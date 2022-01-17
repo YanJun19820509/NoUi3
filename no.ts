@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, SystemEvent, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, CCClass, UITransform, tween, EventTarget, Input } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, SystemEvent, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, CCClass, UITransform, tween, EventTarget, Input, UIOpacity } from 'cc';
 import { EDITOR } from 'cc/env';
 const { ccclass, property } = _decorator;
 
@@ -719,7 +719,7 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        node.getComponent(UITransform).convertToWorldSpaceAR(node.position,out) ;
+        node.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
         return out;
     }
 
@@ -957,6 +957,103 @@ export namespace no {
         return function (target: Function) {
             target.prototype[key] = value;
         };
+    }
+
+    /**
+     * 获取或设置节点x坐标
+     * @param node 节点
+     * @param x x坐标，为空时则返回当前x；否则修改当前x
+     * @returns
+     */
+    export function x(node: Node, x?: number): number {
+        if (!node) return;
+        let p = node.getPosition();
+        if (x != undefined) {
+            p.x = x;
+            node.setPosition(p);
+        }
+        return p.x;
+    }
+
+    /**
+     * 获取或设置节点y坐标
+     * @param node 节点
+     * @param y y坐标，为空时则返回当前y；否则修改当前y
+     * @returns
+     */
+    export function y(node: Node, y?: number): number {
+        if (!node) return;
+        let p = node.getPosition();
+        if (y != undefined) {
+            p.y = y;
+            node.setPosition(p);
+        }
+        return p.y;
+    }
+
+    /**
+     * 获取或设置节点宽
+     * @param node 节点
+     * @param width 为空时则返回当前宽；否则修改当前宽
+     * @returns
+     */
+    export function width(node: Node, width?: number): number {
+        if (!node) return;
+        if (width != undefined)
+            node.getComponent(UITransform).width = width;
+        return node.getComponent(UITransform).width;
+    }
+
+    /**
+     * 获取或设置节点高
+     * @param node 节点
+     * @param height 为空时则返回当前高；否则修改当前高
+     * @returns
+     */
+    export function height(node: Node, height?: number): number {
+        if (!node) return;
+        if (height != undefined)
+            node.getComponent(UITransform).height = height;
+        return node.getComponent(UITransform).height;
+    }
+
+    /**
+     * 获取或设置节点透明度
+     * @param node 节点
+     * @param opacity 为空时则返回当前opacity；否则修改当前opacity
+     * @returns
+     */
+    export function opacity(node: Node, opacity?: number): number {
+        if (!node) return;
+        let op = node.getComponent(UIOpacity);
+        if (opacity != undefined) op.opacity = opacity;
+        return op.opacity;
+    }
+
+    /**
+     * 获取或设置节点anchorX
+     * @param node 节点
+     * @param x 为空时则返回当前anchorX；否则修改当前anchorX
+     * @returns
+     */
+    export function anchorX(node: Node, x?: number): number {
+        if (!node) return;
+        let t = node.getComponent(UITransform);
+        if (x != undefined) t.anchorX = x;
+        return t.anchorX;
+    }
+
+    /**
+     * 获取或设置节点anchorY
+     * @param node 节点
+     * @param y 为空时则返回当前anchorY；否则修改当前anchorY
+     * @returns
+     */
+    export function anchorY(node: Node, y?: number): number {
+        if (!node) return;
+        let t = node.getComponent(UITransform);
+        if (y != undefined) t.anchorY = y;
+        return t.anchorY;
     }
 
     /**基础数据类 */

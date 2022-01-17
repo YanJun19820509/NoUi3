@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node } from 'cc';
-const { ccclass, property } = _decorator;
+import { _decorator, Component, Node, Label } from 'cc';
+import { FuckUi } from './FuckUi';
+const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables
@@ -13,32 +14,27 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
- 
+
 @ccclass('SetHint')
-export class SetHint extends Component {
-    // [1]
-    // dummy = '';
+@menu('NoUi/ui/SetHint(设置红点:number)')
+export class SetHint extends FuckUi {
 
-    // [2]
-    // @property
-    // serializableDummy = 0;
+    @property({ displayName: '红点', type: Node })
+    targetNode: Node = null;
+    @property
+    isNumber: boolean = true;
 
-    start () {
-        // [3]
+    @property({ type: Label, displayName: '显示红点数量', visible() { return this.isNumber; } })
+    label: Label = null;
+
+    onLoad() {
+        this.targetNode = this.targetNode || this.node;
     }
 
-    // update (deltaTime: number) {
-    //     // [4]
-    // }
+    protected onDataChange(data: any) {
+        let v = Number(data);
+        this.targetNode.active = v > 0;
+        if (this.isNumber && this.label != null)
+            this.label.string = data;
+    }
 }
-
-/**
- * [1] Class member could be defined like this.
- * [2] Use `property` decorator if your want the member to be serializable.
- * [3] Your initialization goes here.
- * [4] Your update function goes here.
- *
- * Learn more about scripting: https://docs.cocos.com/creator/3.4/manual/en/scripting/
- * Learn more about CCClass: https://docs.cocos.com/creator/3.4/manual/en/scripting/ccclass.html
- * Learn more about life-cycle callbacks: https://docs.cocos.com/creator/3.4/manual/en/scripting/life-cycle-callbacks.html
- */

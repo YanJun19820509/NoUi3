@@ -65,6 +65,6 @@ export class YJHintWatcher extends Component {
                 }
             }
         } else n = 1;
-        this.hint.setData(n);
+        this.hint.setData(String(n));
     }
 }
