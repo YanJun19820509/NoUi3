@@ -17,7 +17,7 @@ const { ccclass, property, menu } = _decorator;
  */
 @ccclass("ConditionHandlerInfo")
 export class ConditionHandlerInfo {
-    @property()
+    @property
     condition: string = '';
 
     @property(no.EventHandlerInfo)

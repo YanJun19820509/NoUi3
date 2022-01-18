@@ -17,7 +17,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('CheckLocalStorageInfo')
 export class CheckLocalStorageInfo {
-    @property()
+    @property
     value: string = '';
     @property(no.EventHandlerInfo)
     handlers: no.EventHandlerInfo[] = [];

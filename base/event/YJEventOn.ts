@@ -17,7 +17,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('ListenerInfo')
 export class ListenerInfo {
-    @property()
+    @property
     type: string = '';
     @property(no.EventHandlerInfo)
     calls: no.EventHandlerInfo[] = [];

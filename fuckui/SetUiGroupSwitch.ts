@@ -16,7 +16,7 @@ const { ccclass, property, menu } = _decorator;
  */
 @ccclass('SetUiGroupSwitchInfo')
 export class SetUiGroupSwitchInfo {
-    @property()
+    @property
     condition: string = '';
     @property(Node)
     node: Node = null;

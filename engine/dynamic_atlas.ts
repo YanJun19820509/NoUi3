@@ -1,5 +1,10 @@
 //drawcall优化，对引擎相关代码的扩充或修改
-const MaxRects = require('./MaxRects');
+
+import { dynamicAtlasManager, js, Widget,  director, BlockInputEvents,  ScrollView, Layout, SpriteFrame, Sprite,  Label, RenderTexture, Node, RenderComponent,  math, WebGL2Device } from "cc";
+import { EDITOR, DEBUG } from "cc/env";
+import { no } from "../no";
+import { MaxRects } from "./MaxRects";
+
 
 let mixEngine = function () {
     let _curTmpAtlas = null;
@@ -9,21 +14,40 @@ let mixEngine = function () {
     let _textureSize = 1024;
     let _maxFrameSize = 512;
     const space = 2;
-    let o_insertSpriteFrame = cc.dynamicAtlasManager.insertSpriteFrame;
-    cc.js.mixin(cc.dynamicAtlasManager, {
-        insertSpriteFrame(spriteFrame, comp) {
-            if (CC_EDITOR || !spriteFrame || !spriteFrame._texture || !spriteFrame._texture._texture) return null;
-            if (_curTmpAtlas && spriteFrame && spriteFrame._rect.width <= cc.winSize.width && spriteFrame._rect.height <= 700) {
+    let o_insertSpriteFrame = dynamicAtlasManager.insertSpriteFrame;
+    js.mixin(dynamicAtlasManager, {
+        packToDynamicAtlas(comp, frame) {
+            if (EDITOR) return;
+            if (comp instanceof Label && !(frame instanceof SpriteFrame)) {
+                if (comp.string == '') return;
+                frame._texture._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
+            }
+            let packedFrame = dynamicAtlasManager['insertSpriteFrame1'](frame, comp);
+            if (packedFrame) {
+                frame._setDynamicAtlasFrame(packedFrame);
+            }
+            let material = comp._materials[0];
+            if (!material) return;
+
+            if (frame._texture && material.getProperty('texture') !== frame._texture._texture) {
+                // texture was packed to dynamic atlas, should update uvs
+                comp._vertsDirty = true;
+                comp._updateMaterial();
+            }
+        },
+        insertSpriteFrame1(spriteFrame, comp) {
+            if (EDITOR || !spriteFrame || !spriteFrame._texture || !spriteFrame._texture._texture) return null;
+            if (_curTmpAtlas && spriteFrame._rect.height <= 800) {
                 return this._insertTmpSpriteFrame(spriteFrame, comp);
             }
             return null;//o_insertSpriteFrame(spriteFrame);
         },
-        showDebug: CC_DEBUG && function (show) {
+        showDebug: DEBUG && function (show) {
             if (show) {
                 if (!_debugNode || !_debugNode.isValid) {
 
-                    _debugNode = new cc.Node('DYNAMIC_ATLAS_DEBUG_NODE');
-                    let widget = _debugNode.addComponent(cc.Widget);
+                    _debugNode = new Node('DYNAMIC_ATLAS_DEBUG_NODE');
+                    let widget = _debugNode.addComponent(Widget);
                     widget.isAlignTop = true;
                     widget.isAlignLeft = true;
                     widget.isAlignBottom = true;
@@ -32,48 +56,48 @@ let mixEngine = function () {
                     widget.left = 0;
                     widget.bottom = 0;
                     widget.right = 0;
-                    _debugNode.zIndex = cc.macro.MAX_ZINDEX;
-                    _debugNode.parent = cc.director.getScene();
+                    _debugNode.zIndex = Number.MAX_VALUE;
+                    _debugNode.parent = director.getScene();
 
-                    _debugNode.addComponent(cc.BlockInputEvents);
+                    _debugNode.addComponent(BlockInputEvents);
 
-                    _debugNode.groupIndex = cc.Node.BuiltinGroupIndex.DEBUG;
-                    cc.Camera._setupDebugCamera();
+                    // _debugNode.groupIndex = Node.BuiltinGroupIndex.DEBUG;
+                    // Camera._setupDebugCamera();
 
-                    let scroll = _debugNode.addComponent(cc.ScrollView);
+                    let scroll = _debugNode.addComponent(ScrollView);
 
-                    let content = new cc.Node('CONTENT');
-                    let layout = content.addComponent(cc.Layout);
-                    layout.type = cc.Layout.Type.VERTICAL;
-                    layout.resizeMode = cc.Layout.ResizeMode.NONE;
+                    let content = new Node('CONTENT');
+                    let layout = content.addComponent(Layout);
+                    layout.type = Layout.Type.VERTICAL;
+                    layout.resizeMode = Layout.ResizeMode.NONE;
                     content.parent = _debugNode;
 
                     scroll.content = content;
 
                     let _createNode = function (texture, parent) {
-                        let node = new cc.Node('ATLAS');
-                        node.width = texture.width;
-                        node.height = texture.height;
-                        let spriteFrame = new cc.SpriteFrame();
-                        spriteFrame.setTexture(texture);
+                        let node = new Node('ATLAS');
+                        no.width(node, texture.width);
+                        no.height(node, texture.height);
+                        let spriteFrame = new SpriteFrame();
+                        spriteFrame.texture = texture;
 
-                        let sprite = node.addComponent(cc.Sprite);
+                        let sprite = node.addComponent(Sprite);
                         sprite.spriteFrame = spriteFrame;
 
                         node.parent = parent;
                     }
 
                     if (_curTmpAtlas) {
-                        content.width = _curTmpAtlas._texture.width;
-                        content.height = _curTmpAtlas._texture.height;
+                        no.width(content,_curTmpAtlas._texture.width);
+                        no.height(content,_curTmpAtlas._texture.height);
                         _createNode(_curTmpAtlas._texture, content);
                         console.error('curTmpAtlas---' + _curTmpAtlas._texture._id);
                     } else {
-                        content.width = _textureSize;
-                        content.height = _textureSize * _atlases.length;
-                        for (let i = 0, n = _atlases.length; i < n; i++) {
-                            _createNode(_atlases[i]._texture, content);
-                        }
+                        // content.width = _textureSize;
+                        // content.height = _textureSize * _atlases.length;
+                        // for (let i = 0, n = _atlases.length; i < n; i++) {
+                        //     _createNode(_atlases[i]._texture, content);
+                        // }
                     }
                 }
                 return _debugNode;
@@ -141,7 +165,7 @@ let mixEngine = function () {
             // let atlas = this.tmpAtlasByName(spriteFrame['_tmpAtlasId']);
             if (spriteFrame._texture._id == _curTmpAtlas._texture._id) {
                 let _uuid;
-                if (spriteFrame instanceof cc.SpriteFrame)
+                if (spriteFrame instanceof SpriteFrame)
                     _uuid = spriteFrame._uuid;
                 else _uuid = spriteFrame._texture._uuid;
                 _curTmpAtlas.addToInnerComponentes(_uuid, comp);
@@ -164,14 +188,14 @@ let mixEngine = function () {
         }
     });
 
-    cc.js.mixin(cc.dynamicAtlasManager.Atlas.prototype, {
+    js.mixin(Atlas.prototype, {
         fetchSpriteFrameAsync(spriteFrame) {
             if (!this._dynamicTextureRect) {
                 this._dynamicTextureRect = {};
                 return null;
             }
             let info;
-            if (spriteFrame instanceof cc.SpriteFrame) {
+            if (spriteFrame instanceof SpriteFrame) {
                 if (this._dynamicTextureRect[spriteFrame._uuid]) return null;
             } else info = this._dynamicTextureRect[spriteFrame._texture._uuid];
             if (!info) return null;
@@ -192,10 +216,10 @@ let mixEngine = function () {
                 this._dynamicTextureRect = {};
             }
             if (!this._maxRect) {
-                this._maxRect = new MaxRects.MaxRects(this._width, this._height);
+                this._maxRect = new MaxRects(this._width, this._height);
             }
             let _uuid;
-            if (spriteFrame instanceof cc.SpriteFrame)
+            if (spriteFrame instanceof SpriteFrame)
                 _uuid = spriteFrame._uuid;
             else _uuid = spriteFrame._texture._uuid;
             if (this._dynamicTextureRect[_uuid]) {
@@ -225,8 +249,8 @@ let mixEngine = function () {
             let x = p.x, y = p.y;
 
             spriteFrame['_tmpAtlasId'] = this._texture._id;
-            if (spriteFrame instanceof cc.SpriteFrame) {
-                if (spriteFrame._original)
+            if (spriteFrame instanceof SpriteFrame) {
+                if (spriteFrame['_original'])
                     spriteFrame._resetDynamicAtlasFrame();
             }
 
@@ -267,7 +291,7 @@ let mixEngine = function () {
                 this._dirty = true;
             } else {
                 let isRotated = spriteFrame.isRotated();
-                let rect = cc.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
+                let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
                 if (typeof createImageBitmap !== 'undefined' && image) {
                     createImageBitmap(image, rect.x, rect.y, rect.width, rect.height).then(img => {
                         this._setSubImage(img, x, y, premultiplyAlpha);
@@ -282,7 +306,7 @@ let mixEngine = function () {
         },
 
         _setSubImage(img, x, y, premultiplyAlpha) {
-            if (cc.dynamicAtlasManager.textureBleeding) {
+            if (dynamicAtlasManager.textureBleeding) {
                 if (img.width <= 8 || img.height <= 8) {
                     this._texture.drawImageAt(img, x - 1, y - 1, premultiplyAlpha);
                     this._texture.drawImageAt(img, x - 1, y + 1, premultiplyAlpha);
@@ -318,8 +342,8 @@ let mixEngine = function () {
         },
         //读取texture一定区域内的像素数据
         _getPixels(rect, texture) {
-            let gl = cc.game._renderContext;
 
+            const gl = (director.root.device as WebGL2Device).gl;
             let framebuffer = gl.createFramebuffer();
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._texture._glID, 0);
@@ -353,7 +377,7 @@ let mixEngine = function () {
             if (this._innerComponentes) {
                 for (const key in this._innerComponentes) {
                     if (Object.hasOwnProperty.call(this._innerComponentes, key)) {
-                        cc.dynamicAtlasManager.updateAtlasComp(key, this._texture._id);
+                        dynamicAtlasManager['updateAtlasComp'](key, this._texture._id);
                         this.updateComp(key);
                     }
                 }
@@ -369,40 +393,16 @@ let mixEngine = function () {
             for (let i = 0, n = comps.length; i < n; i++) {
                 let comp = comps[i];
                 if (comp.isValid) {
-                    if (comp instanceof cc.Sprite)
-                        comp._assembler.updateRenderData(comp);
+                    if (comp instanceof Sprite)
+                        comp['_assembler']!.updateRenderData!(comp);
                     else
-                        comp.setVertsDirty();
+                        comp.updateRenderData();
                 }
             }
         }
     });
 
-    cc.js.mixin(cc.Assembler2D.prototype, {
-        packToDynamicAtlas(comp, frame) {
-            if (CC_TEST || !frame) return;
-            if (cc.dynamicAtlasManager) {
-                if (comp instanceof cc.Label && !(frame instanceof cc.SpriteFrame)) {
-                    if (comp.string == '') return;
-                    frame._texture._uuid = comp.string + "_" + comp.node.color + "_" + comp.fontSize + comp.fontFamily;
-                }
-                let packedFrame = cc.dynamicAtlasManager.insertSpriteFrame(frame, comp);
-                if (packedFrame) {
-                    frame._setDynamicAtlasFrame(packedFrame);
-                }
-            }
-            let material = comp._materials[0];
-            if (!material) return;
-
-            if (frame._texture && material.getProperty('texture') !== frame._texture._texture) {
-                // texture was packed to dynamic atlas, should update uvs
-                comp._vertsDirty = true;
-                comp._updateMaterial();
-            }
-        }
-    });
-
-    cc.js.mixin(cc.RenderTexture.prototype, {
+    js.mixin(RenderTexture.prototype, {
         drawImageAt(img, x, y, premultiplyAlpha) {
             this._texture.updateSubImage({
                 x,
@@ -418,9 +418,9 @@ let mixEngine = function () {
     });
 };
 
-if (!CC_EDITOR && CC_DEBUG) {
+if (!EDITOR && DEBUG) {
     let a = setInterval(function () {
-        if (cc.Assembler2D) {
+        if (dynamicAtlasManager) {
             mixEngine();
             clearInterval(a);
         }

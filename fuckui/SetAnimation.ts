@@ -42,13 +42,13 @@ export class SetAnimation extends FuckUi {
     protected async onDataChange(data: any) {
         let ani = this.getComponent(Animation);
         await no.waitFor(() => { return ani.enabled; });
-        let { path, name, repeat } = data;
+        let { path, name, speed, repeat } = data;
 
         if (name) {
             if (!ani.getState(name) && path) {
                 await this._loadClip(path, name);
             }
-            this._play(name, repeat);
+            this._play(name, speed, repeat);
         }
     }
 
@@ -62,7 +62,7 @@ export class SetAnimation extends FuckUi {
         });
     }
 
-    private _play(name: string, repeat?: number) {
+    private _play(name: string, speed = 1, repeat?: number) {
         let ani: Animation = this.getComponent(Animation);
         let state = ani.getState(name);
         if (repeat == 0) {
@@ -76,6 +76,7 @@ export class SetAnimation extends FuckUi {
                 repeat = 999;
             state.wrapMode = AnimationClip.WrapMode.Loop;
             state.repeatCount = repeat;
+            state.speed = speed;
             state.play();
         }
     }

@@ -17,15 +17,15 @@ const { ccclass, property , menu} = _decorator;
 
 @ccclass('DefineInfo')
 export class DefineInfo {
-    @property()
+    @property
     type: string = '';
-    @property()
+    @property
     isWork: boolean = false;
 }
 
 @ccclass('PropertyInfo')
 export class PropertyInfo {
-    @property()
+    @property
     type: string = '';
     @property({ step: 0.01 })
     value: number = 0.0;

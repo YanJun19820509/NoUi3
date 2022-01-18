@@ -29,16 +29,16 @@ enum PreloadState {
 @ccclass('YJPreload')
 @menu('NoUi/base/YJPreload(资源预加载)')
 export class YJPreload extends YJComponent {
-    @property({ type: String, displayName: '加载包' })
+    @property({ displayName: '加载包' })
     bundles: string[] = [];
 
-    @property({ type: String, displayName: '加载单个文件' })
+    @property({ displayName: '加载单个文件' })
     files: string[] = [];
 
-    @property({ type: String, displayName: '加载包下所有文件' })
+    @property({ displayName: '加载包下所有文件' })
     bundleFiles: string[] = [];
 
-    @property({ type: String, displayName: '加载文件夹下所有文件' })
+    @property({ displayName: '加载文件夹下所有文件' })
     folderFiles: string[] = [];
 
     @property({ displayName: '跳转的场景' })

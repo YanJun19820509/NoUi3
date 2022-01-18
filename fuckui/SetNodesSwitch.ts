@@ -16,7 +16,7 @@ const { ccclass, property, menu } = _decorator;
  */
 @ccclass("SwitchInfo")
 export class SwitchInfo {
-    @property()
+    @property
     condition: string = '';
 
     @property({ type: Node, displayName: '显示节点' })
