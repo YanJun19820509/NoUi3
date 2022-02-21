@@ -45,7 +45,7 @@ export class YJTouchListener extends Component {
 
     public onStart(event: EventTouch) {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
-        this.isTouchIn = this.rect.contains(event.getStartLocation());
+        this.isTouchIn = this.rect.contains(event.getUIStartLocation());
         if (!this.isTouchIn) return;
         no.EventHandlerInfo.execute(this.startHandlers, event);
     }

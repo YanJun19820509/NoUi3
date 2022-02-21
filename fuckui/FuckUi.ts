@@ -16,12 +16,12 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- /**
- * 设置ui属性的基类
- */
+/**
+* 设置ui属性的基类
+*/
 @ccclass('FuckUi')
 export class FuckUi extends Component {
-    @property({ type: YJFuckUiRegister })
+    @property({ type: YJFuckUiRegister, tooltip: 'deprecated,建议在 YJFuckUiManager 中注册'})
     register: YJFuckUiRegister = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
@@ -46,7 +46,8 @@ export class FuckUi extends Component {
         if (d == 'null') return;
         if (this.saveIgnore && d == this._oldData) return;
         this._oldData = d;
-        d = JSON.parse(d);
+        if (d != '')
+            d = JSON.parse(d);
         this.logValue(d);
         this.onDataChange(d);
         if (this.once) this.destroy();

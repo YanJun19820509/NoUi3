@@ -42,6 +42,7 @@ export class YJDataWork extends Component {
             this.setUiData([ui], this.getValue(key));
         };
         this._ready = true;
+        this.afterInit();
     }
 
     public get data(): any {
@@ -93,5 +94,10 @@ export class YJDataWork extends Component {
                 ui.setData(JSON.stringify(a));
             }
         });
+    }
+
+    //子类实现
+    protected afterInit() {
+
     }
 }

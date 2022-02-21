@@ -23,11 +23,18 @@ export class YJCacheObject extends Component {
     @property({ visible() { return !this.resetOnDisable; } })
     recycleOnDisable: boolean = false;
 
+    private _recycled: boolean = false;
+
+    onEnable() {
+        this._recycled = false;
+    }
+
     onDisable() {
-        this.recycleOnDisable && this.recycle();
+        this.recycleOnDisable && !this._recycled && this.recycle();
     }
 
     public recycle(): void {
+        this._recycled = true;
         no.cachePool.recycle(this.recycleType, this.node);
     }
 }

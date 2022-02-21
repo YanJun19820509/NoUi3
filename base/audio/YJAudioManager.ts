@@ -129,6 +129,7 @@ export class YJAudioManager extends Component {
     public _playClip(clip: AudioClip, path?: string, loop = true): void {
         if (path && !this.clips.has(path))
             this.clips.set(path, clip);
+        this.audioSource.stop()
         if (loop) {
             this.audioSource.clip = clip;
             this.audioSource.loop = true;

@@ -25,17 +25,23 @@ export class SetSpriteFrame extends FuckUi {
     sprite: Sprite = null;
 
     onLoad() {
+        super.onLoad();
         this.sprite = this.sprite || this.getComponent(Sprite);
     }
 
     protected onDataChange(data: any) {
         if (this.sprite == null) return;
-        no.assetBundleManager.decRef(this.sprite.spriteFrame);
-        this.sprite.spriteFrame = null;
-        no.assetBundleManager.loadSprite(String(data), spriteFrame => {
-            this.sprite.spriteFrame = spriteFrame;
+        if (!this.sprite.spriteAtlas) {
+            no.assetBundleManager.decRef(this.sprite.spriteFrame);
+            this.sprite.spriteFrame = null;
+            no.assetBundleManager.loadSprite(String(data), spriteFrame => {
+                this.sprite.spriteFrame = spriteFrame;
+                this.checkShader();
+            });
+        } else {
+            this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(String(data));
             this.checkShader();
-        });
+        }
     }
 
     private checkShader() {

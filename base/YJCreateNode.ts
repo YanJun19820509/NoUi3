@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate } from 'cc';
 import { no } from '../no';
 import YJLoadPrefab from './node/YJLoadPrefab';
 import { YJCacheObject } from './YJCacheObject';
+import { YJDataWork } from './YJDataWork';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -55,10 +56,11 @@ export class YJCreateNode extends Component {
             let node = this.tempNode || await this.loadPrefab.loadPrefab();
             if (node == null) return null;
             a = instantiate(node);
-            a.parent = this.target;
-            a.active = true;
+            a.getComponent(YJDataWork)?.init();
             this._recycleType = node.getComponent(YJCacheObject)?.recycleType;
         }
+        a.parent = this.target;
+        a.active = true;
         return a;
     }
 }

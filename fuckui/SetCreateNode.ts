@@ -61,7 +61,11 @@ export class SetCreateNode extends FuckUi {
             if (data[i] == null) item.active = false;
             else {
                 item.active = true;
-                (item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork)).data = data[i];
+                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                if (a) {
+                    a.init();
+                    a.data = data[i];
+                }
             }
         }
     }

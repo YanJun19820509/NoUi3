@@ -19,23 +19,22 @@ const { ccclass, menu } = _decorator;
 @ccclass('SetBlink')
 @menu('NoUi/tween/SetBlink(闪烁动效:object)')
 export class SetBlink extends SetNodeTweenAction {
-    protected createAction(data: any): Tween<Node> {
+    protected createAction(data: any): no.TweenSet | no.TweenSet[] {
         let d = [{
-            duration: 0.5 / data.frequency,
+            duration: 1 / data.frequency,
+            to: 1,
             props: {
                 opacity: 0
             }
         }, {
-            duration: 0.5 / data.frequency,
+            duration: 1 / data.frequency,
+            to: 1,
             props: {
                 opacity: 255
             }
+        }, {
+            repeat: data.repeat
         }];
-        let a = no.parseTweenData(d, this.node);
-        let b = tween(this.node).repeat(data.frequency, a);
-        if (data.repeat != undefined) {
-            return tween(this.node).repeat(data.repeat || 999, b);
-        }
-        return b;
+        return no.parseTweenData(d, this.node);
     }
 }

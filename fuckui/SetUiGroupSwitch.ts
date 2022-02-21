@@ -18,8 +18,8 @@ const { ccclass, property, menu } = _decorator;
 export class SetUiGroupSwitchInfo {
     @property
     condition: string = '';
-    @property(Node)
-    node: Node = null;
+    @property({ type: Node })
+    uiNode: Node = null;
 }
 @ccclass('SetUiGroupSwitch')
 @menu('NoUi/ui/SetUiGroupSwitch(根据条件切换ui模块:string)')
@@ -30,8 +30,8 @@ export class SetUiGroupSwitch extends FuckUi {
 
     protected onDataChange(data: any) {
         this.infos.forEach(info => {
-            if (info.node) {
-                info.node.active = info.condition === data;
+            if (info.uiNode) {
+                info.uiNode.active = info.condition === data;
             }
         });
     }

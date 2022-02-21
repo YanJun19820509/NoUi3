@@ -29,8 +29,6 @@ export class YJTouchController extends Component {
     selected: boolean = true;
     @property({ displayName: '处理取消' })
     needCancel: boolean = true;
-    @property({ displayName: '吞没事件' })
-    swallowTouches: boolean = true;
     @property({ displayName: '捕获' })
     useCapture: boolean = true;
 
@@ -42,7 +40,6 @@ export class YJTouchController extends Component {
         this.node.on(Node.EventType.TOUCH_MOVE, this.onMove, this, this.useCapture);
         this.node.on(Node.EventType.TOUCH_END, this.onEnd, this, this.useCapture);
         this.node.on(Node.EventType.TOUCH_CANCEL, this.onCancel, this, this.useCapture);
-        this.node['_touchListener'].swallowTouches = this.swallowTouches;
     }
 
     onDisable() {
@@ -64,12 +61,14 @@ export class YJTouchController extends Component {
         if (!this.checkTouched(event)) return;
         this.currentTouch = event.touch;
         this._touched = true;
-        this.dispatcher?.onStart(event)
+        if (this.dispatcher)
+            this.dispatcher.onStart(event)
     }
 
     protected onMove(event: EventTouch) {
         if (this.selected && !this._touched) return;
-        this.dispatcher?.onMove(event)
+        if (this.dispatcher)
+            this.dispatcher.onMove(event)
     }
 
     protected onEnd(event: EventTouch) {
@@ -77,14 +76,16 @@ export class YJTouchController extends Component {
         // if (!this.checkTouched(event)) return;
         this._touched = false;
         this.currentTouch = null;
-        this.dispatcher?.onEnd(event)
+        if (this.dispatcher)
+            this.dispatcher.onEnd(event)
     }
 
     protected onCancel(event: EventTouch) {
         if (this.selected && !this._touched || !this.needCancel) return;
         this._touched = false;
         this.currentTouch = null;
-        this.dispatcher?.onCancel(event)
+        if (this.dispatcher)
+            this.dispatcher.onCancel(event)
     }
 
     public trigger(type: string, event: EventTouch): void {

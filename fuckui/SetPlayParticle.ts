@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ParticleSystem } from 'cc';
+import { _decorator, Component, Node, ParticleSystem2D } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -29,15 +29,15 @@ export class SetPlayParticle extends FuckUi {
     }
 
     private _play() {
-        let p = this.getComponent(ParticleSystem);
-        p.play();
+        let p = this.getComponent(ParticleSystem2D);
+        p.resetSystem();
         if (p.duration > -1) {
             this.scheduleOnce(this._onEnd, p.duration);
         }
     }
 
     private _stop() {
-        this.getComponent(ParticleSystem).stop();
+        this.getComponent(ParticleSystem2D).stopSystem();
         this.unschedule(this._onEnd);
     }
 

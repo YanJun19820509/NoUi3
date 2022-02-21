@@ -26,6 +26,10 @@ export class YJLoadAudioClip extends Component {
     public loadedAudioClip: AudioClip;
     public loaded: boolean = false;
 
+    onLoad(){
+        this.autoLoad && this.loadClip();
+    }
+
     public async loadClip(): Promise<AudioClip> {
         if (this.loadedAudioClip != null) return this.loadedAudioClip;
         return new Promise<AudioClip>(resolve => {

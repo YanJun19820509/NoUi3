@@ -25,22 +25,45 @@ export class SetNodeTweenAction extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '缓动完成回调' })
     endCall: no.EventHandlerInfo[] = [];
 
-    private _action: Tween<Node>;
+    private _action: no.TweenSet | no.TweenSet[];
 
     protected onDataChange(data: any) {
         this.stop();
+        if (Object.keys(data).length == 0) return;
         no.EventHandlerInfo.execute(this.beforeCall);
-        this._action = this.createAction(data)?.call(() => {
-            no.EventHandlerInfo.execute(this.endCall);
-        }).start();
+        this._action = this.createAction(data);
+        this.run();
     }
 
-    protected createAction(data: any): Tween<Node> {
+    protected createAction(data: any): no.TweenSet | no.TweenSet[] {
         return no.parseTweenData(data, this.node);
     }
 
+    private run() {
+        no.TweenSet.play(this._action, () => {
+            no.EventHandlerInfo.execute(this.endCall);
+        });
+        // if (this._action instanceof Array) {
+        //     this._action.forEach((a, i) => {
+        //         if (i == 0)
+        //             a.start().then(() => {
+        //                 no.EventHandlerInfo.execute(this.endCall);
+        //             });
+        //         else a.start();
+        //     })
+        // } else
+        //     this._action?.start().then(() => {
+        //         no.EventHandlerInfo.execute(this.endCall);
+        //     });
+    }
+
     private stop() {
-        this._action?.stop();
+        if (this._action instanceof Array) {
+            this._action.forEach(a => {
+                a.stop();
+            })
+        } else
+            this._action?.stop();
         this._action = null;
     }
 }

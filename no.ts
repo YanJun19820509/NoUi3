@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, SystemEvent, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, CCClass, UITransform, tween, EventTarget, Input, UIOpacity } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, SystemEvent, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, CCClass, UITransform, tween, EventTarget, Input, UIOpacity, Quat } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJCacheObject } from './base/YJCacheObject';
 const { ccclass, property } = _decorator;
 
 export namespace no {
@@ -45,7 +46,7 @@ export namespace no {
             for (let type in this._map) {
                 let a: { h: Function, t: any, o: boolean }[] = this._map[type];
                 if (!a) continue;
-                for (let i = a.length; i >= 0; i--) {
+                for (let i = a.length - 1; i >= 0; i--) {
                     let b = a[i];
                     if (b.t == target) {
                         a.splice(i, 1);
@@ -61,7 +62,7 @@ export namespace no {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type];
             if (!a) return;
             a.forEach(b => {
-                b.h.call(b.t, args);
+                b.h.apply(b.t, args);
             });
             for (let i = a.length - 1; i >= 0; i--) {
                 let b = a[i];
@@ -116,7 +117,7 @@ export namespace no {
             if (handlers.length == 0) return;
             this.sort(handlers);
             handlers.forEach(handler => {
-                handler.execute([].concat(args, handler.hander.customEventData));
+                handler.execute(args);
             });
         }
 
@@ -599,8 +600,8 @@ export namespace no {
      * @param component
      * @returns
      */
-    export async function sleep(duration: number, component?: Component): Promise<void> {
-        if (duration <= 0) duration = director.getDeltaTime();
+    export function sleep(duration: number, component?: Component): Promise<void> {
+        if (duration <= 0) duration = game.deltaTime;
         return new Promise<void>(resolve => {
             if (component != null) {
                 component.scheduleOnce(resolve, duration);
@@ -861,71 +862,164 @@ export namespace no {
         return this.weightRandom(a);
     }
 
+    export enum TweenSetType {
+        Node = 'node',
+        Transform = 'transform',
+        Opacity = 'opacity'
+    }
+
+    export class TweenSet {
+
+        private map: any;
+        constructor(node: Node) {
+            this.map = {};
+            this.map[TweenSetType.Node] = tween(node);
+            this.map[TweenSetType.Transform] = node.getComponent(UITransform) ? tween(node.getComponent(UITransform)) : null;
+            this.map[TweenSetType.Opacity] = node.getComponent(UIOpacity) ? tween(node.getComponent(UIOpacity)) : null;
+        }
+
+        public start(): Promise<void> {
+            return new Promise<void>(resolve => {
+                for (const key in this.map) {
+                    let t: Tween<unknown> = this.map[key];
+                    if (key == TweenSetType.Node) {
+                        t.call(resolve).start();
+                    } else
+                        t?.start();
+                }
+            });
+        }
+
+        public stop() {
+            for (const key in this.map) {
+                let t: Tween<unknown> = this.map[key];
+                t?.stop();
+            }
+        }
+
+        public setTweenData(data: any) {
+
+            this.setDelay(data.delay);
+
+            if (data.props != null) {
+                let np: any, tp: any, op: any;
+                for (let k in data.props) {
+                    let v = data.props[k];
+                    switch (k) {
+                        case 'pos':
+                            np = np || {};
+                            np['position'] = new Vec3(v[0], v[1], v[2]);
+                            break;
+                        case 'rotation':
+                            np = np || {};
+                            np['rotation'] = new Quat(v[0], v[1], v[2]);
+                            break;
+                        case 'scale':
+                            np = np || {};
+                            np['scale'] = new Vec3(v[0], v[1], v[2]);
+                            break;
+                        case 'size':
+                            tp = tp || {};
+                            tp['contentSize'] = new Size(v[0], v[1]);
+                            break;
+                        case 'anchor':
+                            tp = tp || {};
+                            tp['anchorPoint'] = new Vec2(v[0], v[1]);
+                            break;
+                        case 'opacity':
+                            op = op || {};
+                            op['opacity'] = v;
+                            break;
+                    }
+                }
+
+                if (!np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].delay(data.duration || 0);
+                if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
+                if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
+
+                if (data.by) {
+                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].by(data.duration, np, { easing: data.easing });
+                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.by(data.duration, tp, { easing: data.easing });
+                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.by(data.duration, op, { easing: data.easing });
+                } else if (data.to) {
+                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].to(data.duration, np, { easing: data.easing });
+                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.to(data.duration, tp, { easing: data.easing });
+                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.to(data.duration, op, { easing: data.easing });
+                } else if (data.set) {
+                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].set(np);
+                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.set(tp);
+                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.set(op);
+                }
+            }
+
+            this.setRepeat(data.repeat);
+        }
+
+        private setDelay(v: number) {
+            if (!v) return;
+            for (const key in this.map) {
+                this.map[key] = this.map[key]?.delay(v);
+            }
+        }
+
+        private setRepeat(v: number) {
+            if (!v) return;
+            if (v < 0) v = 999;
+            for (const key in this.map) {
+                this.map[key] = this.map[key]?.repeat(v, this.map[key]);
+            }
+        }
+
+        public static play(tweenSet: TweenSet | TweenSet[], endCall?: () => void) {
+            if (tweenSet instanceof Array) {
+                tweenSet.forEach((t, i) => {
+                    if (i == 0)
+                        t.start().then(endCall);
+                    else t.start();
+                });
+            } else tweenSet.start().then(endCall);
+        }
+    }
+
     /**
      * 解析缓动动效数据
      * @param data
      * @param node
-     * @returns Tween
+     * @returns TweenSet[]
      * @example  data = {
      *      delay?: 1,
      *      duration?: 1,
-     *      to_by?: 'to',
+     *      to?:1,
+     *      by?:1,
+     *      set?:1,
      *      props?: {
-     *          x: 100,
-     *          y: 100
+     *          pos: [100,100,0]
+     *          opacity: 100,
+     *          rotation: [1,1,0],
+     *          scale: [0.5,0.5,1],
+     *          size: [100,100],
+     *          anchor: [0, 1]
      *      },
      *      easing?: 'quadIn',
-     *      repeat?: 0
+     *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
      * }
      * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。
      * 默认属性变化为to
      */
-    export function parseTweenData(data: any, node: Node): Tween<Node> {
+    export function parseTweenData(data: any, node: Node): TweenSet | TweenSet[] {
         if (!data || !node) return null;
 
-        if (data instanceof Array) {
-            let a: Tween<Node>[] = [];
-            let isParallel = false;
+        if (data instanceof Array && data[0] instanceof Array) {//并行
+            let a: TweenSet[] = [];
             data.forEach(td => {
-                if (td instanceof Array) isParallel = true;
-                a[a.length] = parseTweenData(td, node);
+                a = a.concat(parseTweenData(td, node))
             });
-
-            let _tween = tween(node);
-            if (a.length == 1) {
-                _tween = a[0];
-            } else {
-                if (!isParallel) {
-                    let c = tween(node);
-                    c = c.sequence(a.shift(), a.shift());
-                    a.forEach(b => {
-                        c = tween(node).sequence(c, b);
-                    });
-                    _tween = c;
-                } else {
-                    let c = tween(node);
-                    c = c.parallel(a.shift(), a.shift());
-                    a.forEach(b => {
-                        c = tween(node).parallel(c, b);
-                    });
-                    _tween = c;
-                }
-            }
-            return _tween;
+            return a;
         } else {
-            let _tween = tween(node);
-            if (data.delay > 0) {
-                _tween = _tween.delay(data.delay);
-            }
-            if (data.props != null) {
-                if (data.to_by == 'by') {
-                    _tween = _tween.by(data.duration, data.props, { easing: data.easing });
-                } else {
-                    _tween = _tween.to(data.duration, data.props, { easing: data.easing });
-                }
-            }
-            if (data.repeat != undefined) {
-                _tween = _tween.repeat(data.repeat || 999);
+            let _tween = new TweenSet(node);
+            data = [].concat(data);
+            for (let i = 0, n = data.length; i < n; i++) {
+                _tween.setTweenData(data[i]);
             }
             return _tween;
         }
@@ -1057,7 +1151,8 @@ export namespace no {
     }
 
     /**基础数据类 */
-    export class Data {
+    export class Data extends Event {
+        public static DataChangeEvent = 'data_change_event';
 
         private _data: any;
 
@@ -1067,6 +1162,7 @@ export namespace no {
 
         public set data(v: any) {
             this._data = v;
+            this.emit(Data.DataChangeEvent, this._data);
         }
 
         /**转成json string */
@@ -1077,6 +1173,7 @@ export namespace no {
         /**将json string转成data */
         public set json(v: string) {
             this._data = JSON.parse(v);
+            this.emit(Data.DataChangeEvent, this._data);
         }
 
         /**
@@ -1111,14 +1208,20 @@ export namespace no {
                 if (Object.keys(value).length == 0) {
                     no.setValue(this._data, path, value);
                 } else {
-                    no.forEachKV(value, (key, v) => {
+                    for (let key in value) {
+                        let v = value[key];
                         this.set(path + '.' + key, v);
-                        return false;
-                    });
+                    }
                 }
             } else {
                 no.setValue(this._data, path, value);
             }
+            this.handleDataChange();
+        }
+
+        private async handleDataChange() {
+            if (await Throttling.ins(this).wait(0.1))
+                this.emit(Data.DataChangeEvent, this._data);
         }
 
         /**
@@ -1649,10 +1752,10 @@ export namespace no {
          * 获取缓存的对象
          * @param type
          */
-        public reuse<T>(type: string): T {
+        public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
             this.cacheUseMap.set(type, no.timestamp());
-            this.cacheMap.get(type).shift();
+            return this.cacheMap.get(type).shift();
         }
 
         /**
@@ -2349,6 +2452,46 @@ export namespace no {
                     resolve(v);
                 });
             });
+        }
+    }
+
+    /**节流 */
+    export class Throttling {
+
+        private isCd: boolean = false;
+        private duration: number = 1;
+        private static _instance: Throttling;
+
+        public static ins(c?: any): Throttling {
+            if (c != null) {
+                c['Throttling_instance'] = c['Throttling_instance'] || new Throttling();
+                return c['Throttling_instance'];
+            }
+            if (this._instance == null) this._instance = new Throttling();
+            return this._instance;
+        }
+
+        public async wait(duration: number, firstWait = false): Promise<boolean> {
+            this.duration = duration;
+            return new Promise<boolean>(async (resolve, reject) => {
+                if (this.isCd) {
+                    resolve(false);
+                } else {
+                    if (firstWait)
+                        await this.setCd();
+                    else
+                        this.setCd();
+
+                    resolve(true);
+                }
+            });
+        }
+
+
+        private async setCd() {
+            this.isCd = true;
+            await sleep(this.duration);
+            this.isCd = false;
         }
     }
 }

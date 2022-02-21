@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { FuckUi } from '../fuckui/FuckUi';
+import { YJFuckUiRegister } from './YJFuckUiRegister';
 const { ccclass, property } = _decorator;
 
 /**
@@ -14,23 +15,33 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
-@ccclass('YJFuckUiRegister')
-export class YJFuckUiRegister extends Component {
+
+@ccclass('YJFuckUiManager')
+export class YJFuckUiManager extends YJFuckUiRegister {
+
+    @property({ type: Node })
+    fuckUiNodes: Node[] = [];
+
     protected _data2ui: object = {};
+    private _registered: boolean = false;
 
-    public onNewUiRegister: (key: string, ui: FuckUi) => void;
-
-    public register(ui: FuckUi): void {
-        let keys = ui.bindKeys;
-        keys.forEach(key => {
-            this._data2ui[key] = this._data2ui[key] || [];
-            this._data2ui[key][this._data2ui[key].length] = ui;
-            this.onNewUiRegister?.(key, ui);
+    public register() {
+        if (this._registered) return;
+        this._registered = true;
+        this.fuckUiNodes.forEach(node => {
+            let uis = node.getComponents(FuckUi);
+            uis.forEach(ui => {
+                let keys = ui.bindKeys;
+                keys.forEach(key => {
+                    this._data2ui[key] = this._data2ui[key] || [];
+                    this._data2ui[key][this._data2ui[key].length] = ui;
+                });
+            });
         });
     }
 
     public getUis(key: string): FuckUi[] {
+        this.register();
         return this._data2ui[key];
     }
 
