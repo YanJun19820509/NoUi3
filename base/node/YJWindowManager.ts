@@ -25,7 +25,7 @@ export class LayerInfo {
 }
 
 @ccclass('YJWindowManager')
-@menu('NoUi/base/YJWindowManager')
+@menu('NoUi/node/YJWindowManager')
 export class YJWindowManager extends Component {
     @property(LayerInfo)
     infos: LayerInfo[] = [];
