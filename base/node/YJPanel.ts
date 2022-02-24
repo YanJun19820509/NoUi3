@@ -38,8 +38,15 @@ export class YJPanel extends Component {
     @property
     panelType: string = 'popup_panel';
 
+    @property({ type: no.EventHandlerInfo })
+    onOpen: no.EventHandlerInfo[] = [];
+
+    @property({ type: no.EventHandlerInfo })
+    onClose: no.EventHandlerInfo[] = [];
+
     onEnable() {
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
+        no.EventHandlerInfo.execute(this.onOpen);
     }
 
     onDisable() {
@@ -54,6 +61,7 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
+        no.EventHandlerInfo.execute(this.onClose);
         this.onClosePanel();
         this.node.destroy();
     }
