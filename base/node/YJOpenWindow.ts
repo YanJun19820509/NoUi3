@@ -1,0 +1,39 @@
+
+import { _decorator, Component, Node, js } from 'cc';
+import { YJPanel } from './YJPanel';
+import { YJWindowManager } from './YJWindowManager';
+const { ccclass, property, menu } = _decorator;
+
+/**
+ * Predefined variables
+ * Name = YJOpenWindow
+ * DateTime = Thu Feb 24 2022 17:29:23 GMT+0800 (中国标准时间)
+ * Author = mqsy_yj
+ * FileBasename = YJOpenWindow.ts
+ * FileBasenameNoExtension = YJOpenWindow
+ * URL = db://assets/NoUi3/base/node/YJOpenWindow.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
+ *
+ */
+
+@ccclass('YJOpenWindow')
+@menu('NoUi/node/YJOpenWindow(打开窗口)')
+export class YJOpenWindow extends Component {
+
+    @property
+    windowName: string = '';
+    @property
+    to: string = '';
+    @property
+    autoOpen: boolean = false;
+
+    onLoad() {
+        this.autoOpen && this.a_open();
+    }
+
+    public a_open() {
+        let c = js.getClassByName(this.windowName) as typeof YJPanel;
+        if (!c || this.to == '') return;
+        YJWindowManager.createPanel(c, this.to);
+    }
+}
