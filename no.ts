@@ -1,7 +1,7 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, SystemEvent, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, CCClass, UITransform, tween, EventTarget, Input, UIOpacity, Quat } from 'cc';
-import { EDITOR } from 'cc/env';
-import { YJCacheObject } from './base/YJCacheObject';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget } from 'cc';
+import { WECHAT } from 'cc/env';
+
 const { ccclass, property } = _decorator;
 
 export namespace no {
@@ -240,11 +240,11 @@ export namespace no {
     }
 
     /**
-     * clone JSON对象
+     * JSON对象深拷贝
      * @param json
      */
     export function cloneJson(json: any): any {
-        return JSON.parse(JSON.stringify(json));
+        return parse2Json(jsonStringify(json));
     }
 
 
@@ -1150,6 +1150,38 @@ export namespace no {
         return t.anchorY;
     }
 
+    /**
+     * 解析带function的json字符串
+     * @param s 
+     * @returns 
+     */
+    export function parse2Json(s: string): any {
+        return JSON.parse(s, function (k, v) {
+            if (!WECHAT)//微信小游戏平台不支持
+                if (v.indexOf && v.indexOf('function') > -1) {
+                    // return eval("(function(){return " + v + " })()");
+                    let FN = Function;
+                    return new FN(`return ${v}`)();
+                }
+            return v;
+        });
+    }
+
+    /**
+     * 序列化带function的json对象
+     * @param json 
+     * @returns 
+     */
+    export function jsonStringify(json: any): string {
+        return JSON.stringify(json, function (key, val) {
+            if (!WECHAT)//微信小游戏平台不支持
+                if (typeof val === 'function') {
+                    return val + '';
+                }
+            return val;
+        });
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
@@ -1251,7 +1283,7 @@ export namespace no {
     /**
      * 数据缓存类，包括localstorage、json配置、全局临时数据
      */
-    class DataCache extends SystemEvent {
+    class DataCache extends EventTarget {
         private _json: Data;
         private _tmp: Data;
 
