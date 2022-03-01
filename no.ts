@@ -99,6 +99,7 @@ export namespace no {
             setInterval(() => {
                 this._time++;
             }, 1000);
+            
         }
     }
 
@@ -148,7 +149,7 @@ export namespace no {
 
         public blink(Evn?: string): void {
             let t = timestampMs();
-            err('TimeWatcher', Evn || 'blink', t - this.t);
+            err('TimeWatcher', Evn || 'blink', t, t - this.t);
             this.t = t;
         }
     }
