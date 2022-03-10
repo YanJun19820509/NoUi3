@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label } from 'cc';
+import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
@@ -22,6 +22,7 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export class AutoCreateNode extends Component {
 
     private atlas: SpriteAtlas;
+    private size: Size;
 
     onEnable() {
         if (EDITOR) {
@@ -62,7 +63,8 @@ export class AutoCreateNode extends Component {
     private createNodes(config: any) {
         try {
             // console.log('createNodes', config);
-            this.node.getComponent(UITransform).setContentSize(config.width, config.height);
+            this.size = new Size(config.width, config.height);
+            this.node.getComponent(UITransform).setContentSize(this.size);
             let parent = this.node.getChildByName('Canvas') || this.node
             config.nodes.forEach((n: any) => {
                 switch (n.type) {
@@ -93,11 +95,15 @@ export class AutoCreateNode extends Component {
         let l = n.addComponent(Label);
         l.string = c.text;
         l.fontSize = Number(c.size);
+        l.lineHeight = l.fontSize;
+        l.color = no.str2Color(c.textColor);
+        l.isBold = Boolean(c.bold);
+        l.isItalic = Boolean(c.italic);
     }
 
     private createNode(name: string, x: number, y: number, w: number, h: number): Node {
         let node = new Node(name);
-        node.setPosition(x, y);
+        node.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
         let t = node.addComponent(UITransform);
         t.setContentSize(w, h);
         return node;
