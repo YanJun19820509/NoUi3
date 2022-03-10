@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget } from 'cc';
-import { WECHAT } from 'cc/env';
+import { EDITOR, WECHAT } from 'cc/env';
 
 const { ccclass, property } = _decorator;
 
@@ -99,7 +99,7 @@ export namespace no {
             setInterval(() => {
                 this._time++;
             }, 1000);
-            
+
         }
     }
 
@@ -294,7 +294,7 @@ export namespace no {
     }
 
     /**
-     * 从数组里随机几n个元素
+     * 从数组里随机n个元素
      * @param arr
      * @param n
      */
@@ -1728,6 +1728,17 @@ export namespace no {
                 }
             });
             this.preloadFiles(p.bundle, paths, onProgress);
+        }
+
+        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T) => void) {
+            if (!EDITOR) return;
+            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
+            // console.log('loadFileInEditorMode', url, info);
+            assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
+                if (err) console.log(err);
+                else
+                    callback(item);
+            });
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback: (file: T) => void) {
