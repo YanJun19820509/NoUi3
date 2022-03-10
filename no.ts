@@ -1183,6 +1183,12 @@ export namespace no {
         });
     }
 
+    export async function getAssetUrlInEditorMode(uuid: string): Promise<string> {
+        if (!EDITOR) return null;
+        let info = await Editor.Message.request('asset-db', 'query-asset-info', uuid);
+        return info.url;
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
