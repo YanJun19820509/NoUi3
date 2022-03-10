@@ -1,7 +1,8 @@
 
 import { _decorator, Component, AudioClip } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../../no';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -17,16 +18,21 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('YJLoadAudioClip')
 @menu('NoUi/audio/YJLoadAudioClip(动态加载音频剪辑)')
+@executeInEditMode()
 export class YJLoadAudioClip extends Component {
-    @property
+    @property({ type: AudioClip, editorOnly: true })
+    clip: AudioClip = null;
+    @property({ readonly: true })
     clipUrl: string = '';
+    @property({ readonly: true })
+    clipUuid: string = '';
     @property
     autoLoad: boolean = true;
 
     public loadedAudioClip: AudioClip;
     public loaded: boolean = false;
 
-    onLoad(){
+    onLoad() {
         this.autoLoad && this.loadClip();
     }
 
@@ -42,5 +48,21 @@ export class YJLoadAudioClip extends Component {
                 }
             });
         });
+    }
+
+    ////////////EDITOR MODE//////////////////////
+    update() {
+        if (EDITOR) {
+            if (this.clip != null) {
+                this.setClipUrl();
+            }
+        }
+    }
+
+    private async setClipUrl() {
+        let url = await no.getAssetUrlInEditorMode(this.clip._uuid);
+        this.clipUrl = url;
+        this.clipUuid = this.clip._uuid;
+        this.clip = null;
     }
 }

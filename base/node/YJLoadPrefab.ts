@@ -1,14 +1,20 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
+@executeInEditMode()
 export default class YJLoadPrefab extends Component {
-
-    @property
+    @property({ type: Prefab, editorOnly: true })
+    prefab: Prefab = null;
+    @property({ readonly: true })
     prefabUrl: string = '';
+    @property({ readonly: true })
+    prefabUuid: string = '';
+
     @property
     autoLoad: boolean = true;
 
@@ -27,7 +33,7 @@ export default class YJLoadPrefab extends Component {
     public async loadPrefab(): Promise<Node> {
         if (this.loadedNode != null && this.loadedNode.isValid) return this.loadedNode;
         return new Promise<Node>(resolve => {
-            no.assetBundleManager.loadPrefab(this.prefabUrl, (p) => {
+            no.assetBundleManager.loadByUuid<Prefab>(this.prefabUuid, Prefab, (p) => {
                 if (p == null) resolve(null);
                 else {
                     this.loadedNode = instantiate(p);
@@ -47,5 +53,21 @@ export default class YJLoadPrefab extends Component {
     public clear(): void {
         this.loadedNode = null;
         this.loaded = false;
+    }
+
+    ////////////EDITOR MODE//////////////////////
+    update() {
+        if (EDITOR) {
+            if (this.prefab != null) {
+                this.setPrefabUrl();
+            }
+        }
+    }
+
+    private async setPrefabUrl() {
+        let url = await no.getAssetUrlInEditorMode(this.prefab._uuid);
+        this.prefabUrl = url;
+        this.prefabUuid = this.prefab._uuid;
+        this.prefab = null;
     }
 }
