@@ -85,8 +85,12 @@ export class AutoCreateNode extends Component {
         let n = this.createNode(c.name, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
         n.parent = parent;
         let s = n.addComponent(Sprite);
+        s.sizeMode = Sprite.SizeMode.CUSTOM;
         s.spriteAtlas = this.atlas;
         s.spriteFrame = this.atlas.getSpriteFrame(c.name);
+        if (c.name.indexOf('9_') == 0){
+            s.type = Sprite.Type.SLICED;
+        }
     }
 
     private createLabelNode(c: any, parent: Node) {
