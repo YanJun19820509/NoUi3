@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size } from 'cc';
+import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
+import { YJAtlasManager } from './YJAtlasManager';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -46,8 +47,10 @@ export class AutoCreateNode extends Component {
                 let root = Editor.Project.path.replace(/\\/g, '/');
                 let dest = path.replace(root + '/', 'db://');
                 // console.log(dest);
-                no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, s => {
+                let atlasManager = this.getComponent(YJAtlasManager);
+                no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     this.atlas = s;
+                    atlasManager?.addAtlasUuid(info.uuid);
                     // console.log(s);
                     no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
                         this.createNodes(f.json);
@@ -88,7 +91,7 @@ export class AutoCreateNode extends Component {
         s.sizeMode = Sprite.SizeMode.CUSTOM;
         s.spriteAtlas = this.atlas;
         s.spriteFrame = this.atlas.getSpriteFrame(c.name);
-        if (c.name.indexOf('9_') == 0){
+        if (c.name.indexOf('9_') == 0) {
             s.type = Sprite.Type.SLICED;
         }
     }
@@ -108,8 +111,30 @@ export class AutoCreateNode extends Component {
     private createNode(name: string, x: number, y: number, w: number, h: number): Node {
         let node = new Node(name);
         node.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
+        node.layer = Layers.Enum.UI_2D;
         let t = node.addComponent(UITransform);
         t.setContentSize(w, h);
+        let widget = node.addComponent(Widget);
+        if (node.position.x < 0) {
+            widget.isAlignLeft = true;
+            widget.left = x - w / 2;
+        } else if (node.position.x == 0) {
+            widget.isAlignHorizontalCenter = true
+            widget.horizontalCenter = 0;
+        } else if (node.position.x > 0) {
+            widget.isAlignRight = true;
+            widget.right = this.size.width - x - w / 2;
+        }
+        if (node.position.y < 0) {
+            widget.isAlignBottom = true;
+            widget.bottom = this.size.height - y - h / 2;
+        } else if (node.position.y == 0) {
+            widget.isAlignVerticalCenter = true
+            widget.verticalCenter = 0;
+        } else if (node.position.y > 0) {
+            widget.isAlignTop = true;
+            widget.top = y - h / 2;
+        }
         return node;
     }
 

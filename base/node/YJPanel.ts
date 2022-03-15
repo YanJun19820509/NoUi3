@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { YJAtlasManager } from '../../editor/YJAtlasManager';
 import { no } from '../../no';
 const { ccclass, property, menu } = _decorator;
 
@@ -57,6 +58,7 @@ export class YJPanel extends Component {
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
     public initPanel() {
+        this.getComponent(YJAtlasManager)?.loadAtlas();
         this.onInitPanel();
     }
 

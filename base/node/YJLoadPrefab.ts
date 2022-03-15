@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJAtlasManager } from '../../editor/YJAtlasManager';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
@@ -39,6 +40,7 @@ export default class YJLoadPrefab extends Component {
                     this.loadedNode = instantiate(p);
                     this.loaded = true;
                     no.assetBundleManager.decRef(p);
+                    this.loadedNode.getComponent(YJAtlasManager)?.loadAtlas();
                     resolve(this.loadedNode);
                 }
             });

@@ -4,7 +4,7 @@ import { no } from '../no';
 import YJLoadPrefab from './node/YJLoadPrefab';
 import { YJCacheObject } from './YJCacheObject';
 import { YJDataWork } from './YJDataWork';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -20,6 +20,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('YJCreateNode')
 @menu('NoUi/base/YJCreateNode(创建节点)')
+@requireComponent(YJLoadPrefab)
 export class YJCreateNode extends Component {
     @property(YJLoadPrefab)
     loadPrefab: YJLoadPrefab = null;

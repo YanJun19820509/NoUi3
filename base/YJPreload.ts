@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, CCString } from 'cc';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
@@ -29,16 +29,16 @@ enum PreloadState {
 @ccclass('YJPreload')
 @menu('NoUi/base/YJPreload(资源预加载)')
 export class YJPreload extends YJComponent {
-    @property({ displayName: '加载包' })
+    @property({ type: CCString, displayName: '加载包' })
     bundles: string[] = [];
 
-    @property({ displayName: '加载单个文件' })
+    @property({ type: CCString, displayName: '加载单个文件' })
     files: string[] = [];
 
-    @property({ displayName: '加载包下所有文件' })
+    @property({ type: CCString, displayName: '加载包下所有文件' })
     bundleFiles: string[] = [];
 
-    @property({ displayName: '加载文件夹下所有文件' })
+    @property({ type: CCString, displayName: '加载文件夹下所有文件' })
     folderFiles: string[] = [];
 
     @property({ displayName: '跳转的场景' })
