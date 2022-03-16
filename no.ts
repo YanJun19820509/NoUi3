@@ -1737,12 +1737,18 @@ export namespace no {
             this.preloadFiles(p.bundle, paths, onProgress);
         }
 
-        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: AssetInfo) => void) {
+        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: AssetInfo) => void, onErr?: () => void) {
             if (!EDITOR) return;
             let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
-            // console.log('loadFileInEditorMode', url, info);
+            if (!info) {
+                onErr?.();
+                return;
+            }
             assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
-                if (err) console.log(err);
+                if (err) {
+                    console.log(err);
+                    onErr?.();
+                }
                 else
                     callback(item, info);
             });

@@ -24,6 +24,8 @@ export class AutoCreateNode extends Component {
 
     private atlas: SpriteAtlas;
     private size: Size;
+    private nameMap: any;
+    private parent: Node;
 
     onEnable() {
         if (EDITOR) {
@@ -33,6 +35,7 @@ export class AutoCreateNode extends Component {
 
     private async loadConfigFile() {
         try {
+            this.nameMap = {};
             let name = this.node.name;
             let a = await Editor.Dialog.select({
                 path: '.',
@@ -55,6 +58,8 @@ export class AutoCreateNode extends Component {
                     no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
                         this.createNodes(f.json);
                         this.deleteConfigFile(dest + `/${name}.json`);
+                    }, () => {
+                        this.enabled = false;
                     });
                 });
             }
@@ -68,14 +73,14 @@ export class AutoCreateNode extends Component {
             // console.log('createNodes', config);
             this.size = new Size(config.width, config.height);
             this.node.getComponent(UITransform).setContentSize(this.size);
-            let parent = this.node.getChildByName('Canvas') || this.node
+            this.parent = this.node.getChildByName('Canvas') || this.node
             config.nodes.forEach((n: any) => {
                 switch (n.type) {
                     case 'label':
-                        this.createLabelNode(n, parent);
+                        this.createLabelNode(n);
                         break;
                     case 'sprite':
-                        this.createSpriteNode(n, parent);
+                        this.createSpriteNode(n);
                         break;
                 }
             });
@@ -84,10 +89,9 @@ export class AutoCreateNode extends Component {
         }
     }
 
-    private createSpriteNode(c: any, parent: Node) {
-        let n = this.createNode(c.name, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
-        n.parent = parent;
-        let s = n.addComponent(Sprite);
+    private createSpriteNode(c: any) {
+        let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
+        let s = n.getComponent(Sprite) || n.addComponent(Sprite);
         s.sizeMode = Sprite.SizeMode.CUSTOM;
         s.spriteAtlas = this.atlas;
         s.spriteFrame = this.atlas.getSpriteFrame(c.name);
@@ -96,10 +100,9 @@ export class AutoCreateNode extends Component {
         }
     }
 
-    private createLabelNode(c: any, parent: Node) {
-        let n = this.createNode(c.name, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
-        n.parent = parent;
-        let l = n.addComponent(Label);
+    private createLabelNode(c: any) {
+        let n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
+        let l = n.getComponent(Label) || n.addComponent(Label);
         l.string = c.text;
         l.fontSize = Number(c.size);
         l.lineHeight = l.fontSize;
@@ -108,39 +111,60 @@ export class AutoCreateNode extends Component {
         l.isItalic = Boolean(c.italic);
     }
 
-    private createNode(name: string, x: number, y: number, w: number, h: number): Node {
-        let node = new Node(name);
-        node.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
-        node.layer = Layers.Enum.UI_2D;
-        let t = node.addComponent(UITransform);
-        t.setContentSize(w, h);
-        let widget = node.addComponent(Widget);
-        if (node.position.x < 0) {
+    private getNode(cname: string, type: typeof Component, x: number, y: number, w: number, h: number): Node {
+        let idx = this.nameMap[cname] || 0;
+        this.nameMap[cname] = idx + 1;
+        let name = `${cname}_${idx}`;
+        let list = this.parent.getComponentsInChildren(type);
+        let n: Node;
+        for (let i = 0, l = list.length; i < l; i++) {
+            let a = list[i].node;
+            if (a.name == name) {
+                n = a;
+                break;
+            }
+        }
+        if (!n) {
+            n = new Node(name);
+            n.layer = Layers.Enum.UI_2D;
+            n.addComponent(UITransform);
+            n.parent = this.parent;
+        }
+        n.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
+        n.getComponent(UITransform).setContentSize(w, h);
+        this.setWidget(n);
+        return n;
+    }
+
+    private async setWidget(node: Node) {
+        await no.sleep(0.1);
+        let widget = node.getComponent(Widget) || node.addComponent(Widget);
+        let rect = node.getComponent(UITransform).getBoundingBox();
+        if (rect.center.x < 0) {
             widget.isAlignLeft = true;
-            widget.left = x - w / 2;
-        } else if (node.position.x == 0) {
+            widget.left = this.size.width / 2 + rect.x;
+        } else if (rect.center.x == 0) {
             widget.isAlignHorizontalCenter = true
             widget.horizontalCenter = 0;
-        } else if (node.position.x > 0) {
+        } else if (rect.center.x > 0) {
             widget.isAlignRight = true;
-            widget.right = this.size.width - x - w / 2;
+            widget.right = this.size.width / 2 - rect.x - rect.width;
         }
-        if (node.position.y < 0) {
+        if (rect.center.y < 0) {
             widget.isAlignBottom = true;
-            widget.bottom = this.size.height - y - h / 2;
-        } else if (node.position.y == 0) {
+            widget.bottom = this.size.height / 2 + rect.y;
+        } else if (rect.center.y == 0) {
             widget.isAlignVerticalCenter = true
             widget.verticalCenter = 0;
-        } else if (node.position.y > 0) {
+        } else if (rect.center.y > 0) {
             widget.isAlignTop = true;
-            widget.top = y - h / 2;
+            widget.top = this.size.height / 2 - rect.y - rect.height;
         }
-        return node;
     }
 
     private async deleteConfigFile(path: string) {
-        let d = await Editor.Message.request('asset-db', 'delete-asset', path);
+        await Editor.Message.request('asset-db', 'delete-asset', path);
         // console.log('deleteConfigFile', d);
-        this.destroy();
+        this.enabled = false;
     }
 }

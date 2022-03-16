@@ -31,7 +31,7 @@ export class YJAtlasManager extends Component {
 
     public addAtlasUuid(uuid: string) {
         if (EDITOR)
-            this.atlasUuids[this.atlasUuids.length] = uuid;
+            no.addToArray(this.atlasUuids, uuid);
     }
 
     /**
