@@ -1,6 +1,8 @@
 
 import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget } from 'cc';
 import { EDITOR } from 'cc/env';
+import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
+import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
 import { no } from '../no';
 import { YJAtlasManager } from './YJAtlasManager';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
@@ -98,6 +100,7 @@ export class AutoCreateNode extends Component {
         if (c.name.indexOf('9_') == 0) {
             s.type = Sprite.Type.SLICED;
         }
+        if (!n.getComponent(DynamicSpriteTexture)) n.addComponent(DynamicSpriteTexture);
     }
 
     private createLabelNode(c: any) {
@@ -109,6 +112,7 @@ export class AutoCreateNode extends Component {
         l.color = no.str2Color(c.textColor);
         l.isBold = Boolean(c.bold);
         l.isItalic = Boolean(c.italic);
+        if (!n.getComponent(DynamicLabelTexture)) n.addComponent(DynamicLabelTexture);
     }
 
     private getNode(cname: string, type: typeof Component, x: number, y: number, w: number, h: number): Node {
