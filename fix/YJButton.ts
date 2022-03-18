@@ -23,7 +23,6 @@ export class YJButton extends Component {
     @property({ displayName: '防连点间隔时长(s)' })
     delay: number = 1;
 
-    private _waiting = false;
     private _clickEvents: EventHandler[] = [];
 
     onLoad() {
@@ -39,14 +38,8 @@ export class YJButton extends Component {
         btn.clickEvents = [a];
     }
 
-    public a_trigger() {
-        if (this._waiting) return;
+    public async a_trigger() {
+        await no.Throttling.ins().wait(this.delay);
         no.executeHandlers(this._clickEvents);
-        if (this.delay > 0) {
-            this._waiting = true;
-            this.scheduleOnce(() => {
-                this._waiting = false;
-            }, this.delay);
-        }
     }
 }
