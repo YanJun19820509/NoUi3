@@ -22,14 +22,14 @@ const { ccclass, menu } = _decorator;
  *     delay?: 1,
 *      duration: 1,
 *      points: [{x:number,y:number}],//偏移量
-*      segment?: 3
+*      segment?: 50
  * }
  */
 @ccclass('SetBezier')
 @menu('NoUi/tween/SetBezier(贝塞尔曲线动效:object')
 export class SetBezier extends SetNodeTweenAction {
     protected createAction(data: any): no.TweenSet | no.TweenSet[] {
-        let points = this.bezier(data.points, data.segment || 3);
+        let points = this.bezier(data.points, data.segment || 50);
         points.shift();
         let d = [];
         let t = data.duration / points.length;
