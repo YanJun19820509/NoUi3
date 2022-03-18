@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Tween, tween } from 'cc';
+import { _decorator } from 'cc';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
 import { no } from '../../no';
 const { ccclass, menu } = _decorator;
@@ -17,7 +17,7 @@ const { ccclass, menu } = _decorator;
  */
 
 @ccclass('SetBlink')
-@menu('NoUi/tween/SetBlink(闪烁动效:object)')
+@menu('NoUi/tween/SetBlink(闪烁动效:{frequency:number, repeat: number})')
 export class SetBlink extends SetNodeTweenAction {
     protected createAction(data: any): no.TweenSet | no.TweenSet[] {
         let d = [{
