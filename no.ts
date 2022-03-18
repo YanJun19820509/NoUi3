@@ -1190,6 +1190,27 @@ export namespace no {
         return info.url;
     }
 
+    /**
+     * 阶乘
+     * @param n 阶
+     */
+    export function factorial(n: number): number {
+        if (n == 0) return 1;
+        return n * factorial(n - 1);
+    }
+
+    /**
+     * 组合
+     * @param n n>=0
+     * @param i i<=n
+     */
+    export function combination(n: number, i: number): number {
+        let _1 = factorial(n),
+            _2 = factorial(i),
+            _3 = factorial(n - i);
+        return _1 / _2 / _3;
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
