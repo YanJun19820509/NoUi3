@@ -1,8 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { YJDataWork } from './YJDataWork';
-import { YJFuckUiRegister } from './YJFuckUiRegister';
-const { ccclass, property, menu, requireComponent } = _decorator;
+const { ccclass, menu } = _decorator;
 
 /**
  * Predefined variables
@@ -18,7 +17,6 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('YJDataProxy')
 @menu('NoUi/base/YJDataProxy(数据代理基类)')
-@requireComponent(YJFuckUiRegister)
 export class YJDataProxy extends YJDataWork {
     private _proxyMap: any = {};
 
