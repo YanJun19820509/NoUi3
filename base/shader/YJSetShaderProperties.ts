@@ -1,7 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { SetShader } from '../../fuckui/SetShader';
-const { ccclass, property , menu} = _decorator;
+import { SetEffect } from '../../fuckui/SetEffect';
+const { ccclass, property , menu, requireComponent} = _decorator;
 
 /**
  * Predefined variables
@@ -33,6 +33,7 @@ export class PropertyInfo {
 
 @ccclass('YJSetShaderProperties')
 @menu('NoUi/shader/YJSetShaderProperties(设置shader属性)')
+@requireComponent(SetEffect)
 export class YJSetShaderProperties extends Component {
     @property
     path: string = '';
@@ -44,7 +45,7 @@ export class YJSetShaderProperties extends Component {
     properties: PropertyInfo[] = [];
 
     start() {
-        let ss = this.getComponent(SetShader);
+        let ss = this.getComponent(SetEffect);
         let properties = {};
         this.properties.forEach(p => {
             properties[p.type] = p.value;

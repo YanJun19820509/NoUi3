@@ -1,0 +1,84 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+//模糊效果
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert 
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        segment: { value: 3, editor: {range: [3, 100, 1]} }
+}%
+
+CCProgram vs %{
+  #include <common-vs>
+
+  vec4 vert(){
+    return getPos();
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <embedded-alpha>
+  #include <alpha-test>
+
+  in vec4 color;
+  in vec2 uv0;       
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+  uniform Constant{
+    vec2 size;
+    float segment;
+  };
+
+  float rand(vec2 st){
+    return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
+  }
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+    
+    // 随机采样次数.
+    const float repeats = 5.0;
+    const float num = 5.0;
+
+    for(float i=0.0; i<repeats; i++) {
+
+      // 以下两步, 主要用来产生一个随机偏移量, 即以当前uv0坐标为基础, 叠加一个偏移量, 从而获得偏移后的周边某点的采样颜色.
+       vec2 q = vec2(
+         cos(degrees(i*360.0/repeats)),
+         sin(degrees(i*360.0/repeats))
+       );
+       q*= (rand(vec2(i,uv0.x + uv0.y ))+ num );
+       vec2 uv2 = uv0 + q*num;
+      
+       // 将周边某点颜色叠加到一起进行颜色混合.
+       o += CCSampleWithAlphaSeparated(cc_spriteTexture, uv2);
+
+    }
+
+    // 中和, 刚才的循环累加了repeats 次, 颜色分量应当除以repeats, 否则颜色分量可能超过1,即高曝光效果.
+    o /= repeats;
+
+    // 降低亮度. 并用节点本身颜色进行混合.
+    float light = 0.5;
+    o = o* color* light;
+
+    o.a = 1.0;
+
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

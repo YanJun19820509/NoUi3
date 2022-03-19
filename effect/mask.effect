@@ -1,0 +1,65 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert 
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        segment: { value: 3, editor: {range: [3, 100, 1]} }
+}%
+
+CCProgram vs %{
+  #include <common-vs>
+
+  vec4 vert(){
+    return getPos();
+  }
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <embedded-alpha>
+  #include <alpha-test>
+
+  in vec4 color;
+  in vec2 uv0;       
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+  uniform Constant{
+    vec2 size;
+    float segment;
+  };
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0); 
+    // #if IS_GRAY
+    //   float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+    //   o.r = o.g = o.b = gray;
+    // #endif  
+
+    float a = radians((180.0 - 360.0/segment)/2.0);
+    float h = tan(a) * (1.0 - uv0.x);
+
+    if (abs(uv0.y) > abs(h) )
+
+    o *= color;
+
+    ALPHA_TEST(o);
+    return o;
+  }
+}%
