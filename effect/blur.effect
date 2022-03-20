@@ -17,7 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        segment: { value: 3, editor: {range: [3, 100, 1]} }
+        offset: { value: 0.01, editor: {range: [0.01, 0.2, 0.01]} }
 }%
 
 CCProgram vs %{
@@ -31,16 +31,17 @@ CCProgram vs %{
 CCProgram unlit-fs %{
   precision highp float;
   #include <embedded-alpha>
-  #include <alpha-test>
+  #include <alpha-test> 
 
   in vec4 color;
-  in vec2 uv0;       
-  #pragma builtin(local)
-  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
-
+  in vec2 uv0;
+  #if USE_TEXTURE   
+    #pragma builtin(local)
+    layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+  #endif
+  
   uniform Constant{
-    vec2 size;
-    float segment;
+    float offset;
   };
 
   float rand(vec2 st){
@@ -49,10 +50,9 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    
+
     // 随机采样次数.
     const float repeats = 5.0;
-    const float num = 5.0;
 
     for(float i=0.0; i<repeats; i++) {
 
@@ -61,11 +61,13 @@ CCProgram unlit-fs %{
          cos(degrees(i*360.0/repeats)),
          sin(degrees(i*360.0/repeats))
        );
-       q*= (rand(vec2(i,uv0.x + uv0.y ))+ num );
-       vec2 uv2 = uv0 + q*num;
-      
+       q*= (rand(vec2(i,uv0.x + uv0.y ))+ offset );
+       vec2 uv2 = uv0 + q*offset;
+       
+       #if USE_TEXTURE
        // 将周边某点颜色叠加到一起进行颜色混合.
        o += CCSampleWithAlphaSeparated(cc_spriteTexture, uv2);
+       #endif
 
     }
 
@@ -76,7 +78,9 @@ CCProgram unlit-fs %{
     float light = 0.5;
     o = o* color* light;
 
-    o.a = 1.0;
+    if (o.a > 0.4){
+      o.a = 1.0;
+    }
 
     ALPHA_TEST(o);
     return o;
