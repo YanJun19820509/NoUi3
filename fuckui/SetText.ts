@@ -3,7 +3,7 @@ import { _decorator, Label, RichText } from 'cc';
 import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { SetShader } from './SetShader';
+import { SetEffect } from './SetEffect';
 const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
@@ -62,7 +62,7 @@ export class SetText extends FuckUi {
 
     private checkShader() {
         this.scheduleOnce(() => {
-            this.getComponent(SetShader)?.work();
+            this.getComponent(SetEffect)?.work();
         }, 0);
     }
 }

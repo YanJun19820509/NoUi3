@@ -1,7 +1,9 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, EffectAsset } from 'cc';
+import { EDITOR } from 'cc/env';
 import { SetEffect } from '../../fuckui/SetEffect';
-const { ccclass, property , menu, requireComponent} = _decorator;
+import { no } from '../../no';
+const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -34,8 +36,12 @@ export class PropertyInfo {
 @ccclass('YJSetShaderProperties')
 @menu('NoUi/shader/YJSetShaderProperties(设置shader属性)')
 @requireComponent(SetEffect)
+@executeInEditMode()
 export class YJSetShaderProperties extends Component {
-    @property
+
+    @property({ type: EffectAsset, editorOnly: true })
+    effectAsset: EffectAsset = null;
+    @property({ readonly: true })
     path: string = '';
 
     @property(DefineInfo)
@@ -44,7 +50,12 @@ export class YJSetShaderProperties extends Component {
     @property(PropertyInfo)
     properties: PropertyInfo[] = [];
 
-    start() {
+    onEnable() {
+        this.setEffect();
+    }
+
+    private setEffect() {
+        if (this.path == '') return;
         let ss = this.getComponent(SetEffect);
         let properties = {};
         this.properties.forEach(p => {
@@ -59,6 +70,22 @@ export class YJSetShaderProperties extends Component {
             properties: properties,
             defines: defines
         };
+        console.log(d);
         ss.setData(JSON.stringify(d));
+    }
+
+    ////////////EDITOR MODE//////////////////////
+    update() {
+        if (EDITOR) {
+            if (this.effectAsset != null) {
+                this.setUrl();
+            }
+        }
+    }
+
+    private async setUrl() {
+        let url = await no.getAssetUrlInEditorMode(this.effectAsset._uuid);
+        this.path = url.replace('db://assets/', '').replace('.effect', '');
+        this.effectAsset = null;
     }
 }

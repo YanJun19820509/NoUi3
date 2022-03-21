@@ -17,9 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        center: { value: [0.5, 0.5]}
-        radius: { value: 1.0, editor: {range: [0.0, 1.0, 0.01]} }
-        feather: { value: 0.01, editor: {range: [0.0, 1.0, 0.01]} }
+        width: { value: 0.1, editor: {range: [0.1,1.0,0.01]}}
 }%
 
 CCProgram vs %{
@@ -32,25 +30,25 @@ CCProgram vs %{
 
 CCProgram unlit-fs %{
   precision highp float;
+  #include <cc-global>
   #include <embedded-alpha> 
   #include <alpha-test>
   #include <common-fs> 
   #include <utils>
 
-  uniform Constant{ 
-    vec2 center;
-    float radius;
-    float feather;
+  uniform Constant{
+    float width;
   };
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
-    vec2 c = vec2(factRect.x + factRect.z * center.x, factRect.y + factRect.w * center.y);
-    float r = radius * (ratio > 1.0 ? factRect.w : factRect.z);
-
-    #if USE_MASK
-      o = maskTexture(o, uv0, color, c, r, feather);
+    #if USE_FADEOUT
+      #if IS_VERTICAL
+        o = fadeOut(o, uv0, color, fract(cc_time.x), width, true); 
+      #else
+        o = fadeOut(o, uv0, color, fract(cc_time.x), width, false);
+      #endif
     #else
       o = normalTexture(o);
     #endif

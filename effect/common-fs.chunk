@@ -1,0 +1,17 @@
+in vec4 color;
+in vec2 uv0;  
+      
+#pragma builtin(local)
+layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+
+uniform ZZ {
+  vec4 factRect;//碎图在合图中的相对rect
+  float ratio;//合图的宽高比
+};
+
+//标准纹理效果
+vec4 normalTexture(in vec4 o) { 
+  o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0); 
+  o *= color;
+  return o;
+}

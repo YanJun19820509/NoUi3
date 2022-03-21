@@ -3,7 +3,7 @@ import { _decorator, Sprite } from 'cc';
 import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { SetShader } from './SetShader';
+import { SetEffect } from './SetEffect';
 const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
@@ -55,7 +55,7 @@ export class SetSpriteFrame extends FuckUi {
 
     private checkShader() {
         this.scheduleOnce(() => {
-            this.getComponent(SetShader)?.work();
+            this.getComponent(SetEffect)?.work();
         }, 0);
     }
 }

@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, Sprite } from 'cc';
-import { SetShader } from '../../fuckui/SetShader';
+import { SetEffect } from '../../fuckui/SetEffect';
 import { no } from '../../no';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
@@ -71,7 +71,7 @@ export class YJUiSkin extends Component {
 
     private checkShader() {
         this.scheduleOnce(() => {
-            this.getComponent(SetShader)?.work();
+            this.getComponent(SetEffect)?.work();
         }, 0);
     }
 }

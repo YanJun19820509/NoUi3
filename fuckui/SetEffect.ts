@@ -1,5 +1,5 @@
 
-import { EffectAsset, Material, RenderComponent, _decorator } from 'cc';
+import { EffectAsset, Material, RenderComponent, Vec4, _decorator } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -59,5 +59,21 @@ export class SetEffect extends FuckUi {
                 if (material.getProperty(key) !== undefined)
                     material.setProperty(key, properties[key]);
             }
+        this.caculateFact(material, this._renderComp.renderData.frame);
+    }
+
+    //计算frame在合图中的实际rect
+    private caculateFact(material: Material, f: any) {
+        if (!f) return;
+        let texture = f._texture;
+        material.setProperty('factRect', new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
+        material.setProperty('ratio', texture.width / texture.height);
+    }
+
+    /**
+     * work
+     */
+    public work() {
+        this.caculateFact(this._renderComp.material, this._renderComp.renderData.frame);
     }
 }
