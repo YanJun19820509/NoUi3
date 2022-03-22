@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, ImageAsset } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -1777,6 +1777,30 @@ export namespace no {
                 else
                     callback(item, info);
             });
+        }
+
+        public async loadSpriteFrameInEditorMode(url: string, callback: (file: SpriteFrame, info: any) => void, onErr?: () => void) {
+            if (!EDITOR) return;
+            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
+            if (!info) {
+                onErr?.();
+                return;
+            }
+            for (const key in info.subAssets) {
+                let sub = info.subAssets[key];
+                if (sub.type == 'cc.SpriteFrame') {
+                    assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteFrame }, (err, item: SpriteFrame) => {
+                        if (err) {
+                            console.log(err);
+                            onErr?.();
+                        }
+                        else {
+                            callback(item, sub);
+                        }
+                    });
+                    break;
+                }
+            }
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
