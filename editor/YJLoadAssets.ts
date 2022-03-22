@@ -1,32 +1,34 @@
 
-import { _decorator, Component, Node, CCString, SpriteAtlas, Asset } from 'cc';
+import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
- * Name = YJAtlasManager
+ * Name = YJLoadAssets
  * DateTime = Tue Mar 15 2022 18:48:04 GMT+0800 (中国标准时间)
  * Author = mqsy_yj
- * FileBasename = YJAtlasManager.ts
- * FileBasenameNoExtension = YJAtlasManager
- * URL = db://assets/NoUi3/base/YJAtlasManager.ts
+ * FileBasename = YJLoadAssets.ts
+ * FileBasenameNoExtension = YJLoadAssets
+ * URL = db://assets/NoUi3/base/YJLoadAssets.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
 
-@ccclass('YJAtlasManager')
-@menu('NoUi/editor/YJAtlasManager(图集加载与释放)')
+@ccclass('YJLoadAssets')
+@menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
 @executeInEditMode()
-export class YJAtlasManager extends Component {
+export class YJLoadAssets extends Component {
     @property
     atlasUuids: string[] = [];
+    @property
+    spriteFrameUuids: string[] = [];
 
     private assets: Asset[];
 
     onDestroy() {
-        this.releaseAtlas();
+        this.release();
     }
 
     public addAtlasUuid(uuid: string) {
@@ -34,14 +36,24 @@ export class YJAtlasManager extends Component {
             no.addToArray(this.atlasUuids, uuid);
     }
 
+    public addSpriteFrameUuid(uuid: string) {
+        if (EDITOR)
+            no.addToArray(this.spriteFrameUuids, uuid);
+    }
+
     /**
      * 加载图集
      */
-    public loadAtlas() {
+    public load() {
         if (EDITOR) return;
         this.assets = [];
         this.atlasUuids.forEach(uuid => {
             no.assetBundleManager.loadByUuid(uuid, SpriteAtlas, (file) => {
+                this.assets[this.assets.length] = file;
+            });
+        });
+        this.spriteFrameUuids.forEach(uuid => {
+            no.assetBundleManager.loadByUuid(uuid, SpriteFrame, (file) => {
                 this.assets[this.assets.length] = file;
             });
         });
@@ -50,7 +62,7 @@ export class YJAtlasManager extends Component {
     /**
      * 释放图集
      */
-    public releaseAtlas() {
+    public release() {
         if (EDITOR) return;
         this.assets.forEach(asset => {
             asset.decRef();
