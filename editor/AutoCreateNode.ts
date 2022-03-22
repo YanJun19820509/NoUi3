@@ -1,10 +1,10 @@
 
-import { _decorator, Component, Node, assetManager, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget } from 'cc';
+import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget } from 'cc';
 import { EDITOR } from 'cc/env';
 import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
 import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
 import { no } from '../no';
-import { YJAtlasManager } from './YJAtlasManager';
+import { YJLoadAssets } from './YJLoadAssets';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -28,6 +28,7 @@ export class AutoCreateNode extends Component {
     private size: Size;
     private nameMap: any;
     private parent: Node;
+    private rootPath: string;
 
     onEnable() {
         if (EDITOR) {
@@ -51,8 +52,9 @@ export class AutoCreateNode extends Component {
                 // console.log(path);
                 let root = Editor.Project.path.replace(/\\/g, '/');
                 let dest = path.replace(root + '/', 'db://');
+                this.rootPath = dest;
                 // console.log(dest);
-                let atlasManager = this.getComponent(YJAtlasManager);
+                let atlasManager = this.getComponent(YJLoadAssets);
                 no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     this.atlas = s;
                     atlasManager?.addAtlasUuid(info.uuid);
@@ -95,8 +97,22 @@ export class AutoCreateNode extends Component {
         let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h));
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
         s.sizeMode = Sprite.SizeMode.CUSTOM;
-        s.spriteAtlas = this.atlas;
         s.spriteFrame = this.atlas.getSpriteFrame(c.name);
+        if (s.spriteFrame)
+            s.spriteAtlas = this.atlas;
+        else {
+            // let p = `${this.rootPath.replace('db://assets/', '')}/${c.name}`;
+            // console.log(p);
+            // no.assetBundleManager.loadSprite(p, sf => {
+            //     console.log(sf);
+            //     this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(sf._uuid);
+            //     s.spriteFrame = sf;
+            // });
+            no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
+                this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
+                s.spriteFrame = f;
+            });
+        }
         if (c.name.indexOf('9_') == 0) {
             s.type = Sprite.Type.SLICED;
         }
