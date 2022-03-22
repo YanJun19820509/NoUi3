@@ -59,12 +59,11 @@ export class SetEffect extends FuckUi {
                 if (material.getProperty(key) !== undefined)
                     material.setProperty(key, properties[key]);
             }
-        this.caculateFact(material, this._renderComp.renderData.frame);
+        this.work();
     }
 
     //计算frame在合图中的实际rect
     private caculateFact(material: Material, f: any) {
-        if (!f) return;
         let texture = f._texture;
         material.setProperty('factRect', new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
         material.setProperty('ratio', texture.width / texture.height);
@@ -74,6 +73,12 @@ export class SetEffect extends FuckUi {
      * work
      */
     public work() {
+        if (!this._renderComp.renderData.frame) {
+            this.scheduleOnce(() => {
+                this.work();
+            }, 0);
+            return;
+        }
         this.caculateFact(this._renderComp.material, this._renderComp.renderData.frame);
     }
 }

@@ -54,8 +54,6 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private checkShader() {
-        this.scheduleOnce(() => {
-            this.getComponent(SetEffect)?.work();
-        }, 0);
+        this.getComponent(SetEffect)?.work();
     }
 }

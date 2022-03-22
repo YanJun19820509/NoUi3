@@ -117,6 +117,18 @@ vec4 fadeOut(vec4 o,vec2 uv0, vec4 color, float time, float width, bool vertical
   return o;
 }
 
-vec4 shine(vec4 o,vec2 uv0, vec4 color, float time, float width){
-  
+//扫光效果
+vec4 shine(vec4 o,vec2 uv0, vec4 color, float start, float width, float strength, bool reverse){
+  o = o * color * CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+      
+  // 斜线控制区域. 其实就是 y = -x+width  y = -x -width 夹着的区域. 还可以乘上斜率,以使扫光的倾斜程度变化. 加上time 时间控制, 可以使区域根据时间推移,平滑的从左往右移动.
+
+  if(uv0.x <= (-uv0.y + width + start) && uv0.x >= (-uv0.y - width + start)) {
+        o *= strength;  // 给颜色增强若干倍. 
+  }
+  else if( reverse ) {  
+    // 可以通过参数控制, 是否仅显示扫光区域, 看起来就会变成一道光照亮了一片区域,而其他地方则是虚无. 手电筒的效果.
+    discard;
+  }
+  return o;
 }
