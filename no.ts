@@ -2275,11 +2275,11 @@ export namespace no {
             this._tableDatas = tableDatas;
             expression = this.parseBrackets(expression);
             let arr = [];
-            let idx = expression.indexOf(' where ');
-            let table = expression.substring(0, idx == -1 ? expression.length : idx).split('.');
+            let exps = expression.split(' where ');
+            let table = exps[0].split('.');
             let tableData = tableDatas[table[0]];
-            if (idx > -1) {
-                let query = expression.substring(idx + 1);
+            if (exps[1]) {
+                let query = exps[1];
                 let queryies = this.parseOr(query);
                 forEachKV(tableData, (key, value) => {
                     if (this.checkConditions(value, queryies))
@@ -2381,6 +2381,9 @@ export namespace no {
                     case '?=':
                         b = (d[exp.k] as string).includes(exp.v);
                         break;
+                    case 'in':
+                        b = (exp.v.split(',')).includes(d[exp.k]);
+                        break;
                 }
                 if (!b) return false;
             }
@@ -2395,38 +2398,43 @@ export namespace no {
             if (condition.includes('==')) {
                 r.symbol = '==';
                 let a = condition.split('==');
-                r.k = a[0];
-                r.v = a[1];
+                r.k = a[0].trim();
+                r.v = a[1].trim();
             } else if (condition.includes('!=')) {
                 r.symbol = '!=';
                 let a = condition.split('!=');
-                r.k = a[0];
-                r.v = a[1];
+                r.k = a[0].trim();
+                r.v = a[1].trim();
             } else if (condition.includes('>=')) {
                 r.symbol = '>=';
                 let a = condition.split('>=');
-                r.k = a[0];
-                r.v = Number(a[1]);
+                r.k = a[0].trim();
+                r.v = Number(a[1].trim());
             } else if (condition.includes('<=')) {
                 r.symbol = '<=';
                 let a = condition.split('<=');
-                r.k = a[0];
-                r.v = Number(a[1]);
+                r.k = a[0].trim();
+                r.v = Number(a[1].trim());
             } else if (condition.includes('>')) {
                 r.symbol = '>';
                 let a = condition.split('>');
-                r.k = a[0];
-                r.v = Number(a[1]);
+                r.k = a[0].trim();
+                r.v = Number(a[1].trim());
             } else if (condition.includes('<')) {
                 r.symbol = '<';
                 let a = condition.split('<');
-                r.k = a[0];
-                r.v = Number(a[1]);
+                r.k = a[0].trim();
+                r.v = Number(a[1].trim());
             } else if (condition.includes('?=')) {
                 r.symbol = '?=';
                 let a = condition.split('?=');
-                r.k = a[0];
-                r.v = a[1];
+                r.k = a[0].trim();
+                r.v = a[1].trim();
+            } else if (condition.includes('in')) {
+                r.symbol = 'in';
+                let a = condition.split('in');
+                r.k = a[0].trim();
+                r.v = a[1].trim();
             }
             this.expMap.set(condition, r);
             return r;
