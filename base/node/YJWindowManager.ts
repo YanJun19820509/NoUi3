@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { no } from '../../no';
 import { YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
 const { ccclass, property, menu } = _decorator;
@@ -59,22 +59,39 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns
      */
-    public static async createPanel<T extends YJPanel>(comp: typeof YJPanel, to: string): Promise<T> {
+    public static async createPanel<T extends YJPanel>(comp: typeof YJPanel, to: string, onInit?: (panel: T) => void) {
         if (!comp) return null;
         let content: Node = await YJWindowManager._ins.getContent(to);
 
         let a = content.getComponentInChildren(comp.name);
         if (a != null) {
-            return a as T;
+            onInit?.(a as T);
+            return;
         }
-        return new Promise<T>(resolve => {
-            no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
-                let node = instantiate(pf);
-                a = node.getComponent(comp.name);
-                (a as YJPanel).initPanel();
-                content.addChild(node);
-                resolve(a as T);
-            });
+        no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
+            let node = instantiate(pf);
+            a = node.getComponent(comp.name);
+            onInit?.(a as T);
+            (a as YJPanel).initPanel();
+            content.addChild(node);
+        });
+    }
+
+    public static async OpenPanel(name: string, to: string) {
+        if (!name) return null;
+        let content: Node = await YJWindowManager._ins.getContent(to);
+
+        let comp = js.getClassByName(name) as (typeof YJPanel);
+        let a = content.getComponentInChildren(comp.name);
+        if (a != null) {
+            return;
+        }
+
+        no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
+            let node = instantiate(pf);
+            a = node.getComponent(comp.name);
+            (a as YJPanel).initPanel();
+            content.addChild(node);
         });
     }
 
