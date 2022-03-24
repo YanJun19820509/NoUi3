@@ -41,16 +41,17 @@ export class AutoCreateNode extends Component {
             this.nameMap = {};
             let name = this.node.name;
             let a = await Editor.Dialog.select({
-                path: '.',
+                path: Editor.Project.path + '\\assets',
                 multi: false,
                 type: 'directory'
             });
             if (!a.canceled) {
                 let path = a.filePaths[0];
-                // console.log(path);
+                console.log(path);
                 path = path.replace(/\\/g, '/');
                 // console.log(path);
                 let root = Editor.Project.path.replace(/\\/g, '/');
+                // console.log(root);
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 // console.log(dest);
@@ -60,6 +61,7 @@ export class AutoCreateNode extends Component {
                     atlasManager?.addAtlasUuid(info.uuid);
                     // console.log(s);
                     no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
+                        // console.log(f.json);
                         this.createNodes(f.json);
                         this.deleteConfigFile(dest + `/${name}.json`);
                     }, () => {
