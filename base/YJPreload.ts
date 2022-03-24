@@ -1,8 +1,9 @@
 
-import { _decorator, Component, Node, CCString } from 'cc';
+import { _decorator, Component, Node, CCString, JsonAsset } from 'cc';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
+import { YJPreloadDelegate } from './YJPreloadDelegate';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -23,6 +24,7 @@ enum PreloadState {
     LoadingFiles,
     LoadingBundleFiles,
     LoadingFolderFiles,
+    LoadingJsonFiles,
     LoadingScene
 }
 
@@ -41,6 +43,9 @@ export class YJPreload extends YJComponent {
     @property({ type: CCString, displayName: '加载文件夹下所有文件' })
     folderFiles: string[] = [];
 
+    @property({ type: CCString, displayName: '加载json文件夹' })
+    jsonFiles: string[] = [];
+
     @property({ displayName: '跳转的场景' })
     scene: string = '';
 
@@ -58,6 +63,9 @@ export class YJPreload extends YJComponent {
 
     @property({ type: no.EventHandlerInfo, displayName: '加载完成' })
     completeCall: no.EventHandlerInfo[] = [];
+
+    @property({ type: YJPreloadDelegate })
+    delegate: YJPreloadDelegate = null;
 
     private fileInfo: Map<string, string[]>;
     private state: PreloadState;
@@ -103,7 +111,7 @@ export class YJPreload extends YJComponent {
                 i.push(f);
             }
         });
-        this.total = 1 + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + (this.scene != '' ? 1 : 0);
+        this.total = 1 + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + (this.scene != '' ? 1 : 0);
     }
 
     protected loadBundles() {
@@ -150,6 +158,16 @@ export class YJPreload extends YJComponent {
         }
     }
 
+    protected loadJsonFiles() {
+        this.state = PreloadState.LoadingJsonFiles;
+        if (this.jsonFiles.length == 0) {
+            this.loadNext = true;
+            this.progress = 0;
+        } else {
+            this.loadJsonFilesInFolder(0);
+        }
+    }
+
     protected loadScene() {
         this.showNewScene = false;
         this.state = PreloadState.LoadingScene;
@@ -183,6 +201,9 @@ export class YJPreload extends YJComponent {
                     this.loadFolderFiles();
                     break;
                 case PreloadState.LoadingFolderFiles:
+                    this.loadJsonFiles();
+                    break;
+                case PreloadState.LoadingJsonFiles:
                     this.loadScene();
                     break;
             }
@@ -275,6 +296,29 @@ export class YJPreload extends YJComponent {
             } else {
                 this.progress = p / this.total;
             }
+        });
+    }
+
+    private loadJsonFilesInFolder(index: number) {
+        let b = this.jsonFiles[index];
+        if (b == null) {
+            this.loadNext = true;
+            return;
+        }
+        if (b == '') {
+            this.loadJsonFilesInFolder(index + 1);
+            return;
+        }
+        no.assetBundleManager.loadAllFilesInFolder(b, (p) => {
+            if (p == 1) {
+                this.progress = 0;
+                this.finished++;
+            } else {
+                this.progress = p / this.total;
+            }
+        }, (items: JsonAsset[]) => {
+            this.delegate?.onJsonLoaded(items);
+            this.loadJsonFilesInFolder(index + 1);
         });
     }
 }
