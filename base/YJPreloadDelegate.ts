@@ -13,8 +13,9 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
- @ccclass('YJPreloadDelegate')
- export class YJPreloadDelegate extends Component{
-     onJsonLoaded(assets: JsonAsset[]): void { }
- }
+
+@ccclass('YJPreloadDelegate')
+export class YJPreloadDelegate extends Component {
+    onJsonLoaded(assets: JsonAsset[]): void { }
+    onLoadComplete(): void { }
+}

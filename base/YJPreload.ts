@@ -220,7 +220,10 @@ export class YJPreload extends YJComponent {
                     progress: this.progress
                 }
             }
-            no.EventHandlerInfo.execute(this.completeCall);
+            this.delegate?.onLoadComplete();
+            this.scheduleOnce(() => {
+                no.EventHandlerInfo.execute(this.completeCall);
+            }, 0.5);
             return false;
         } else {
             // no.EventHandlerInfo.execute(this.progressingCall, this.total, this.finished, this.progress);
