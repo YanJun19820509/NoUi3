@@ -54,7 +54,7 @@ export class AutoCreateNode extends Component {
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 // console.log(dest);
-                let atlasManager = this.getComponent(YJLoadAssets);
+                let atlasManager = this.getComponent(YJLoadAssets) || this.addComponent(YJLoadAssets);
                 no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     this.atlas = s;
                     atlasManager?.addAtlasUuid(info.uuid);
