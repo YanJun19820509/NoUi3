@@ -24,7 +24,7 @@ export const YJPanelPrefabMetaKey = 'prefabPath';
  * @returns
  */
 export function panelPrefabPath(path: string) {
-    return no.addMeta(YJPanelPrefabMetaKey, path);
+    return no.addMeta(YJPanelPrefabMetaKey, path.replace('db://assets/', '').replace('.prefab', ''));
 }
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
