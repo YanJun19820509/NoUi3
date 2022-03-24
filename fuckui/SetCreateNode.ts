@@ -52,18 +52,22 @@ export class SetCreateNode extends FuckUi {
         let l = this.container.children.length;
         if (l < n) {
             for (let i = l; i < n; i++) {
-                instantiate(this.template).parent = this.container;
+                let item = instantiate(this.template);
+                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                if (a) {
+                    a.data = data[i];
+                }
+                item.parent = this.container;
             }
         }
-        n = this.container.children.length;
-        for (let i = 0; i < n; i++) {
+        // n = this.container.children.length;
+        for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) item.active = false;
             else {
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
-                    a.init();
                     a.data = data[i];
                 }
             }
