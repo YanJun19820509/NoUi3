@@ -16,14 +16,24 @@ const { ccclass, property, menu } = _decorator;
  *
  */
 
-@ccclass('YJOpenWindow')
-@menu('NoUi/node/YJOpenWindow(打开窗口)')
-export class YJOpenWindow extends Component {
-
+@ccclass('OpenWindowInfo')
+export class OpenWindowInfo {
     @property
     windowName: string = '';
     @property
     to: string = '';
+
+    public open() {
+        YJWindowManager.OpenPanel(this.windowName, this.to);
+    }
+}
+
+@ccclass('YJOpenWindow')
+@menu('NoUi/node/YJOpenWindow(打开窗口)')
+export class YJOpenWindow extends Component {
+    @property(OpenWindowInfo)
+    infos: OpenWindowInfo[] = [];
+
     @property
     autoOpen: boolean = false;
 
@@ -32,8 +42,15 @@ export class YJOpenWindow extends Component {
     }
 
     public a_open() {
-        let c = js.getClassByName(this.windowName) as typeof YJPanel;
-        if (!c || this.to == '') return;
-        YJWindowManager.createPanel(c, this.to);
+        this.infos.forEach(info => {
+            info.open();
+        });
     }
+
+    public a_openAt(idx: string): void {
+        let info = this.infos[Number(idx)];
+        info?.open();
+    }
+
+
 }
