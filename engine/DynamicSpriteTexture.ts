@@ -30,6 +30,7 @@ export class DynamicSpriteTexture extends Component {
     private deleteSpriteFrame() {
         if (!dynamicAtlasManager.enabled) return;
         let sprite = this.getComponent(Sprite);
+        if (!sprite.spriteFrame || !sprite.spriteFrame['_original']) return;
         dynamicAtlasManager.deleteAtlasSpriteFrame(sprite.spriteFrame);
         sprite.spriteFrame._resetDynamicAtlasFrame();
     }

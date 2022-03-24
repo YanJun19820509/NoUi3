@@ -38,6 +38,7 @@ export class DynamicLabelTexture extends Component {
     private deleteSpriteFrame() {
         if (!dynamicAtlasManager.enabled) return;
         let label = this.getComponent(Label);
+        if (!label['_texture'] || !label['_texture']['_original']) return;
         dynamicAtlasManager.deleteAtlasSpriteFrame(label['_texture']);
         label.spriteFrame['_resetDynamicAtlasFrame']();
     }
