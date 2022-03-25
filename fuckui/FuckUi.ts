@@ -21,7 +21,7 @@ const { ccclass, property } = _decorator;
 */
 @ccclass('FuckUi')
 export class FuckUi extends Component {
-    @property({ type: YJFuckUiRegister, tooltip: 'deprecated,建议在 YJFuckUiManager 中注册'})
+    @property({ type: YJFuckUiRegister, tooltip: 'deprecated,建议在 YJFuckUiManager 中注册' })
     register: YJFuckUiRegister = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
@@ -81,6 +81,10 @@ export class FuckUi extends Component {
 
     public a_clearData() {
         this._oldData = null;
+    }
+
+    protected get dataSetted(): boolean {
+        return this._oldData != null;
     }
 
     /**
