@@ -26,12 +26,8 @@ export class SetSpriteFrame extends FuckUi {
     @property(Sprite)
     sprite: Sprite = null;
 
-    onLoad() {
-        super.onLoad();
-        this.sprite = this.sprite || this.getComponent(Sprite);
-    }
-
     protected onDataChange(data: any) {
+        this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
         this.getComponent(DynamicSpriteTexture).beforeChange();
         if (data.atlas) {

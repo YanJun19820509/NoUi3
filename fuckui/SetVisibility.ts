@@ -31,7 +31,7 @@ export class SetVisibility extends FuckUi {
 
     onLoad() {
         super.onLoad();
-        this.show(this.default);
+        !this.dataSetted && this.show(this.default);
     }
 
     protected onDataChange(data: any) {

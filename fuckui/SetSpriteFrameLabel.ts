@@ -30,7 +30,7 @@ export class SetSpriteFrameLabel extends FuckUi {
     onLoad() {
         if (EDITOR) return;
         super.onLoad();
-        this.setData(JSON.stringify(this.text));
+        !this.dataSetted && this.setData(JSON.stringify(this.text));
     }
 
     update() {

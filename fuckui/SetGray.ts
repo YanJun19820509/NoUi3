@@ -25,7 +25,8 @@ export class SetGray extends FuckUi {
     reverse: boolean = false;
 
     onLoad() {
-        if (this.autoGray) this.setGray(true);
+        super.onLoad();
+        this.autoGray && !this.dataSetted && this.setGray(true);
     }
 
     protected onDataChange(data: any) {

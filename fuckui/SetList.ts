@@ -54,6 +54,7 @@ export class SetList extends FuckUi {
     private _loaded: boolean = false;
 
     async onLoad() {
+        super.onLoad();
         let node = await this.itemPanel.loadPrefab();
         this.itemSize = node.getComponent(UITransform).getBoundingBox().size;
         this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;

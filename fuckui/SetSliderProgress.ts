@@ -26,6 +26,7 @@ export class SetSliderProgress extends FuckUi {
     onProgressChangeEnd: no.EventHandlerInfo[] = [];
 
     onLoad() {
+        super.onLoad();
         let e = new EventHandler();
         e.target = this.node;
         e.component = 'SetSlider';

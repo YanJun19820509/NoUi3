@@ -31,6 +31,7 @@ export class SetProgress extends FuckUi {
     private targetValue: number = -1;
 
     onLoad() {
+        super.onLoad();
         this.speed = 1000 / this.motionSpeed;
     }
 

@@ -28,6 +28,7 @@ export class SetHint extends FuckUi {
     label: Label = null;
 
     onLoad() {
+        super.onLoad();
         this.targetNode = this.targetNode || this.node;
     }
 
