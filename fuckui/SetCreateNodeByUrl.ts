@@ -1,35 +1,39 @@
 
 import { _decorator, Component, Node, instantiate } from 'cc';
-import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables
- * Name = SetCreateNode
- * DateTime = Mon Jan 17 2022 10:42:39 GMT+0800 (中国标准时间)
+ * Name = SetCreateNodeByUrl
+ * DateTime = Fri Mar 25 2022 15:10:40 GMT+0800 (中国标准时间)
  * Author = mqsy_yj
- * FileBasename = SetCreateNode.ts
- * FileBasenameNoExtension = SetCreateNode
- * URL = db://assets/Script/NoUi3/fuckui/SetCreateNode.ts
- * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
+ * FileBasename = SetCreateNodeByUrl.ts
+ * FileBasenameNoExtension = SetCreateNodeByUrl
+ * URL = db://assets/NoUi3/fuckui/SetCreateNodeByUrl.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
 
-@ccclass('SetCreateNode')
-@menu('NoUi/ui/SetCreateNode(动态创建节点:object|array)')
-export class SetCreateNode extends FuckUi {
-
-    @property({ type: YJLoadPrefab, displayName: '元素预制体' })
-    loadPrefab: YJLoadPrefab = null;
-    @property({ type: Node, displayName: '元素模板' })
-    template: Node = null;
+/**
+ * 参数 : {
+ *  url: string,
+ *  data: object | array
+ * }
+ */
+@ccclass('SetCreateNodeByUrl')
+@menu('NoUi/ui/SetCreateNodeByUrl(根据prefab的url动态创建节点:object)')
+export class SetCreateNodeByUrl extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
+
+    private template: Node;
+    private url: string;
 
     onDisable() {
         if (this.clearOnDisable) {
@@ -38,14 +42,21 @@ export class SetCreateNode extends FuckUi {
         }
     }
 
-    protected onDataChange(data: any) {
-        this.setItems([].concat(data));
+    protected onDataChange(d: any) {
+        let { url, data }: { url: string, data: any[] } = d;
+        if (url && this.url != url)
+            no.assetBundleManager.loadPrefab(url, item => {
+                this.url = url;
+                this.template = instantiate(item)
+                this.setItems(data);
+            });
+        else {
+            this.setItems(data);
+        }
     }
 
-    private async setItems(data: any[]) {
-        if (!this.template) {
-            this.template = await this.loadPrefab.loadPrefab();
-        }
+    private setItems(data: any[]) {
+        if (!this.template) return;
         if (!this.container) this.container = this.node;
 
         let n = data.length
@@ -61,7 +72,6 @@ export class SetCreateNode extends FuckUi {
                 item.parent = this.container;
             }
         }
-        // n = this.container.children.length;
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) item.active = false;

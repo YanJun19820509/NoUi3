@@ -37,11 +37,12 @@ export class YJDataWork extends Component {
      * @returns
      */
     public init() {
-        if (this._ready) return;
-        this.register.onNewUiRegister = (key: string, ui: FuckUi) => {
-            this.setUiData([ui], this.getValue(key));
-        };
-        this._ready = true;
+        if (!this._ready) {
+            this.register.onNewUiRegister = (key: string, ui: FuckUi) => {
+                this.setUiData([ui], this.getValue(key));
+            };
+            this._ready = true;
+        }
         this.afterInit();
     }
 
