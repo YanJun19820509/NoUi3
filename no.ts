@@ -1315,6 +1315,7 @@ export namespace no {
     class DataCache extends EventTarget {
         private _json: Data;
         private _tmp: Data;
+        private _localPreKey: string = '';
 
         constructor() {
             super();
@@ -1322,11 +1323,23 @@ export namespace no {
             this._tmp = new Data();
         }
 
+        /**本地数据前缀，用来区分不同账号 */
+        public get localPreKey() : string {
+            return this._localPreKey;
+        }
+
+        public set localPreKey(v : string) {
+            this._localPreKey = v;
+        }
+        
+        
+
         /**
          * 获取本地数据
          * @param key
          */
         public getLocal(key: string): any {
+            key = `${this._localPreKey}_${key}`;
             let a = localStorage.getItem(key);
             if (a == null) return null;
             return JSON.parse(a);
@@ -1337,6 +1350,7 @@ export namespace no {
          * @param value
          */
         public setLocal(key: string, value: any): void {
+            key = `${this._localPreKey}_${key}`;
             localStorage.setItem(key, JSON.stringify(value));
             this.emit(key, value);
         }
