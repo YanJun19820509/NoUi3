@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget } from 'cc';
+import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow } from 'cc';
 import { EDITOR } from 'cc/env';
 import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
 import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
@@ -130,6 +130,10 @@ export class AutoCreateNode extends Component {
         l.color = no.str2Color(c.textColor);
         l.isBold = Boolean(c.bold);
         l.isItalic = Boolean(c.italic);
+        l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
+        if (c.direction == 'vertical') {
+            l.overflow = Overflow.RESIZE_HEIGHT;
+        }
         if (!n.getComponent(DynamicLabelTexture)) n.addComponent(DynamicLabelTexture);
     }
 
@@ -161,6 +165,7 @@ export class AutoCreateNode extends Component {
     private async setWidget(node: Node) {
         await no.sleep(0.1);
         let widget = node.getComponent(Widget) || node.addComponent(Widget);
+        if (!widget.enabled) return;
         let rect = node.getComponent(UITransform).getBoundingBox();
         if (rect.center.x < 0) {
             widget.isAlignLeft = true;
