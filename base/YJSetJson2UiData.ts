@@ -34,8 +34,7 @@ export class YJSetJson2UiData extends Component {
     start() {
         this.infos.forEach(info => {
             if (info.json == '' || !info.ui) return;
-            let data = JSON.parse(info.json);
-            info.ui.setData(data);
+            info.ui.setData(info.json.replace(/\n/g, '').replace(/\'/g, '\"'));
         });
     }
 }

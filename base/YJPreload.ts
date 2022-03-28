@@ -217,7 +217,8 @@ export class YJPreload extends YJComponent {
                 this.dataWork.data = {
                     total: this.total,
                     finished: this.finished,
-                    progress: this.progress
+                    progress: this.progress,
+                    allProgress: this.progress + this.finished / this.total
                 }
             }
             this.delegate?.onLoadComplete();
@@ -231,7 +232,8 @@ export class YJPreload extends YJComponent {
                 this.dataWork.data = {
                     total: this.total,
                     finished: this.finished,
-                    progress: this.progress
+                    progress: this.progress,
+                    allProgress: this.progress + this.finished / this.total
                 }
             }
             return true;

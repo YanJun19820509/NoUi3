@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, js } from 'cc';
+import { _decorator, Component, Node, js, EventTouch } from 'cc';
 import { YJPanel } from './YJPanel';
 import { YJWindowManager } from './YJWindowManager';
 const { ccclass, property, menu } = _decorator;
@@ -47,8 +47,8 @@ export class YJOpenWindow extends Component {
         });
     }
 
-    public a_openAt(idx: string): void {
-        let info = this.infos[Number(idx)];
+    public a_openAt(event: EventTouch, idx: string): void {
+        let info = this.infos[Number(idx || event)];
         info?.open();
     }
 

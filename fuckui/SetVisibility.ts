@@ -59,4 +59,14 @@ export class SetVisibility extends FuckUi {
             this.node.active = v;
         }
     }
+
+    public a_show(): void {
+        this.show(true);
+    }
+
+    public a_hide(): void {
+        this.show(false);
+    }
+
+
 }

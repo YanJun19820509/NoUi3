@@ -2,7 +2,7 @@
 import { _decorator, Component, Node } from 'cc';
 import { FuckUi } from '../fuckui/FuckUi';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
-const { ccclass, property } = _decorator;
+const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables
@@ -17,6 +17,7 @@ const { ccclass, property } = _decorator;
  */
 
 @ccclass('YJFuckUiManager')
+@disallowMultiple()
 export class YJFuckUiManager extends YJFuckUiRegister {
 
     @property({ type: Node })
