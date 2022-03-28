@@ -64,7 +64,7 @@ export class YJLoadAssets extends Component {
      */
     public release() {
         if (EDITOR) return;
-        this.assets.forEach(asset => {
+        this.assets?.forEach(asset => {
             asset.decRef();
         });
         this.assets = [];
