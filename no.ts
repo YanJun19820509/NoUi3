@@ -1324,15 +1324,15 @@ export namespace no {
         }
 
         /**本地数据前缀，用来区分不同账号 */
-        public get localPreKey() : string {
+        public get localPreKey(): string {
             return this._localPreKey;
         }
 
-        public set localPreKey(v : string) {
+        public set localPreKey(v: string) {
             this._localPreKey = v;
         }
-        
-        
+
+
 
         /**
          * 获取本地数据
@@ -2258,6 +2258,32 @@ export namespace no {
 
         public get numberValue(): number {
             return this._coefficient * Math.pow(10, this.index);
+        }
+
+        /**
+         * 带单位字符串
+         * @param units 自定义单位数组
+         * @param step 单位换算步进值
+         * @returns string 如：1.23AA
+         */
+        public toUnitString(units: string[], step = 3): string {
+            if (this.index < 3) {
+                return `${Math.floor(this._coefficient * Math.pow(10, this.index))}`;
+            }
+            let a = Math.floor(this.index / step),
+                b = this.index % step,
+                u: string = units[a];
+            return `${Math.floor(this._coefficient * Math.pow(10, b + 2)) / 100}${u}`;
+        }
+
+        /**
+         * 取负值到一个新的ScientificString
+         * @returns 新的ScientificString
+         */
+        public toNegative(): ScientificString {
+            let a = this.clone;
+            a._coefficient = -Math.abs(a._coefficient);
+            return a;
         }
     }
 
