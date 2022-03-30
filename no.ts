@@ -2131,11 +2131,7 @@ export namespace no {
         /**加 */
         public add(other: ScientificString): void {
             if (other == null) return;
-            if (this.index == other.index) {
-                this.coefficient += other._coefficient;
-            } else {
-                this.coefficient += other._coefficient * Math.pow(10, other.index - this.index);
-            }
+            this.coefficient = this.float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
         }
 
         /**加 */
@@ -2150,11 +2146,7 @@ export namespace no {
         /**减 */
         public minus(other: ScientificString): void {
             if (other == null) return;
-            if (this.index == other.index) {
-                this.coefficient -= other._coefficient;
-            } else {
-                this.coefficient -= other._coefficient * Math.pow(10, other.index - this.index);
-            }
+            this.coefficient = this.float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
         }
 
         /**减 */
@@ -2169,7 +2161,7 @@ export namespace no {
         /**乘 */
         public mul(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient *= other._coefficient;
+            this.coefficient = this.float(this._coefficient * other._coefficient);
             this.index += other.index;
         }
 
@@ -2185,7 +2177,7 @@ export namespace no {
         /**除 */
         public div(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient /= other._coefficient;
+            this.coefficient = this.float(this._coefficient / other._coefficient);
             this.index -= other.index;
         }
 
@@ -2268,12 +2260,12 @@ export namespace no {
          */
         public toUnitString(units: string[], step = 3): string {
             if (this.index < 3) {
-                return `${Math.floor(this._coefficient * Math.pow(10, this.index))}`;
+                return `${this.float(this._coefficient * Math.pow(10, this.index))}`;
             }
             let a = Math.floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a];
-            return `${Math.floor(this._coefficient * Math.pow(10, b + 2)) / 100}${u}`;
+            return `${this.float(this._coefficient * Math.pow(10, b))}${u}`;
         }
 
         /**
@@ -2284,6 +2276,10 @@ export namespace no {
             let a = this.clone;
             a._coefficient = -Math.abs(a._coefficient);
             return a;
+        }
+
+        private float(v: number): number {
+            return Math.floor(Math.ceil(v * 1000000) / 100) / 10000;
         }
     }
 
