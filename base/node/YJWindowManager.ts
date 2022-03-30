@@ -63,16 +63,16 @@ export class YJWindowManager extends Component {
         if (!comp) return null;
         let content: Node = await YJWindowManager._ins.getContent(to);
 
-        let a = content.getComponentInChildren(comp.name);
+        let a = content.getComponentInChildren(comp);
         if (a != null) {
             onInit?.(a as T);
             return;
         }
         no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
             let node = instantiate(pf);
-            a = node.getComponent(comp.name);
+            a = node.getComponent(comp);
             onInit?.(a as T);
-            (a as YJPanel).initPanel();
+            a.initPanel();
             content.addChild(node);
         });
     }
@@ -82,15 +82,16 @@ export class YJWindowManager extends Component {
         let content: Node = await YJWindowManager._ins.getContent(to);
 
         let comp = js.getClassByName(name) as (typeof YJPanel);
-        let a = content.getComponentInChildren(comp.name);
+        let a = content.getComponentInChildren(comp);
         if (a != null) {
+            console.log('Cant OpenPanel', name, to);
             return;
         }
 
         no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
             let node = instantiate(pf);
-            a = node.getComponent(comp.name);
-            (a as YJPanel).initPanel();
+            a = node.getComponent(comp);
+            a.initPanel();
             content.addChild(node);
         });
     }
