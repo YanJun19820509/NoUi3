@@ -22,6 +22,8 @@ export class LayerInfo {
     type: string = '';
     @property({ displayName: '容器', type: Node })
     content: Node = null;
+    @property({ editorOnly: true })
+    desc: string = ''
 }
 
 @ccclass('YJWindowManager')
