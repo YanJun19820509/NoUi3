@@ -21,6 +21,8 @@ const { ccclass, property, menu } = _decorator;
 export class SetClickEvent extends FuckUi {
     @property({ displayName: '事件类型' })
     type: string = '';
+    @property(no.EventHandlerInfo)
+    onClick: no.EventHandlerInfo[] = [];
 
     private _v: any;
 
@@ -29,6 +31,8 @@ export class SetClickEvent extends FuckUi {
     }
 
     public a_onClick() {
-        no.evn.emit(this.type, this._v);
+        if (this.type != '')
+            no.evn.emit(this.type, this._v);
+        no.EventHandlerInfo.execute(this.onClick, this._v);
     }
 }
