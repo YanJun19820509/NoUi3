@@ -112,21 +112,11 @@ export namespace no {
     export class EventHandlerInfo {
         @property(EventHandler)
         hander: EventHandler = new EventHandler();
-        @property({ step: 1 })
-        order: number = 0;
 
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (handlers.length == 0) return;
-            this.sort(handlers);
             handlers.forEach(handler => {
-                handler.execute(args);
-            });
-        }
-
-        private static sort(handlers: EventHandlerInfo[]): void {
-            if (handlers.length == 0) return;
-            handlers.sort((a, b) => {
-                return a.order - b.order;
+                handler.execute.apply(handler, args);
             });
         }
 
