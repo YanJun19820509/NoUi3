@@ -31,10 +31,12 @@ export class SetCreateNode extends FuckUi {
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
 
+    private needClearChildren = false;
+
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.container.removeAllChildren();
+            this.needClearChildren = true;
         }
     }
 
@@ -47,6 +49,11 @@ export class SetCreateNode extends FuckUi {
             this.template = await this.loadPrefab.loadPrefab();
         }
         if (!this.container) this.container = this.node;
+
+        if (this.needClearChildren) {
+            this.container.removeAllChildren();
+            this.needClearChildren = false;
+        }
 
         let n = data.length
         let l = this.container.children.length;
