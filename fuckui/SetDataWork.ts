@@ -26,6 +26,7 @@ export class SetDataWork extends FuckUi {
     protected onDataChange(data: any) {
         if (this.dataWork) {
             this.dataWork.data = data;
+            this.dataWork.init();
         }
     }
 }
