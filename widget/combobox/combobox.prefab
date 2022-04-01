@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "combobox",
+    "_name": "ComboBox",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
