@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform } from 'cc';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
@@ -24,6 +25,8 @@ export class SetList extends FuckUi {
 
     @property({ type: YJLoadPrefab, displayName: '元素容器', tooltip: '管理列表子项布局的容器，需要挂载SetCreateNode组件' })
     itemPanel: YJLoadPrefab = null;
+    @property({ type: Node, displayName: '元素模板' })
+    template: Node = null;
 
     @property({ displayName: '列数', step: 1, min: 1 })
     columnNumber: number = 1;
@@ -55,8 +58,10 @@ export class SetList extends FuckUi {
 
     async onLoad() {
         super.onLoad();
-        let node = await this.itemPanel.loadPrefab();
-        this.itemSize = node.getComponent(UITransform).getBoundingBox().size;
+        if (!this.template) {
+            this.template = await this.itemPanel.loadPrefab();
+        }
+        this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
         this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
         this.content = this.scrollView.content;
@@ -86,7 +91,7 @@ export class SetList extends FuckUi {
     }
 
     private async initItems() {
-        await no.waitFor(() => { return this.itemPanel.loaded; });
+        await no.waitFor(() => { return this.template != null; });
         if (this.isVertical) {
             this.contentSize = this.allNum * this.itemSize.height;
             this.content.getComponent(UITransform).width = this.itemSize.width;
@@ -97,7 +102,8 @@ export class SetList extends FuckUi {
             this.content.getComponent(UITransform).height = this.itemSize.height;
         }
         for (let i = this.listItems.length; i < this.showNum; i++) {
-            let item = instantiate(this.itemPanel.loadedNode);
+            let item = instantiate(this.template);
+            item.active = true;
             item.parent = this.content;
             this.listItems[this.listItems.length] = item;
         }
@@ -129,7 +135,16 @@ export class SetList extends FuckUi {
     }
 
     private setItemData(item: Node, data: any) {
-        (item.getComponent(SetCreateNode) || item.getComponentInChildren(SetCreateNode)).setData(data);
+        let a = item.getComponent(SetCreateNode) || item.getComponentInChildren(SetCreateNode);
+        if (a)
+            a.setData(data);
+        else {
+            let b = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+            if (b) {
+                b.data = data;
+                b.init();
+            }
+        }
     }
 
     private setItemPosition(item: Node, index: number) {
