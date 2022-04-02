@@ -31,7 +31,7 @@ export class SetUiGroupSwitch extends FuckUi {
     protected onDataChange(data: any) {
         this.infos.forEach(info => {
             if (info.uiNode) {
-                info.uiNode.active = info.condition === data;
+                info.uiNode.active = info.condition === String(data);
             }
         });
     }
