@@ -2249,7 +2249,7 @@ export namespace no {
          * @returns string 如：1.23AA
          */
         public toUnitString(units: string[], step = 3): string {
-            if (this.index < 3) {
+            if (this.index <= step) {
                 return `${this.float(this._coefficient * Math.pow(10, this.index))}`;
             }
             let a = Math.floor(this.index / step),
