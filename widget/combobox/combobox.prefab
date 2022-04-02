@@ -28,13 +28,10 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 98
+        "__id__": 100
       },
       {
         "__id__": 14
-      },
-      {
-        "__id__": 100
       },
       {
         "__id__": 102
@@ -44,10 +41,13 @@
       },
       {
         "__id__": 106
+      },
+      {
+        "__id__": 108
       }
     ],
     "_prefab": {
-      "__id__": 108
+      "__id__": 110
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -774,10 +774,13 @@
       },
       {
         "__id__": 95
+      },
+      {
+        "__id__": 97
       }
     ],
     "_prefab": {
-      "__id__": 97
+      "__id__": 99
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -1855,6 +1858,30 @@
     "fileId": "98FJSBu0lK0rDglj7ZGEWJ"
   },
   {
+    "__type__": "6bc778NTm9Ju5+3cdxdDbTc",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 37
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 98
+    },
+    "register": {
+      "__id__": 14
+    },
+    "bind_keys": "x",
+    "once": false,
+    "saveIgnore": true,
+    "showValueLog": false,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "1d8fLcnoJI95bJEVgFFXsE"
+  },
+  {
     "__type__": "cc.PrefabInfo",
     "root": {
       "__id__": 1
@@ -1873,7 +1900,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 99
+      "__id__": 101
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -1900,7 +1927,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 101
+      "__id__": 103
     },
     "register": {
       "__id__": 14
@@ -1928,7 +1955,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 103
+      "__id__": 105
     },
     "register": null,
     "bind_keys": "filter",
@@ -1936,7 +1963,7 @@
     "saveIgnore": true,
     "showValueLog": false,
     "dataWork": {
-      "__id__": 100
+      "__id__": 102
     },
     "_id": ""
   },
@@ -1953,7 +1980,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 105
+      "__id__": 107
     },
     "_resizeMode": 1,
     "_layoutType": 2,
@@ -1974,7 +2001,7 @@
     "_constraint": 0,
     "_constraintNum": 2,
     "_affectedByScale": false,
-    "_isAlign": true,
+    "_isAlign": false,
     "_id": ""
   },
   {
@@ -1990,7 +2017,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 107
+      "__id__": 109
     },
     "_alignFlags": 1,
     "_target": null,

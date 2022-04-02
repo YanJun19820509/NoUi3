@@ -73,7 +73,8 @@ export class YJComboBox extends YJDataWork {
                     opacity: v ? 255 : 0
                 }
             },
-            dir: v ? -1 : 1
+            dir: v ? -1 : 1,
+            x: v ? 0 : -10000
         };
     }
 }
