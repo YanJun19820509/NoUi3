@@ -23,22 +23,25 @@ export class YJFuckUiManager extends YJFuckUiRegister {
     @property({ type: Node })
     fuckUiNodes: Node[] = [];
 
-    protected _data2ui: object = {};
     private _registered: boolean = false;
 
-    public register() {
-        if (this._registered) return;
-        this._registered = true;
-        this.fuckUiNodes.forEach(node => {
-            let uis = node.getComponents(FuckUi);
-            uis.forEach(ui => {
-                let keys = ui.bindKeys;
-                keys.forEach(key => {
-                    this._data2ui[key] = this._data2ui[key] || [];
-                    this._data2ui[key][this._data2ui[key].length] = ui;
+    public register(ui?: FuckUi) {
+        if (ui) {
+            super.register(ui);
+        } else {
+            if (this._registered) return;
+            this._registered = true;
+            this.fuckUiNodes.forEach(node => {
+                let uis = node.getComponents(FuckUi);
+                uis.forEach(ui => {
+                    let keys = ui.bindKeys;
+                    keys.forEach(key => {
+                        this._data2ui[key] = this._data2ui[key] || [];
+                        this._data2ui[key][this._data2ui[key].length] = ui;
+                    });
                 });
             });
-        });
+        }
     }
 
     public getUis(key: string): FuckUi[] {
