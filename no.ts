@@ -1929,7 +1929,9 @@ export namespace no {
 
         constructor() {
             super();
-            setInterval(this.checkHint, 2000);
+            setInterval(() => {
+                this.checkHint();
+            }, 2000);
         }
 
         /**
