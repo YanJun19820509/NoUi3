@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, instantiate } from 'cc';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -47,6 +48,7 @@ export class SetCreateNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
+            this.template.getComponent(YJLoadAssets)?.load();
         }
         if (!this.container) this.container = this.node;
 
