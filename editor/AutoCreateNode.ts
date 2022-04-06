@@ -79,7 +79,18 @@ export class AutoCreateNode extends Component {
             // console.log('createNodes', config);
             this.size = new Size(config.width, config.height);
             this.node.getComponent(UITransform).setContentSize(this.size);
-            this.parent = this.node.getChildByName('Canvas') || this.node
+            this.parent = this.node.getChildByName('Canvas') || this.node;
+            if (!this.node.getComponent(Widget)) {
+                let widget = this.node.addComponent(Widget);
+                widget.isAlignTop = true;
+                widget.isAlignBottom = true;
+                widget.isAlignLeft = true;
+                widget.isAlignRight = true;
+                widget.top = 0;
+                widget.bottom = 0;
+                widget.left = 0;
+                widget.right = 0;
+            }
             config.nodes.forEach((n: any) => {
                 switch (n.type) {
                     case 'label':
