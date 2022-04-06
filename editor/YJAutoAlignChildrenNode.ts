@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Widget, UITransform, Enum } from 'cc';
+import { _decorator, Component, Widget, Enum, view } from 'cc';
 import { EDITOR } from 'cc/env';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -30,7 +30,7 @@ enum AlignType {
 @ccclass('YJAutoAlignChildrenNode')
 @executeInEditMode(true)
 export class YJAutoAlignChildrenNode extends Component {
-    @property({ type: Enum(AlignType) })
+    @property({ type: Enum(AlignType), tooltip: 'Top,Middle,Bottom适用于竖屏模式，Left,Center,Right适用于横屏模式' })
     align: AlignType = AlignType.None;
 
     private lastAlign: AlignType;
@@ -43,6 +43,11 @@ export class YJAutoAlignChildrenNode extends Component {
     update() {
         if (!EDITOR) return;
         if (this.align == this.lastAlign) return;
+        let wsize = view.getDesignResolutionSize();
+        // console.log(wsize);
+        let a = wsize.width / wsize.height;
+        if (a > 1 && (this.align == AlignType.Bottom || this.align == AlignType.Middle || this.align == AlignType.Top)) return;
+        if (a < 1 && (this.align == AlignType.Left || this.align == AlignType.Center || this.align == AlignType.Right)) return;
         this.lastAlign = this.align;
         this.node.children.forEach(child => {
             if (child.active) {
