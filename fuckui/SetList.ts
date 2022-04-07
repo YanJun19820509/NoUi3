@@ -87,7 +87,9 @@ export class SetList extends FuckUi {
             this.initItems();
         }
         this.listData = a;
-        this.setList(this.autoScrollBack ? 0 : this.lastIndex);
+        let i = this.lastIndex;
+        if (!this.listData[this.lastIndex]) i = 0;
+        this.setList(this.autoScrollBack ? 0 : i);
     }
 
     private async initItems() {
