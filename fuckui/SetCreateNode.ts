@@ -62,9 +62,9 @@ export class SetCreateNode extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
-                item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                if (a) {
+                item.active = !!data[i];
+                if (a && data[i]) {
                     a.data = data[i];
                 }
                 item.parent = this.container;
@@ -75,9 +75,9 @@ export class SetCreateNode extends FuckUi {
             let item = this.container.children[i];
             if (data[i] == null) item.active = false;
             else {
-                item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                if (a) {
+                item.active = !!data[i];
+                if (a && data[i]) {
                     a.data = data[i];
                     a.init();
                 }
