@@ -1201,6 +1201,25 @@ export namespace no {
         return _1 / _2 / _3;
     }
 
+    /**
+     * 检查数据是否需要重置
+     * @param dataKey 数据key
+     * @param value 重置后的数据值
+     * @param time 重置定时时间(s)，与当天0点的间隔时间
+     */
+    export function resetValueCheck(dataKey: string, value: any, time: number) {
+        let zeroTime = zeroTimestamp(),
+            now = sysTime.now,
+            resetTime = zeroTime + time;
+        let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
+        let lt = lastResetTime[dataKey] || zeroTime - 1;
+        if (resetTime > lt && resetTime <= now) {
+            dataCache.setLocal(dataKey, value);
+            lastResetTime[dataKey] = now;
+            dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
+        }
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
