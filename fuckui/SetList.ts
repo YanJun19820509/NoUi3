@@ -112,7 +112,7 @@ export class SetList extends FuckUi {
     }
 
     private async setList(start: number) {
-        await no.waitFor(() => { return this.listItems.length == this.showNum });
+        await no.waitFor(() => { return this.listItems.length >= this.showNum; });
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
@@ -136,7 +136,7 @@ export class SetList extends FuckUi {
         }
     }
 
-    private setItemData(item: Node, data: any) {
+    private setItemData(item: Node, data = []) {
         let a = item.getComponent(SetCreateNode) || item.getComponentInChildren(SetCreateNode);
         if (a)
             a.setData(JSON.stringify(data));
