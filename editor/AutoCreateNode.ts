@@ -139,8 +139,8 @@ export class AutoCreateNode extends Component {
         l.fontSize = Number(c.size);
         l.lineHeight = l.fontSize;
         l.color = no.str2Color(c.textColor);
-        l.isBold = Boolean(c.bold);
-        l.isItalic = Boolean(c.italic);
+        l.isBold = c.bold == 'true';
+        l.isItalic = c.italic == 'true';
         l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
         if (c.direction == 'vertical') {
             l.overflow = Overflow.RESIZE_HEIGHT;
