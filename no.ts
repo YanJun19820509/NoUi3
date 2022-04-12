@@ -189,15 +189,44 @@ export namespace no {
         });
     }
 
+    /**
+     * 等待方法成立
+     * @param express 
+     * @returns 
+     */
     export async function waitFor(express: (dt?: number) => boolean): Promise<void> {
         return new Promise<void>(resolve => {
             this.callUntil(express, resolve);
         });
     }
 
+    /**
+     * 等待有返回值的事件
+     * @param type 
+     * @param target 
+     * @returns 
+     */
     export async function waiForEventValue(type: string, target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             evn.once(type, resolve, target);
+        });
+    }
+
+    /**
+     * 等待事件返回值与预期值相等
+     * @param type 
+     * @param equalValue 预期值
+     * @param target 
+     * @returns 
+     */
+    export async function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
+        return new Promise<void>(resolve => {
+            evn.on(type, (v: any) => {
+                if (v == equalValue) {
+                    evn.typeOff(type);
+                    resolve();
+                }
+            }, target);
         });
     }
 
@@ -1232,7 +1261,7 @@ export namespace no {
 
         public set data(v: any) {
             this._data = v;
-            this.emit(Data.DataChangeEvent, this._data);
+            this.emit(Data.DataChangeEvent, this);
         }
 
         /**转成json string */
@@ -1243,7 +1272,7 @@ export namespace no {
         /**将json string转成data */
         public set json(v: string) {
             this._data = JSON.parse(v);
-            this.emit(Data.DataChangeEvent, this._data);
+            this.emit(Data.DataChangeEvent, this);
         }
 
         /**
@@ -1291,7 +1320,7 @@ export namespace no {
 
         private async handleDataChange() {
             if (await Throttling.ins(this).wait(0.1))
-                this.emit(Data.DataChangeEvent, this._data);
+                this.emit(Data.DataChangeEvent, this);
         }
 
         /**
@@ -1309,13 +1338,18 @@ export namespace no {
 
         /**
          * 枚举
-         * @param hander
+         * @param handler
          */
-        public enumerate(hander: (k: string, v: any) => void) {
+        public enumerate(handler: (k: string, v: any) => void) {
             for (const key in this._data) {
-                hander(key, this._data[key]);
+                handler(key, this._data[key]);
             }
         }
+
+        public onChange(handler: (d?: Data) => void, target?: any): void {
+            this.on(Data.DataChangeEvent, handler, target);
+        }
+
     }
 
     /**
