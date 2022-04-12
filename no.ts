@@ -2288,6 +2288,15 @@ export namespace no {
             a._coefficient = -Math.abs(a._coefficient);
             return a;
         }
+        /**
+         * 取正值到一个新的ScientificString
+         * @returns 新的ScientificString
+         */
+        public toPositive(): ScientificString {
+            let a = this.clone;
+            a._coefficient = Math.abs(a._coefficient);
+            return a;
+        }
 
         private float(v: number): number {
             return Math.floor(Math.ceil(v * 1000000) / 100) / 10000;
