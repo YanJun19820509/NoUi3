@@ -26,9 +26,6 @@ export class SetText extends FuckUi {
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
 
-    @property({ displayName: '数值显示单位' })
-    showUnit: boolean = true;
-
     private label: Label | RichText;
 
     protected onDataChange(data: any) {
@@ -47,9 +44,6 @@ export class SetText extends FuckUi {
     private setLabel(data: any): void {
         if (this.label == null) return;
         if (data == '') this.label.string = '';
-        if (this.showUnit && typeof data == 'number') {
-            data = no.num2str(data);
-        }
         this.getComponent(DynamicLabelTexture)?.beforeContentChange();
         if (typeof data == 'string') {
             this.label.string = no.formatString(this.formatter, data.split('|'));
