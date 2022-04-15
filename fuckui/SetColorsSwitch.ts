@@ -18,7 +18,7 @@ const { ccclass, property, menu } = _decorator;
 export class ColorInfo {
     @property
     condition: string = '';
-    @property({ type: Color })
+    @property
     color: Color = Color.BLACK;
 }
 
