@@ -2304,12 +2304,12 @@ export namespace no {
          * @returns string 如：1.23AA
          */
         public toUnitString(units: string[], step = 3): string {
-            if (this.index <= step) {
+            if (this.index < step) {
                 return `${this.float(this._coefficient * Math.pow(10, this.index))}`;
             }
             let a = Math.floor(this.index / step),
                 b = this.index % step,
-                u: string = units[a];
+                u: string = units[a - 1];
             return `${this.float(this._coefficient * Math.pow(10, b))}${u}`;
         }
 
