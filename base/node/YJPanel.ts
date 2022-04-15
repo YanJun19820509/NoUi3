@@ -1,7 +1,9 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
+import { SetCreateNodeByUrl } from '../../fuckui/SetCreateNodeByUrl';
 import { no } from '../../no';
+import YJLoadPrefab from './YJLoadPrefab';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -63,9 +65,23 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
+        this.getComponentsInChildren(YJLoadPrefab).forEach(a => {
+            a.recycle();
+        });
+        this.getComponentsInChildren(SetCreateNodeByUrl).forEach(a => {
+            a.recycle();
+        });
+        this.recycle();
         no.EventHandlerInfo.execute(this.onClose);
         this.onClosePanel();
         this.node.destroy();
+    }
+
+    private recycle() {
+        let k = this['__proto__'].prefabPath;
+        if (this.node['_prefab'].asset.refCount > 0)
+            no.cachePool.recycle(k, this.node['_prefab'].asset);
+        else no.assetBundleManager.release(this.node['_prefab'].asset);
     }
 
     //////由子类实现

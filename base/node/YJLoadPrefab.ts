@@ -12,33 +12,46 @@ export default class YJLoadPrefab extends Component {
     prefab: Prefab = null;
     @property({ readonly: true })
     prefabUrl: string = '';
-    @property({ readonly: true })
-    prefabUuid: string = '';
+    // @property({ readonly: true })
+    // prefabUuid: string = '';
 
     @property
     autoLoad: boolean = true;
 
+    private url: string;
     public loaded: boolean = false;
     public loadedNode: Node = null;
+    private pref: Prefab = null;
 
     onLoad() {
         if (!this.autoLoad) return;
         this.loadPrefab();
     }
 
-    onDestroy() {
-        this.loadedNode?.destroy();
+    public recycle() {
+        if (this.pref && this.pref.refCount > 0) {
+            no.cachePool.recycle(this.url, this.pref);
+        }
+        else no.assetBundleManager.release(this.pref);
     }
 
     public async loadPrefab(): Promise<Node> {
         if (this.loadedNode != null && this.loadedNode.isValid) return this.loadedNode;
+        this.url = this.prefabUrl.replace('db://assets/', '').replace('.prefab', '');
+        let pf = no.cachePool.reuse<Prefab>(this.url);
+        if (pf) {
+            this.pref = pf;
+            this.loadedNode = instantiate(pf);
+            this.loaded = true;
+            return this.loadedNode;
+        }
         return new Promise<Node>(resolve => {
-            no.assetBundleManager.loadByUuid<Prefab>(this.prefabUuid, Prefab, (p) => {
+            no.assetBundleManager.loadPrefab(this.url, (p) => {
                 if (p == null) resolve(null);
                 else {
+                    this.pref = p;
                     this.loadedNode = instantiate(p);
                     this.loaded = true;
-                    no.assetBundleManager.decRef(p);
                     resolve(this.loadedNode);
                 }
             });
@@ -67,7 +80,7 @@ export default class YJLoadPrefab extends Component {
     private async setPrefabUrl() {
         let url = await no.getAssetUrlInEditorMode(this.prefab._uuid);
         this.prefabUrl = url;
-        this.prefabUuid = this.prefab._uuid;
+        // this.prefabUuid = this.prefab._uuid;
         this.prefab = null;
     }
 }

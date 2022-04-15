@@ -1893,6 +1893,12 @@ export namespace no {
                 if (item == null) no.err(e.message);
             });
         }
+
+        public release(asset: Asset): void {
+            if (!asset) return;
+            assetManager.releaseAsset(asset);
+        }
+
     }
 
     /**全局资源管理器 */
@@ -1900,15 +1906,13 @@ export namespace no {
 
     /**缓存池 */
     class CachePool {
-        private cacheMap: Map<string, any[]>;
-        private cacheUseMap: Map<string, number>;
-
+        private cacheMap: Map<string, { o: any, t: number }[]>;
+        private checkDuration = 10;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
-            this.cacheUseMap = new Map<string, number>();
-            window.setTimeout(() => {
+            setInterval(() => {
                 this.checkClear();
-            }, 60000);
+            }, this.checkDuration * 500);
         }
 
         /**
@@ -1917,8 +1921,8 @@ export namespace no {
          */
         public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
-            this.cacheUseMap.set(type, no.timestamp());
-            return this.cacheMap.get(type).shift();
+            let a = this.cacheMap.get(type).shift();
+            return a.o as T;
         }
 
         /**
@@ -1929,9 +1933,7 @@ export namespace no {
         public recycle(type: string, object: any): void {
             if (type == null || type == '') {
                 log(`${object.name}未指定回收类型，不做回收处理，直接销毁`);
-                if (object instanceof Node)
-                    object.destroy();
-                else object = null;
+                this.clear(object);
                 return;
             }
             if (!this.cacheMap.has(type)) this.cacheMap.set(type, []);
@@ -1939,7 +1941,21 @@ export namespace no {
                 object.parent = null;
                 object.active = false;
             }
-            this.cacheMap.get(type).push(object);
+            let a = this.cacheMap.get(type);
+            let have = false;
+            for (let i = 0, n = a.length; i < n; i++) {
+                let b = a[i];
+                if (b.o._uuid == object._uuid) {
+                    have = true;
+                    break;
+                }
+            }
+            if (have) return;
+            a.push({
+                o: object,
+                t: no.sysTime.now
+            });
+            this.cacheMap.set(type, a);
         }
 
         public clearAll(): void {
@@ -1951,25 +1967,35 @@ export namespace no {
         }
 
         public clear(type: string): void {
-            if (type != null && this.cacheMap.has(type)) {
-                let a = this.cacheMap.get(type).splice(1);
-                a.forEach(obj => {
-                    if (obj instanceof Node)
-                        obj.destroy();
-                    else obj = null;
-                });
+            let arr = this.cacheMap.get(type);
+            this.cacheMap.delete(type);
+            for (let i = arr.length - 1; i >= 0; i--) {
+                let a = arr[i];
+                this._clear(a.o);
             }
         }
 
+
+        private _clear(obj: any): void {
+            if (obj instanceof Node) obj.destroy();
+            else if (obj instanceof Asset) no.assetBundleManager.release(obj);
+            else obj = null;
+        }
+
         private checkClear() {
-            let types = no.MapKeys2Array(this.cacheUseMap);
-            let n = types.length;
             let t = no.timestamp();
-            for (let i = 0; i < n; i++) {
-                let type = types[i];
-                if (t - this.cacheUseMap.get(type) > 60000)
-                    this.clear(type);
-            }
+            let types = no.MapKeys2Array(this.cacheMap);
+            types.forEach(type => {
+                let arr = this.cacheMap.get(type);
+                for (let i = arr.length - 1; i >= 0; i--) {
+                    let a = arr[i];
+                    if (t - a.t >= this.checkDuration) {
+                        arr.splice(i, 1);
+                        this._clear(a.o);
+                    }
+                }
+                if (arr.length == 0) this.cacheMap.delete(type);
+            });
         }
     }
     /**全局缓存池 */

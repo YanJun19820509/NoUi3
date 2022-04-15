@@ -55,6 +55,14 @@ export class YJWindowManager extends Component {
         return Promise.resolve(content);
     }
 
+    private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, onInit?: (panel: T) => void) {
+        let node = instantiate(pf);
+        let a = node.getComponent(comp);
+        onInit?.(a as T);
+        a.initPanel();
+        content.addChild(node);
+    }
+
     /**
      * 创建功能面板
      * @param comp 功能组件类
@@ -70,13 +78,13 @@ export class YJWindowManager extends Component {
             onInit?.(a as T);
             return;
         }
-        no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
-            let node = instantiate(pf);
-            a = node.getComponent(comp);
-            onInit?.(a as T);
-            a.initPanel();
-            content.addChild(node);
-        });
+        let url = comp.prototype[YJPanelPrefabMetaKey];
+        let pf = no.cachePool.reuse<Prefab>(url);
+        if (!pf)
+            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+                this.initPrefab(pf, comp, content, onInit);
+            });
+        else this.initPrefab(pf, comp, content, onInit);
     }
 
     public static async OpenPanel(name: string, to: string) {
@@ -90,12 +98,13 @@ export class YJWindowManager extends Component {
             return;
         }
 
-        no.assetBundleManager.loadPrefab(comp.prototype[YJPanelPrefabMetaKey], (pf: Prefab) => {
-            let node = instantiate(pf);
-            a = node.getComponent(comp);
-            a.initPanel();
-            content.addChild(node);
-        });
+        let url = comp.prototype[YJPanelPrefabMetaKey];
+        let pf = no.cachePool.reuse<Prefab>(url);
+        if (!pf)
+            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+                this.initPrefab(pf, comp, content);
+            });
+        else this.initPrefab(pf, comp, content);
     }
 
     /**

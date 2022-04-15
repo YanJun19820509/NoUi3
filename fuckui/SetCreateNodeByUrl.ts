@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -34,23 +34,43 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     private template: Node;
     private url: string;
+    private pref: Prefab;
+
+    private needClearChildren = false;
 
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.container?.removeAllChildren();
+            this.needClearChildren = true;
         }
+    }
+
+    public recycle() {
+        if (this.pref && this.pref.refCount > 0) {
+            no.cachePool.recycle(this.url, this.pref);
+        }
+        else no.assetBundleManager.release(this.pref);
     }
 
     protected onDataChange(d: any) {
         let { url, data }: { url: string, data: any[] } = d;
         if (url && this.url != url) {
+            if (this.pref) {
+                no.cachePool.recycle(this.url, this.pref);
+            }
             this.container?.removeAllChildren();
-            no.assetBundleManager.loadPrefab(url, item => {
-                this.url = url;
-                this.template = instantiate(item)
+            this.url = url;
+            let pf = no.cachePool.reuse<Prefab>(url);
+            if (pf) {
+                this.pref = pf;
+                this.template = instantiate(pf)
                 this.setItems(data);
-            });
+            } else
+                no.assetBundleManager.loadPrefab(url, item => {
+                    this.pref = item;
+                    this.template = instantiate(item)
+                    this.setItems(data);
+                });
         } else {
             this.setItems(data);
         }
@@ -59,6 +79,11 @@ export class SetCreateNodeByUrl extends FuckUi {
     private setItems(data: any[]) {
         if (!this.template) return;
         if (!this.container) this.container = this.node;
+
+        if (this.needClearChildren) {
+            this.container.removeAllChildren();
+            this.needClearChildren = false;
+        }
 
         let n = data.length
         let l = this.container.children.length;
