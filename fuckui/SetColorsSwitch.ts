@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Color, RenderComponent } from 'cc';
+import { _decorator, Color, RenderComponent } from 'cc';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -18,7 +18,7 @@ const { ccclass, property, menu } = _decorator;
 export class ColorInfo {
     @property
     condition: string = '';
-    @property(Color)
+    @property({ type: Color })
     color: Color = Color.BLACK;
 }
 
