@@ -55,6 +55,10 @@ export class YJi18n extends no.Data {
      */
     public to(key: string, args?: any): string {
         let s = this.get(`${key}.${this._lan}`);
+        if (s == null) {
+            console.error(`指定的多语言无效，id：${key}`);
+            return key;
+        }
         if (args) {
             return no.formatString(s, args);
         }

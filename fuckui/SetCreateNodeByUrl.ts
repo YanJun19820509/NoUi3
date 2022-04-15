@@ -38,19 +38,20 @@ export class SetCreateNodeByUrl extends FuckUi {
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.container.removeAllChildren();
+            this.container?.removeAllChildren();
         }
     }
 
     protected onDataChange(d: any) {
         let { url, data }: { url: string, data: any[] } = d;
-        if (url && this.url != url)
+        if (url && this.url != url) {
+            this.container?.removeAllChildren();
             no.assetBundleManager.loadPrefab(url, item => {
                 this.url = url;
                 this.template = instantiate(item)
                 this.setItems(data);
             });
-        else {
+        } else {
             this.setItems(data);
         }
     }

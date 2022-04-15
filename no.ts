@@ -246,7 +246,7 @@ export namespace no {
      * @param formatter 模板，如'{a}:{b}:{c}' {0}:{1}:{2}
      * @param data 需要替换的数据，如{'a':1,'b':2,'c':3}，返回1:2:3  [1,2,3] 1:2:3
      */
-    export function formatString(formatter: string, data: any): string {
+    export function formatString(formatter: string, data: any[] | object): string {
         var s = formatter;
         let keys = Object.keys(data);
         keys.forEach(k => {
