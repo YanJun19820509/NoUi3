@@ -34,6 +34,7 @@ export class SetPathWithNodePointByUrl extends FuckUi {
                 path[path.length] = child.position.clone();
             });
             this.onParsed.execute(path);
+            this.autoRelease && no.assetBundleManager.release(item);
         });
     }
 }
