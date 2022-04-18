@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, js } from 'cc';
+import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, UIOpacity, Size, size } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { SetGray } from './SetGray';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -16,14 +17,27 @@ const { ccclass, property, menu } = _decorator;
  *
  */
 
+enum LockType {
+    Gray = 0,
+    Hide
+}
+
 @ccclass('SetLock')
 @menu('NoUi/ui/SetLock(给节点上锁:boolean)')
 export class SetLock extends FuckUi {
+    @property({ type: Enum(LockType) })
+    lockType: LockType = LockType.Gray;
+
+    @property({ visible() { return this.lockType == LockType.Gray; } })
+    setGray: SetGray = null;
+
     @property
     locked: boolean = true;
 
     @property(no.EventHandlerInfo)
     onLocked: no.EventHandlerInfo[] = [];
+
+    private size: Size;
 
     start() {
         if (this.locked) this.createLockNode();
@@ -31,16 +45,35 @@ export class SetLock extends FuckUi {
 
     onDataChange(d: any) {
         this.locked = Boolean(d);
-        if (this.locked) {
-            this.createLockNode();
-        } else {
-            this.node.getChildByName('_lock_')?.destroy();
-        }
+        if (this.locked) this.setLock();
+        else this.setUnlock();
     }
 
     public a_check(): void {
         if (this.locked) {
             no.EventHandlerInfo.execute(this.onLocked);
+        }
+    }
+
+    private setLock() {
+        if (this.lockType == LockType.Gray) {
+            this.createLockNode();
+            this.setGray?.setData('true');
+        } else {
+            let t = this.getComponent(UITransform);
+            if (!this.size)
+                this.size = t.getBoundingBox().size;
+            t.setContentSize(size(0, 0));
+        }
+    }
+
+    private setUnlock() {
+        if (this.lockType == LockType.Gray) {
+            this.node.getChildByName('_lock_')?.destroy();
+            this.setGray?.setData('false');
+        } else {
+            let t = this.getComponent(UITransform);
+            t.setContentSize(this.size);
         }
     }
 
