@@ -28,7 +28,7 @@ export class SetLock extends FuckUi {
     @property({ type: Enum(LockType) })
     lockType: LockType = LockType.Gray;
 
-    @property({ visible() { return this.lockType == LockType.Gray; } })
+    @property({ type: SetGray, visible() { return this.lockType == LockType.Gray; } })
     setGray: SetGray = null;
 
     @property
@@ -71,7 +71,7 @@ export class SetLock extends FuckUi {
         if (this.lockType == LockType.Gray) {
             this.node.getChildByName('_lock_')?.destroy();
             this.setGray?.setData('false');
-        } else {
+        } else if (this.size) {
             let t = this.getComponent(UITransform);
             t.setContentSize(this.size);
         }
