@@ -23,6 +23,8 @@ export class YJFloatTips extends YJDataWork {
     upDuration: number = 0.5;
     @property({ step: 0.1, min: 0.1, displayName: '停留时长(s)' })
     stayDuration: number = 1;
+    @property({ step: 1, min: 1 })
+    maxHeight: number = 100;
 
     private tipList = [];
     private isShowing = false;
@@ -59,14 +61,14 @@ export class YJFloatTips extends YJDataWork {
                     to: 1,
                     duration: this.upDuration,
                     props: {
-                        pos: [0, 550, 0]
+                        pos: [0, this.maxHeight - 50, 0]
                     }
                 },
                 {
                     to: 1,
                     duration: this.stayDuration,
                     props: {
-                        pos: [0, 600, 0],
+                        pos: [0, this.maxHeight, 0],
                         opacity: 0
                     },
                     easing: easing.backIn
