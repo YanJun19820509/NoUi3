@@ -15,11 +15,11 @@ const { ccclass, property, requireComponent, menu } = _decorator;
  */
 
 @ccclass('DynamicLabelTexture')
-@requireComponent(Label)
 @menu('NoUi/engine/DynamicLabelTexture(动态合图文本纹理管理)')
 export class DynamicLabelTexture extends Component {
     onLoad() {
         let label = this.getComponent(Label);
+        if (!label) return;
         if (label.cacheMode == CacheMode.CHAR) {
             this.destroy();
             return;
@@ -38,6 +38,7 @@ export class DynamicLabelTexture extends Component {
     private deleteSpriteFrame() {
         if (!dynamicAtlasManager.enabled) return;
         let label = this.getComponent(Label);
+        if (!label) return;
         if (!label['_texture'] || !label['_texture']['_original']) return;
         dynamicAtlasManager.deleteAtlasSpriteFrame(label['_texture']);
         label.spriteFrame['_resetDynamicAtlasFrame']();
