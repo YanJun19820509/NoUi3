@@ -1,6 +1,8 @@
 
-import { _decorator, Component, Node, Label, CacheMode, dynamicAtlasManager } from 'cc';
-const { ccclass, property, requireComponent, menu } = _decorator;
+import { _decorator, Label, CacheMode } from 'cc';
+import { no } from '../no';
+import { DynamicTexture } from './DynamicTexture';
+const { ccclass, menu } = _decorator;
 
 /**
  * Predefined variables
@@ -16,7 +18,8 @@ const { ccclass, property, requireComponent, menu } = _decorator;
 
 @ccclass('DynamicLabelTexture')
 @menu('NoUi/engine/DynamicLabelTexture(动态合图文本纹理管理)')
-export class DynamicLabelTexture extends Component {
+export class DynamicLabelTexture extends DynamicTexture {
+
     onLoad() {
         let label = this.getComponent(Label);
         if (!label) return;
@@ -24,23 +27,18 @@ export class DynamicLabelTexture extends Component {
             this.destroy();
             return;
         }
-        label.cacheMode = CacheMode.BITMAP;
+        this.afterChange();
     }
 
-    public beforeContentChange() {
-        this.deleteSpriteFrame();
+    public async afterChange() {
+        let label = this.getComponent(Label);
+        await no.waitFor(() => { return label.ttfSpriteFrame != null; });
+        this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame)
     }
 
-    onDisable() {
-        this.deleteSpriteFrame();
-    }
-
-    private deleteSpriteFrame() {
-        if (!dynamicAtlasManager.enabled) return;
+    public reset(): void {
         let label = this.getComponent(Label);
         if (!label) return;
-        if (!label['_texture'] || !label['_texture']['_original']) return;
-        dynamicAtlasManager.deleteAtlasSpriteFrame(label['_texture']);
-        label.spriteFrame['_resetDynamicAtlasFrame']();
+        label.ttfSpriteFrame._resetDynamicAtlasFrame();
     }
 }

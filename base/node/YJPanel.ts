@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
+import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { SetCreateNodeByUrl } from '../../fuckui/SetCreateNodeByUrl';
 import { no } from '../../no';
 import YJLoadPrefab from './YJLoadPrefab';
@@ -70,6 +71,9 @@ export class YJPanel extends Component {
         });
         this.getComponentsInChildren(SetCreateNodeByUrl).forEach(a => {
             a.recycle();
+        });
+        this.getComponentsInChildren(YJDynamicAtlas).forEach(a => {
+            a.clear();
         });
         this.recycle();
         no.EventHandlerInfo.execute(this.onClose);

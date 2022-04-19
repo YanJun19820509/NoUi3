@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Sprite, dynamicAtlasManager } from 'cc';
-const { ccclass, property, requireComponent, menu } = _decorator;
+import { _decorator, Sprite } from 'cc';
+import { DynamicTexture } from './DynamicTexture';
+const { ccclass, requireComponent, menu } = _decorator;
 
 /**
  * Predefined variables
@@ -17,21 +18,18 @@ const { ccclass, property, requireComponent, menu } = _decorator;
 @ccclass('DynamicSpriteTexture')
 @requireComponent(Sprite)
 @menu('NoUi/engine/DynamicSpriteTexture(动态合图纹理管理)')
-export class DynamicSpriteTexture extends Component {
+export class DynamicSpriteTexture extends DynamicTexture {
 
-    public beforeChange() {
-        this.deleteSpriteFrame();
+    onLoad() {
+        this.afterChange();
     }
 
-    onDisable() {
-        this.deleteSpriteFrame();
-    }
-
-    private deleteSpriteFrame() {
-        if (!dynamicAtlasManager.enabled) return;
+    public afterChange() {
         let sprite = this.getComponent(Sprite);
-        if (!sprite.spriteFrame || !sprite.spriteFrame['_original']) return;
-        dynamicAtlasManager.deleteAtlasSpriteFrame(sprite.spriteFrame);
+        this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame)
+    }
+    public reset() {
+        let sprite = this.getComponent(Sprite);
         sprite.spriteFrame._resetDynamicAtlasFrame();
     }
 }

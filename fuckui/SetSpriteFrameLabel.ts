@@ -1,7 +1,6 @@
 
 import { _decorator, Component, Node, SpriteAtlas, Layout, Sprite, UITransform, Layers } from 'cc';
 import { EDITOR } from 'cc/env';
-import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
@@ -19,7 +18,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 
 @ccclass('SetSpriteFrameLabel')
 @menu('NoUi/ui/SetSpriteFrameLabel(设置精灵文本:string)')
-@requireComponent([Layout, DynamicSpriteTexture])
+@requireComponent(Layout)
 @executeInEditMode()
 export class SetSpriteFrameLabel extends FuckUi {
     @property(SpriteAtlas)

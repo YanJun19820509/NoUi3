@@ -38,13 +38,13 @@ export class SetText extends FuckUi {
             this.label = this.node.getComponent(Label) || this.node.getComponent(RichText);
         }
         this.setLabel(data);
+        this.getComponent(DynamicLabelTexture)?.afterChange();
         this.checkShader();
     }
 
     private setLabel(data: any): void {
         if (this.label == null) return;
         if (data == '') this.label.string = '';
-        this.getComponent(DynamicLabelTexture)?.beforeContentChange();
         if (typeof data == 'string') {
             this.label.string = no.formatString(this.formatter, data.split('|'));
         } else if (typeof data == 'number') {

@@ -29,7 +29,6 @@ export class SetSpriteFrame extends FuckUi {
     protected onDataChange(data: any) {
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
-        this.getComponent(DynamicSpriteTexture).beforeChange();
         if (data.atlas) {
             no.assetBundleManager.loadAtlas(data.atlas, item => {
                 this.sprite.spriteAtlas = item;
@@ -50,6 +49,7 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private checkShader() {
+        this.getComponent(DynamicSpriteTexture).afterChange();
         this.getComponent(SetEffect)?.work();
     }
 }

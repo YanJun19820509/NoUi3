@@ -1,0 +1,79 @@
+
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite } from 'cc';
+import { Atlas } from './atlas';
+const { ccclass, property } = _decorator;
+
+/**
+ * Predefined variables
+ * Name = YJDynamicAtlas
+ * DateTime = Tue Apr 19 2022 15:57:55 GMT+0800 (中国标准时间)
+ * Author = mqsy_yj
+ * FileBasename = YJDynamicAtlas.ts
+ * FileBasenameNoExtension = YJDynamicAtlas
+ * URL = db://assets/NoUi3/engine/YJDynamicAtlas.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
+ *
+ */
+/**
+ * 将子节点Label及特定SpriteFrame添加进入动态图集
+ */
+@ccclass('YJDynamicAtlas')
+export class YJDynamicAtlas extends Component {
+    @property({ min: 128, max: 2048, step: 1 })
+    width: number = 512;
+    @property({ min: 128, max: 2048, step: 1 })
+    height: number = 512;
+
+    private atlas: Atlas;
+
+    public clear(): void {
+        this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
+            a.reset();
+        });
+        this.atlas?.destroy();
+    }
+
+
+    /**
+     * @en
+     * Pack the sprite in the dynamic atlas and update the atlas information of the sprite frame.
+     *
+     * @zh
+     * 将图片打入动态图集，并更新该图片的图集信息。
+     *
+     * @method packToDynamicAtlas
+     * @param frame  the sprite frame that will be packed in the dynamic atlas.
+     */
+    public packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
+        if (frame && !frame.original && frame.packable && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
+            if (comp instanceof Label || comp instanceof RichText) {
+                if (comp.string == '') return;
+                frame._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
+            }
+            const packedFrame = this.insertSpriteFrame(frame);
+            if (packedFrame) {
+                frame._setDynamicAtlasFrame(packedFrame);
+                // if (comp instanceof Label){}
+                //     // comp.updateRenderData(true);
+                // else 
+                comp['_assembler']!.updateRenderData!(comp);
+            }
+        }
+    }
+
+    private insertSpriteFrame(spriteFrame: SpriteFrame) {
+        if (!spriteFrame || spriteFrame.original) return null;
+
+        if (!spriteFrame.packable) return null;
+
+        // hack for pixel game,should pack to different sampler atlas
+        const sampler = spriteFrame.texture.getSamplerInfo();
+        if (sampler.minFilter !== 2 || sampler.magFilter !== 2 || sampler.mipFilter !== 0) {
+            return null;
+        }
+        if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
+
+        const frame = this.atlas.insertSpriteFrame(spriteFrame);
+        return frame;
+    }
+}
