@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, ImageAsset } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, ImageAsset, utils, sys } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -1906,6 +1906,7 @@ export namespace no {
 
     /**缓存池 */
     class CachePool {
+        private uuid: number;
         private cacheMap: Map<string, { o: any, t: number }[]>;
         private checkDuration = 10;
         constructor() {
@@ -1913,6 +1914,7 @@ export namespace no {
             setInterval(() => {
                 this.checkClear();
             }, this.checkDuration * 500);
+            this.uuid = sysTime.now;
         }
 
         /**
@@ -1922,6 +1924,7 @@ export namespace no {
         public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
             let a = this.cacheMap.get(type).shift();
+            if (!a) return null;
             return a.o as T;
         }
 
@@ -1930,7 +1933,7 @@ export namespace no {
          * @param type
          * @param object
          */
-        public recycle(type: string, object: any): void {
+        public recycle(type: string, object: any, canRelease = true): void {
             if (type == null || type == '') {
                 log(`${object.name}未指定回收类型，不做回收处理，直接销毁`);
                 this.clear(object);
@@ -1945,7 +1948,7 @@ export namespace no {
             let have = false;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
-                if (b.o._uuid == object._uuid) {
+                if ((object.uuid && b.o.uuid == object.uuid) || (object._uuid && b.o._uuid == object._uuid)) {
                     have = true;
                     break;
                 }
@@ -1953,7 +1956,7 @@ export namespace no {
             if (have) return;
             a.push({
                 o: object,
-                t: no.sysTime.now
+                t: no.sysTime.now + (canRelease ? 0 : 999999)
             });
             this.cacheMap.set(type, a);
         }

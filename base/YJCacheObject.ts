@@ -22,6 +22,8 @@ export class YJCacheObject extends Component {
     recycleType: string = '';
     @property({ visible() { return !this.resetOnDisable; } })
     recycleOnDisable: boolean = false;
+    @property({ displayName: '需要释放' })
+    needRelease: boolean = true;
 
     private _recycled: boolean = false;
 
@@ -35,6 +37,6 @@ export class YJCacheObject extends Component {
 
     public recycle(): void {
         this._recycled = true;
-        no.cachePool.recycle(this.recycleType, this.node);
+        no.cachePool.recycle(this.recycleType, this.node, this.needRelease);
     }
 }
