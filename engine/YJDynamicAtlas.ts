@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D } from 'cc';
 import { Atlas } from './atlas';
 const { ccclass, property } = _decorator;
 
@@ -23,8 +23,20 @@ export class YJDynamicAtlas extends Component {
     width: number = 512;
     @property({ min: 128, max: 2048, step: 1 })
     height: number = 512;
+    @property
+    autoFindDynamicTextures: boolean = true;
 
     private atlas: Atlas;
+
+    start() {
+        if (this.autoFindDynamicTextures) {
+            this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
+                if (!a.dynamicAtlas)
+                    a.dynamicAtlas = this;
+                a.init();
+            });
+        }
+    }
 
     public clear(): void {
         this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
@@ -44,8 +56,8 @@ export class YJDynamicAtlas extends Component {
      * @method packToDynamicAtlas
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
-    public packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
-        if (frame && !frame.original && frame.packable && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
+    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame) {
+        if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             if (comp instanceof Label || comp instanceof RichText) {
                 if (comp.string == '') return;
                 frame._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
@@ -53,18 +65,18 @@ export class YJDynamicAtlas extends Component {
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame) {
                 frame._setDynamicAtlasFrame(packedFrame);
-                // if (comp instanceof Label){}
-                //     // comp.updateRenderData(true);
-                // else 
-                comp['_assembler']!.updateRenderData!(comp);
+                if (comp instanceof Label) {
+                    comp['_assembler'].updateVertexData(comp);
+                    comp['_assembler'].updateUVs(comp);
+                }
+                comp.setTextureDirty();
+                comp.renderData.updateRenderData(comp, frame);
             }
         }
     }
 
     private insertSpriteFrame(spriteFrame: SpriteFrame) {
         if (!spriteFrame || spriteFrame.original) return null;
-
-        if (!spriteFrame.packable) return null;
 
         // hack for pixel game,should pack to different sampler atlas
         const sampler = spriteFrame.texture.getSamplerInfo();

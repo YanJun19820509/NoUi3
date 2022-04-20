@@ -46,7 +46,10 @@ export class Atlas {
             height = isRotated ? rect.width : rect.height;
 
         let p = this._maxRect.find(width, height);
-        if (!p) return null;
+        if (!p) {
+            console.log('动态图集无空间！');
+            return null;
+        }
         let x = p.x, y = p.y;
 
         this.drawImageAt(spriteFrame, x, y);

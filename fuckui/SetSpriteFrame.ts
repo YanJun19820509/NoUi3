@@ -1,6 +1,6 @@
 
 import { _decorator, Sprite } from 'cc';
-import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
+import { DynamicTexture } from '../engine/DynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
@@ -20,7 +20,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('SetSpriteFrame')
 @menu('NoUi/ui/SetSpriteFrame(设置精灵:string|{atlas:string,frame:string})')
-@requireComponent(DynamicSpriteTexture)
+@requireComponent(DynamicTexture)
 export class SetSpriteFrame extends FuckUi {
 
     @property(Sprite)
@@ -29,6 +29,7 @@ export class SetSpriteFrame extends FuckUi {
     protected onDataChange(data: any) {
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
+        this.getComponent(DynamicTexture).beforeChange();
         if (data.atlas) {
             no.assetBundleManager.loadAtlas(data.atlas, item => {
                 this.sprite.spriteAtlas = item;
@@ -49,7 +50,7 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private checkShader() {
-        this.getComponent(DynamicSpriteTexture).afterChange();
+        this.getComponent(DynamicTexture).afterChange();
         this.getComponent(SetEffect)?.work();
     }
 }

@@ -1,8 +1,7 @@
 
 import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow } from 'cc';
 import { EDITOR } from 'cc/env';
-import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
-import { DynamicSpriteTexture } from '../engine/DynamicSpriteTexture';
+import { DynamicTexture } from '../engine/DynamicTexture';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
@@ -129,7 +128,6 @@ export class AutoCreateNode extends Component {
         if (c.name.indexOf('9_') == 0) {
             s.type = Sprite.Type.SLICED;
         }
-        if (!n.getComponent(DynamicSpriteTexture)) n.addComponent(DynamicSpriteTexture);
     }
 
     private createLabelNode(c: any) {
@@ -145,7 +143,6 @@ export class AutoCreateNode extends Component {
         if (c.direction == 'vertical') {
             l.overflow = Overflow.RESIZE_HEIGHT;
         }
-        if (!n.getComponent(DynamicLabelTexture)) n.addComponent(DynamicLabelTexture);
     }
 
     private getNode(cname: string, type: typeof Component, x: number, y: number, w: number, h: number): Node {
@@ -170,6 +167,7 @@ export class AutoCreateNode extends Component {
         n.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
         n.getComponent(UITransform).setContentSize(w, h);
         this.setWidget(n);
+        if (!n.getComponent(DynamicTexture)) n.addComponent(DynamicTexture);
         return n;
     }
 

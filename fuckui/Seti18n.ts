@@ -1,7 +1,7 @@
 
-import { _decorator, Label, RichText } from 'cc';
+import { _decorator } from 'cc';
 import { YJi18n } from '../base/YJi18n';
-import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
+import { DynamicTexture } from '../engine/DynamicTexture';
 import { SetText } from './SetText';
 const { ccclass, requireComponent, menu } = _decorator;
 
@@ -19,7 +19,7 @@ const { ccclass, requireComponent, menu } = _decorator;
 
 @ccclass('Seti18n')
 @menu('NoUi/ui/Seti18n(本地化:any)')
-@requireComponent(DynamicLabelTexture)
+@requireComponent(DynamicTexture)
 export class Seti18n extends SetText {
 
     protected onDataChange(data: any) {

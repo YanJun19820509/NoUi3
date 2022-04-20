@@ -1,6 +1,6 @@
 
 import { _decorator, Label, RichText } from 'cc';
-import { DynamicLabelTexture } from '../engine/DynamicLabelTexture';
+import { DynamicTexture } from '../engine/DynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
@@ -20,7 +20,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('SetText')
 @menu('NoUi/ui/SetText(设置文本内容:string)')
-@requireComponent(DynamicLabelTexture)
+@requireComponent(DynamicTexture)
 export class SetText extends FuckUi {
 
     @property({ displayName: '格式化模板' })
@@ -37,8 +37,9 @@ export class SetText extends FuckUi {
         if (!this.label) {
             this.label = this.node.getComponent(Label) || this.node.getComponent(RichText);
         }
+        this.getComponent(DynamicTexture).beforeChange();
         this.setLabel(data);
-        this.getComponent(DynamicLabelTexture)?.afterChange();
+        this.getComponent(DynamicTexture).afterChange();
         this.checkShader();
     }
 
