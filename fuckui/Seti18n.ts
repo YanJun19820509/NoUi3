@@ -1,7 +1,7 @@
 
 import { _decorator } from 'cc';
 import { YJi18n } from '../base/YJi18n';
-import { DynamicTexture } from '../engine/DynamicTexture';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { SetText } from './SetText';
 const { ccclass, requireComponent, menu } = _decorator;
 
@@ -19,7 +19,7 @@ const { ccclass, requireComponent, menu } = _decorator;
 
 @ccclass('Seti18n')
 @menu('NoUi/ui/Seti18n(本地化:any)')
-@requireComponent(DynamicTexture)
+@requireComponent(YJDynamicTexture)
 export class Seti18n extends SetText {
 
     protected onDataChange(data: any) {

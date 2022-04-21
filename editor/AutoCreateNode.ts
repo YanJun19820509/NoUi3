@@ -1,7 +1,8 @@
 
 import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow } from 'cc';
 import { EDITOR } from 'cc/env';
-import { DynamicTexture } from '../engine/DynamicTexture';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
@@ -77,6 +78,7 @@ export class AutoCreateNode extends Component {
         try {
             // console.log('createNodes', config);
             this.size = new Size(config.width, config.height);
+            this.node.addComponent(YJDynamicAtlas);
             this.node.getComponent(UITransform).setContentSize(this.size);
             this.parent = this.node.getChildByName('Canvas') || this.node;
             if (!this.node.getComponent(Widget)) {
@@ -167,7 +169,7 @@ export class AutoCreateNode extends Component {
         n.setPosition(x - this.size.width / 2, this.size.height / 2 - y);
         n.getComponent(UITransform).setContentSize(w, h);
         this.setWidget(n);
-        if (!n.getComponent(DynamicTexture)) n.addComponent(DynamicTexture);
+        if (!n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture);
         return n;
     }
 

@@ -60,10 +60,13 @@ export class SetLock extends FuckUi {
             this.createLockNode();
             this.setGray?.setData('true');
         } else {
-            let t = this.getComponent(UITransform);
-            if (!this.size)
-                this.size = t.getBoundingBox().size;
-            t.setContentSize(size(0, 0));
+            // let t = this.getComponent(UITransform);
+            // if (!this.size)
+            //     this.size = t.getBoundingBox().size;
+            // t.setContentSize(size(0, 0));
+            // let opacity = this.getComponent(UIOpacity) || this.addComponent(UIOpacity);
+            // opacity.opacity = 0;
+            this.node.active = false;
         }
     }
 
@@ -72,8 +75,11 @@ export class SetLock extends FuckUi {
             this.node.getChildByName('_lock_')?.destroy();
             this.setGray?.setData('false');
         } else if (this.size) {
-            let t = this.getComponent(UITransform);
-            t.setContentSize(this.size);
+            // let t = this.getComponent(UITransform);
+            // t.setContentSize(this.size);
+            // let opacity = this.getComponent(UIOpacity) || this.addComponent(UIOpacity);
+            // opacity.opacity = 255;
+            this.node.active = true;
         }
     }
 

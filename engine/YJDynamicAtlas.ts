@@ -1,7 +1,8 @@
 
 import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D } from 'cc';
+import { EDITOR } from 'cc/env';
 import { Atlas } from './atlas';
-const { ccclass, property } = _decorator;
+const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -18,30 +19,38 @@ const { ccclass, property } = _decorator;
  * 将子节点Label及特定SpriteFrame添加进入动态图集
  */
 @ccclass('YJDynamicAtlas')
+@disallowMultiple()
+@executeInEditMode()
 export class YJDynamicAtlas extends Component {
     @property({ min: 128, max: 2048, step: 1 })
     width: number = 512;
     @property({ min: 128, max: 2048, step: 1 })
     height: number = 512;
-    @property
-    autoFindDynamicTextures: boolean = true;
+    @property({ visible() { return EDITOR; } })
+    autoFindDynamicTextures: boolean = false;
 
     private atlas: Atlas;
+    private needInit: boolean = false;
 
-    start() {
-        if (this.autoFindDynamicTextures) {
-            this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
-                if (!a.dynamicAtlas)
-                    a.dynamicAtlas = this;
-                a.init();
-            });
-        }
+    onLoad() {
+        this.needInit = false;
+    }
+
+    onEnable() {
+        if (!this.needInit) return;
+        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+            a.init();
+        });
+    }
+
+    onDisable() {
+        this.needInit = true;
+        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+            a.reset();
+        });
     }
 
     public clear(): void {
-        this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
-            a.reset();
-        });
         this.atlas?.destroy();
     }
 
@@ -85,7 +94,18 @@ export class YJDynamicAtlas extends Component {
         }
         if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
 
-        const frame = this.atlas.insertSpriteFrame(spriteFrame);
+        const frame = this.atlas.insertSpriteFrame(spriteFrame, () => {
+            console.log(`${this.node.name}动态图集无空间！`);
+        });
         return frame;
+    }
+
+    //////////////EDITOR/////////////
+    update() {
+        if (!this.autoFindDynamicTextures) return;
+        this.autoFindDynamicTextures = false;
+        this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
+            a.dynamicAtlas = this;
+        });
     }
 }

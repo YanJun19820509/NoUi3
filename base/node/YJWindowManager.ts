@@ -107,6 +107,12 @@ export class YJWindowManager extends Component {
         else this.initPrefab(pf, comp, content);
     }
 
+    public static async OpenPanelAndCloseOther(name: string, to: string) {
+        await this.OpenPanel(name, to);
+        await no.sleep(0.2);
+        this.closePanelIn(to, [name]);
+    }
+
     /**
      * 关闭某个窗口
      * @param name 窗口类名
@@ -131,12 +137,18 @@ export class YJWindowManager extends Component {
 
     /**
      * 关闭某个节点下所有窗口
-     * @param name 
+     * @param nodeName 
+     * @param excepts 不关闭的窗口
      */
-    public static async closePanelIn(nodeName: string) {
+    public static async closePanelIn(nodeName: string, excepts: string[] = []) {
         let content: Node = await YJWindowManager._ins.getContent(nodeName);
         content.children.forEach(node => {
-            node.getComponent(YJPanel)?.closePanel();
+            let panel = node.getComponent(YJPanel);
+            if (panel) {
+                let name = js.getClassName(panel);
+                if (excepts.indexOf(name) > -1) return;
+                panel.closePanel();
+            }
         });
     }
 

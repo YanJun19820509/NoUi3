@@ -26,7 +26,7 @@ export class Atlas {
      * @method insertSpriteFrame
      * @param spriteFrame  the sprite frame that will be inserted in the atlas.
      */
-    public insertSpriteFrame(spriteFrame: SpriteFrame) {
+    public insertSpriteFrame(spriteFrame: SpriteFrame, noSpace: () => void) {
         // Todo:No renderTexture
         let _uuid = spriteFrame._uuid;
         let info = this._dynamicTextureRect[_uuid];
@@ -47,7 +47,7 @@ export class Atlas {
 
         let p = this._maxRect.find(width, height);
         if (!p) {
-            console.log('动态图集无空间！');
+            noSpace();
             return null;
         }
         let x = p.x, y = p.y;
