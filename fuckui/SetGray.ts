@@ -40,14 +40,14 @@ export class SetGray extends FuckUi {
     }
 
     private setGray(v: boolean) {
-        let setEffect = this.getComponent(SetEffect);
-        setEffect.setData(JSON.stringify(
+        let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
+        setEffect.setData(JSON.stringify(v ?
             {
                 path: 'NoUi3/effect/gray',
                 defines: {
                     IS_GRAY: v
                 }
-            }
+            } : {}
         ));
         if (this.recursive) {
             this.node.children.forEach(child => {
