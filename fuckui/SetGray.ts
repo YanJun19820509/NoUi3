@@ -1,7 +1,8 @@
 
 import { _decorator, Sprite } from 'cc';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
+import { SetEffect } from './SetEffect';
+const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -17,12 +18,15 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetGray')
 @menu('NoUi/ui/SetGray(设置灰态:bool)')
+@requireComponent(SetEffect)
 export class SetGray extends FuckUi {
 
     @property({ displayName: '默认置灰' })
     autoGray: boolean = false;
     @property({ displayName: '取反' })
     reverse: boolean = false;
+    @property({ displayName: '影响子节点' })
+    recursive: boolean = false;
 
     onLoad() {
         super.onLoad();
@@ -36,7 +40,19 @@ export class SetGray extends FuckUi {
     }
 
     private setGray(v: boolean) {
-        let sprite = this.getComponent(Sprite);
-        if (sprite) sprite.grayscale = v;
+        let setEffect = this.getComponent(SetEffect);
+        setEffect.setData(JSON.stringify(
+            {
+                path: 'NoUi3/effect/gray',
+                defines: {
+                    IS_GRAY: v
+                }
+            }
+        ));
+        if (this.recursive) {
+            this.node.children.forEach(child => {
+                (child.getComponent(SetGray) || child.addComponent(SetGray)).setData(JSON.stringify(v));
+            });
+        }
     }
 }
