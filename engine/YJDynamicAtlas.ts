@@ -115,7 +115,7 @@ export class YJDynamicAtlas extends Component {
     update() {
         if (!this.autoFindDynamicTextures) return;
         this.autoFindDynamicTextures = false;
-        this.getComponentsInChildren('DynamicTexture').forEach((a: any) => {
+        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.dynamicAtlas = this;
         });
     }
