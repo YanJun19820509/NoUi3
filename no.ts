@@ -2138,19 +2138,18 @@ export namespace no {
         /**指数 */
         public index: number = 0;
 
-        constructor(v?: string) {
-            this.value = v;
+        constructor(v?: string | number) {
+            this.value = String(v || 0);
         }
 
         public static get new(): ScientificString {
-            return new ScientificString();
+            return new ScientificString(0);
         }
 
-        public set value(v: string) {
+        public set value(v: string | number) {
             if (v == null) return;
-            if (typeof (v) == 'number') {
-                console.error('科学计数不能为数字', v);
-                return;
+            if (typeof v == 'number') {
+                v = String(v);
             }
             if (v != null && v != '') {
                 v = v.toUpperCase();
@@ -2270,8 +2269,10 @@ export namespace no {
          * @param other
          * @returns 负值：小于，0：等于，正值：大于
          */
-        public compareTo(other: ScientificString): number {
+        public compareTo(other: ScientificString | string | number): number {
             if (other == null) return 1;
+            if (!(other instanceof ScientificString))
+                other = new ScientificString(other);
             if (this.index == other.index) {
                 return this.coefficient - other.coefficient;
             } else {
