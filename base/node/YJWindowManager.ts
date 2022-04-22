@@ -69,9 +69,11 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns
      */
-    public static async createPanel<T extends YJPanel>(comp: typeof YJPanel, to: string, onInit?: (panel: T) => void) {
+    public static async createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, onInit?: (panel: T) => void) {
         if (!comp) return null;
         let content: Node = await YJWindowManager._ins.getContent(to);
+        if (typeof comp == 'string')
+            comp = js.getClassByName(comp) as (typeof YJPanel);
 
         let a = content.getComponentInChildren(comp);
         if (a != null) {
@@ -82,7 +84,7 @@ export class YJWindowManager extends Component {
         let pf = no.cachePool.reuse<Prefab>(url);
         if (!pf)
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-                this.initPrefab(pf, comp, content, onInit);
+                this.initPrefab(pf, comp as (typeof YJPanel), content, onInit);
             });
         else this.initPrefab(pf, comp, content, onInit);
     }
