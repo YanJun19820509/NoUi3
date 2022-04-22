@@ -16,7 +16,14 @@ const { ccclass, property, disallowMultiple } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-
+/**
+ * 本组件同时处理了sprite和label进行合图的处理，这两者处理上有一些不同。
+ * 1.sprite需要在设置纹理的同时进行合图，如果纹理设置完后过段时间再进行合图就会出现异常。
+ * 2.sprite在设置纹理时不需要重置动态合图纹理。
+ * 3.label需要在设置string流程走完后再进行合图。
+ * 4.label在设置string前需要重置动态合图纹理。
+ * 5.当节点disable时需要reset label，但不需要reset sprite，所以当再次enable时又需要对label进行合图处理
+ */
 @ccclass('YJDynamicTexture')
 @disallowMultiple()
 export class YJDynamicTexture extends YJComponent {
@@ -30,6 +37,15 @@ export class YJDynamicTexture extends YJComponent {
             return;
         }
         this.init();
+    }
+
+    onEnable() {
+        if (!this.enabledInHierarchy) return;
+        this.addUpdateHandlerByFrame(this.check, 2);
+    }
+
+    onDisable() {
+        this.resetLabel(false);
     }
 
     private async check(): Promise<boolean> {
@@ -46,7 +62,6 @@ export class YJDynamicTexture extends YJComponent {
 
     public init() {
         if (!this.enabledInHierarchy) return;
-        this.addUpdateHandlerByFrame(this.check, 2);
         this.afterChange();
     }
 
@@ -57,23 +72,18 @@ export class YJDynamicTexture extends YJComponent {
         }
     }
     public reset() {
-        this.clearUpdateHandlers();
-        if (this.enabledInHierarchy && this.getComponent(Label) && this.getComponent(Label).ttfSpriteFrame && !this.getComponent(Label).ttfSpriteFrame.original) {
-            return;
-        }
         if (this.enabledInHierarchy && this.getComponent(Sprite) && this.getComponent(Sprite).spriteFrame && !this.getComponent(Sprite).spriteFrame.original) {
             return;
         }
-        this.getComponent(Label)?.ttfSpriteFrame?._resetDynamicAtlasFrame();
         this.getComponent(Sprite)?.spriteFrame?._resetDynamicAtlasFrame();
     }
 
-    public resetLabel(): void {
+    public resetLabel(needCheck = true): void {
         this.clearUpdateHandlers();
         let label = this.getComponent(Label);
         if (!label) return;
         label.ttfSpriteFrame?._resetDynamicAtlasFrame();
-        this.addUpdateHandlerByFrame(this.check, 2);
+        needCheck && this.addUpdateHandlerByFrame(this.check, 2);
     }
 
 }
