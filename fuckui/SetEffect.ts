@@ -34,11 +34,12 @@ export class SetEffect extends FuckUi {
             if (!this._renderComp) return;
         }
         let { path, properties, defines }: { path: string, properties: {}, defines: {} } = data;
-        this.setMaterial(path, defines, properties);
+        if (path == null) this.reset();
+        else this.setMaterial(path, defines, properties);
     }
 
     private setMaterial(path: string, defines: any, properties: any) {
-        if (this._renderComp.sharedMaterial?.effectName == `../${path}`)
+        if (this._renderComp.material?.effectName == `../${path}`)
             this.setProperties(this._renderComp.material, defines, properties);
         else
             no.assetBundleManager.loadEffect(path, item => {
@@ -81,4 +82,10 @@ export class SetEffect extends FuckUi {
         }
         this.caculateFact(this._renderComp.material, this._renderComp.renderData.frame);
     }
+
+    public reset(): void {
+        this._renderComp.customMaterial = null;
+        this._renderComp.markForUpdateRenderData();
+    }
+
 }
