@@ -48,16 +48,20 @@ export class YJDynamicTexture extends YJComponent {
         this.resetLabel(false);
     }
 
-    private async check(): Promise<boolean> {
-        if (!this.dynamicAtlas) return false;
+    private check(): boolean {
+        if (!this.dynamicAtlas || !this.dynamicAtlas.isWork) return false;
         if (!this.enabledInHierarchy) return true;
         let label = this.getComponent(Label);
         if (!label) return false;
         if (label.string != '' && !label.ttfSpriteFrame.original) {
-            await no.waitFor(() => { return !label['_renderDataFlag']; });
-            this.dynamicAtlas.packToDynamicAtlas(label, label.ttfSpriteFrame);
+            this.setLabelDynamicAtlas(label);
         }
         return false;
+    }
+
+    private async setLabelDynamicAtlas(label: Label) {
+        await no.waitFor(() => { return !label['_renderDataFlag']; });
+        this.dynamicAtlas.packToDynamicAtlas(label, label.ttfSpriteFrame);
     }
 
     public init() {
@@ -72,6 +76,7 @@ export class YJDynamicTexture extends YJComponent {
         }
     }
     public reset() {
+        if (!this.dynamicAtlas?.isWork) return;
         if (this.enabledInHierarchy && this.getComponent(Sprite) && this.getComponent(Sprite).spriteFrame && !this.getComponent(Sprite).spriteFrame.original) {
             return;
         }
@@ -79,6 +84,7 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     public resetLabel(needCheck = true): void {
+        if (!this.dynamicAtlas?.isWork) return;
         this.clearUpdateHandlers();
         let label = this.getComponent(Label);
         if (!label) return;

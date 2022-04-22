@@ -108,7 +108,9 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
-        return !dynamicAtlasManager.enabled;
+        let a = !dynamicAtlasManager.enabled;
+        console.log(`YJDynamicAtlas isWork::${a}`);
+        return a;
     }
 
     //////////////EDITOR/////////////
