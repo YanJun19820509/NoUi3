@@ -1234,12 +1234,13 @@ export namespace no {
      * 检查数据是否需要重置
      * @param dataKey 数据key
      * @param value 重置后的数据值
-     * @param time 重置定时时间(s)，与当天0点的间隔时间
+     * @param time 重置时长(s)
+     * @param isInterval 是否间隔时间。如果是，则从当前时间开始计算重置时间；如果否，则从当天0点开始计算。默认false
      */
-    export function resetValueCheck(dataKey: string, value: any, time: number) {
+    export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let zeroTime = zeroTimestamp(),
             now = sysTime.now,
-            resetTime = zeroTime + time;
+            resetTime = (isInterval ? now : zeroTime) + time;
         let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
         let lt = lastResetTime[dataKey] || zeroTime - 1;
         if (resetTime > lt && resetTime <= now) {
