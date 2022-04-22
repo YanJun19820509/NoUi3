@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D, dynamicAtlasManager } from 'cc';
 import { EDITOR } from 'cc/env';
 import { Atlas } from './atlas';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -17,6 +17,7 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
  */
 /**
  * 将子节点Label及特定SpriteFrame添加进入动态图集
+ * 【不能与原生动态合图同时使用】。
  */
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
@@ -37,6 +38,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     onEnable() {
+        if (!this.isWork) return;
         if (!this.needInit) return;
         this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.init();
@@ -44,6 +46,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     onDisable() {
+        if (!this.isWork) return;
         this.needInit = true;
         this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.reset();
@@ -66,6 +69,7 @@ export class YJDynamicAtlas extends Component {
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame) {
+        if (!this.isWork) return;
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             if (comp instanceof Label || comp instanceof RichText) {
                 if (comp.string == '') return;
@@ -98,6 +102,13 @@ export class YJDynamicAtlas extends Component {
             console.log(`${this.node.name}动态图集无空间！`);
         });
         return frame;
+    }
+
+    /**
+     * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
+     */
+    public get isWork(): boolean {
+        return !dynamicAtlasManager.enabled;
     }
 
     //////////////EDITOR/////////////
