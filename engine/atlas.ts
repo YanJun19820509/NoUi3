@@ -1,4 +1,4 @@
-import { SpriteFrame, Texture2D, ImageAsset, director, WebGL2Device, math } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, director, WebGL2Device, math, game, gfx, __private, RenderTexture } from "cc";
 import { MaxRects } from "./MaxRects";
 
 export class Atlas {
@@ -84,21 +84,16 @@ export class Atlas {
     private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number) {
         let texture = spriteFrame.texture;
         let r = spriteFrame.rect;
-        let image: ImageAsset = texture['_mipmaps'][0];
-        if (image && image.width == r.width && image.height == r.height) {
-            this._setSubImage(image, x, y);
-        } else {
-            let isRotated = spriteFrame.rotated;
-            let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
-            if (typeof createImageBitmap !== 'undefined' && image) {
-                createImageBitmap(image.data as HTMLCanvasElement, rect.x, rect.y, rect.width, rect.height).then(img => {
-                    this._setSubImage(img, x, y);
-                });
-            } else {
-                let img = this._createImageData(texture, rect);
-                this._setSubImage(img, x, y);
-            }
-        }
+        // let image: ImageAsset = texture['_mipmaps'][0];
+        // if (image && image.width == r.width && image.height == r.height) {
+        //     this._setSubImage(image, x, y);
+        // } else {
+        let isRotated = spriteFrame.rotated;
+        let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
+        let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
+        let img = this._createImage(buffer, rect);
+        this._setSubImage(img, x, y);
+        // }
     }
 
     private _setSubImage(img, x, y) {
@@ -117,9 +112,10 @@ export class Atlas {
         this._texture.drawImageAt(img, x, y);
     }
 
-    private _createImageData(texture, rect) {
-        let input = this._getPixels(rect, texture);
-        let canvas = document.createElement("canvas");
+    private _createImage(pixels: ArrayBufferView, rect: math.Rect) {
+        let canvas = document.createElement('canvas');
+        canvas.width = rect.width;
+        canvas.height = rect.height;
         let ctx = canvas.getContext("2d");
         let imageData = ctx.createImageData(rect.width, rect.height);
         let i = 0,
@@ -127,29 +123,12 @@ export class Atlas {
             data = imageData.data,
             length = data.length;
         while (i < length) {
-            data[i++] = input[k++];
-            data[i++] = input[k++];
-            data[i++] = input[k++];
-            data[i++] = input[k++];
+            data[i++] = pixels[k++];
+            data[i++] = pixels[k++];
+            data[i++] = pixels[k++];
+            data[i++] = pixels[k++];
         }
         return imageData;
-    }
-    //读取texture一定区域内的像素数据
-    private _getPixels(rect, texture) {
-
-        const gl = (director.root.device as WebGL2Device).gl;
-        let framebuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture._texture._glID, 0);
-
-        let pixels = new Uint8Array(rect.width * rect.height * 4);
-        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
-            gl.readPixels(rect.x, rect.y, rect.width, rect.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        }
-
-        gl.deleteFramebuffer(framebuffer);
-
-        return pixels;
     }
 }
 
@@ -203,7 +182,7 @@ export class DynamicAtlasTexture extends Texture2D {
         gfxDevice.copyTexImagesToTexture([image.data as HTMLCanvasElement], gfxTexture, [region]);
     }
 
-    public drawImageAt(image: ImageAsset | ImageBitmap, x: number, y: number) {
+    public drawImageAt(image: ImageAsset | ImageData, x: number, y: number) {
         if (image instanceof ImageAsset) {
             this.drawTextureAt(image, x, y);
             return;
@@ -225,6 +204,20 @@ export class DynamicAtlasTexture extends Texture2D {
         region.texExtent.width = image.width;
         region.texExtent.height = image.height;
         gfxDevice.copyTexImagesToTexture([image], gfxTexture, [region]);
+    }
+
+    public getTextureBuffer(texture: Texture2D, rect: math.Rect): ArrayBufferView {
+        const gfxTexture = texture.getGFXTexture();
+        const gfxDevice = this._getGFXDevice();
+        let buffer = new Uint8Array(rect.width * rect.height * 4);
+        const bufferViews: ArrayBufferView[] = [buffer];
+        const region = new BufferTextureCopy();
+        region.texOffset.x = rect.x;
+        region.texOffset.y = rect.y;
+        region.texExtent.width = rect.width;
+        region.texExtent.height = rect.height;
+        gfxDevice.copyTextureToBuffers(gfxTexture, bufferViews, [region]);
+        return buffer;
     }
 }
 
