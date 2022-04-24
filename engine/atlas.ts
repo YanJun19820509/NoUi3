@@ -1,4 +1,4 @@
-import { SpriteFrame, Texture2D, ImageAsset, director, WebGL2Device, math, game, gfx, __private, RenderTexture } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, math, __private } from "cc";
 import { MaxRects } from "./MaxRects";
 
 export class Atlas {
@@ -84,32 +84,11 @@ export class Atlas {
     private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number) {
         let texture = spriteFrame.texture;
         let r = spriteFrame.rect;
-        // let image: ImageAsset = texture['_mipmaps'][0];
-        // if (image && image.width == r.width && image.height == r.height) {
-        //     this._setSubImage(image, x, y);
-        // } else {
         let isRotated = spriteFrame.rotated;
         let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
         let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
         let img = this._createImage(buffer, rect);
         this._setSubImage(img, x, y);
-        // }
-    }
-
-    private _setSubImage(img, x, y) {
-        if (img.width <= 8 || img.height <= 8) {
-            this._texture.drawImageAt(img, x - 1, y - 1);
-            this._texture.drawImageAt(img, x - 1, y + 1);
-            this._texture.drawImageAt(img, x + 1, y - 1);
-            this._texture.drawImageAt(img, x + 1, y + 1);
-        }
-
-        this._texture.drawImageAt(img, x - 1, y);
-        this._texture.drawImageAt(img, x + 1, y);
-        this._texture.drawImageAt(img, x, y - 1);
-        this._texture.drawImageAt(img, x, y + 1);
-
-        this._texture.drawImageAt(img, x, y);
     }
 
     private _createImage(pixels: ArrayBufferView, rect: math.Rect) {
@@ -128,7 +107,24 @@ export class Atlas {
             data[i++] = pixels[k++];
             data[i++] = pixels[k++];
         }
-        return imageData;
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
+    }
+
+    private _setSubImage(img, x, y) {
+        if (img.width <= 8 || img.height <= 8) {
+            this._texture.drawImageAt(img, x - 1, y - 1);
+            this._texture.drawImageAt(img, x - 1, y + 1);
+            this._texture.drawImageAt(img, x + 1, y - 1);
+            this._texture.drawImageAt(img, x + 1, y + 1);
+        }
+
+        this._texture.drawImageAt(img, x - 1, y);
+        this._texture.drawImageAt(img, x + 1, y);
+        this._texture.drawImageAt(img, x, y - 1);
+        this._texture.drawImageAt(img, x, y + 1);
+
+        this._texture.drawImageAt(img, x, y);
     }
 }
 
@@ -182,7 +178,7 @@ export class DynamicAtlasTexture extends Texture2D {
         gfxDevice.copyTexImagesToTexture([image.data as HTMLCanvasElement], gfxTexture, [region]);
     }
 
-    public drawImageAt(image: ImageAsset | ImageData, x: number, y: number) {
+    public drawImageAt(image: ImageAsset | HTMLCanvasElement, x: number, y: number) {
         if (image instanceof ImageAsset) {
             this.drawTextureAt(image, x, y);
             return;
@@ -208,7 +204,14 @@ export class DynamicAtlasTexture extends Texture2D {
 
     public getTextureBuffer(texture: Texture2D, rect: math.Rect): ArrayBufferView {
         const gfxTexture = texture.getGFXTexture();
+        if (!gfxTexture) {
+            return;
+        }
         const gfxDevice = this._getGFXDevice();
+        if (!gfxDevice) {
+            console.warn('Unable to get device');
+            return;
+        }
         let buffer = new Uint8Array(rect.width * rect.height * 4);
         const bufferViews: ArrayBufferView[] = [buffer];
         const region = new BufferTextureCopy();
