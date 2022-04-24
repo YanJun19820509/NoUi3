@@ -55,6 +55,7 @@ export class SetTimeCountDown extends FuckUi {
         this._countDown = a;
         this._max = a;
         this.unschedule(this.countdown);
+        this.countdown();
         this.schedule(this.countdown, 1, a);
 
     }
@@ -63,7 +64,7 @@ export class SetTimeCountDown extends FuckUi {
         let a = this._countDown--;
         if (this.isLabel) {
             this.setLabel(no.sec2time(a, this.formatter, this.show0));
-            if (a <= 0) {
+            if (a < 0) {
                 no.EventHandlerInfo.execute(this.endCalls);
             } else {
                 no.EventHandlerInfo.execute(this.secondCalls);
