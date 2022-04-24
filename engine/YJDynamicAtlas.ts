@@ -109,7 +109,7 @@ export class YJDynamicAtlas extends Component {
      */
     public get isWork(): boolean {
         let a = !dynamicAtlasManager.enabled;
-        console.log(`YJDynamicAtlas isWork::${a}`);
+        // console.log(`YJDynamicAtlas isWork::${a}`);
         return a;
     }
 
