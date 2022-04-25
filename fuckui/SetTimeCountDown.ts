@@ -42,7 +42,7 @@ export class SetTimeCountDown extends FuckUi {
 
     @property({ displayName: '定时触发' })
     isTime: boolean = false;
-    @property({ min: 1, step: 1, displayName: '定时触发时间', visible() { return this.isTime; } })
+    @property({ min: 0, step: 1, displayName: '定时触发时间', visible() { return this.isTime; } })
     time: number = 60;
     @property({ type: no.EventHandlerInfo, displayName: '定时回调', visible() { return this.isTime; } })
     timeCalls: no.EventHandlerInfo[] = [];
