@@ -36,7 +36,7 @@ export class YJGameState extends Component {
     onLoad() {
         game.on(Game.EVENT_HIDE, this.onHide, this);
         game.on(Game.EVENT_SHOW, this.onShow, this);
-        no.evn.on(this.type, this.restart, this);
+        no.evn.on(this.type, this.a_restart, this);
     }
 
     onDestroy() {
@@ -53,7 +53,7 @@ export class YJGameState extends Component {
             no.EventHandlerInfo.execute(this.onShowCalls);
     }
 
-    private restart() {
+    public a_restart() {
         if (JSB)
             game.restart();
         else if (sys.isBrowser)
