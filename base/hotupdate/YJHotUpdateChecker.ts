@@ -1,5 +1,6 @@
 
 import { _decorator, sys, game } from 'cc';
+import { JSB } from 'cc/env';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';
 import { YJComponent } from '../YJComponent';
@@ -36,14 +37,15 @@ export class YJHotUpdateChecker extends YJComponent {
 
 
     onLoad() {
-        if (sys.isNative) this.check();
+        if (JSB) this.check();
         else no.EventHandlerInfo.execute(this.triggers1);
     }
 
     private async check() {
-        await this.waitFor(() => { return YJHotUpdate.ins.checkState == -99; });
+        await this.waitFor(() => { return YJHotUpdate.ins && YJHotUpdate.ins.checkState == -99; });
         if (!YJHotUpdate.ins.checkUpdate()) no.EventHandlerInfo.execute(this.triggers1);
         else {
+            await this.waitFor(() => { return YJHotUpdate.ins.checkState == 1; });
             let size = YJHotUpdate.ins.needUpdateFilesSize;
             if (size > 0) {
                 this.dataWork.setValue('updateSize', size);

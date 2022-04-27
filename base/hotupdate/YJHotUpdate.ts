@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, game } from 'cc';
-import { no } from '../../no';
+import { JSB } from 'cc/env';
 import { YJAudioManager } from '../audio/YJAudioManager';
 const { ccclass, menu } = _decorator;
 
@@ -15,7 +15,7 @@ const { ccclass, menu } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
+
 export class UpdateProgressInfo {
     /**[0下载中，1完成，2失败] */
     public state: number = 0;
@@ -47,18 +47,12 @@ export class YJHotUpdate extends Component {
     }
 
     onLoad() {
+        if (!JSB) return;
         YJHotUpdate._instance = this;
         this._storagePath = ((jsb.fileUtils ? jsb.fileUtils.getWritablePath() : '/') + 'yj-remote-asset');
+        console.log(this._storagePath);
         this._am = new jsb.AssetsManager('', this._storagePath, this.versionCompareHandle);
         this._am.setVerifyCallback(function (path, asset) {
-            // // When asset is compressed, we don't need to check its md5, because zip file have been deleted.
-            // var compressed = asset.compressed;
-            // // Retrieve the correct md5 value.
-            // var expectedMD5 = asset.md5;
-            // // asset.path is relative path and path is absolute.
-            // var relativePath = asset.path;
-            // // The size of asset file, but this value could be absent.
-            // var size = asset.size;
             return true;
         });
         this.copyFiles();
@@ -66,10 +60,11 @@ export class YJHotUpdate extends Component {
 
     protected onDestroy(): void {
         YJHotUpdate._instance = null;
+        this._am?.setEventCallback(null!);
     }
 
     public copyFiles() {
-        if (no.dataCache.getLocal('init_game') == null) {
+        if (localStorage.getItem('init_game') == null) {
             let jf = jsb.fileUtils;
             this.checkState = -100;//开始初始化
             if (jf.isDirectoryExist(this._storagePath)) {
@@ -89,7 +84,7 @@ export class YJHotUpdate extends Component {
                     }
                     continue;
                 }
-                if (path.substr(p.length - 5) == '.json') {
+                if (path.substring(p.length - 5) == '.json') {
                     if (!jf['writeStringToFile'](jf['getStringFromFile'](path), this._storagePath + p)) {
                         console.log(p, jf.isFileExist(this._storagePath + p));
                     }
@@ -100,7 +95,7 @@ export class YJHotUpdate extends Component {
                     }
                 }
             }
-            no.dataCache.setLocal('init_game', 'done');
+            localStorage.setItem('init_game', 'done');
         }
         this.checkState = -99;//初始化完成
     }
@@ -114,9 +109,10 @@ export class YJHotUpdate extends Component {
         if (this._am.getState() === jsb.AssetsManager.State.UNINITED) {
             let localVersionManifest = this.getLocalManifest('version.manifest');
             this._am.loadLocalManifest(localVersionManifest, this._storagePath);
+            // console.log('本地version.manifest：：', localVersionManifest);
         }
         if (!this._am.getLocalManifest() || !this._am.getLocalManifest().isLoaded()) {
-            console.error('Failed to load local manifest ...');
+            console.log('Failed to load local manifest ...');
             return false;
         }
         this._am.setEventCallback(this.checkUpdateCallback.bind(this));
@@ -144,9 +140,9 @@ export class YJHotUpdate extends Component {
         let path = this._storagePath + '/' + name;
         if (!jsb.fileUtils.isFileExist(path)) {
             path = 'assets/' + name;
-            console.log(path);
+            console.log('getLocalManifest', path);
         } else {
-            console.log(path);
+            console.log('getLocalManifest', path);
         }
         return new jsb.Manifest(path);
     }
