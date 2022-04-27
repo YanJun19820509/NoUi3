@@ -45,6 +45,10 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
+    onDestroy(){
+        this.template?.destroy();
+    }
+    
     public recycle() {
         if (this.pref && this.pref.refCount > 0) {
             no.cachePool.recycle(this.url, this.pref);

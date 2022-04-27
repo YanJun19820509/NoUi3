@@ -74,6 +74,10 @@ export class SetList extends FuckUi {
         this._loaded = true;
     }
 
+    onDestroy(){
+        this.template?.destroy();
+    }
+    
     protected async onDataChange(data: any) {
         await no.waitFor(() => { return this._loaded; });
         let a = [].concat(data);

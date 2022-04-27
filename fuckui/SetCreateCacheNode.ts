@@ -33,6 +33,10 @@ export class SetCreateCacheNode extends FuckUi {
 
     private recycleType: string;
 
+    onDestroy() {
+        this.template?.destroy();
+    }
+
     protected onDataChange(data: any) {
         this.setItems([].concat(data));
     }
