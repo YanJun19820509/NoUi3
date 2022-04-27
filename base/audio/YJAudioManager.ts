@@ -21,6 +21,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 export class YJAudioManager extends Component {
     private musicMute: string = '__musicMute';
     private effectMute: string = '__effectMute';
+    private _lastBGM: string;
 
     private audioSource: AudioSource = null;
 
@@ -49,6 +50,8 @@ export class YJAudioManager extends Component {
     public setBGMMute(v: boolean) {
         localStorage.setItem(this.musicMute, JSON.stringify(v));
         this._isBGMMute = v;
+        if (!v) this.stopBGM();
+        else this.playBGM();
     }
 
     public get isEffectMute(): boolean {
@@ -73,8 +76,11 @@ export class YJAudioManager extends Component {
      * 播放背景音乐
      * @param path 音频剪辑路径
      */
-    public playBGM(path: string): void {
+    public playBGM(path?: string): void {
         if (this.isBGMMute) return;
+        if (path) this._lastBGM = path;
+        else path = this._lastBGM;
+        if (!path) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
             this._playClip(c, path);
