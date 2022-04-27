@@ -1515,7 +1515,7 @@ export namespace no {
                 }, (err, items) => {
                     if (items == null || items.length == 0) {
                         onProgress && onProgress(1);
-                        no.log(err.message);
+                        no.log('preloadFiles', filePaths, err.message);
                     }
                 });
             }
@@ -1531,7 +1531,7 @@ export namespace no {
                 // onProgress && onProgress((finished / total) || 0);
             }, (err) => {
                 if (err) {
-                    no.log(err.message);
+                    no.log('preloadScene', name, err.message);
                 } else {
                     onProgress && onProgress(1);
                 }
@@ -1550,7 +1550,7 @@ export namespace no {
             }
             assetManager.loadBundle(name, (err, b) => {
                 if (err != null) {
-                    no.log(err.message);
+                    no.log('loadBundle', name, err);
                 } else {
                     callback && callback();
                 }
@@ -1587,7 +1587,7 @@ export namespace no {
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
-                        no.log(err.message);
+                        no.log('load', fileName, err.message);
                     } else {
                         this.addRef(item);//增加引用计数
                         callback && callback(item);
@@ -1599,7 +1599,7 @@ export namespace no {
                 if (bundle != null) {
                     bundle.load(fileName, type, (err, item) => {
                         if (item == null) {
-                            no.log(err.message);
+                            no.log('load', fileName, err.message);
                         } else {
                             this.addRef(item);//增加引用计数
                             callback && callback(item);
@@ -1677,7 +1677,7 @@ export namespace no {
             }, (err, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(0);
-                    no.log(err.message);
+                    no.log('loadFiles', filePaths, err.message);
                 } else {
                     items.forEach(item => {
                         this.addRef(item);//增加引用计数
@@ -1705,7 +1705,7 @@ export namespace no {
         public loadRemoteFile<T extends Asset>(url: string, callback: (file: T) => void) {
             assetManager.loadRemote<T>(url, (err, file) => {
                 if (file == null) {
-                    no.log(err.message);
+                    no.log('loadRemoteFile', url, err.message);
                     callback && callback(null);
                 } else {
                     this.addRef(file);//增加引用计数
@@ -1829,7 +1829,7 @@ export namespace no {
             }
             assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
                 if (err) {
-                    console.log(err);
+                    console.log(url, err);
                     onErr?.();
                 }
                 else
@@ -1849,7 +1849,7 @@ export namespace no {
                 if (sub.type == 'cc.SpriteFrame') {
                     assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteFrame }, (err, item: SpriteFrame) => {
                         if (err) {
-                            console.log(err);
+                            console.log(url, err);
                             onErr?.();
                         }
                         else {
@@ -1864,7 +1864,7 @@ export namespace no {
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {
-                    no.err(e.stack);
+                    no.err(uuid, e.stack);
                 }
                 this.addRef(f);//增加引用计数
                 callback?.(f);
@@ -1891,7 +1891,7 @@ export namespace no {
                 a.push({ uuid: uuid });
             });
             assetManager.loadAny(a, (e, item) => {
-                if (item == null) no.err(e.message);
+                if (item == null) no.err(uuid, e.message);
             });
         }
 
