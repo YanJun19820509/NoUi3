@@ -71,7 +71,7 @@ export class YJHotUpdateChecker extends YJComponent {
             if (this.dataWork) {
                 this.dataWork.data = {
                     downloadedBytes: d.downloadedBytes,
-                    progress: Math.floor(d.bytesPer * 100)
+                    progress: d.bytesPer
                 };
             }
             console.log('update progress' + d.bytesPer);

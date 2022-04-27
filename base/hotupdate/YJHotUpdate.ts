@@ -55,7 +55,8 @@ export class YJHotUpdate extends Component {
         this._am.setVerifyCallback(function (path, asset) {
             return true;
         });
-        this.copyFiles();
+        this.checkState = -99;//初始化完成
+        // this.copyFiles();
     }
 
     protected onDestroy(): void {
@@ -63,42 +64,43 @@ export class YJHotUpdate extends Component {
         this._am?.setEventCallback(null!);
     }
 
-    public copyFiles() {
-        if (localStorage.getItem('init_game') == null) {
-            let jf = jsb.fileUtils;
-            this.checkState = -100;//开始初始化
-            if (jf.isDirectoryExist(this._storagePath)) {
-                jf.createDirectory(this._storagePath);
-            }
-            console.log('copy manifest Files');
-            let list: string[] = [];
-            jf.listFilesRecursively('assets', list);
-            let n = list.length;
-            for (let i = 0; i < n; i++) {
-                let path = list[i];
-                let p = path.split('assets')[1];
-                if (p[p.length - 1] == '/') {
-                    let dir = this._storagePath + p;
-                    if (!jf.isDirectoryExist(dir)) {
-                        jf.createDirectory(dir);
-                    }
-                    continue;
-                }
-                if (path.substring(p.length - 5) == '.json') {
-                    if (!jf['writeStringToFile'](jf['getStringFromFile'](path), this._storagePath + p)) {
-                        console.log(p, jf.isFileExist(this._storagePath + p));
-                    }
-                } else {
-                    let data = jf['getDataFromFile'](path);
-                    if (!jf['writeDataToFile'](data, this._storagePath + p)) {
-                        console.log(p, jf.isFileExist(this._storagePath + p));
-                    }
-                }
-            }
-            localStorage.setItem('init_game', 'done');
-        }
-        this.checkState = -99;//初始化完成
-    }
+    // public copyFiles() {
+    //     if (localStorage.getItem('init_game') == null) {
+    //         let jf = jsb.fileUtils;
+    //         this.checkState = -100;//开始初始化
+    //         if (jf.isDirectoryExist(this._storagePath)) {
+    //             jf.createDirectory(this._storagePath);
+    //         }
+    //         console.log('copy manifest Files');
+    //         let list: string[] = [];
+    //         jf.listFilesRecursively('/assets', list);
+    //         let n = list.length;
+    //         for (let i = 0; i < n; i++) {
+    //             let path = list[i];
+    //             console.log('copyFiles::', path);
+    //             let p = path.split('assets')[1];
+    //             if (p[p.length - 1] == '/') {
+    //                 let dir = this._storagePath + p;
+    //                 if (!jf.isDirectoryExist(dir)) {
+    //                     jf.createDirectory(dir);
+    //                 }
+    //                 continue;
+    //             }
+    //             if (path.substring(p.length - 5) == '.json') {
+    //                 if (!jf.writeStringToFile(jf.getStringFromFile(path), this._storagePath + p)) {
+    //                     console.log(p, jf.isFileExist(this._storagePath + p));
+    //                 }
+    //             } else {
+    //                 let data = jf.getValueVectorFromFile(path);
+    //                 if (!jf.writeValueVectorToFile(data, this._storagePath + p)) {
+    //                     console.log(p, jf.isFileExist(this._storagePath + p));
+    //                 }
+    //             }
+    //         }
+    //         localStorage.setItem('init_game', 'done');
+    //     }
+    //     this.checkState = -99;//初始化完成
+    // }
 
     /**
      * 检查更新
@@ -132,6 +134,10 @@ export class YJHotUpdate extends Component {
                 let localManifest = this.getLocalManifest('project.manifest');
                 this._am.loadLocalManifest(localManifest, this._storagePath);
             }
+            let remoteManifest = this._am.getRemoteManifest();
+            localStorage.setItem('version', remoteManifest.getVersion());
+            let downloader = new jsb.Downloader();
+            downloader.createDownloadFileTask(remoteManifest.getVersionFileUrl(), this._storagePath + '/' + 'version.manifest');
             this._am.update();
         }
     }
@@ -144,7 +150,10 @@ export class YJHotUpdate extends Component {
         } else {
             console.log('getLocalManifest', path);
         }
-        return new jsb.Manifest(path);
+        let a = new jsb.Manifest(path);
+        console.log(`${name} version:${a.getVersion()}`);
+        localStorage.setItem('version', a.getVersion());
+        return a;
     }
 
     private checkUpdateCallback(event) {
@@ -223,20 +232,24 @@ export class YJHotUpdate extends Component {
                     searchPaths.unshift(path);
                 }
             });
-            console.log(JSON.stringify(searchPaths));
+            let a = JSON.stringify(searchPaths);
+            console.log(a);
             // This value will be retrieved and appended to the default search path during game startup,
             // please refer to samples/js-tests/main.js for detailed usage.
             // !!! Re-add the search paths in main.js is very important, otherwise, new scripts won't take effect.
-            localStorage.setItem('HotUpdateSearchPaths', JSON.stringify(searchPaths));
+            localStorage.setItem('HotUpdateSearchPaths', a);
             jsb.fileUtils.setSearchPaths(searchPaths);
 
             YJAudioManager.ins?.stopBGM();
-            game.restart();
+            this.scheduleOnce(() => {
+                game.restart();
+            }, 1);
         }
     }
 
     private versionCompareHandle(versionA, versionB): number {
         console.log("JS Custom Version Compare: version A is " + versionA + ', version B is ' + versionB);
+        if (versionA == versionB) return 0;
         var vA = versionA.split('.');
         var vB = versionB.split('.');
         for (var i = 0; i < vA.length; ++i) {
