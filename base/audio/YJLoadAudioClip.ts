@@ -39,7 +39,7 @@ export class YJLoadAudioClip extends Component {
     public async loadClip(): Promise<AudioClip> {
         if (this.loadedAudioClip != null) return this.loadedAudioClip;
         return new Promise<AudioClip>(resolve => {
-            no.assetBundleManager.loadAudio(this.clipUrl, (a) => {
+            no.assetBundleManager.loadAudio(this.clipUrl.replace('db://assets/',''), (a) => {
                 if (a == null) resolve(null);
                 else {
                     this.loadedAudioClip = a;
