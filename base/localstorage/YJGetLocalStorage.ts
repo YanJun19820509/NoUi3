@@ -29,6 +29,7 @@ export class YJGetLocalStorage extends Component {
         ks.forEach(key => {
             v[key] = localStorage.getItem(key);
         });
+        if (ks.length == 0) v = v[ks[0]];
         no.EventHandlerInfo.execute(this.calls, v);
     }
 }
