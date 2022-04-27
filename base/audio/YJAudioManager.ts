@@ -19,6 +19,9 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 @menu('NoUi/audio/YJAudioManager(音频管理组件)')
 @requireComponent(AudioSource)
 export class YJAudioManager extends Component {
+    private musicMute: string = '__musicMute';
+    private effectMute: string = '__effectMute';
+
     private audioSource: AudioSource = null;
 
     private static _ins: YJAudioManager;
@@ -30,6 +33,8 @@ export class YJAudioManager extends Component {
     onLoad() {
         YJAudioManager._ins = this;
         this.audioSource = this.getComponent(AudioSource);
+        this.setBGMMute(JSON.parse(localStorage.getItem(this.musicMute) || 'true'));
+        this.setEffectMute(JSON.parse(localStorage.getItem(this.effectMute) || 'true'));
     }
 
     onDestroy() {
@@ -37,15 +42,32 @@ export class YJAudioManager extends Component {
     }
 
     private clips: Map<string, AudioClip> = new Map();
+
+    public get isBGMMute(): boolean {
+        return this._isBGMMute;
+    }
+    public setBGMMute(v: boolean) {
+        localStorage.setItem(this.musicMute, JSON.stringify(v));
+        this._isBGMMute = v;
+    }
+
+    public get isEffectMute(): boolean {
+        return this._isEffectMute;
+    }
+    public setEffectMute(v: boolean) {
+        localStorage.setItem(this.effectMute, JSON.stringify(v));
+        this._isEffectMute = v;
+    }
+
     /**
      * 背景音乐静音
      */
-    public isBGMMute = false;
+    private _isBGMMute = false;
 
     /**
      * 音效静音
      */
-    public isEffectMute = false;
+    private _isEffectMute = false;
 
     /**
      * 播放背景音乐
