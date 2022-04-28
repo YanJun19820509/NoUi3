@@ -23,9 +23,9 @@ export class SoundEffectInfo {
     @property({ displayName: '别名' })
     alias: string = '';
     @property({ readonly: true })
-    url: string = '';
+    assetUrl: string = '';
     @property({ readonly: true })
-    uuid: string = '';
+    assetUuid: string = '';
 }
 
 @ccclass('YJSoundEffectManager')
@@ -60,7 +60,7 @@ export class YJSoundEffectManager extends Component {
         if (EDITOR) return;
         this._map = {};
         this.soundEffects.forEach(info => {
-            if (info.alias) this._map[info.alias] = info.url.replace('db://assets/', '');
+            if (info.alias) this._map[info.alias] = info.assetUrl.replace('db://assets/', '');
         });
     }
 
@@ -119,17 +119,20 @@ export class YJSoundEffectManager extends Component {
         let fs = require('fs');
         let path = info.file;
         let files: string[] = fs.readdirSync(path);
-        this.soundEffects = [];
         files.forEach(file => {
             if (file.indexOf('.meta') > -1) return;
             let p = info.path + '/' + file;
             no.assetBundleManager.loadFileInEditorMode(p, AudioClip, (file: any, fileInfo: AssetInfo) => {
+                // if (no.indexOfArray(this.soundEffects, fileInfo.uuid, 'uuid') == -1){
+
+                //     this.soundEffects[this.soundEffects.length] = effectInfo;
+                // }
                 let effectInfo = new SoundEffectInfo();
                 let name = fileInfo.name.split('.')[0];
                 effectInfo.alias = name;
-                effectInfo.url = fileInfo.url;
-                effectInfo.uuid = fileInfo.uuid;
-                this.soundEffects[this.soundEffects.length] = effectInfo;
+                effectInfo.assetUrl = fileInfo.url;
+                effectInfo.assetUuid = fileInfo.uuid;
+                no.addToArray(this.soundEffects, effectInfo, 'assetUrl');
             });
         });
         console.log('YJSoundEffectManager解析完成，请刷新组件！')
