@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D, dynamicAtlasManager } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D, dynamicAtlasManager, Texture2D } from 'cc';
 import { EDITOR } from 'cc/env';
 import { Atlas } from './atlas';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -57,6 +57,22 @@ export class YJDynamicAtlas extends Component {
         this.atlas?.destroy();
     }
 
+    public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
+        if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
+        let texture = frames[0].texture as Texture2D;
+        const p = this.atlas.drawAtlasTexture(texture);
+        if (p) {
+            frames.forEach(frame => {
+                let offset = frame.rect.origin;
+                let pp = {
+                    x: p.x + offset.x,
+                    y: p.y + offset.y,
+                    texture: p.texture
+                };
+                frame._setDynamicAtlasFrame(pp);
+            });
+        }
+    }
 
     /**
      * @en

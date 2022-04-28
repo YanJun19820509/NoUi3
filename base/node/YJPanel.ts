@@ -60,9 +60,9 @@ export class YJPanel extends Component {
     /**
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
-    public initPanel() {
-        this.getComponent(YJLoadAssets)?.load();
+    public async initPanel() {
         this.onInitPanel();
+        await this.getComponent(YJLoadAssets)?.load();
     }
 
     public closePanel() {

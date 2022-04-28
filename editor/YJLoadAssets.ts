@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
@@ -44,14 +45,16 @@ export class YJLoadAssets extends Component {
     /**
      * 加载图集
      */
-    public load() {
+    public async load() {
         if (EDITOR) return;
         this.assets = [];
         this.atlasUuids.forEach(uuid => {
-            no.assetBundleManager.loadByUuid(uuid, SpriteAtlas, (file) => {
+            no.assetBundleManager.loadByUuid<SpriteAtlas>(uuid, SpriteAtlas, (file) => {
                 this.assets[this.assets.length] = file;
+                this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
             });
         });
+        await no.waitFor(() => { return this.assets.length == this.atlasUuids.length; });
         this.spriteFrameUuids.forEach(uuid => {
             no.assetBundleManager.loadByUuid(uuid, SpriteFrame, (file) => {
                 this.assets[this.assets.length] = file;

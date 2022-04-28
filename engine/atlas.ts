@@ -53,11 +53,7 @@ export class Atlas {
         let x = p.x, y = p.y;
 
         this.drawImageAt(spriteFrame, x, y);
-
-        this._dynamicTextureRect[_uuid] = {
-            x: x,
-            y: y
-        };
+        this.setSpriteFrameTextureRect(_uuid, x, y);
         const frame = {
             x: x,
             y: y,
@@ -67,6 +63,25 @@ export class Atlas {
         // this._innerSpriteFrames.push(spriteFrame);
         return frame;
     }
+
+    public drawAtlasTexture(texture: Texture2D) {
+        let p = this._maxRect.find(texture.width, texture.height);
+        if (!p) return null;
+        this._setSubImage(texture._mipmaps[0], p.x, p.y);
+        return {
+            x: p.x,
+            y: p.y,
+            texture: this._texture
+        };
+    }
+
+    public setSpriteFrameTextureRect(uuid: string, x: number, y: number) {
+        this._dynamicTextureRect[uuid] = {
+            x: x,
+            y: y
+        };
+    }
+
 
     /**
      * @en

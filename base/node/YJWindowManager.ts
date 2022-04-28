@@ -59,8 +59,9 @@ export class YJWindowManager extends Component {
         let node = instantiate(pf);
         let a = node.getComponent(comp);
         onInit?.(a as T);
-        a.initPanel();
-        content.addChild(node);
+        a.initPanel().then(() => {
+            content.addChild(node);
+        });
     }
 
     /**

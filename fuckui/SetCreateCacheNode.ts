@@ -44,7 +44,7 @@ export class SetCreateCacheNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
-            this.template.getComponent(YJLoadAssets)?.load();
+            await this.template.getComponent(YJLoadAssets)?.load();
         }
         if (!this.container) this.container = this.node;
         if (!this.recycleType) this.recycleType = this.template.getComponent(YJCacheObject).recycleType;

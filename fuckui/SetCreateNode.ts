@@ -34,7 +34,7 @@ export class SetCreateNode extends FuckUi {
 
     private needClearChildren = false;
 
-    onDestroy(){
+    onDestroy() {
         this.template?.destroy();
     }
 
@@ -52,7 +52,7 @@ export class SetCreateNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
-            this.template.getComponent(YJLoadAssets)?.load();
+            await this.template.getComponent(YJLoadAssets)?.load();
         }
         if (!this.container) this.container = this.node;
 

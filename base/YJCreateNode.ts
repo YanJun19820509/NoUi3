@@ -58,7 +58,7 @@ export class YJCreateNode extends Component {
             let node = this.tempNode || await this.loadPrefab.loadPrefab();
             if (node == null) return null;
             a = instantiate(node);
-            a.getComponent(YJLoadAssets)?.load();
+            await a.getComponent(YJLoadAssets)?.load();
             a.getComponent(YJDataWork)?.init();
             this._recycleType = node.getComponent(YJCacheObject)?.recycleType;
         }
