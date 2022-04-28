@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, ImageAsset, utils, sys } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -111,7 +111,16 @@ export namespace no {
     @ccclass('EventHandlerInfo')
     export class EventHandlerInfo {
         @property(EventHandler)
-        hander: EventHandler = new EventHandler();
+        handler: EventHandler = new EventHandler();
+
+        public static new(target: Node, comp: string, handler: string): EventHandlerInfo {
+            let a = new EventHandlerInfo();
+            a.handler.target = target;
+            a.handler.component = comp;
+            a.handler.handler = handler;
+            return a;
+        }
+
 
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (handlers.length == 0) return;
@@ -121,7 +130,7 @@ export namespace no {
         }
 
         public execute(...args: any[]): void {
-            this.hander.emit([].concat(args, this.hander.customEventData));
+            this.handler.emit([].concat(args, this.handler.customEventData));
         }
     }
 
