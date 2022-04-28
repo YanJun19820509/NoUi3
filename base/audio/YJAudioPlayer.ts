@@ -31,8 +31,12 @@ export class YJAudioPlayer extends Component {
     }
 
     public async a_play() {
-        let clip = await this.getComponent(YJLoadAudioClip).loadClip();
-        YJAudioManager.ins.playClip(clip, !this.once);
+        let a = this.getComponent(YJLoadAudioClip);
+        let clip = await a.loadClip();
+        let b = YJAudioManager.ins;
+        b.setClip(a.clipUrl, clip);
+        if (this.once) YJAudioManager.ins.playClip(clip, false);
+        else YJAudioManager.ins.playBGM(a.clipUrl);
     }
 
     public a_stop() {

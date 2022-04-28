@@ -34,13 +34,14 @@ export class YJLoadAudioClip extends Component {
 
     onLoad() {
         if (EDITOR) return;
+        this.clipUrl = this.clipUrl.replace('db://assets/', '');
         this.autoLoad && this.loadClip();
     }
 
     public async loadClip(): Promise<AudioClip> {
         if (this.loadedAudioClip != null) return this.loadedAudioClip;
         return new Promise<AudioClip>(resolve => {
-            no.assetBundleManager.loadAudio(this.clipUrl.replace('db://assets/', ''), (a) => {
+            no.assetBundleManager.loadAudio(this.clipUrl, (a) => {
                 if (a == null) resolve(null);
                 else {
                     this.loadedAudioClip = a;

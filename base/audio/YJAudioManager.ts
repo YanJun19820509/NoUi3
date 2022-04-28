@@ -19,8 +19,8 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 @menu('NoUi/audio/YJAudioManager(音频管理组件)')
 @requireComponent(AudioSource)
 export class YJAudioManager extends Component {
-    private musicMute: string = '__musicMute';
-    private effectMute: string = '__effectMute';
+    private musicOn: string = '__musicOn';
+    private effectOn: string = '__effectOn';
     private _lastBGM: string;
 
     private audioSource: AudioSource = null;
@@ -34,8 +34,12 @@ export class YJAudioManager extends Component {
     onLoad() {
         YJAudioManager._ins = this;
         this.audioSource = this.getComponent(AudioSource);
-        this.setBGMMute(JSON.parse(localStorage.getItem(this.musicMute) || 'true'));
-        this.setEffectMute(JSON.parse(localStorage.getItem(this.effectMute) || 'true'));
+        let a = localStorage.getItem(this.musicOn);
+        if (a == null) a = '1';
+        let b = localStorage.getItem(this.effectOn);
+        if (b == null) b = '1';
+        this.setBGMOn(a == '1');
+        this.setEffectOn(b == '1');
     }
 
     onDestroy() {
@@ -44,40 +48,52 @@ export class YJAudioManager extends Component {
 
     private clips: Map<string, AudioClip> = new Map();
 
-    public get isBGMMute(): boolean {
-        return this._isBGMMute;
+    /**
+     * 音乐开
+     */
+    public get isBGMOn(): boolean {
+        return this._isBGMOn;
     }
-    public setBGMMute(v: boolean) {
-        localStorage.setItem(this.musicMute, JSON.stringify(v));
-        this._isBGMMute = v;
+    /**
+     * 设置音乐开关
+     */
+    public setBGMOn(v: boolean) {
+        localStorage.setItem(this.musicOn, v ? '1' : '0');
+        this._isBGMOn = v;
         if (!v) this.stopBGM();
         else this.playBGM();
     }
 
-    public get isEffectMute(): boolean {
-        return this._isEffectMute;
+    /**
+     * 音效开关
+     */
+    public get isEffectOn(): boolean {
+        return this._isEffectOn;
     }
-    public setEffectMute(v: boolean) {
-        localStorage.setItem(this.effectMute, JSON.stringify(v));
-        this._isEffectMute = v;
+    /**
+     * 设置音效开关
+     */
+    public setEffectOn(v: boolean) {
+        localStorage.setItem(this.effectOn, v ? '1' : '0');
+        this._isEffectOn = v;
     }
 
     /**
-     * 背景音乐静音
+     * 背景音乐开关
      */
-    private _isBGMMute = false;
+    private _isBGMOn = true;
 
     /**
-     * 音效静音
+     * 音效开关
      */
-    private _isEffectMute = false;
+    private _isEffectOn = true;
 
     /**
      * 播放背景音乐
      * @param path 音频剪辑路径
      */
     public playBGM(path?: string): void {
-        if (this.isBGMMute) return;
+        if (!this.isBGMOn) return;
         if (path) this._lastBGM = path;
         else path = this._lastBGM;
         if (!path) return;
@@ -94,7 +110,7 @@ export class YJAudioManager extends Component {
      * @param path 音频剪辑路径
      */
     public playEffect(path: string): void {
-        if (this.isEffectMute) return;
+        if (!this.isEffectOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
             this._playClip(c, path, false);
@@ -109,7 +125,7 @@ export class YJAudioManager extends Component {
      * @returns
      */
     public async playOnceAsync(path: string): Promise<void> {
-        if (this.isEffectMute) return;
+        if (!this.isEffectOn) return;
         if (this.clips.has(path)) {
             return new Promise<void>(resolve => {
                 let clip = this.clips.get(path);
@@ -139,6 +155,8 @@ export class YJAudioManager extends Component {
      * @param loop 是否循环，默认true
      */
     public playClip(clip: AudioClip, loop = true): void {
+        if (loop && !this.isBGMOn) return;
+        if (!loop && !this.isEffectOn) return;
         this._playClip(clip, null, loop);
     }
 
@@ -147,18 +165,23 @@ export class YJAudioManager extends Component {
      * @param clip 音频剪辑
      */
     public async playClipOnceAsync(clip: AudioClip): Promise<void> {
-        if (this.isEffectMute) return;
+        if (!this.isEffectOn) return;
         return new Promise<void>(resolve => {
             this.audioSource.playOneShot(clip, 1);
             this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
         });
     }
 
-    public _playClip(clip: AudioClip, path?: string, loop = true): void {
+    public setClip(path: string, clip: AudioClip): void {
         if (path && !this.clips.has(path))
             this.clips.set(path, clip);
-        this.audioSource.stop()
+    }
+
+
+    private _playClip(clip: AudioClip, path?: string, loop = true): void {
+        this.setClip(path, clip);
         if (loop) {
+            this.audioSource.stop()
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
             this.audioSource.play();
