@@ -46,7 +46,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     onDisable() {
-        if (!this.isWork) return;
+        if (!this.isWork || !this.atlas) return;
         this.needInit = true;
         this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.reset();
@@ -54,10 +54,15 @@ export class YJDynamicAtlas extends Component {
     }
 
     public clear(): void {
+        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+            a.reset();
+        });
         this.atlas?.destroy();
+        this.atlas = null;
     }
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
+        if (!this.isWork) return;
         if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
         let texture = frames[0].texture as Texture2D;
         const p = this.atlas.drawAtlasTexture(texture);
