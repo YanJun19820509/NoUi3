@@ -41,7 +41,7 @@ export class SetSpriteFrame extends FuckUi {
                 this.sprite.spriteFrame = spriteFrame;
                 this.checkShader();
             });
-        } else {
+        } else if (this.sprite.spriteAtlas?.spriteFrames) {
             this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(String(data));
             this.checkShader();
         }

@@ -1904,7 +1904,9 @@ export namespace no {
             });
         }
 
-        public release(asset: Asset): void {
+        public release(asset: Asset | string): void {
+            if (!asset) return;
+            if (typeof asset == 'string') asset = assetManager.assets.get(asset);
             if (!asset) return;
             assetManager.releaseAsset(asset);
         }

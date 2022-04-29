@@ -67,6 +67,7 @@ export class YJPanel extends Component {
 
     public closePanel() {
         this.getComponentsInChildren(YJLoadPrefab).forEach(a => {
+            a.clear();
             a.recycle();
         });
         this.getComponentsInChildren(SetCreateNodeByUrl).forEach(a => {

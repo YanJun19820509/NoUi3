@@ -64,7 +64,7 @@ export default class YJLoadPrefab extends Component {
     }
 
     public clear(): void {
-        this.loadedNode.destroy();
+        this.loadedNode?.destroy();
         this.loadedNode = null;
         this.loaded = false;
     }

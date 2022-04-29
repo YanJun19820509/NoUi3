@@ -22,22 +22,18 @@ export class LoadAssetsInfo {
     @property
     assetUuid: string = '';
 
-    private loadedAsset: Asset;
-
     constructor(uuid: string) {
         this.assetUuid = uuid;
     }
 
     public load(cb?: (asset: Asset) => void): void {
         no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
-            this.loadedAsset = file;
             cb?.(file);
         });
     }
 
     public release(): void {
-        this.loadedAsset?.decRef();
-        this.loadedAsset = null;
+        no.assetBundleManager.release(this.assetUuid);
     }
 
 }
@@ -75,17 +71,17 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
+        this.spriteFrameInfos.forEach(info => {
+            info.load();
+        });
         let n = 0;
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
-                this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
+                // this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
                 ++n;
             });
         });
         await no.waitFor(() => { return n == this.atlasInfos.length; });
-        this.spriteFrameInfos.forEach(info => {
-            info.load();
-        });
     }
 
     /**
