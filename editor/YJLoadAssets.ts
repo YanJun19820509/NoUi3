@@ -17,29 +17,57 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
  *
  */
 
+@ccclass("LoadAssetsInfo")
+export class LoadAssetsInfo {
+    @property
+    assetUuid: string = '';
+
+    private loadedAsset: Asset;
+
+    constructor(uuid: string) {
+        this.assetUuid = uuid;
+    }
+
+    public load(cb?: (asset: Asset) => void): void {
+        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+            this.loadedAsset = file;
+            cb?.(file);
+        });
+    }
+
+    public release(): void {
+        this.loadedAsset?.decRef();
+        this.loadedAsset = null;
+    }
+
+}
+
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
 @executeInEditMode()
 export class YJLoadAssets extends Component {
-    @property
-    atlasUuids: string[] = [];
-    @property
-    spriteFrameUuids: string[] = [];
 
-    private assets: Asset[];
+    @property(LoadAssetsInfo)
+    atlasInfos: LoadAssetsInfo[] = [];
+    @property(LoadAssetsInfo)
+    spriteFrameInfos: LoadAssetsInfo[] = [];
 
     onDestroy() {
         this.release();
     }
 
     public addAtlasUuid(uuid: string) {
-        if (EDITOR)
-            no.addToArray(this.atlasUuids, uuid);
+        if (EDITOR) {
+            let a = new LoadAssetsInfo(uuid);
+            no.addToArray(this.atlasInfos, a, 'assetUuid');
+        }
     }
 
     public addSpriteFrameUuid(uuid: string) {
-        if (EDITOR)
-            no.addToArray(this.spriteFrameUuids, uuid);
+        if (EDITOR) {
+            let a = new LoadAssetsInfo(uuid);
+            no.addToArray(this.spriteFrameInfos, a, 'assetUuid');
+        }
     }
 
     /**
@@ -47,18 +75,16 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
-        this.assets = [];
-        this.atlasUuids.forEach(uuid => {
-            no.assetBundleManager.loadByUuid<SpriteAtlas>(uuid, SpriteAtlas, (file) => {
-                this.assets[this.assets.length] = file;
+        let n = 0;
+        this.atlasInfos.forEach(info => {
+            info.load((file: SpriteAtlas) => {
                 this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
+                ++n;
             });
         });
-        await no.waitFor(() => { return this.assets.length == this.atlasUuids.length; });
-        this.spriteFrameUuids.forEach(uuid => {
-            no.assetBundleManager.loadByUuid(uuid, SpriteFrame, (file) => {
-                this.assets[this.assets.length] = file;
-            });
+        await no.waitFor(() => { return n == this.atlasInfos.length; });
+        this.spriteFrameInfos.forEach(info => {
+            info.load();
         });
     }
 
@@ -67,9 +93,11 @@ export class YJLoadAssets extends Component {
      */
     public release() {
         if (EDITOR) return;
-        this.assets?.forEach(asset => {
-            asset.decRef();
+        this.atlasInfos.forEach(info => {
+            info.release();
         });
-        this.assets = [];
+        this.spriteFrameInfos.forEach(info => {
+            info.release();
+        });
     }
 }
