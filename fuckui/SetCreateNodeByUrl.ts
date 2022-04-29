@@ -46,7 +46,8 @@ export class SetCreateNodeByUrl extends FuckUi {
     }
 
     onDestroy(){
-        this.template?.destroy();
+        if (this.template && this.template.isValid)
+            this.template.destroy();
     }
     
     public recycle() {

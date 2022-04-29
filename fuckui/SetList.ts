@@ -75,7 +75,8 @@ export class SetList extends FuckUi {
     }
 
     onDestroy(){
-        this.template?.destroy();
+        if (this.template && this.template.isValid)
+            this.template.destroy();
     }
     
     protected async onDataChange(data: any) {

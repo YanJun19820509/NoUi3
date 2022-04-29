@@ -35,7 +35,8 @@ export class SetCreateNode extends FuckUi {
     private needClearChildren = false;
 
     onDestroy() {
-        this.template?.destroy();
+        if (this.template && this.template.isValid)
+            this.template.destroy();
     }
 
     onDisable() {

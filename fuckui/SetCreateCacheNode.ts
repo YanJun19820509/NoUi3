@@ -34,7 +34,8 @@ export class SetCreateCacheNode extends FuckUi {
     private recycleType: string;
 
     onDestroy() {
-        this.template?.destroy();
+        if (this.template && this.template.isValid)
+            this.template.destroy();
     }
 
     protected onDataChange(data: any) {
