@@ -1,13 +1,16 @@
 import { SpriteFrame, Texture2D, ImageAsset, math, __private } from "cc";
+import { no } from "../no";
 import { MaxRects } from "./MaxRects";
 
 export class Atlas {
-    private _texture: DynamicAtlasTexture;
+    public _texture: DynamicAtlasTexture;
     private _maxRect: MaxRects;
     private _dynamicTextureRect: any;
+    public readonly uuid: number;
     // private _innerSpriteFrames: SpriteFrame[];
 
     constructor(width: number, height: number) {
+        this.uuid = no.sysTime.now;
         const texture = new DynamicAtlasTexture();
         texture.initWithSize(width, height);
         this._maxRect = new MaxRects(width, height);
@@ -82,6 +85,14 @@ export class Atlas {
         };
     }
 
+    public clearTexture(frame: SpriteFrame) {
+        let uuid = frame._uuid;
+        delete this._dynamicTextureRect[uuid];
+        let rect = frame.rect;
+        this._maxRect.reuseRect(rect.x, rect.y, rect.width, rect.height);
+        let img = this._createEmptyImage(frame.rect);
+        this._setSubImage(img, rect.x, rect.y);
+    }
 
     /**
      * @en
@@ -104,6 +115,25 @@ export class Atlas {
         let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
         let img = this._createImage(buffer, rect);
         this._setSubImage(img, x, y);
+    }
+
+    private _createEmptyImage(rect: math.Rect) {
+        let canvas = document.createElement('canvas');
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        let ctx = canvas.getContext("2d");
+        let imageData = ctx.createImageData(rect.width, rect.height);
+        let i = 0,
+            data = imageData.data,
+            length = data.length;
+        while (i < length) {
+            data[i++] = 0;
+            data[i++] = 0;
+            data[i++] = 0;
+            data[i++] = 0;
+        }
+        ctx.putImageData(imageData, 0, 0);
+        return canvas;
     }
 
     private _createImage(pixels: ArrayBufferView, rect: math.Rect) {

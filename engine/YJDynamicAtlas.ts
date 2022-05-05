@@ -1,7 +1,8 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Sprite, Renderable2D, dynamicAtlasManager, Texture2D } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D } from 'cc';
 import { EDITOR } from 'cc/env';
 import { Atlas } from './atlas';
+import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -54,6 +55,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     public clear(): void {
+        YJShowDynamicAtlasDebug.ins.remove(this.atlas);
         this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.reset();
         });
@@ -63,7 +65,10 @@ export class YJDynamicAtlas extends Component {
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
         if (!this.isWork) return;
-        if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
+        if (!this.atlas) {
+            this.atlas = new Atlas(this.width, this.height);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas);
+        }
         let texture = frames[0].texture as Texture2D;
         const p = this.atlas.drawAtlasTexture(texture);
         if (p) {
@@ -107,6 +112,12 @@ export class YJDynamicAtlas extends Component {
                 comp.renderData.updateRenderData(comp, frame);
             }
         }
+    }
+
+    public removeFromDynamicAtlas(frame: SpriteFrame): void {
+        if (!this.isWork || !this.atlas || !frame) return;
+        this.atlas.clearTexture(frame);
+        frame._resetDynamicAtlasFrame();
     }
 
     private insertSpriteFrame(spriteFrame: SpriteFrame) {

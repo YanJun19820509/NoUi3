@@ -66,12 +66,8 @@ class Rect {
 
 export class MaxRects {
     private _rects: Rect[] = [];
-    private _width: number;
-    private _height: number;
 
     constructor(width: number, height: number, padding = 2) {
-        this._width = width;
-        this._height = height;
         _padding = padding;
         this._addRect(_padding, _padding, width - _padding, height - _padding);
     }
@@ -119,6 +115,12 @@ export class MaxRects {
         return use.rect.origin;
     }
 
+    public reuseRect(x: number, y: number, w: number, h: number): void {
+        let r = Rect.new(x, y, w, h);
+        this._rects = this._joinRects(r, this._rects);
+    }
+
+
     private _getRectByOrigin(origin: Vec2, remove = true): Rect {
         for (let i = 0, n = this._rects.length; i < n; i++) {
             if (this._rects[i].saveOrigin(origin)) {
@@ -140,7 +142,7 @@ export class MaxRects {
         this._rects[this._rects.length] = r;
     }
 
-    private _mergeRects(arr: Rect[], target: Rect[]) {
+    private _mergeRects(arr: Rect[], target: Rect[]): Rect[] {
         for (let i = arr.length - 1; i >= 0; i--) {
             let a = arr[i];
             for (let j = target.length - 1; j >= 0; j--) {
@@ -155,6 +157,37 @@ export class MaxRects {
             }
         }
         target = target.concat(arr);
+        return target;
+    }
+
+    private _joinRects(r: Rect, target: Rect[]): Rect[] {
+        for (let j = target.length - 1; j >= 0; j--) {
+            let b = target[j];
+            if (b.rect.x == r.rect.x && b.rect.width == r.rect.width) {
+                if (b.rect.y == r.rect.y + r.rect.height + _padding) {
+                    b.rect.y = r.rect.y;
+                    b.rect.height = r.rect.height + b.rect.height + _padding;
+                    target.splice(j, 1);
+                    return this._joinRects(b, target);
+                } else if (r.rect.y == b.rect.y + b.rect.height + _padding) {
+                    b.rect.height = r.rect.height + b.rect.height + _padding;
+                    target.splice(j, 1);
+                    return this._joinRects(b, target);
+                }
+            } else if (b.rect.y == r.rect.y && b.rect.height == r.rect.height) {
+                if (b.rect.x == r.rect.x + r.rect.width + _padding) {
+                    b.rect.x = r.rect.x;
+                    b.rect.width = r.rect.width + b.rect.width + _padding;
+                    target.splice(j, 1);
+                    return this._joinRects(b, target);
+                } else if (r.rect.x == b.rect.x + b.rect.width + _padding) {
+                    b.rect.width = r.rect.width + b.rect.width + _padding;
+                    target.splice(j, 1);
+                    return this._joinRects(b, target);
+                }
+            }
+        }
+        target[target.length] = r;
         return target;
     }
 }

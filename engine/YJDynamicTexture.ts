@@ -41,7 +41,7 @@ export class YJDynamicTexture extends YJComponent {
 
     onEnable() {
         if (!this.enabledInHierarchy) return;
-        this.addUpdateHandlerByFrame(this.check, 2);
+        this.addUpdateHandlerByFrame(this.check, 1);
     }
 
     onDisable() {
@@ -50,10 +50,10 @@ export class YJDynamicTexture extends YJComponent {
 
     private check(): boolean {
         if (!this.dynamicAtlas || !this.dynamicAtlas.isWork) return false;
-        if (!this.enabledInHierarchy) return true;
         let label = this.getComponent(Label);
-        if (!label) return false;
-        if (label.string != '' && !label.ttfSpriteFrame.original) {
+        if (!label || label.string == '') return false;
+        if (!label.ttfSpriteFrame) return true;
+        if (!label.ttfSpriteFrame.original) {
             this.setLabelDynamicAtlas(label);
         }
         return false;
@@ -70,6 +70,7 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     public afterChange() {
+        if (!this.dynamicAtlas?.isWork) return;
         let sprite = this.getComponent(Sprite);
         if (sprite) {
             this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame);
@@ -77,19 +78,20 @@ export class YJDynamicTexture extends YJComponent {
     }
     public reset() {
         if (!this.dynamicAtlas?.isWork) return;
-        if (this.enabledInHierarchy && this.getComponent(Sprite) && this.getComponent(Sprite).spriteFrame && !this.getComponent(Sprite).spriteFrame.original) {
+        let a = this.getComponent(Sprite);
+        if (!a || !a.spriteFrame || !a.spriteFrame.original) {
             return;
         }
-        this.getComponent(Sprite)?.spriteFrame?._resetDynamicAtlasFrame();
+        a.spriteFrame._resetDynamicAtlasFrame();
     }
 
     public resetLabel(needCheck = true): void {
         if (!this.dynamicAtlas?.isWork) return;
-        this.clearUpdateHandlers();
         let label = this.getComponent(Label);
         if (!label) return;
-        label.ttfSpriteFrame?._resetDynamicAtlasFrame();
-        needCheck && this.addUpdateHandlerByFrame(this.check, 2);
+        this.clearUpdateHandlers();
+        this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+        needCheck && this.addUpdateHandlerByFrame(this.check, 1);
     }
 
 }

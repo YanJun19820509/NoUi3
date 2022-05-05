@@ -1,5 +1,6 @@
 
 import { _decorator, Label } from 'cc';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -78,8 +79,10 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     private setLabel(str: string): void {
-        if (this.label)
+        if (this.label) {
+            this.getComponent(YJDynamicTexture)?.resetLabel();
             this.label.string = str || '';
+        }
     }
 
     private setPercent(v: number) {
