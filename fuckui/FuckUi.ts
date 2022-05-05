@@ -83,6 +83,16 @@ export class FuckUi extends Component {
         this._oldData = null;
     }
 
+    public resetData(): void {
+        if (!this._oldData) return;
+        let d = this._oldData;
+        if (d != '')
+            d = JSON.parse(d);
+        this.logValue(d);
+        this.onDataChange(d);
+    }
+
+
     protected get dataSetted(): boolean {
         return this._oldData != null;
     }
