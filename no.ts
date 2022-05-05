@@ -84,6 +84,59 @@ export namespace no {
     */
     export const evn = new Event();
 
+    class State {
+        private _states: any;
+        private _watchers: any;
+
+        constructor() {
+            this._states = {};
+            this._watchers = {};
+        }
+
+        public set(type: string, value?: any): void {
+            this._states[type] = { v: value, t: sysTime.now };
+        }
+
+        public on(type: string, target: Component) {
+            this._watchers[type] = this._watchers[type] || {};
+            this._watchers[type][target.uuid] = sysTime.now;
+        }
+
+
+        public off(type: string, target: Component) {
+            if (this._watchers[type])
+                delete this._watchers[type][target.uuid];
+        }
+
+        public clear(type: string) {
+            delete this._states[type];
+            delete this._watchers[type];
+        }
+
+        public clearAll(): void {
+            this._states = {};
+            this._watchers = {};
+        }
+
+        public check(type: string, target: Component): { state: boolean, value?: any } {
+            let c = { state: false, value: null };
+            let b: { v: any, t: number } = this._states[type];
+            if (!b) return c;
+            let a = this._watchers[type];
+            if (!a) {
+                this._watchers[type] = {};
+            } else if (a[target.uuid] == b.t) return c;
+            this._watchers[type][target.uuid] = b.t;
+            c.state = true;
+            c.value = b.v;
+            return c;
+        }
+    }
+    /**
+    * 状态系统
+    */
+    export const state = new State();
+
     class st {
         private _time: number;
 
