@@ -29,6 +29,8 @@ const { ccclass, property, disallowMultiple } = _decorator;
 export class YJDynamicTexture extends YJComponent {
     @property({ type: YJDynamicAtlas })
     dynamicAtlas: YJDynamicAtlas = null;
+    @property
+    needClear: boolean = false;
 
     onLoad() {
         let label = this.getComponent(Label);
@@ -90,7 +92,9 @@ export class YJDynamicTexture extends YJComponent {
         let label = this.getComponent(Label);
         if (!label) return;
         this.clearUpdateHandlers();
-        this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+        if (this.needClear)
+            this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+        else label.ttfSpriteFrame?._resetDynamicAtlasFrame();
         needCheck && this.addUpdateHandlerByFrame(this.check, 1);
     }
 

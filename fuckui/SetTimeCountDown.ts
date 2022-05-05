@@ -51,6 +51,11 @@ export class SetTimeCountDown extends FuckUi {
     private _countDown: number;
     private _max: number;
 
+    onLoad() {
+        super.onLoad();
+        if (this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).needClear = true;
+    }
+
     protected onDataChange(data: any) {
         let a = Number(data);
         this._countDown = a;
