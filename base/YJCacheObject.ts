@@ -20,7 +20,7 @@ const { ccclass, property, menu } = _decorator;
 export class YJCacheObject extends Component {
     @property({ displayName: '回收类型' })
     recycleType: string = '';
-    @property({ visible() { return !this.resetOnDisable; } })
+    @property
     recycleOnDisable: boolean = false;
     @property({ displayName: '需要释放' })
     needRelease: boolean = true;

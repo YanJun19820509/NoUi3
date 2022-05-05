@@ -1336,7 +1336,7 @@
   },
   {
     "__type__": "EventHandlerInfo",
-    "hander": {
+    "handler": {
       "__id__": 67
     }
   },
