@@ -32,8 +32,8 @@ export class LoadAssetsInfo {
         });
     }
 
-    public release(): void {
-        no.assetBundleManager.release(this.assetUuid);
+    public release(force = false): void {
+        no.assetBundleManager.release(this.assetUuid, force);
     }
 
 }
@@ -77,7 +77,7 @@ export class YJLoadAssets extends Component {
         let n = 0;
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
-                // this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
+                this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
                 ++n;
             });
         });
@@ -90,10 +90,10 @@ export class YJLoadAssets extends Component {
     public release() {
         if (EDITOR) return;
         this.atlasInfos.forEach(info => {
-            info.release();
+            info.release(true);
         });
         this.spriteFrameInfos.forEach(info => {
-            info.release();
+            info.release(false);
         });
     }
 }

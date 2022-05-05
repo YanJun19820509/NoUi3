@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset } from 'cc';
-import { EDITOR, WECHAT } from 'cc/env';
+import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
@@ -1957,11 +1957,18 @@ export namespace no {
             });
         }
 
-        public release(asset: Asset | string): void {
+        /**
+         * 释放资源
+         * @param asset 资源对象或uuid
+         * @param force 是否强制释放，默认false
+         * @returns 
+         */
+        public release(asset: Asset | string, force = false): void {
             if (!asset) return;
             if (typeof asset == 'string') asset = assetManager.assets.get(asset);
             if (!asset) return;
-            assetManager.releaseAsset(asset);
+            if (force) assetManager.releaseAsset(asset);
+            else asset.decRef();
         }
 
     }
@@ -1973,7 +1980,7 @@ export namespace no {
     class CachePool {
         private uuid: number;
         private cacheMap: Map<string, { o: any, t: number }[]>;
-        private checkDuration = 10;
+        private checkDuration = DEBUG ? 2 : 60;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
             setInterval(() => {
