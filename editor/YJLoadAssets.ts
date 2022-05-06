@@ -32,8 +32,12 @@ export class LoadAssetsInfo {
         });
     }
 
-    public release(force = false): void {
-        no.assetBundleManager.release(this.assetUuid, force);
+    public release(cb?: (asset: Asset) => void, force = false): void {
+        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        if (file) {
+            cb?.(file);
+            no.assetBundleManager.release(file, force);
+        }
     }
 
 }
@@ -90,10 +94,15 @@ export class YJLoadAssets extends Component {
     public release() {
         if (EDITOR) return;
         this.atlasInfos.forEach(info => {
-            info.release(true);
+            info.release((file: SpriteAtlas) => {
+                let a = file.getSpriteFrames();
+                a.forEach(sf => {
+                    sf._resetDynamicAtlasFrame();
+                });
+            }, true);
         });
         this.spriteFrameInfos.forEach(info => {
-            info.release(false);
+            info.release(null, false);
         });
     }
 }

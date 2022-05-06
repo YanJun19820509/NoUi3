@@ -74,12 +74,13 @@ export class SetList extends FuckUi {
         this._loaded = true;
     }
 
-    onDestroy(){
+    onDestroy() {
         if (this.template && this.template.isValid)
             this.template.destroy();
     }
-    
+
     protected async onDataChange(data: any) {
+        if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; });
         let a = [].concat(data);
         if (this.columnNumber > 1) {
@@ -98,6 +99,7 @@ export class SetList extends FuckUi {
     }
 
     private async initItems() {
+        if (!this.node.isValid) return;
         await no.waitFor(() => { return this.template != null; });
         if (this.isVertical) {
             this.contentSize = this.allNum * this.itemSize.height;
@@ -117,6 +119,7 @@ export class SetList extends FuckUi {
     }
 
     private async setList(start: number) {
+        if (!this.node.isValid) return;
         await no.waitFor(() => { return this.listItems.length >= this.showNum; });
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {

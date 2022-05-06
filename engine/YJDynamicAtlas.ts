@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, math } from 'cc';
 import { EDITOR } from 'cc/env';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
@@ -56,9 +56,9 @@ export class YJDynamicAtlas extends Component {
 
     public clear(): void {
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
-        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
-            a.reset();
-        });
+        // this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+        //     a.reset();
+        // });
         this.atlas?.destroy();
         this.atlas = null;
     }
@@ -100,6 +100,7 @@ export class YJDynamicAtlas extends Component {
             this.atlas = new Atlas(this.width, this.height);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
         }
+
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             if (comp instanceof Label || comp instanceof RichText) {
                 if (comp.string == '') return;
@@ -107,13 +108,21 @@ export class YJDynamicAtlas extends Component {
             }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame) {
-                frame._setDynamicAtlasFrame(packedFrame);
+                let root = math.rect(0, 0, this.width, this.height);
+                comp.setTextureDirty();
                 if (comp instanceof Label) {
+                    frame._setDynamicAtlasFrame(packedFrame);
                     comp['_assembler'].updateVertexData(comp);
                     comp['_assembler'].updateUVs(comp);
+                    comp.renderData.updateRenderData(comp, frame);
+                    // console.log(root.containsRect(frame.rect), comp.node.name);
+                } else if (comp instanceof Sprite) {
+                    let ff = frame.clone();
+                    ff._setDynamicAtlasFrame(packedFrame);
+                    comp.spriteFrame = ff;
+                    comp.renderData.updateRenderData(comp, ff);
+                    // console.log(root.containsRect(ff.rect), comp.node.name);
                 }
-                comp.setTextureDirty();
-                comp.renderData.updateRenderData(comp, frame);
             }
         }
     }

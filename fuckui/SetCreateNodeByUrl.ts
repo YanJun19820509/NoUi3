@@ -45,37 +45,22 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
-    onDestroy(){
+    onDestroy() {
         if (this.template && this.template.isValid)
             this.template.destroy();
-    }
-    
-    public recycle() {
-        if (this.pref && this.pref.refCount > 0) {
-            no.cachePool.recycle(this.url, this.pref);
-        }
-        else no.assetBundleManager.release(this.pref);
     }
 
     protected onDataChange(d: any) {
         let { url, data }: { url: string, data: any[] } = d;
         if (url && this.url != url) {
-            if (this.pref) {
-                no.cachePool.recycle(this.url, this.pref);
-            }
             this.container?.removeAllChildren();
             this.url = url;
-            let pf = no.cachePool.reuse<Prefab>(url);
-            if (pf) {
-                this.pref = pf;
-                this.template = instantiate(pf)
+            no.assetBundleManager.loadPrefab(url, item => {
+                // this.pref = item;
+                this.template = instantiate(item)
                 this.setItems(data);
-            } else
-                no.assetBundleManager.loadPrefab(url, item => {
-                    this.pref = item;
-                    this.template = instantiate(item)
-                    this.setItems(data);
-                });
+                item.decRef();
+            });
         } else {
             this.setItems(data);
         }

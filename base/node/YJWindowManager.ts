@@ -62,6 +62,7 @@ export class YJWindowManager extends Component {
         a.initPanel().then(() => {
             content.addChild(node);
         });
+        pf.decRef();
     }
 
     /**
@@ -82,12 +83,9 @@ export class YJWindowManager extends Component {
             return;
         }
         let url = comp.prototype[YJPanelPrefabMetaKey];
-        let pf = no.cachePool.reuse<Prefab>(url);
-        if (!pf)
-            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-                this.initPrefab(pf, comp as (typeof YJPanel), content, onInit);
-            });
-        else this.initPrefab(pf, comp, content, onInit);
+        no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+            this.initPrefab(pf, comp as (typeof YJPanel), content, onInit);
+        });
     }
 
     public static async OpenPanel(name: string, to: string) {
@@ -102,12 +100,9 @@ export class YJWindowManager extends Component {
         }
 
         let url = comp.prototype[YJPanelPrefabMetaKey];
-        let pf = no.cachePool.reuse<Prefab>(url);
-        if (!pf)
-            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-                this.initPrefab(pf, comp, content);
-            });
-        else this.initPrefab(pf, comp, content);
+        no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+            this.initPrefab(pf, comp, content);
+        });
     }
 
     public static async OpenPanelAndCloseOther(name: string, to: string) {

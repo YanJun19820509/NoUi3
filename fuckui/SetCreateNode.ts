@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
+import { _decorator, Node, instantiate } from 'cc';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
@@ -29,6 +29,8 @@ export class SetCreateNode extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+    @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
+    onlyOne: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
 
@@ -53,13 +55,17 @@ export class SetCreateNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
-            await this.template.getComponent(YJLoadAssets)?.load();
         }
         if (!this.container) this.container = this.node;
 
         if (this.needClearChildren) {
             this.container.removeAllChildren();
             this.needClearChildren = false;
+        }
+
+        if (this.onlyOne) {
+            this.setDynamicAtlasNode(data[0]);
+            return;
         }
 
         let n = data.length
@@ -87,6 +93,22 @@ export class SetCreateNode extends FuckUi {
                     a.init();
                 }
             }
+        }
+    }
+
+    private async setDynamicAtlasNode(data: any) {
+        if (data == null) return;
+        let item = this.container.children[0];
+        if (!item) {
+            item = this.template;
+            await item.getComponent(YJLoadAssets)?.load();
+            item.parent = this.container;
+        }
+        item.active = true;
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a && data) {
+            a.data = data;
+            a.init();
         }
     }
 }

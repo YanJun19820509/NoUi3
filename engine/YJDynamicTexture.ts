@@ -51,7 +51,7 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     private check(): boolean {
-        if (!this.dynamicAtlas || !this.dynamicAtlas.isWork) return false;
+        if (!this.dynamicAtlas?.isWork) return false;
         let label = this.getComponent(Label);
         if (!label || label.string == '') return false;
         if (!label.ttfSpriteFrame) return true;
@@ -63,7 +63,7 @@ export class YJDynamicTexture extends YJComponent {
 
     private async setLabelDynamicAtlas(label: Label) {
         await no.waitFor(() => { return !label['_renderDataFlag']; });
-        this.dynamicAtlas.packToDynamicAtlas(label, label.ttfSpriteFrame);
+        this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
     }
 
     public init() {
@@ -79,19 +79,19 @@ export class YJDynamicTexture extends YJComponent {
         }
     }
     public reset() {
-        if (!this.dynamicAtlas?.isWork) return;
-        let a = this.getComponent(Sprite);
-        if (!a || !a.spriteFrame || !a.spriteFrame.original) {
-            return;
-        }
-        a.spriteFrame._resetDynamicAtlasFrame();
+        // if (!this.dynamicAtlas?.isWork) return;
+        // let a = this.getComponent(Sprite);
+        // if (!a || !a.spriteFrame || !a.spriteFrame.original) {
+        //     return;
+        // }
+        // a.spriteFrame._resetDynamicAtlasFrame();
     }
 
     public resetLabel(needCheck = true): void {
+        this.clearUpdateHandlers();
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label) return;
-        this.clearUpdateHandlers();
         if (this.needClear)
             this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else label.ttfSpriteFrame?._resetDynamicAtlasFrame();

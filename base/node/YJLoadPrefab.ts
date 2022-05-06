@@ -21,35 +21,25 @@ export default class YJLoadPrefab extends Component {
     private url: string;
     public loaded: boolean = false;
     public loadedNode: Node = null;
-    private pref: Prefab = null;
+    private prefUuid: string;
 
     onLoad() {
         if (!this.autoLoad) return;
         this.loadPrefab();
     }
 
-    public recycle() {
-        if (this.pref && this.pref.refCount > 0) {
-            no.cachePool.recycle(this.url, this.pref);
-        }
-        else no.assetBundleManager.release(this.pref);
+    onDestroy() {
+        no.assetBundleManager.release(this.prefUuid, true);
     }
 
     public async loadPrefab(): Promise<Node> {
         if (this.loadedNode != null && this.loadedNode.isValid) return this.loadedNode;
         this.url = this.prefabUrl.replace('db://assets/', '').replace('.prefab', '');
-        let pf = no.cachePool.reuse<Prefab>(this.url);
-        if (pf) {
-            this.pref = pf;
-            this.loadedNode = instantiate(pf);
-            this.loaded = true;
-            return this.loadedNode;
-        }
         return new Promise<Node>(resolve => {
             no.assetBundleManager.loadPrefab(this.url, (p) => {
                 if (p == null) resolve(null);
                 else {
-                    this.pref = p;
+                    this.prefUuid = p._uuid;
                     this.loadedNode = instantiate(p);
                     this.loaded = true;
                     resolve(this.loadedNode);

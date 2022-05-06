@@ -1971,6 +1971,10 @@ export namespace no {
             else asset.decRef();
         }
 
+        public getAssetFromCache(uuid: string): Asset {
+            return assetManager.assets.get(uuid);
+        }
+
     }
 
     /**全局资源管理器 */
@@ -1980,7 +1984,7 @@ export namespace no {
     class CachePool {
         private uuid: number;
         private cacheMap: Map<string, { o: any, t: number }[]>;
-        private checkDuration = DEBUG ? 2 : 60;
+        private checkDuration = DEBUG ? 10 : 60;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
             setInterval(() => {
