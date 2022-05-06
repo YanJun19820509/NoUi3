@@ -102,13 +102,17 @@ export class SetCreateNode extends FuckUi {
         if (!item) {
             item = this.template;
             await item.getComponent(YJLoadAssets)?.load();
+            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+            if (a) {
+                a.data = data;
+            }
             item.parent = this.container;
-        }
-        item.active = true;
-        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-        if (a && data) {
-            a.data = data;
-            a.init();
+        } else {
+            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+            if (a) {
+                a.data = data;
+                a.init();
+            }
         }
     }
 }
