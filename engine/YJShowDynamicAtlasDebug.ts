@@ -27,24 +27,26 @@ export class YJShowDynamicAtlasDebug {
         return this._ins;
     }
 
-    private list: Atlas[];
+    private list: any;
     private _debugNode: Node;
 
     constructor() {
-        this.list = [];
+        this.list = {};
     }
 
-    public add(a: Atlas): void {
-        no.addToArray(this.list, a, 'uuid');
+    public add(a: Atlas, name: string): void {
+        if (!a || !name) return;
+        this.list[name] = a;
     }
 
-    public remove(a: Atlas): void {
-        no.removeFromArray(this.list, a, 'uuid');
+    public remove(name: string): void {
+        if (!name) return;
+        delete this.list[name];
     }
 
-    public showDebug(show: boolean) {
+    public showDebug(name?: string) {
         if (!DEBUG) return;
-        if (show) {
+        if (name) {
             if (!this._debugNode || !this._debugNode.isValid) {
 
                 this._debugNode = new Node('DYNAMIC_ATLAS_DEBUG_NODE');
@@ -75,7 +77,7 @@ export class YJShowDynamicAtlasDebug {
                 // content.parent = this._debugNode;
 
 
-                let texture = this.list[this.list.length - 1]._texture;
+                let texture = this.list[name]._texture;
 
                 let node = new Node('ATLAS');
                 node.addComponent(UITransform);
@@ -101,6 +103,6 @@ export class YJShowDynamicAtlasDebug {
 
 }
 
-window['showDynamicAtlas'] = function (v: boolean) {
-    YJShowDynamicAtlasDebug.ins.showDebug(v);
+window['showDynamicAtlas'] = function (name?: string) {
+    YJShowDynamicAtlasDebug.ins.showDebug(name);
 };

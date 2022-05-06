@@ -55,7 +55,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     public clear(): void {
-        YJShowDynamicAtlasDebug.ins.remove(this.atlas);
+        YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
             a.reset();
         });
@@ -67,7 +67,7 @@ export class YJDynamicAtlas extends Component {
         if (!this.isWork) return;
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
         }
         let texture = frames[0].texture as Texture2D;
         const p = this.atlas.drawAtlasTexture(texture);
@@ -96,6 +96,10 @@ export class YJDynamicAtlas extends Component {
      */
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame) {
         if (!this.isWork) return;
+        if (!this.atlas) {
+            this.atlas = new Atlas(this.width, this.height);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
+        }
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             if (comp instanceof Label || comp instanceof RichText) {
                 if (comp.string == '') return;
