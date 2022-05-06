@@ -2,6 +2,7 @@
 import { _decorator, Label, RichText } from 'cc';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
 const { ccclass, property, menu } = _decorator;
@@ -25,7 +26,7 @@ export class SetText extends FuckUi {
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
 
-    private label: Label | RichText;
+    private label: Label | RichText | YJCharLabel;
 
     protected onDataChange(data: any) {
         if (typeof data == 'object') {
@@ -34,7 +35,7 @@ export class SetText extends FuckUi {
             }
         }
         if (!this.label) {
-            this.label = this.node.getComponent(Label) || this.node.getComponent(RichText);
+            this.label = this.node.getComponent(Label) || this.node.getComponent(RichText) || this.node.getComponent(YJCharLabel);
         }
         this.getComponent(YJDynamicTexture)?.resetLabel();
         this.setLabel(data);

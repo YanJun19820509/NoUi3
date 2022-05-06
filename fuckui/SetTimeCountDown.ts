@@ -2,6 +2,7 @@
 import { _decorator, Label } from 'cc';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -25,6 +26,8 @@ export class SetTimeCountDown extends FuckUi {
     isLabel: boolean = true;
     @property({ type: Label, visible() { return this.isLabel; } })
     label: Label = null;
+    @property({ type: YJCharLabel, visible() { return this.isLabel; } })
+    charLabel: YJCharLabel = null;
     @property({ displayName: '格式化模板', visible() { return this.isLabel; } })
     formatter: string = '{h}:{m}:{s}';
     @property({ displayName: '用0补位', visible() { return this.isLabel; } })
@@ -87,7 +90,7 @@ export class SetTimeCountDown extends FuckUi {
         if (this.label) {
             this.getComponent(YJDynamicTexture)?.resetLabel();
             this.label.string = str || '';
-        }
+        } else if (this.charLabel) this.charLabel.string = str || '';
     }
 
     private setPercent(v: number) {
