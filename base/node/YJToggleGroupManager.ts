@@ -25,17 +25,29 @@ export class YJToggleGroupManager extends Component {
     @property({ tooltip: '是否能重复点击，默认false，checked后点击无效' })
     redo: boolean = false;
 
+    @property({ tooltip: '在disable时重置选中项' })
+    reset: boolean = true;
+
     private checkedToggleUuid: string = null;
+    private defaultCheckedIdx: number;
 
     onEnable() {
         let items = this.getComponent(ToggleContainer).toggleItems;
         for (let i = 0, n = items.length; i < n; i++) {
             let toggle = items[i];
+            if (this.defaultCheckedIdx != null && this.reset) {
+                toggle.isChecked = this.defaultCheckedIdx == i;
+            }
             if (toggle.isChecked) {
+                if (this.defaultCheckedIdx == null) this.defaultCheckedIdx = i;
                 this.a_onCheck(toggle);
                 break;
             }
         }
+    }
+
+    onDisable() {
+        this.checkedToggleUuid = null;
     }
 
     public a_onCheck(toggle: Toggle): void {
