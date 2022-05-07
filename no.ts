@@ -1982,15 +1982,13 @@ export namespace no {
 
     /**缓存池 */
     class CachePool {
-        private uuid: number;
         private cacheMap: Map<string, { o: any, t: number }[]>;
-        private checkDuration = DEBUG ? 10 : 60;
+        private checkDuration = 60;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
             setInterval(() => {
                 this.checkClear();
             }, this.checkDuration * 500);
-            this.uuid = sysTime.now;
         }
 
         /**

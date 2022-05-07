@@ -5,6 +5,7 @@ import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
+import { YJReleasePrefab } from '../base/node/YJReleasePrefab';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -80,6 +81,7 @@ export class AutoCreateNode extends Component {
             this.size = new Size(config.width, config.height);
             this.node.addComponent(YJDynamicAtlas);
             this.node.getComponent(UITransform).setContentSize(this.size);
+            this.node.addComponent(YJReleasePrefab);
             this.parent = this.node.getChildByName('Canvas') || this.node;
             if (!this.node.getComponent(Widget)) {
                 let widget = this.node.addComponent(Widget);

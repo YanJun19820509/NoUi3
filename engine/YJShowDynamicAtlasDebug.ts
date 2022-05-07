@@ -101,8 +101,17 @@ export class YJShowDynamicAtlasDebug {
         }
     }
 
+    public logNames(): void {
+        let keys = Object.keys(this.list);
+        console.log(keys);
+    }
+
 }
 
 window['showDynamicAtlas'] = function (name?: string) {
     YJShowDynamicAtlasDebug.ins.showDebug(name);
+};
+
+window['showDynamicAtlasNames'] = function () {
+    YJShowDynamicAtlasDebug.ins.logNames();
 };
