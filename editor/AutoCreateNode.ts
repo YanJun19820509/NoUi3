@@ -79,9 +79,11 @@ export class AutoCreateNode extends Component {
         try {
             // console.log('createNodes', config);
             this.size = new Size(config.width, config.height);
-            this.node.addComponent(YJDynamicAtlas);
+            if (!this.node.getComponent(YJDynamicAtlas))
+                this.node.addComponent(YJDynamicAtlas);
             this.node.getComponent(UITransform).setContentSize(this.size);
-            this.node.addComponent(YJReleasePrefab);
+            if (!this.node.getComponent(YJReleasePrefab))
+                this.node.addComponent(YJReleasePrefab);
             this.parent = this.node.getChildByName('Canvas') || this.node;
             if (!this.node.getComponent(Widget)) {
                 let widget = this.node.addComponent(Widget);
@@ -162,6 +164,7 @@ export class AutoCreateNode extends Component {
                 break;
             }
         }
+        console.log(cname);
         if (!n) {
             n = new Node(name);
             n.layer = Layers.Enum.UI_2D;

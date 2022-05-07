@@ -69,7 +69,7 @@ export class Atlas {
 
     public drawAtlasTexture(texture: Texture2D) {
         let p = this._maxRect.find(texture.width, texture.height);
-        if (!p) return null;
+        if (!p || !texture._mipmaps[0]) return null;
         this._setSubImage(texture._mipmaps[0], p.x, p.y);
         return {
             x: p.x,
