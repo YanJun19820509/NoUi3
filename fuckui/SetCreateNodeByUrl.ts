@@ -1,6 +1,8 @@
 
 import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
+import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -34,14 +36,11 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     private template: Node;
     private url: string;
-    private pref: Prefab;
-
-    private needClearChildren = false;
 
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.needClearChildren = true;
+            this.clear();
         }
     }
 
@@ -53,10 +52,9 @@ export class SetCreateNodeByUrl extends FuckUi {
     protected onDataChange(d: any) {
         let { url, data }: { url: string, data: any[] } = d;
         if (url && this.url != url) {
-            this.container?.removeAllChildren();
+            this.clear();
             this.url = url;
             no.assetBundleManager.loadPrefab(url, item => {
-                // this.pref = item;
                 this.template = instantiate(item)
                 this.setItems(data);
                 item.decRef();
@@ -69,11 +67,6 @@ export class SetCreateNodeByUrl extends FuckUi {
     private setItems(data: any[]) {
         if (!this.template) return;
         if (!this.container) this.container = this.node;
-
-        if (this.needClearChildren) {
-            this.container.removeAllChildren();
-            this.needClearChildren = false;
-        }
 
         let n = data.length
         let l = this.container.children.length;
@@ -100,5 +93,11 @@ export class SetCreateNodeByUrl extends FuckUi {
                 }
             }
         }
+    }
+
+    private clear() {
+        this.container?.children.forEach(child => {
+            child.destroy();
+        });
     }
 }

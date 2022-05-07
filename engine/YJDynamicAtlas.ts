@@ -32,35 +32,33 @@ export class YJDynamicAtlas extends Component {
     autoFindDynamicTextures: boolean = false;
 
     private atlas: Atlas;
-    private needInit: boolean = false;
+    // private needInit: boolean = false;
 
-    onLoad() {
-        this.needInit = false;
-    }
+    // onLoad() {
+    //     this.needInit = false;
+    // }
 
-    onEnable() {
-        if (!this.isWork) return;
-        if (!this.needInit) return;
-        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
-            a.init();
-        });
-    }
+    // onEnable() {
+    //     if (!this.isWork) return;
+    //     if (!this.needInit) return;
+    //     this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+    //         a.init();
+    //     });
+    // }
 
-    onDisable() {
-        if (!this.isWork || !this.atlas) return;
-        this.needInit = true;
-        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
-            a.reset();
-        });
+    // onDisable() {
+    //     if (!this.isWork || !this.atlas) return;
+    //     this.needInit = true;
+    // }
+
+    onDestroy(){
+        YJShowDynamicAtlasDebug.ins.remove(this.node.name);
+        this.atlas?.destroy();
+        this.atlas = null;
     }
 
     public clear(): void {
-        YJShowDynamicAtlasDebug.ins.remove(this.node.name);
-        // this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
-        //     a.reset();
-        // });
-        this.atlas?.destroy();
-        this.atlas = null;
+        
     }
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {

@@ -78,14 +78,6 @@ export class YJDynamicTexture extends YJComponent {
             this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame);
         }
     }
-    public reset() {
-        // if (!this.dynamicAtlas?.isWork) return;
-        // let a = this.getComponent(Sprite);
-        // if (!a || !a.spriteFrame || !a.spriteFrame.original) {
-        //     return;
-        // }
-        // a.spriteFrame._resetDynamicAtlasFrame();
-    }
 
     public resetLabel(needCheck = true): void {
         this.clearUpdateHandlers();

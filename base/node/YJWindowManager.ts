@@ -31,11 +31,16 @@ export class LayerInfo {
 export class YJWindowManager extends Component {
     @property(LayerInfo)
     infos: LayerInfo[] = [];
+    @property({ displayName: '清理间隔时长(s)', min: 3, step: 1 })
+    duration: number = 10;
 
     private static _ins: YJWindowManager;
 
     onLoad() {
         YJWindowManager._ins = this;
+        this.schedule(() => {
+            this.clearClosedPanel();
+        }, 3);
     }
 
     onDestroy() {
@@ -79,7 +84,10 @@ export class YJWindowManager extends Component {
 
         let a = content.getComponentInChildren(comp);
         if (a != null) {
+            a.node.active = true;
+            a.node.setSiblingIndex(content.children.length - 1);
             onInit?.(a as T);
+            a.initPanel();
             return;
         }
         let url = comp.prototype[YJPanelPrefabMetaKey];
@@ -95,7 +103,10 @@ export class YJWindowManager extends Component {
         let comp = js.getClassByName(name) as (typeof YJPanel);
         let a = content.getComponentInChildren(comp);
         if (a != null) {
-            console.log('Cant OpenPanel', name, to);
+            // console.log('Cant OpenPanel', name, to);
+            a.node.active = true;
+            a.node.setSiblingIndex(content.children.length - 1);
+            a.initPanel();
             return;
         }
 
@@ -158,6 +169,20 @@ export class YJWindowManager extends Component {
         let self = YJWindowManager._ins;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             this.closePanelIn(self.infos[i].type);
+        }
+    }
+
+    private clearClosedPanel() {
+        let t = no.sysTime.now;
+        for (let i = 0, n = this.infos.length; i < n; i++) {
+            YJWindowManager._ins.getContent(this.infos[i].type).then(content => {
+                content.children.forEach(node => {
+                    let panel = node.getComponent(YJPanel);
+                    if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                        panel.clear();
+                    }
+                });
+            });
         }
     }
 }

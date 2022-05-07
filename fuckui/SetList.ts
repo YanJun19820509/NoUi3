@@ -37,6 +37,9 @@ export class SetList extends FuckUi {
     @property({ displayName: '数据更新时自动回滚到第1个' })
     autoScrollBack: boolean = false;
 
+    @property({ tooltip: 'disable时清除子节点' })
+    clearOnDisable: boolean = true;
+
     private listData: any[];
     private listItems: Node[] = [];
     private viewSize: Size;
@@ -74,6 +77,15 @@ export class SetList extends FuckUi {
         this._loaded = true;
     }
 
+    onDisable() {
+        if (this.clearOnDisable) {
+            this.listItems?.forEach(item => {
+                item.destroy();
+            });
+            this.listItems = [];
+        }
+    }
+
     onDestroy() {
         if (this.template && this.template.isValid)
             this.template.destroy();
@@ -87,7 +99,7 @@ export class SetList extends FuckUi {
             a = no.arrayToArrays(a, this.columnNumber);
         }
         this.allNum = a.length;
-        if (this.listData?.length != this.allNum) {
+        if (this.listItems.length == 0 || this.listData?.length != this.allNum) {
             if (this.showMax >= this.allNum) this.showNum = this.allNum;
             else this.showNum = this.showMax + 2;
             this.initItems();

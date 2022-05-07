@@ -38,6 +38,8 @@ export class YJPanel extends Component {
     /**面板关闭事件 */
     public static PanelCloseEvent = '_PanelClose';
 
+    public lastCloseTime: number = -1;
+
     @property
     panelType: string = 'popup_panel';
 
@@ -48,11 +50,13 @@ export class YJPanel extends Component {
     onClose: no.EventHandlerInfo[] = [];
 
     onEnable() {
+        this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
     }
 
     onDisable() {
+        this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
     }
 
@@ -65,14 +69,18 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
-        this.getComponentsInChildren(YJLoadPrefab).forEach(a => {
-            a.clear();
-        });
-        this.getComponentsInChildren(YJDynamicAtlas).forEach(a => {
-            a.clear();
-        });
         no.EventHandlerInfo.execute(this.onClose);
         this.onClosePanel();
+        this.node.active = false;
+    }
+
+    public clear() {
+        // this.getComponentsInChildren(YJLoadPrefab).forEach(a => {
+        //     a.clear();
+        // });
+        // this.getComponentsInChildren(YJDynamicAtlas).forEach(a => {
+        //     a.clear();
+        // });
         this.node.destroy();
     }
 

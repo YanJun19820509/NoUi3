@@ -3,6 +3,7 @@ import { _decorator, Node, instantiate } from 'cc';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -34,17 +35,17 @@ export class SetCreateNode extends FuckUi {
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
 
-    private needClearChildren = false;
-
     onDestroy() {
-        if (this.template && this.template.isValid)
+        if (this.loadPrefab && this.template && this.template.isValid)
             this.template.destroy();
     }
 
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.needClearChildren = true;
+            this.container?.children.forEach(child => {
+                child.destroy();
+            });
         }
     }
 
@@ -57,11 +58,6 @@ export class SetCreateNode extends FuckUi {
             this.template = await this.loadPrefab.loadPrefab();
         }
         if (!this.container) this.container = this.node;
-
-        if (this.needClearChildren) {
-            this.container.removeAllChildren();
-            this.needClearChildren = false;
-        }
 
         if (this.onlyOne) {
             this.setDynamicAtlasNode(data[0]);
@@ -81,7 +77,7 @@ export class SetCreateNode extends FuckUi {
                 item.parent = this.container;
             }
         }
-        // n = this.container.children.length;
+        
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) item.active = false;
@@ -102,17 +98,12 @@ export class SetCreateNode extends FuckUi {
         if (!item) {
             item = this.template;
             await item.getComponent(YJLoadAssets)?.load();
-            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-            if (a) {
-                a.data = data;
-            }
-            item.parent = this.container;
-        } else {
-            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-            if (a) {
-                a.data = data;
-                a.init();
-            }
         }
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            a.data = data;
+        }
+        if (!item.parent) item.parent = this.container;
+        else a?.init();
     }
 }
