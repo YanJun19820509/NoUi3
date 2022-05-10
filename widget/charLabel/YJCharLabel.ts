@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, UITransform, Label, Layers } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, Layers } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -64,7 +64,12 @@ export class YJCharLabel extends Component {
             if (a[i]) {
                 labelNode.active = true;
                 labelNode.getComponent(SetText).setData(JSON.stringify(a[i]));
-            } else labelNode.active = false;
+            } else {
+                if (EDITOR)
+                    labelNode.destroy();
+                else
+                    labelNode.active = false;
+            }
         }
     }
 
