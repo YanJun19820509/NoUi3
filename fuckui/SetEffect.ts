@@ -57,7 +57,7 @@ export class SetEffect extends FuckUi {
             material.recompileShaders(defines);
         if (properties)
             for (const key in properties) {
-                if (material.getProperty(key) !== undefined)
+                if (this.hasProperty(material, key))
                     material.setProperty(key, properties[key]);
             }
         this.work();
@@ -66,8 +66,22 @@ export class SetEffect extends FuckUi {
     //计算frame在合图中的实际rect
     private caculateFact(material: Material, f: any) {
         let texture = f._texture;
-        material.setProperty('factRect', new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
-        material.setProperty('ratio', texture.width / texture.height);
+
+        if (this.hasProperty(material, 'factRect'))
+            material.setProperty('factRect', new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
+
+        if (this.hasProperty(material, 'ratio'))
+            material.setProperty('ratio', texture.width / texture.height);
+    }
+
+    private hasProperty(material: Material, key: string): boolean {
+        for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
+            for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
+                let properties = material.effectAsset.techniques[i].passes[j].properties || {};
+                if (properties[key] !== undefined) return true;
+            }
+        }
+        return false;
     }
 
     /**
