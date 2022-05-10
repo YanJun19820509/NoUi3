@@ -4,6 +4,7 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -34,6 +35,8 @@ export class SetCreateNode extends FuckUi {
     onlyOne: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
@@ -69,6 +72,11 @@ export class SetCreateNode extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
+                if (this.dynamicAtlas) {
+                    item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
+                        dt.dynamicAtlas = this.dynamicAtlas;
+                    });
+                }
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 item.active = !!data[i];
                 if (a && data[i]) {
@@ -77,7 +85,7 @@ export class SetCreateNode extends FuckUi {
                 item.parent = this.container;
             }
         }
-        
+
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) item.active = false;
@@ -97,6 +105,11 @@ export class SetCreateNode extends FuckUi {
         let item = this.container.children[0];
         if (!item) {
             item = this.template;
+            if (this.dynamicAtlas) {
+                item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
+                    dt.dynamicAtlas = this.dynamicAtlas;
+                });
+            }
             await item.getComponent(YJLoadAssets)?.load();
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);

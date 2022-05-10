@@ -1,6 +1,9 @@
 
 import { _decorator, instantiate, PageView } from 'cc';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
 const { ccclass, property, menu } = _decorator;
@@ -25,6 +28,8 @@ export class SetPage extends FuckUi {
 
     @property(PageView)
     view: PageView = null;
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     protected onDataChange(data: any) {
         data = [].concat(data);
@@ -42,6 +47,12 @@ export class SetPage extends FuckUi {
             await this.page.loadPrefab();
         }
         let node = instantiate(this.page.loadedNode);
+        if (this.dynamicAtlas) {
+            node.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
+                dt.dynamicAtlas = this.dynamicAtlas;
+            });
+        }
+        await node.getComponent(YJLoadAssets)?.load();
         this.view.addPage(node);
         (node.getComponent(SetCreateNode) || node.getComponentInChildren(SetCreateNode))?.setData(data);
     }

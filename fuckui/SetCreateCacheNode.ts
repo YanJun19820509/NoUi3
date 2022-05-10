@@ -4,6 +4,8 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJCacheObject } from '../base/YJCacheObject';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, menu, property } = _decorator;
@@ -30,6 +32,8 @@ export class SetCreateCacheNode extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     private recycleType: string;
 
@@ -45,6 +49,11 @@ export class SetCreateCacheNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
+            if (this.dynamicAtlas) {
+                this.template.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
+                    dt.dynamicAtlas = this.dynamicAtlas;
+                });
+            }
             await this.template.getComponent(YJLoadAssets)?.load();
         }
         if (!this.container) this.container = this.node;

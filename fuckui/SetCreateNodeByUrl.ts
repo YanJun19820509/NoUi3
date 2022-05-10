@@ -1,8 +1,8 @@
 
 import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
-import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -33,6 +33,8 @@ export class SetCreateNodeByUrl extends FuckUi {
     container: Node = null;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     private template: Node;
     private url: string;
@@ -73,6 +75,11 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
+                if (this.dynamicAtlas) {
+                    item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
+                        dt.dynamicAtlas = this.dynamicAtlas;
+                    });
+                }
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
