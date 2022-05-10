@@ -35,8 +35,6 @@ export class SetSpriteFrame extends FuckUi {
                 this.checkShader();
             });
         } else if (!this.sprite.spriteAtlas) {
-            no.assetBundleManager.decRef(this.sprite.spriteFrame);
-            this.sprite.spriteFrame = null;
             no.assetBundleManager.loadSprite(String(data) + '/spriteFrame', spriteFrame => {
                 this.sprite.spriteFrame = spriteFrame;
                 this.checkShader();

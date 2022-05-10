@@ -51,14 +51,14 @@ export class YJDynamicAtlas extends Component {
     //     this.needInit = true;
     // }
 
-    onDestroy(){
+    onDestroy() {
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
         this.atlas = null;
     }
 
     public clear(): void {
-        
+
     }
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
@@ -120,6 +120,8 @@ export class YJDynamicAtlas extends Component {
                     comp.spriteFrame = ff;
                     comp.renderData.updateRenderData(comp, ff);
                     // console.log(root.containsRect(ff.rect), comp.node.name);
+                    if (frame.name.indexOf('default_') == -1)
+                        frame.decRef();
                 }
             }
         }
