@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset } from 'cc';
-import { DEBUG, EDITOR, WECHAT } from 'cc/env';
+import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
@@ -256,9 +256,9 @@ export namespace no {
      * @param express 
      * @returns 
      */
-    export async function waitFor(express: (dt?: number) => boolean): Promise<void> {
+    export async function waitFor(express: (dt?: number) => boolean, comp: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            this.callUntil(express, resolve);
+            this.callUntil(express, resolve, comp);
         });
     }
 
@@ -292,15 +292,12 @@ export namespace no {
         });
     }
 
-    export function callUntil(express: (dt?: number) => boolean, callback: () => void, dt = 0): void {
-        if (express(dt)) {
-            callback?.();
-            return;
-        }
-        dt = game.deltaTime;
-        window.setTimeout(() => {
-            this.callUntil(express, callback, dt);
-        }, dt * 1000);
+    export function callUntil(express: (dt?: number) => boolean, callback: () => void, comp: Component): void {
+        comp?.scheduleOnce((dt: number) => {
+            if (express(dt)) {
+                callback?.();
+            } else callUntil(express, callback, comp);
+        });
     }
 
     /**
@@ -1534,7 +1531,7 @@ export namespace no {
             assetManager.downloader.maxConcurrency = 10;
             //用于设置每帧发起的最大请求数，从而均摊发起请求的 CPU 开销，避免单帧过于卡顿
             assetManager.downloader.maxRequestsPerFrame = 10;
-            assetManager.downloader.maxRetryCount = 10;
+            assetManager.downloader.maxRetryCount = 2;
         }
 
         /**

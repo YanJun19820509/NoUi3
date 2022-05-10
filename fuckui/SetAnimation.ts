@@ -41,7 +41,7 @@ export class SetAnimation extends FuckUi {
 
     protected async onDataChange(data: any) {
         let ani = this.getComponent(Animation);
-        await no.waitFor(() => { return ani.enabled; });
+        await no.waitFor(() => { return ani.enabled; }, this);
         let { path, name, speed, repeat } = data;
 
         if (name) {

@@ -35,7 +35,7 @@ export class YJTouchListener extends Component {
     private rect: Rect;
 
     async onEnable() {
-        await no.waitFor(() => { return YJTouchDispatcher.ins != null; })
+        await no.waitFor(() => { return YJTouchDispatcher.ins != null; }, this)
         YJTouchDispatcher.ins.addListener(this);
     }
 

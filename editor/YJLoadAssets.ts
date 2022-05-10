@@ -85,7 +85,7 @@ export class YJLoadAssets extends Component {
                 ++n;
             });
         });
-        await no.waitFor(() => { return n == this.atlasInfos.length; });
+        await no.waitFor(() => { return n == this.atlasInfos.length; }, this);
     }
 
     /**

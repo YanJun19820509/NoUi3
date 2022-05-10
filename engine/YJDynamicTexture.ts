@@ -35,7 +35,7 @@ export class YJDynamicTexture extends YJComponent {
     onLoad() {
         let label = this.getComponent(Label);
         if (label && label.cacheMode == CacheMode.CHAR) {
-            this.destroy();
+            label.cacheMode = CacheMode.NONE;
             return;
         }
         this.init();
@@ -62,7 +62,7 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     private async setLabelDynamicAtlas(label: Label) {
-        await no.waitFor(() => { return !label['_renderDataFlag']; });
+        await no.waitFor(() => { return !label['_renderDataFlag']; }, this);
         this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
     }
 
