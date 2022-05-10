@@ -47,8 +47,7 @@ export class YJWindowManager extends Component {
         YJWindowManager._ins = null;
     }
 
-    private async getContent(type: string): Promise<Node> {
-        await no.waitFor(() => { return YJWindowManager._ins != null; });
+    private getContent(type: string): Node {
         let self = YJWindowManager._ins;
         let content: Node;
         for (let i = 0, n = self.infos.length; i < n; i++) {
@@ -57,7 +56,7 @@ export class YJWindowManager extends Component {
                 break;
             }
         }
-        return Promise.resolve(content);
+        return content;
     }
 
     private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, onInit?: (panel: T) => void) {
@@ -76,9 +75,9 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns
      */
-    public static async createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, onInit?: (panel: T) => void) {
+    public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, onInit?: (panel: T) => void) {
         if (!comp) return null;
-        let content: Node = await YJWindowManager._ins.getContent(to);
+        let content: Node = YJWindowManager._ins.getContent(to);
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
 
@@ -96,30 +95,31 @@ export class YJWindowManager extends Component {
         });
     }
 
-    public static async OpenPanel(name: string, to: string) {
-        if (!name) return null;
-        let content: Node = await YJWindowManager._ins.getContent(to);
+    // public static OpenPanel(name: string, to: string, cb?: () => void) {
+    //     if (!name) return null;
+    //     let content: Node = YJWindowManager._ins.getContent(to);
 
-        let comp = js.getClassByName(name) as (typeof YJPanel);
-        let a = content.getComponentInChildren(comp);
-        if (a != null) {
-            // console.log('Cant OpenPanel', name, to);
-            a.node.active = true;
-            a.node.setSiblingIndex(content.children.length - 1);
-            a.initPanel();
-            return;
-        }
+    //     let comp = js.getClassByName(name) as (typeof YJPanel);
+    //     let a = content.getComponentInChildren(comp);
+    //     if (a != null) {
+    //         // console.log('Cant OpenPanel', name, to);
+    //         a.node.active = true;
+    //         a.node.setSiblingIndex(content.children.length - 1);
+    //         a.initPanel();
+    //         return;
+    //     }
 
-        let url = comp.prototype[YJPanelPrefabMetaKey];
-        no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-            this.initPrefab(pf, comp, content);
+    //     let url = comp.prototype[YJPanelPrefabMetaKey];
+    //     no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+    //         this.initPrefab(pf, comp, content);
+    //         cb?.();
+    //     });
+    // }
+
+    public static OpenPanelAndCloseOther(name: string, to: string) {
+        this.createPanel(name, to, () => {
+            this.closePanelIn(to, [name]);
         });
-    }
-
-    public static async OpenPanelAndCloseOther(name: string, to: string) {
-        await this.OpenPanel(name, to);
-        await no.sleep(0.2);
-        this.closePanelIn(to, [name]);
     }
 
     /**
@@ -127,8 +127,7 @@ export class YJWindowManager extends Component {
      * @param name 窗口类名
      * @param to 所属节点
      */
-    public static async closePanel(name: string, to?: string) {
-        await no.waitFor(() => { return YJWindowManager._ins != null; });
+    public static closePanel(name: string, to?: string) {
         let self = YJWindowManager._ins;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             if (to && self.infos[i].type != to) continue;
@@ -149,8 +148,8 @@ export class YJWindowManager extends Component {
      * @param nodeName 
      * @param excepts 不关闭的窗口
      */
-    public static async closePanelIn(nodeName: string, excepts: string[] = []) {
-        let content: Node = await YJWindowManager._ins.getContent(nodeName);
+    public static closePanelIn(nodeName: string, excepts: string[] = []) {
+        let content: Node = YJWindowManager._ins.getContent(nodeName);
         content.children.forEach(node => {
             let panel = node.getComponent(YJPanel);
             if (panel) {
@@ -164,8 +163,7 @@ export class YJWindowManager extends Component {
     /**
      * 关闭所有窗口
      */
-    public static async closeAllPanel() {
-        await no.waitFor(() => { return YJWindowManager._ins != null; });
+    public static closeAllPanel() {
         let self = YJWindowManager._ins;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             this.closePanelIn(self.infos[i].type);
@@ -175,13 +173,12 @@ export class YJWindowManager extends Component {
     private clearClosedPanel() {
         let t = no.sysTime.now;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            YJWindowManager._ins.getContent(this.infos[i].type).then(content => {
-                content.children.forEach(node => {
-                    let panel = node.getComponent(YJPanel);
-                    if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
-                        panel.clear();
-                    }
-                });
+            let content = YJWindowManager._ins.getContent(this.infos[i].type);
+            content.children.forEach(node => {
+                let panel = node.getComponent(YJPanel);
+                if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                    panel.clear();
+                }
             });
         }
     }

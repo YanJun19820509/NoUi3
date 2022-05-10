@@ -24,7 +24,7 @@ export class OpenWindowInfo {
     to: string = '';
 
     public open() {
-        YJWindowManager.OpenPanel(this.windowName, this.to);
+        YJWindowManager.createPanel(this.windowName, this.to);
     }
 }
 
