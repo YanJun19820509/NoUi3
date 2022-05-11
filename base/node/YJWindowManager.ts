@@ -83,10 +83,10 @@ export class YJWindowManager extends Component {
 
         let a = content.getComponentInChildren(comp);
         if (a != null) {
-            a.node.active = true;
-            a.node.setSiblingIndex(content.children.length - 1);
             onInit?.(a as T);
             a.initPanel();
+            a.node.active = true;
+            a.node.setSiblingIndex(content.children.length - 1);
             return;
         }
         let url = comp.prototype[YJPanelPrefabMetaKey];
