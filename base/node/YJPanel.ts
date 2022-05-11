@@ -49,6 +49,9 @@ export class YJPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onClose: no.EventHandlerInfo[] = [];
 
+    @property
+    needCache: boolean = true;
+
     onEnable() {
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
@@ -71,16 +74,12 @@ export class YJPanel extends Component {
     public closePanel() {
         no.EventHandlerInfo.execute(this.onClose);
         this.onClosePanel();
-        this.node.active = false;
+        if (this.needCache)
+            this.node.active = false;
+        else this.clear();
     }
 
     public clear() {
-        // this.getComponentsInChildren(YJLoadPrefab).forEach(a => {
-        //     a.clear();
-        // });
-        // this.getComponentsInChildren(YJDynamicAtlas).forEach(a => {
-        //     a.clear();
-        // });
         this.node.destroy();
     }
 
