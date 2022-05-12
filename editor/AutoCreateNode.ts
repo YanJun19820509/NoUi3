@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider } from 'cc';
+import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -197,6 +197,12 @@ export class AutoCreateNode extends Component {
         l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
         if (c.direction == 'vertical') {
             l.overflow = Overflow.RESIZE_HEIGHT;
+        }
+        if (c.outline != '') {
+            let info = c.outline.split('|');
+            let ol = n.addComponent(LabelOutline);
+            ol.color = no.str2Color(info[0]);
+            ol.width = Number(info[1]);
         }
         return n;
     }
