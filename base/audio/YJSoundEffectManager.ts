@@ -123,10 +123,6 @@ export class YJSoundEffectManager extends Component {
             if (file.indexOf('.meta') > -1) return;
             let p = info.path + '/' + file;
             no.assetBundleManager.loadFileInEditorMode(p, AudioClip, (file: any, fileInfo: AssetInfo) => {
-                // if (no.indexOfArray(this.soundEffects, fileInfo.uuid, 'uuid') == -1){
-
-                //     this.soundEffects[this.soundEffects.length] = effectInfo;
-                // }
                 let effectInfo = new SoundEffectInfo();
                 let name = fileInfo.name.split('.')[0];
                 effectInfo.alias = name;
