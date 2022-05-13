@@ -24,6 +24,7 @@ export default class YJLoadPrefab extends Component {
     private prefUuid: string;
 
     onLoad() {
+        if (EDITOR) return;
         if (!this.autoLoad) return;
         this.loadPrefab();
     }
