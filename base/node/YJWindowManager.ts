@@ -66,7 +66,6 @@ export class YJWindowManager extends Component {
         a.initPanel().then(() => {
             content.addChild(node);
         });
-        pf.decRef();
     }
 
     /**

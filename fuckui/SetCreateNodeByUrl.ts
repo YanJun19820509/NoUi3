@@ -59,7 +59,6 @@ export class SetCreateNodeByUrl extends FuckUi {
             no.assetBundleManager.loadPrefab(url, item => {
                 this.template = instantiate(item)
                 this.setItems(data);
-                item.decRef();
             });
         } else {
             this.setItems(data);
