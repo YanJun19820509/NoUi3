@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Label, Layers } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -45,6 +45,8 @@ export class YJCharLabel extends Component {
         let a = s.split('');
         let n = Math.max(a.length, labelNodes.length);
         let tempLabelComp = this.tempLabel.getComponent(Label);
+        let tempLabelOutlineComp = this.tempLabel.getComponent(LabelOutline);
+        let tempLabelShadowComp = this.tempLabel.getComponent(LabelShadow);
         for (let i = 0; i < n; i++) {
             let labelNode = labelNodes[i];
             if (!labelNode) {
@@ -60,6 +62,17 @@ export class YJCharLabel extends Component {
                 labelNode.addComponent(SetText);
                 let dt = labelNode.addComponent(YJDynamicTexture);
                 dt.dynamicAtlas = this.dynamicAtlas;
+                if (tempLabelOutlineComp) {
+                    let ol = labelNode.addComponent(LabelOutline);
+                    ol.color = tempLabelOutlineComp.color;
+                    ol.width = tempLabelOutlineComp.width;
+                }
+                if (tempLabelShadowComp) {
+                    let ls = labelNode.addComponent(LabelShadow);
+                    ls.offset = tempLabelShadowComp.offset;
+                    ls.blur = tempLabelShadowComp.blur;
+                    ls.color = tempLabelShadowComp.color;
+                }
             }
             if (a[i]) {
                 labelNode.active = true;
