@@ -131,6 +131,15 @@ export namespace no {
             c.value = b.v;
             return c;
         }
+
+        public async checkTrue(type: string, target: Component): Promise<any> {
+            if (!target?.isValid) return Promise.resolve(null);
+            let a = this.check(type, target);
+            if (a.state) return Promise.resolve(a.value);
+            await sleep(0, target);
+            return this.checkTrue(type, target);
+        }
+
     }
     /**
     * 状态系统
@@ -293,6 +302,7 @@ export namespace no {
     }
 
     export function callUntil(express: (dt?: number) => boolean, callback: () => void, comp: Component): void {
+        if (!comp?.isValid) return;
         comp?.scheduleOnce((dt: number) => {
             if (express(dt)) {
                 callback?.();
