@@ -27,9 +27,13 @@ export class LoadAssetsInfo {
     }
 
     public load(cb?: (asset: Asset) => void): void {
-        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        if (file) {
             cb?.(file);
-        });
+        } else
+            no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                cb?.(file);
+            });
     }
 
     public release(cb?: (asset: Asset) => void, force = false): void {
@@ -75,17 +79,19 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
-        this.spriteFrameInfos.forEach(info => {
-            info.load();
-        });
         let n = 0;
+        this.spriteFrameInfos.forEach(info => {
+            info.load(() => {
+                ++n;
+            });
+        });
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
                 this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
                 ++n;
             });
         });
-        await no.waitFor(() => { return n == this.atlasInfos.length; }, this);
+        await no.waitFor(() => { return n == (this.spriteFrameInfos.length + this.atlasInfos.length); }, this);
     }
 
     /**
@@ -102,7 +108,7 @@ export class YJLoadAssets extends Component {
             }, true);
         });
         this.spriteFrameInfos.forEach(info => {
-            info.release(null, false);
+            info.release(null, true);
         });
     }
 }
