@@ -1,4 +1,5 @@
-import { SpriteFrame, Texture2D, ImageAsset, math, __private } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component } from "cc";
+import { EDITOR } from "cc/env";
 import { no } from "../no";
 import { MaxRects } from "./MaxRects";
 
@@ -340,3 +341,13 @@ export class TextureSubresLayers {
         return this;
     }
 }
+
+//关闭自动合图
+dynamicAtlasManager.enabled = false;
+js.mixin(dynamicAtlasManager, {
+    packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
+        if (EDITOR) return;
+        let a: any = comp.getComponent('YJDynamicTexture');
+        a?.pack();
+    }
+});

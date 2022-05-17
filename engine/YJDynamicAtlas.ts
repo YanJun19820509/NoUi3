@@ -1,6 +1,7 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, math } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite } from 'cc';
 import { EDITOR } from 'cc/env';
+import { no } from '../no';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -106,22 +107,22 @@ export class YJDynamicAtlas extends Component {
             }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame) {
-                let root = math.rect(0, 0, this.width, this.height);
-                comp.setTextureDirty();
+                // let root = math.rect(0, 0, this.width, this.height);
                 if (comp instanceof Label) {
                     frame._setDynamicAtlasFrame(packedFrame);
-                    comp['_assembler'].updateVertexData(comp);
-                    comp['_assembler'].updateUVs(comp);
-                    comp.renderData.updateRenderData(comp, frame);
+                    // comp['_assembler'].updateVertexData(comp);
+                    // comp['_assembler'].updateUVs(comp);
+                    // comp.renderData.updateRenderData(comp, frame);
                     // console.log(root.containsRect(frame.rect), comp.node.name);
                 } else if (comp instanceof Sprite) {
                     let ff = frame.clone();
                     ff._setDynamicAtlasFrame(packedFrame);
                     comp.spriteFrame = ff;
                     comp.renderData.updateRenderData(comp, ff);
+                    comp.setTextureDirty();
                     // console.log(root.containsRect(ff.rect), comp.node.name);
                     if (frame.name.indexOf('default_') == -1)
-                        frame.decRef();
+                        no.assetBundleManager.release(frame);
                 }
             }
         }
@@ -162,8 +163,27 @@ export class YJDynamicAtlas extends Component {
     update() {
         if (!this.autoFindDynamicTextures) return;
         this.autoFindDynamicTextures = false;
-        this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
+        let labels = this.getComponentsInChildren(Label);
+        let sprites = this.getComponentsInChildren(Sprite);
+        labels.forEach(comp => {
+            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
             a.dynamicAtlas = this;
+        });
+        sprites.forEach(comp => {
+            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
+            a.dynamicAtlas = this;
+        });
+        let bs = [].concat(
+            this.getComponentsInChildren('YJCreateNode'),
+            this.getComponentsInChildren('SetCreateCacheNode'),
+            this.getComponentsInChildren('SetCreateNode'),
+            this.getComponentsInChildren('SetCreateNodeByUrl'),
+            this.getComponentsInChildren('SetList'),
+            this.getComponentsInChildren('SetPage'),
+            this.getComponentsInChildren('YJCharLabel')
+        );
+        bs.forEach(b => {
+            b.dynamicAtlas = this;
         });
     }
 }

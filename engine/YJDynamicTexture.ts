@@ -1,7 +1,6 @@
 
 import { _decorator, Label, CacheMode, Sprite } from 'cc';
 import { YJComponent } from '../base/YJComponent';
-import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
 
@@ -34,37 +33,37 @@ export class YJDynamicTexture extends YJComponent {
 
     onLoad() {
         let label = this.getComponent(Label);
-        if (label && label.cacheMode == CacheMode.CHAR) {
-            label.cacheMode = CacheMode.NONE;
+        if (label && label.cacheMode != CacheMode.BITMAP) {
+            label.cacheMode = CacheMode.BITMAP;
             return;
         }
         this.init();
     }
 
-    onEnable() {
-        if (!this.enabledInHierarchy) return;
-        this.addUpdateHandlerByFrame(this.check, 1);
-    }
+    // onEnable() {
+    //     if (!this.enabledInHierarchy) return;
+    //     this.addUpdateHandlerByFrame(this.check, 1);
+    // }
 
     onDisable() {
-        this.resetLabel(false);
+        this.resetLabel();
     }
 
-    private check(): boolean {
-        if (!this.dynamicAtlas?.isWork) return false;
-        let label = this.getComponent(Label);
-        if (!label || label.string == '') return false;
-        if (!label.ttfSpriteFrame) return true;
-        if (!label.ttfSpriteFrame.original) {
-            this.setLabelDynamicAtlas(label);
-        }
-        return false;
-    }
+    // private check(): boolean {
+    //     if (!this.dynamicAtlas?.isWork) return false;
+    //     let label = this.getComponent(Label);
+    //     if (!label || label.string == '') return false;
+    //     if (!label.ttfSpriteFrame) return true;
+    //     if (!label.ttfSpriteFrame.original) {
+    //         this.setLabelDynamicAtlas(label);
+    //     }
+    //     return false;
+    // }
 
-    private async setLabelDynamicAtlas(label: Label) {
-        await no.waitFor(() => { return !label['_renderDataFlag']; }, this);
-        this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
-    }
+    // private async setLabelDynamicAtlas(label: Label) {
+    //     await no.waitFor(() => { return !label['_renderDataFlag']; }, this);
+    //     this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
+    // }
 
     public init() {
         if (!this.enabledInHierarchy) return;
@@ -79,7 +78,7 @@ export class YJDynamicTexture extends YJComponent {
         }
     }
 
-    public resetLabel(needCheck = true): void {
+    public resetLabel(): void {
         this.clearUpdateHandlers();
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
@@ -87,7 +86,19 @@ export class YJDynamicTexture extends YJComponent {
         if (this.needClear)
             this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else label.ttfSpriteFrame?._resetDynamicAtlasFrame();
-        needCheck && this.addUpdateHandlerByFrame(this.check, 1);
+    }
+
+    public pack(): void {
+        if (!this.enabledInHierarchy) return;
+        if (!this.dynamicAtlas?.isWork) return;
+        // let sprite = this.getComponent(Sprite);
+        // if (sprite) {
+        //     this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame);
+        // } else {
+        let label = this.getComponent(Label);
+        if (!label || label.string == '' || !label.ttfSpriteFrame || label.ttfSpriteFrame.original) return;
+        this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
+        // }
     }
 
 }
