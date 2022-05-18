@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, SpriteFrame } from 'cc';
 import { YJComponent } from '../base/YJComponent';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
@@ -32,7 +32,7 @@ export class YJDynamicTexture extends YJComponent {
     needClear: boolean = false;
 
     onLoad() {
-        let label = this.getComponent(Label);
+        let label = this.getComponent(Label) || this.getComponent(RichText);
         if (label && label.cacheMode != CacheMode.BITMAP) {
             label.cacheMode = CacheMode.BITMAP;
             return;
@@ -82,7 +82,7 @@ export class YJDynamicTexture extends YJComponent {
         this.clearUpdateHandlers();
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
-        if (!label) return;
+        if (!label || !label.ttfSpriteFrame) return;
         if (this.needClear)
             this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else label.ttfSpriteFrame?._resetDynamicAtlasFrame();
@@ -91,14 +91,11 @@ export class YJDynamicTexture extends YJComponent {
     public pack(): void {
         if (!this.enabledInHierarchy) return;
         if (!this.dynamicAtlas?.isWork) return;
-        // let sprite = this.getComponent(Sprite);
-        // if (sprite) {
-        //     this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame);
-        // } else {
         let label = this.getComponent(Label);
-        if (!label || label.string == '' || !label.ttfSpriteFrame || label.ttfSpriteFrame.original) return;
-        this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
-        // }
+        if (!label || label.string == '') return;
+        let frame = label.ttfSpriteFrame || (label.spriteFrame as SpriteFrame);
+        if (frame && !frame.original)
+            this.dynamicAtlas?.packToDynamicAtlas(label, frame);
     }
 
 }

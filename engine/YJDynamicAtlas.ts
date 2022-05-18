@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -100,27 +100,32 @@ export class YJDynamicAtlas extends Component {
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
         }
 
+        let isBM = false;
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            if (comp instanceof Label || comp instanceof RichText) {
+            if (comp instanceof Label) {
                 if (comp.string == '') return;
-                frame._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
+                isBM = comp.font instanceof BitmapFont;
+                if (frame._uuid == '')
+                    frame._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
             }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame) {
-                // let root = math.rect(0, 0, this.width, this.height);
                 if (comp instanceof Label) {
-                    frame._setDynamicAtlasFrame(packedFrame);
-                    // comp['_assembler'].updateVertexData(comp);
-                    // comp['_assembler'].updateUVs(comp);
-                    // comp.renderData.updateRenderData(comp, frame);
-                    // console.log(root.containsRect(frame.rect), comp.node.name);
+                    if (!isBM)
+                        frame._setDynamicAtlasFrame(packedFrame);
+                    else if (isBM) {
+                        let ff = frame.clone();
+                        ff._setDynamicAtlasFrame(packedFrame);
+                        (comp.font as BitmapFont).spriteFrame = ff;
+                        if (frame.name.indexOf('default_') == -1)
+                            no.assetBundleManager.release(frame);
+                    }
                 } else if (comp instanceof Sprite) {
                     let ff = frame.clone();
                     ff._setDynamicAtlasFrame(packedFrame);
                     comp.spriteFrame = ff;
                     comp.renderData.updateRenderData(comp, ff);
                     comp.setTextureDirty();
-                    // console.log(root.containsRect(ff.rect), comp.node.name);
                     if (frame.name.indexOf('default_') == -1)
                         no.assetBundleManager.release(frame);
                 }
