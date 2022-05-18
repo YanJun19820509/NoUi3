@@ -3,7 +3,6 @@ import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
@@ -69,9 +68,7 @@ export class SetList extends FuckUi {
             this.template = await this.itemPanel.loadPrefab();
         }
         if (this.dynamicAtlas) {
-            this.template.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                dt.dynamicAtlas = this.dynamicAtlas;
-            });
+            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
         this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
         this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;

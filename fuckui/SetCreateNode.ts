@@ -4,7 +4,6 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -73,9 +72,7 @@ export class SetCreateNode extends FuckUi {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
                 if (this.dynamicAtlas) {
-                    item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                        dt.dynamicAtlas = this.dynamicAtlas;
-                    });
+                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 }
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 item.active = !!data[i];
@@ -106,9 +103,7 @@ export class SetCreateNode extends FuckUi {
         if (!item) {
             item = this.template;
             if (this.dynamicAtlas) {
-                item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                    dt.dynamicAtlas = this.dynamicAtlas;
-                });
+                YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
             }
             await item.getComponent(YJLoadAssets)?.load();
         }

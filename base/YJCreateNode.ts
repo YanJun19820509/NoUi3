@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, instantiate } from 'cc';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import YJLoadPrefab from './node/YJLoadPrefab';
 import { YJCacheObject } from './YJCacheObject';
@@ -59,9 +58,7 @@ export class YJCreateNode extends Component {
             if (node == null) return null;
             a = instantiate(node);
             if (this.dynamicAtlas) {
-                a.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                    dt.dynamicAtlas = this.dynamicAtlas;
-                });
+                YJDynamicAtlas.setDynamicAtlas(a, this.dynamicAtlas);
             }
             await a.getComponent(YJLoadAssets)?.load();
             a.getComponent(YJDataWork)?.init();

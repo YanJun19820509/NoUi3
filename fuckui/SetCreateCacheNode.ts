@@ -5,7 +5,6 @@ import { YJCacheObject } from '../base/YJCacheObject';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, menu, property } = _decorator;
@@ -50,9 +49,7 @@ export class SetCreateCacheNode extends FuckUi {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
             if (this.dynamicAtlas) {
-                this.template.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                    dt.dynamicAtlas = this.dynamicAtlas;
-                });
+                YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
             }
             await this.template.getComponent(YJLoadAssets)?.load();
         }

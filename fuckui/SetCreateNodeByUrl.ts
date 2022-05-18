@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -75,9 +74,7 @@ export class SetCreateNodeByUrl extends FuckUi {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
                 if (this.dynamicAtlas) {
-                    item.getComponentsInChildren(YJDynamicTexture).forEach(dt => {
-                        dt.dynamicAtlas = this.dynamicAtlas;
-                    });
+                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 }
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);

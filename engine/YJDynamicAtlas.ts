@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -30,7 +30,7 @@ export class YJDynamicAtlas extends Component {
     @property({ min: 128, max: 2048, step: 1 })
     height: number = 512;
     @property({ visible() { return EDITOR; } })
-    autoFindDynamicTextures: boolean = false;
+    autoSetDynamicTextures: boolean = false;
 
     private atlas: Atlas;
     // private needInit: boolean = false;
@@ -160,14 +160,30 @@ export class YJDynamicAtlas extends Component {
      */
     public get isWork(): boolean {
         let a = !dynamicAtlasManager.enabled;
-        // console.log(`YJDynamicAtlas isWork::${a}`);
         return a;
     }
 
+    public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
+        let bs = [].concat(
+            node.getComponentsInChildren('YJCreateNode'),
+            node.getComponentsInChildren('SetCreateCacheNode'),
+            node.getComponentsInChildren('SetCreateNode'),
+            node.getComponentsInChildren('SetCreateNodeByUrl'),
+            node.getComponentsInChildren('SetList'),
+            node.getComponentsInChildren('SetPage'),
+            node.getComponentsInChildren('YJCharLabel')
+        );
+        bs.forEach(b => {
+            b.dynamicAtlas = dynamicAtlas;
+        });
+    }
+
+
     //////////////EDITOR/////////////
     update() {
-        if (!this.autoFindDynamicTextures) return;
-        this.autoFindDynamicTextures = false;
+        if (!EDITOR) return;
+        if (!this.autoSetDynamicTextures) return;
+        this.autoSetDynamicTextures = false;
         let labels = this.getComponentsInChildren(Label);
         let sprites = this.getComponentsInChildren(Sprite);
         labels.forEach(comp => {
@@ -178,17 +194,6 @@ export class YJDynamicAtlas extends Component {
             let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
             a.dynamicAtlas = this;
         });
-        let bs = [].concat(
-            this.getComponentsInChildren('YJCreateNode'),
-            this.getComponentsInChildren('SetCreateCacheNode'),
-            this.getComponentsInChildren('SetCreateNode'),
-            this.getComponentsInChildren('SetCreateNodeByUrl'),
-            this.getComponentsInChildren('SetList'),
-            this.getComponentsInChildren('SetPage'),
-            this.getComponentsInChildren('YJCharLabel')
-        );
-        bs.forEach(b => {
-            b.dynamicAtlas = this;
-        });
+        YJDynamicAtlas.setDynamicAtlas(this.node, this);
     }
 }
