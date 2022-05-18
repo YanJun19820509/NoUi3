@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, SpriteFrame } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, SpriteFrame, BitmapFont } from 'cc';
 import { YJComponent } from '../base/YJComponent';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
@@ -95,6 +95,7 @@ export class YJDynamicTexture extends YJComponent {
         let label = this.getComponent(Label);
         if (!label || label.string == '') return;
         let frame = label.ttfSpriteFrame || (label.spriteFrame as SpriteFrame);
+        if (label.font instanceof BitmapFont && label.font.spriteFrame.original) return;
         if (frame && !frame.original)
             this.dynamicAtlas?.packToDynamicAtlas(label, frame);
     }
