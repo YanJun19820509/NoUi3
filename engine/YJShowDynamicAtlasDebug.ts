@@ -101,9 +101,19 @@ export class YJShowDynamicAtlasDebug {
         }
     }
 
-    public logNames(): void {
+    public logInfos(): void {
+        let infos = [];
+        for (const key in this.list) {
+            let a: Atlas = this.list[key];
+            infos[infos.length] = {
+                name: key,
+                width: a._texture.width,
+                height: a._texture.height,
+                mem: a._texture.width * a._texture.height * 4 / 1024 / 1024 + 'M'
+            };
+        }
         let keys = Object.keys(this.list);
-        console.log(keys);
+        console.log(infos);
     }
 
 }
@@ -112,6 +122,6 @@ window['showDynamicAtlas'] = function (name?: string) {
     YJShowDynamicAtlasDebug.ins.showDebug(name);
 };
 
-window['showDynamicAtlasNames'] = function () {
-    YJShowDynamicAtlasDebug.ins.logNames();
+window['showDynamicAtlasInfos'] = function () {
+    YJShowDynamicAtlasDebug.ins.logInfos();
 };
