@@ -1,5 +1,5 @@
 
-import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size } from 'cc';
+import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetGray } from './SetGray';
@@ -19,17 +19,21 @@ const { ccclass, property, menu } = _decorator;
 
 enum LockType {
     Gray = 0,
-    Hide
+    Hide,
+    Sprite
 }
 
 @ccclass('SetLock')
 @menu('NoUi/ui/SetLock(给节点上锁:boolean)')
 export class SetLock extends FuckUi {
-    @property
+    @property({ type: Node })
     target: Node = null;
 
     @property({ type: Enum(LockType) })
     lockType: LockType = LockType.Gray;
+
+    @property({ type: Node, visible() { return this.lockType == LockType.Sprite; } })
+    lockNode: Node = null;
 
     @property
     locked: boolean = true;
@@ -58,18 +62,19 @@ export class SetLock extends FuckUi {
     }
 
     private setLock() {
-        if (this.lockType == LockType.Gray) {
+        if (this.lockType != LockType.Hide) {
             this.createLockNode();
-            this.setGray(true);
+            this.setGray(this.lockType == LockType.Gray);
         } else {
             this.target.active = false;
         }
     }
 
     private setUnlock() {
-        if (this.lockType == LockType.Gray) {
+        if (this.lockType != LockType.Hide) {
             this.target.getChildByName('_lock_')?.destroy();
-            this.setGray(false);
+            if (this.lockType == LockType.Gray)
+                this.setGray(false);
         } else if (this.size) {
             this.target.active = true;
         }
@@ -78,12 +83,19 @@ export class SetLock extends FuckUi {
     private createLockNode() {
         let target = this.target;
         if (target.getChildByName('_lock_')) return;
-        let nodeUt = target.getComponent(UITransform);
-        let lock = new Node('_lock_');
-        lock.layer = Layers.Enum.UI_2D;
-        let ut = lock.addComponent(UITransform);
-        ut.setContentSize(nodeUt.getBoundingBox().size);
-        ut.setAnchorPoint(nodeUt.anchorPoint);
+        let lock: Node;
+        if (this.lockType == LockType.Sprite && this.lockNode) {
+            lock = instantiate(this.lockNode);
+            lock.name = '_lock_';
+            lock.active = true;
+        } else {
+            let nodeUt = target.getComponent(UITransform);
+            lock = new Node('_lock_');
+            lock.layer = Layers.Enum.UI_2D;
+            let ut = lock.addComponent(UITransform);
+            ut.setContentSize(nodeUt.getBoundingBox().size);
+            ut.setAnchorPoint(nodeUt.anchorPoint);
+        }
         lock.setPosition(0, 0);
         let a = new EventHandler();
         a.target = target;
