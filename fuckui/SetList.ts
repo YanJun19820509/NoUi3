@@ -85,6 +85,7 @@ export class SetList extends FuckUi {
 
     onDisable() {
         if (this.clearOnDisable) {
+            this.a_clearData();
             this.listItems?.forEach(item => {
                 item.destroy();
             });

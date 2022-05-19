@@ -1,11 +1,12 @@
 
 import { _decorator, Label, RichText } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -21,6 +22,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetText')
 @menu('NoUi/ui/SetText(设置文本内容:string)')
+@executeInEditMode()
 export class SetText extends FuckUi {
 
     @property({ displayName: '格式化模板' })
@@ -56,5 +58,13 @@ export class SetText extends FuckUi {
 
     private checkShader() {
         this.getComponent(SetEffect)?.work();
+    }
+
+    /////////////EDITOR////////////
+    update() {
+        if (!EDITOR) return;
+        let label = this.node.getComponent(Label) || this.node.getComponent(RichText);
+        if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
+        else if (!label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
     }
 }

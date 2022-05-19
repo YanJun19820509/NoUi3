@@ -1,10 +1,11 @@
 
 import { _decorator, Label } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -20,6 +21,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetTimeCountDown')
 @menu('NoUi/ui/SetTimeCountDown(设置倒计时:number)')
+@executeInEditMode()
 export class SetTimeCountDown extends FuckUi {
 
     @property({ displayName: '显示倒计时' })
@@ -98,5 +100,12 @@ export class SetTimeCountDown extends FuckUi {
         this.fuckUiComponents.forEach(ui => {
             ui.setData(String(v));
         });
+    }
+
+    /////////////EDITOR////////////
+    update() {
+        if (!EDITOR) return;
+        if (this.label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
+        else if (!this.label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
     }
 }

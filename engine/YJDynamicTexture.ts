@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, SpriteFrame, BitmapFont } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent } from 'cc';
 import { YJComponent } from '../base/YJComponent';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
@@ -40,30 +40,9 @@ export class YJDynamicTexture extends YJComponent {
         this.init();
     }
 
-    // onEnable() {
-    //     if (!this.enabledInHierarchy) return;
-    //     this.addUpdateHandlerByFrame(this.check, 1);
-    // }
-
     onDisable() {
         this.resetLabel();
     }
-
-    // private check(): boolean {
-    //     if (!this.dynamicAtlas?.isWork) return false;
-    //     let label = this.getComponent(Label);
-    //     if (!label || label.string == '') return false;
-    //     if (!label.ttfSpriteFrame) return true;
-    //     if (!label.ttfSpriteFrame.original) {
-    //         this.setLabelDynamicAtlas(label);
-    //     }
-    //     return false;
-    // }
-
-    // private async setLabelDynamicAtlas(label: Label) {
-    //     await no.waitFor(() => { return !label['_renderDataFlag']; }, this);
-    //     this.dynamicAtlas?.packToDynamicAtlas(label, label.ttfSpriteFrame);
-    // }
 
     public init() {
         if (!this.enabledInHierarchy) return;
@@ -93,11 +72,23 @@ export class YJDynamicTexture extends YJComponent {
         if (!this.enabledInHierarchy) return;
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
-        if (!label || label.string == '') return;
-        let frame = label.ttfSpriteFrame || (label.spriteFrame as SpriteFrame);
-        if (label.font instanceof BitmapFont && label.font.spriteFrame.original) return;
-        if (frame && !frame.original)
-            this.dynamicAtlas?.packToDynamicAtlas(label, frame);
+        if (!label) return;
+        let frame = label.ttfSpriteFrame;
+
+        if (label.font instanceof BitmapFont)
+            frame = label.font.spriteFrame;
+        else if (label.string == '') return;
+
+        if (!frame || frame.original)
+            return;
+
+        if (frame._uuid == '')
+            frame._uuid = this.createLabelFrameUuid(label);
+
+        this.dynamicAtlas?.packToDynamicAtlas(label, frame);
     }
 
+    private createLabelFrameUuid(label: Label): string {
+        return label.string + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+    }
 }

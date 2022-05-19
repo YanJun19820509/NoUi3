@@ -100,27 +100,16 @@ export class YJDynamicAtlas extends Component {
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
         }
 
-        let isBM = false;
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            if (comp instanceof Label) {
-                if (comp.string == '') return;
-                isBM = comp.font instanceof BitmapFont;
-                if (frame._uuid == '')
-                    frame._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
-            }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame) {
                 if (comp instanceof Label) {
-                    if (!isBM)
-                        frame._setDynamicAtlasFrame(packedFrame);
-                    else if (isBM) {
+                    if (comp.font instanceof BitmapFont) {
                         let ff = frame.clone();
                         ff._setDynamicAtlasFrame(packedFrame);
                         (comp.font as BitmapFont).spriteFrame = ff;
                         comp['_texture'] = ff;
-                        // if (frame.name.indexOf('default_') == -1)
-                        //     no.assetBundleManager.release(frame);
-                    }
+                    } else frame._setDynamicAtlasFrame(packedFrame);
                 } else if (comp instanceof Sprite) {
                     let ff = frame.clone();
                     ff._setDynamicAtlasFrame(packedFrame);
@@ -185,13 +174,8 @@ export class YJDynamicAtlas extends Component {
         if (!EDITOR) return;
         if (!this.autoSetDynamicTextures) return;
         this.autoSetDynamicTextures = false;
-        let labels = this.getComponentsInChildren(Label);
-        let sprites = this.getComponentsInChildren(Sprite);
-        labels.forEach(comp => {
-            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
-            a.dynamicAtlas = this;
-        });
-        sprites.forEach(comp => {
+        let comps = [].concat(this.getComponentsInChildren(Label), this.getComponentsInChildren(Sprite), this.getComponentsInChildren(RichText));
+        comps.forEach(comp => {
             let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
             a.dynamicAtlas = this;
         });
