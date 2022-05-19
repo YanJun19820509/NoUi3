@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, easing } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
+import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -36,14 +37,11 @@ export class YJFloatTips extends YJDataWork {
         this.show();
     }
 
-    private show() {
-        if (this.tipList.length == 0) {
-            this.isShowing = false;
-            return;
-        }
+    private async show() {
+        await no.waitFor(() => { return this.enabledInHierarchy; }, this);
         let tip = this.tipList.shift();
         if (!tip) {
-            this.show();
+            this.isShowing = false;
             return;
         }
 
@@ -76,6 +74,10 @@ export class YJFloatTips extends YJDataWork {
             ]
         });
 
+        if (this.tipList.length == 0) {
+            this.isShowing = false;
+            return;
+        }
         this.scheduleOnce(() => {
             this.show();
         }, this.delay);
