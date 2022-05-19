@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { no } from '../../no';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -22,22 +23,28 @@ export class YJSetChildrenShieldByY extends Component {
 
     private _num = 0;
 
-    update() {
-        if (this._num == 0) {
-            this.sortSibling();
-            this._num = this.frameNum;
-        } else {
-            this._num--;
+    start() {
+        let children = this.node.children;
+        no.sortArray(children, (b, a) => {
+            return b.position.y - a.position.y;
+        }, true);
+        for (let i = 0, n = children.length; i < n; i++) {
+            children[i].setSiblingIndex(i);
         }
     }
 
-    private sortSibling() {
-        let children = this.node.children;
-        children.sort((a, b) => {
-            return b.position.y - a.position.y;
-        });
-        for (let i = 0, n = children.length; i < n; i++) {
-            children[i].setSiblingIndex(i);
+    update() {
+        if (this._num == 0) {
+            let children = this.node.children;
+            no.insertionSort(children, (b, a) => {
+                return b.position.y > a.position.y;
+            }, true);
+            for (let i = 0, n = children.length; i < n; i++) {
+                children[i].setSiblingIndex(i);
+            }
+            this._num = this.frameNum;
+        } else {
+            this._num--;
         }
     }
 }

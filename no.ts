@@ -832,15 +832,44 @@ export namespace no {
      * @param handler 排序方法,为空则按数字大小排序
      * @param desc 是否降序
      */
-    export function sortArray(arr: Array<any>, handler?: (a: any, b: any) => number, desc = false): void {
+    export function sortArray<T>(arr: T[], handler?: (a: T, b: T) => number, desc = false): void {
         if (arr == null || arr.length == 0) return;
-        handler = handler || function (a: number, b: number) {
-            return a - b;
-        };
+        if (!handler)
+            handler = (a: T, b: T) => {
+                return <number><undefined>a - <number><undefined>b;
+            };
         arr.sort((a, b) => {
             if (desc) return handler(b, a);
             return handler(a, b);
         });
+    }
+
+    /**
+     * 插入排序算法,相对有序的数据性能更高
+     * @param arr 
+     * @param handler 排序方法,为空则按数字大小排序
+     * @param desc 是否降序
+     * @returns 
+     */
+    export function insertionSort<T>(arr: T[], handler?: (a: T, b: T) => boolean, desc = false) {
+        let n = arr?.length || 0;
+        if (n <= 1) return;
+        if (!handler)
+            handler = (a: T, b: T) => {
+                return <number><undefined>a > <number><undefined>b;
+            };
+        let a1: any, a2: any;
+        for (let i = 1; i < n; i++) {
+            a2 = arr[i];
+            let j: number;
+            for (j = i; j > 0; j--) {
+                a1 = arr[j - 1];
+                if (desc && handler(a2, a1)) arr[j] = a1;
+                else if (!desc && handler(a1, a2)) arr[j] = a1;
+                else break;
+            }
+            arr[j] = a2;
+        }
     }
 
     /**
