@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite } from 'cc';
+import { _decorator, Sprite, RenderComponent } from 'cc';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
 const { ccclass, property, menu, requireComponent } = _decorator;
@@ -40,15 +40,17 @@ export class SetGray extends FuckUi {
     }
 
     private setGray(v: boolean) {
-        let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-        setEffect.setData(JSON.stringify(v ?
-            {
-                path: 'NoUi3/effect/gray',
-                defines: {
-                    IS_GRAY: v
-                }
-            } : {}
-        ));
+        if (this.getComponent(RenderComponent)) {
+            let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
+            setEffect.setData(JSON.stringify(v ?
+                {
+                    path: 'NoUi3/effect/gray',
+                    defines: {
+                        IS_GRAY: v
+                    }
+                } : {}
+            ));
+        }
         if (this.recursive) {
             this.node.children.forEach(child => {
                 (child.getComponent(SetGray) || child.addComponent(SetGray)).setData(JSON.stringify(v));
