@@ -88,7 +88,7 @@ export class SetEffect extends FuckUi {
      * work
      */
     public work() {
-        if (!this._renderComp.renderData.frame) {
+        if (!this._renderComp.renderData?.frame) {
             this.scheduleOnce(() => {
                 this.work();
             }, 0);
