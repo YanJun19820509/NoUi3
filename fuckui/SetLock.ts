@@ -32,7 +32,7 @@ export class SetLock extends FuckUi {
     @property({ type: Enum(LockType) })
     lockType: LockType = LockType.Gray;
 
-    @property({ type: Node, visible() { return this.lockType == LockType.Sprite; } })
+    @property({ type: Node, visible() { return this.lockType != LockType.Hide; } })
     lockNode: Node = null;
 
     @property
@@ -84,7 +84,7 @@ export class SetLock extends FuckUi {
         let target = this.target;
         if (target.getChildByName('_lock_')) return;
         let lock: Node;
-        if (this.lockType == LockType.Sprite && this.lockNode) {
+        if (this.lockNode) {
             lock = instantiate(this.lockNode);
             lock.name = '_lock_';
             lock.active = true;
