@@ -1,6 +1,7 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material } from 'cc';
 import { YJComponent } from '../base/YJComponent';
+import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
 
@@ -31,7 +32,25 @@ export class YJDynamicTexture extends YJComponent {
     @property
     needClear: boolean = false;
 
+    private static commonMaterial: Material;
+
+    public static hasCommonMaterial(): boolean {
+        return !!this.commonMaterial;
+    }
+
+    public static loadCommonMaterial(url: string) {
+        no.assetBundleManager.loadMaterial(url, item => {
+            this.commonMaterial = item;
+        });
+    }
+
+    public static setCommonMaterial(comp: RenderComponent) {
+        if (comp && this.commonMaterial && !comp.customMaterial && this.commonMaterial.effectName != comp.material?.effectName) comp.material = this.commonMaterial;
+    }
+
     onLoad() {
+        let renderComp = this.getComponent(RenderComponent);
+        YJDynamicTexture.setCommonMaterial(renderComp);
         let label = this.getComponent(Label) || this.getComponent(RichText);
         if (label && label.cacheMode != CacheMode.BITMAP) {
             label.cacheMode = CacheMode.BITMAP;
