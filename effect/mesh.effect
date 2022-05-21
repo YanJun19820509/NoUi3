@@ -17,10 +17,8 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        point: { value: [0.5, 0.5] }
-        scaleMin: {value: 1.0}
-        scaleMax: {value: 1.0}
-        yMin: {value: 1.0}
+        w: {value: .4}
+        h: {value: .5}
 }%
 
 CCProgram vs %{
@@ -33,43 +31,21 @@ CCProgram vs %{
 
 CCProgram unlit-fs %{
   precision highp float;
-  #include <embedded-alpha>
+  #include <cc-global>
+  #include <embedded-alpha> 
   #include <alpha-test>
+  #include <common-fs> 
+  #include <utils>
 
-  in vec4 color;
-
-  uniform MeshData {
-    vec2 point;
-    float scaleMin;
-    float scaleMax;
-    float yMin;
+  uniform DD {
+    float w;
+    float h;
   };
-       
-  in vec2 uv0;
-  #pragma builtin(local)
-  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    vec2 uv = vec2(point.x,point.y);
-    float smin = scaleMin;// * (1.0 - uv.y);
-    float s = smin + (scaleMax - smin) *(uv0.y - yMin);
-    // float s = .5+uv.y;
-    uv.x = uv.x - (uv.x - uv0.x)/s;
-    uv.y = uv.y - (uv.y - uv0.y)/s;
-    if(uv.x > 1.0 || uv.x < 0.0 || uv.y > 1.0 || uv.y < 0.0){
-      //超出纹理范围的用透明填充
-      o = vec4(0, 0, 0, 0);
-    }else{
-      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
-      if(o.a == 0.0){
-        //发现透明度为0的坐标，直接用透明填充
-        o = vec4(0, 0, 0, 0);
-      }
-    }
-    o *= color;
-
-    ALPHA_TEST(o);
-    return o;
+    vec4 c = water(o,uv0,color,w,h);
+    ALPHA_TEST(c);
+    return c;
   }
 }%

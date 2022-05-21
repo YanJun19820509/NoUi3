@@ -12,6 +12,7 @@ in vec4 a_color;
 
 out vec4 color;
 out vec2 uv0;
+out vec2 ext;
 
 vec4 getPos () {
   vec4 pos = vec4(a_position, 1);
@@ -32,7 +33,23 @@ vec4 getPos () {
   #if SAMPLE_FROM_RT
     CC_HANDLE_RT_SAMPLE_FLIP(uv0);
   #endif
-  color = a_color;
+
+  //设置扩展参数
+  ext = a_color.gb;
+  //转换正常color
+  float c = floor(a_color.r * 1000000000000.0);
+  color = vec4(1.0,1.0,1.0,1.0);
+  // color.r = floor(c / 1000000000.0);
+  // c -= color.r * 1000000000.0;
+  // color.g = floor(c / 1000000.0);
+  // c -= color.g * 1000000.0;
+  // color.b = floor(c / 1000.0);
+  // c -= color.b * 1000.0;
+  // color.a = c;
+  // color.r/=255.0; 
+  // color.g/=255.0; 
+  // color.b/=255.0; 
+  // color.a/=255.0; 
 
   return pos;
 }

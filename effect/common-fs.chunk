@@ -1,5 +1,6 @@
 in vec4 color;
 in vec2 uv0;  
+in vec2 ext;
       
 #pragma builtin(local)
 layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;

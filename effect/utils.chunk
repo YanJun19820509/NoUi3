@@ -172,3 +172,9 @@ vec4 water(vec4 o,vec2 uv0, vec4 color,float w, float h){
     o *= color;
   return o;
 }
+
+// 是否置灰，取整数第0位，2为true，否则为false
+bool isTrue(float type, float offset){
+  float a = floor(type/offset);
+  return a == 2.0;
+}

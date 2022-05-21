@@ -1,5 +1,7 @@
 
-import { EffectAsset, Material, RenderComponent, Vec4, _decorator } from 'cc';
+import { Material, RenderComponent, Vec4, _decorator } from 'cc';
+import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -39,7 +41,11 @@ export class SetEffect extends FuckUi {
     }
 
     private setMaterial(path: string, defines: any, properties: any) {
-        if (this._renderComp.material?.effectName == `../${path}`)
+        if (YJDynamicTexture.hasCommonMaterial) {
+            YJDynamicTexture.setCommonMaterial(this._renderComp);
+            this.setVertex(defines, properties);
+        }
+        else if (this._renderComp.material?.effectName == `../${path}`)
             this.setProperties(this._renderComp.material, defines, properties);
         else
             no.assetBundleManager.loadEffect(path, item => {
@@ -50,6 +56,10 @@ export class SetEffect extends FuckUi {
                 this._renderComp.material = material;
                 this.setProperties(this._renderComp.material, defines, properties);
             });
+    }
+
+    private setVertex(defines: any, properties: any){
+        this.getComponent(YJVertexColorTransition).setEffect(defines, properties);
     }
 
     private setProperties(material: Material, defines?: any, properties?: any) {
@@ -98,7 +108,7 @@ export class SetEffect extends FuckUi {
     }
 
     public reset(): void {
-        this._renderComp.customMaterial = null;
+        this._renderComp.material = null;
         this._renderComp.markForUpdateRenderData();
     }
 

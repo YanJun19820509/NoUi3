@@ -41,8 +41,6 @@ export class SetLock extends FuckUi {
     @property(no.EventHandlerInfo)
     onLocked: no.EventHandlerInfo[] = [];
 
-    private size: Size;
-
     start() {
         if (this.dataSetted) return;
         if (this.locked) this.onDataChange(this.locked);
@@ -75,7 +73,7 @@ export class SetLock extends FuckUi {
             this.target.getChildByName('_lock_')?.destroy();
             if (this.lockType == LockType.Gray)
                 this.setGray(false);
-        } else if (this.size) {
+        } else {
             this.target.active = true;
         }
     }

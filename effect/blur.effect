@@ -37,7 +37,7 @@ CCProgram unlit-fs %{
   #include <common-fs>
   #include <utils> 
   
-  uniform Constant{
+  uniform Constant{ 
     float offset;
   };
 

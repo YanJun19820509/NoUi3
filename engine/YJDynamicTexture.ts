@@ -1,6 +1,7 @@
 
 import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material } from 'cc';
 import { YJComponent } from '../base/YJComponent';
+import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple } = _decorator;
@@ -45,10 +46,15 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     public static setCommonMaterial(comp: RenderComponent) {
-        if (comp && this.commonMaterial && !comp.customMaterial && this.commonMaterial.effectName != comp.material?.effectName) comp.material = this.commonMaterial;
+        if (comp && this.commonMaterial) {
+            if (!comp.getComponent(YJVertexColorTransition)) comp.addComponent(YJVertexColorTransition);
+            if (!comp.customMaterial && this.commonMaterial.effectName != comp.customMaterial?.effectName)
+                comp.customMaterial = this.commonMaterial;
+        }
     }
 
     onLoad() {
+        if (!this.enabled) return;
         let renderComp = this.getComponent(RenderComponent);
         YJDynamicTexture.setCommonMaterial(renderComp);
         let label = this.getComponent(Label) || this.getComponent(RichText);
