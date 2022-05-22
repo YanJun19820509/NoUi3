@@ -173,8 +173,15 @@ vec4 water(vec4 o,vec2 uv0, vec4 color,float w, float h){
   return o;
 }
 
-// 是否置灰，取整数第0位，2为true，否则为false
-bool isTrue(float type, float offset){
-  float a = floor(type/offset);
-  return a == 2.0;
+// 判断 defined 类型状态,type为 0/1
+bool isTrue(float defines, float type, float checkValue){
+  float a = 0.0;
+  if (type == 0.0){
+    a = floor(defines);
+    return a == checkValue;
+  }else{
+    a = fract(defines);
+    float b = checkValue/a;
+    return b - 10.0*floor(b/10.0) == 0.0;
+  }
 }

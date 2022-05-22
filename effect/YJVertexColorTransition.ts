@@ -18,8 +18,8 @@ export enum YJEffectUniformType {
     IS_GRAY = 'IS_GRAY',
 };
 
-enum EffectTypeOffset {
-    IS_GRAY = 0,
+enum EffectType {
+    IS_GRAY = '1',
 }
 
 @ccclass('YJVertexColorTransition')
@@ -28,7 +28,13 @@ export class YJVertexColorTransition extends Component {
     test: boolean = false;
 
     private renderComp: RenderComponent;
-    private _data: Vec4 = new Vec4(0, 111111111.11111111, 0, 0);
+    /**
+     * _data数据说明，
+     * x用来存放宏定义的类型，整数部分为 color相关，小数部分为uv 相关，0 表示正常状态
+     * yz用来存放与 一些扩展数据，当 x=0 时用来存放当前 color 的数据
+     * w在Sprite.Type ！= SIMPLE 时会被引擎修改，通常，Sprite.Type == SIMPLE 可以使用
+    */
+    private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
 
     onLoad() {
@@ -51,8 +57,9 @@ export class YJVertexColorTransition extends Component {
 
     private _setNormalColor() {
         let c = this.renderComp.color;
-        let rgba = c.r * 1000000000 + c.g * 1000000 + c.b * 1000 + c.a;
-        this._data.x = (rgba + 0.222222) / 1000000000000;
+        let rg = c.r * 1000 + c.g, ba = c.b * 1000 + c.a;
+        this._data.y = rg;
+        this._data.z = ba;
         this._data.w = c.a / 255;
         this._needUpdate = true;
     }
@@ -63,9 +70,12 @@ export class YJVertexColorTransition extends Component {
     }
 
     private _setGray(v: boolean) {
-        let type = `${this._data.y}`.split('');
-        type[EffectTypeOffset.IS_GRAY] = v ? '2' : '1';
-        this._data.y = Number(type.join(''));
+        let type = `${this._data.y}`.split('.');
+        if (v && type[0] != EffectType.IS_GRAY)
+            type[0] = EffectType.IS_GRAY;
+        else if (!v && type[0] == EffectType.IS_GRAY)
+            type[0] = '0';
+        this._data.y = Number(type.join('.'));
         this._needUpdate = true;
     }
 
