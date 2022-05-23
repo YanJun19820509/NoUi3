@@ -134,7 +134,8 @@ vec4 shine(vec4 o,vec2 uv0, vec4 color, float start, float width, float strength
 }
 
 //置灰
-vec4 gray(vec4 o){
+vec4 gray(vec4 o,vec2 uv0){
+  o = normalTexture(o,uv0);
   float gray  = dot(o.rgb, vec3(0.3,0.29,0.07));
   o.r = o.g = o.b = gray;
   return o;
@@ -164,19 +165,17 @@ vec4 scale(vec4 o,vec2 uv0, vec4 color, vec2 point, float scaleMin, float scaleM
 vec4 water(vec4 o,vec2 uv0, vec4 color,float w, float h){
   vec2 uv = vec2(uv0.x,uv0.y);
   uv.y = uv.y + h * sin(2.0*3.14*(cc_time.x/w - uv.x));
-  if (uv.y > 1.0){
-    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
-  }else{
+  o = normalTexture(o,uv);
+  if (uv.y <= 1.0){
     o.a = 0.0;
   }
-    o *= color;
   return o;
 }
 
 // 判断 defined 类型状态,type为 0/1
-bool isTrue(float defines, float type, float checkValue){
+bool isTrue(float defines, bool isColor, float checkValue){
   float a = 0.0;
-  if (type == 0.0){
+  if (isColor){
     a = floor(defines);
     return a == checkValue;
   }else{
@@ -184,4 +183,11 @@ bool isTrue(float defines, float type, float checkValue){
     float b = checkValue/a;
     return b - 10.0*floor(b/10.0) == 0.0;
   }
+}
+
+vec4 getColorFromExt(vec3 ext){
+  float r = floor(ext.x / 1000.0);
+  float g = ext.x - r * 1000.0;
+  float b = floor(ext.y / 1000.0);
+  color = vec4(r/255.0,g/255.0,b/255.0,ext.z);
 }

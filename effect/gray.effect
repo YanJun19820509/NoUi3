@@ -37,11 +37,10 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-      o = normalTexture(o);
     // #if USE_TEXTURE  
       // o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0); 
       #if IS_GRAY
-        o = gray(o);
+        o = gray(o,uv0);
       #endif  
 
     // #endif

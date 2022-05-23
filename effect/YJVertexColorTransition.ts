@@ -1,5 +1,6 @@
 
-import { _decorator, Component, RenderComponent, Vec4, gfx, Sprite } from 'cc';
+import { _decorator, Component, RenderComponent, Vec4, gfx, Sprite, Label, math, BitmapFont } from 'cc';
+import { no } from '../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -18,8 +19,9 @@ export enum YJEffectUniformType {
     IS_GRAY = 'IS_GRAY',
 };
 
+//从2开始，不能为1和0
 enum EffectType {
-    IS_GRAY = '1',
+    IS_GRAY = '2',
 }
 
 @ccclass('YJVertexColorTransition')
@@ -30,21 +32,27 @@ export class YJVertexColorTransition extends Component {
     private renderComp: RenderComponent;
     /**
      * _data数据说明，
-     * x用来存放宏定义的类型，整数部分为 color相关，小数部分为uv 相关，0 表示正常状态
+     * x用来存放宏定义的类型，为负值，非负则为正常状态，整数部分为 color相关，小数部分为uv 相关
      * yz用来存放与 一些扩展数据，当 x=0 时用来存放当前 color 的数据
      * w在Sprite.Type ！= SIMPLE 时会被引擎修改，通常，Sprite.Type == SIMPLE 可以使用
     */
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
+    private _originColor: math.Color;
 
     onLoad() {
-        this.renderComp = this.getComponent(RenderComponent);
+        if (!this.renderComp)
+            this.renderComp = this.getComponent(RenderComponent);
         if (!this.renderComp) return;
-        this._setNormalColor();
-        this._setGray(this.test)
+        if (this.test)
+            this._setGray(true);
     }
 
     public setEffect(defines: any, properties: any) {
+        if (!this.renderComp)
+            this.renderComp = this.getComponent(RenderComponent);
+        if (!this.renderComp) return;
+
         for (const key in defines) {
             switch (key) {
                 case YJEffectUniformType.IS_GRAY:
@@ -55,13 +63,19 @@ export class YJVertexColorTransition extends Component {
         this._setProperties(properties);
     }
 
-    private _setNormalColor() {
+    private _setColor() {
         let c = this.renderComp.color;
-        let rg = c.r * 1000 + c.g, ba = c.b * 1000 + c.a;
-        this._data.y = rg;
-        this._data.z = ba;
-        this._data.w = c.a / 255;
-        this._needUpdate = true;
+        if (this._data.x == 0) {
+            this._data.x = c.r / 255;
+            this._data.y = c.g / 255;
+            this._data.z = c.b / 255;
+            this._data.w = c.a / 255;
+        } else {
+            let rg = c.r * 1000 + c.g, ba = c.b * 1000 + c.a;
+            this._data.y = rg;
+            this._data.z = ba;
+            this._data.w = c.a / 255;
+        }
     }
 
     private _setProperties(properties: any) {
@@ -70,19 +84,26 @@ export class YJVertexColorTransition extends Component {
     }
 
     private _setGray(v: boolean) {
-        let type = `${this._data.y}`.split('.');
+        if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont) {
+            //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
+            if (!this._originColor) this._originColor = this.renderComp.color.clone();
+            if (v) {
+                let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
+                this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
+            } else this.renderComp.color = this._originColor;
+            return;
+        }
+        let type = `${Math.abs(this._data.x)}`.split('.');
         if (v && type[0] != EffectType.IS_GRAY)
             type[0] = EffectType.IS_GRAY;
         else if (!v && type[0] == EffectType.IS_GRAY)
             type[0] = '0';
-        this._data.y = Number(type.join('.'));
+        this._data.x = -Number(type.join('.'));
+        this._setColor();
         this._needUpdate = true;
     }
 
     private _updateVB() {
-        if (!this.renderComp)
-            this.renderComp = this.getComponent(RenderComponent);
-        if (!this.renderComp) return;
         if (this.renderComp instanceof Sprite) {
             switch (this.renderComp.type) {
                 case Sprite.Type.SIMPLE:

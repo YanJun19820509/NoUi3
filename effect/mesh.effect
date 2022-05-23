@@ -44,8 +44,8 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    vec4 c = water(o,uv0,color,w,h);
-    ALPHA_TEST(c);
-    return c;
+    o = water(o,uv0,color,w,h);
+    ALPHA_TEST(o);
+    return o;
   }
 }%

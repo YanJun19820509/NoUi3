@@ -12,8 +12,8 @@ uniform ZZ {
 };
 
 //标准纹理效果
-vec4 normalTexture(in vec4 o) { 
-  o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0); 
+vec4 normalTexture(vec4 o, vec2 uv) { 
+  o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
   o *= color;
   return o;
 }

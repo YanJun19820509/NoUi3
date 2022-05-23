@@ -35,19 +35,15 @@ vec4 getPos () {
     CC_HANDLE_RT_SAMPLE_FLIP(uv0);
   #endif
 
-  color = vec4(1.0,1.0,1.0,1.0);
-  ext = vec3(0,0,0);
   def = a_color.r;
-  if (def != 0.0){
+  if (def < 0.0){
+    color = vec4(1, 1, 1, 1);
     //设置扩展参数
     ext = a_color.gba;
   }else{
-    //转换正常color
-    float r = floor(a_color.g / 1000.0);
-    float g = a_color.g - r * 1000.0;
-    float b = floor(a_color.b / 1000.0);
-    float a = a_color.a;
-    color = vec4(r/255.0,g/255.0,b/255.0,a);
+    //正常
+    ext = vec3(0,0,0);
+    color = a_color;
   }
   return pos;
 }
