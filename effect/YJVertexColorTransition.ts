@@ -1,6 +1,5 @@
 
 import { _decorator, Component, RenderComponent, Vec4, gfx, Sprite, Label, math, BitmapFont } from 'cc';
-import { no } from '../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -15,19 +14,8 @@ const { ccclass, property } = _decorator;
  *
  */
 
-export enum YJEffectUniformType {
-    IS_GRAY = 'IS_GRAY',
-};
-
-//从2开始，不能为1和0
-enum EffectType {
-    IS_GRAY = '2',
-}
-
 @ccclass('YJVertexColorTransition')
 export class YJVertexColorTransition extends Component {
-    @property
-    test: boolean = false;
 
     private renderComp: RenderComponent;
     /**
@@ -44,23 +32,18 @@ export class YJVertexColorTransition extends Component {
         if (!this.renderComp)
             this.renderComp = this.getComponent(RenderComponent);
         if (!this.renderComp) return;
-        if (this.test)
-            this._setGray(true);
     }
 
-    public setEffect(defines: any, properties: any) {
+    public setEffect(defines: any, properties: number[]) {
         if (!this.renderComp)
             this.renderComp = this.getComponent(RenderComponent);
         if (!this.renderComp) return;
 
         for (const key in defines) {
-            switch (key) {
-                case YJEffectUniformType.IS_GRAY:
-                    this._setGray(defines[key]);
-                    break;
-            }
+            this._setDefines(key, defines[key]);
         }
         this._setProperties(properties);
+        this._needUpdate = true;
     }
 
     private _setColor() {
@@ -78,29 +61,37 @@ export class YJVertexColorTransition extends Component {
         }
     }
 
-    private _setProperties(properties: any) {
-
-        this._needUpdate = true;
+    private _setProperties(properties: number[]) {
+        this._data.y = properties[0] || this._data.y;
+        this._data.z = properties[1] || this._data.z;
+        this._data.w = properties[2] || this._data.w;
     }
 
-    private _setGray(v: boolean) {
-        if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont) {
-            //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
-            if (!this._originColor) this._originColor = this.renderComp.color.clone();
-            if (v) {
-                let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
-                this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
-            } else this.renderComp.color = this._originColor;
+    private _setBMFontGray(v: boolean) {
+        //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
+        if (!this._originColor) this._originColor = this.renderComp.color.clone();
+        if (v) {
+            let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
+            this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
+        } else this.renderComp.color = this._originColor;
+    }
+
+    private _setDefines(key: string, v: boolean) {
+        if (key == 'IS_GRAY') key = '0-2';
+        let keys = key.split('-');
+        let offset = Number(keys[0]);
+        let id = keys[1];
+        if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont && offset == 0 && id == '2') {
+            this._setBMFontGray(v);
             return;
         }
         let type = `${Math.abs(this._data.x)}`.split('.');
-        if (v && type[0] != EffectType.IS_GRAY)
-            type[0] = EffectType.IS_GRAY;
-        else if (!v && type[0] == EffectType.IS_GRAY)
-            type[0] = '0';
+        if (v && type[offset] != id)
+            type[offset] = id;
+        else if (!v && type[0] == id)
+            type[offset] = '0';
         this._data.x = -Number(type.join('.'));
         this._setColor();
-        this._needUpdate = true;
     }
 
     private _updateVB() {
