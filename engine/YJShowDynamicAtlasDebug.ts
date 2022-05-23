@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Widget, director, BlockInputEvents, Layout, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find } from 'cc';
+import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from 'cc';
 import { DEBUG } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -49,24 +49,46 @@ export class YJShowDynamicAtlasDebug {
         if (name) {
             if (!this._debugNode || !this._debugNode.isValid) {
 
-                this._debugNode = new Node('DYNAMIC_ATLAS_DEBUG_NODE');
-                this._debugNode.addComponent(UITransform);
-                this._debugNode.layer = Layers.Enum.UI_2D;
+                no.assetBundleManager.loadPrefab('NoUi3/engine/dynamic_atlas_debug_node', item => {
+                    this._debugNode = instantiate(item);
+                    this._debugNode.parent = find('Canvas');
+                    let scrollView = this._debugNode.getComponentInChildren(ScrollView);
 
-                let widget = this._debugNode.addComponent(Widget);
-                widget.isAlignTop = true;
-                widget.isAlignLeft = true;
-                widget.isAlignBottom = true;
-                widget.isAlignRight = true;
-                widget.top = 0;
-                widget.left = 0;
-                widget.bottom = 0;
-                widget.right = 0;
-                this._debugNode.parent = find('Canvas');
+                    let texture = this.list[name]._texture;
+                    no.width(scrollView.content, texture.width);
+                    no.height(scrollView.content, texture.height);
 
-                this._debugNode.addComponent(BlockInputEvents);
+                    let node = new Node('ATLAS');
+                    node.addComponent(UITransform).setAnchorPoint(0, 1);
+                    node.layer = Layers.Enum.UI_2D;
+                    no.width(node, texture.width);
+                    no.height(node, texture.height);
+                    let spriteFrame = new SpriteFrame();
+                    spriteFrame.texture = texture;
 
-                let scroll = this._debugNode.addComponent(ScrollView);
+                    let sprite = node.addComponent(Sprite);
+                    sprite.spriteFrame = spriteFrame;
+
+                    node.parent = scrollView.content;
+                });
+                // this._debugNode = new Node('DYNAMIC_ATLAS_DEBUG_NODE');
+                // this._debugNode.addComponent(UITransform);
+                // this._debugNode.layer = Layers.Enum.UI_2D;
+
+                // let widget = this._debugNode.addComponent(Widget);
+                // widget.isAlignTop = true;
+                // widget.isAlignLeft = true;
+                // widget.isAlignBottom = true;
+                // widget.isAlignRight = true;
+                // widget.top = 0;
+                // widget.left = 0;
+                // widget.bottom = 0;
+                // widget.right = 0;
+                // this._debugNode.parent = find('Canvas');
+
+                // this._debugNode.addComponent(BlockInputEvents);
+
+                // let scroll = this._debugNode.addComponent(ScrollView);
 
                 // let content = new Node('CONTENT');
                 // content.addComponent(UITransform);
@@ -77,21 +99,7 @@ export class YJShowDynamicAtlasDebug {
                 // content.parent = this._debugNode;
 
 
-                let texture = this.list[name]._texture;
 
-                let node = new Node('ATLAS');
-                node.addComponent(UITransform);
-                node.layer = Layers.Enum.UI_2D;
-                no.width(node, texture.width);
-                no.height(node, texture.height);
-                let spriteFrame = new SpriteFrame();
-                spriteFrame.texture = texture;
-
-                let sprite = node.addComponent(Sprite);
-                sprite.spriteFrame = spriteFrame;
-
-                node.parent = this._debugNode;
-                scroll.content = node;
             }
         } else {
             if (this._debugNode) {
