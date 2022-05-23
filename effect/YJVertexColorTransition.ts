@@ -37,7 +37,7 @@ export class YJVertexColorTransition extends Component {
     public setEffect(defines: any, properties: number[]) {
         if (!this.renderComp)
             this.renderComp = this.getComponent(RenderComponent);
-        if (!this.renderComp) return;
+        if (!this.renderComp || !defines) return;
 
         for (const key in defines) {
             this._setDefines(key, defines[key]);
@@ -62,6 +62,7 @@ export class YJVertexColorTransition extends Component {
     }
 
     private _setProperties(properties: number[]) {
+        if (!properties) return;
         this._data.y = properties[0] || this._data.y;
         this._data.z = properties[1] || this._data.z;
         this._data.w = properties[2] || this._data.w;
