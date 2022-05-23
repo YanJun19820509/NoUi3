@@ -55,6 +55,8 @@ export class YJLoadAssets extends Component {
     atlasInfos: LoadAssetsInfo[] = [];
     @property(LoadAssetsInfo)
     spriteFrameInfos: LoadAssetsInfo[] = [];
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     onDestroy() {
         this.release();
@@ -85,9 +87,10 @@ export class YJLoadAssets extends Component {
                 ++n;
             });
         });
+        let dynamicAtlas = this.dynamicAtlas || this.getComponent(YJDynamicAtlas);
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
-                this.getComponent(YJDynamicAtlas)?.packAtlasToDynamicAtlas(file.getSpriteFrames());
+                dynamicAtlas?.packAtlasToDynamicAtlas(file.getSpriteFrames());
                 ++n;
             });
         });
@@ -111,4 +114,5 @@ export class YJLoadAssets extends Component {
             info.release(null, true);
         });
     }
+
 }

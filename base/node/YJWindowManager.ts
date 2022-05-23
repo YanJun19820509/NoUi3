@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
+import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
 const { ccclass, property, menu } = _decorator;
@@ -61,6 +62,15 @@ export class YJWindowManager extends Component {
 
     private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, onInit?: (panel: T) => void) {
         let node = instantiate(pf);
+        let dynamicAtlas = content.getComponent(YJDynamicAtlas);
+        if (dynamicAtlas) {
+            let la = node.getComponent('YJLoadAssets');
+            if (la && la['dynamicAtlas'] == null) {
+                la['dynamicAtlas'] = dynamicAtlas;
+                YJDynamicAtlas.setDynamicAtlasToRenderComponent(node, dynamicAtlas);
+                YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
+            }
+        }
         let a = node.getComponent(comp);
         onInit?.(a as T);
         a.initPanel().then(() => {
@@ -93,27 +103,6 @@ export class YJWindowManager extends Component {
             this.initPrefab(pf, comp as (typeof YJPanel), content, onInit);
         });
     }
-
-    // public static OpenPanel(name: string, to: string, cb?: () => void) {
-    //     if (!name) return null;
-    //     let content: Node = YJWindowManager._ins.getContent(to);
-
-    //     let comp = js.getClassByName(name) as (typeof YJPanel);
-    //     let a = content.getComponentInChildren(comp);
-    //     if (a != null) {
-    //         // console.log('Cant OpenPanel', name, to);
-    //         a.node.active = true;
-    //         a.node.setSiblingIndex(content.children.length - 1);
-    //         a.initPanel();
-    //         return;
-    //     }
-
-    //     let url = comp.prototype[YJPanelPrefabMetaKey];
-    //     no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-    //         this.initPrefab(pf, comp, content);
-    //         cb?.();
-    //     });
-    // }
 
     public static OpenPanelAndCloseOther(name: string, to: string) {
         this.createPanel(name, to, () => {

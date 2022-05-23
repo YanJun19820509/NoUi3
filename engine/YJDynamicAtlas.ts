@@ -33,33 +33,11 @@ export class YJDynamicAtlas extends Component {
     autoSetDynamicTextures: boolean = false;
 
     private atlas: Atlas;
-    // private needInit: boolean = false;
-
-    // onLoad() {
-    //     this.needInit = false;
-    // }
-
-    // onEnable() {
-    //     if (!this.isWork) return;
-    //     if (!this.needInit) return;
-    //     this.getComponentsInChildren('YJDynamicTexture').forEach((a: any) => {
-    //         a.init();
-    //     });
-    // }
-
-    // onDisable() {
-    //     if (!this.isWork || !this.atlas) return;
-    //     this.needInit = true;
-    // }
 
     onDestroy() {
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
         this.atlas = null;
-    }
-
-    public clear(): void {
-
     }
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
@@ -153,6 +131,14 @@ export class YJDynamicAtlas extends Component {
         return a;
     }
 
+    public static setDynamicAtlasToRenderComponent(node: Node, dynamicAtlas: YJDynamicAtlas): void {
+        let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
+        comps.forEach(comp => {
+            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
+            a.dynamicAtlas = dynamicAtlas;
+        });
+    }
+
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
         let bs = [].concat(
             node.getComponentsInChildren('YJCreateNode'),
@@ -174,11 +160,7 @@ export class YJDynamicAtlas extends Component {
         if (!EDITOR) return;
         if (!this.autoSetDynamicTextures) return;
         this.autoSetDynamicTextures = false;
-        let comps = [].concat(this.getComponentsInChildren(Label), this.getComponentsInChildren(Sprite), this.getComponentsInChildren(RichText));
-        comps.forEach(comp => {
-            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
-            a.dynamicAtlas = this;
-        });
+        YJDynamicAtlas.setDynamicAtlasToRenderComponent(this.node, this);
         YJDynamicAtlas.setDynamicAtlas(this.node, this);
     }
 }
