@@ -2847,4 +2847,182 @@ export namespace no {
             this.isCd = false;
         }
     }
+
+    /** 绘制图形的类型*/
+    export enum GraphicsType {
+        /** 线*/
+        Line = 'line',
+        /** 圆弧*/
+        Arc = 'arc',
+        /** 椭圆*/
+        Ellipse = 'ellipse',
+        /** 圆*/
+        Circle = 'circle',
+        /** 矩形*/
+        Rect = 'rect',
+        /** 贝赛尔曲线*/
+        Bezier = 'bezier'
+    };
+
+    /** 绘制图形路径的数据结构*/
+    export type GraphicsData = {
+        points: number[],//矩形起始 x,y 轴坐标 | 贝赛尔曲线路径控制点的 x,y 轴坐标|线路径目标位置的 x,y 轴坐标|圆,椭圆,圆弧路径中心点的 x,y 轴坐标
+        radius?: number[] | number,//矩形圆角半径|椭圆 x,y 轴半径|圆半径|圆弧弧度
+        size?: number[],//矩形宽度和高度
+        startEndAngles?: number[]//弧度起点和终点，从正 x 轴顺时针方向测量
+        counterclockwise?: boolean,//如果为真，在两个角度之间逆时针绘制。默认顺时针
+        lineWidth?: number,//线条宽度
+        fillColor?: string,//填充绘画的颜色#000000
+        strokeColor?: string,//笔触的颜色
+    };
+
+    /**
+     * 创建绘制线路径的数据
+     * @param points 
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     */
+    export function createGraphicLineData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        let ps = [];
+        d.points.forEach(p => {
+            ps[ps.length] = p.x;
+            ps[ps.length] = p.y;
+        });
+        return {
+            points: ps,
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制圆弧路径的数据
+     * @param center 
+     * @param radius 
+     * @param startAngle 
+     * @param endAngle 
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @param counterclockwise 
+     * @returns 
+     */
+    export function createGraphicArcData(d: { center: Vec2, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        return {
+            points: [d.center.x, d.center.y],
+            radius: [d.radius],
+            startEndAngles: [d.startAngle, d.endAngle],
+            counterclockwise: d.counterclockwise || false,
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制椭圆路径的数据
+     * @param center 
+     * @param rx 
+     * @param ry 
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @returns 
+     */
+    export function createGraphicEllipseData(d: { center: Vec2, rx: number, ry: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        return {
+            points: [d.center.x, d.center.y],
+            radius: [d.rx, d.ry],
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制圆路径的数据
+     * @param center 
+     * @param r 
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @returns 
+     */
+    export function createGraphicCircleData(d: { center: Vec2, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        return {
+            points: [d.center.x, d.center.y],
+            radius: [d.r],
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制矩形路径的数据
+     * @param x 
+     * @param y 
+     * @param width 
+     * @param height 
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @returns 
+     */
+    export function createGraphicRectData(d: { x: number, y: number, width: number, height: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        return {
+            points: [d.x, d.y],
+            size: [d.width, d.height],
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制圆角矩形路径的数据
+     * @param x 
+     * @param y 
+     * @param width 
+     * @param height 
+     * @param r 矩形圆角半径
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @returns 
+     */
+    export function createGraphicRoundRectData(d: { x: number, y: number, width: number, height: number, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        return {
+            points: [d.x, d.y],
+            size: [d.width, d.height],
+            radius: [d.r],
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
+
+    /**
+     * 创建绘制贝塞尔曲线路径的数据
+     * @param points 两个点时创建二次贝塞尔曲线，三个点时三次贝塞尔曲线
+     * @param lineWidth 
+     * @param strokeColor 
+     * @param fillColor 
+     * @returns 
+     */
+    export function createBezierData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        let ps = [];
+        d.points.forEach(p => {
+            ps[ps.length] = p.x;
+            ps[ps.length] = p.y;
+        });
+        return {
+            points: ps,
+            lineWidth: d.lineWidth || 0,
+            strokeColor: d.strokeColor,
+            fillColor: d.fillColor
+        };
+    }
 }
