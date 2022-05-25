@@ -4,10 +4,10 @@
   "_objFlags": 0,
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "42337e6a-6381-4298-ac79-70a537817778",
+    "__uuid__": "9f00d070-1e0d-4d75-97a5-1673e9ba65dc",
     "__expectedType__": "cc.EffectAsset"
   },
-  "_techIdx": 0,
+  "_techIdx": "0",
   "_defines": [
     {}
   ],
