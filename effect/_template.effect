@@ -22,10 +22,6 @@ CCEffect %{
 
 CCProgram sprite-vs %{
   #include "common-vs"
-
-  vec4 vert(){
-    return getPos();
-  }
 }%
 
 CCProgram sprite-fs %{

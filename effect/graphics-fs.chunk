@@ -1,0 +1,37 @@
+#include <cc-global>
+  #pragma extension([GL_OES_standard_derivatives, __VERSION__ < 300])
+
+  precision highp float;
+
+  in vec4 v_color;
+  in vec2 v_uv;
+  in float v_dist;
+
+  uniform GraphicsUV{
+    vec4 i_min_max_uv;
+  };
+
+  vec4 getGraphicsColor () {
+    
+    float minX = i_min_max_uv.x,
+          minY = i_min_max_uv.y,
+          maxX = i_min_max_uv.z,
+          maxY = i_min_max_uv.w;
+    if (v_uv.x < minX || v_uv.x > maxX || v_uv.y < minY || v_uv.y > maxY) discard;
+
+    vec4 o = v_color;
+
+    #if __VERSION__ < 300
+      #ifdef GL_OES_standard_derivatives
+        float aa = fwidth(v_dist);
+      #else
+        float aa = 0.05;
+      #endif
+    #else
+      float aa = fwidth(v_dist);
+    #endif
+
+    float alpha = smoothstep(aa, -aa, abs(v_dist) - 1.0);
+    o.rgb *= alpha;
+    return o;
+  }

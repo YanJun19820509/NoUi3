@@ -15,7 +15,7 @@ out vec3 ext;
 out vec2 uv0;
 out float def;
 
-vec4 getPos () {
+vec4 vert() {
   vec4 pos = vec4(a_position, 1);
 
   #if USE_LOCAL

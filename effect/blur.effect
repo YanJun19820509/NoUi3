@@ -22,11 +22,7 @@ CCEffect %{
 }%
 
 CCProgram vs %{
-  #include <common-vs>
-
-  vec4 vert(){
-    return getPos();
-  }
+  #include <common-vs> 
 }%
 
 CCProgram unlit-fs %{
@@ -47,7 +43,7 @@ CCProgram unlit-fs %{
     #if USE_BLUR     
       o = blurTexture(o, uv0, color, offset);
     #else
-      o = normalTexture(o);
+      o = normalTexture(o, uv0);
     #endif
 
     ALPHA_TEST(o);

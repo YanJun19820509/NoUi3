@@ -3033,13 +3033,13 @@ export namespace no {
      * @param width 图形宽
      * @param height 图形高
      * @param graphicsNode 
-     * @returns -{ min: Vec2, max: Vec2 }
+     * @returns [minx,miny,maxx,maxy]
      */
-    export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): { min: Vec2, max: Vec2 } {
+    export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): number[] {
         let worldSize = view.getVisibleSize();
         //世界坐标系原点为左下角
         let p1 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx - width / 2, cy - height / 2));
         let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
-        return { min: v2(p1.x / worldSize.width, p1.y / worldSize.height), max: v2(p2.x / worldSize.width, p2.y / worldSize.height) };
+        return [p1.x / worldSize.width, p1.y / worldSize.height, p2.x / worldSize.width, p2.y / worldSize.height];
     }
 }

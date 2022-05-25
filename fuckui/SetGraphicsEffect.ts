@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Graphics, Material } from 'cc';
+import { _decorator, Component, Node, Graphics, Material, math, v4 } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
@@ -19,6 +19,7 @@ const { ccclass, property, requireComponent } = _decorator;
 /**
  * data:{
  * path?:'filepath',
+ * rect?: math.Rect,
  * defines?:{key:boolean},
  * properties?:{key:any}
  * },
@@ -34,7 +35,13 @@ export class SetGraphicsEffect extends SetEffect {
             this._renderComp = this.getComponent(Graphics);
             if (!this._renderComp) return;
         }
-        let { path, properties, defines }: { path: string, properties: {}, defines: {} } = data;
+        let { path, rect, properties, defines }: { path: string,rect: number[], properties: {}, defines: {} } = data;
+
+        if (rect){
+            properties = properties || {};
+            properties['i_min_max_uv'] = no.getGraphicUVInWorld(rect[0],rect[1],rect[2],rect[3], this.node);;
+        }
+
         this.setMaterial(path, defines, properties);
     }
 

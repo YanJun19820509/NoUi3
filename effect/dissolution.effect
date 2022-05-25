@@ -22,10 +22,6 @@ CCEffect %{
 
 CCProgram vs %{
   #include <common-vs>
-
-  vec4 vert(){
-    return getPos();
-  }
 }%
 
 CCProgram unlit-fs %{
@@ -43,7 +39,7 @@ CCProgram unlit-fs %{
     #if USE_DISSOLUTION
       o = dissolve(o, uv0, color, t); 
     #else
-      o = normalTexture(o);
+      o = normalTexture(o, uv0);
     #endif
 
     ALPHA_TEST(o);

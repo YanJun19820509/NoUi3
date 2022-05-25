@@ -25,10 +25,6 @@ CCEffect %{
 
 CCProgram vs %{
   #include <common-vs>
-
-  vec4 vert(){
-    return getPos();
-  }
 }%
 
 CCProgram unlit-fs %{

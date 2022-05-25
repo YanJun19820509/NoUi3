@@ -1,5 +1,6 @@
 // Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
 
+
 CCEffect %{
   techniques:
   - passes:
@@ -18,82 +19,33 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        i_min: { value: [0, 0], editor: {type: vec2} }
-        i_max: { value: [1, 1], editor: {type: vec2} }
+        i_min: { value: [0., 0.], target: i_min_max_uv.xy}
+        i_max: { value: [1., 1.], target: i_min_max_uv.zw}
 }%
 
 CCProgram vs %{
-  precision highp float;
-
-  #include <cc-global>
-  #include <cc-local>
-
-  in vec3 a_position;
-
-  in vec4 a_color;
-  out vec4 v_color;
-
-  in float a_dist;
-  out float v_dist;
-
-  out vec2 v_uv;
-
-  vec4 vert () {
-    vec4 pos = vec4(a_position, 1);
-    pos = cc_matViewProj * cc_matWorld * pos;
-
-    v_color = a_color;
-    v_dist = a_dist;
-    v_uv = (pos.xy+vec2(1.0,1.0))/2.0;
-    return pos;
-  }
+  #include <graphics-vs>
 }%
 
 CCProgram fs %{
-  #include <cc-global>
-  #pragma extension([GL_OES_standard_derivatives, __VERSION__ < 300])
-
-  precision highp float;
-
-  in vec4 v_color;
-  in vec2 v_uv;
-  in float v_dist;
-
-  uniform SomeRect{
-    vec2 i_min;
-    vec2 i_max;
-  };
+  #include <graphics-fs>
 
   // 一个彩虹色的色板，输入t的范围是[0, 1], 输出一个颜色值
-vec3 Pallete(float t) {
-    // 滚动动起来
-    t += cc_time.x;
-    
-    vec3 dcOffset = vec3(0.5, 0.5, 0.5);
-    vec3 amp = vec3(1., 1., 1.);
-    vec3 freq = vec3(1., 1., 1.);
-    vec3 phase = vec3(0., 0.3333, 0.6666);
-    return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase));
-}
+  vec3 Pallete(float t) {
+      // 滚动动起来
+      t += cc_time.x;
+      
+      vec3 dcOffset = vec3(0.5, 0.5, 0.5);
+      vec3 amp = vec3(1., 1., 1.);
+      vec3 freq = vec3(1., 1., 1.);
+      vec3 phase = vec3(0., 0.3333, 0.6666);
+      return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase));
+  }
 
   vec4 frag () {
-    if (v_uv.x < i_min.x || v_uv.x > i_max.x || v_uv.y < i_min.y || v_uv.y > i_max.y) discard;
-    vec4 o = v_color;
-
-    #if __VERSION__ < 300
-      #ifdef GL_OES_standard_derivatives
-        float aa = fwidth(v_dist);
-      #else
-        float aa = 0.05;
-      #endif
-    #else
-      float aa = fwidth(v_dist);
-    #endif
-
-    float alpha = smoothstep(aa, -aa, abs(v_dist) - 1.0);
+    vec4 o = getGraphicsColor();
     float D = abs(v_dist);//v_dist * 0.5 + 0.5;
     o.rgb = Pallete(D);
-    o.rgb *= alpha;
     return o;
   }
 }%
