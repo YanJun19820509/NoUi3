@@ -1,5 +1,5 @@
 
-import { Material, RenderComponent, Vec4, _decorator } from 'cc';
+import { Material, RenderComponent, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from 'cc';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -23,12 +23,14 @@ const { ccclass, property, menu } = _decorator;
  * path:'filepath',
  * defines:{key:boolean},
  * properties:{key:any}
- * }
+ * },
+ * 
+ * 如果对graphics设置效果，请使用SetGraphicsEffect
  */
 @ccclass('SetEffect')
 @menu('NoUi/ui/SetEffect(设置shader:object)')
 export class SetEffect extends FuckUi {
-    private _renderComp: RenderComponent;
+    protected _renderComp: RenderComponent;
 
     protected onDataChange(data: any) {
         if (!this._renderComp) {
@@ -36,18 +38,18 @@ export class SetEffect extends FuckUi {
             if (!this._renderComp) return;
         }
         let { path, properties, defines }: { path: string, properties: {}, defines: {} } = data;
-        if (path == null) this.reset();
-        else this.setMaterial(path, defines, properties);
+        this.setMaterial(path, defines, properties);
     }
 
-    private setMaterial(path: string, defines: any, properties: any) {
+    protected setMaterial(path: string, defines: any, properties: any) {
         if (YJDynamicTexture.hasCommonMaterial) {
             YJDynamicTexture.setCommonMaterial(this._renderComp);
             this.setVertex(defines, properties);
         }
-        else if (this._renderComp.material?.effectName == `../${path}`)
+        else if (this._renderComp.material && (!path || this._renderComp.material.effectName == `../${path}`)) {
             this.setProperties(this._renderComp.material, defines, properties);
-        else
+            this.work();
+        } else if (path)
             no.assetBundleManager.loadEffect(path, item => {
                 const material = new Material();
                 material.initialize({
@@ -55,22 +57,41 @@ export class SetEffect extends FuckUi {
                 });
                 this._renderComp.material = material;
                 this.setProperties(this._renderComp.material, defines, properties);
+                this.work();
             });
+        else this.reset();
     }
 
-    private setVertex(defines: any, properties: any){
+    private setVertex(defines: any, properties: any) {
         this.getComponent(YJVertexColorTransition).setEffect(defines, properties);
     }
 
-    private setProperties(material: Material, defines?: any, properties?: any) {
+    protected setProperties(material?: Material, defines?: any, properties?: any) {
+        if (!material) return;
         if (defines)
             material.recompileShaders(defines);
         if (properties)
             for (const key in properties) {
-                if (this.hasProperty(material, key))
-                    material.setProperty(key, properties[key]);
+                if (this.hasProperty(material, key)) {
+                    let v: number | Vec2 | Vec3 | Vec4,
+                        p = [].concat(properties[key]);
+                    switch (p.length) {
+                        case 1:
+                            v = p[0];
+                            break;
+                        case 2:
+                            v = v2(p[0], p[1]);
+                            break;
+                        case 3:
+                            v = v3(p[0], p[1], p[2]);
+                            break;
+                        case 4:
+                            v = v4(p[0], p[1], p[2], p[3]);
+                            break;
+                    }
+                    material.setProperty(key, v);
+                }
             }
-        this.work();
     }
 
     //计算frame在合图中的实际rect
@@ -84,7 +105,7 @@ export class SetEffect extends FuckUi {
             material.setProperty('ratio', texture.width / texture.height);
     }
 
-    private hasProperty(material: Material, key: string): boolean {
+    protected hasProperty(material: Material, key: string): boolean {
         for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
             for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
                 let properties = material.effectAsset.techniques[i].passes[j].properties || {};
@@ -109,6 +130,7 @@ export class SetEffect extends FuckUi {
 
     public reset(): void {
         this._renderComp.material = null;
+        this._renderComp.customMaterial = null;
         this._renderComp.markForUpdateRenderData();
     }
 
