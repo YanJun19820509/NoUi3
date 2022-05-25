@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, ImageAsset } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -3024,5 +3024,22 @@ export namespace no {
             strokeColor: d.strokeColor,
             fillColor: d.fillColor
         };
+    }
+
+    /**
+     * 计算自定义图形相对world的uv最小最大点
+     * @param cx 图形中心点x
+     * @param cy 图形中心点y
+     * @param width 图形宽
+     * @param height 图形高
+     * @param graphicsNode 
+     * @returns -{ min: Vec2, max: Vec2 }
+     */
+    export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): { min: Vec2, max: Vec2 } {
+        let worldSize = view.getVisibleSize();
+        //世界坐标系原点为左下角
+        let p1 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx - width / 2, cy - height / 2));
+        let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
+        return { min: v2(p1.x / worldSize.width, p1.y / worldSize.height), max: v2(p2.x / worldSize.width, p2.y / worldSize.height) };
     }
 }
