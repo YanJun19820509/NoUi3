@@ -57,15 +57,18 @@ CCProgram fs %{
   }
 
   vec4 frag () {
-    vec4 o = getGraphicsColor();
+    //初始化自定义图形的颜色和 uv
+    initGraphicsColorUV();
+    if (!isUvInside()){
     // float D = abs(v_dist);//v_dist * 0.5 + 0.5;
-    // o.rgb = Pallete(D);
-    
+    // color.rgb = Pallete(D);
+      discard;
+    }
 
     #if IS_SWITCH
       vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
-    o.rgb+= c2.rgb;
+    color.rgb += c2.rgb;
     #endif
-    return o;
+    return color;
   }
 }%

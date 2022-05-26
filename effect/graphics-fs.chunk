@@ -5,24 +5,20 @@
 
   in vec4 v_color;
   in vec2 v_uv;
-  vec2 uv0;//对应纹理uv
   in float v_dist;
+  vec4 color;
+  vec2 uv0;//对应纹理uv
+  
 
   uniform GraphicsUV{
     vec4 i_min_max_uv;
   };
 
-  vec4 getGraphicsColor () {
-    
-    float minX = i_min_max_uv.x,
-          minY = i_min_max_uv.y,
-          maxX = i_min_max_uv.z,
-          maxY = i_min_max_uv.w;
-    if (v_uv.x < minX || v_uv.x > maxX || v_uv.y < minY || v_uv.y > maxY) discard;
-
+//初始化 color 和 uv0，与从纹理中获取的 color，uv0 等同
+  void initGraphicsColorUV () {
     uv0 = (v_uv - i_min_max_uv.xy) / (i_min_max_uv.zw - i_min_max_uv.xy);
 
-    vec4 o = v_color;
+    color = v_color;
 
     #if __VERSION__ < 300
       #ifdef GL_OES_standard_derivatives
@@ -35,6 +31,15 @@
     #endif
 
     float alpha = smoothstep(aa, -aa, abs(v_dist) - 1.0);
-    o.rgb *= alpha;
-    return o;
+    color.rgb *= alpha;
+  }
+
+//检测当前顶点是否在指定区域内
+  bool isUvInside(){
+    float minX = i_min_max_uv.x,
+          minY = i_min_max_uv.y,
+          maxX = i_min_max_uv.z,
+          maxY = i_min_max_uv.w;
+    if (v_uv.x < minX || v_uv.x > maxX || v_uv.y < minY || v_uv.y > maxY) return false;
+    return true;
   }
