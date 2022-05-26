@@ -17,7 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        
+        speed: {value: 5.0}
 }%
 
 CCProgram vs %{
@@ -32,14 +32,21 @@ CCProgram unlit-fs %{
   #include <common-fs> 
   #include <utils>
 
+  uniform DissolutionData{
+    float speed;
+  };
+
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    float t = fract(cc_time.x/ 10.0);
-    if (t > 0.5) t = 1.0 - t;
+
+    #if USE_TEXTURE
+      o *= normalTexture(cc_spriteTexture, uv0);
+    #endif
+    o*=color;
+
+    float t = fract(cc_time.x/speed);
     #if USE_DISSOLUTION
-      o = dissolve(o, uv0, color, t); 
-    #else
-      o = normalTexture(o, uv0);
+      o = dissolve(o, t); 
     #endif
 
     ALPHA_TEST(o);

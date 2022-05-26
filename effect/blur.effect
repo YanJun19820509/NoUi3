@@ -17,8 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        alphaThreshold: { value: 0.5 }
-        offset: { value: 0.01, editor: {range: [0.01, 0.2, 0.01]} }
+        offset: { value: 0.01, editor: {range: [0.01, 0.2, 0.001]} }
 }%
 
 CCProgram vs %{
@@ -40,12 +39,15 @@ CCProgram unlit-fs %{
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1); 
 
-    #if USE_BLUR     
-      o = blurTexture(o, uv0, color, offset);
-    #else
-      o = normalTexture(o, uv0);
+    #if USE_TEXTURE
+      o *= normalTexture(cc_spriteTexture, uv0);
     #endif
 
+    #if USE_BLUR     
+      o = blurTexture(o, uv0, offset); 
+    #endif
+
+    o*=color;
     ALPHA_TEST(o);
     return o;
   }

@@ -20,6 +20,10 @@ CCEffect %{
         center: { value: [0.5, 0.5]}
         radius: { value: 1.0, editor: {range: [0.0, 1.0, 0.01]} }
         feather: { value: 0.01, editor: {range: [0.0, 1.0, 0.01]} }
+        # 合图中的区域
+        factRect: { value: [0.0,0.0,1.0,1.0], editor: {visible: false}}
+        # 合图中的比率
+        ratio: { value: 1.0, editor: {visible: false}}
 }%
 
 CCProgram vs %{
@@ -42,13 +46,17 @@ CCProgram unlit-fs %{
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
+    #if USE_TEXTURE
+      o *= normalTexture(cc_spriteTexture, uv0);
+    #endif
+
+    o*=color;
+
     vec2 c = vec2(factRect.x + factRect.z * center.x, factRect.y + factRect.w * center.y);
     float r = radius * (ratio > 1.0 ? factRect.w : factRect.z);
 
     #if USE_MASK
-      o = maskTexture(o, uv0, color, c, r, feather);
-    #else
-      o = normalTexture(o, uv0);
+      o = mask(o, uv0, c, r, feather);
     #endif
 
     ALPHA_TEST(o);

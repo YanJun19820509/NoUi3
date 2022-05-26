@@ -1,176 +1,3 @@
-//随机函数
-float rand(vec2 st){
-  return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
-}
-
-//高斯模糊纹理效果
-vec4 blurTexture(vec4 o, vec2 uv0, vec4 color, float offset){
-  // 随机采样次数.
-  const float repeats = 5.0;
-
-  for(float i=0.0; i<repeats; i++) {
-
-    // 以下两步, 主要用来产生一个随机偏移量, 即以当前uv0坐标为基础, 叠加一个偏移量, 从而获得偏移后的周边某点的采样颜色.
-      vec2 q = vec2(
-        cos(degrees(i*360.0/repeats)),
-        sin(degrees(i*360.0/repeats))
-      );
-      q*= (rand(vec2(i,uv0.x + uv0.y ))+ offset );
-      vec2 uv2 = uv0 + q*offset;
-      
-      // 将周边某点颜色叠加到一起进行颜色混合.
-      o += CCSampleWithAlphaSeparated(cc_spriteTexture, uv2);
-  }
-
-  // 中和, 刚才的循环累加了repeats 次, 颜色分量应当除以repeats, 否则颜色分量可能超过1,即高曝光效果.
-  o /= repeats;
-
-  // 降低亮度. 并用节点本身颜色进行混合.
-  float light = 0.5;
-  o = o* color* light;
-
-  if (o.a > 0.4){ 
-    o.a = 1.0;
-  }else {
-    o.a = 0.0;
-  }
-  return o;
-}
-
-//圆形头像裁剪效果带羽化
-vec4 maskTexture(vec4 o, vec2 uv0, vec4 color, vec2 center, float radius, float feather){
-    // 计算当前坐标点与 中心点(0.5, 0.5)的距离, 距离超过半径的点,直接 discard; 即return.
-    float dis = distance(uv0, center);
-
-    if( dis > radius ){
-        discard;
-    }
-
-   // 正常计算坐标点的颜色值. 
-    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
-    o *= color;
-
-    // 判断圆形周边的一圈像素, 根据羽化参数大小, 对周边一圈颜色的透明度进行平滑降低, 即>0.5r 为透明a=0, < 0.4r为不透明a=1,  否则透明度a= 线性0~1过渡.
-    // dis < 0.4 则为1, >0.5则为0, 否则就为0~1之间插值
-    if( feather > 0.0 ){
-      o.a = smoothstep(radius, radius - feather, dis);
-    }
-  return o;
-}
-
-// 圆角矩形
-vec4 roundedRectangle(vec4 o, vec2 uv0, vec4 color, vec2 center, float radius, float base){
-
-  // 计算出以4个圆角圆心的坐标点区域.
-  vec2 uv = uv0 - center;
-  uv.x = abs(uv.x);
-  uv.y = abs(uv.y);
-
-  float r = base- radius;
-  
-  if (uv.x > r && uv.y > r) {
-    uv.x -= r;
-    uv.y -= r;
-
-    // 计算平移后的坐标点距离圆心(0 ,0 )的距离, 与圆形头像原理一致,
-    float dis = distance(uv, vec2(0,0));
-
-    if( dis >= radius ) {
-      discard;
-    }
-  }
-  o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0) * color;
-  return o;
-}
-
-//溶解效果(若干像素变没了, 像腐烂的破布)
-vec4 dissolve(vec4 o,vec2 uv0, vec4 color, float time) {
-  o = o * color * CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
-
-  // 将当前坐标点的三个颜色分量进行混合, 并把其中小于某值的颜色 discard;掉.
-  // 实际应用场景可能需要另外单独提供一张用来判断是否discard像素的贴图,此处简化,直接对当前图像的色彩进行判断.
-  float h = (o.g + o.r +o.b)/3.0;
-  
-  // 动态修改time 即颜色动态融化的效果. 
-  if(h < time) {
-    discard;
-  }
-  return o;
-}
-
-//渐变消失效果
-vec4 fadeOut(vec4 o,vec2 uv0, vec4 color, float time, float width, bool vertical){
-  o = o * color * CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
-  // 外部控制从上到下还是从左向右消失.
-  if (o.a > 0.3){
-    if(vertical) {
-      if( uv0.y < time ) {
-        // 对消失区域进行透明度插值渐变.
-        o.a = smoothstep(time - width,time, uv0.y);
-      }
-    } else {
-      if( uv0.x < time ) {
-        o.a = smoothstep(time - width,time, uv0.x);
-      }
-    }
-  }
-  return o;
-}
-
-//扫光效果
-vec4 shine(vec4 o,vec2 uv0, vec4 color, float start, float width, float strength, bool reverse){
-  o = o * color * CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
-      
-  // 斜线控制区域. 其实就是 y = -x+width  y = -x -width 夹着的区域. 还可以乘上斜率,以使扫光的倾斜程度变化. 加上time 时间控制, 可以使区域根据时间推移,平滑的从左往右移动.
-
-  if(uv0.x <= (-uv0.y + width + start) && uv0.x >= (-uv0.y - width + start)) {
-        o *= strength;  // 给颜色增强若干倍. 
-  }
-  else if( reverse ) {  
-    // 可以通过参数控制, 是否仅显示扫光区域, 看起来就会变成一道光照亮了一片区域,而其他地方则是虚无. 手电筒的效果.
-    discard;
-  }
-  return o;
-}
-
-//置灰
-vec4 gray(vec4 o,vec2 uv0){
-  o = normalTexture(o,uv0);
-  float gray  = dot(o.rgb, vec3(0.3,0.29,0.07));
-  o.r = o.g = o.b = gray;
-  return o;
-}
-
-vec4 scale(vec4 o,vec2 uv0, vec4 color, vec2 point, float scaleMin, float scaleMax){
-  vec2 uv = vec2(point.x,point.y);
-  float smin = scaleMin;// * (1.0 - uv.y);
-  float s = smin + (scaleMax - smin) *uv0.y;
-  // float s = .5+uv.y;
-  uv.x = uv.x - (uv.x - uv0.x)/s;
-  uv.y = uv.y - (uv.y - uv0.y)/s;
-  if(uv.x > 1.0 || uv.x < 0.0 || uv.y > 1.0 || uv.y < 0.0){
-    //超出纹理范围的用透明填充
-    o = vec4(0, 0, 0, 0);
-  }else{
-    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
-    if(o.a == 0.0){
-      //发现透明度为0的坐标，直接用透明填充
-      o = vec4(0, 0, 0, 0);
-    }
-  }
-  o *= color;
-  return o;
-}
-
-vec4 water(vec4 o,vec2 uv0, vec4 color,float w, float h){
-  vec2 uv = vec2(uv0.x,uv0.y);
-  uv.y = uv.y + h * sin(2.0*3.14*(cc_time.x/w - uv.x));
-  o = normalTexture(o,uv);
-  if (uv.y <= 1.0){
-    o.a = 0.0;
-  }
-  return o;
-}
 
 // 判断 defined 类型状态,type为 0/1
 bool isTrue(float defines, bool isColor, float checkValue){
@@ -185,9 +12,183 @@ bool isTrue(float defines, bool isColor, float checkValue){
   }
 }
 
+// 从扩展数据里解析颜色数据
 vec4 getColorFromExt(vec3 ext){
   float r = floor(ext.x / 1000.0);
   float g = ext.x - r * 1000.0;
   float b = floor(ext.y / 1000.0);
   color = vec4(r/255.0,g/255.0,b/255.0,ext.z);
+}
+
+//随机函数
+float rand(vec2 st){
+  return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
+}
+
+
+
+//置灰,_o:color
+vec4 gray(vec4 _o, vec2 _uv){
+  //心理学灰度公式
+  float gray  = dot(_o.rgb, vec3(0.299,0.587,0.114));
+  _o.r = _o.g = _o.b = gray;
+  return _o;
+}
+
+
+
+//扫光效果
+vec4 shine(vec4 _o, vec2 _uv, float _start, float _width, float _strength, bool _reverse){
+      
+  // 斜线控制区域. 其实就是 y = -x+width  y = -x -width 夹着的区域. 还可以乘上斜率,以使扫光的倾斜程度变化. 加上time 时间控制, 可以使区域根据时间推移,平滑的从左往右移动.
+
+  if(_uv.x <= (-_uv.y + _width + _start) && _uv.x >= (-_uv.y - _width + _start)) {
+    _o *= _strength;  // 给颜色增强若干倍. 
+  }
+  else if( _reverse ) {  
+    // 可以通过参数控制, 是否仅显示扫光区域, 看起来就会变成一道光照亮了一片区域,而其他地方则是虚无. 手电筒的效果.
+    discard;
+  }
+  return _o;
+}
+
+
+
+//圆形头像裁剪效果带羽化
+vec4 mask(vec4 _o, vec2 _uv, vec2 _center, float _radius, float _feather){
+    // 计算当前坐标点与 中心点(0.5, 0.5)的距离, 距离超过半径的点,直接 discard; 即return.
+    float dis = distance(_uv, _center);
+
+    if( dis > _radius ){
+        discard;
+    }
+
+    // 判断圆形周边的一圈像素, 根据羽化参数大小, 对周边一圈颜色的透明度进行平滑降低, 即>0.5r 为透明a=0, < 0.4r为不透明a=1,  否则透明度a= 线性0~1过渡.
+    // dis < 0.4 则为1, >0.5则为0, 否则就为0~1之间插值
+    if( _feather > 0.0 ){
+      _o.a *= smoothstep(_radius, _radius - _feather, dis);
+    }
+  return _o;
+}
+
+
+
+// 圆角矩形
+void roundedRectangle(vec2 _uv, vec2 _center, float _radius, float _base){
+
+  // 计算出以4个圆角圆心的坐标点区域.
+  vec2 uv = _uv - _center;
+  uv.x = abs(uv.x);
+  uv.y = abs(uv.y);
+
+  float r = _base- _radius;
+  
+  if (uv.x > r && uv.y > r) {
+    uv.x -= r;
+    uv.y -= r;
+
+    // 计算平移后的坐标点距离圆心(0 ,0 )的距离, 与圆形头像原理一致,
+    float dis = distance(uv, vec2(0,0));
+
+    if( dis >= _radius ) {
+      discard;
+    }
+  }
+}
+
+
+
+//渐变消失效果
+vec4 fadeOut(vec4 _o,vec2 _uv,  float _time, float _width, bool _vertical){
+  // 外部控制从上到下还是从左向右消失.
+  if (_o.a > 0.3){
+    if(_vertical) {
+        // 对消失区域进行透明度插值渐变.
+        _o.a *= smoothstep(_time - _width, _time, _uv.y);
+    } else {
+        _o.a *= smoothstep(_time - _width, _time, _uv.x);
+    }
+  } else _o.a = 0.0;
+  return _o;
+}
+
+
+
+//高斯模糊纹理效果
+vec4 blurTexture(vec4 _o, vec2 _uv, float _offset){
+  // 随机采样次数.
+  const float repeats = 10.;
+
+  for(float i=0.0; i<repeats ; i++) {
+
+    // 以下两步, 主要用来产生一个随机偏移量, 即以当前_uv坐标为基础, 叠加一个偏移量, 从而获得偏移后的周边某点的采样颜色.
+      vec2 q = vec2(
+        cos(degrees(i*360.0/repeats)),
+        sin(degrees(i*360.0/repeats))
+      );
+      q*= (rand(vec2(i,_uv.x + _uv.y ))+ _offset );
+      vec2 uv2 = _uv + q*_offset;
+      
+      // 将周边某点颜色叠加到一起进行颜色混合.
+      _o += normalTexture(cc_spriteTexture, uv2);
+  }
+
+  // 中和, 刚才的循环累加了repeats 次, 颜色分量应当除以repeats, 否则颜色分量可能超过1,即高曝光效果.
+  _o /= repeats;
+
+  // 降低亮度. 并用节点本身颜色进行混合.
+  float light = 0.7;
+  _o *= light;
+  _o.a = step(0.4, _o.a);
+
+  return _o;
+}
+
+
+
+//溶解效果(若干像素变没了, 像腐烂的破布)
+vec4 dissolve(vec4 _o, float _time) {
+
+  // 将当前坐标点的三个颜色分量进行混合, 并把其中小于某值的颜色 discard;掉.
+  // 实际应用场景可能需要另外单独提供一张用来判断是否discard像素的贴图,此处简化,直接对当前图像的色彩进行判断.
+  float h = (_o.g + _o.r + _o.b)/3.0;
+  
+  // 动态修改time 即颜色动态融化的效果. 
+  if(h < _time) {
+    discard;
+  }
+  return _o;
+}
+
+
+
+vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleMax){
+  vec2 uv = vec2(point.x,point.y);
+  float smin = scaleMin;// * (1.0 - uv.y);
+  float s = smin + (scaleMax - smin) *_uv.y;
+  // float s = .5+uv.y;
+  uv.x = uv.x - (uv.x - _uv.x)/s;
+  uv.y = uv.y - (uv.y - _uv.y)/s;
+  if(uv.x > 1.0 || uv.x < 0.0 || uv.y > 1.0 || uv.y < 0.0){
+    //超出纹理范围的用透明填充
+    o = vec4(0, 0, 0, 0);
+  }else{
+    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
+    if(o.a == 0.0){
+      //发现透明度为0的坐标，直接用透明填充
+      o = vec4(0, 0, 0, 0);
+    }
+  }
+  o *= color;
+  return o;
+}
+
+vec4 water(vec4 o, sampler2D _texture,vec2 _uv, vec4 color,float w, float h){
+  vec2 uv = vec2(_uv.x,_uv.y);
+  uv.y = uv.y + h * sin(2.0*3.14*(cc_time.x/w - uv.x));
+  o *= normalTexture(_texture,uv);
+  if (uv.y <= 1.0){
+    o.a = 0.0;
+  }
+  return o;
 }

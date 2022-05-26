@@ -40,7 +40,8 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    o = water(o,uv0,color,w,h);
+    o = water(o,cc_spriteTexture,uv0,color,w,h);
+    o*=color;
     ALPHA_TEST(o);
     return o;
   }

@@ -25,7 +25,7 @@ CCProgram vs %{
 }%
 
 CCProgram unlit-fs %{
-  precision highp float;
+  precision highp float; 
   #include <cc-global>
   #include <embedded-alpha> 
   #include <alpha-test>
@@ -39,14 +39,18 @@ CCProgram unlit-fs %{
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
+    #if USE_TEXTURE
+    o *= normalTexture(cc_spriteTexture,uv0);
+    #endif
+
+    o*=color;
+
     #if USE_FADEOUT
       #if IS_VERTICAL
-        o = fadeOut(o, uv0, color, fract(cc_time.x), width, true); 
+        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, true); 
       #else
-        o = fadeOut(o, uv0, color, fract(cc_time.x), width, false);
+        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, false);
       #endif
-    #else
-      o = normalTexture(o, uv0);
     #endif
 
     ALPHA_TEST(o);

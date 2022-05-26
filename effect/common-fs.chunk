@@ -1,10 +1,12 @@
 in vec4 color;
 in vec3 ext;
-in vec2 uv0;  
 in float def;
-      
-#pragma builtin(local)
-layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+in vec2 uv0;  
+
+#if USE_TEXTURE
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+#endif
 
 uniform ZZ {
   vec4 factRect;//碎图在合图中的相对rect
@@ -12,8 +14,10 @@ uniform ZZ {
 };
 
 //标准纹理效果
-vec4 normalTexture(vec4 o, vec2 uv) { 
-  o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
-  o *= color;
-  return o;
+vec4 normalTexture(sampler2D _texture, vec2 _uv) { 
+  #if USE_TEXTURE
+    return CCSampleWithAlphaSeparated(_texture, _uv); 
+  #else
+    return texture(_texture, _uv);
+  #endif
 }

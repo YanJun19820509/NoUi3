@@ -19,7 +19,9 @@ CCEffect %{
       properties: 
         width: { value: 0.1, editor: {range: [0.0, 1.0, 0.01]} }
         strength: { value: 1.5, editor: {range: [0.0, 10.0, 0.01]} }
+        # 合图中的区域
         factRect: { value: [1.0,1.0,1.0,1.0], editor: {visible: false}}
+        # 合图中的比率
         ratio: { value: 1.0, editor: {visible: false}}
 }%
 
@@ -42,20 +44,23 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1); 
-    float start = fract(cc_time.x) * 2.0; 
 
+    #if USE_TEXTURE
+    o *= normalTexture(cc_spriteTexture,uv0);
+    #endif
+
+    float start = fract(cc_time.x) * 2.0; 
     float w = width * factRect.z;
 
     #if USE_SHINE
       #if IS_REVERSE
-        o = shine(o, uv0, color, start, w, strength, true);
+        o = shine(o, uv0, start, w, strength, true);
       #else
-        o = shine(o, uv0, color, start, w, strength, false);
+        o = shine(o, uv0, start, w, strength, false);
       #endif
-    #else
-      o = normalTexture(o,uv0);
     #endif
 
+    o*=color;
     ALPHA_TEST(o);
     return o;
   }
