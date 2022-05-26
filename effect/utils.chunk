@@ -162,6 +162,68 @@ vec4 dissolve(vec4 _o, float _time) {
 
 
 
+//描边
+bool isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
+  float cosArray[12], sinArray[12]; 
+  cosArray[0] = 1.0;
+  cosArray[1] = 0.866;
+  cosArray[2] = .5;
+  cosArray[3] = 0.;
+  cosArray[4] = -.5;
+  cosArray[5] = -0.866;
+  cosArray[6] = -.1;
+  cosArray[7] = -0.866;
+  cosArray[8] = -.5;
+  cosArray[9] = 0.;
+  cosArray[10] = .5;
+  cosArray[11] = 0.866;
+  sinArray[0] = 0.;
+  sinArray[1] = 0.5;
+  sinArray[2] = 0.866;
+  sinArray[3] = 1.;
+  sinArray[4] = 0.866;
+  sinArray[5] = 0.5;
+  sinArray[6] = 0.;
+  sinArray[7] = -0.5;
+  sinArray[8] = -.866;
+  sinArray[9] = -1.;
+  sinArray[10] = -.866;
+  sinArray[11] = -0.5;
+  int stroke = 0;
+  for(int i = 0; i < 12; i++){
+    float a = normalTexture(_texture, vec2(_uv.x + _outlineWidth * cosArray[i], _uv.y + _outlineWidth * sinArray[i])).a;
+    if (a >= 0.7)
+    {
+        stroke += 1;
+    }
+  }
+  return stroke > 0;
+}
+
+
+//流动
+vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVerse) {
+  float offset = fract(cc_time.x*_speed);
+  if (isVerse) offset = 1. - offset;
+  vec2 uv = _uv + vec2(isVertical ? 0. : offset, isVertical ? offset : 0.);
+  uv -= step(1., uv);
+
+  return normalTexture(_texture, uv);
+}
+
+//纹理UV切换
+vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps){
+  float index = floor(cc_time.x * _fps);
+
+  float row = _cells.x;
+  float col = _cells.y;
+
+  vec2 offset = vec2(mod(index,col)/col,floor(index/col)/row);
+
+  return texture(_texture, _uv / _cells.yx + offset);
+}
+
+
 vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleMax){
   vec2 uv = vec2(point.x,point.y);
   float smin = scaleMin;// * (1.0 - uv.y);

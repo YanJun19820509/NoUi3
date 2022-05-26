@@ -21,6 +21,9 @@ CCEffect %{
       properties:
         i_min: { value: [0., 0.], target: i_min_max_uv.xy}
         i_max: { value: [1., 1.], target: i_min_max_uv.zw}
+        switchTexture: {value: white}
+        cells: {value: [1,1]}
+        fps: { value: 1. }
 }%
 
 CCProgram vs %{
@@ -29,6 +32,17 @@ CCProgram vs %{
 
 CCProgram fs %{
   #include <graphics-fs>
+  #include <cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+  #include <utils>
+
+   uniform sampler2D switchTexture;
+     
+    uniform SwitchData{
+      vec2 cells;
+      float fps;
+    };
 
   // 一个彩虹色的色板，输入t的范围是[0, 1], 输出一个颜色值
   vec3 Pallete(float t) {
@@ -44,8 +58,14 @@ CCProgram fs %{
 
   vec4 frag () {
     vec4 o = getGraphicsColor();
-    float D = abs(v_dist);//v_dist * 0.5 + 0.5;
-    o.rgb = Pallete(D);
+    // float D = abs(v_dist);//v_dist * 0.5 + 0.5;
+    // o.rgb = Pallete(D);
+    
+
+    #if IS_SWITCH
+      vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
+    o.rgb+= c2.rgb;
+    #endif
     return o;
   }
 }%

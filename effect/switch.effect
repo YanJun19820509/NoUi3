@@ -17,7 +17,10 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        width: { value: 0.1, editor: {range: [0.1,1.0,0.01]}}
+        switchTexture: {value: white}
+        mainTexture: {value: white}
+        cells: {value: [1,1]}
+        fps: { value: 1. }
 }%
 
 CCProgram vs %{
@@ -27,32 +30,33 @@ CCProgram vs %{
 CCProgram unlit-fs %{
   precision highp float;
   #include <cc-global>
-  #include <embedded-alpha> 
+  #include <embedded-alpha>
   #include <alpha-test>
-  #include <common-fs> 
+  #include <common-fs>
   #include <utils>
 
-  uniform Constant{
-    float width;
-  };
+    uniform sampler2D switchTexture;
+    uniform sampler2D mainTexture;
+     
+    uniform SwitchData{
+      vec2 cells;
+      float fps;
+    };
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
     #if USE_TEXTURE
-    o *= normalTexture(cc_spriteTexture,uv0);
+      o *= normalTexture(cc_spriteTexture, uv0);
     #endif
 
-    o*=color;
+    #if IS_SWITCH
+      // vec4 c1 = texture(mainTexture, uv0);
+      vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
+    o*= c2;
+    #endif  
 
-    #if USE_FADEOUT
-      #if IS_VERTICAL
-        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, true); 
-      #else
-        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, false);
-      #endif
-    #endif
-
+    o *= color;
     ALPHA_TEST(o);
     return o;
   }

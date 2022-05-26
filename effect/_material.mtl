@@ -4,14 +4,13 @@
   "_objFlags": 0,
   "_native": "",
   "_effectAsset": {
-    "__uuid__": "1466f758-a1e6-45ea-ada6-5c1e46e37778",
+    "__uuid__": "9f00d070-1e0d-4d75-97a5-1673e9ba65dc",
     "__expectedType__": "cc.EffectAsset"
   },
   "_techIdx": "0",
   "_defines": [
     {
-      "USE_TEXTURE": true,
-      "USE_DISSOLUTION": true
+      "IS_SWITCH": true
     }
   ],
   "_states": [
@@ -26,6 +25,17 @@
     }
   ],
   "_props": [
-    {}
+    {
+      "switchTexture": {
+        "__uuid__": "21e2b390-35bb-48db-934c-e2a9bc9b9cc3@6c48a",
+        "__expectedType__": "cc.Texture2D"
+      },
+      "cells": {
+        "__type__": "cc.Vec2",
+        "x": 4,
+        "y": 4
+      },
+      "fps": 12
+    }
   ]
 }

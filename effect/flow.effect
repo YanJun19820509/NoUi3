@@ -17,7 +17,7 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        width: { value: 0.1, editor: {range: [0.1,1.0,0.01]}}
+        speed: { value: 0.5 }
 }%
 
 CCProgram vs %{
@@ -27,31 +27,33 @@ CCProgram vs %{
 CCProgram unlit-fs %{
   precision highp float;
   #include <cc-global>
-  #include <embedded-alpha> 
+  #include <embedded-alpha>
   #include <alpha-test>
-  #include <common-fs> 
+  #include <common-fs>
   #include <utils>
 
-  uniform Constant{
-    float width;
+  uniform FlowData{
+    float speed;
   };
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-
+    bool isV = false, isM = false;
     #if USE_TEXTURE
-    o *= normalTexture(cc_spriteTexture,uv0);
-    #endif
-
-    o*=color;
-
-    #if USE_FADEOUT
       #if IS_VERTICAL
-        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, true); 
-      #else
-        o = fadeOut(o, uv0, fract(cc_time.x)*2.0, width, false);
+        isV = true;
       #endif
+      #if IS_VERSE
+        isM = true;
+      #endif
+      #if IS_FLOW
+        o *= flow(cc_spriteTexture,uv0, speed, isV, isM);
+      #else 
+        o *= normalTexture(cc_spriteTexture, uv0);
+      #endif  
     #endif
+
+    o *= color;
 
     ALPHA_TEST(o);
     return o;
