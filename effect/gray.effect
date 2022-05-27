@@ -39,7 +39,7 @@ CCProgram unlit-fs %{
     #endif
 
     #if IS_GRAY
-      o = gray(o,uv0);
+      o = gray(o);
     #endif  
 
     o *= color;

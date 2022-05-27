@@ -1,0 +1,88 @@
+// Effect Syntax Guide: https://github.com/cocos-creator/docs-3d/blob/master/zh/material-system/effect-syntax.md
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert 
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        amplitude: { value: 0.05, range: [0.0, 0.5], editor: { tooltip: '振幅' } }
+        angularVelocity: { value: 10.0, editor: { tooltip: '角速度' } }
+        frequency: { value: 10.0, editor: { tooltip: '频率' } }
+        offset: { value: 0.5, range: [0.0, 1.0], editor: { tooltip: '偏距' } }
+        toLeft: { value: false, editor: { type: boolean, tooltip: '向左（方向）' } }
+        waterTexture: { value: white, editor: { tooltip: '扰动图' }}
+        strengthen: { value: 0.05, target: waterParams.x, editor: { tooltip: '扰动强度' } }
+        speed: { value: [0.05, 0.05], target: waterParams.yz, editor: { tooltip: '速度' } }
+        factor: { value: 1., target: waterParams.w, editor: { tooltip: '混合比例' } }
+}%
+
+CCProgram vs %{
+  #include <common-vs>
+}%
+
+CCProgram unlit-fs %{
+  precision highp float;
+  #include <cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+  #include <common-fs>
+  #include <utils>
+
+    uniform sampler2D waterTexture;
+     
+    uniform WaterData{
+      vec4 waterParams;
+    };
+     
+    uniform WaveData{
+      float amplitude;
+      float angularVelocity;
+      float frequency;
+      float offset;
+      bool toLeft;
+    };
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+    float strengthen = waterParams.x;
+    float factor = waterParams.w;
+    vec2 speed = waterParams.yz;
+
+    vec2 uv = uv0 + cc_time.xx * speed;
+    vec4 c = texture(waterTexture, uv);
+    float gray = grayF(c);
+    vec2 os = (c.rg - 0.5) * 2.0 * strengthen * gray; 
+    // o *= normalTexture( cc_spriteTexture, uv0 + offset );
+    
+
+    #if IS_WAVE
+      o *= wave(cc_spriteTexture, uv0 + os, amplitude, angularVelocity, frequency, offset, toLeft);
+    #elif USE_TEXTURE
+      o *= normalTexture(cc_spriteTexture, uv0 + os);
+    #endif
+
+    o.rgb += c.rgb * factor;
+
+    // #if IS_WATER
+    //   o *= water(cc_spriteTexture, uv0, amplitude, angularVelocity, frequency, offset, toLeft);
+    // #elif USE_TEXTURE
+    //   o *= normalTexture(cc_spriteTexture, uv0);
+    // #endif
+
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

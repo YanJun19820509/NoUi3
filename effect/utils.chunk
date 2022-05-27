@@ -22,18 +22,46 @@ vec4 getColorFromExt(vec3 ext){
 
 //随机函数
 float rand(vec2 st){
-  return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);
+  return fract(sin(dot(st,vec2(12.9898,78.233)))*43758.5453123);
 }
 
+
+float grayF(vec4 _color){
+  return dot(_color.rgb, vec3(0.299,0.587,0.114));
+}
 
 
 //置灰,_o:color
-vec4 gray(vec4 _o, vec2 _uv){
+vec4 gray(vec4 _o){
   //心理学灰度公式
-  float gray  = dot(_o.rgb, vec3(0.299,0.587,0.114));
+  float gray  = grayF(_o);
   _o.r = _o.g = _o.b = gray;
   return _o;
 }
+
+//两个颜色混合，type为混合的方式，1：相加，2：相减，3：相乘，4：插值混合，5：加权求和，6：灰度混合
+vec4 blend(vec4 _c1, vec4 _c2, float _type){
+  if (_type == 1.) _c1 += _c2;
+  else if (_type == 2.) _c1 -= _c2;
+  else if (_type == 3.) _c1 *= _c2;
+  else if (_type == 4.) _c1.rgb = mix(_c1.rgb, _c2.rgb, .618);
+  else if (_type == 5.) _c1.rgb = _c1.rgb * .2 + _c2.rgb * 1.2;
+  else if (_type == 6.) _c1.rgb = mix(_c1.rgb, _c2.rgb*1.5, grayF(_c2));
+  return _c1;
+}
+
+
+// 一个彩虹色的色板，输入t的范围是[0, 1], 输出一个颜色值
+  vec3 Pallete(float t) {
+      // 滚动动起来
+      t += cc_time.x;
+      
+      vec3 dcOffset = vec3(0.5, 0.5, 0.5);
+      vec3 amp = vec3(1., 1., 1.);
+      vec3 freq = vec3(1., 1., 1.);
+      vec3 phase = vec3(0., 0.3333, 0.6666);
+      return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase));
+  }
 
 
 
@@ -224,6 +252,29 @@ vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps){
 }
 
 
+//波纹
+// amplitude: { value: 0.05, range: [0.0, 0.5], editor: { tooltip: '振幅' } }
+//         angularVelocity: { value: 10.0, editor: { tooltip: '角速度' } }
+//         frequency: { value: 10.0, editor: { tooltip: '频率' } }
+//         offset: { value: 0.5, range: [0.0, 1.0], editor: { tooltip: '偏距' } }
+//         toLeft: { value: false, editor: { type: boolean, tooltip: '向左（方向）' } }
+vec4 wave(sampler2D _texture, vec2 _uv, float _amplitude,float _angularVelocity, float _frequency, float _offset, bool _toLeft){
+  float y = _amplitude * sin((_angularVelocity * _uv.x) + ((_frequency * cc_time.x) * (_toLeft ? 1. : -1.))) + _offset;
+  vec2 uv = _uv + vec2(0., y);
+  uv.y -= 0.5;
+  vec4 c = normalTexture(_texture, uv);
+    //超出纹理范围的用透明填充
+  if (uv.y < 0. || uv.y > 1.) c.a = 0.;
+  return c;
+}
+
+void graphicsWave(vec4 _o, vec2 _uv, float _amplitude,float _angularVelocity, float _frequency, float _offset, bool _toLeft){
+  float y = _amplitude * sin((_angularVelocity * _uv.x) + ((_frequency * cc_time.x) * (_toLeft ? 1. : -1.))) + _offset;
+    //超出偏移的丢弃
+  if (_uv.y > y) discard;
+}
+
+
 vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleMax){
   vec2 uv = vec2(point.x,point.y);
   float smin = scaleMin;// * (1.0 - uv.y);
@@ -242,15 +293,5 @@ vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleM
     }
   }
   o *= color;
-  return o;
-}
-
-vec4 water(vec4 o, sampler2D _texture,vec2 _uv, vec4 color,float w, float h){
-  vec2 uv = vec2(_uv.x,_uv.y);
-  uv.y = uv.y + h * sin(2.0*3.14*(cc_time.x/w - uv.x));
-  o *= normalTexture(_texture,uv);
-  if (uv.y <= 1.0){
-    o.a = 0.0;
-  }
   return o;
 }

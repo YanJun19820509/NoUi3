@@ -21,9 +21,16 @@ CCEffect %{
       properties:
         i_min: { value: [0., 0.], target: i_min_max_uv.xy}
         i_max: { value: [1., 1.], target: i_min_max_uv.zw}
+        amplitude: { value: 0.05, range: [0.0, 0.5], editor: { tooltip: '振幅' } }
+        angularVelocity: { value: 10.0, editor: { tooltip: '角速度' } }
+        frequency: { value: 10.0, editor: { tooltip: '频率' } }
+        offset: { value: 0.5, range: [0.0, 1.0], editor: { tooltip: '偏距' } }
+        toLeft: { value: false, editor: { type: boolean, tooltip: '向左（方向）' } }
+        
         switchTexture: {value: white}
         cells: {value: [1,1]}
         fps: { value: 1. }
+        blendType: { value: 1., editor: {range:[1.,6.,1.]} }
 }%
 
 CCProgram vs %{
@@ -37,38 +44,39 @@ CCProgram fs %{
   #include <alpha-test>
   #include <utils>
 
-   uniform sampler2D switchTexture;
+    uniform sampler2D switchTexture;
      
     uniform SwitchData{
       vec2 cells;
       float fps;
+      float blendType;
     };
-
-  // 一个彩虹色的色板，输入t的范围是[0, 1], 输出一个颜色值
-  vec3 Pallete(float t) {
-      // 滚动动起来
-      t += cc_time.x;
-      
-      vec3 dcOffset = vec3(0.5, 0.5, 0.5);
-      vec3 amp = vec3(1., 1., 1.);
-      vec3 freq = vec3(1., 1., 1.);
-      vec3 phase = vec3(0., 0.3333, 0.6666);
-      return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase));
-  }
+     
+    uniform WaveData{
+      float amplitude;
+      float angularVelocity;
+      float frequency;
+      float offset;
+      bool toLeft;
+    };
 
   vec4 frag () {
     //初始化自定义图形的颜色和 uv
     initGraphicsColorUV();
-    if (!isUvInside()){
     // float D = abs(v_dist);//v_dist * 0.5 + 0.5;
     // color.rgb = Pallete(D);
+    if (isUvInside()){
+      #if IS_WAVE
+        graphicsWave(color, uv0, amplitude, angularVelocity, frequency, offset, toLeft);
+      #endif
+
+      #if IS_SWITCH
+        vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
+        color = blend(color, c2, blendType);
+      #endif
+    }else{
       discard;
     }
-
-    #if IS_SWITCH
-      vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
-    color.rgb += c2.rgb;
-    #endif
     return color;
   }
 }%

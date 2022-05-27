@@ -17,10 +17,11 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        switchTexture: {value: white}
-        cells: {value: [1,1]}
-        fps: { value: 1. }
-        blendType: { value: 1., editor: {range:[1.,6.,1.]} }
+        amplitude: { value: 0.05, range: [0.0, 0.5], editor: { tooltip: '振幅' } }
+        angularVelocity: { value: 10.0, editor: { tooltip: '角速度' } }
+        frequency: { value: 10.0, editor: { tooltip: '频率' } }
+        offset: { value: 0.5, range: [0.0, 1.0], editor: { tooltip: '偏距' } }
+        toLeft: { value: false, editor: { type: boolean, tooltip: '向左（方向）' } }
 }%
 
 CCProgram vs %{
@@ -37,25 +38,24 @@ CCProgram unlit-fs %{
 
     uniform sampler2D switchTexture;
      
-    uniform SwitchData{
-      vec2 cells;
-      float fps;
-      float blendType;
+    uniform WaveData{
+      float amplitude;
+      float angularVelocity;
+      float frequency;
+      float offset;
+      bool toLeft;
     };
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
 
-    #if USE_TEXTURE
+    #if IS_WAVE
+      o *= wave(cc_spriteTexture, uv0, amplitude, angularVelocity, frequency, offset, toLeft);
+    #elif USE_TEXTURE
       o *= normalTexture(cc_spriteTexture, uv0);
-    #endif  
+    #endif
 
     o *= color;
-
-    #if IS_SWITCH
-      vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
-      o = blend(o, c2, blendType);
-    #endif
     ALPHA_TEST(o);
     return o;
   }
