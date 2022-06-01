@@ -390,7 +390,6 @@ export namespace no {
     export function arrayRandom(arr: any, n = 1): any {
         if (!arr || arr.length == 0) return null;
         if (arr.length == 1) return arr[0];
-        if (arr.length == n) return arr;
         let a = [].concat(arr);
         let c = [];
         for (var i = 0; i < n; i++) {
@@ -717,7 +716,7 @@ export namespace no {
     export function randomBetween(min: number, max: number): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        return Math.random() * (max - min) + min;
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 
     /**当前时间戳（秒） */
