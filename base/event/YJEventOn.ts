@@ -43,6 +43,10 @@ export class YJEventOn extends Component {
         if (this.nodeActiveEffect) this.init();
     }
 
+    onDisable() {
+        no.evn.targetOff(this);
+    }
+
     public a_trigger(e: any, type?: string) {
         this._on(type || e);
     }
