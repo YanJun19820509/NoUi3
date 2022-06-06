@@ -43,7 +43,10 @@ export class FuckUi extends Component {
     }
 
     public setData(d: string) {
-        if (d == 'null') return;
+        if (d == 'null') {
+            this.a_setEmpty();
+            return;
+        }
         if (this.saveIgnore && d == this._oldData) return;
         this._oldData = d;
         if (d != '')
@@ -104,4 +107,9 @@ export class FuckUi extends Component {
     protected onDataChange(data: any) {
 
     }
+
+    public a_setEmpty(): void {
+
+    }
+
 }

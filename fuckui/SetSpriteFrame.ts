@@ -50,4 +50,10 @@ export class SetSpriteFrame extends FuckUi {
         this.getComponent(YJDynamicTexture)?.afterChange();
         this.getComponent(SetEffect)?.work();
     }
+
+    public a_setEmpty(): void {
+        if (this.sprite == null) return;
+        this.sprite.spriteFrame = null;
+    }
+
 }
