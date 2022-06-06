@@ -17,7 +17,7 @@ const { ccclass, property } = _decorator;
  */
 /**
  * data :: {
- *      list: {id: string, title: string}[],
+ *      list: {id: string, title: string, icon?:string, checked?: boolean}[],
  *      selected?: 0
  * }
  */
@@ -44,9 +44,7 @@ export class YJComboBox extends YJDataWork {
 
     protected afterInit() {
         this.setListVisible(this.autoShow);
-        this.data = {
-            title: this.data.list[this.data.selected || 0].title
-        };
+        this.setChecked(this.data.selected);
     }
 
     public a_changeVisible(): void {
@@ -56,9 +54,7 @@ export class YJComboBox extends YJDataWork {
     public a_onSelect(d: any): void {
         this.setListVisible(false);
         no.EventHandlerInfo.execute(this.onChange, d);
-        this.data = {
-            title: d.title
-        };
+        this.setChecked(d.id);
     }
 
 
@@ -76,5 +72,19 @@ export class YJComboBox extends YJDataWork {
             dir: v ? -1 : 1,
             x: v ? 0 : -10000
         };
+    }
+
+    private setChecked(id: string) {
+        let list = this.data.list;
+        list.forEach((a: any) => {
+            a.checked = a.id == id;
+            if (a.checked) {
+                this.data = {
+                    title: a.title,
+                    icon: a.icon
+                };
+            }
+        });
+        this.data = { list: list };
     }
 }
