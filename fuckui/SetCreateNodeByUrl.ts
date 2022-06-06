@@ -55,10 +55,14 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (url && this.url != url) {
             this.clear();
             this.url = url;
-            no.assetBundleManager.loadPrefab(url, item => {
-                this.template = instantiate(item)
-                this.setItems(data);
-            });
+            no.callUntil(() => {
+                return !this.container?.children.length;
+            }, () => {
+                no.assetBundleManager.loadPrefab(url, item => {
+                    this.template = instantiate(item)
+                    this.setItems(data);
+                });
+            }, this);
         } else {
             this.setItems(data);
         }
