@@ -37,11 +37,12 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     private template: Node;
     private url: string;
+    private needDestroyChildrenUuid: string[];
 
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            this.clear();
+            this.clear(true);
         }
     }
 
@@ -53,16 +54,13 @@ export class SetCreateNodeByUrl extends FuckUi {
     protected onDataChange(d: any) {
         let { url, data }: { url: string, data: any[] } = d;
         if (url && this.url != url) {
-            this.clear();
             this.url = url;
-            no.callUntil(() => {
-                return !this.container?.children.length;
-            }, () => {
-                no.assetBundleManager.loadPrefab(url, item => {
-                    this.template = instantiate(item)
-                    this.setItems(data);
-                });
-            }, this);
+            this.setNeedDestroyChildren();
+            no.assetBundleManager.loadPrefab(url, item => {
+                this.template = instantiate(item)
+                this.setItems(data);
+                this.clear();
+            });
         } else {
             this.setItems(data);
         }
@@ -73,7 +71,7 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (!this.container) this.container = this.node;
 
         let n = data.length
-        let l = this.container.children.length;
+        let l = this.container.children.length - this.needDestroyChildrenUuid.length;
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
@@ -102,9 +100,17 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
-    private clear() {
+    private clear(all = false) {
         this.container?.children.forEach(child => {
-            child.destroy();
+            if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
+                child.destroy();
+        });
+    }
+
+    private setNeedDestroyChildren() {
+        this.needDestroyChildrenUuid = [];
+        this.container?.children.forEach(child => {
+            this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
         });
     }
 }
