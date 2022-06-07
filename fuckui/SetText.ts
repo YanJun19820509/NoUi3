@@ -1,5 +1,5 @@
 
-import { _decorator, Label, RichText } from 'cc';
+import { _decorator, Label, RichText, UITransform, view, BitmapFont } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -31,6 +31,44 @@ export class SetText extends FuckUi {
     private label: Label | RichText | YJCharLabel;
 
     protected onDataChange(data: any) {
+        this.lateSet(data);
+    }
+
+    private setLabel(data: any): void {
+        if (this.label == null) return;
+        let s = '';
+        if (typeof data == 'string') {
+            if (data != '')
+                s = no.formatString(this.formatter, data.split('|'));
+        } else if (typeof data == 'number') {
+            s = no.formatString(this.formatter, { '0': data });
+        } else {
+            s = no.formatString(this.formatter, data);
+        }
+        if (this.label.string != s) {
+            if (this.label instanceof Label && !this.label.font) {
+                this.getComponent(YJDynamicTexture)?.resetLabel();
+            }
+            this.label.string = s;
+            this.checkShader();
+        }
+    }
+
+    private checkShader() {
+        this.getComponent(SetEffect)?.work();
+    }
+
+    private lateSet(data: any): void {
+        let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
+        let viewSize = view.getVisibleSize();
+
+        if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
+            this.scheduleOnce(() => {
+                this.lateSet(data);
+            });
+            return;
+        }
+
         if (typeof data == 'object') {
             for (let k in data) {
                 if (data[k] == null) return;
@@ -39,26 +77,9 @@ export class SetText extends FuckUi {
         if (!this.label) {
             this.label = this.node.getComponent(Label) || this.node.getComponent(RichText) || this.node.getComponent(YJCharLabel);
         }
-        this.getComponent(YJDynamicTexture)?.resetLabel();
         this.setLabel(data);
-        this.checkShader();
     }
 
-    private setLabel(data: any): void {
-        if (this.label == null) return;
-        if (data == '') this.label.string = '';
-        if (typeof data == 'string') {
-            this.label.string = no.formatString(this.formatter, data.split('|'));
-        } else if (typeof data == 'number') {
-            this.label.string = no.formatString(this.formatter, { '0': data });
-        } else {
-            this.label.string = no.formatString(this.formatter, data);
-        }
-    }
-
-    private checkShader() {
-        this.getComponent(SetEffect)?.work();
-    }
 
     /////////////EDITOR////////////
     update() {
@@ -66,5 +87,9 @@ export class SetText extends FuckUi {
         let label = this.node.getComponent(Label) || this.node.getComponent(RichText);
         if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
         else if (!label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
+    }
+
+    public a_setEmpty(): void {
+        this.setLabel('');
     }
 }

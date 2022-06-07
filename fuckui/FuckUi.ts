@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, UITransform, view } from 'cc';
 import { DEBUG } from 'cc/env';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
@@ -49,8 +49,10 @@ export class FuckUi extends Component {
         }
         if (this.saveIgnore && d == this._oldData) return;
         this._oldData = d;
+
         if (d != '')
             d = JSON.parse(d);
+
         this.logValue(d);
         this.onDataChange(d);
         if (this.once) this.destroy();
@@ -94,7 +96,6 @@ export class FuckUi extends Component {
         this.logValue(d);
         this.onDataChange(d);
     }
-
 
     protected get dataSetted(): boolean {
         return this._oldData != null;

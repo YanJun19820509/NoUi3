@@ -94,12 +94,12 @@ export namespace no {
         }
 
         public set(type: string, value?: any): void {
-            this._states[type] = { v: value, t: sysTime.now };
+            this._states[type] = { v: value, t: Date.now() };
         }
 
         public on(type: string, target: Component) {
             this._watchers[type] = this._watchers[type] || {};
-            this._watchers[type][target.uuid] = sysTime.now;
+            this._watchers[type][target.uuid] = Date.now();
         }
 
 

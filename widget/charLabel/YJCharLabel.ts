@@ -59,6 +59,9 @@ export class YJCharLabel extends Component {
                 label.fontSize = tempLabelComp.fontSize;
                 label.lineHeight = tempLabelComp.lineHeight;
                 label.font = tempLabelComp.font;
+                label.isItalic = tempLabelComp.isItalic;
+                label.isBold = tempLabelComp.isBold;
+                label.isUnderline = tempLabelComp.isUnderline;
                 labelNode.addComponent(SetText);
                 let dt = labelNode.addComponent(YJDynamicTexture);
                 dt.dynamicAtlas = this.dynamicAtlas;

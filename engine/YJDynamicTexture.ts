@@ -1,6 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material } from 'cc';
-import { YJComponent } from '../base/YJComponent';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component } from 'cc';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
@@ -27,7 +26,7 @@ const { ccclass, property, disallowMultiple } = _decorator;
  */
 @ccclass('YJDynamicTexture')
 @disallowMultiple()
-export class YJDynamicTexture extends YJComponent {
+export class YJDynamicTexture extends Component {
     @property({ type: YJDynamicAtlas })
     dynamicAtlas: YJDynamicAtlas = null;
     @property
@@ -66,7 +65,7 @@ export class YJDynamicTexture extends YJComponent {
     }
 
     onDisable() {
-        this.resetLabel();
+        // this.resetLabel();
     }
 
     public init() {
@@ -91,7 +90,6 @@ export class YJDynamicTexture extends YJComponent {
 
 
     public resetLabel(): void {
-        this.clearUpdateHandlers();
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label || !label.ttfSpriteFrame) return;
@@ -100,6 +98,7 @@ export class YJDynamicTexture extends YJComponent {
         else label.ttfSpriteFrame._resetDynamicAtlasFrame();
         label.ttfSpriteFrame._uuid = '';
     }
+
 
     public pack(): void {
         if (!this.enabledInHierarchy) return;
@@ -121,7 +120,7 @@ export class YJDynamicTexture extends YJComponent {
         this.dynamicAtlas?.packToDynamicAtlas(label, frame);
     }
 
-    private createLabelFrameUuid(label: Label): string {
-        return label.string + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+    private createLabelFrameUuid(label: Label, str?: string): string {
+        return (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
     }
 }

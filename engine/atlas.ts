@@ -20,6 +20,21 @@ export class Atlas {
         // this._innerSpriteFrames = [];
     }
 
+    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: DynamicAtlasTexture } {
+        let info = this._dynamicTextureRect[uuid];
+        if (info) {
+            return {
+                x: info.x,
+                y: info.y,
+                w: info.w,
+                h: info.h,
+                texture: this._texture
+            };
+        }
+        return null;
+    }
+
+
     /**
      * @en
      * Append a sprite frame into the dynamic atlas.
@@ -33,14 +48,8 @@ export class Atlas {
     public insertSpriteFrame(spriteFrame: SpriteFrame, noSpace: () => void) {
         // Todo:No renderTexture
         let _uuid = spriteFrame._uuid;
-        let info = this._dynamicTextureRect[_uuid];
-        if (info) {
-            return {
-                x: info.x,
-                y: info.y,
-                texture: this._texture
-            };
-        }
+        let packedFrame = this.getPackedFrame(_uuid);
+        if (packedFrame) return packedFrame;
 
         const rect = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
@@ -57,7 +66,7 @@ export class Atlas {
         let x = p.x, y = p.y;
 
         this.drawImageAt(spriteFrame, x, y);
-        this.setSpriteFrameTextureRect(_uuid, x, y);
+        this.setSpriteFrameTextureRect(_uuid, x, y, rect.width, rect.height);
         const frame = {
             x: x,
             y: y,
@@ -75,7 +84,7 @@ export class Atlas {
         }
         let p = this._maxRect.find(texture.width, texture.height);
         if (!p || !texture._mipmaps[0]) return null;
-        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y);
+        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, texture.width, texture.height);
         this._setSubImage(texture._mipmaps[0], p.x, p.y);
         return {
             x: p.x,
@@ -84,10 +93,12 @@ export class Atlas {
         };
     }
 
-    public setSpriteFrameTextureRect(uuid: string, x: number, y: number) {
+    public setSpriteFrameTextureRect(uuid: string, x: number, y: number, w: number, h: number) {
         this._dynamicTextureRect[uuid] = {
             x: x,
-            y: y
+            y: y,
+            w: w,
+            h: h
         };
     }
 
@@ -352,6 +363,7 @@ dynamicAtlasManager.enabled = false;
 js.mixin(dynamicAtlasManager, {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
+        if (frame?.original) return;
         let a: any = comp.getComponent('YJDynamicTexture');
         if (!a && comp.node.parent.getComponent('cc.RichText') && comp.node.parent.getComponent('YJDynamicTexture')) {
             a = comp.addComponent('YJDynamicTexture');

@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite } from 'cc';
+import { _decorator, Sprite, SpriteFrame, UITransform, view } from 'cc';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -26,29 +26,45 @@ export class SetSpriteFrame extends FuckUi {
     sprite: Sprite = null;
 
     protected onDataChange(data: any) {
-        this.sprite = this.sprite || this.getComponent(Sprite);
-        if (this.sprite == null) return;
+        this.lateSet(data);
+    }
+
+    private setSpriteFrame(sf: SpriteFrame) {
         this.getComponent(YJDynamicTexture)?.resetSprite();
-        if (data.atlas) {
-            no.assetBundleManager.loadAtlas(data.atlas, item => {
-                this.sprite.spriteAtlas = item;
-                this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(data.frame);
-                this.checkShader();
-            });
-        } else if (!this.sprite.spriteAtlas) {
-            no.assetBundleManager.loadSprite(String(data) + '/spriteFrame', spriteFrame => {
-                this.sprite.spriteFrame = spriteFrame;
-                this.checkShader();
-            });
-        } else if (this.sprite.spriteAtlas?.spriteFrames) {
-            this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(String(data));
-            this.checkShader();
-        }
+        this.sprite.spriteFrame = sf;
+        this.getComponent(YJDynamicTexture)?.afterChange();
+        this.checkShader();
     }
 
     private checkShader() {
-        this.getComponent(YJDynamicTexture)?.afterChange();
         this.getComponent(SetEffect)?.work();
+    }
+
+    private lateSet(data: any): void {
+        let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
+        let viewSize = view.getVisibleSize();
+
+        if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
+            this.scheduleOnce(() => {
+                this.lateSet(data);
+            });
+            return;
+        }
+
+        this.sprite = this.sprite || this.getComponent(Sprite);
+        if (this.sprite == null) return;
+        if (data.atlas) {
+            no.assetBundleManager.loadAtlas(data.atlas, item => {
+                this.sprite.spriteAtlas = item;
+                this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
+            });
+        } else if (!this.sprite.spriteAtlas) {
+            no.assetBundleManager.loadSprite(String(data) + '/spriteFrame', spriteFrame => {
+                this.setSpriteFrame(spriteFrame);
+            });
+        } else if (this.sprite.spriteAtlas?.spriteFrames) {
+            this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(String(data)));
+        }
     }
 
     public a_setEmpty(): void {

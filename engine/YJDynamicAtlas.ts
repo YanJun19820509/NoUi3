@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, RenderComponent, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -39,6 +39,27 @@ export class YJDynamicAtlas extends Component {
         this.atlas?.destroy();
         this.atlas = null;
     }
+
+    public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
+        const packedFrame = this.atlas.getPackedFrame(uuid);
+        if (!packedFrame) return false;
+        if (!frame.original) {
+            this.setPackedFrame(comp, frame, packedFrame);
+        } else {
+            let rect = frame.rect;
+            rect.x = packedFrame.x;
+            rect.y = packedFrame.y;
+            rect.width = packedFrame.w;
+            rect.height = packedFrame.h;
+            frame.rect = rect;
+            comp['_assembler'].updateRenderData(comp);
+            // comp['_assembler'].updateVertexData(comp);
+            // comp.setTextureDirty();
+            // comp.renderData.updateRenderData(comp, frame);
+        }
+        return true;
+    }
+
 
     public packAtlasToDynamicAtlas(frames: SpriteFrame[]) {
         if (!this.isWork) return;
@@ -80,24 +101,7 @@ export class YJDynamicAtlas extends Component {
 
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             const packedFrame = this.insertSpriteFrame(frame);
-            if (packedFrame) {
-                if (comp instanceof Label) {
-                    if (comp.font instanceof BitmapFont) {
-                        let ff = frame.clone();
-                        ff._setDynamicAtlasFrame(packedFrame);
-                        (comp.font as BitmapFont).spriteFrame = ff;
-                        comp['_texture'] = ff;
-                    } else frame._setDynamicAtlasFrame(packedFrame);
-                } else if (comp instanceof Sprite) {
-                    let ff = frame.clone();
-                    ff._setDynamicAtlasFrame(packedFrame);
-                    comp.spriteFrame = ff;
-                    comp.renderData.updateRenderData(comp, ff);
-                    comp.setTextureDirty();
-                    if (frame.name.indexOf('default_') == -1)
-                        no.assetBundleManager.release(frame);
-                }
-            }
+            this.setPackedFrame(comp, frame, packedFrame);
         }
     }
 
@@ -105,6 +109,27 @@ export class YJDynamicAtlas extends Component {
         if (!this.isWork || !this.atlas || !frame) return;
         this.atlas.clearTexture(frame);
         frame._resetDynamicAtlasFrame();
+    }
+
+    private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: any) {
+        if (packedFrame) {
+            if (comp instanceof Label) {
+                if (comp.font instanceof BitmapFont) {
+                    let ff = frame.clone();
+                    ff._setDynamicAtlasFrame(packedFrame);
+                    (comp.font as BitmapFont).spriteFrame = ff;
+                    comp['_texture'] = ff;
+                } else frame._setDynamicAtlasFrame(packedFrame);
+            } else if (comp instanceof Sprite) {
+                let ff = frame.clone();
+                ff._setDynamicAtlasFrame(packedFrame);
+                comp.spriteFrame = ff;
+                comp.setTextureDirty();
+                comp.renderData.updateRenderData(comp, ff);
+                if (frame.name.indexOf('default_') == -1)
+                    no.assetBundleManager.release(frame);
+            }
+        }
     }
 
     private insertSpriteFrame(spriteFrame: SpriteFrame) {
