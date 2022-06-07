@@ -41,22 +41,19 @@ export class YJDynamicAtlas extends Component {
     }
 
     public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
+        if (!comp || !frame || !frame.original) return false;
         const packedFrame = this.atlas.getPackedFrame(uuid);
         if (!packedFrame) return false;
-        if (!frame.original) {
-            this.setPackedFrame(comp, frame, packedFrame);
-        } else {
-            let rect = frame.rect;
-            rect.x = packedFrame.x;
-            rect.y = packedFrame.y;
-            rect.width = packedFrame.w;
-            rect.height = packedFrame.h;
-            frame.rect = rect;
-            comp['_assembler'].updateRenderData(comp);
-            // comp['_assembler'].updateVertexData(comp);
-            // comp.setTextureDirty();
-            // comp.renderData.updateRenderData(comp, frame);
-        }
+        let rect = frame.rect;
+        rect.x = packedFrame.x;
+        rect.y = packedFrame.y;
+        rect.width = packedFrame.w;
+        rect.height = packedFrame.h;
+        frame.rect = rect;
+        if (comp instanceof Label)
+            comp.updateRenderData(true);
+        else if (comp instanceof Sprite)
+            comp.markForUpdateRenderData(true);
         return true;
     }
 
@@ -124,8 +121,8 @@ export class YJDynamicAtlas extends Component {
                 let ff = frame.clone();
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                comp.setTextureDirty();
-                comp.renderData.updateRenderData(comp, ff);
+                // comp.setTextureDirty();
+                // comp.renderData.updateRenderData(comp, ff);
                 if (frame.name.indexOf('default_') == -1)
                     no.assetBundleManager.release(frame);
             }

@@ -90,7 +90,6 @@ export class SetTimeCountDown extends FuckUi {
 
     private setLabel(str: string): void {
         if (this.label) {
-            this.getComponent(YJDynamicTexture)?.resetLabel();
             this.label.string = str || '';
         } else if (this.charLabel) this.charLabel.string = str || '';
     }

@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame } from 'cc';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
@@ -70,33 +70,58 @@ export class YJDynamicTexture extends Component {
 
     public init() {
         if (!this.enabledInHierarchy) return;
-        this.afterChange();
+        this.packSpriteFrame();
     }
 
-    public afterChange() {
+    public packSpriteFrame(frame?: SpriteFrame) {
         if (!this.dynamicAtlas?.isWork) return;
         let sprite = this.getComponent(Sprite);
         if (sprite) {
-            this.dynamicAtlas?.packToDynamicAtlas(sprite, sprite.spriteFrame);
+            // if (this.needClear)
+            //     this.dynamicAtlas.removeFromDynamicAtlas(sprite.spriteFrame);
+            if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
+                this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite.spriteFrame);
         }
     }
 
-    public resetSprite(): void {
-        if (!this.dynamicAtlas?.isWork) return;
-        let sprite = this.getComponent(Sprite);
-        if (this.needClear && sprite)
-            this.dynamicAtlas?.removeFromDynamicAtlas(sprite.spriteFrame);
-    }
+    // public resetSprite(): void {
+    //     if (!this.dynamicAtlas?.isWork) return;
+    //     let sprite = this.getComponent(Sprite);
+    //     if (this.needClear && sprite)
+    //         this.dynamicAtlas?.removeFromDynamicAtlas(sprite.spriteFrame);
+    // }
+
+    // public checkSpriteFrame(uuid: string): boolean {
+    //     if (!this.enabledInHierarchy) return false;
+    //     if (!this.dynamicAtlas?.isWork) return false;
+    //     let sprite = this.getComponent(Sprite);
+    //     return this.dynamicAtlas.usePackedFrame(sprite, sprite.spriteFrame, uuid);
+    // }
 
 
-    public resetLabel(): void {
+    // public resetLabel(): void {
+    //     if (!this.dynamicAtlas?.isWork) return;
+    //     let label = this.getComponent(Label);
+    //     if (!label || !label.ttfSpriteFrame) return;
+    //     if (this.needClear)
+    //         this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+    //     else label.ttfSpriteFrame._resetDynamicAtlasFrame();
+    //     label.ttfSpriteFrame._uuid = '';
+    // }
+
+    public packLabelFrame(text: string) {
+        if (!this.enabledInHierarchy) return;
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
-        if (!label || !label.ttfSpriteFrame) return;
-        if (this.needClear)
-            this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-        else label.ttfSpriteFrame._resetDynamicAtlasFrame();
-        label.ttfSpriteFrame._uuid = '';
+        if (!label) return;
+        let uuid = this.createLabelFrameUuid(label, text);
+        if (!this.dynamicAtlas.usePackedFrame(label, label.ttfSpriteFrame, uuid)) {
+            if (this.needClear)
+                this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+            else label.ttfSpriteFrame._resetDynamicAtlasFrame();
+            label.ttfSpriteFrame._uuid = '';
+            label.string = text;
+        }
     }
 
 

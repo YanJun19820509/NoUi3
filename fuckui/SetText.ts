@@ -46,10 +46,12 @@ export class SetText extends FuckUi {
             s = no.formatString(this.formatter, data);
         }
         if (this.label.string != s) {
-            if (this.label instanceof Label && !this.label.font) {
-                this.getComponent(YJDynamicTexture)?.resetLabel();
+            if (this.label instanceof Label) {
+                if (this.label.font instanceof BitmapFont)
+                    this.label.string = s;
+                else
+                    this.getComponent(YJDynamicTexture)?.packLabelFrame(s);
             }
-            this.label.string = s;
             this.checkShader();
         }
     }
