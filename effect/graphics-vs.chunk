@@ -16,6 +16,7 @@ vec4 vert () {
   pos = cc_matViewProj * cc_matWorld * pos;
 
   v_uv = (pos.xy + vec2(1.0,1.0)) / 2.0;
+  v_uv.y = 1. - v_uv.y;
   v_color = a_color;
   v_dist = a_dist;
   

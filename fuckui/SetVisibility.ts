@@ -61,11 +61,11 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_show(): void {
-        this.show(true);
+        this.setData('true');
     }
 
     public a_hide(): void {
-        this.show(false);
+        this.setData('false');
     }
 
 

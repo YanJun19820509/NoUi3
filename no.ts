@@ -2481,7 +2481,7 @@ export namespace no {
         }
 
         private float(v: number): number {
-            return Math.floor(Math.ceil(v * 1000000) / 100) / 10000;
+            return Math.floor(Math.ceil(v * 1000000) / 10000) / 100;
         }
     }
 
@@ -3039,6 +3039,6 @@ export namespace no {
         //世界坐标系原点为左下角
         let p1 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx - width / 2, cy - height / 2));
         let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
-        return [p1.x / worldSize.width, p1.y / worldSize.height, p2.x / worldSize.width, p2.y / worldSize.height];
+        return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
     }
 }

@@ -30,9 +30,11 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private setSpriteFrame(sf: SpriteFrame) {
-        // this.getComponent(YJDynamicTexture)?.resetSprite();
-        // this.sprite.spriteFrame = sf;
-        this.getComponent(YJDynamicTexture)?.packSpriteFrame(sf);
+        if (!sf) return;
+        if (sf.original)
+            this.sprite.spriteFrame = sf;
+        else
+            this?.getComponent(YJDynamicTexture)?.packSpriteFrame(sf);
         this.checkShader();
     }
 

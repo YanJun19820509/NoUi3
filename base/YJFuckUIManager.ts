@@ -32,6 +32,7 @@ export class YJFuckUiManager extends YJFuckUiRegister {
             if (this._registered) return;
             this._registered = true;
             this.fuckUiNodes.forEach(node => {
+                if (!node) return;
                 let uis = node.getComponents(FuckUi);
                 uis.forEach(ui => {
                     let keys = ui.bindKeys;

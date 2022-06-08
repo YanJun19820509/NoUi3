@@ -39,7 +39,7 @@ export class YJButton extends Component {
     }
 
     public async a_trigger() {
-        await no.Throttling.ins().wait(this.delay);
+        if (!await no.Throttling.ins(this).wait(this.delay)) return;
         no.executeHandlers(this._clickEvents);
     }
 }

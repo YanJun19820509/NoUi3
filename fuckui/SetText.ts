@@ -45,13 +45,17 @@ export class SetText extends FuckUi {
         } else {
             s = no.formatString(this.formatter, data);
         }
+        if (EDITOR) {
+            this.label.string = s;
+            return;
+        }
         if (this.label.string != s) {
             if (this.label instanceof Label) {
                 if (this.label.font instanceof BitmapFont)
                     this.label.string = s;
                 else
                     this.getComponent(YJDynamicTexture)?.packLabelFrame(s);
-            }
+            } else this.label.string = s;
             this.checkShader();
         }
     }
@@ -61,14 +65,16 @@ export class SetText extends FuckUi {
     }
 
     private lateSet(data: any): void {
-        let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
-        let viewSize = view.getVisibleSize();
+        if (!EDITOR) {
+            let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
+            let viewSize = view.getVisibleSize();
 
-        if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
-            this.scheduleOnce(() => {
-                this.lateSet(data);
-            });
-            return;
+            if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
+                this.scheduleOnce(() => {
+                    this.lateSet(data);
+                });
+                return;
+            }
         }
 
         if (typeof data == 'object') {

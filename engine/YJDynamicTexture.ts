@@ -118,8 +118,10 @@ export class YJDynamicTexture extends Component {
         if (!this.dynamicAtlas.usePackedFrame(label, label.ttfSpriteFrame, uuid)) {
             if (this.needClear)
                 this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-            else label.ttfSpriteFrame._resetDynamicAtlasFrame();
-            label.ttfSpriteFrame._uuid = '';
+            else if (label.ttfSpriteFrame) {
+                label.ttfSpriteFrame?._resetDynamicAtlasFrame();
+                label.ttfSpriteFrame._uuid = '';
+            }
             label.string = text;
         }
     }

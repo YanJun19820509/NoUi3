@@ -30,6 +30,8 @@ export class YJCharLabel extends Component {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
+    private _s: string;
+
     update() {
         if (!EDITOR) return;
         this.setLabel(this.text);
@@ -39,8 +41,14 @@ export class YJCharLabel extends Component {
         this.setLabel(s);
     }
 
+    public get string(): string {
+        return this._s;
+    }
+
+
     public setLabel(s: string): void {
         if (!this.tempLabel || !this.container) return;
+        this._s = s;
         let labelNodes = this.container.children;
         let a = s.split('');
         let n = Math.max(a.length, labelNodes.length);
@@ -55,6 +63,7 @@ export class YJCharLabel extends Component {
                 labelNode.parent = this.container;
                 labelNode.addComponent(UITransform);
                 let label = labelNode.addComponent(Label);
+                label.string = '';
                 label.color = tempLabelComp.color;
                 label.fontSize = tempLabelComp.fontSize;
                 label.lineHeight = tempLabelComp.lineHeight;
