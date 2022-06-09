@@ -86,10 +86,10 @@ export class YJWindowManager extends Component {
      */
     public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, onInit?: (panel: T) => void) {
         if (!comp) return null;
-        let content: Node = YJWindowManager._ins.getContent(to);
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
-
+        if (!comp) return null;
+        let content: Node = YJWindowManager._ins.getContent(to);
         let a = content.getComponentInChildren(comp);
         if (a != null) {
             onInit?.(a as T);

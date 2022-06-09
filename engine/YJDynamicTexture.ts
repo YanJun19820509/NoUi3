@@ -74,14 +74,18 @@ export class YJDynamicTexture extends Component {
     }
 
     public packSpriteFrame(frame?: SpriteFrame) {
-        if (!this.dynamicAtlas?.isWork) return;
         let sprite = this.getComponent(Sprite);
-        if (sprite) {
-            // if (this.needClear)
-            //     this.dynamicAtlas.removeFromDynamicAtlas(sprite.spriteFrame);
-            if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
-                this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite.spriteFrame);
+        if (!this.dynamicAtlas?.isWork) {
+            if (frame) {
+                console.error('dynamicAtlas 为null，未做合图', frame);
+                sprite.spriteFrame = frame;
+            }
+            return;
         }
+        // if (this.needClear)
+        //     this.dynamicAtlas.removeFromDynamicAtlas(sprite.spriteFrame);
+        if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
+            this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame);
     }
 
     // public resetSprite(): void {
@@ -111,9 +115,13 @@ export class YJDynamicTexture extends Component {
 
     public packLabelFrame(text: string) {
         if (!this.enabledInHierarchy) return;
-        if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label) return;
+        if (!this.dynamicAtlas?.isWork) {
+            console.error('dynamicAtlas 为null，未做合图', text);
+            label.string = text;
+            return;
+        }
         let uuid = this.createLabelFrameUuid(label, text);
         if (!this.dynamicAtlas.usePackedFrame(label, label.ttfSpriteFrame, uuid)) {
             if (this.needClear)

@@ -170,7 +170,8 @@ export class YJDynamicAtlas extends Component {
             node.getComponentsInChildren('SetCreateNodeByUrl'),
             node.getComponentsInChildren('SetList'),
             node.getComponentsInChildren('SetPage'),
-            node.getComponentsInChildren('YJCharLabel')
+            node.getComponentsInChildren('YJCharLabel'),
+            node.getComponentsInChildren('YJDynamicTexture')
         );
         bs.forEach(b => {
             b.dynamicAtlas = dynamicAtlas;
