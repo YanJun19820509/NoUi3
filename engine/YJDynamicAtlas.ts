@@ -90,7 +90,7 @@ export class YJDynamicAtlas extends Component {
      * @method packToDynamicAtlas
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
-    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame) {
+    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
         if (!this.isWork) return;
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
@@ -99,7 +99,9 @@ export class YJDynamicAtlas extends Component {
 
         if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             const packedFrame = this.insertSpriteFrame(frame);
-            this.setPackedFrame(comp, frame, packedFrame);
+            if (packedFrame)
+                this.setPackedFrame(comp, frame, packedFrame);
+            else onFail?.();
         }
     }
 

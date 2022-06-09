@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
+import { _decorator, Component, Node, instantiate, UIOpacity } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
 const { ccclass, property } = _decorator;
 
@@ -17,6 +17,7 @@ const { ccclass, property } = _decorator;
 /**
  * data--{
  *      count: number//需要重复创建个数
+ *      max: number//最大重复创建个数
  *      type?: number,//需要创建的模板下标，默认0
  * }
  */
@@ -31,15 +32,21 @@ export class YJRepeatBoxTemplate {
 export class YJRepeatBox extends YJDataWork {
     @property(YJRepeatBoxTemplate)
     templates: YJRepeatBoxTemplate[] = [];
+    @property({ step: 1, tooltip: '填充类型，当重复个数不足最大个数时，用来填充的templates下标，如果找不到则不填充' })
+    fileType: number = 0;
 
     onLoad() { }
 
     protected afterInit() {
         this.node.removeAllChildren();
-        for (let i = 0, n = this.data.count; i < n; i++) {
-            let item = instantiate(this.templates[this.data.type || 0].tempNode);
-            item.active = true;
-            item.parent = this.node;
+        let temp = this.templates[this.data.type || 0].tempNode;
+        let fill = this.templates[this.fileType]?.tempNode;
+        for (let i = 0, n = this.data.max; i < n; i++) {
+            let item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
+            if (item) {
+                item.active = true;
+                item.parent = this.node;
+            }
         }
     }
 }
