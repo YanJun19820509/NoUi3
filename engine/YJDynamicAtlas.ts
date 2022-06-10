@@ -41,21 +41,22 @@ export class YJDynamicAtlas extends Component {
     }
 
     public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
-        return false;
-        // if (!comp || !frame || !frame.original) return false;
-        // const packedFrame = this.atlas.getPackedFrame(uuid);
-        // if (!packedFrame) return false;
-        // let rect = frame.rect;
-        // rect.x = packedFrame.x;
-        // rect.y = packedFrame.y;
-        // rect.width = packedFrame.w;
-        // rect.height = packedFrame.h;
-        // frame.rect = rect;
+        // return false;
+        if (!comp || !frame) return false;
+        const packedFrame = this.atlas.getPackedFrame(uuid);
+        if (!packedFrame) return false;
+        frame._resetDynamicAtlasFrame();
+        frame._setDynamicAtlasFrame(packedFrame);
+        let rect = frame.rect;
+        rect.width = packedFrame.w;
+        rect.height = packedFrame.h;
+        frame.rect = rect;
         // if (comp instanceof Label)
         //     comp.updateRenderData(true);
-        // else if (comp instanceof Sprite)
-        //     comp.markForUpdateRenderData(true);
-        // return true;
+        // else 
+        if (comp instanceof Sprite)
+            comp.markForUpdateRenderData(true);
+        return true;
     }
 
 

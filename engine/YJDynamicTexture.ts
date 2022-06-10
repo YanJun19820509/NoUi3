@@ -121,21 +121,15 @@ export class YJDynamicTexture extends Component {
         if (!this.enabledInHierarchy) return;
         let label = this.getComponent(Label);
         if (!label) return;
-        if (!this.dynamicAtlas?.isWork) {
-            console.error('dynamicAtlas 为null，未做合图', text);
-            label.string = text;
-            return;
+        // let uuid = this.createLabelFrameUuid(label, text);
+        // label.ttfSpriteFrame._uuid = uuid;
+        if (this.needClear)
+            this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+        else if (label.ttfSpriteFrame) {
+            label.ttfSpriteFrame?._resetDynamicAtlasFrame();
+            label.ttfSpriteFrame._uuid = '';
         }
-        let uuid = this.createLabelFrameUuid(label, text);
-        if (!this.dynamicAtlas.usePackedFrame(label, label.ttfSpriteFrame, uuid)) {
-            if (this.needClear)
-                this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-            else if (label.ttfSpriteFrame) {
-                label.ttfSpriteFrame?._resetDynamicAtlasFrame();
-                label.ttfSpriteFrame._uuid = '';
-            }
-            label.string = text;
-        }
+        label.string = text;
     }
 
 
