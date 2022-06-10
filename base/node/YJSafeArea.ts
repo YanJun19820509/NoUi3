@@ -20,8 +20,10 @@ const { ccclass, requireComponent, property } = _decorator;
 @ccclass('YJSafeArea')
 @requireComponent(Widget)
 export class YJSafeArea extends SafeArea {
-    @property({ tooltip: '使用原生效果' })
-    useOrigin: boolean = false;
+    @property({ tooltip: '保留顶部' })
+    safeTop: boolean = false;
+    @property({ tooltip: '保留底部' })
+    safeBottom: boolean = false;
 
     public updateArea() {
         // TODO Remove Widget dependencies in the future
@@ -46,8 +48,8 @@ export class YJSafeArea extends SafeArea {
         const screenWidth = visibleSize.width;
         const screenHeight = visibleSize.height;
         const safeArea = sys.getSafeAreaRect();
-        widget.top = screenHeight - safeArea.y - safeArea.height;
-        widget.bottom = this.useOrigin ? safeArea.y : 0;
+        widget.top = this.safeTop ? screenHeight - safeArea.y - safeArea.height : 0;
+        widget.bottom = this.safeBottom ? safeArea.y : 0;
         widget.left = safeArea.x;
         widget.right = screenWidth - safeArea.x - safeArea.width;
         widget.updateAlignment();

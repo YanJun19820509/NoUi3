@@ -40,6 +40,7 @@ export class YJTouchController extends Component {
         this.node.on(Node.EventType.TOUCH_MOVE, this.onMove, this, this.useCapture);
         this.node.on(Node.EventType.TOUCH_END, this.onEnd, this, this.useCapture);
         this.node.on(Node.EventType.TOUCH_CANCEL, this.onCancel, this, this.useCapture);
+
     }
 
     onDisable() {
@@ -63,12 +64,14 @@ export class YJTouchController extends Component {
         this._touched = true;
         if (this.dispatcher)
             this.dispatcher.onStart(event)
+        event.preventSwallow = true;
     }
 
     protected onMove(event: EventTouch) {
         if (this.selected && !this._touched) return;
         if (this.dispatcher)
             this.dispatcher.onMove(event)
+        event.preventSwallow = true;
     }
 
     protected onEnd(event: EventTouch) {
@@ -78,6 +81,7 @@ export class YJTouchController extends Component {
         this.currentTouch = null;
         if (this.dispatcher)
             this.dispatcher.onEnd(event)
+        event.preventSwallow = true;
     }
 
     protected onCancel(event: EventTouch) {
@@ -86,6 +90,7 @@ export class YJTouchController extends Component {
         this.currentTouch = null;
         if (this.dispatcher)
             this.dispatcher.onCancel(event)
+        event.preventSwallow = true;
     }
 
     public trigger(type: string, event: EventTouch): void {

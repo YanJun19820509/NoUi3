@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -98,7 +98,19 @@ export class YJDynamicAtlas extends Component {
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
         }
 
-        if (frame && !frame.original && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
+        if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
+            if (frame.original && frame.texture['_id'] != this.atlas._texture['_id']) {
+                let original = frame.original, uuid = frame._uuid;
+                frame = frame.clone();
+                frame._uuid = uuid;
+                frame['_rect'].x = original._x;
+                frame['_rect'].y = original._y;
+                frame['_texture'] = original._texture;
+                frame._calculateUV();
+            } else if (frame.original) {
+                onFail?.();
+                return;
+            }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);

@@ -84,12 +84,12 @@ export class YJDynamicTexture extends Component {
         }
         // if (this.needClear)
         //     this.dynamicAtlas.removeFromDynamicAtlas(sprite.spriteFrame);
-        if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
-            this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame, () => {
-                if (frame) {
-                    sprite.spriteFrame = frame;
-                }
-            });
+        // if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
+        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame, () => {
+            if (frame) {
+                sprite.spriteFrame = frame;
+            }
+        });
     }
 
     // public resetSprite(): void {

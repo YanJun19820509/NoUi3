@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Size, size, ScrollView, UITransform } from 'cc';
+import { _decorator, Component, Node, Size, size, ScrollView, UITransform, find } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
@@ -33,6 +33,9 @@ export class YJComboBox extends YJDataWork {
     autoShow: boolean = false;
 
     @property(no.EventHandlerInfo)
+    onShow: no.EventHandlerInfo[] = [];
+
+    @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
     private isShow: boolean = false;
@@ -40,6 +43,11 @@ export class YJComboBox extends YJDataWork {
     onLoad() {
         let sv = this.getComponentInChildren(ScrollView);
         sv.node.getComponent(UITransform).setContentSize(this.size);
+        find('Canvas').on(Node.EventType.TOUCH_START, this.hideList, this);
+    }
+
+    onDestroy() {
+        find('Canvas').off(Node.EventType.TOUCH_START, this.hideList, this);
     }
 
     protected afterInit() {
@@ -57,6 +65,9 @@ export class YJComboBox extends YJDataWork {
         this.setChecked(d.id);
     }
 
+    private hideList() {
+        if (this.isShow) this.a_changeVisible();
+    }
 
     private setListVisible(v: boolean) {
         this.isShow = v;
@@ -72,6 +83,9 @@ export class YJComboBox extends YJDataWork {
             dir: v ? -1 : 1,
             x: v ? 0 : -10000
         };
+        if (v) {
+            no.EventHandlerInfo.execute(this.onShow);
+        }
     }
 
     private setChecked(id: string) {

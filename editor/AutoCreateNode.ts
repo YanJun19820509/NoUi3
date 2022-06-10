@@ -10,9 +10,10 @@ import { YJButton } from '../fix/YJButton';
 import { SetProgress } from '../fuckui/SetProgress';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { SetText } from '../fuckui/SetText';
-import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager'; 
+import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
+import { fixedLab } from '../../resources/gameUtils/fixedLab';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -167,16 +168,14 @@ export class AutoCreateNode extends Component {
         if (s.spriteFrame)
             s.spriteAtlas = this.atlas;
         else {
-            // let p = `${this.rootPath.replace('db://assets/', '')}/${c.name}`;
-            // console.log(p);
-            // no.assetBundleManager.loadSprite(p, sf => {
-            //     console.log(sf);
-            //     this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(sf._uuid);
-            //     s.spriteFrame = sf;
-            // });
             no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
                 this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
                 s.spriteFrame = f;
+            }, () => {
+                no.assetBundleManager.loadSpriteFrameInEditorMode(`db://assets/resources/texture_c/${c.name}.png`, (f, info) => {
+                    this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
+                    s.spriteFrame = f;
+                });
             });
         }
         if (c.name.indexOf('9_') == 0) {
@@ -210,6 +209,16 @@ export class AutoCreateNode extends Component {
             ls.color = no.str2Color(info[0]);
             ls.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
             ls.blur = Number(info[3]);
+        }
+        if (!n.getComponent(fixedLab)) {
+            let t: string = c.text;
+            for (let i = 0, m = t.length; i < m; i++) {
+                let code = t.charCodeAt(i);
+                if (code >= 0x4e00 && code <= 0x29fa5) {
+                    n.addComponent(fixedLab);
+                    break;
+                }
+            }
         }
         return n;
     }
