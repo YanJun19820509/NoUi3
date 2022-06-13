@@ -1,10 +1,11 @@
 
 import { _decorator, Sprite, SpriteFrame, UITransform, view } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -20,10 +21,13 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetSpriteFrame')
 @menu('NoUi/ui/SetSpriteFrame(设置精灵:string|{atlas:string,frame:string})')
+@executeInEditMode()
 export class SetSpriteFrame extends FuckUi {
 
     @property(Sprite)
     sprite: Sprite = null;
+    @property
+    path: string = '';
 
     protected onDataChange(data: any) {
         this.lateSet(data);
@@ -55,13 +59,14 @@ export class SetSpriteFrame extends FuckUi {
 
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
+        this.sprite.spriteFrame = null;
         if (data.atlas) {
             no.assetBundleManager.loadAtlas(data.atlas, item => {
                 this.sprite.spriteAtlas = item;
                 this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
             });
         } else if (!this.sprite.spriteAtlas) {
-            no.assetBundleManager.loadSprite(String(data) + '/spriteFrame', spriteFrame => {
+            no.assetBundleManager.loadSprite(`${this.path != '' ? this.path + '/' : ''}${data}/spriteFrame`, spriteFrame => {
                 this.setSpriteFrame(spriteFrame);
             });
         } else if (this.sprite.spriteAtlas?.spriteFrames) {
@@ -74,4 +79,10 @@ export class SetSpriteFrame extends FuckUi {
         this.sprite.spriteFrame = null;
     }
 
+    ///////EDITOR
+    update() {
+        if (!EDITOR) return;
+        if (this.path == '' || this.path.indexOf('db://assets/') == -1) return;
+        this.path = this.path.replace('db://assets/', '');
+    }
 }

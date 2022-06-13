@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { no } from '../../no';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -19,8 +20,10 @@ const { ccclass, property, menu } = _decorator;
 export class YJSetLocalStorage extends Component {
     @property({ displayName: '本地缓存数据的key' })
     key: string = '';
+    @property
+    usePreKey: boolean = true;
 
     public a_set(e: any, v?: string) {
-        localStorage.setItem(this.key, v || e);
+        this.usePreKey ? no.dataCache.setLocal(this.key, v || e) : localStorage.setItem(this.key, v || e);
     }
 }

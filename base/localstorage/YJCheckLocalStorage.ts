@@ -28,6 +28,8 @@ export class CheckLocalStorageInfo {
 export class YJCheckLocalStorage extends Component {
     @property
     key: string = '';
+    @property
+    usePreKey: boolean = true;
 
     @property({ displayName: '默认值' })
     defaultValue: string = '';
@@ -49,7 +51,7 @@ export class YJCheckLocalStorage extends Component {
 
     public a_check() {
         if (this.key == '') return;
-        let v = localStorage.getItem(this.key) || this.defaultValue;
+        let v = (this.usePreKey ? no.dataCache.getLocal(this.key) : localStorage.getItem(this.key)) || this.defaultValue;
         if (this._value == v) return;
         this._value = v;
         this.infos.forEach(info => {

@@ -22,4 +22,13 @@ export class SetToggleCheck extends FuckUi {
     protected onDataChange(data: any) {
         this.getComponent(Toggle).isChecked = Boolean(data);
     }
+
+    public a_setChecked(): void {
+        this.setData('true');
+    }
+
+    public a_setNotChecked(): void {
+        this.setData('false');
+    }
+
 }

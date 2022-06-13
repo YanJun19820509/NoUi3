@@ -22,12 +22,14 @@ export class YJGetLocalStorage extends Component {
     keys: string = '';
     @property(no.EventHandlerInfo)
     calls: no.EventHandlerInfo[] = [];
+    @property
+    usePreKey: boolean = true;
 
     onLoad() {
         let v = new Object();
         let ks = this.keys.split(',');
         ks.forEach(key => {
-            v[key] = localStorage.getItem(key);
+            v[key] = this.usePreKey ? no.dataCache.getLocal(key) : JSON.parse(localStorage.getItem(key));
         });
         if (ks.length == 0) v = v[ks[0]];
         no.EventHandlerInfo.execute(this.calls, v);
