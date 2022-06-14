@@ -185,6 +185,7 @@ export class YJDynamicAtlas extends Component {
             node.getComponentsInChildren('SetCreateNodeByUrl'),
             node.getComponentsInChildren('SetList'),
             node.getComponentsInChildren('SetPage'),
+            node.getComponentsInChildren('SetSpriteFrameLabel'),
             node.getComponentsInChildren('YJCharLabel'),
             node.getComponentsInChildren('YJDynamicTexture')
         );

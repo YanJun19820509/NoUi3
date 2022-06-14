@@ -1,6 +1,8 @@
 
-import { _decorator, Component, Node, SpriteAtlas, Layout, Sprite, UITransform, Layers } from 'cc';
+import { _decorator, Component, Node, SpriteAtlas, Layout, Sprite, UITransform, Layers, Vec2, v2 } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
@@ -25,6 +27,12 @@ export class SetSpriteFrameLabel extends FuckUi {
     atlas: SpriteAtlas = null;
     @property
     text: string = '';
+    @property({ displayName: '格式化模板' })
+    formatter: string = '{0}';
+    @property
+    anchor: Vec2 = v2();
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
 
     onLoad() {
         if (EDITOR) return;
@@ -38,22 +46,37 @@ export class SetSpriteFrameLabel extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        this.node.removeAllChildren();
+        if (EDITOR)
+            this.node.removeAllChildren();
         if (!this.atlas) return;
-        let s = String(data);
-        for (let i = 0, n = s.length; i < n; i++) {
-            let v = s[i];
-            this.createLetter(v);
+        let s = '';
+        if (typeof data == 'string') {
+            if (data != '')
+                s = no.formatString(this.formatter, data.split('|'));
+        } else if (typeof data == 'number') {
+            s = no.formatString(this.formatter, { '0': data });
+        } else {
+            s = no.formatString(this.formatter, data);
         }
-    }
-
-    private createLetter(v: string) {
-        let node = new Node(v);
-        node.layer = Layers.Enum.UI_2D;
-        node.addComponent(UITransform);
-        let sprite = node.addComponent(Sprite);
-        sprite.spriteAtlas = this.atlas;
-        sprite.spriteFrame = this.atlas!.getSpriteFrame(v);
-        this.node.addChild(node);
+        let n = Math.max(this.node.children.length, s.length);
+        for (let i = 0; i < n; i++) {
+            let v = s[i];
+            let node = this.node.children[i];
+            if (!node) {
+                node = new Node(v);
+                node.layer = Layers.Enum.UI_2D;
+                node.addComponent(UITransform).anchorPoint = this.anchor;
+                let sprite = node.addComponent(Sprite);
+                sprite.spriteAtlas = this.atlas;
+                node.addComponent('YJDynamicTexture')['dynamicAtlas'] = this.dynamicAtlas;
+                this.node.addChild(node);
+            } else if (v == undefined) {
+                node.active = false;
+                continue;
+            }
+            node.active = true;
+            let sf = this.atlas!.getSpriteFrame(String(v.charCodeAt(0)));
+            node.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+        }
     }
 }
