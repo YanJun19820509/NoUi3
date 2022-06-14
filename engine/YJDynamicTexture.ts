@@ -156,8 +156,7 @@ export class YJDynamicTexture extends Component {
         if (!frame || frame.original)
             return;
 
-        if (frame._uuid == '')
-            frame._uuid = this.createLabelFrameUuid(label);
+        frame._uuid = this.createLabelFrameUuid(label);
 
         this.dynamicAtlas?.packToDynamicAtlas(label, frame);
     }

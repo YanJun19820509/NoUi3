@@ -13,7 +13,6 @@ import { SetText } from '../fuckui/SetText';
 import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
-import { fixedLab } from '../../resources/gameUtils/fixedLab';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -210,12 +209,12 @@ export class AutoCreateNode extends Component {
             ls.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
             ls.blur = Number(info[3]);
         }
-        if (!n.getComponent(fixedLab)) {
+        if (!n.getComponent('fixedLab')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {
                 let code = t.charCodeAt(i);
                 if (code >= 0x4e00 && code <= 0x29fa5) {
-                    n.addComponent(fixedLab);
+                    n.addComponent('fixedLab');
                     break;
                 }
             }
