@@ -2210,7 +2210,7 @@ export namespace no {
     /**节点管理类 */
     class NodeTargetManager {
 
-        private tagetMap: Map<string, any> = new Map();
+        private targetMap: Map<string, any> = new Map();
 
         /**
          * 注册节点
@@ -2219,7 +2219,7 @@ export namespace no {
          */
         public register(type: string, target: any) {
             if (type == null || type == '' || target == null) return;
-            this.tagetMap.set(type, target);
+            this.targetMap.set(type, target);
         }
 
         /**
@@ -2229,8 +2229,8 @@ export namespace no {
          */
         public get<T>(type: string): T {
             if (type == null || type == '') return null;
-            if (!this.tagetMap.has(type)) return null;
-            return this.tagetMap.get(type) as T;
+            if (!this.targetMap.has(type)) return null;
+            return this.targetMap.get(type) as T;
         }
 
         /**
@@ -2239,8 +2239,8 @@ export namespace no {
          */
         public remove(type: string) {
             if (type == null || type == '') return;
-            if (this.tagetMap.has(type)) {
-                this.tagetMap.delete(type);
+            if (this.targetMap.has(type)) {
+                this.targetMap.delete(type);
             }
         }
     }
