@@ -1,9 +1,10 @@
 
 import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
-const { ccclass, property, disallowMultiple } = _decorator;
+const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -26,6 +27,7 @@ const { ccclass, property, disallowMultiple } = _decorator;
  */
 @ccclass('YJDynamicTexture')
 @disallowMultiple()
+@executeInEditMode()
 export class YJDynamicTexture extends Component {
     @property({ type: YJDynamicAtlas })
     dynamicAtlas: YJDynamicAtlas = null;
@@ -53,10 +55,16 @@ export class YJDynamicTexture extends Component {
     }
 
     onLoad() {
-        if (!this.enabled) return;
+        if (!this.enabled || EDITOR) return;
         let renderComp = this.getComponent(RenderComponent);
         YJDynamicTexture.setCommonMaterial(renderComp);
+
         let label = this.getComponent(Label) || this.getComponent(RichText);
+        // if (label && label.font instanceof BitmapFont) {
+        //     let bf = this.dynamicAtlas.getBitmapFont(label.font.name);
+        //     if (bf) label.font = bf;
+        //     return;
+        // }
         if (label && label.cacheMode != CacheMode.BITMAP) {
             label.cacheMode = CacheMode.BITMAP;
             return;
@@ -111,13 +119,16 @@ export class YJDynamicTexture extends Component {
     //     if (!this.dynamicAtlas?.isWork) return;
     //     let label = this.getComponent(Label);
     //     if (!label || !label.ttfSpriteFrame) return;
-    //     if (this.needClear)
+    //     if (label.font instanceof BitmapFont)
+    //         label.font.spriteFrame._resetDynamicAtlasFrame();
+    //     else if (this.needClear)
     //         this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
     //     else label.ttfSpriteFrame._resetDynamicAtlasFrame();
     //     label.ttfSpriteFrame._uuid = '';
     // }
 
     public packLabelFrame(text: string) {
+        if (!this.dynamicAtlas?.isWork) return;
         if (!this.enabledInHierarchy) return;
         let label = this.getComponent(Label);
         if (!label) return;
@@ -137,13 +148,11 @@ export class YJDynamicTexture extends Component {
         if (!this.enabledInHierarchy) return;
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
-        if (!label) return;
+        if (!label || label.string == '') return;
         let frame = label.ttfSpriteFrame;
 
         if (label.font instanceof BitmapFont)
             frame = label.font.spriteFrame;
-        else if (label.string == '') return;
-
         if (!frame || frame.original)
             return;
 
@@ -155,5 +164,14 @@ export class YJDynamicTexture extends Component {
 
     private createLabelFrameUuid(label: Label, str?: string): string {
         return (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+    }
+
+    update() {
+        if (!EDITOR) return;
+
+        let label = this.getComponent(Label) || this.getComponent(RichText);
+        if (label && label.cacheMode != CacheMode.BITMAP) {
+            label.cacheMode = CacheMode.BITMAP;
+        }
     }
 }

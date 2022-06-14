@@ -2458,7 +2458,7 @@ export namespace no {
             let a = Math.floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a - 1];
-            return `${this.float(this._coefficient * Math.pow(10, b))}${u}`;
+            return `${this.float(this._coefficient * Math.pow(10, b), 2)}${u}`;
         }
 
         /**
@@ -2480,8 +2480,11 @@ export namespace no {
             return a;
         }
 
-        private float(v: number): number {
-            return Math.floor(Math.ceil(v * 1000000) / 10000) / 100;
+        private float(v: number, x = 12): number {
+            let a = Math.pow(10, 12),
+                b = Math.pow(10, 12 - x),
+                c = Math.pow(10, x);
+            return Math.floor(Math.ceil(v * a) / b) / c;
         }
     }
 
