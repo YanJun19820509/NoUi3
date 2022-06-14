@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, UIOpacity } from 'cc';
+import { _decorator, Component, Node, instantiate, Sprite } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
 const { ccclass, property } = _decorator;
 
@@ -38,14 +38,24 @@ export class YJRepeatBox extends YJDataWork {
     onLoad() { }
 
     protected afterInit() {
-        this.node.removeAllChildren();
         let temp = this.templates[this.data.type || 0].tempNode;
         let fill = this.templates[this.fileType]?.tempNode;
-        for (let i = 0, n = this.data.max; i < n; i++) {
-            let item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
-            if (item) {
-                item.active = true;
-                item.parent = this.node;
+        let n = Math.max(this.data.max, this.node.children.length);
+        for (let i = 0; i < n; i++) {
+            let item = this.node.children[i];
+            if (!item) {
+                item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
+                if (item) {
+                    item.parent = this.node;
+                    item.active = true;
+                }
+            } else {
+                if (i >= this.data.max) item.active = false;
+                else {
+                    let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
+                    item.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+                    item.active = true;
+                }
             }
         }
     }
