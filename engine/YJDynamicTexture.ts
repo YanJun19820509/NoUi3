@@ -90,8 +90,6 @@ export class YJDynamicTexture extends Component {
             }
             return;
         }
-        // if (this.needClear)
-        //     this.dynamicAtlas.removeFromDynamicAtlas(sprite.spriteFrame);
         // if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
         this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame, () => {
             if (frame) {
@@ -99,6 +97,13 @@ export class YJDynamicTexture extends Component {
             }
         });
     }
+
+    public removeFrameFromDynamicAtlas(frame?: SpriteFrame): void {
+        if (!frame) return;
+        if (this.needClear)
+            this.dynamicAtlas.removeFromDynamicAtlas(frame);
+    }
+
 
     // public resetSprite(): void {
     //     if (!this.dynamicAtlas?.isWork) return;

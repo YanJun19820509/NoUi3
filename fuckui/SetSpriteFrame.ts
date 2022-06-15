@@ -59,6 +59,7 @@ export class SetSpriteFrame extends FuckUi {
 
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
+        this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
         this.sprite.spriteFrame = null;
         if (data.atlas) {
             no.assetBundleManager.loadAtlas(data.atlas, item => {
