@@ -105,6 +105,7 @@ export class SetCreateNodeByUrl extends FuckUi {
             if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
                 child.destroy();
         });
+        this.needDestroyChildrenUuid = [];
     }
 
     private setNeedDestroyChildren() {
