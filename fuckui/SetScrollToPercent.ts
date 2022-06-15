@@ -28,8 +28,13 @@ export class SetScrollToPercent extends FuckUi {
     @property({ displayName: '滚动动画时长(秒)', min: 0 })
     duration: number = 0;
 
+    @property({ displayName: '等待时长(秒)', min: 0 })
+    wait: number = 0;
+
     protected onDataChange(data: any) {
-        this.a_scrollToPercent(data);
+        this.scheduleOnce(() => {
+            this.a_scrollToPercent(data);
+        }, this.wait);
     }
 
     public a_scrollToPercent(per: number) {

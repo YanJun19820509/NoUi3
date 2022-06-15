@@ -20,7 +20,9 @@ const { ccclass, menu } = _decorator;
 export class SetScrollToNode extends SetScrollToPercent {
 
     protected onDataChange(data: any) {
-        this.a_scrollToNode(data);
+        this.scheduleOnce(() => {
+            this.a_scrollToNode(data);
+        }, this.wait);
     }
 
     public a_scrollToNode(name: string) {
