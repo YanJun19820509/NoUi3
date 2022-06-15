@@ -46,7 +46,10 @@ export class YJShowDynamicAtlasDebug {
 
     public showDebug(name?: string) {
         if (!DEBUG) return;
+        this._clearDebugNode();
         if (name) {
+            let texture = this.list[name]?._texture;
+            if (!texture) return;
             if (!this._debugNode || !this._debugNode.isValid) {
 
                 no.assetBundleManager.loadPrefab('NoUi3/engine/dynamic_atlas_debug_node', item => {
@@ -54,7 +57,6 @@ export class YJShowDynamicAtlasDebug {
                     this._debugNode.parent = find('Canvas');
                     let scrollView = this._debugNode.getComponentInChildren(ScrollView);
 
-                    let texture = this.list[name]._texture;
                     no.width(scrollView.content, texture.width);
                     no.height(scrollView.content, texture.height);
 
@@ -71,41 +73,14 @@ export class YJShowDynamicAtlasDebug {
 
                     node.parent = scrollView.content;
                 });
-                // this._debugNode = new Node('DYNAMIC_ATLAS_DEBUG_NODE');
-                // this._debugNode.addComponent(UITransform);
-                // this._debugNode.layer = Layers.Enum.UI_2D;
-
-                // let widget = this._debugNode.addComponent(Widget);
-                // widget.isAlignTop = true;
-                // widget.isAlignLeft = true;
-                // widget.isAlignBottom = true;
-                // widget.isAlignRight = true;
-                // widget.top = 0;
-                // widget.left = 0;
-                // widget.bottom = 0;
-                // widget.right = 0;
-                // this._debugNode.parent = find('Canvas');
-
-                // this._debugNode.addComponent(BlockInputEvents);
-
-                // let scroll = this._debugNode.addComponent(ScrollView);
-
-                // let content = new Node('CONTENT');
-                // content.addComponent(UITransform);
-                // content.layer = Layers.Enum.UI_2D;
-                // let layout = content.addComponent(Layout);
-                // layout.type = Layout.Type.VERTICAL;
-                // layout.resizeMode = Layout.ResizeMode.CONTAINER;
-                // content.parent = this._debugNode;
-
-
-
             }
-        } else {
-            if (this._debugNode) {
-                this._debugNode.removeFromParent();
-                this._debugNode = null;
-            }
+        }
+    }
+
+    private _clearDebugNode() {
+        if (this._debugNode) {
+            this._debugNode.removeFromParent();
+            this._debugNode = null;
         }
     }
 
