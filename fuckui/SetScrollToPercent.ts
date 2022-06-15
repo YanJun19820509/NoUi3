@@ -22,6 +22,9 @@ export class SetScrollToPercent extends FuckUi {
     @property(ScrollView)
     scrollView: ScrollView = null;
 
+    @property
+    offset: Vec2 = v2();
+
     @property({ displayName: '目标位置在可视范围内0-1', min: 0, max: 1 })
     at: number = 0.5;
 
@@ -41,11 +44,14 @@ export class SetScrollToPercent extends FuckUi {
         if (this.scrollView == null) return;
         let cs = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+
         let offset = v2();
         if (this.scrollView.vertical) {
-            offset.y = cs.height * per - ns.height * this.at;
+            if (cs.height <= ns.height) return;
+            offset.y = cs.height * per - ns.height * this.at + this.offset.y;
         } else {
-            offset.x = cs.width * per + ns.width * this.at;
+            if (cs.width <= ns.width) return;
+            offset.x = cs.width * per - ns.width * this.at + this.offset.x;
         }
         this.scrollToOffset(offset);
     }
