@@ -2453,7 +2453,7 @@ export namespace no {
          */
         public toUnitString(units: string[], step = 3): string {
             if (this.index < step) {
-                return `${this.float(this._coefficient * Math.pow(10, this.index))}`;
+                return `${this.float(this._coefficient * Math.pow(10, this.index), 2)}`;
             }
             let a = Math.floor(this.index / step),
                 b = this.index % step,
