@@ -101,15 +101,16 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            if (frame.original && frame.texture['_id'] != this.atlas._texture['_id']) {
-                let original = frame.original, uuid = frame._uuid;
-                frame = frame.clone();
-                frame._uuid = uuid;
-                frame['_rect'].x = original._x;
-                frame['_rect'].y = original._y;
-                frame['_texture'] = original._texture;
-                frame._calculateUV();
-            } else if (frame.original) {
+            // if (frame.original && frame.texture['_id'] != this.atlas._texture['_id']) {
+            //     let original = frame.original, uuid = frame._uuid;
+            //     frame = frame.clone();
+            //     frame._uuid = uuid;
+            //     frame['_rect'].x = original._x;
+            //     frame['_rect'].y = original._y;
+            //     frame['_texture'] = original._texture;
+            //     frame._calculateUV();
+            // } else 
+            if (frame.original) {
                 onFail?.();
                 return;
             }
