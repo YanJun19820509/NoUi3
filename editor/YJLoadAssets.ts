@@ -90,7 +90,7 @@ export class YJLoadAssets extends Component {
         let dynamicAtlas = this.dynamicAtlas || this.getComponent(YJDynamicAtlas);
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
-                dynamicAtlas?.packAtlasToDynamicAtlas(file.getSpriteFrames());
+                dynamicAtlas?.packAtlasToDynamicAtlas(file);
                 ++n;
             });
         });
