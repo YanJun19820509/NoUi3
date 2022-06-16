@@ -60,7 +60,7 @@ export class YJWindowManager extends Component {
         return content;
     }
 
-    private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, onInit?: (panel: T) => void) {
+    private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         let node = instantiate(pf);
         let dynamicAtlas = content.getComponent(YJDynamicAtlas);
         if (dynamicAtlas) {
@@ -72,9 +72,10 @@ export class YJWindowManager extends Component {
             }
         }
         let a = node.getComponent(comp);
-        onInit?.(a as T);
+        beforeInit?.(a as T);
         a.initPanel().then(() => {
             content.addChild(node);
+            afterInit?.(a as T);
         });
     }
 
@@ -84,7 +85,7 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns
      */
-    public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, onInit?: (panel: T) => void) {
+    public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         if (!comp) return null;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
@@ -92,20 +93,22 @@ export class YJWindowManager extends Component {
         let content: Node = YJWindowManager._ins.getContent(to);
         let a = content.getComponentInChildren(comp);
         if (a != null) {
-            onInit?.(a as T);
-            a.initPanel();
-            a.node.active = true;
+            beforeInit?.(a as T);
+            a.initPanel().then(() => {
+                a.node.active = true;
+                afterInit?.(a as T);
+            });
             a.node.setSiblingIndex(content.children.length - 1);
             return;
         }
         let url = comp.prototype[YJPanelPrefabMetaKey];
         no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-            this.initPrefab(pf, comp as (typeof YJPanel), content, onInit);
+            this.initPrefab(pf, comp as (typeof YJPanel), content, beforeInit, afterInit);
         });
     }
 
     public static OpenPanelAndCloseOther(name: string, to: string) {
-        this.createPanel(name, to, () => {
+        this.createPanel(name, to, null, () => {
             this.closePanelIn(to, [name]);
         });
     }

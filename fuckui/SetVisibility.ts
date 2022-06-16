@@ -31,7 +31,7 @@ export class SetVisibility extends FuckUi {
 
     onLoad() {
         super.onLoad();
-        !this.dataSetted && this.show(this.default);
+        !this.dataSetted && this.setData(this.default ? 'true' : 'false');
     }
 
     protected onDataChange(data: any) {
@@ -68,5 +68,8 @@ export class SetVisibility extends FuckUi {
         this.setData('false');
     }
 
+    public a_changeVisible(): void {
+        this.setData(this.oldData == 'false' ? 'true' : 'false');
+    }
 
 }

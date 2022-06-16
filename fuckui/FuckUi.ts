@@ -98,6 +98,10 @@ export class FuckUi extends Component {
         this.onDataChange(d);
     }
 
+    protected get oldData(): string{
+        return this._oldData;
+    }
+
     protected get dataSetted(): boolean {
         return this._oldData != null;
     }

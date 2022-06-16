@@ -59,6 +59,11 @@ export class YJComboBox extends YJDataWork {
         this.setListVisible(!this.isShow);
     }
 
+    public a_hideList(): void {
+        this.setListVisible(false);
+    }
+    
+
     public a_onSelect(d: any): void {
         this.setListVisible(false);
         no.EventHandlerInfo.execute(this.onChange, d);
