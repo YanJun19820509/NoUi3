@@ -1347,6 +1347,19 @@ export namespace no {
         }
     }
 
+    /**
+     * 数字精度转换
+     * @param v 数字
+     * @param x 保留小数位数
+     * @returns 
+     */
+    export function float(v: number, x = 12): number {
+        let a = Math.pow(10, 12),
+            b = Math.pow(10, 12 - x),
+            c = Math.pow(10, x);
+        return Math.floor(Math.ceil(v * a) / b) / c;
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
@@ -2280,7 +2293,7 @@ export namespace no {
         }
 
         public get value(): string {
-            return `${this._coefficient}E+${this.index}`;
+            return `${this._coefficient}E${this.index}`;
         }
 
         /**系数 */
@@ -2322,7 +2335,7 @@ export namespace no {
         /**加 */
         public add(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient = this.float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
+            this.coefficient = float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
         }
 
         /**加 */
@@ -2337,7 +2350,7 @@ export namespace no {
         /**减 */
         public minus(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient = this.float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
+            this.coefficient = float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
         }
 
         /**减 */
@@ -2352,7 +2365,7 @@ export namespace no {
         /**乘 */
         public mul(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient = this.float(this._coefficient * other._coefficient);
+            this.coefficient = float(this._coefficient * other._coefficient);
             this.index += other.index;
         }
 
@@ -2368,7 +2381,7 @@ export namespace no {
         /**除 */
         public div(other: ScientificString): void {
             if (other == null) return;
-            this.coefficient = this.float(this._coefficient / other._coefficient);
+            this.coefficient = float(this._coefficient / other._coefficient);
             this.index -= other.index;
         }
 
@@ -2453,12 +2466,12 @@ export namespace no {
          */
         public toUnitString(units: string[], step = 3): string {
             if (this.index < step) {
-                return `${this.float(this._coefficient * Math.pow(10, this.index), 2)}`;
+                return `${float(this._coefficient * Math.pow(10, this.index), 2)}`;
             }
             let a = Math.floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a - 1];
-            return `${this.float(this._coefficient * Math.pow(10, b), 2)}${u}`;
+            return `${float(this._coefficient * Math.pow(10, b), 2)}${u}`;
         }
 
         /**
@@ -2478,13 +2491,6 @@ export namespace no {
             let a = this.clone;
             a._coefficient = Math.abs(a._coefficient);
             return a;
-        }
-
-        private float(v: number, x = 12): number {
-            let a = Math.pow(10, 12),
-                b = Math.pow(10, 12 - x),
-                c = Math.pow(10, x);
-            return Math.floor(Math.ceil(v * a) / b) / c;
         }
     }
 
