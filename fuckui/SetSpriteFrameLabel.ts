@@ -4,6 +4,8 @@ import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { SetEffect } from './SetEffect';
+import { SetGray } from './SetGray';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -31,6 +33,8 @@ export class SetSpriteFrameLabel extends FuckUi {
     formatter: string = '{0}';
     @property
     anchor: Vec2 = v2();
+    @property
+    isGray: boolean = false;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
@@ -69,6 +73,11 @@ export class SetSpriteFrameLabel extends FuckUi {
                 let sprite = node.addComponent(Sprite);
                 sprite.spriteAtlas = this.atlas;
                 node.addComponent('YJDynamicTexture')['dynamicAtlas'] = this.dynamicAtlas;
+                if (this.isGray) {
+                    node.addComponent(SetEffect);
+                    let gray = node.addComponent(SetGray);
+                    gray.autoGray = true;
+                }
                 this.node.addChild(node);
             } else if (v == undefined) {
                 node.active = false;
