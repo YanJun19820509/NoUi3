@@ -2310,6 +2310,7 @@ export namespace no {
                 let e = v.toExponential().toUpperCase().split('E');
                 this._coefficient = Number(e[0]);
                 this.index += Number(e[1]);
+                this._coefficient = float(this._coefficient, this.index);
             }
         }
 
