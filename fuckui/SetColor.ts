@@ -20,10 +20,15 @@ const { ccclass, menu } = _decorator;
 @menu('NoUi/ui/SetColor(设置颜色:string|cc.Color)')
 export class SetColor extends FuckUi {
     protected onDataChange(data: any) {
+        let color: Color;
         if (typeof data == 'string') {
-            this.node.getComponent(RenderComponent).color = no.str2Color(data);
+            color = no.str2Color(data);
         } else if (data instanceof Color) {
-            this.node.getComponent(RenderComponent).color = data;
+            color = data;
         }
+        let renders = this.node.getComponentsInChildren(RenderComponent);
+        renders.forEach(render => {
+            render.color = color;
+        });
     }
 }
