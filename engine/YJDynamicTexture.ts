@@ -134,7 +134,6 @@ export class YJDynamicTexture extends Component {
 
     public packLabelFrame(text: string) {
         if (!this.dynamicAtlas?.isWork) return;
-        if (!this.enabledInHierarchy) return;
         let label = this.getComponent(Label);
         if (!label) return;
         // let uuid = this.createLabelFrameUuid(label, text);
@@ -157,7 +156,8 @@ export class YJDynamicTexture extends Component {
         let frame = label.ttfSpriteFrame;
 
         if (label.font instanceof BitmapFont)
-            frame = label.font.spriteFrame;
+            // frame = label.font.spriteFrame;
+            return;
         if (!frame || frame.original)
             return;
 
