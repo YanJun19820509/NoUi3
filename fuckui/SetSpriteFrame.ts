@@ -81,6 +81,11 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     ///////EDITOR
+    onLoad() {
+        if (EDITOR)
+            this.sprite = this.getComponent(Sprite);
+        else super.onLoad();
+    }
     update() {
         if (!EDITOR) return;
         if (this.path == '' || this.path.indexOf('db://assets/') == -1) return;
