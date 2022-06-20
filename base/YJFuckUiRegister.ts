@@ -1,7 +1,8 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { FuckUi } from '../fuckui/FuckUi';
-const { ccclass, property, disallowMultiple } = _decorator;
+import { EDITOR } from 'cc/env';
+import { _FuckUi } from '../types';
+const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -14,15 +15,19 @@ const { ccclass, property, disallowMultiple } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
+
 @ccclass('YJFuckUiRegister')
 @disallowMultiple()
+@executeInEditMode()
 export class YJFuckUiRegister extends Component {
+    @property
+    autoRegister: boolean = false;
+
     protected _data2ui: object = {};
 
-    public onNewUiRegister: (key: string, ui: FuckUi) => void;
+    public onNewUiRegister: (key: string, ui: _FuckUi) => void;
 
-    public register(ui: FuckUi): void {
+    public register(ui: _FuckUi): void {
         let keys = ui.bindKeys;
         keys.forEach(key => {
             this._data2ui[key] = this._data2ui[key] || [];
@@ -31,18 +36,30 @@ export class YJFuckUiRegister extends Component {
         });
     }
 
-    public getUis(key: string): FuckUi[] {
+    public getUis(key: string): any[] {
         return this._data2ui[key];
     }
 
-    public remove(ui: FuckUi) {
+    public remove(ui: _FuckUi) {
         let keys = ui.bindKeys;
         keys.forEach(key => {
-            let a: FuckUi[] = this._data2ui[key];
+            let a: _FuckUi[] = this._data2ui[key];
             if (a) {
                 let i = a.indexOf(ui);
                 a.splice(i, 1);
             }
         });
+    }
+
+    /////////IN EDITOR/////
+    update() {
+        if (!EDITOR) return;
+        if (this.autoRegister) {
+            this.autoRegister = false;
+            let list = this.getComponentsInChildren('FuckUi');
+            list.forEach((a: _FuckUi) => {
+                a.register = this;
+            });
+        }
     }
 }
