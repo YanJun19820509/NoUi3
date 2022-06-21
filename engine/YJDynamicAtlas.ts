@@ -177,6 +177,7 @@ export class YJDynamicAtlas extends Component {
         comps.forEach(comp => {
             let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
             a.dynamicAtlas = dynamicAtlas;
+            if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
         });
     }
 

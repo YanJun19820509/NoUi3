@@ -192,7 +192,7 @@ export namespace no {
         }
 
         public execute(...args: any[]): void {
-            this.handler.emit([].concat(args, this.handler.customEventData));
+            this.handler.emit(args);
         }
     }
 

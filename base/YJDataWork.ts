@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { DEBUG } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
@@ -79,6 +80,10 @@ export class YJDataWork extends Component {
                 this.setUiData(ui, v);
             });
         } else if (value instanceof Object) {
+            if (DEBUG && value.__classname__) {
+                console.warn('不能传递对象类型数据：', key, value);
+                return;
+            }
             for (let k in value) {
                 this.onValueChange(`${key}.${k}`, value[k]);
             }

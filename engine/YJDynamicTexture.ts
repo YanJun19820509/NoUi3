@@ -1,7 +1,6 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame, LabelOutline } from 'cc';
 import { EDITOR } from 'cc/env';
-import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -48,9 +47,8 @@ export class YJDynamicTexture extends Component {
 
     public static setCommonMaterial(comp: RenderComponent) {
         if (comp && this.commonMaterial) {
-            if (!comp.getComponent(YJVertexColorTransition)) comp.addComponent(YJVertexColorTransition);
-            if (!comp.customMaterial && this.commonMaterial.effectName != comp.customMaterial?.effectName)
-                comp.customMaterial = this.commonMaterial;
+            if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
+            comp.customMaterial = this.commonMaterial;
         }
     }
 
@@ -83,7 +81,7 @@ export class YJDynamicTexture extends Component {
 
     public packSpriteFrame(frame?: SpriteFrame) {
         let sprite = this.getComponent(Sprite);
-        if (!this.dynamicAtlas?.isWork) {
+        if (!this.enabled || !this.dynamicAtlas?.isWork) {
             if (frame) {
                 console.error('dynamicAtlas 为null，未做合图', frame);
                 sprite.spriteFrame = frame;
@@ -133,9 +131,12 @@ export class YJDynamicTexture extends Component {
     // }
 
     public packLabelFrame(text: string) {
-        if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label) return;
+        if (!this.enabled || !this.dynamicAtlas?.isWork) {
+            label.string = text;
+            return;
+        }
         // let uuid = this.createLabelFrameUuid(label, text);
         // label.ttfSpriteFrame._uuid = uuid;
         if (this.needClear)
@@ -149,7 +150,7 @@ export class YJDynamicTexture extends Component {
 
 
     public pack(): void {
-        if (!this.enabledInHierarchy) return;
+        if (!this.enabled) return;
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label || label.string == '') return;
@@ -167,7 +168,12 @@ export class YJDynamicTexture extends Component {
     }
 
     private createLabelFrameUuid(label: Label, str?: string): string {
-        return (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+        let a = (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+        let ol = label.getComponent(LabelOutline);
+        if (ol) {
+            a += "_" + ol.color + '_' + ol.width;
+        }
+        return a;
     }
 
     update() {

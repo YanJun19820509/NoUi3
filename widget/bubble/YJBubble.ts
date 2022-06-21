@@ -19,7 +19,6 @@ const { ccclass, property } = _decorator;
 /**
  * 气泡控件,
  * data: {
- *     info: string,
  *     position?: number[x,y]
  *     target?: string//目标节点标识，在YJNodeTarget中设置，与position任选其一
  * }
@@ -30,6 +29,7 @@ export class YJBubble extends YJDataWork {
     offset: Vec3 = v3();
 
     protected afterInit() {
+        if (!this.data) return;
         let pos = v3();
         if (this.data.position) {
             pos.x = this.data.position[0];
