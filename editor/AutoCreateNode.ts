@@ -150,6 +150,9 @@ export class AutoCreateNode extends Component {
             case 'slider':
                 this.createSlider(n, parent);
                 break;
+            case 'layout':
+                this.createLayout(n, parent);
+                break;
         }
     }
 
@@ -174,6 +177,8 @@ export class AutoCreateNode extends Component {
                 no.assetBundleManager.loadSpriteFrameInEditorMode(`db://assets/resources/texture_c/${c.name}.png`, (f, info) => {
                     this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
                     s.spriteFrame = f;
+                }, () => {
+                    n.addComponent('SetDynamicSpriteFrame');
                 });
             });
         }
@@ -331,6 +336,20 @@ export class AutoCreateNode extends Component {
             n.addComponent(SetSliderProgress);
             s.handle = n.getComponentInChildren(Sprite);
             s.handle.addComponent(Button);
+        }
+        return n;
+    }
+
+    private createLayout(c: any, parent: Node): Node {
+        let n = this.getNode(c.name, Toggle, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+        this.parseChildren(c, n);
+        if (!n.getComponent(Layout)) {
+            let s = n.addComponent(Layout);
+            s.type = c.w > c.h ? Layout.Type.HORIZONTAL : Layout.Type.VERTICAL;
+            s.resizeMode = Layout.ResizeMode.CONTAINER;
+            s.affectedByScale = true;
+            if (s.type == Layout.Type.HORIZONTAL) s.alignVertical = true;
+            else if (s.type == Layout.Type.VERTICAL) s.alignHorizontal = true;
         }
         return n;
     }
