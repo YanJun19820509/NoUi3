@@ -1,7 +1,4 @@
-
-import { _decorator, Component, Node } from 'cc';
 import { FuckUi } from './fuckui/FuckUi';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
