@@ -275,6 +275,21 @@ void graphicsWave(vec4 _o, vec2 _uv, float _amplitude,float _angularVelocity, fl
 }
 
 
+/**
+纹理平铺，
+_uv 当前 uv
+_scale 平铺比例，值越大，平铺后数量越多
+_speed 位移速度
+_offsetY y 方向偏移
+**/
+vec2 tiled(vec2 _uv, float _scale, float _speed, float _offsetY){
+  vec2 uv = _uv * _scale - vec2(cc_time.x,cc_time.x) / _speed;
+  float b = floor(uv.x);
+  uv.y -= b / _offsetY;
+  if (mod(b,2.) == 1. || mod(floor(uv.y),2.) == 1.) {discard;}
+  uv = fract(uv);
+  return uv;
+}
 
 
 vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleMax){
@@ -297,3 +312,4 @@ vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleM
   o *= color;
   return o;
 }
+
