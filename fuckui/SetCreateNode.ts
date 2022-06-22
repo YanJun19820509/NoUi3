@@ -55,7 +55,7 @@ export class SetCreateNode extends FuckUi {
         this.setItems([].concat(data));
     }
 
-    private async setItems(data: any[]) {
+    protected async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
         }
@@ -97,7 +97,7 @@ export class SetCreateNode extends FuckUi {
         }
     }
 
-    private async setDynamicAtlasNode(data: any) {
+    protected async setDynamicAtlasNode(data: any) {
         if (data == null) return;
         let item = this.container.children[0];
         if (!item) {
