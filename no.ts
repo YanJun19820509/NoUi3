@@ -1435,6 +1435,16 @@ export namespace no {
         }
 
         /**
+         * 是否存在
+         * @param paths 
+         * @returns 
+         */
+        public has(paths?: string | string[]): boolean {
+            return !!this.get(paths);
+        }
+
+
+        /**
          * 删
          * @param path
          */
