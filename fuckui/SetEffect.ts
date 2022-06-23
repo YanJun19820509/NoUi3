@@ -42,9 +42,10 @@ export class SetEffect extends FuckUi {
     }
 
     protected setMaterial(path: string, defines: any, properties: any) {
-        if (YJDynamicTexture.hasCommonMaterial) {
+        if (YJDynamicTexture.hasCommonMaterial()) {
             YJDynamicTexture.setCommonMaterial(this._renderComp);
             this.setVertex(defines, properties);
+            this.work();
         }
         else if (this._renderComp.material && (!path || this._renderComp.material.effectName == `../${path}`)) {
             this.setProperties(this._renderComp.material, defines, properties);
@@ -119,6 +120,10 @@ export class SetEffect extends FuckUi {
      * work
      */
     public work() {
+        if (!this._renderComp) {
+            this._renderComp = this.getComponent(RenderComponent);
+            if (!this._renderComp) return;
+        }
         if (!this._renderComp.renderData?.frame) {
             this.scheduleOnce(() => {
                 this.work();
@@ -133,5 +138,4 @@ export class SetEffect extends FuckUi {
         this._renderComp.customMaterial = null;
         this._renderComp.markForUpdateRenderData();
     }
-
 }

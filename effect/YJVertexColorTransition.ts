@@ -65,7 +65,6 @@ export class YJVertexColorTransition extends Component {
         if (!properties) return;
         this._data.y = properties[0] || this._data.y;
         this._data.z = properties[1] || this._data.z;
-        this._data.w = properties[2] || this._data.w;
     }
 
     private _setBMFontGray(v: boolean) {
