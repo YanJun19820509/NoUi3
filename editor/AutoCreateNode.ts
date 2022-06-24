@@ -63,23 +63,30 @@ export class AutoCreateNode extends Component {
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 // console.log(dest);
-                let atlasManager = this.getComponent(YJLoadAssets) || this.addComponent(YJLoadAssets);
                 no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     this.atlas = s;
+                    let atlasManager = this.getComponent(YJLoadAssets) || this.addComponent(YJLoadAssets);
                     atlasManager?.addAtlasUuid(info.uuid);
                     // console.log(s);
-                    no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
-                        // console.log(f.json);
-                        this.createNodes(f.json);
-                        this.deleteConfigFile(dest + `/${name}.json`);
-                    }, () => {
-                        this.enabled = false;
-                    });
+                    this.loadJson(dest, name);
+                }, () => {
+                    this.loadJson(dest, name);
                 });
             }
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private loadJson(dest: string, name: string) {
+        // console.log('loadjson');
+        no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
+            // console.log(f.json);
+            this.createNodes(f.json);
+            this.deleteConfigFile(dest + `/${name}.json`);
+        }, () => {
+            this.enabled = false;
+        });
     }
 
     private createNodes(config: any) {
@@ -166,7 +173,7 @@ export class AutoCreateNode extends Component {
         let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
         s.sizeMode = Sprite.SizeMode.CUSTOM;
-        s.spriteFrame = this.atlas.getSpriteFrame(c.name);
+        s.spriteFrame = this.atlas?.getSpriteFrame(c.name);
         if (s.spriteFrame)
             s.spriteAtlas = this.atlas;
         else {
@@ -182,7 +189,7 @@ export class AutoCreateNode extends Component {
                 });
             });
         }
-        if (c.name.indexOf('9_') == 0) {
+        if (c['9']) {
             s.type = Sprite.Type.SLICED;
         }
         return n;
