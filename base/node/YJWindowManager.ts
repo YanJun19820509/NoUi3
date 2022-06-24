@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
+import { YJAddPanelToMetaKey, YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -85,11 +85,12 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns
      */
-    public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
+    public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to?: string, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         if (!comp) return null;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
         if (!comp) return null;
+        to = to || comp.prototype[YJAddPanelToMetaKey];
         let content: Node = YJWindowManager._ins.getContent(to);
         let a = content.getComponentInChildren(comp);
         if (a != null) {

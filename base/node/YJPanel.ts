@@ -19,7 +19,7 @@ const { ccclass, property, menu } = _decorator;
  */
 
 export const YJPanelPrefabMetaKey = 'prefabPath';
-
+export const YJAddPanelToMetaKey = 'addPanelToTargetName';
 /**
  * 注解，向YJPanel添加prefab path 元数据
  * @param path
@@ -27,6 +27,10 @@ export const YJPanelPrefabMetaKey = 'prefabPath';
  */
 export function panelPrefabPath(path: string) {
     return no.addMeta(YJPanelPrefabMetaKey, path.replace('db://assets/', '').replace('.prefab', ''));
+}
+
+export function addPanelTo(targetName: string) {
+    return no.addMeta(YJAddPanelToMetaKey, targetName);
 }
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
