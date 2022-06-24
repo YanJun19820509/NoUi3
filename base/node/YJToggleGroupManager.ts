@@ -60,6 +60,12 @@ export class YJToggleGroupManager extends Component {
         (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
     }
 
+    public a_check(idx: number): void {
+        idx = Number(idx);
+        let items = this.getComponent(ToggleContainer).toggleItems;
+        if (items[idx])
+            items[idx].isChecked = true;
+    }
 
 }
 
