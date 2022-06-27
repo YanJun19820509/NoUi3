@@ -1,7 +1,6 @@
 
 import { Material, RenderComponent, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from 'cc';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -42,8 +41,7 @@ export class SetEffect extends FuckUi {
     }
 
     protected setMaterial(path: string, defines: any, properties: any) {
-        if (YJDynamicTexture.hasCommonMaterial()) {
-            YJDynamicTexture.setCommonMaterial(this._renderComp);
+        if (this.getComponent(YJVertexColorTransition)) {
             this.setVertex(defines, properties);
             this.work();
         }

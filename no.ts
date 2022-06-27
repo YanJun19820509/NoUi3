@@ -2344,9 +2344,14 @@ export namespace no {
         }
 
         /**加 */
-        public add(other: ScientificString): void {
+        public add(other: ScientificString | number | string): void {
             if (other == null) return;
-            this.coefficient = float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
+            if (other instanceof ScientificString) {
+                this.coefficient = float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
+            } else {
+                other = new ScientificString(other);
+                this.add(other);
+            }
         }
 
         /**加 */
@@ -2359,9 +2364,14 @@ export namespace no {
         }
 
         /**减 */
-        public minus(other: ScientificString): void {
+        public minus(other: ScientificString | number | string): void {
             if (other == null) return;
-            this.coefficient = float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
+            if (other instanceof ScientificString) {
+                this.coefficient = float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
+            } else {
+                other = new ScientificString(other);
+                this.minus(other);
+            }
         }
 
         /**减 */
@@ -2374,10 +2384,15 @@ export namespace no {
         }
 
         /**乘 */
-        public mul(other: ScientificString): void {
+        public mul(other: ScientificString | number | string): void {
             if (other == null) return;
-            this.coefficient = float(this._coefficient * other._coefficient);
-            this.index += other.index;
+            if (other instanceof ScientificString) {
+                this.coefficient = float(this._coefficient * other._coefficient);
+                this.index += other.index;
+            } else {
+                other = new ScientificString(other);
+                this.mul(other);
+            }
         }
 
         /**乘 */
@@ -2390,10 +2405,15 @@ export namespace no {
         }
 
         /**除 */
-        public div(other: ScientificString): void {
+        public div(other: ScientificString | number | string): void {
             if (other == null) return;
-            this.coefficient = float(this._coefficient / other._coefficient);
-            this.index -= other.index;
+            if (other instanceof ScientificString) {
+                this.coefficient = float(this._coefficient / other._coefficient);
+                this.index -= other.index;
+            } else {
+                other = new ScientificString(other);
+                this.div(other);
+            }
         }
 
         /**除 */

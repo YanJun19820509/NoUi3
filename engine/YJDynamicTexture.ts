@@ -33,29 +33,29 @@ export class YJDynamicTexture extends Component {
     @property
     needClear: boolean = false;
 
-    private static commonMaterial: Material;
+    // private static commonMaterial: Material;
 
-    public static hasCommonMaterial(): boolean {
-        return !!this.commonMaterial;
-    }
+    // public static hasCommonMaterial(): boolean {
+    //     return !!this.commonMaterial;
+    // }
 
-    public static loadCommonMaterial(url: string) {
-        no.assetBundleManager.loadMaterial(url, item => {
-            this.commonMaterial = item;
-        });
-    }
+    // public static loadCommonMaterial(url: string) {
+    //     no.assetBundleManager.loadMaterial(url, item => {
+    //         this.commonMaterial = item;
+    //     });
+    // }
 
-    public static setCommonMaterial(comp: RenderComponent) {
-        if (comp && this.commonMaterial) {
-            if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
-            comp.customMaterial = this.commonMaterial;
-        }
-    }
+    // public static setCommonMaterial(comp: RenderComponent) {
+    //     if (comp && this.commonMaterial) {
+    //         if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
+    //         comp.customMaterial = this.commonMaterial;
+    //     }
+    // }
 
     onLoad() {
         if (!this.enabled || EDITOR) return;
-        let renderComp = this.getComponent(RenderComponent);
-        YJDynamicTexture.setCommonMaterial(renderComp);
+        // let renderComp = this.getComponent(RenderComponent);
+        // YJDynamicTexture.setCommonMaterial(renderComp);
 
         let label = this.getComponent(Label) || this.getComponent(RichText);
         // if (label && label.font instanceof BitmapFont) {
@@ -67,6 +67,9 @@ export class YJDynamicTexture extends Component {
             label.cacheMode = CacheMode.BITMAP;
             return;
         }
+    }
+
+    start(){
         this.init();
     }
 
@@ -176,6 +179,13 @@ export class YJDynamicTexture extends Component {
         return a;
     }
 
+    public setCommonMaterial(): void {
+        let renderComp = this.getComponent(RenderComponent);
+        if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
+            renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;
+    }
+    
+
     update() {
         if (!EDITOR) return;
 
@@ -183,5 +193,6 @@ export class YJDynamicTexture extends Component {
         if (label && label.cacheMode != CacheMode.BITMAP) {
             label.cacheMode = CacheMode.BITMAP;
         }
+        this.setCommonMaterial();
     }
 }

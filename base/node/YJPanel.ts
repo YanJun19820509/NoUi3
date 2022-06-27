@@ -72,7 +72,9 @@ export class YJPanel extends Component {
      */
     public async initPanel() {
         this.onInitPanel();
-        await this.getComponent(YJLoadAssets)?.load();
+        if (this.getComponent(YJLoadAssets)) {
+            await this.getComponent(YJLoadAssets).load();
+        }
     }
 
     public closePanel() {

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -29,6 +29,8 @@ export class YJDynamicAtlas extends Component {
     width: number = 512;
     @property({ min: 128, max: 2048, step: 1 })
     height: number = 512;
+    @property(Material)
+    commonMaterial: Material = null;
     @property({ visible() { return EDITOR; } })
     autoSetDynamicTextures: boolean = false;
 
@@ -176,7 +178,9 @@ export class YJDynamicAtlas extends Component {
         let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
         comps.forEach(comp => {
             let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
+            if (!a.enabled) return;
             a.dynamicAtlas = dynamicAtlas;
+            a.setCommonMaterial();
             if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
         });
     }
