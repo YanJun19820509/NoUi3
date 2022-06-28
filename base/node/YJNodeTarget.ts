@@ -1,7 +1,8 @@
 
 import { _decorator, Component, Node, Button, Toggle, v3, Vec2, Vec3, UITransform } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../../no';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -17,9 +18,18 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('YJNodeTarget')
 @menu('NoUi/node/YJNodeTarget(节点目标)')
+@executeInEditMode()
 export class YJNodeTarget extends Component {
     @property
     type: string = '';
+
+    onLoad() {
+        if (!EDITOR) return;
+        if (this.type != '') return;
+        let name = [this.node.name];
+        if (this.node.parent) name.unshift(this.node.parent.name);
+        this.type = name.join('.');
+    }
 
     onEnable() {
         no.nodeTargetManager.register(this.type, this);
