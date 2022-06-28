@@ -1,9 +1,9 @@
 
 // 判断 defined 类型状态,type为 0/1
-bool isTrue(float defines, bool isColor, float checkValue){
+bool isTrue(float defines, bool isColor, float checkValue, float index){
   float a = 0.0;
   if (isColor){
-    a = floor(defines);
+    a = floor(floor(defines)/pow(10.,index));
     return a == checkValue;
   }else{
     a = fract(defines);
@@ -220,7 +220,7 @@ bool isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
   int stroke = 0;
   for(int i = 0; i < 12; i++){
     float a = normalTexture(_texture, vec2(_uv.x + _outlineWidth * cosArray[i], _uv.y + _outlineWidth * sinArray[i])).a;
-    if (a >= 0.7)
+    if (a < 0.3)
     {
         stroke += 1;
     }
