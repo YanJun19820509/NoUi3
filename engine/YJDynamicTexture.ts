@@ -33,30 +33,9 @@ export class YJDynamicTexture extends Component {
     @property
     needClear: boolean = false;
 
-    // private static commonMaterial: Material;
-
-    // public static hasCommonMaterial(): boolean {
-    //     return !!this.commonMaterial;
-    // }
-
-    // public static loadCommonMaterial(url: string) {
-    //     no.assetBundleManager.loadMaterial(url, item => {
-    //         this.commonMaterial = item;
-    //     });
-    // }
-
-    // public static setCommonMaterial(comp: RenderComponent) {
-    //     if (comp && this.commonMaterial) {
-    //         if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
-    //         comp.customMaterial = this.commonMaterial;
-    //     }
-    // }
-
     onLoad() {
         if (!this.enabled || EDITOR) return;
-        // let renderComp = this.getComponent(RenderComponent);
-        // YJDynamicTexture.setCommonMaterial(renderComp);
-
+        this.setCommonMaterial();
         let label = this.getComponent(Label) || this.getComponent(RichText);
         // if (label && label.font instanceof BitmapFont) {
         //     let bf = this.dynamicAtlas.getBitmapFont(label.font.name);
@@ -67,9 +46,6 @@ export class YJDynamicTexture extends Component {
             label.cacheMode = CacheMode.BITMAP;
             return;
         }
-    }
-
-    start(){
         this.init();
     }
 

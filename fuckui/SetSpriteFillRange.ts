@@ -19,6 +19,6 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(Sprite)
 export class SetSpriteFillRange extends FuckUi {
     protected onDataChange(data: any) {
-        this.getComponent(Sprite).fillRange = Number(data);
+        this.getComponent(Sprite).fillRange = -Number(data);
     }
 }

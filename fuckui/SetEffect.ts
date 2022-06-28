@@ -29,6 +29,8 @@ const { ccclass, property, menu } = _decorator;
 @ccclass('SetEffect')
 @menu('NoUi/ui/SetEffect(设置shader:object)')
 export class SetEffect extends FuckUi {
+    @property({ min: 0, step: 1, displayName: '合图属性下标', tooltip: '区分同一材质中多个合图中的纹理需要对应的其在合图中的rect属性，如idx=0，着色器中对应属性为factRect0' })
+    idx: number = 0;
     protected _renderComp: RenderComponent;
 
     protected onDataChange(data: any) {
@@ -48,7 +50,8 @@ export class SetEffect extends FuckUi {
         else if (this._renderComp.material && (!path || this._renderComp.material.effectName == `../${path}`)) {
             this.setProperties(this._renderComp.material, defines, properties);
             this.work();
-        } else if (path)
+        }
+        else if (path)
             no.assetBundleManager.loadEffect(path, item => {
                 const material = new Material();
                 material.initialize({
@@ -94,14 +97,19 @@ export class SetEffect extends FuckUi {
     }
 
     //计算frame在合图中的实际rect
-    private caculateFact(material: Material, f: any) {
+    private caculateFact() {
+        //当多个组件使用同一个材质时，需要使用sharedMaterial
+        let material = this.getComponent(YJVertexColorTransition) ? this._renderComp.sharedMaterial : this._renderComp.material;
+        let f = this._renderComp.renderData.frame;
         let texture = f._texture;
 
-        if (this.hasProperty(material, 'factRect'))
-            material.setProperty('factRect', new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
+        let fr = `factRect${this.idx}`;
+        if (this.hasProperty(material, fr))
+            material.setProperty(fr, new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
 
-        if (this.hasProperty(material, 'ratio'))
-            material.setProperty('ratio', texture.width / texture.height);
+        let r = `ratio${this.idx}`;
+        if (this.hasProperty(material, r))
+            material.setProperty(r, texture.width / texture.height);
     }
 
     protected hasProperty(material: Material, key: string): boolean {
@@ -128,7 +136,7 @@ export class SetEffect extends FuckUi {
             }, 0);
             return;
         }
-        this.caculateFact(this._renderComp.material, this._renderComp.renderData.frame);
+        this.caculateFact();
     }
 
     public reset(): void {

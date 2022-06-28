@@ -26,7 +26,7 @@ export class YJSetMaterial extends Component {
 
     //////////////EDITOR/////////////
     update() {
-        if (!EDITOR || !this.autoSet || !this.commonMaterial) return;
+        if (!EDITOR || !this.autoSet) return;
         this.autoSet = false;
         let renderComps = this.getComponentsInChildren(RenderComponent);
         renderComps.forEach(comp => {
