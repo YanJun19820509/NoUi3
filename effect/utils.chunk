@@ -191,7 +191,7 @@ vec4 dissolve(vec4 _o, float _time) {
 
 
 //描边
-bool isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
+float isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
   float cosArray[12], sinArray[12]; 
   cosArray[0] = 1.0;
   cosArray[1] = 0.866;
@@ -217,15 +217,15 @@ bool isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
   sinArray[9] = -1.;
   sinArray[10] = -.866;
   sinArray[11] = -0.5;
-  int stroke = 0;
+  float stroke = 0.;
   for(int i = 0; i < 12; i++){
     float a = normalTexture(_texture, vec2(_uv.x + _outlineWidth * cosArray[i], _uv.y + _outlineWidth * sinArray[i])).a;
-    if (a < 0.3)
+    if (a > 0.1)
     {
-        stroke += 1;
+        stroke += 1.;
     }
   }
-  return stroke > 0;
+  return stroke;
 }
 
 

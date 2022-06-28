@@ -4,7 +4,7 @@ CCEffect %{
   techniques:
   - passes:
     - vert: vs:vert 
-      frag: unlit-fs:frag
+      frag: unlit-fs1:frag
       depthStencilState:
         depthTest: false
         depthWrite: false
@@ -19,6 +19,20 @@ CCEffect %{
       properties:
         outlineColor: {value: [1,1,1,1], editor: {type: color}}
         outlineWidth: { value: 0.1, range:{0,1,0.01} }
+    - vert: vs:vert 
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
 }%
 
 CCProgram vs %{
@@ -27,6 +41,29 @@ CCProgram vs %{
 
 CCProgram unlit-fs %{
   precision highp float;
+  #include <cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+  #include <common-fs>
+  #include <utils>
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+      o *= normalTexture(cc_spriteTexture, uv0);
+    #endif
+
+    o *= color;
+
+    ALPHA_TEST(o);
+    return o;
+  }
+}%
+
+CCProgram unlit-fs1 %{
+  precision highp float;
+  #include <cc-global>
   #include <embedded-alpha>
   #include <alpha-test>
   #include <common-fs>
@@ -47,9 +84,13 @@ CCProgram unlit-fs %{
     o *= color;
 
     #if IS_STROKE
-      if (o.a < 0.8 && outlineWidth > 0. && isStroke(cc_spriteTexture,uv0,outlineWidth)){
-        o *= outlineColor;
-        o.a = .9;
+      float w = sin(cc_time.x)/100.;
+      if (o.a < 0.1 && outlineWidth > 0.){
+        float s = isStroke(cc_spriteTexture,uv0,outlineWidth+w);
+        if(s > 0.){
+          o.rgb = outlineColor.rgb;
+          o.a = .7;
+        }
       }
     #endif  
 
