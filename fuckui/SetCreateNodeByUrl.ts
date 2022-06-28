@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab, UITransform } from 'cc';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -30,6 +30,8 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+    @property({ tooltip: '根据子节点大小重置宽高，当子节点个数大于1时不生效' })
+    resize: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
     @property(YJDynamicAtlas)
@@ -98,6 +100,17 @@ export class SetCreateNodeByUrl extends FuckUi {
                 }
             }
         }
+        this.resizeContentSize();
+    }
+
+    private resizeContentSize() {
+        if (!this.resize || this.container.children.length > 1) return;
+        let child = this.container.children[0];
+        let size = child.getComponent(UITransform).contentSize.clone();
+        let scale = child.scale;
+        size.width *= scale.x;
+        size.height *= scale.y;
+        this.container.getComponent(UITransform).contentSize = size;
     }
 
     private clear(all = false) {
