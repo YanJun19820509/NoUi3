@@ -220,7 +220,7 @@ float isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
   float stroke = 0.;
   for(int i = 0; i < 12; i++){
     float a = normalTexture(_texture, vec2(_uv.x + _outlineWidth * cosArray[i], _uv.y + _outlineWidth * sinArray[i])).a;
-    if (a > 0.1)
+    if (a > 0.9)
     {
         stroke += 1.;
     }

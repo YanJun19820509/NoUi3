@@ -1,7 +1,7 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Enum } from 'cc';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu } = _decorator;
+const { ccclass, menu, property } = _decorator;
 
 /**
  * Predefined variables
@@ -15,10 +15,29 @@ const { ccclass, menu } = _decorator;
  *
  */
 
+export enum SiblingType {
+    None = 0,
+    Top,
+    Bottom
+}
+
 @ccclass('SetSiblingIndex')
 @menu('NoUi/ui/SetSiblingIndex(设置同级节点索引:number)')
 export class SetSiblingIndex extends FuckUi {
+    @property({ type: Enum(SiblingType), displayName: '方式' })
+    type: SiblingType = SiblingType.None;
+
     protected onDataChange(data: any) {
-        this.node.setSiblingIndex(Number(data));
+        switch (this.type) {
+            case SiblingType.None:
+                this.node.setSiblingIndex(Number(data));
+                break;
+            case SiblingType.Top:
+                if (Boolean(data)) this.node.setSiblingIndex(this.node.parent.children.length - 1);
+                break;
+            case SiblingType.Bottom:
+                if (Boolean(data)) this.node.setSiblingIndex(0);
+                break;
+        }
     }
 }

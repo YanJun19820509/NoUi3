@@ -39,7 +39,8 @@ export class FuckUi extends Component {
     private _oldData: string;
 
     onLoad() {
-        this.register?.register(this);
+        if (this.bind_keys != '')
+            this.register?.register(this);
     }
 
     public setData(d: string) {
@@ -98,7 +99,7 @@ export class FuckUi extends Component {
         this.onDataChange(d);
     }
 
-    protected get oldData(): string{
+    protected get oldData(): string {
         return this._oldData;
     }
 
