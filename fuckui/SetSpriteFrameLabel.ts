@@ -85,7 +85,9 @@ export class SetSpriteFrameLabel extends FuckUi {
             }
             node.active = true;
             let sf = this.atlas!.getSpriteFrame(String(v.charCodeAt(0)));
-            node.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+            if (!EDITOR)
+                node.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+            else node.getComponent(Sprite).spriteFrame = sf;
         }
     }
 }
