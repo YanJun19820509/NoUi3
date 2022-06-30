@@ -1,11 +1,9 @@
 
-import { _decorator, Component, Node, SpriteAtlas, Layout, Sprite, UITransform, Layers, Vec2, v2 } from 'cc';
+import { _decorator, Component, Node, SpriteAtlas, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJCreateSpriteFrame } from '../engine/YJCreateSpriteFrame';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { SetEffect } from './SetEffect';
-import { SetGray } from './SetGray';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -22,7 +20,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 
 @ccclass('SetSpriteFrameLabel')
 @menu('NoUi/ui/SetSpriteFrameLabel(设置精灵文本:string)')
-@requireComponent(Layout)
+@requireComponent(YJCreateSpriteFrame)
 @executeInEditMode()
 export class SetSpriteFrameLabel extends FuckUi {
     @property(SpriteAtlas)
@@ -31,12 +29,6 @@ export class SetSpriteFrameLabel extends FuckUi {
     text: string = '';
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
-    @property
-    anchor: Vec2 = v2();
-    @property
-    isGray: boolean = false;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
 
     onLoad() {
         if (EDITOR) return;
@@ -50,8 +42,6 @@ export class SetSpriteFrameLabel extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        if (EDITOR)
-            this.node.removeAllChildren();
         if (!this.atlas) return;
         let s = '';
         if (typeof data == 'string') {
@@ -62,32 +52,15 @@ export class SetSpriteFrameLabel extends FuckUi {
         } else {
             s = no.formatString(this.formatter, data);
         }
-        let n = Math.max(this.node.children.length, s.length);
-        for (let i = 0; i < n; i++) {
-            let v = s[i];
-            let node = this.node.children[i];
-            if (!node) {
-                node = new Node(v);
-                node.layer = Layers.Enum.UI_2D;
-                node.addComponent(UITransform).anchorPoint = this.anchor;
-                let sprite = node.addComponent(Sprite);
-                sprite.spriteAtlas = this.atlas;
-                node.addComponent('YJDynamicTexture')['dynamicAtlas'] = this.dynamicAtlas;
-                if (this.isGray) {
-                    node.addComponent(SetEffect);
-                    let gray = node.addComponent(SetGray);
-                    gray.autoGray = true;
-                }
-                this.node.addChild(node);
-            } else if (v == undefined) {
-                node.active = false;
-                continue;
-            }
-            node.active = true;
-            let sf = this.atlas!.getSpriteFrame(String(v.charCodeAt(0)));
-            if (!EDITOR)
-                node.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
-            else node.getComponent(Sprite).spriteFrame = sf;
+        this.createSpriteFrame(s);
+    }
+
+    private createSpriteFrame(s: string) {
+        let sfs: SpriteFrame[] = [];
+        for (let i = 0, n = s.length; i < n; i++) {
+            let v = String(s[i].charCodeAt(0))
+            sfs[sfs.length] = this.atlas.getSpriteFrame(v);
         }
+        this.getComponent(YJCreateSpriteFrame)?.useSpriteFrames(sfs, this.atlas.name + '_' + s);
     }
 }
