@@ -157,10 +157,11 @@ export class YJDynamicTexture extends Component {
 
     public setCommonMaterial(): void {
         let renderComp = this.getComponent(RenderComponent);
+        if (!renderComp) return;
         if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
             renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;
     }
-    
+
 
     update() {
         if (!EDITOR) return;

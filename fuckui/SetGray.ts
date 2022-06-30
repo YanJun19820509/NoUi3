@@ -1,8 +1,9 @@
 
 import { _decorator, Sprite, RenderComponent } from 'cc';
+import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, menu, requireComponent } = _decorator;
+const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -19,6 +20,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 @ccclass('SetGray')
 @menu('NoUi/ui/SetGray(设置灰态:bool)')
 @requireComponent(SetEffect)
+@executeInEditMode()
 export class SetGray extends FuckUi {
 
     @property({ displayName: '默认置灰' })
@@ -27,8 +29,11 @@ export class SetGray extends FuckUi {
     reverse: boolean = false;
     @property({ displayName: '影响子节点' })
     recursive: boolean = false;
+    @property
+    autoSetChildren: boolean = false;
 
     onLoad() {
+        if (EDITOR) return;
         super.onLoad();
         this.autoGray && !this.dataSetted && this.setGray(true);
     }
@@ -40,7 +45,8 @@ export class SetGray extends FuckUi {
     }
 
     private setGray(v: boolean) {
-        if (this.getComponent(RenderComponent)) {
+        let a = this.getComponent(RenderComponent);
+        if (a) {
             let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
             setEffect.setData(JSON.stringify(
                 {
@@ -52,8 +58,21 @@ export class SetGray extends FuckUi {
             ));
         }
         if (this.recursive) {
-            this.node.children.forEach(child => {
+            this.getComponentsInChildren(RenderComponent).forEach(child => {
+                if (a?.uuid == child.uuid) return;
                 (child.getComponent(SetGray) || child.addComponent(SetGray)).setData(JSON.stringify(v));
+            });
+        }
+    }
+
+    update() {
+        if (!EDITOR) return;
+        if (!this.autoSetChildren) return;
+        this.autoSetChildren = false;
+
+        if (this.recursive) {
+            this.getComponentsInChildren(RenderComponent).forEach(child => {
+                (child.getComponent(SetGray) || child.addComponent(SetGray));
             });
         }
     }
