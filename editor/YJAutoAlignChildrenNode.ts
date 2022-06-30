@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Widget, Enum, view } from 'cc';
 import { EDITOR } from 'cc/env';
+import { AlignType } from '../types';
 const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
@@ -18,15 +19,6 @@ const { ccclass, property, executeInEditMode } = _decorator;
  * 在编辑器状态下，自动设置所有子节点widget的纵向对齐方式：顶对齐、居中或底对齐,
  * 该组件适用于需要统一调整所有子节点的对齐方式 
  */
-enum AlignType {
-    None = 0,
-    Top,
-    Middle,
-    Bottom,
-    Left,
-    Center,
-    Right
-}
 @ccclass('YJAutoAlignChildrenNode')
 @executeInEditMode(true)
 export class YJAutoAlignChildrenNode extends Component {

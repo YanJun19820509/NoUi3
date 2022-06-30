@@ -12,4 +12,14 @@ import { FuckUi } from './fuckui/FuckUi';
  *
  */
 
+export enum AlignType {
+    None = 0,
+    Top,
+    Middle,
+    Bottom,
+    Left,
+    Center,
+    Right
+};
+
 export type _FuckUi = FuckUi;
