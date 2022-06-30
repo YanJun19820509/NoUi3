@@ -97,10 +97,6 @@ export class YJDynamicAtlas extends Component {
      */
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
         if (!this.isWork) return;
-        if (!this.atlas) {
-            this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
-        }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             // if (frame.original && frame.texture['_id'] != this.atlas._texture['_id']) {
@@ -150,7 +146,7 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    private insertSpriteFrame(spriteFrame: SpriteFrame) {
+    public insertSpriteFrame(spriteFrame: SpriteFrame) {
         if (!spriteFrame || spriteFrame.original) return null;
 
         // hack for pixel game,should pack to different sampler atlas
@@ -158,7 +154,11 @@ export class YJDynamicAtlas extends Component {
         if (sampler.minFilter !== 2 || sampler.magFilter !== 2 || sampler.mipFilter !== 0) {
             return null;
         }
-        if (!this.atlas) this.atlas = new Atlas(this.width, this.height);
+        
+        if (!this.atlas) {
+            this.atlas = new Atlas(this.width, this.height);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
+        }
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, () => {
             console.log(`${this.node.name}动态图集无空间！`);
