@@ -2492,16 +2492,17 @@ export namespace no {
          * 带单位字符串
          * @param units 自定义单位数组
          * @param step 单位换算步进值
+         * @param digits 小数位数
          * @returns string 如：1.23AA
          */
-        public toUnitString(units: string[], step = 3): string {
+        public toUnitString(units: string[], step = 3, digits = 2): string {
             if (this.index < step) {
-                return `${float(this._coefficient * Math.pow(10, this.index), 2)}`;
+                return `${float(this._coefficient * Math.pow(10, this.index), digits)}`;
             }
             let a = Math.floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a - 1];
-            return `${float(this._coefficient * Math.pow(10, b), 2)}${u}`;
+            return `${float(this._coefficient * Math.pow(10, b), digits)}${u}`;
         }
 
         /**
