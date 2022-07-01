@@ -22,6 +22,8 @@ const { ccclass, property, executeInEditMode } = _decorator;
 export class YJCloneComponent extends Component {
     @property(Node)
     target: Node = null;
+    @property
+    asyncPosition: boolean = false;
 
     update() {
         if (!EDITOR) return;
@@ -36,6 +38,7 @@ export class YJCloneComponent extends Component {
     }
 
     private setNodeProperties() {
+        if (!this.asyncPosition) return;
         this.node.position = this.target.position;
         this.node.rotation = this.target.rotation;
         this.node.scale = this.target.scale;

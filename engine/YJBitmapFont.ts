@@ -39,6 +39,7 @@ export class YJBitmapFont extends Component {
         bf.fntDataStr = this.font.fntDataStr;
         bf.fontDefDictionary = this.font.fontDefDictionary;
         let sf = this.font.spriteFrame.clone();
+        sf._uuid = this.font.spriteFrame._uuid;
         if (!EDITOR) {
             let packedFrame = this.dynamicAtlas.insertSpriteFrame(sf);
             sf._setDynamicAtlasFrame(packedFrame);
