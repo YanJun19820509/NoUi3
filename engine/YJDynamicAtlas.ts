@@ -42,24 +42,24 @@ export class YJDynamicAtlas extends Component {
         this.atlas = null;
     }
 
-    public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
-        // return false;
-        if (!comp || !frame) return false;
-        const packedFrame = this.atlas.getPackedFrame(uuid);
-        if (!packedFrame) return false;
-        frame._resetDynamicAtlasFrame();
-        frame._setDynamicAtlasFrame(packedFrame);
-        let rect = frame.rect;
-        rect.width = packedFrame.w;
-        rect.height = packedFrame.h;
-        frame.rect = rect;
-        // if (comp instanceof Label)
-        //     comp.updateRenderData(true);
-        // else 
-        if (comp instanceof Sprite)
-            comp.markForUpdateRenderData(true);
-        return true;
-    }
+    // public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
+    //     // return false;
+    //     if (!comp || !frame) return false;
+    //     const packedFrame = this.atlas.getPackedFrame(uuid);
+    //     if (!packedFrame) return false;
+    //     frame._resetDynamicAtlasFrame();
+    //     frame._setDynamicAtlasFrame(packedFrame);
+    //     let rect = frame.rect;
+    //     rect.width = packedFrame.w;
+    //     rect.height = packedFrame.h;
+    //     frame.rect = rect;
+    //     // if (comp instanceof Label)
+    //     //     comp.updateRenderData(true);
+    //     // else 
+    //     if (comp instanceof Sprite)
+    //         comp.markForUpdateRenderData(true);
+    //     return true;
+    // }
 
 
     public packAtlasToDynamicAtlas(atlas: SpriteAtlas) {
@@ -98,20 +98,12 @@ export class YJDynamicAtlas extends Component {
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
         if (!this.isWork) return;
 
+        if (frame.original && frame.texture._uuid == this.atlas._texture._uuid) {
+            onFail?.();
+            return;
+        }
+
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            // if (frame.original && frame.texture['_id'] != this.atlas._texture['_id']) {
-            //     let original = frame.original, uuid = frame._uuid;
-            //     frame = frame.clone();
-            //     frame._uuid = uuid;
-            //     frame['_rect'].x = original._x;
-            //     frame['_rect'].y = original._y;
-            //     frame['_texture'] = original._texture;
-            //     frame._calculateUV();
-            // } else 
-            if (frame.original) {
-                onFail?.();
-                return;
-            }
             const packedFrame = this.insertSpriteFrame(frame);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
@@ -147,14 +139,14 @@ export class YJDynamicAtlas extends Component {
     }
 
     public insertSpriteFrame(spriteFrame: SpriteFrame) {
-        if (!spriteFrame || spriteFrame.original) return null;
+        if (!spriteFrame || spriteFrame.texture._uuid == this.atlas._texture._uuid) return null;
 
         // hack for pixel game,should pack to different sampler atlas
         const sampler = spriteFrame.texture.getSamplerInfo();
         if (sampler.minFilter !== 2 || sampler.magFilter !== 2 || sampler.mipFilter !== 0) {
             return null;
         }
-        
+
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);

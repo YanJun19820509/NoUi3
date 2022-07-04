@@ -37,20 +37,11 @@ export class YJDynamicTexture extends Component {
         if (!this.enabled || EDITOR) return;
         this.setCommonMaterial();
         let label = this.getComponent(Label) || this.getComponent(RichText);
-        // if (label && label.font instanceof BitmapFont) {
-        //     let bf = this.dynamicAtlas.getBitmapFont(label.font.name);
-        //     if (bf) label.font = bf;
-        //     return;
-        // }
         if (label && label.cacheMode != CacheMode.BITMAP) {
             label.cacheMode = CacheMode.BITMAP;
             return;
         }
         this.init();
-    }
-
-    onDisable() {
-        // this.resetLabel();
     }
 
     public init() {
@@ -67,7 +58,6 @@ export class YJDynamicTexture extends Component {
             }
             return;
         }
-        // if (!this.dynamicAtlas.usePackedFrame(sprite, frame, frame?._uuid))
         this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame, () => {
             if (frame) {
                 sprite.spriteFrame = frame;
@@ -81,34 +71,6 @@ export class YJDynamicTexture extends Component {
             this.dynamicAtlas.removeFromDynamicAtlas(frame);
     }
 
-
-    // public resetSprite(): void {
-    //     if (!this.dynamicAtlas?.isWork) return;
-    //     let sprite = this.getComponent(Sprite);
-    //     if (this.needClear && sprite)
-    //         this.dynamicAtlas?.removeFromDynamicAtlas(sprite.spriteFrame);
-    // }
-
-    // public checkSpriteFrame(uuid: string): boolean {
-    //     if (!this.enabledInHierarchy) return false;
-    //     if (!this.dynamicAtlas?.isWork) return false;
-    //     let sprite = this.getComponent(Sprite);
-    //     return this.dynamicAtlas.usePackedFrame(sprite, sprite.spriteFrame, uuid);
-    // }
-
-
-    // public resetLabel(): void {
-    //     if (!this.dynamicAtlas?.isWork) return;
-    //     let label = this.getComponent(Label);
-    //     if (!label || !label.ttfSpriteFrame) return;
-    //     if (label.font instanceof BitmapFont)
-    //         label.font.spriteFrame._resetDynamicAtlasFrame();
-    //     else if (this.needClear)
-    //         this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-    //     else label.ttfSpriteFrame._resetDynamicAtlasFrame();
-    //     label.ttfSpriteFrame._uuid = '';
-    // }
-
     public packLabelFrame(text: string) {
         let label = this.getComponent(Label);
         if (!label) return;
@@ -116,8 +78,7 @@ export class YJDynamicTexture extends Component {
             label.string = text;
             return;
         }
-        // let uuid = this.createLabelFrameUuid(label, text);
-        // label.ttfSpriteFrame._uuid = uuid;
+        
         if (this.needClear)
             this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else if (label.ttfSpriteFrame) {
@@ -133,11 +94,11 @@ export class YJDynamicTexture extends Component {
         if (!this.dynamicAtlas?.isWork) return;
         let label = this.getComponent(Label);
         if (!label || label.string == '') return;
-        let frame = label.ttfSpriteFrame;
 
         if (label.font instanceof BitmapFont)
-            // frame = label.font.spriteFrame;
             return;
+
+        let frame = label.ttfSpriteFrame;
         if (!frame || frame.original)
             return;
 

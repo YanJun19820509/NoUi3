@@ -13,6 +13,7 @@ export class Atlas {
     constructor(width: number, height: number) {
         this.uuid = no.sysTime.now;
         const texture = new DynamicAtlasTexture();
+        texture._uuid = `${no.sysTime.now}`;
         texture.initWithSize(width, height);
         this._maxRect = new MaxRects(width, height);
         this._texture = texture;
@@ -20,7 +21,7 @@ export class Atlas {
         // this._innerSpriteFrames = [];
     }
 
-    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: DynamicAtlasTexture } {
+    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: DynamicAtlasTexture } | null {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
             return {

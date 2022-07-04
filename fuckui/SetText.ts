@@ -1,6 +1,7 @@
 
 import { _decorator, Label, RichText, UITransform, view, BitmapFont } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJBitmapFont } from '../engine/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
@@ -95,7 +96,7 @@ export class SetText extends FuckUi {
     /////////////EDITOR////////////
     update() {
         if (!EDITOR) return;
-        let label = this.node.getComponent(Label) || this.node.getComponent(RichText);
+        let label = (this.node.getComponent(Label) && !this.node.getComponent(YJBitmapFont)) || this.node.getComponent(RichText);
         if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
         else if (!label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
     }
