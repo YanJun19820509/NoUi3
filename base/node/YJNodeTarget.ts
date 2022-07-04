@@ -22,14 +22,8 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export class YJNodeTarget extends Component {
     @property
     type: string = '';
-
-    onLoad() {
-        if (!EDITOR) return;
-        if (this.type != '') return;
-        let name = [this.node.name];
-        if (this.node.parent) name.unshift(this.node.parent.name);
-        this.type = name.join('.');
-    }
+    @property
+    autoSet: boolean = false;
 
     onEnable() {
         no.nodeTargetManager.register(this.type, this);
@@ -38,6 +32,23 @@ export class YJNodeTarget extends Component {
     onDisable() {
         no.nodeTargetManager.remove(this.type);
     }
+
+    update() {
+        if (!EDITOR) return;
+        if (!this.autoSet) return;
+        this.autoSet = false;
+        if (this.type != '') return;
+        let name = [this.node.name];
+        if (this.node.parent) name.unshift(this.node.parent.name);
+        this.type = name.join('.');
+    }
+
+    public setType(type: string): void {
+        if (this.type != '') no.nodeTargetManager.remove(this.type);
+        this.type = type;
+        no.nodeTargetManager.register(this.type, this);
+    }
+
 
     /**
      * 目标节点的世界坐标

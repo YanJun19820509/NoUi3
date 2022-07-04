@@ -21,6 +21,6 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(YJNodeTarget)
 export class SetNodeTarget extends FuckUi {
     protected onDataChange(data: any) {
-        this.getComponent(YJNodeTarget).type = String(data);
+        this.getComponent(YJNodeTarget).setType(String(data));
     }
 }
