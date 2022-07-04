@@ -780,11 +780,11 @@ export namespace no {
      * @param sec 秒
      */
     export function sec2time(sec: number, formatter?: string, show0 = true) {
+        formatter = formatter || '{h}:{m}:{s}';
         // 负数不处理
         if (sec <= 0) {
-            return '00:00:00'
+            return this.formatString(formatter, { h: 0, m: 0, s: 0 });
         }
-        formatter = formatter || '{h}:{m}:{s}';
         let d = Math.floor(sec / 3600 / 24);
         let h = Math.floor(sec / 3600 % 24);
         if (d > 0) {
