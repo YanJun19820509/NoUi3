@@ -71,6 +71,7 @@ export class YJCharLabel extends Component {
                 label.isItalic = tempLabelComp.isItalic;
                 label.isBold = tempLabelComp.isBold;
                 label.isUnderline = tempLabelComp.isUnderline;
+                label.customMaterial = this.dynamicAtlas.commonMaterial;
                 labelNode.addComponent(SetText);
                 let dt = labelNode.addComponent(YJDynamicTexture);
                 dt.dynamicAtlas = this.dynamicAtlas;
