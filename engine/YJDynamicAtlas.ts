@@ -98,7 +98,7 @@ export class YJDynamicAtlas extends Component {
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
         if (!this.isWork) return;
 
-        if (frame.original && frame.texture._uuid == this.atlas._texture._uuid) {
+        if (frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
             onFail?.();
             return;
         }
@@ -130,16 +130,14 @@ export class YJDynamicAtlas extends Component {
                 let ff = frame.clone();
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                // comp.setTextureDirty();
-                // comp.renderData.updateRenderData(comp, ff);
-                if (frame.name.indexOf('default_') == -1)
+                if (!frame.original && frame.name.indexOf('default_') == -1)
                     no.assetBundleManager.release(frame);
             }
         }
     }
 
     public insertSpriteFrame(spriteFrame: SpriteFrame) {
-        if (!spriteFrame || spriteFrame.texture._uuid == this.atlas._texture._uuid) return null;
+        if (!spriteFrame || spriteFrame.texture._uuid == this.atlas?._texture._uuid) return null;
 
         // hack for pixel game,should pack to different sampler atlas
         const sampler = spriteFrame.texture.getSamplerInfo();

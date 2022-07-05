@@ -37,8 +37,9 @@ export class YJDynamicTexture extends Component {
         if (!this.enabled || EDITOR) return;
         this.setCommonMaterial();
         let label = this.getComponent(Label) || this.getComponent(RichText);
-        if (label && label.cacheMode != CacheMode.BITMAP) {
-            label.cacheMode = CacheMode.BITMAP;
+        if (label) {
+            if (label.cacheMode != CacheMode.BITMAP)
+                label.cacheMode = CacheMode.BITMAP;
             return;
         }
         this.init();
@@ -50,7 +51,9 @@ export class YJDynamicTexture extends Component {
     }
 
     public packSpriteFrame(frame?: SpriteFrame) {
+        if (!frame) return;
         let sprite = this.getComponent(Sprite);
+        if (!sprite) return;
         if (!this.enabled || !this.dynamicAtlas?.isWork) {
             if (frame) {
                 console.error('dynamicAtlas 为null，未做合图', frame);
@@ -78,7 +81,7 @@ export class YJDynamicTexture extends Component {
             label.string = text;
             return;
         }
-        
+
         if (this.needClear)
             this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else if (label.ttfSpriteFrame) {
