@@ -30,7 +30,7 @@ export class YJNodeTarget extends Component {
     }
 
     onDisable() {
-        no.nodeTargetManager.remove(this.type);
+        no.nodeTargetManager.remove(this.type, this);
     }
 
     update() {
@@ -44,7 +44,7 @@ export class YJNodeTarget extends Component {
     }
 
     public setType(type: string): void {
-        if (this.type != '') no.nodeTargetManager.remove(this.type);
+        if (this.type != '') no.nodeTargetManager.remove(this.type, this);
         this.type = type;
         no.nodeTargetManager.register(this.type, this);
     }
