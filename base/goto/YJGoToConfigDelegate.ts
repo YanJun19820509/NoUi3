@@ -15,11 +15,12 @@ const { ccclass, property } = _decorator;
  */
 
 
-export type YJGoToInfo = {//'类型
+export type YJGoToInfo = {
+    //'类型
     alias: string,
     //'目标功能名
     target: string,
-    //'伴随功能名
+    //'前置功能配置类型
     accompany: string,
     //'参数
     args: string,

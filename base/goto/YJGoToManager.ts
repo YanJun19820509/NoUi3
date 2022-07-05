@@ -33,20 +33,21 @@ export class YJGoToManager extends Component {
         YJGoToManager._ins = null;
     }
 
-    public static goTo(alias: string): void {
+    public static goTo(alias: string, args?: any, cb?: () => void): void {
         let info = YJGoToManager._ins?.delegate?.getInfoByAlias(alias);
         if (!info) return;
         if (info.accompany != '') {
-            YJWindowManager.createPanel(info.accompany, null, null, () => {
-                this.show(info);
+            this.goTo(info.accompany, null, () => {
+                this.show(info, args, cb);
             });
-        } else this.show(info);
+        } else this.show(info, args, cb);
     }
 
-    private static show(info: YJGoToInfo) {
+    private static show(info: YJGoToInfo, args?: any, cb?: () => void) {
         YJWindowManager.createPanel(info.target, null, null, panel => {
             let a = panel.getComponent(YJGoToTarget) || panel.getComponentInChildren(YJGoToTarget);
-            a?.trigger(info.args);
+            a?.trigger(args || info.args);
+            cb?.();
         });
     }
 }

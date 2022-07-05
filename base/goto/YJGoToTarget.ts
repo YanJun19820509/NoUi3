@@ -20,7 +20,7 @@ export class YJGoToTarget extends Component {
     @property(no.EventHandlerInfo)
     cbs: no.EventHandlerInfo[] = [];
 
-    public trigger(args: string): void {
+    public trigger(args: any): void {
         no.EventHandlerInfo.execute(this.cbs, args);
     }
 
