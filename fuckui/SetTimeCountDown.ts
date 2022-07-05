@@ -104,7 +104,8 @@ export class SetTimeCountDown extends FuckUi {
     /////////////EDITOR////////////
     update() {
         if (!EDITOR) return;
-        if (this.label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
+        let a = !this.node.getComponent('YJBitmapFont');
+        if (a && this.label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
         else if (!this.label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
     }
 }
