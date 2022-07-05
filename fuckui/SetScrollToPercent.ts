@@ -45,13 +45,12 @@ export class SetScrollToPercent extends FuckUi {
         let cs = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
 
-        let offset = v2();
-        if (this.scrollView.vertical) {
-            if (cs.height <= ns.height) return;
-            offset.y = cs.height * per - ns.height * this.at + this.offset.y;
-        } else {
-            if (cs.width <= ns.width) return;
-            offset.x = cs.width * per - ns.width * this.at + this.offset.x;
+        let offset = v2(cs.width * per - ns.width * this.at + this.offset.x, cs.height * per - ns.height * this.at + this.offset.y);
+        if (!this.scrollView.vertical) {
+            offset.y = 0;
+        }
+        if (!this.scrollView.horizontal) {
+            offset.x = 0;
         }
         this.scrollToOffset(offset);
     }

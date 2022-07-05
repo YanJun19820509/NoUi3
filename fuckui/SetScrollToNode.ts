@@ -1,5 +1,5 @@
 
-import { UITransform, _decorator } from 'cc';
+import { UITransform, v2, _decorator } from 'cc';
 import { SetScrollToPercent } from './SetScrollToPercent';
 const { ccclass, menu } = _decorator;
 
@@ -29,14 +29,17 @@ export class SetScrollToNode extends SetScrollToPercent {
         if (this.scrollView == null) return;
         let node = this.scrollView.content.getChildByName(name);
         if (node == null) return;
-        let size = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
-        let rect = node.getComponent(UITransform).getBoundingBox();
-        let percent = 0;
-        if (this.scrollView.vertical) {
-            percent = -rect.origin.y / size.height;
-        } else {
-            percent = rect.origin.x / size.width;
+        let ut = this.scrollView.content.getComponent(UITransform);
+        let anchor = ut.anchorPoint;
+        let size = ut.getBoundingBox().size;
+        let pos = node.position;
+        let offset = v2(pos.x + size.width * anchor.x + this.offset.x, pos.y - size.height * anchor.y - this.offset.y);
+        if (!this.scrollView.vertical) {
+            offset.y = 0;
         }
-        this.a_scrollToPercent(percent);
+        if (!this.scrollView.horizontal) {
+            offset.x = 0;
+        }
+        this.scrollToOffset(offset);
     }
 }
