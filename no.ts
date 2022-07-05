@@ -2261,10 +2261,12 @@ export namespace no {
          * 移除目标
          * @param type 注册类型
          */
-        public remove(type: string) {
-            if (type == null || type == '') return;
+        public remove(type: string, target: any) {
+            if (type == null || type == '' || target == null) return;
             if (this.targetMap.has(type)) {
-                this.targetMap.delete(type);
+                let a = this.targetMap.get(type);
+                if (a['uuid'] == target['uuid'])
+                    this.targetMap.delete(type);
             }
         }
     }
