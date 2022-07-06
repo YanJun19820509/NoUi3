@@ -1,10 +1,11 @@
 
 import { _decorator, Component, Node, instantiate, Prefab, UITransform } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -26,6 +27,7 @@ const { ccclass, property, menu } = _decorator;
  */
 @ccclass('SetCreateNodeByUrl')
 @menu('NoUi/ui/SetCreateNodeByUrl(根据prefab的url动态创建节点:object)')
+@executeInEditMode()
 export class SetCreateNodeByUrl extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
@@ -126,5 +128,15 @@ export class SetCreateNodeByUrl extends FuckUi {
         this.container?.children.forEach(child => {
             this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
         });
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.container) this.container = this.node;
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 }

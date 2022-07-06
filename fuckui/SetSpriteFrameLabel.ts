@@ -31,8 +31,8 @@ export class SetSpriteFrameLabel extends FuckUi {
     formatter: string = '{0}';
 
     onLoad() {
-        if (EDITOR) return;
         super.onLoad();
+        if (EDITOR) return;
         !this.dataSetted && this.setData(JSON.stringify(this.text));
     }
 

@@ -82,9 +82,9 @@ export class SetSpriteFrame extends FuckUi {
 
     ///////EDITOR
     onLoad() {
+        super.onLoad();
         if (EDITOR)
             this.sprite = this.getComponent(Sprite);
-        else super.onLoad();
     }
     update() {
         if (!EDITOR) return;

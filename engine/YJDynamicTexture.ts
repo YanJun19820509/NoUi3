@@ -34,15 +34,16 @@ export class YJDynamicTexture extends Component {
     needClear: boolean = false;
 
     onLoad() {
-        if (!this.enabled || EDITOR) return;
-        this.setCommonMaterial();
-        let label = this.getComponent(Label) || this.getComponent(RichText);
-        if (label) {
-            if (label.cacheMode != CacheMode.BITMAP)
+        if (EDITOR) {
+            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+
+            let label = this.getComponent(Label) || this.getComponent(RichText);
+            if (label && label.cacheMode != CacheMode.BITMAP) {
                 label.cacheMode = CacheMode.BITMAP;
-            return;
-        }
-        this.init();
+            }
+            this.setCommonMaterial();
+        } else
+            this.init();
     }
 
     public init() {
@@ -124,16 +125,5 @@ export class YJDynamicTexture extends Component {
         if (!renderComp) return;
         if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
             renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;
-    }
-
-
-    update() {
-        if (!EDITOR) return;
-
-        let label = this.getComponent(Label) || this.getComponent(RichText);
-        if (label && label.cacheMode != CacheMode.BITMAP) {
-            label.cacheMode = CacheMode.BITMAP;
-        }
-        this.setCommonMaterial();
     }
 }

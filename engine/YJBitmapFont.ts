@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, BitmapFont, Label, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
+import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
 
@@ -27,10 +28,6 @@ export class YJBitmapFont extends Component {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
-    onLoad() {
-        if (!EDITOR) this.createBitmapFont();
-    }
-
     private createBitmapFont() {
         if (!this.font) return;
         let bf = new BitmapFont();
@@ -48,6 +45,14 @@ export class YJBitmapFont extends Component {
         this.getComponent(Label).font = bf;
     }
 
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        if (!EDITOR) {
+            this.createBitmapFont();
+            return;
+        }
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+    }
     update() {
         if (!EDITOR) return;
         if (!this.preview) this.getComponent(Label).font = null;

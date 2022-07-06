@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, Slider } from 'cc';
+import { _decorator, Component, Node, EventHandler, Slider, EDITOR } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -27,6 +27,7 @@ export class SetSliderProgress extends FuckUi {
 
     onLoad() {
         super.onLoad();
+        if (EDITOR) return;
         let e = new EventHandler();
         e.target = this.node;
         e.component = 'SetSlider';

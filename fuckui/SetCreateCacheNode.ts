@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, instantiate } from 'cc';
+import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJCacheObject } from '../base/YJCacheObject';
 import { YJDataWork } from '../base/YJDataWork';
@@ -7,7 +8,7 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu, property } = _decorator;
+const { ccclass, menu, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -23,6 +24,7 @@ const { ccclass, menu, property } = _decorator;
 
 @ccclass('SetCreateCacheNode')
 @menu('NoUi/ui/SetCreateCacheNode(动态创建可回收节点:object|array)')
+@executeInEditMode()
 export class SetCreateCacheNode extends FuckUi {
     @property({ type: YJLoadPrefab, displayName: '元素预制体' })
     loadPrefab: YJLoadPrefab = null;
@@ -67,5 +69,16 @@ export class SetCreateCacheNode extends FuckUi {
                 a.init();
             }
         }
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
+        if (!this.container) this.container = this.node;
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 }

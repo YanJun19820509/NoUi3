@@ -62,23 +62,21 @@ export class YJPanel extends Component {
         no.EventHandlerInfo.execute(this.onOpen);
     }
 
-    onDisable() {
-        this.lastCloseTime = no.sysTime.now;
-        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
-    }
-
     /**
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
-    public async initPanel() {
+    public initPanel(): Promise<void> {
         this.onInitPanel();
         if (this.getComponent(YJLoadAssets)) {
-            await this.getComponent(YJLoadAssets).load();
+            return this.getComponent(YJLoadAssets).load();
         }
+        return Promise.resolve();
     }
 
     public closePanel() {
         no.EventHandlerInfo.execute(this.onClose);
+        this.lastCloseTime = no.sysTime.now;
+        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
         if (this.needCache)
             this.node.active = false;

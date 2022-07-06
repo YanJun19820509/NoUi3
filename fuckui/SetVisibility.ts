@@ -1,5 +1,6 @@
 
 import { _decorator } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
@@ -31,6 +32,7 @@ export class SetVisibility extends FuckUi {
 
     onLoad() {
         super.onLoad();
+        if (EDITOR) return;
         !this.dataSetted && this.setData(this.default ? 'true' : 'false');
     }
 

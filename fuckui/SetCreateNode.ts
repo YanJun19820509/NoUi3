@@ -1,11 +1,13 @@
 
 import { _decorator, Node, instantiate } from 'cc';
+import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -21,6 +23,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetCreateNode')
 @menu('NoUi/ui/SetCreateNode(动态创建节点:object|array)')
+@executeInEditMode()
 export class SetCreateNode extends FuckUi {
 
     @property({ type: YJLoadPrefab, displayName: '元素预制体' })
@@ -113,5 +116,16 @@ export class SetCreateNode extends FuckUi {
         }
         if (!item.parent) item.parent = this.container;
         else a?.init();
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
+        if (!this.container) this.container = this.node;
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 }

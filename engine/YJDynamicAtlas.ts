@@ -164,16 +164,16 @@ export class YJDynamicAtlas extends Component {
         return a;
     }
 
-    public static setDynamicAtlasToRenderComponent(node: Node, dynamicAtlas: YJDynamicAtlas): void {
-        let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
-        comps.forEach(comp => {
-            let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
-            if (!a.enabled) return;
-            a.dynamicAtlas = dynamicAtlas;
-            a.setCommonMaterial();
-            if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
-        });
-    }
+    // public static setDynamicAtlasToRenderComponent(node: Node, dynamicAtlas: YJDynamicAtlas): void {
+    //     let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
+    //     comps.forEach(comp => {
+    //         let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
+    //         if (!a.enabled) return;
+    //         a.dynamicAtlas = dynamicAtlas;
+    //         a.setCommonMaterial();
+    //         if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
+    //     });
+    // }
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
         let bs = [].concat(
@@ -183,7 +183,6 @@ export class YJDynamicAtlas extends Component {
             node.getComponentsInChildren('SetCreateNodeByUrl'),
             node.getComponentsInChildren('SetList'),
             node.getComponentsInChildren('SetPage'),
-            node.getComponentsInChildren('SetSpriteFrameLabel'),
             node.getComponentsInChildren('YJCharLabel'),
             node.getComponentsInChildren('YJDynamicTexture'),
             node.getComponentsInChildren('YJBitmapFont')
@@ -195,11 +194,11 @@ export class YJDynamicAtlas extends Component {
 
 
     //////////////EDITOR/////////////
-    update() {
-        if (!EDITOR) return;
-        if (!this.autoSetDynamicTextures) return;
-        this.autoSetDynamicTextures = false;
-        YJDynamicAtlas.setDynamicAtlasToRenderComponent(this.node, this);
-        YJDynamicAtlas.setDynamicAtlas(this.node, this);
-    }
+    // update() {
+    //     if (!EDITOR) return;
+    //     if (!this.autoSetDynamicTextures) return;
+    //     this.autoSetDynamicTextures = false;
+    //     // YJDynamicAtlas.setDynamicAtlasToRenderComponent(this.node, this);
+    //     // YJDynamicAtlas.setDynamicAtlas(this.node, this);
+    // }
 }

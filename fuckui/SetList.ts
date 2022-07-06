@@ -1,12 +1,13 @@
 
 import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform } from 'cc';
+import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -22,6 +23,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('SetList')
 @menu('NoUi/ui/SetList(设置列表:array)')
+@executeInEditMode()
 export class SetList extends FuckUi {
 
     @property({ type: YJLoadPrefab, displayName: '元素容器', tooltip: '管理列表子项布局的容器，需要挂载SetCreateNode组件' })
@@ -64,6 +66,11 @@ export class SetList extends FuckUi {
 
     async onLoad() {
         super.onLoad();
+        if (EDITOR) {
+            if (!this.itemPanel) this.itemPanel = this.getComponent(YJLoadPrefab);
+            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            return;
+        }
         if (!this.template) {
             this.template = await this.itemPanel.loadPrefab();
         }
@@ -190,6 +197,7 @@ export class SetList extends FuckUi {
     }
 
     update() {
+        if (EDITOR) return;
         if (this.listData == null || this.listItems == null || this.listItems.length == 0) return;
         let curPos = 0;
         let startIndex = 0;

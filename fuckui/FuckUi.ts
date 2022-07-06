@@ -1,9 +1,9 @@
 
 import { _decorator, Component, Node, UITransform, view } from 'cc';
-import { DEBUG } from 'cc/env';
+import { DEBUG, EDITOR } from 'cc/env';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
-const { ccclass, property } = _decorator;
+const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -20,6 +20,7 @@ const { ccclass, property } = _decorator;
 * 设置ui属性的基类
 */
 @ccclass('FuckUi')
+@executeInEditMode()
 export class FuckUi extends Component {
     @property({ type: YJFuckUiRegister, tooltip: 'deprecated,建议在 YJFuckUiManager 中注册' })
     register: YJFuckUiRegister = null;
@@ -39,8 +40,11 @@ export class FuckUi extends Component {
     private _oldData: string;
 
     onLoad() {
-        if (this.bind_keys != '')
-            this.register?.register(this);
+        if (EDITOR) {
+            if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
+        } else
+            if (this.bind_keys != '')
+                this.register?.register(this);
     }
 
     public setData(d: string) {

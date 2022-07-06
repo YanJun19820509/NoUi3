@@ -1,11 +1,13 @@
 
 import { _decorator, instantiate, PageView } from 'cc';
+import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -20,6 +22,7 @@ const { ccclass, property, menu } = _decorator;
  */
 
 @ccclass('SetPage')
+@executeInEditMode()
 export class SetPage extends FuckUi {
 
     @property({ type: YJLoadPrefab, displayName: '页面', tooltip: '需要挂载SetCreateNode组件' })
@@ -60,5 +63,16 @@ export class SetPage extends FuckUi {
 
     private _clear() {
         this.view?.removeAllPages();
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.page) this.page = this.getComponent(YJLoadPrefab);
+        if (!this.view) this.view = this.getComponent(PageView);
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 }

@@ -67,7 +67,7 @@ export class YJWindowManager extends Component {
             let la = node.getComponent('YJLoadAssets');
             if (la && la['dynamicAtlas'] == null) {
                 la['dynamicAtlas'] = dynamicAtlas;
-                YJDynamicAtlas.setDynamicAtlasToRenderComponent(node, dynamicAtlas);
+                // YJDynamicAtlas.setDynamicAtlasToRenderComponent(node, dynamicAtlas);
                 YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
             }
         }

@@ -29,17 +29,23 @@ export class SetProgress extends FuckUi {
     private speed: number;
     private dir: number;
     private targetValue: number = -1;
+    private isFirst: boolean = true;
 
     onLoad() {
         super.onLoad();
         this.speed = 1000 / this.motionSpeed;
     }
 
+    onDisable() {
+        this.isFirst = true;
+    }
+
     protected onDataChange(data: any) {
         if (data > 0 && data < this.initValue)
             data = this.initValue;
-        if (this.motionSpeed == 0) {
+        if (this.motionSpeed == 0 || this.isFirst) {
             this.progressBar.progress = data;
+            this.isFirst = false;
         } else {
             this.targetValue = data;
             this.dir = data > this.progressBar.progress ? 1 : -1;

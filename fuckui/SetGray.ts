@@ -33,8 +33,8 @@ export class SetGray extends FuckUi {
     autoSetChildren: boolean = false;
 
     onLoad() {
-        if (EDITOR) return;
         super.onLoad();
+        if (EDITOR) return;
         this.autoGray && !this.dataSetted && this.setGray(true);
     }
 
