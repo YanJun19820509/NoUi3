@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow, Font, size, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow, Font,  Sprite, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
@@ -116,9 +116,9 @@ export class YJCharLabel extends Component {
     }
 
     private createSpriteFrame(v: string) {
-        let texture = new DynamicAtlasTexture();
-        texture.initWithSize(100, 100);
         let img = this.createCharImage(v);
+        let texture = new DynamicAtlasTexture();
+        texture.initWithSize(img.width, img.height);
         texture.drawImageAt(img, 0, 0);
         let newSf = new SpriteFrame();
         newSf.texture = texture;
@@ -129,12 +129,13 @@ export class YJCharLabel extends Component {
 
     private createCharImage(c: string): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
-        canvas.width = this.fontSize;
+        canvas.width = this.fontSize * c.length;
         canvas.height = this.fontSize + 10;
 
         let ctx = canvas.getContext("2d");
         ctx.font = `${this.fontSize}px ${this.font['_fontFamily']}`;
-        ctx.fillText(c, 0, 0);
+        ctx.fillStyle = 'white';
+        ctx.fillText(c, 0, canvas.height-10);
         return canvas;
     }
 }
