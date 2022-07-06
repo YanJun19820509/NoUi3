@@ -1,9 +1,11 @@
 
-import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow } from 'cc';
+import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow, Font, size, Sprite, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
+import { DynamicAtlasTexture } from '../../engine/atlas';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
 import { SetText } from '../../fuckui/SetText';
+import { no } from '../../no';
 const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
@@ -21,6 +23,10 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('YJCharLabel')
 @executeInEditMode()
 export class YJCharLabel extends Component {
+    @property(Font)
+    font: Font = null;
+    @property
+    fontSize: number = 22;
     @property
     text: string = '';
     @property(Node)
@@ -31,6 +37,14 @@ export class YJCharLabel extends Component {
     dynamicAtlas: YJDynamicAtlas = null;
 
     private _s: string;
+
+    onLoad() {
+        if (!EDITOR) {
+            this.createSpriteFrame(this.text);
+            return;
+        }
+        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+    }
 
     update() {
         if (!EDITOR) return;
@@ -71,10 +85,12 @@ export class YJCharLabel extends Component {
                 label.isItalic = tempLabelComp.isItalic;
                 label.isBold = tempLabelComp.isBold;
                 label.isUnderline = tempLabelComp.isUnderline;
-                label.customMaterial = this.dynamicAtlas.commonMaterial;
+                label.customMaterial = this.dynamicAtlas?.commonMaterial;
                 labelNode.addComponent(SetText);
-                let dt = labelNode.addComponent(YJDynamicTexture);
-                dt.dynamicAtlas = this.dynamicAtlas;
+                if (this.dynamicAtlas) {
+                    let dt = labelNode.addComponent(YJDynamicTexture);
+                    dt.dynamicAtlas = this.dynamicAtlas;
+                }
                 if (tempLabelOutlineComp) {
                     let ol = labelNode.addComponent(LabelOutline);
                     ol.color = tempLabelOutlineComp.color;
@@ -99,4 +115,26 @@ export class YJCharLabel extends Component {
         }
     }
 
+    private createSpriteFrame(v: string) {
+        let texture = new DynamicAtlasTexture();
+        texture.initWithSize(100, 100);
+        let img = this.createCharImage(v);
+        texture.drawImageAt(img, 0, 0);
+        let newSf = new SpriteFrame();
+        newSf.texture = texture;
+        newSf._uuid = '1';
+        this.getComponent(Sprite).spriteFrame = newSf;
+    }
+
+
+    private createCharImage(c: string): HTMLCanvasElement {
+        let canvas = document.createElement('canvas');
+        canvas.width = this.fontSize;
+        canvas.height = this.fontSize + 10;
+
+        let ctx = canvas.getContext("2d");
+        ctx.font = `${this.fontSize}px ${this.font['_fontFamily']}`;
+        ctx.fillText(c, 0, 0);
+        return canvas;
+    }
 }
