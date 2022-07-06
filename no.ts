@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -1359,6 +1359,27 @@ export namespace no {
             b = Math.pow(10, 12 - x),
             c = Math.pow(10, x);
         return Math.floor(Math.ceil(v * a) / b) / c;
+    }
+
+    /**
+     * 从父节点获取某个组件实例
+     * @param self 
+     * @param comp 
+     * @returns 
+     */
+    export function getComponentInParents<T extends Component>(self: Node, comp: string | typeof Component): T {
+        if (typeof comp == 'string') {
+            comp = js.getClassByName(comp) as (typeof Component);
+        }
+        let c = self.getComponent(comp);
+        if (c) return c as T;
+
+        if (self.parent) {
+            c = self.parent.getComponent(comp);
+            if (!c) return getComponentInParents(self.parent, comp);
+            else return c as T;
+        }
+        return null;
     }
 
     /**基础数据类 */
