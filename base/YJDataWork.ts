@@ -1,10 +1,10 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { DEBUG } from 'cc/env';
+import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
-const { ccclass, property, menu, requireComponent } = _decorator;
+const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -21,6 +21,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 @ccclass('YJDataWork')
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @requireComponent(YJFuckUiRegister)
+@executeInEditMode()
 export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
@@ -30,6 +31,10 @@ export class YJDataWork extends Component {
     protected _data: no.Data = new no.Data();
 
     onLoad() {
+        if (EDITOR) {
+            this.register = this.getComponent(YJFuckUiRegister);
+            return;
+        }
         this.init();
     }
 
