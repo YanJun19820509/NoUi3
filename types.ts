@@ -1,4 +1,5 @@
 import { FuckUi } from './fuckui/FuckUi';
+import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 
 /**
  * Predefined variables
@@ -23,3 +24,4 @@ export enum AlignType {
 };
 
 export type _FuckUi = FuckUi;
+export type _SetMoveAlongWithPath = SetMoveAlongWithPath;

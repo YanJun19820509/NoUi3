@@ -52,7 +52,6 @@ export class YJDynamicTexture extends Component {
     }
 
     public packSpriteFrame(frame?: SpriteFrame) {
-        if (!frame) return;
         let sprite = this.getComponent(Sprite);
         if (!sprite) return;
         if (!this.enabled || !this.dynamicAtlas?.isWork) {

@@ -71,6 +71,8 @@ export class Atlas {
         const frame = {
             x: x,
             y: y,
+            w: rect.width,
+            h: rect.height,
             texture: this._texture
         }
 
@@ -78,7 +80,7 @@ export class Atlas {
         return frame;
     }
 
-    public drawAtlasTexture(texture: Texture2D) {
+    public drawTexture(texture: Texture2D) {
         let info = this._dynamicTextureRect[texture._uuid];
         if (info) {
             return null;
@@ -90,6 +92,8 @@ export class Atlas {
         return {
             x: p.x,
             y: p.y,
+            w: texture.width,
+            h: texture.height,
             texture: this._texture
         };
     }

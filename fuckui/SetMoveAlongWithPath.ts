@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, v3, Vec2, Vec3, math } from 'cc';
 import { FuckUi } from './FuckUi';
+import { YJMoveAlongWithPathDelegate } from './YJMoveAlongWithPathDelegate';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -17,44 +18,6 @@ const { ccclass, property, menu } = _decorator;
 /**
 * 沿路线移动的代理
 */
-export class MoveAlongWithPathDelegate {
-    /**
-     * 移动开始时
-     * @param m
-     */
-    public onStart(m: SetMoveAlongWithPath) { }
-    /**
-     * 改变方向时
-     * @param from
-     * @param to
-     */
-    public onChangeDirection(from: Vec3, to: Vec3): void { }
-    /**
-     * 移动中
-     * @param m
-     */
-    public onMoving(m: SetMoveAlongWithPath): void { }
-    /**
-     * 移动结束
-     */
-    public onEnd() { }
-    /**
-     * 移动暂停
-     */
-    public onPause() { }
-    /**
-     * 移动继续
-     */
-    public onResume() { }
-    /**
-     * 移动过程中的特殊时刻
-     * @param d
-     * @returns
-     */
-    public onSpecialStep(d: any): boolean {
-        return false;
-    }
-}
 @ccclass('SetMoveAlongWithPath')
 @menu('NoUi/ui/SetMoveAlongWithPath(设置沿路线移动:{speed:number, paths:[Vec2]})')
 export class SetMoveAlongWithPath extends FuckUi {
@@ -62,8 +25,8 @@ export class SetMoveAlongWithPath extends FuckUi {
     @property({ displayName: '是否循环' })
     circular: boolean = false;
 
-    @property({ type: MoveAlongWithPathDelegate })
-    delegate: MoveAlongWithPathDelegate = null;
+    @property(YJMoveAlongWithPathDelegate)
+    delegate: YJMoveAlongWithPathDelegate = null;
 
     private paths: Vec2[];
     public speed: number;

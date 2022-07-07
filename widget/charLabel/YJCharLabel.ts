@@ -1,12 +1,10 @@
 
-import { _decorator, Component, Node, UITransform, Label, Layers, LabelOutline, LabelShadow, Font,  Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow } from 'cc';
 import { EDITOR } from 'cc/env';
-import { DynamicAtlasTexture } from '../../engine/atlas';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
-import { SetText } from '../../fuckui/SetText';
 import { no } from '../../no';
-const { ccclass, property, executeInEditMode } = _decorator;
+const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -21,28 +19,45 @@ const { ccclass, property, executeInEditMode } = _decorator;
  */
 
 @ccclass('YJCharLabel')
+@requireComponent(Layout)
 @executeInEditMode()
 export class YJCharLabel extends Component {
+    @property(Color)
+    color: Color = Color.WHITE.clone();
+    @property
+    text: string = '';
+    @property
+    fontSize: number = 22;
     @property(Font)
     font: Font = null;
     @property
-    fontSize: number = 22;
+    lineHeight: number = 22;
     @property
-    text: string = '';
-    @property(Node)
-    tempLabel: Node = null;
-    @property(Node)
-    container: Node = null;
+    letterSpacing: number = 0;
+    @property
+    italic: boolean = false;
+    @property
+    bold: boolean = false;
+    @property
+    outlineColor: Color = Color.BLACK.clone();
+    @property
+    outlineWidth: number = 2;
+    @property
+    shadowColor: Color = Color.BLACK.clone();
+    @property
+    shadowOffset: Vec2 = v2();
+    @property
+    shadowBlur: number = 0;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
-    private _s: string;
-
     onLoad() {
         if (!EDITOR) {
-            this.createSpriteFrame(this.text);
             return;
         }
+        let layout = this.getComponent(Layout);
+        layout.type = Layout.Type.HORIZONTAL;
+        layout.resizeMode = Layout.ResizeMode.CONTAINER;
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 
@@ -51,61 +66,42 @@ export class YJCharLabel extends Component {
         this.setLabel(this.text);
     }
 
-    public set string(s: string) {
-        this.setLabel(s);
+    public set string(v: string) {
+        this.setLabel(v);
     }
-
-    public get string(): string {
-        return this._s;
-    }
-
 
     public setLabel(s: string): void {
-        if (!this.tempLabel || !this.container) return;
-        this._s = s;
-        let labelNodes = this.container.children;
+        let labelNodes = this.node.children;
         let a = s.split('');
         let n = Math.max(a.length, labelNodes.length);
-        let tempLabelComp = this.tempLabel.getComponent(Label);
-        let tempLabelOutlineComp = this.tempLabel.getComponent(LabelOutline);
-        let tempLabelShadowComp = this.tempLabel.getComponent(LabelShadow);
         for (let i = 0; i < n; i++) {
             let labelNode = labelNodes[i];
             if (!labelNode) {
                 labelNode = new Node('char');
                 labelNode.layer = Layers.Enum.UI_2D;
-                labelNode.parent = this.container;
+                labelNode.parent = this.node;
                 labelNode.addComponent(UITransform);
                 let label = labelNode.addComponent(Label);
-                label.string = '';
-                label.color = tempLabelComp.color;
-                label.fontSize = tempLabelComp.fontSize;
-                label.lineHeight = tempLabelComp.lineHeight;
-                label.font = tempLabelComp.font;
-                label.isItalic = tempLabelComp.isItalic;
-                label.isBold = tempLabelComp.isBold;
-                label.isUnderline = tempLabelComp.isUnderline;
                 label.customMaterial = this.dynamicAtlas?.commonMaterial;
-                labelNode.addComponent(SetText);
-                if (this.dynamicAtlas) {
-                    let dt = labelNode.addComponent(YJDynamicTexture);
-                    dt.dynamicAtlas = this.dynamicAtlas;
-                }
-                if (tempLabelOutlineComp) {
-                    let ol = labelNode.addComponent(LabelOutline);
-                    ol.color = tempLabelOutlineComp.color;
-                    ol.width = tempLabelOutlineComp.width;
-                }
-                if (tempLabelShadowComp) {
-                    let ls = labelNode.addComponent(LabelShadow);
-                    ls.offset = tempLabelShadowComp.offset;
-                    ls.blur = tempLabelShadowComp.blur;
-                    ls.color = tempLabelShadowComp.color;
-                }
+                label.color = this.color;
+                label.font = this.font;
+                label.fontSize = this.fontSize;
+                label.lineHeight = this.lineHeight;
+                label.isItalic = this.italic;
+                label.isBold = this.bold;
+                label.cacheMode = Label.CacheMode.BITMAP;
+                let outline = labelNode.addComponent(LabelOutline);
+                outline.color = this.outlineColor;
+                outline.width = this.outlineWidth;
+                let shadow = labelNode.addComponent(LabelShadow);
+                shadow.color = this.shadowColor;
+                shadow.offset = this.shadowOffset;
+                shadow.blur = this.shadowBlur;
+                labelNode.addComponent(YJDynamicTexture).dynamicAtlas = this.dynamicAtlas;
             }
             if (a[i]) {
                 labelNode.active = true;
-                labelNode.getComponent(SetText).setData(JSON.stringify(a[i]));
+                labelNode.getComponent(YJDynamicTexture).packLabelFrame(a[i]);
             } else {
                 if (EDITOR)
                     labelNode.destroy();
@@ -115,27 +111,51 @@ export class YJCharLabel extends Component {
         }
     }
 
-    private createSpriteFrame(v: string) {
-        let img = this.createCharImage(v);
-        let texture = new DynamicAtlasTexture();
-        texture.initWithSize(img.width, img.height);
-        texture.drawImageAt(img, 0, 0);
-        let newSf = new SpriteFrame();
-        newSf.texture = texture;
-        newSf._uuid = '1';
-        this.getComponent(Sprite).spriteFrame = newSf;
-    }
+    // private createSpriteFrame(v: string, label: Label) {
+    //     if (v == '') {
+    //         label['_ttfSpriteFrame'] = null;
+    //         return;
+    //     }
+    //     if (!EDITOR) {
+    //         let uuid = v + "_" + this.color + "_" + this.fontSize + "_" + this.font['_fontFamily'] + "_" + this.outlineColor + '_' + this.outlineWidth;
+    //         let packedFrame = this.dynamicAtlas.getPackedFrame(uuid);
+    //         if (!packedFrame) {
+    //             label.string = v;
+    //             label.ttfSpriteFrame.texture._uuid = uuid;
+    //             packedFrame = this.dynamicAtlas.atlas?.drawTexture(label.ttfSpriteFrame.texture as Texture2D);
+    //         }
+    //         if (packedFrame) {
+    //             label.ttfSpriteFrame._setDynamicAtlasFrame(packedFrame);
+    //             if (label.spriteFrame) {
+    //                 const renderData = label.renderData;
+    //                 renderData.updateRenderData(label, label.spriteFrame);
+    //             }
+    //         }
+    //     } else {
+    //         label.string = v;
+    //         // let img = this.createCharImage(v);
+    //         // let texture = new DynamicAtlasTexture();
+    //         // texture.initWithSize(img.width, img.height);
+    //         // texture.drawImageAt(img, 0, 0);
+    //         // newSf.texture = texture;
+    //     }
+    // }
 
 
-    private createCharImage(c: string): HTMLCanvasElement {
-        let canvas = document.createElement('canvas');
-        canvas.width = this.fontSize * c.length;
-        canvas.height = this.fontSize + 10;
-
-        let ctx = canvas.getContext("2d");
-        ctx.font = `${this.fontSize}px ${this.font['_fontFamily']}`;
-        ctx.fillStyle = 'white';
-        ctx.fillText(c, 0, canvas.height-10);
-        return canvas;
-    }
+    // private createCharImage(c: string): HTMLCanvasElement {
+    //     this.label.string = c;
+    //     let canvas = document.createElement('canvas');
+    //     // canvas.width = this.label.;
+    //     canvas.height = this.lineHeight;
+    //     let ff = this.font?.['_fontFamily'] || '';
+    //     let ctx = canvas.getContext("2d");
+    //     ctx.font = `${this.italic ? 'italic' : ''} ${this.bold ? 'bold' : ''} ${this.fontSize}px ${ff}`;
+    //     ctx.fillStyle = this.color.toCSS('#rrggbb');
+    //     ctx.fillText(c, 0, canvas.height - this.outlineWidth * 2 - 2);
+    //     if (this.outlineWidth > 0) {
+    //         ctx.strokeStyle = this.outlineColor.toCSS('#rrggbb');
+    //         ctx.strokeText(c, 0, canvas.height - this.outlineWidth * 2 - 2);
+    //     }
+    //     return canvas;
+    // }
 }

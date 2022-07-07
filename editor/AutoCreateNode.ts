@@ -137,7 +137,8 @@ export class AutoCreateNode extends Component {
                 this.createProgress(n, parent);
                 break;
             case 'char':
-                this.createChar(n, parent);
+                this.createLabelNode(n, parent);
+                // this.createChar(n, parent);
                 break;
             case 'toggleGroup':
                 this.createToggleGroup(n, parent);
@@ -197,38 +198,59 @@ export class AutoCreateNode extends Component {
 
     private createLabelNode(c: any, parent: Node): Node {
         let n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
-        let l = n.getComponent(Label) || n.addComponent(Label);
-        l.string = c.text;
-        l.fontSize = Number(c.size);
-        l.lineHeight = l.fontSize;
-        l.color = no.str2Color(c.textColor);
-        l.isBold = c.bold;
-        l.isItalic = c.italic;
-        l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
-        if (c.direction == 'vertical') {
-            l.overflow = Overflow.RESIZE_HEIGHT;
-        }
-        if (c.outline != '') {
-            let info = c.outline.split('|');
-            let ol = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
-            ol.color = no.str2Color(info[0]);
-            ol.width = Number(info[1]);
-        }
-        if (c.shadow != '') {
-            let info = c.shadow.split('|');
-            let ls = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
-            ls.color = no.str2Color(info[0]);
-            ls.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
-            ls.blur = Number(info[3]);
-        }
         if (!n.getComponent('fixedLab')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {
                 let code = t.charCodeAt(i);
                 if (code >= 0x4e00 && code <= 0x29fa5) {
-                    n.addComponent('fixedLab');
+                    n.addComponent('fixedLab')['textId'] = c.text;
                     break;
                 }
+            }
+        }
+        if (n.getComponent('fixedLab')) {
+            let l = n.getComponent(Label) || n.addComponent(Label);
+            l.string = c.text;
+            l.fontSize = Number(c.size);
+            l.lineHeight = l.fontSize;
+            l.color = no.str2Color(c.textColor);
+            l.isBold = c.bold;
+            l.isItalic = c.italic;
+            l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
+            if (c.direction == 'vertical') {
+                l.overflow = Overflow.RESIZE_HEIGHT;
+            }
+            if (c.outline != '') {
+                let info = c.outline.split('|');
+                let ol = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
+                ol.color = no.str2Color(info[0]);
+                ol.width = Number(info[1]);
+            }
+            if (c.shadow != '') {
+                let info = c.shadow.split('|');
+                let ls = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
+                ls.color = no.str2Color(info[0]);
+                ls.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+                ls.blur = Number(info[3]);
+            }
+        } else {
+            let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
+            char.string = c.text;
+            char.fontSize = Number(c.size);
+            char.lineHeight = char.fontSize;
+            char.color = no.str2Color(c.textColor);
+            char.bold = c.bold;
+            char.italic = c.italic;
+            if (c.outline != '') {
+                let info = c.outline.split('|');
+                char.outlineColor = no.str2Color(info[0]);
+                char.outlineWidth = Number(info[1]);
+            }
+            if (c.shadow != '') {
+                let info = c.shadow.split('|');
+                char.shadowColor = no.str2Color(info[0]);
+                char.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+                char.shadowBlur = Number(info[3]);
             }
         }
         return n;
@@ -272,8 +294,6 @@ export class AutoCreateNode extends Component {
             layout.addComponent(UITransform);
             this.setLayout(layout, Layout.Type.HORIZONTAL, Layout.ResizeMode.CONTAINER);
             let cl = n.addComponent(YJCharLabel);
-            cl.tempLabel = n.children[0];
-            cl.container = layout;
             cl.dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
             cl.text = n.children[0].getComponent(Label).string;
             this.setLayout(n, Layout.Type.HORIZONTAL, Layout.ResizeMode.CONTAINER);

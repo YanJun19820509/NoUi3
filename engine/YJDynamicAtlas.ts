@@ -31,15 +31,22 @@ export class YJDynamicAtlas extends Component {
     height: number = 512;
     @property(Material)
     commonMaterial: Material = null;
-    @property({ visible() { return EDITOR; } })
-    autoSetDynamicTextures: boolean = false;
+    // @property({ visible() { return EDITOR; } })
+    // autoSetDynamicTextures: boolean = false;
 
-    private atlas: Atlas;
+    public atlas: Atlas;
 
     onDestroy() {
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
         this.atlas = null;
+    }
+
+    private initAtlas(){
+        if (!this.atlas) {
+            this.atlas = new Atlas(this.width, this.height);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
+        }
     }
 
     // public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
@@ -61,17 +68,19 @@ export class YJDynamicAtlas extends Component {
     //     return true;
     // }
 
+    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: Texture2D } | null {
+        if (!this.isWork) return null;
+        this.initAtlas();
+        return this.atlas.getPackedFrame(uuid);
+    }
 
     public packAtlasToDynamicAtlas(atlas: SpriteAtlas) {
         if (!this.isWork) return;
-        if (!this.atlas) {
-            this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
-        }
+        this.initAtlas();
         let frames = atlas.getSpriteFrames();
         if (frames[0].original) return;
         let texture = frames[0].texture as Texture2D;
-        const p = this.atlas.drawAtlasTexture(texture);
+        const p = this.atlas.drawTexture(texture);
         if (p) {
             frames.forEach(frame => {
                 let offset = frame.rect.origin;
@@ -145,10 +154,7 @@ export class YJDynamicAtlas extends Component {
             return null;
         }
 
-        if (!this.atlas) {
-            this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
-        }
+        this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, () => {
             console.log(`${this.node.name}动态图集无空间！`);
