@@ -132,7 +132,7 @@ export class SetMoveAlongWithPath extends FuckUi {
     update(dt: number) {
         this.checkSpeedChangeEnd(dt);
         if (this.paused || this.moveDuration <= 0) return;
-        this.node.position = this.node.position.add(this.moveVector.multiplyScalar(dt));
+        this.node.position = this.node.position.clone().add(this.moveVector.clone().multiplyScalar(dt));
         this.delegate?.onMoving(this);
         this.moveDuration -= dt;
         if (this.moveDuration <= 0) {

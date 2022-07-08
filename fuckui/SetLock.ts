@@ -1,5 +1,6 @@
 
 import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetGray } from './SetGray';
@@ -42,6 +43,7 @@ export class SetLock extends FuckUi {
     onLocked: no.EventHandlerInfo[] = [];
 
     start() {
+        if (EDITOR) return;
         if (this.dataSetted) return;
         if (this.locked) this.onDataChange(this.locked);
     }
