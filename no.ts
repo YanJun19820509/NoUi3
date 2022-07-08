@@ -801,7 +801,62 @@ export namespace no {
         if (m <= 9 && show0) { m = `0${m}` }
         if (s <= 9 && show0) { s = `0${s}` }
 
-        return this.formatString(formatter, { h: h, m: m, s: s });
+        return formatString(formatter, { h: h, m: m, s: s });
+    }
+
+    function formatSeconds(sec: number, formatter: string, show0: boolean): string {
+        if (sec <= 0) {
+            let a = show0 ? '00' : '0';
+            return formatString(formatter, { h: a, M: a, s: a });
+        }
+        let h: any, m: any, s: any;
+        h = Math.floor(sec / 3600);
+        m = Math.floor((sec % 3600) / 60);
+        s = sec % 60;
+        if (m <= 9 && show0) { m = `0${m}`; }
+        if (s <= 9 && show0) { s = `0${s}`; }
+        return formatString(formatter, { h: h, M: m, s: s });
+    }
+
+    function formatTime(sec: number, formatter: string, show0: boolean): string {
+        if (sec <= 0) return '';
+        let t = new Date(sec * 1000);
+        let y: any = t.getFullYear();
+        let m: any = t.getMonth() + 1;
+        let d: any = t.getDate();
+        let h: any = t.getHours();
+        let M: any = t.getMinutes();
+        let s: any = t.getSeconds();
+        if (m <= 9 && show0) { m = `0${m}`; }
+        if (d <= 9 && show0) { d = `0${d}`; }
+        if (h <= 9 && show0) { h = `0${h}`; }
+        if (M <= 9 && show0) { M = `0${M}`; }
+        if (s <= 9 && show0) { s = `0${s}`; }
+        return formatString(formatter, { y: y, m: m, d: d, h: h, M: M, s: s });
+    }
+
+    export function formatTime_yymmddhhMMss(sec: number, show0 = true): string {
+        return formatTime(sec, '{y}.{m}.{d} {h}:{M}:{s}', show0);
+    }
+
+    export function formatTime_yymmdd(sec: number, show0 = true): string {
+        return formatTime(sec, '{y}.{m}.{d}', show0);
+    }
+
+    export function formatTime_hhMMss(sec: number, show0 = true): string {
+        return formatSeconds(sec, '{h}:{M}:{s}', show0);
+    }
+
+    export function formatTime_hhMM(sec: number, show0 = true): string {
+        return formatSeconds(sec, '{h}:{M}', show0);
+    }
+
+    export function formatTime_MMss(sec: number, show0 = true): string {
+        return formatSeconds(sec, '{M}:{s}', show0);
+    }
+
+    export function formatTime_ss(sec: number, show0 = true): string {
+        return formatSeconds(sec, '{s}', show0);
     }
 
     /**
