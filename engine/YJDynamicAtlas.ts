@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform, RenderComponent } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -31,8 +31,8 @@ export class YJDynamicAtlas extends Component {
     height: number = 512;
     @property(Material)
     commonMaterial: Material = null;
-    // @property({ visible() { return EDITOR; } })
-    // autoSetDynamicTextures: boolean = false;
+    @property({ visible() { return EDITOR; } })
+    autoSetSubMaterial: boolean = false;
 
     public atlas: Atlas;
 
@@ -42,7 +42,7 @@ export class YJDynamicAtlas extends Component {
         this.atlas = null;
     }
 
-    private initAtlas(){
+    private initAtlas() {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
@@ -200,11 +200,14 @@ export class YJDynamicAtlas extends Component {
 
 
     //////////////EDITOR/////////////
-    // update() {
-    //     if (!EDITOR) return;
-    //     if (!this.autoSetDynamicTextures) return;
-    //     this.autoSetDynamicTextures = false;
-    //     // YJDynamicAtlas.setDynamicAtlasToRenderComponent(this.node, this);
-    //     // YJDynamicAtlas.setDynamicAtlas(this.node, this);
-    // }
+    update() {
+        if (!EDITOR) return;
+        if (!this.autoSetSubMaterial) return;
+        this.autoSetSubMaterial = false;
+        let renderComps = this.getComponentsInChildren(RenderComponent);
+        renderComps.forEach(comp => {
+            if (this.commonMaterial != comp.customMaterial)
+                comp.customMaterial = this.commonMaterial;
+        });
+    }
 }
