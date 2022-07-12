@@ -1,6 +1,7 @@
 
 import { _decorator, Label } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
@@ -34,6 +35,8 @@ export class SetTimeCountDown extends FuckUi {
     formatter: string = '{h}:{m}:{s}';
     @property({ displayName: '用0补位', visible() { return this.isLabel; } })
     show0: boolean = true;
+    @property({ type: YJTimeFormatDecorator, displayName: '格式化装饰器' })
+    decorator: YJTimeFormatDecorator = null;
 
     @property({ type: FuckUi, tooltip: '将倒计时转换成百分比，传给对应组件', visible() { return !this.isLabel; } })
     fuckUiComponents: FuckUi[] = [];
@@ -74,7 +77,9 @@ export class SetTimeCountDown extends FuckUi {
     private countdown() {
         let a = this._countDown--;
         if (this.isLabel) {
-            this.setLabel(no.sec2time(a, this.formatter, this.show0));
+            if (this.decorator) this.setLabel(this.decorator.format(a));
+            else
+                this.setLabel(no.sec2time(a, this.formatter, this.show0));
             if (a < 0) {
                 no.EventHandlerInfo.execute(this.endCalls);
             } else {
