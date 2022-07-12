@@ -719,6 +719,33 @@ export namespace no {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    /**
+     * 将秒数解析为日时分秒
+     * @param v 总秒数
+     */
+    export function parseSeconds(v: number): { d: number, h: number, M: number, s: number } {
+        let d = Math.floor(v / 86400);
+        let h = Math.floor(v / 3600) % 24;
+        let M = Math.floor((v % 3600) / 60);
+        let s = v % 60;
+        return { d: d, h: h, M: M, s: s };
+    }
+
+    /**
+     * 将时间戳解析为年月日时分秒
+     * @param v 时间戳总秒数
+     */
+    export function parseTimestamp(v: number): { y: number, m: number, d: number, h: number, M: number, s: number } {
+        let t = new Date(v * 1000);
+        let y: any = t.getFullYear();
+        let m: any = t.getMonth() + 1;
+        let d: any = t.getDate();
+        let h: any = t.getHours();
+        let M: any = t.getMinutes();
+        let s: any = t.getSeconds();
+        return { y: y, m: m, d: d, h: h, M: M, s: s };
+    }
+
     /**当前时间戳（秒） */
     export function timestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
@@ -787,7 +814,7 @@ export namespace no {
             return this.formatString(formatter, { h: a, m: a, s: a });
         }
         let d = Math.floor(sec / 3600 / 24);
-        let h = Math.floor(sec / 3600 % 24);
+        let h = Math.floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
             formatter = `{d}{h}`;
@@ -820,13 +847,7 @@ export namespace no {
 
     function formatTime(sec: number, formatter: string, show0: boolean): string {
         if (sec <= 0) return '';
-        let t = new Date(sec * 1000);
-        let y: any = t.getFullYear();
-        let m: any = t.getMonth() + 1;
-        let d: any = t.getDate();
-        let h: any = t.getHours();
-        let M: any = t.getMinutes();
-        let s: any = t.getSeconds();
+        let { y, m, d, h, M, s }: { y: number, m: any, d: any, h: any, M: any, s: any } = parseTimestamp(sec);
         if (m <= 9 && show0) { m = `0${m}`; }
         if (d <= 9 && show0) { d = `0${d}`; }
         if (h <= 9 && show0) { h = `0${h}`; }
@@ -865,7 +886,7 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        node.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
+        node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
         return out;
     }
 
