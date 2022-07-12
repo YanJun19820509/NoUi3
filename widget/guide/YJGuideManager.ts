@@ -23,8 +23,8 @@ const { ccclass, property } = _decorator;
 export class YJGuideManager extends Component {
     @property({ tooltip: '配置路径，可为配置文件路径或key，如果为key则直接通过no.dataCache获得' })
     jsonPath: string = '';
-    @property({ displayName: '所属层' })
-    toLayer: string = '';
+    @property({ displayName: '引导主窗口类名' })
+    guidePanel: string = '';
 
     private static _ins: YJGuideManager;
 
@@ -40,9 +40,10 @@ export class YJGuideManager extends Component {
             console.error('新手引导配置不可为空！');
             return;
         }
-        this._config = no.dataCache.getJSON(this.jsonPath);
+        let path = this.jsonPath.replace('db://assets/', '').replace('.json', '');
+        this._config = no.dataCache.getJSON(path);
         if (!this._config)
-            no.assetBundleManager.loadJSON(this.jsonPath, item => {
+            no.assetBundleManager.loadJSON(path, item => {
                 this._config = item.json;
             });
     }
@@ -57,14 +58,14 @@ export class YJGuideManager extends Component {
         no.dataCache.setLocal('guide_steps', a);
     }
 
-    public getGuideInfo(step: string): any {
-        return this._config[step];
+    public getGuideInfo(path: string): any {
+        return no.getValue(this._config, path);
     }
 
     public check(step: string): boolean {
         let a: string[] = no.dataCache.getLocal('guide_steps') || [];
         if (a.indexOf(step) != -1) return false;
-        YJWindowManager.createPanel('YJGuidePanel', this.toLayer, (panel: any) => {
+        YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
             panel.curStep = step;
         });
         return true;

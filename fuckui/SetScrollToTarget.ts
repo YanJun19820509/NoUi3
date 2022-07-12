@@ -51,10 +51,10 @@ export class SetScrollToTarget extends SetScrollToPercent {
         let anchor = ut.anchorPoint;
         let size = ut.getBoundingBox().size;
         ut.convertToNodeSpaceAR(pos, pos);
-        let offset = v2(pos.x + size.width * anchor.x + this.offset.x, pos.y - size.height * anchor.y - this.offset.y);
+        pos.x += size.width * anchor.x;
+        pos.y += size.height * (anchor.y - 1);
         let svSize = this.scrollView.node.getComponent(UITransform).contentSize;
-        offset.x -= svSize.width * this.at;
-        offset.y -= svSize.height * this.at;
+        let offset = v2(pos.x - svSize.width * this.at, - pos.y - svSize.height * this.at);
         if (!this.scrollView.vertical) {
             offset.y = 0;
         }

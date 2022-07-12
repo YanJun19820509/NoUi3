@@ -1,5 +1,6 @@
 
 import { _decorator, Node } from 'cc';
+import { YJGoToManager } from '../../base/goto/YJGoToManager';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
 import { panelPrefabPath, YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';
@@ -60,11 +61,24 @@ export class YJGuidePanel extends YJPanel {
 
     }
 
+    //子类实现
+    protected guideInfo(): any {
+
+    }
+
     private async setGuide() {
-        let info = YJGuideManager.ins.getGuideInfo(this.curStep);
+        await no.sleep(0.5);
+        let info = this.guideInfo();
+        this.dataWork.setValue('lock', info.lock == 1);
+        if (info.save) YJGuideManager.ins.save(info.save);
         if (info.event) {
             this.showGuideNode(info.type);
-            await no.waitForEvent(info.event);
+            if (info.content)
+                await no.waiForEventValueEqual(info.event, info.content[0]);
+            else await no.waitForEvent(info.event);
+            this.nextStep();
+        } else if (info.type == 'goto') {
+            YJGoToManager.goTo(info.sub_type, info.content[0]);
             this.nextStep();
         } else this.showGuide(info);
     }
@@ -78,6 +92,7 @@ export class YJGuidePanel extends YJPanel {
             this.guideNodeMap[info.type] = guideNode;
         }
         let b = guideNode.getComponent(YJDataWork);
+        b.clear();
         b.data = info;
         b.init();
         this.showGuideNode(info.type);
@@ -90,10 +105,10 @@ export class YJGuidePanel extends YJPanel {
     }
 
     private nextStep() {
-        let info = YJGuideManager.ins.getGuideInfo(this.curStep);
-        if (info.save) YJGuideManager.ins.save(info.save);
+        let info = this.guideInfo();
         if (info.next_id) {
             this.curStep = info.next_id;
+            this.showGuideNode('yj小僧');
             this.setGuide();
         } else this.closePanel();
     }

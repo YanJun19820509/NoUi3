@@ -107,7 +107,7 @@ export class YJDynamicAtlas extends Component {
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
         if (!this.isWork) return;
 
-        if (frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
+        if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
             onFail?.();
             return;
         }
