@@ -36,6 +36,9 @@ export class YJGuidePanel extends YJPanel {
     @property(YJGuideTypeInfo)
     guideTypes: YJGuideTypeInfo[] = [];
 
+    @property(Node)
+    container: Node = null;
+
     public curStep: string;
     private static _ins: YJGuidePanel;
     private guideNodeMap: Object;
@@ -71,6 +74,7 @@ export class YJGuidePanel extends YJPanel {
         if (!guideNode) {
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
             guideNode = await a.loadPrefab.loadPrefab();
+            guideNode.parent = this.container;
             this.guideNodeMap[info.type] = guideNode;
         }
         let b = guideNode.getComponent(YJDataWork);

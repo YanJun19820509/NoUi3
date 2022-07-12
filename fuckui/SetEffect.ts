@@ -39,7 +39,7 @@ export class SetEffect extends FuckUi {
             this._renderComp = this.getComponent(RenderComponent);
             if (!this._renderComp) return;
         }
-        let { path, properties, defines }: { path: string, properties: {}, defines: {} } = data;
+        let { path, properties, defines }: { path: string, properties: any, defines: any } = data;
         this.setMaterial(path, defines, properties);
     }
 

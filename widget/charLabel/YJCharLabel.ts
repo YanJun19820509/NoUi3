@@ -101,7 +101,9 @@ export class YJCharLabel extends Component {
             }
             if (a[i]) {
                 labelNode.active = true;
-                labelNode.getComponent(YJDynamicTexture).packLabelFrame(a[i]);
+                if (EDITOR) labelNode.getComponent(Label).string = a[i];
+                else
+                    labelNode.getComponent(YJDynamicTexture).packLabelFrame(a[i]);
             } else {
                 if (EDITOR)
                     labelNode.destroy();
