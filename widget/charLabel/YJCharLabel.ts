@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -51,6 +51,9 @@ export class YJCharLabel extends Component {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
+    private charPool: any = {};
+    private usedCharNode: Node[] = [];
+
     onLoad() {
         if (!EDITOR) {
             return;
@@ -71,46 +74,64 @@ export class YJCharLabel extends Component {
     }
 
     public setLabel(s: string): void {
-        let labelNodes = this.node.children;
         let a = s.split('');
-        let n = Math.max(a.length, labelNodes.length);
-        for (let i = 0; i < n; i++) {
-            let labelNode = labelNodes[i];
-            if (!labelNode) {
-                labelNode = new Node('char');
-                labelNode.layer = Layers.Enum.UI_2D;
-                labelNode.parent = this.node;
-                labelNode.addComponent(UITransform);
-                let label = labelNode.addComponent(Label);
-                label.customMaterial = this.dynamicAtlas?.commonMaterial;
-                label.color = this.color;
-                label.font = this.font;
-                label.fontSize = this.fontSize;
-                label.lineHeight = this.lineHeight;
-                label.isItalic = this.italic;
-                label.isBold = this.bold;
-                label.cacheMode = Label.CacheMode.BITMAP;
-                let outline = labelNode.addComponent(LabelOutline);
-                outline.color = this.outlineColor;
-                outline.width = this.outlineWidth;
-                let shadow = labelNode.addComponent(LabelShadow);
-                shadow.color = this.shadowColor;
-                shadow.offset = this.shadowOffset;
-                shadow.blur = this.shadowBlur;
-                labelNode.addComponent(YJDynamicTexture).dynamicAtlas = this.dynamicAtlas;
+        if (EDITOR) {
+            let labelNodes = this.node.children;
+            labelNodes.forEach(child => {
+                child.destroy();
+            });
+            for (let i = 0, n = a.length; i < n; i++) {
+                this.createCharNode(a[i], i);
             }
-            if (a[i]) {
-                labelNode.active = true;
-                if (EDITOR) labelNode.getComponent(Label).string = a[i];
-                else
-                    labelNode.getComponent(YJDynamicTexture).packLabelFrame(a[i]);
-            } else {
-                if (EDITOR)
-                    labelNode.destroy();
-                else
-                    labelNode.active = false;
+        } else {
+            for (let i = this.usedCharNode.length - 1; i >= 0; i--) {
+                let v = this.usedCharNode[i].name;
+                this.usedCharNode[i].active = false;
+                if (!this.charPool[v]) this.charPool[v] = [];
+                this.charPool[v][this.charPool[v].length] = this.usedCharNode[i];
+            }
+            this.usedCharNode = [];
+            for (let i = 0, n = a.length; i < n; i++) {
+                if (!this.charPool[a[i]]) this.charPool[a[i]] = [];
+                let labelNode = this.charPool[a[i]].shift();
+                if (!labelNode) {
+                    labelNode = this.createCharNode(a[i], i);
+                } else {
+                    labelNode.setSiblingIndex(i);
+                    labelNode.active = true;
+                }
+                this.usedCharNode[this.usedCharNode.length] = labelNode;
             }
         }
+    }
+
+    private createCharNode(v: string, siblingIndex: number): Node {
+        let labelNode = new Node(v);
+        labelNode.layer = Layers.Enum.UI_2D;
+        labelNode.parent = this.node;
+        labelNode.setSiblingIndex(siblingIndex);
+        labelNode.addComponent(UITransform);
+        let label = labelNode.addComponent(Label);
+        label.customMaterial = this.dynamicAtlas?.commonMaterial;
+        label.color = this.color;
+        label.font = this.font;
+        label.fontSize = this.fontSize;
+        label.lineHeight = this.lineHeight;
+        label.isItalic = this.italic;
+        label.isBold = this.bold;
+        label.cacheMode = Label.CacheMode.BITMAP;
+        let outline = labelNode.addComponent(LabelOutline);
+        outline.color = this.outlineColor;
+        outline.width = this.outlineWidth;
+        let shadow = labelNode.addComponent(LabelShadow);
+        shadow.color = this.shadowColor;
+        shadow.offset = this.shadowOffset;
+        shadow.blur = this.shadowBlur;
+        labelNode.addComponent(YJDynamicTexture).dynamicAtlas = this.dynamicAtlas;
+        if (EDITOR) label.string = v;
+        else
+            labelNode.getComponent(YJDynamicTexture).packLabelFrame(v);
+        return labelNode;
     }
 
     // private createSpriteFrame(v: string, label: Label) {
