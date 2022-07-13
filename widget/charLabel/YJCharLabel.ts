@@ -51,6 +51,7 @@ export class YJCharLabel extends Component {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
+    private _text: string;
     private charPool: any = {};
     private usedCharNode: Node[] = [];
 
@@ -66,7 +67,8 @@ export class YJCharLabel extends Component {
 
     update() {
         if (!EDITOR) return;
-        this.setLabel(this.text);
+        if (this.text != this._text)
+            this.setLabel(this.text);
     }
 
     public set string(v: string) {
@@ -74,6 +76,7 @@ export class YJCharLabel extends Component {
     }
 
     public setLabel(s: string): void {
+        this._text = s;
         let a = s.split('');
         if (EDITOR) {
             let labelNodes = this.node.children;
