@@ -66,8 +66,7 @@ export class YJGuidePanel extends YJPanel {
 
     }
 
-    private async setGuide() {
-        await no.sleep(0.5);
+    protected async setGuide() {
         let info = this.guideInfo();
         this.dataWork.setValue('lock', info.lock == 1);
         if (info.save) YJGuideManager.ins.save(info.save);
@@ -77,13 +76,10 @@ export class YJGuidePanel extends YJPanel {
                 await no.waiForEventValueEqual(info.event, info.content[0]);
             else await no.waitForEvent(info.event);
             this.nextStep();
-        } else if (info.type == 'goto') {
-            YJGoToManager.goTo(info.sub_type, info.content[0]);
-            this.nextStep();
         } else this.showGuide(info);
     }
 
-    private async showGuide(info: any) {
+    protected async showGuide(info: any) {
         let guideNode: Node = this.guideNodeMap[info.type];
         if (!guideNode) {
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
@@ -98,13 +94,13 @@ export class YJGuidePanel extends YJPanel {
         this.showGuideNode(info.type);
     }
 
-    private showGuideNode(type: string) {
+    protected showGuideNode(type: string) {
         for (let k in this.guideNodeMap) {
             this.guideNodeMap[k].active = k == type;
         }
     }
 
-    private nextStep() {
+    protected nextStep() {
         let info = this.guideInfo();
         if (info.next_id) {
             this.curStep = info.next_id;

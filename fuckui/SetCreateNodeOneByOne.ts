@@ -68,5 +68,6 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
                 await this.delegate?.afterCreateOneNode(i, data[i], item);
             }
         }
+        this.delegate?.afterAllCreated();
     }
 }

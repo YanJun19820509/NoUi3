@@ -25,8 +25,12 @@ export class YJNodeTarget extends Component {
     @property
     autoSet: boolean = false;
 
+    private pos: Vec3;
+    private registed: boolean = false;
+
     onEnable() {
-        no.nodeTargetManager.register(this.type, this);
+        this.registed = false;
+        this.pos = this.node.worldPosition;
     }
 
     onDisable() {
@@ -34,7 +38,15 @@ export class YJNodeTarget extends Component {
     }
 
     update() {
-        if (!EDITOR) return;
+        if (!EDITOR) {
+            if (!this.registed) {
+                if (this.pos.equals(this.node.worldPosition)) {
+                    this.registed = true;
+                    no.nodeTargetManager.register(this.type, this);
+                } else this.pos = this.node.worldPosition;
+            }
+            return;
+        }
         if (!this.autoSet) return;
         this.autoSet = false;
         if (this.type != '') return;
@@ -70,13 +82,9 @@ export class YJNodeTarget extends Component {
         let a = rect.contains(touchPosition);
         if (a && trigger) {
             let btn = this.getComponent(Button);
-            if (btn) {
-                if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents);
-                else {
-                    let tgl = this.getComponent(Toggle);
-                    if (tgl && tgl.checkEvents.length > 0) no.executeHandlers(tgl.checkEvents);
-                }
-            }
+            if (btn instanceof Toggle)
+                btn.isChecked = true;
+            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents);
         }
         return a;
     }

@@ -1,10 +1,9 @@
 
 import { _decorator, Component } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import YJLoadPrefab from './YJLoadPrefab';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -35,6 +34,7 @@ export function addPanelTo(targetName: string) {
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
 @panelPrefabPath('')
+@executeInEditMode()
 export class YJPanel extends Component {
 
     /**面板打开事件 */
@@ -45,7 +45,7 @@ export class YJPanel extends Component {
     public lastCloseTime: number = -1;
 
     @property
-    panelType: string = 'popup_panel';
+    panelType: string = '';
 
     @property({ type: no.EventHandlerInfo })
     onOpen: no.EventHandlerInfo[] = [];
@@ -55,6 +55,12 @@ export class YJPanel extends Component {
 
     @property
     needCache: boolean = true;
+
+    onLoad() {
+        if (EDITOR) {
+            if (this.panelType == '') this.panelType = this.node.name;
+        }
+    }
 
     onEnable() {
         this.lastCloseTime = -1;

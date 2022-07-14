@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { DEBUG } from 'cc/env';
 import { YJWindowManager } from '../../base/node/YJWindowManager';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
@@ -71,4 +72,8 @@ export class YJGuideManager extends Component {
         return true;
     }
 
+}
+
+if (DEBUG) {
+    window['YJGuideManager'] = YJGuideManager;
 }
