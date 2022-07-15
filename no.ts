@@ -1495,12 +1495,10 @@ export namespace no {
             if (paths.length == 1) {
                 return no.getValue(this._data, paths[0]);
             } else {
-                let a = new Object();
-                for (const k of paths) {
-                    let p = k.split('.');
-                    a[p[p.length - 1]] = no.getValue(this._data, k);
-                }
-                return a;
+                let p = paths.join('.');
+                let a = no.getValue(this._data, p);
+                if (!a) return null;
+                return clone(a);
             }
         }
         /**
