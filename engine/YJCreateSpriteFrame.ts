@@ -29,12 +29,13 @@ export class YJCreateSpriteFrame extends Component {
             let size = this.getSize(sfs);
             let texture = new DynamicAtlasTexture();
             texture.initWithSize(size.width, size.height);
-            let img = this.createImage(texture, sfs);
-            texture.drawImageAt(img, 0, 0);
             let newSf = new SpriteFrame();
             newSf.texture = texture;
             newSf._uuid = uuid;
             this.getComponent(Sprite).spriteFrame = newSf;
+            
+            let img = this.createImage(texture, sfs);
+            texture.drawImageAt(img, 0, 0);
         } else
             this.getComponent(Sprite).spriteFrame = null;
     }
