@@ -26,6 +26,8 @@ export class YJGuideManager extends Component {
     jsonPath: string = '';
     @property({ displayName: '引导主窗口类名' })
     guidePanel: string = '';
+    @property
+    isWork: boolean = true;
 
     private static _ins: YJGuideManager;
 
@@ -64,6 +66,7 @@ export class YJGuideManager extends Component {
     }
 
     public check(step: string): boolean {
+        if (!this.isWork) return false;
         let a: string[] = no.dataCache.getLocal('guide_steps') || [];
         if (a.indexOf(step) != -1) return false;
         YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
