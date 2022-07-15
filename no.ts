@@ -1113,6 +1113,10 @@ export namespace no {
                             np = np || {};
                             np['scale'] = new Vec3(v[0], v[1], v[2]);
                             break;
+                        case 'angle':
+                            np = np || {};
+                            np['angle'] = v;
+                            break;
                         case 'size':
                             tp = tp || {};
                             tp['contentSize'] = new Size(v[0], v[1]);
