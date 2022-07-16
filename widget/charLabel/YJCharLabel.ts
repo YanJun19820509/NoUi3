@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate, Size, game, Sprite } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate, Size, game, Sprite, Renderable2D } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -111,7 +111,7 @@ export class YJCharLabel extends Component {
     }
 
     private createCharNode(v: string): Node {
-        if (this.charModels[v]) {
+        if (this.charModels[v] && this.charModels[v].getComponent(Renderable2D).spriteFrame.original) {
             let node = this.clone(this.charModels[v]);
             return node;
         }
@@ -140,9 +140,9 @@ export class YJCharLabel extends Component {
         if (EDITOR) label.string = v;
         else
             labelNode.getComponent(YJDynamicTexture).packLabelFrame(v);
-        // this.scheduleOnce(() => {
         labelNode.parent = this.node;
-        // }, game.deltaTime * 2);
+        this.scheduleOnce(() => {
+        }, game.deltaTime * 2);
         return labelNode;
     }
 
@@ -151,10 +151,10 @@ export class YJCharLabel extends Component {
             let labelNode = new Node(temp.name);
             labelNode.layer = Layers.Enum.UI_2D;
             let ut = labelNode.addComponent(UITransform);
-            ut.setContentSize(temp.getComponent(UITransform).contentSize.clone());
             let s = labelNode.addComponent(Sprite);
             s.customMaterial = this.dynamicAtlas?.commonMaterial;
             s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
+            ut.setContentSize(s.spriteFrame.rect.size);
             labelNode.active = true;
             labelNode.parent = this.node;
             this.charModels[temp.name] = labelNode;
