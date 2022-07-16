@@ -1530,7 +1530,7 @@ export namespace no {
         }
 
         private async handleDataChange() {
-            if (await Throttling.ins(this).wait(0.1))
+            if (await Throttling.ins(this).wait(0.1, true))
                 this.emit(Data.DataChangeEvent, this);
         }
 
@@ -2971,18 +2971,16 @@ export namespace no {
 
         public async wait(duration: number, firstWait = false): Promise<boolean> {
             this.duration = duration;
-            return new Promise<boolean>(async (resolve, reject) => {
-                if (this.isCd) {
-                    resolve(false);
-                } else {
-                    if (firstWait)
-                        await this.setCd();
-                    else
-                        this.setCd();
+            if (this.isCd) {
+                return Promise.resolve(false);
+            } else {
+                if (firstWait)
+                    await this.setCd();
+                else
+                    this.setCd();
 
-                    resolve(true);
-                }
-            });
+                return Promise.resolve(true);
+            }
         }
 
 
