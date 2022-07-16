@@ -23,5 +23,31 @@ export enum AlignType {
     Right
 };
 
+export type CreateSpritemFrameSFData = { url: string, x: number, y: number };
+
+export type CreateSpritemFrameLabelData = {
+    string: string,
+    x: number,
+    y: number
+    size?: number,
+    font?: string,
+    color?: string,
+    letterSpacing?: number,
+    italic?: boolean,
+    bold?: boolean,
+    outlineColor?: string,
+    outlineWidth?: number,
+    shadowColor?: string,
+    shadowOffset?: number[],
+    shadowBlur?: number
+};
+
+export type CreateSpritemFrameData = {
+    width: number,
+    height: number,
+    spriteFrames: CreateSpritemFrameSFData[],
+    labels: CreateSpritemFrameLabelData[]
+};
+
 export type _FuckUi = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
