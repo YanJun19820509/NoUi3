@@ -85,7 +85,7 @@ export class YJCharLabel extends Component {
                 child.destroy();
             });
             for (let i = 0, n = a.length; i < n; i++) {
-                this.createCharNode(a[i], i);
+                this.createCharNode(a[i]);
             }
         } else {
             for (let i = this.usedCharNode.length - 1; i >= 0; i--) {
@@ -99,7 +99,8 @@ export class YJCharLabel extends Component {
                 if (!this.charPool[a[i]]) this.charPool[a[i]] = [];
                 let labelNode = this.charPool[a[i]].shift();
                 if (!labelNode) {
-                    labelNode = this.createCharNode(a[i], i);
+                    labelNode = this.createCharNode(a[i]);
+                    labelNode.setSiblingIndex(i);
                 } else {
                     labelNode.setSiblingIndex(i);
                     labelNode.active = true;
@@ -109,16 +110,16 @@ export class YJCharLabel extends Component {
         }
     }
 
-    private createCharNode(v: string, siblingIndex: number): Node {
+    private createCharNode(v: string): Node {
         if (this.charModels[v]) {
-            return this.clone(this.charModels[v]);
+            let node = this.clone(this.charModels[v]);
+            return node;
         }
 
         let labelNode = new Node(v);
         labelNode.layer = Layers.Enum.UI_2D;
         labelNode.addComponent(UITransform);
         this.charModels[v] = labelNode;
-        labelNode.setSiblingIndex(siblingIndex);
         let label = labelNode.addComponent(Label);
         label.customMaterial = this.dynamicAtlas?.commonMaterial;
         label.color = this.color;
@@ -146,16 +147,24 @@ export class YJCharLabel extends Component {
     }
 
     private clone(temp: Node): Node {
-        let labelNode = new Node(temp.name);
-        labelNode.layer = Layers.Enum.UI_2D;
-        let ut = labelNode.addComponent(UITransform);
-        ut.setContentSize(temp.getComponent(UITransform).contentSize.clone());
-        let s = labelNode.addComponent(Sprite);
-        s.customMaterial = this.dynamicAtlas?.commonMaterial;
-        s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
-        labelNode.active = true;
-        labelNode.parent = this.node;
-        return labelNode;
+        if (temp.getComponent(Label)) {
+            let labelNode = new Node(temp.name);
+            labelNode.layer = Layers.Enum.UI_2D;
+            let ut = labelNode.addComponent(UITransform);
+            ut.setContentSize(temp.getComponent(UITransform).contentSize.clone());
+            let s = labelNode.addComponent(Sprite);
+            s.customMaterial = this.dynamicAtlas?.commonMaterial;
+            s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
+            labelNode.active = true;
+            labelNode.parent = this.node;
+            this.charModels[temp.name] = labelNode;
+            return labelNode;
+        } else {
+            let labelNode = instantiate(temp);
+            labelNode.parent = this.node;
+            labelNode.active = true;
+            return labelNode;
+        }
     }
 
     // private createSpriteFrame(v: string, label: Label) {
