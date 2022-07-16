@@ -31,7 +31,7 @@ export class SetLock extends FuckUi {
     target: Node = null;
 
     @property({ type: Enum(LockType) })
-    lockType: LockType = LockType.Gray;
+    lockType: LockType = LockType.Hide;
 
     @property({ type: Node, visible() { return this.lockType != LockType.Hide; } })
     lockNode: Node = null;
@@ -42,10 +42,20 @@ export class SetLock extends FuckUi {
     @property(no.EventHandlerInfo)
     onLocked: no.EventHandlerInfo[] = [];
 
+    private _lockType: LockType;
+
     start() {
         if (EDITOR) return;
         if (this.dataSetted) return;
         if (this.locked) this.onDataChange(this.locked);
+    }
+
+    update() {
+        if (!EDITOR) return;
+        if (this._lockType == this.lockType) return;
+        this._lockType = this.lockType;
+        if (this.lockType == LockType.Gray && !this.getComponent(SetGray)) this.addComponent(SetGray);
+        else if (this.lockType != LockType.Gray) this.getComponent(SetGray)?.destroy();
     }
 
     onDataChange(d: any) {
