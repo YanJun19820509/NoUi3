@@ -84,7 +84,7 @@ export namespace no {
     */
     export const evn = new Event();
 
-    class State {
+    export class State {
         private _states: any;
         private _watchers: any;
 
