@@ -78,7 +78,7 @@ export class SetGraphics extends FuckUi {
 
     private createEllipses(g: Graphics, data: no.GraphicsData[]) {
         data.forEach(d => {
-            g.arc(d.points[0], d.points[1], d.radius[0], d.startEndAngles[0], d.startEndAngles[1], d.counterclockwise);
+            g.ellipse(d.points[0], d.points[1], d.radius[0], d.radius[1]);
             this._fillWidthColor(g, d);
         });
     }
