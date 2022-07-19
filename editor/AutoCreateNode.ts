@@ -95,8 +95,8 @@ export class AutoCreateNode extends Component {
             let size = new Size(config.width, config.height);
             this.size = size;
             let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
-            da.width = config.width + 10;
-            da.height = config.height + 200;
+            da.width = 512;
+            da.height = 512;
             this.node.getComponent(UITransform).setContentSize(size);
             if (!this.node.getComponent(YJReleasePrefab))
                 this.node.addComponent(YJReleasePrefab);

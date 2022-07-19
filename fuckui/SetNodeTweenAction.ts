@@ -43,18 +43,6 @@ export class SetNodeTweenAction extends FuckUi {
         no.TweenSet.play(this._action, () => {
             no.EventHandlerInfo.execute(this.endCall);
         });
-        // if (this._action instanceof Array) {
-        //     this._action.forEach((a, i) => {
-        //         if (i == 0)
-        //             a.start().then(() => {
-        //                 no.EventHandlerInfo.execute(this.endCall);
-        //             });
-        //         else a.start();
-        //     })
-        // } else
-        //     this._action?.start().then(() => {
-        //         no.EventHandlerInfo.execute(this.endCall);
-        //     });
     }
 
     private stop() {

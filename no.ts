@@ -1111,7 +1111,7 @@ export namespace no {
                             break;
                         case 'scale':
                             np = np || {};
-                            np['scale'] = new Vec3(v[0], v[1], v[2]);
+                            np['scale'] = new Vec3(v[0] || v, v[1] || v[0] || v, v[2] || 1);
                             break;
                         case 'angle':
                             np = np || {};

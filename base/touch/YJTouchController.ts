@@ -59,38 +59,38 @@ export class YJTouchController extends Component {
     }
 
     protected onStart(event: EventTouch) {
+        event.preventSwallow = true;
         if (!this.checkTouched(event)) return;
         this.currentTouch = event.touch;
         this._touched = true;
         if (this.dispatcher)
             this.dispatcher.onStart(event)
-        event.preventSwallow = true;
     }
 
     protected onMove(event: EventTouch) {
+        event.preventSwallow = true;
         if (this.selected && !this._touched) return;
         if (this.dispatcher)
             this.dispatcher.onMove(event)
-        event.preventSwallow = true;
     }
 
     protected onEnd(event: EventTouch) {
+        event.preventSwallow = true;
         if (this.selected && !this._touched) return;
         // if (!this.checkTouched(event)) return;
         this._touched = false;
         this.currentTouch = null;
         if (this.dispatcher)
             this.dispatcher.onEnd(event)
-        event.preventSwallow = true;
     }
 
     protected onCancel(event: EventTouch) {
+        event.preventSwallow = true;
         if (this.selected && !this._touched || !this.needCancel) return;
         this._touched = false;
         this.currentTouch = null;
         if (this.dispatcher)
             this.dispatcher.onCancel(event)
-        event.preventSwallow = true;
     }
 
     public trigger(type: string, event: EventTouch): void {
