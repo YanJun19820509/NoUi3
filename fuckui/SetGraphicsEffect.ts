@@ -35,11 +35,11 @@ export class SetGraphicsEffect extends SetEffect {
             this._renderComp = this.getComponent(Graphics);
             if (!this._renderComp) return;
         }
-        let { path, rect, properties, defines }: { path: string,rect: number[], properties: {}, defines: {} } = data;
+        let { path, rect, properties, defines }: { path: string, rect: number[], properties: {}, defines: {} } = data;
 
-        if (rect){
+        if (rect) {
             properties = properties || {};
-            properties['i_min_max_uv'] = no.getGraphicUVInWorld(rect[0],rect[1],rect[2],rect[3], this.node);;
+            properties[`i_min_max_uv${this.idx}`] = no.getGraphicUVInWorld(rect[0], rect[1], rect[2], rect[3], this.node);;
         }
 
         this.setMaterial(path, defines, properties);
