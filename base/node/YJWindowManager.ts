@@ -36,6 +36,7 @@ export class YJWindowManager extends Component {
     duration: number = 10;
 
     private static _ins: YJWindowManager;
+    private static canOpen: boolean = true;
 
     onLoad() {
         YJWindowManager._ins = this;
@@ -76,6 +77,7 @@ export class YJWindowManager extends Component {
         a.initPanel().then(() => {
             content.addChild(node);
             afterInit?.(a as T);
+            this.canOpen = true;
         });
     }
 
@@ -86,6 +88,8 @@ export class YJWindowManager extends Component {
      * @returns
      */
     public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to?: string, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
+        if (!this.canOpen) return;
+        this.canOpen = false;
         if (!comp) return null;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
@@ -98,6 +102,7 @@ export class YJWindowManager extends Component {
             a.initPanel().then(() => {
                 a.node.active = true;
                 afterInit?.(a as T);
+                this.canOpen = true;
             });
             a.node.setSiblingIndex(content.children.length - 1);
             return;
