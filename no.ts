@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js, Font } from 'cc';
 import { EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -1027,16 +1027,18 @@ export namespace no {
      * @param weight 权重数组
      * @returns 权重索引
      */
-    export function weightRandom(weight: number[]): number {
+    export function weightRandom(weight: number[], except?: number[]): number {
         let sum = 0;
-        weight.forEach(w => {
-            sum += w;
+        except = except || [];
+        weight.forEach((w, i) => {
+            if (except.indexOf(i) == -1)
+                sum += Number(w);
         });
         let r = Math.random() * sum;
         let n = weight.length;
         let a = 0;
         for (let i = 0; i < n; i++) {
-            if (weight[i] == 0) continue;
+            if (weight[i] == 0 || except.indexOf(i) > -1) continue;
             a += weight[i];
             if (r <= a) {
                 return i;
@@ -1055,6 +1057,10 @@ export namespace no {
             a[a.length] = Number(item[key]);
         });
         return this.weightRandom(a);
+    }
+
+    export function fract(v: number): number {
+        return v - Math.floor(v);
     }
 
     export enum TweenSetType {
@@ -1883,6 +1889,10 @@ export namespace no {
 
         public loadEffect(path: string, callback: (item: EffectAsset) => void): void {
             this.loadFile(path, EffectAsset, callback);
+        }
+
+        public loadFont(path: string, callback: (item: Font) => void): void {
+            this.loadFile(path, Font, callback);
         }
 
         // public loadDragonBonesAtlasAsset(path: string, callback: (item: dragonBones.DragonBonesAtlasAsset) => void): void {
