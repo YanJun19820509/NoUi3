@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, EventHandler } from 'cc';
+import { _decorator, Component, Node, Button, EventHandler, EventTouch } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 const { ccclass, property, menu, requireComponent } = _decorator;
@@ -38,8 +38,11 @@ export class YJButton extends Component {
         btn.clickEvents = [a];
     }
 
-    public async a_trigger() {
-        if (!await no.Throttling.ins(this).wait(this.delay)) return;
-        no.executeHandlers(this._clickEvents);
+    public a_trigger(event: EventTouch) {
+        if (event.touch.getID() != 0) return;
+        no.Throttling.ins(this).wait(this.delay).then(a => {
+            if (a)
+                no.executeHandlers(this._clickEvents);
+        })
     }
 }

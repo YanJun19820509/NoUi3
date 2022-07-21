@@ -36,7 +36,7 @@ export class YJWindowManager extends Component {
     duration: number = 10;
 
     private static _ins: YJWindowManager;
-    private static canOpen: boolean = true;
+    public static canOpen: boolean = true;
 
     onLoad() {
         YJWindowManager._ins = this;

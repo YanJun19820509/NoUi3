@@ -42,7 +42,9 @@ export class YJOpenWindow extends Component {
     }
 
     public a_open() {
+        let a = this.infos.length > 1;
         this.infos.forEach(info => {
+            a && (YJWindowManager.canOpen = true);
             info.open();
         });
     }
