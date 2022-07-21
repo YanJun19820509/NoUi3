@@ -1,7 +1,7 @@
 
 import { _decorator, Toggle } from 'cc';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu } = _decorator;
+const { ccclass, menu, property } = _decorator;
 
 /**
  * Predefined variables
@@ -18,9 +18,13 @@ const { ccclass, menu } = _decorator;
 @ccclass('SetToggleCheck')
 @menu('NoUi/ui/SetToggleCheck(设置复选框选中状态:bool)')
 export class SetToggleCheck extends FuckUi {
+    @property({ displayName: '取反' })
+    reverse: boolean = false;
 
     protected onDataChange(data: any) {
-        this.getComponent(Toggle).isChecked = Boolean(data);
+        let a = Boolean(data);
+        if (this.reverse) a = !a;
+        this.getComponent(Toggle).isChecked = a;
     }
 
     public a_setChecked(): void {
