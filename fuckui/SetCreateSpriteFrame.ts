@@ -1,9 +1,11 @@
 
 import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite } from 'cc';
 import { DynamicAtlasTexture } from '../engine/atlas';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { CreateSpritemFrameData, CreateSpritemFrameLabelData, CreateSpritemFrameSFData } from '../types';
 import { FuckUi } from './FuckUi';
+import { SetEffect } from './SetEffect';
 const { ccclass, property, requireComponent } = _decorator;
 
 /**
@@ -29,14 +31,13 @@ export class SetCreateSpriteFrame extends FuckUi {
     protected onDataChange(data: CreateSpritemFrameData) {
         this.texture = new DynamicAtlasTexture();
         this.texture.initWithSize(data.width, data.height);
-        let newSf = new SpriteFrame();
-        newSf.texture = this.texture;
-        newSf._uuid = `${no.sysTime.now}`;
-        this.getComponent(Sprite).spriteFrame = newSf;
         this.drawSpriteFrames(data.spriteFrames).then(canvas => {
             if (data.labels && data.labels.length > 0)
                 this.drawTTFSpriteFrames(data.labels, canvas);
-            else this.texture.drawImageAt(canvas, 0, 0);
+            else {
+                this.texture.drawImageAt(canvas, 0, 0);
+                this.setSpriteFrame();
+            }
         });
     }
 
@@ -62,26 +63,29 @@ export class SetCreateSpriteFrame extends FuckUi {
     private drawTTFSpriteFrames(labels: CreateSpritemFrameLabelData[], canvas: HTMLCanvasElement) {
         let arr: { label: Label, x: number, y: number }[] = [];
         labels.forEach(a => {
-            let label = this.createLabel(a);
-            arr[arr.length] = {
-                label: label,
-                x: a.x,
-                y: a.y
-            }
-        });
-        this.scheduleOnce(() => {
-            this.drawTTFSpriteFramesToCanvas(arr, canvas);
-            this.texture.drawImageAt(canvas, 0, 0);
+            this.createLabel(a).then(label => {
+                arr[arr.length] = {
+                    label: label,
+                    x: a.x,
+                    y: a.y
+                };
+                if (arr.length == labels.length) {
+                    this.scheduleOnce(() => {
+                        this.drawTTFSpriteFramesToCanvas(arr, canvas);
+                        this.texture.drawImageAt(canvas, 0, 0);
+                        this.setSpriteFrame();
+                    });
+                }
+            });
         });
     }
 
-    private createLabel(d: any): Label {
+    private createLabel(d: any): Promise<Label> {
         let labelNode = new Node();
         labelNode.layer = Layers.Enum.EDITOR;
         labelNode.addComponent(UITransform);
         let label = labelNode.addComponent(Label);
         label.color = no.str2Color(d.color);
-        label.font = d.font;
         label.fontSize = d.size;
         label.lineHeight = d.size + 4;
         label.isItalic = d.italic;
@@ -100,7 +104,12 @@ export class SetCreateSpriteFrame extends FuckUi {
         }
         label.string = d.string;
         labelNode.parent = this.node;
-        return label;
+        return new Promise<Label>(resolve => {
+            no.assetBundleManager.loadFont(d.font, f => {
+                label.font = f;
+                resolve(label);
+            });
+        });
     }
 
     private drawSpriteFrameToTexture(sf: SpriteFrame, x: number, y: number) {
@@ -152,5 +161,20 @@ export class SetCreateSpriteFrame extends FuckUi {
         }
         ctx.putImageData(imageData, 0, 0);
         return canvas;
+    }
+
+    private setSpriteFrame() {
+        let newSf = new SpriteFrame();
+        newSf.texture = this.texture;
+        newSf._uuid = `${no.sysTime.now}`;
+        if (!this?.getComponent(YJDynamicTexture))
+            this.getComponent(Sprite).spriteFrame = newSf;
+        else
+            this?.getComponent(YJDynamicTexture).packSpriteFrame(newSf);
+        this.checkShader();
+    }
+
+    private checkShader() {
+        this.getComponent(SetEffect)?.work();
     }
 }
