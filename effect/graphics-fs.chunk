@@ -10,12 +10,8 @@
   vec2 uv0;//对应纹理uv
   
 
-  uniform GraphicsUV{
-    vec4 i_min_max_uv;
-  };
-
 //初始化 color 和 uv0，与从纹理中获取的 color，uv0 等同
-  void initGraphicsColorUV () {
+  void initGraphicsColorUV (vec4 i_min_max_uv) {
     uv0 = (v_uv - i_min_max_uv.xy) / (i_min_max_uv.zw - i_min_max_uv.xy);
 
     color = v_color;
@@ -35,7 +31,7 @@
   }
 
 //检测当前顶点是否在指定区域内
-  bool isUvInside(){
+  bool isUvInside(vec4 i_min_max_uv){
     float minX = i_min_max_uv.x,
           minY = i_min_max_uv.y,
           maxX = i_min_max_uv.z,

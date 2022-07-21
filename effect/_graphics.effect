@@ -19,8 +19,8 @@ CCEffect %{
         depthTest: false
         depthWrite: false
       properties:
-        i_min: { value: [0., 0.], target: i_min_max_uv.xy}
-        i_max: { value: [1., 1.], target: i_min_max_uv.zw}
+        i_min: { value: [0., 0.], target: i_min_max_uv0.xy}
+        i_max: { value: [1., 1.], target: i_min_max_uv0.zw}
         amplitude: { value: 0.05, range: [0.0, 0.5], editor: { tooltip: '振幅' } }
         angularVelocity: { value: 10.0, editor: { tooltip: '角速度' } }
         frequency: { value: 10.0, editor: { tooltip: '频率' } }
@@ -60,12 +60,16 @@ CCProgram fs %{
       bool toLeft;
     };
 
+    uniform GD{
+      vec4 i_min_max_uv0;
+    };
+
   vec4 frag () {
     //初始化自定义图形的颜色和 uv
-    initGraphicsColorUV();
+    initGraphicsColorUV(i_min_max_uv0);
     // float D = abs(v_dist);//v_dist * 0.5 + 0.5;
     // color.rgb = Pallete(D);
-    if (isUvInside()){
+    if (isUvInside(i_min_max_uv0)){
       #if IS_WAVE
         graphicsWave(color, uv0, amplitude, angularVelocity, frequency, offset, toLeft);
       #endif
