@@ -48,14 +48,14 @@ export class Atlas {
      * @method insertSpriteFrame
      * @param spriteFrame  the sprite frame that will be inserted in the atlas.
      */
-    public insertSpriteFrame(spriteFrame: SpriteFrame, noSpace: () => void): PackedFrameData {
+    public insertSpriteFrame(spriteFrame: SpriteFrame, canRotate: boolean, noSpace: () => void): PackedFrameData {
         // Todo:No renderTexture
         let _uuid = spriteFrame._uuid;
         let packedFrame = this.getPackedFrame(_uuid);
         if (packedFrame) return packedFrame;
 
         const rect = spriteFrame.rect;
-        let isRotated = rect.width > rect.height;
+        let isRotated = canRotate && rect.width > rect.height;
 
         let width = isRotated ? rect.height : rect.width,
             height = isRotated ? rect.width : rect.height;

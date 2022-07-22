@@ -2,6 +2,7 @@
 import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform, RenderComponent } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
+import { PackedFrameData } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -113,7 +114,7 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            const packedFrame = this.insertSpriteFrame(frame);
+            const packedFrame = this.insertSpriteFrame(frame, comp instanceof Sprite);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
             else onFail?.();
@@ -126,17 +127,19 @@ export class YJDynamicAtlas extends Component {
         frame._resetDynamicAtlasFrame();
     }
 
-    private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: any) {
+    private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: PackedFrameData) {
         if (packedFrame) {
             if (comp instanceof Label) {
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
+                    ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
                 } else frame._setDynamicAtlasFrame(packedFrame);
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
+                ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
                 if (!frame.original && frame.name.indexOf('default_') == -1)
@@ -145,7 +148,7 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    public insertSpriteFrame(spriteFrame: SpriteFrame) {
+    public insertSpriteFrame(spriteFrame: SpriteFrame, canRotate: boolean) {
         if (!spriteFrame || spriteFrame.texture._uuid == this.atlas?._texture._uuid) return null;
 
         // hack for pixel game,should pack to different sampler atlas
@@ -156,7 +159,7 @@ export class YJDynamicAtlas extends Component {
 
         this.initAtlas();
 
-        const frame = this.atlas.insertSpriteFrame(spriteFrame, () => {
+        const frame = this.atlas.insertSpriteFrame(spriteFrame, canRotate, () => {
             console.log(`${this.node.name}动态图集无空间！`);
         });
         return frame;
