@@ -1,6 +1,7 @@
 import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component } from "cc";
 import { EDITOR } from "cc/env";
 import { no } from "../no";
+import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
 
 export class Atlas {
@@ -21,7 +22,7 @@ export class Atlas {
         // this._innerSpriteFrames = [];
     }
 
-    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: DynamicAtlasTexture } | null {
+    public getPackedFrame(uuid: string): PackedFrameData | null {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
             return {
@@ -29,6 +30,7 @@ export class Atlas {
                 y: info.y,
                 w: info.w,
                 h: info.h,
+                rotate: info.rotate,
                 texture: this._texture
             };
         }
@@ -46,15 +48,14 @@ export class Atlas {
      * @method insertSpriteFrame
      * @param spriteFrame  the sprite frame that will be inserted in the atlas.
      */
-    public insertSpriteFrame(spriteFrame: SpriteFrame, noSpace: () => void) {
+    public insertSpriteFrame(spriteFrame: SpriteFrame, noSpace: () => void): PackedFrameData {
         // Todo:No renderTexture
         let _uuid = spriteFrame._uuid;
         let packedFrame = this.getPackedFrame(_uuid);
         if (packedFrame) return packedFrame;
 
         const rect = spriteFrame.rect;
-        let isRotated = spriteFrame.rotated;
-
+        let isRotated = rect.width > rect.height;
 
         let width = isRotated ? rect.height : rect.width,
             height = isRotated ? rect.width : rect.height;
@@ -64,46 +65,50 @@ export class Atlas {
             noSpace();
             return null;
         }
-        let x = p.x, y = p.y;
 
+        let x = p.x, y = p.y;
+        spriteFrame.rotated = isRotated;
         this.drawImageAt(spriteFrame, x, y);
-        this.setSpriteFrameTextureRect(_uuid, x, y, rect.width, rect.height);
-        const frame = {
+        this.setSpriteFrameTextureRect(_uuid, x, y, width, height, isRotated);
+        return {
             x: x,
             y: y,
-            w: rect.width,
-            h: rect.height,
-            texture: this._texture
-        }
-
-        // this._innerSpriteFrames.push(spriteFrame);
-        return frame;
-    }
-
-    public drawTexture(texture: Texture2D) {
-        let info = this._dynamicTextureRect[texture._uuid];
-        if (info) {
-            return null;
-        }
-        let p = this._maxRect.find(texture.width, texture.height);
-        if (!p || !texture._mipmaps[0]) return null;
-        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, texture.width, texture.height);
-        this._setSubImage(texture._mipmaps[0], p.x, p.y);
-        return {
-            x: p.x,
-            y: p.y,
-            w: texture.width,
-            h: texture.height,
+            w: width,
+            h: height,
+            rotate: isRotated,
             texture: this._texture
         };
     }
 
-    public setSpriteFrameTextureRect(uuid: string, x: number, y: number, w: number, h: number) {
+    public drawTexture(texture: Texture2D): PackedFrameData {
+        let info = this._dynamicTextureRect[texture._uuid];
+        if (info) {
+            return null;
+        }
+        let rotate = false;
+        let width = rotate ? texture.height : texture.width;
+        let height = rotate ? texture.width : texture.height;
+        let p = this._maxRect.find(width, height);
+        if (!p || !texture._mipmaps[0]) return null;
+        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, width, height, false);
+        this._setSubImage(texture._mipmaps[0], p.x, p.y);
+        return {
+            x: p.x,
+            y: p.y,
+            w: width,
+            h: height,
+            rotate: false,
+            texture: this._texture
+        };
+    }
+
+    public setSpriteFrameTextureRect(uuid: string, x: number, y: number, w: number, h: number, rotate: boolean) {
         this._dynamicTextureRect[uuid] = {
             x: x,
             y: y,
             w: w,
-            h: h
+            h: h,
+            rotate: rotate
         };
     }
 
@@ -133,13 +138,14 @@ export class Atlas {
         let texture = spriteFrame.texture;
         let r = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
-        let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
+        let rect = math.rect(r.x, r.y, r.width, r.height);
         let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
         let img = this._createImage(buffer, rect);
+        if (isRotated) img = this._rotateImage(img);
         this._setSubImage(img, x, y);
     }
 
-    private _createEmptyImage(rect: math.Rect) {
+    private _createEmptyImage(rect: math.Rect): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
         canvas.width = rect.width;
         canvas.height = rect.height;
@@ -158,7 +164,7 @@ export class Atlas {
         return canvas;
     }
 
-    private _createImage(pixels: ArrayBufferView, rect: math.Rect) {
+    private _createImage(pixels: ArrayBufferView, rect: math.Rect): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
         canvas.width = rect.width;
         canvas.height = rect.height;
@@ -178,7 +184,7 @@ export class Atlas {
         return canvas;
     }
 
-    private _setSubImage(img, x, y) {
+    private _setSubImage(img: HTMLCanvasElement | ImageAsset, x: number, y: number) {
         if (img.width <= 8 || img.height <= 8) {
             this._texture.drawImageAt(img, x - 1, y - 1);
             this._texture.drawImageAt(img, x - 1, y + 1);
@@ -192,6 +198,16 @@ export class Atlas {
         this._texture.drawImageAt(img, x, y + 1);
 
         this._texture.drawImageAt(img, x, y);
+    }
+
+    private _rotateImage(img: HTMLCanvasElement): HTMLCanvasElement {
+        let canvas = document.createElement('canvas');
+        canvas.width = img.height;
+        canvas.height = img.width;
+        let ctx = canvas.getContext("2d");
+        ctx.rotate(1.5707963267948966);
+        ctx.drawImage(img, 0, -img.height);
+        return canvas;
     }
 }
 

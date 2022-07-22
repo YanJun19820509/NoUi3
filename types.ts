@@ -1,3 +1,4 @@
+import { Texture2D } from 'cc';
 import { FuckUi } from './fuckui/FuckUi';
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 
@@ -48,6 +49,8 @@ export type CreateSpritemFrameData = {
     spriteFrames: CreateSpritemFrameSFData[],
     labels: CreateSpritemFrameLabelData[]
 };
+
+export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
 export type _FuckUi = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
