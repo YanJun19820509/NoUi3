@@ -1,5 +1,5 @@
 import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component } from "cc";
-import { EDITOR } from "cc/env";
+import { EDITOR, JSB } from "cc/env";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
@@ -53,9 +53,15 @@ export class Atlas {
         let _uuid = spriteFrame._uuid;
         let packedFrame = this.getPackedFrame(_uuid);
         if (packedFrame) return packedFrame;
-
         const rect = spriteFrame.rect;
-        let isRotated = canRotate && rect.width > rect.height;
+
+        // let isRotated = canRotate && rect.width > rect.height;
+
+        // let width = isRotated ? rect.height : rect.width,
+        //     height = isRotated ? rect.width : rect.height;
+
+        let isRotated = spriteFrame.rotated;
+
 
         let width = isRotated ? rect.height : rect.width,
             height = isRotated ? rect.width : rect.height;
@@ -67,7 +73,7 @@ export class Atlas {
         }
 
         let x = p.x, y = p.y;
-        spriteFrame.rotated = isRotated;
+        // spriteFrame.rotated = isRotated;
         this.drawImageAt(spriteFrame, x, y);
         this.setSpriteFrameTextureRect(_uuid, x, y, width, height, isRotated);
         return {
@@ -138,10 +144,10 @@ export class Atlas {
         let texture = spriteFrame.texture;
         let r = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
-        let rect = math.rect(r.x, r.y, r.width, r.height);
+        let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
         let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
         let img = this._createImage(buffer, rect);
-        if (isRotated) img = this._rotateImage(img);
+        // if (isRotated) img = this._rotateImage(img);
         this._setSubImage(img, x, y);
     }
 
