@@ -2222,6 +2222,7 @@ export namespace no {
 
         public clear(type: string): void {
             let arr = this.cacheMap.get(type);
+            if (!arr) return;
             this.cacheMap.delete(type);
             for (let i = arr.length - 1; i >= 0; i--) {
                 let a = arr[i];
