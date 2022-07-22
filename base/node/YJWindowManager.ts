@@ -76,8 +76,8 @@ export class YJWindowManager extends Component {
         beforeInit?.(a as T);
         a.initPanel().then(() => {
             content.addChild(node);
-            afterInit?.(a as T);
             this.canOpen = true;
+            afterInit?.(a as T);
         });
     }
 
@@ -101,8 +101,8 @@ export class YJWindowManager extends Component {
             beforeInit?.(a as T);
             a.initPanel().then(() => {
                 a.node.active = true;
-                afterInit?.(a as T);
                 this.canOpen = true;
+                afterInit?.(a as T);
             });
             a.node.setSiblingIndex(content.children.length - 1);
             return;
