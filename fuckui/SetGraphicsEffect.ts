@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Graphics, Material, math, v4 } from 'cc';
+import { _decorator, Component, Node, Graphics, Material } from 'cc';
 import { no } from '../no';
-import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
 const { ccclass, property, requireComponent } = _decorator;
 
@@ -46,16 +45,16 @@ export class SetGraphicsEffect extends SetEffect {
     }
 
     protected setMaterial(path: string, defines: any, properties: any) {
-        if (this._renderComp.customMaterial && (!path || this._renderComp.customMaterial?.effectName == `../${path}`))
-            this.setProperties(this._renderComp.customMaterial, defines, properties);
-        else if (path)
+        if (this._renderComp.material && (!path || this._renderComp.material?.effectName == `../${path}`)) {
+            this.setProperties(this._renderComp.material, defines, properties);
+        } else if (path)
             no.assetBundleManager.loadEffect(path, item => {
                 const material = new Material();
                 material.initialize({
                     effectAsset: item
                 });
-                this._renderComp.customMaterial = material;
-                this.setProperties(this._renderComp.customMaterial, defines, properties);
+                this._renderComp.material = material;
+                this.setProperties(this._renderComp.material, defines, properties);
             });
         else this.reset();
     }
