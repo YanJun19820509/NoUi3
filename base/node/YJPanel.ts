@@ -78,6 +78,7 @@ export class YJPanel extends Component {
                 return Promise.resolve();
             });
         }
+        this.onInitPanel();
         return Promise.resolve();
     }
 
