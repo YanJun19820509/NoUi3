@@ -31,18 +31,17 @@ export class SetCreateSpriteFrame extends FuckUi {
     protected onDataChange(data: CreateSpritemFrameData) {
         this.texture = new DynamicAtlasTexture();
         this.texture.initWithSize(data.width, data.height);
-        this.drawSpriteFrames(data.spriteFrames).then(canvas => {
+        this.drawSpriteFrames(data.spriteFrames).then(() => {
             if (data.labels && data.labels.length > 0)
-                this.drawTTFSpriteFrames(data.labels, canvas);
+                this.drawTTFSpriteFrames(data.labels);
             else {
-                this.texture.drawImageAt(canvas, 0, 0);
                 this.setSpriteFrame();
             }
         });
     }
 
-    private drawSpriteFrames(spriteFrames: CreateSpritemFrameSFData[]): Promise<HTMLCanvasElement> {
-        return new Promise<HTMLCanvasElement>(resolve => {
+    private drawSpriteFrames(spriteFrames: CreateSpritemFrameSFData[]): Promise<void> {
+        return new Promise<void>(resolve => {
             let arr: { frame: SpriteFrame, x: number, y: number }[] = [];
             for (let i = 0, n = spriteFrames.length; i < n; i++) {
                 let a = spriteFrames[i];
@@ -53,14 +52,14 @@ export class SetCreateSpriteFrame extends FuckUi {
                         y: a.y
                     };
                     if (arr.length == n) {
-                        resolve(this.drawSpriteFramesToCanvas(arr));
+                        resolve(this.drawSpriteFramesToTexture(arr));
                     }
                 });
             }
         });
     }
 
-    private drawTTFSpriteFrames(labels: CreateSpritemFrameLabelData[], canvas: HTMLCanvasElement) {
+    private drawTTFSpriteFrames(labels: CreateSpritemFrameLabelData[]) {
         let arr: { label: Label, x: number, y: number }[] = [];
         labels.forEach(a => {
             this.createLabel(a).then(label => {
@@ -71,8 +70,7 @@ export class SetCreateSpriteFrame extends FuckUi {
                 };
                 if (arr.length == labels.length) {
                     this.scheduleOnce(() => {
-                        this.drawTTFSpriteFramesToCanvas(arr, canvas);
-                        this.texture.drawImageAt(canvas, 0, 0);
+                        this.drawTTFSpriteFramesToCanvas(arr);
                         this.setSpriteFrame();
                     });
                 }
@@ -115,32 +113,19 @@ export class SetCreateSpriteFrame extends FuckUi {
     private drawSpriteFrameToTexture(sf: SpriteFrame, x: number, y: number) {
         let rect = sf.rect;
         let buffer = this.texture.getTextureBuffer(sf.texture as Texture2D, rect);
-        let img = this._createImage(buffer, rect);
-        this.texture.drawImageAt(img, x - rect.width / 2, y - rect.height / 2);
+        this.texture.drawTextureBufferAt(buffer, x - rect.width / 2, y - rect.height / 2, rect.width, rect.height);
     }
 
-    private drawTTFSpriteFramesToCanvas(labels: { label: Label, x: number, y: number }[], canvas: HTMLCanvasElement) {
-        let ctx = canvas.getContext("2d");
+    private drawTTFSpriteFramesToCanvas(labels: { label: Label, x: number, y: number }[]) {
         labels.forEach(a => {
-            let rect = a.label.ttfSpriteFrame.rect;
-            let buffer = this.texture.getTextureBuffer(a.label.ttfSpriteFrame.texture as Texture2D, rect);
-            let img = this._createImage(buffer, rect);
-            ctx.drawImage(img, a.x - rect.width / 2, a.y - rect.height / 2);
+            this.drawSpriteFrameToTexture(a.label.ttfSpriteFrame, a.x, a.y);
         });
     }
 
-    private drawSpriteFramesToCanvas(frames: { frame: SpriteFrame, x: number, y: number }[]): HTMLCanvasElement {
-        let canvas = document.createElement('canvas');
-        canvas.width = this.texture.width;
-        canvas.height = this.texture.height;
-        let ctx = canvas.getContext("2d");
+    private drawSpriteFramesToTexture(frames: { frame: SpriteFrame, x: number, y: number }[]) {
         frames.forEach(a => {
-            let rect = a.frame.rect;
-            let buffer = this.texture.getTextureBuffer(a.frame.texture as Texture2D, rect);
-            let img = this._createImage(buffer, rect);
-            ctx.drawImage(img, a.x - rect.width / 2, a.y - rect.height / 2);
+            this.drawSpriteFrameToTexture(a.frame, a.x, a.y);
         });
-        return canvas;
     }
 
     private _createImage(pixels: ArrayBufferView, rect: math.Rect): HTMLCanvasElement {
