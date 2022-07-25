@@ -34,6 +34,7 @@ export class YJDynamicTexture extends Component {
     needClear: boolean = false;
 
     onLoad() {
+        if (!this.enabled) return;
         if (EDITOR) {
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
 
@@ -61,10 +62,10 @@ export class YJDynamicTexture extends Component {
             }
             return;
         }
-        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame || sprite?.spriteFrame, () => {
-            if (frame) {
-                sprite.spriteFrame = frame;
-            }
+        frame = frame || sprite?.spriteFrame;
+        if (!frame) return;
+        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, () => {
+            sprite.spriteFrame = frame;
         });
     }
 

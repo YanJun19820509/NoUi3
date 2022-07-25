@@ -1,5 +1,5 @@
 import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component } from "cc";
-import { EDITOR, JSB } from "cc/env";
+import { EDITOR } from "cc/env";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
@@ -87,6 +87,7 @@ export class Atlas {
     }
 
     public drawTexture(texture: Texture2D): PackedFrameData {
+        if (!texture._mipmaps[0]) return null;
         let info = this._dynamicTextureRect[texture._uuid];
         if (info) {
             return null;
@@ -95,7 +96,7 @@ export class Atlas {
         let width = rotate ? texture.height : texture.width;
         let height = rotate ? texture.width : texture.height;
         let p = this._maxRect.find(width, height);
-        if (!p || !texture._mipmaps[0]) return null;
+        if (!p) return null;
         this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, width, height, false);
         this._setSubImage(texture._mipmaps[0], p.x, p.y);
         return {
@@ -289,6 +290,26 @@ export class DynamicAtlasTexture extends Texture2D {
         region.texExtent.width = image.width;
         region.texExtent.height = image.height;
         gfxDevice.copyTexImagesToTexture([image], gfxTexture, [region]);
+    }
+
+    public drawTextureBufferAt(buffer: ArrayBufferView, x: number, y: number, width: number, height: number) {
+        const gfxTexture = this.getGFXTexture();
+        if (!buffer || !gfxTexture) {
+            return;
+        }
+
+        const gfxDevice = this._getGFXDevice();
+        if (!gfxDevice) {
+            console.warn('Unable to get device');
+            return;
+        }
+
+        const region = new BufferTextureCopy();
+        region.texOffset.x = x;
+        region.texOffset.y = y;
+        region.texExtent.width = width;
+        region.texExtent.height = height;
+        gfxDevice.copyBuffersToTexture([buffer], gfxTexture, [region]);
     }
 
     public getTextureBuffer(texture: Texture2D, rect: math.Rect): ArrayBufferView {

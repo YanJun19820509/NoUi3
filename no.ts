@@ -1038,8 +1038,9 @@ export namespace no {
         let n = weight.length;
         let a = 0;
         for (let i = 0; i < n; i++) {
-            if (weight[i] == 0 || except.indexOf(i) > -1) continue;
-            a += weight[i];
+            let m = Number(weight[i]);
+            if (m == 0 || except.indexOf(i) > -1) continue;
+            a += m;
             if (r <= a) {
                 return i;
             }

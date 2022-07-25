@@ -54,21 +54,39 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
             }
         }
 
-        for (let i = 0; i < n; i++) {
-            let item = this.container.children[i];
-            if (data[i] == null) continue;
-            else {
-                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                item.active = !!data[i];
-                if (a && data[i]) {
-                    a.data = data[i];
-                    a.init();
-                }
-                await no.sleep(this.duration, this);
-                await this.delegate?.afterCreateOneNode(i, data[i], item);
-            }
-        }
-        if (n > 0)
+        // for (let i = 0; i < n; i++) {
+        //     let item = this.container.children[i];
+        //     if (data[i] == null) continue;
+        //     else {
+        //         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        //         item.active = !!data[i];
+        //         if (a && data[i]) {
+        //             a.data = data[i];
+        //             a.init();
+        //         }
+        //         await no.sleep(this.duration, this);
+        //         await this.delegate?.afterCreateOneNode(i, data[i], item);
+        //     }
+        // }
+        if (n > 0) {
+            await this.showItemsOneByOne(data, 0);
             this.delegate?.afterAllCreated();
+        }
+    }
+
+    private async showItemsOneByOne(data: any[], idx: number): Promise<void> {
+        let item = this.container.children[idx];
+        if (!item || data[idx] == null) return Promise.resolve();
+        else {
+            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+            item.active = !!data[idx];
+            if (a && data[idx]) {
+                a.data = data[idx];
+                a.init();
+            }
+            await no.sleep(this.duration, this);
+            await this.delegate?.afterCreateOneNode(idx, data[idx], item);
+        }
+        return this.showItemsOneByOne(data, ++idx);
     }
 }

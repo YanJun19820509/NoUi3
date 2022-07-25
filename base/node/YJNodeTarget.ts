@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec2, Vec3, UITransform } from 'cc';
+import { _decorator, Component, Node, Button, Toggle, v3, Vec2, Vec3, UITransform, EventTouch } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
@@ -73,18 +73,18 @@ export class YJNodeTarget extends Component {
 
     /**
      * 触摸检测
-     * @param touchPosition 触摸的世界坐标
+     * @param e 触摸事件
      * @param trigger 是否触发touch事件，默认true
      * @returns boolean
      */
-    public checkTouch(touchPosition: Vec2, trigger = true): boolean {
+    public checkTouch(e: EventTouch, trigger = true): boolean {
         let rect = no.nodeBoundingBox(this.node);
-        let a = rect.contains(touchPosition);
+        let a = rect.contains(e.getUIStartLocation());
         if (a && trigger) {
             let btn = this.getComponent(Button);
             if (btn instanceof Toggle)
                 btn.isChecked = true;
-            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents);
+            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e);
         }
         return a;
     }

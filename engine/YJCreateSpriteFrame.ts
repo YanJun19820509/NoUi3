@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame, math, Texture2D, Enum, Size, v2, Vec2 } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, math, Texture2D, Enum, Size, v2, Vec2, Canvas } from 'cc';
 import { AlignType } from '../types';
 import { DynamicAtlasTexture } from './atlas';
 const { ccclass, property, requireComponent } = _decorator;
@@ -33,9 +33,8 @@ export class YJCreateSpriteFrame extends Component {
             newSf.texture = texture;
             newSf._uuid = uuid;
             this.getComponent(Sprite).spriteFrame = newSf;
-            
-            let img = this.createImage(texture, sfs);
-            texture.drawImageAt(img, 0, 0);
+
+            this.createImage(texture, sfs);
         } else
             this.getComponent(Sprite).spriteFrame = null;
     }
@@ -65,38 +64,33 @@ export class YJCreateSpriteFrame extends Component {
         return size;
     }
 
-    private _createImage(pixels: ArrayBufferView, rect: math.Rect) {
-        let canvas = document.createElement('canvas');
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        let ctx = canvas.getContext("2d");
-        let imageData = ctx.createImageData(rect.width, rect.height);
-        let i = 0,
-            k = 0,
-            data = imageData.data,
-            length = data.length;
-        while (i < length) {
-            data[i++] = pixels[k++];
-            data[i++] = pixels[k++];
-            data[i++] = pixels[k++];
-            data[i++] = pixels[k++];
-        }
-        ctx.putImageData(imageData, 0, 0);
-        return canvas;
-    }
+    // private _createImage(pixels: ArrayBufferView, rect: math.Rect) {
+    //     let canvas = document.createElement('canvas');
+    //     canvas.width = rect.width;
+    //     canvas.height = rect.height;
+    //     let ctx = canvas.getContext("2d");
+    //     let imageData = ctx.createImageData(rect.width, rect.height);
+    //     let i = 0,
+    //         k = 0,
+    //         data = imageData.data,
+    //         length = data.length;
+    //     while (i < length) {
+    //         data[i++] = pixels[k++];
+    //         data[i++] = pixels[k++];
+    //         data[i++] = pixels[k++];
+    //         data[i++] = pixels[k++];
+    //     }
+    //     ctx.putImageData(imageData, 0, 0);
+    //     return canvas;
+    // }
 
-    private createImage(texture: DynamicAtlasTexture, sfs: SpriteFrame[]): HTMLCanvasElement {
+    private createImage(texture: DynamicAtlasTexture, sfs: SpriteFrame[]) {
         let width = texture.width, height = texture.height;
-        let canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        let ctx = canvas.getContext("2d");
 
         let x = 0, y = 0, sx = 0, sy = 0;
         sfs.forEach(sf => {
             let rect = sf.rect;
             let buffer = texture.getTextureBuffer(sf.texture as Texture2D, rect);
-            let img = this._createImage(buffer, rect);
             switch (this.align) {
                 case AlignType.Top:
                     sx = rect.width + this.offset.x;
@@ -125,10 +119,9 @@ export class YJCreateSpriteFrame extends Component {
                     sy = rect.height + this.offset.y;
                     break;
             }
-            ctx.drawImage(img, x, y);
+            texture.drawTextureBufferAt(buffer, x, y, rect.width, rect.height);
             x += sx;
             y += sy;
         });
-        return canvas;
     }
 }

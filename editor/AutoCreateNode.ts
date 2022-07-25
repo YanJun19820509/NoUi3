@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, SpriteFrame, Label, Size, Layers, Widget, TextAsset, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow } from 'cc';
+import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -33,7 +33,6 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export class AutoCreateNode extends Component {
 
     private atlas: SpriteAtlas;
-    private size: Size;
     private nameMap: any;
     private parent: Node;
     private rootPath: string;
@@ -93,7 +92,6 @@ export class AutoCreateNode extends Component {
         try {
             // console.log('createNodes', config);
             let size = new Size(config.width, config.height);
-            this.size = size;
             let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
             da.width = 512;
             da.height = 512;

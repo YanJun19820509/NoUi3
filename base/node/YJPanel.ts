@@ -72,9 +72,11 @@ export class YJPanel extends Component {
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
     public initPanel(): Promise<void> {
-        this.onInitPanel();
         if (this.getComponent(YJLoadAssets)) {
-            return this.getComponent(YJLoadAssets).load();
+            return this.getComponent(YJLoadAssets).load().then(() => {
+                this.onInitPanel();
+                return Promise.resolve();
+            });
         }
         return Promise.resolve();
     }

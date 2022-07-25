@@ -35,7 +35,7 @@ export class SetPositionToNodeTarget extends SetPosition {
 
         let pos = target.nodeWorldPosition;
         this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
-        super.onDataChange(pos);
+        super.onDataChange([pos.x, pos.y]);
     }
 
 }
