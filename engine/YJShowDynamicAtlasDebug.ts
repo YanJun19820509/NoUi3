@@ -1,5 +1,5 @@
 
-import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from 'cc';
+import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate, Button, EventHandler } from 'cc';
 import { DEBUG } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
@@ -29,19 +29,26 @@ export class YJShowDynamicAtlasDebug {
 
     private list: any;
     private _debugNode: Node;
+    private names: string[];
 
     constructor() {
         this.list = {};
+        this.names = [];
+        no.evn.on('close_dynamic_atlas_debug_node', () => {
+            this.showDebug();
+        }, this);
     }
 
     public add(a: Atlas, name: string): void {
         if (!a || !name) return;
         this.list[name] = a;
+        this.names[this.names.length] = name;
     }
 
     public remove(name: string): void {
         if (!name) return;
         delete this.list[name];
+        this.names.splice(this.names.indexOf(name), 1);
     }
 
     public showDebug(name?: string) {
@@ -95,10 +102,13 @@ export class YJShowDynamicAtlasDebug {
                 mem: a._texture.width * a._texture.height * 4 / 1024 / 1024 + 'M'
             };
         }
-        let keys = Object.keys(this.list);
+        // let keys = Object.keys(this.list);
         console.log(infos);
     }
 
+    public showNewestAtlas(): any {
+        this.showDebug(this.names[this.names.length - 1]);
+    }
 }
 
 window['showDynamicAtlas'] = function (name?: string) {
