@@ -55,16 +55,10 @@ export class Atlas {
         if (packedFrame) return packedFrame;
         const rect = spriteFrame.rect;
 
-        // let isRotated = canRotate && rect.width > rect.height;
+        let needRotated = canRotate && rect.width > rect.height;
 
-        // let width = isRotated ? rect.height : rect.width,
-        //     height = isRotated ? rect.width : rect.height;
-
-        let isRotated = spriteFrame.rotated;
-
-
-        let width = isRotated ? rect.height : rect.width,
-            height = isRotated ? rect.width : rect.height;
+        let width = needRotated ? rect.height : rect.width,
+            height = needRotated ? rect.width : rect.height;
 
         let p = this._maxRect.find(width, height);
         if (!p) {
@@ -73,15 +67,14 @@ export class Atlas {
         }
 
         let x = p.x, y = p.y;
-        // spriteFrame.rotated = isRotated;
-        this.drawImageAt(spriteFrame, x, y);
-        this.setSpriteFrameTextureRect(_uuid, x, y, width, height, isRotated);
+        this.setSpriteFrameTextureRect(_uuid, x, y, width, height, needRotated);
+        this.drawImageAt(spriteFrame, x, y, needRotated);
         return {
             x: x,
             y: y,
             w: width,
             h: height,
-            rotate: isRotated,
+            rotate: needRotated,
             texture: this._texture
         };
     }
@@ -141,14 +134,22 @@ export class Atlas {
         this._texture.destroy();
     }
 
-    private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number) {
+    private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number, needRotate: boolean) {
         let texture = spriteFrame.texture;
         let r = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
         let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
         let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
+        if (isRotated && !needRotate) {
+            this._rotateImageBuffer(buffer, rect.width, rect.height, false);
+            rect.width = r.width;
+            rect.height = r.height;
+        } else if (needRotate && !isRotated) {
+            this._rotateImageBuffer(buffer, rect.width, rect.height);
+            rect.width = r.height;
+            rect.height = r.width;
+        }
         let img = this._createImage(buffer, rect);
-        // if (isRotated) img = this._rotateImage(img);
         this._setSubImage(img, x, y);
     }
 
@@ -207,14 +208,28 @@ export class Atlas {
         this._texture.drawImageAt(img, x, y);
     }
 
-    private _rotateImage(img: HTMLCanvasElement): HTMLCanvasElement {
-        let canvas = document.createElement('canvas');
-        canvas.width = img.height;
-        canvas.height = img.width;
-        let ctx = canvas.getContext("2d");
-        ctx.rotate(1.5707963267948966);
-        ctx.drawImage(img, 0, -img.height);
-        return canvas;
+    private _rotateImageBuffer(buffer: Uint8Array, width: number, height: number, cw = true) {
+        var dd = [];
+        let length = Math.ceil(buffer.length / 4);
+        for (var ii = 0; ii < length; ii++) {
+            dd[ii] = [];
+            for (var jj = 0; jj < 4; jj++) {
+                dd[ii][jj] = buffer[ii * 4 + jj];
+            }
+        }
+        cw && (dd = dd.reverse());
+        let bb = [];
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                const [_x, _y] = [y, width - x - 1];
+                bb[_y * height + _x] = dd[y * width + x];
+            }
+        }
+        for (var i = 0; i < length; i++) {
+            for (var j = 0; j < 4; j++) {
+                buffer[i * 4 + j] = bb[i][j];
+            }
+        }
     }
 }
 
@@ -312,7 +327,7 @@ export class DynamicAtlasTexture extends Texture2D {
         gfxDevice.copyBuffersToTexture([buffer], gfxTexture, [region]);
     }
 
-    public getTextureBuffer(texture: Texture2D, rect: math.Rect): ArrayBufferView {
+    public getTextureBuffer(texture: Texture2D, rect: math.Rect): Uint8Array {
         const gfxTexture = texture.getGFXTexture();
         if (!gfxTexture) {
             return;

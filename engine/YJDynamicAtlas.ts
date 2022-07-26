@@ -139,7 +139,7 @@ export class YJDynamicAtlas extends Component {
                 } else frame._setDynamicAtlasFrame(packedFrame);
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
-                // ff.rotated = packedFrame.rotate;
+                ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
                 if (!frame.original && frame.name.indexOf('default_') == -1)
@@ -148,7 +148,7 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    public insertSpriteFrame(spriteFrame: SpriteFrame, canRotate: boolean) {
+    public insertSpriteFrame(spriteFrame: SpriteFrame, canRotate = false) {
         if (!spriteFrame || spriteFrame.texture._uuid == this.atlas?._texture._uuid) return null;
 
         // hack for pixel game,should pack to different sampler atlas
