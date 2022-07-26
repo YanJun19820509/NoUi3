@@ -88,4 +88,17 @@ export class YJNodeTarget extends Component {
         }
         return a;
     }
+
+    /**
+     * 获取子节点中的目标节点
+     * @param type 
+     * @returns 
+     */
+    public getSubTarget(type: string): YJNodeTarget {
+        let arr = this.getComponentsInChildren(YJNodeTarget);
+        for (let i = 0, n = arr.length; i < n; i++) {
+            if (arr[i].type == type) return arr[i];
+        }
+    }
+
 }
