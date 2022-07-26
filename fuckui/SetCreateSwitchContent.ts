@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -31,6 +32,12 @@ class ContentInfo {
         } else {
             let n = await this.prefab.loadPrefab();
             this.content = instantiate(n);
+
+            if (this.content.getComponent(YJLoadAssets)) {
+                return this.content.getComponent(YJLoadAssets).load().then(() => {
+                    return Promise.resolve(this.content);
+                });
+            }
             return Promise.resolve(this.content);
         }
     }
