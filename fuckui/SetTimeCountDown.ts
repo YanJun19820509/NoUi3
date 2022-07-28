@@ -38,7 +38,7 @@ export class SetTimeCountDown extends FuckUi {
     @property({ type: YJTimeFormatDecorator, displayName: '格式化装饰器' })
     decorator: YJTimeFormatDecorator = null;
 
-    @property({ type: FuckUi, tooltip: '将倒计时转换成百分比，传给对应组件', visible() { return !this.isLabel; } })
+    @property({ type: FuckUi, tooltip: '将倒计时转换成百分比，传给对应组件' })
     fuckUiComponents: FuckUi[] = [];
     @property({ displayName: '由0到1', visible() { return !this.isLabel; } })
     is0_1: boolean = true;
@@ -65,12 +65,17 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        let a = Number(data);
-        this._countDown = a;
-        this._max = a;
+        if (data instanceof Array) {
+            this._countDown = Number(data[0]);
+            this._max = Number(data[1]);
+        } else {
+            let a = Number(data);
+            this._countDown = a;
+            this._max = a;
+        }
         this.unschedule(this.countdown);
         this.countdown();
-        this.schedule(this.countdown, 1, a);
+        this.schedule(this.countdown, 1, this._countDown);
 
     }
 
@@ -80,17 +85,18 @@ export class SetTimeCountDown extends FuckUi {
             if (this.decorator) this.setLabel(this.decorator.format(a));
             else
                 this.setLabel(no.sec2time(a, this.formatter, this.show0));
-            if (a < 0) {
-                no.EventHandlerInfo.execute(this.endCalls);
+            if (a == 0) {
+                this.scheduleOnce(() => {
+                    no.EventHandlerInfo.execute(this.endCalls);
+                }, 1);
             } else {
                 no.EventHandlerInfo.execute(this.secondCalls);
                 if (this.isTime && a == this.time) {
                     no.EventHandlerInfo.execute(this.timeCalls);
                 }
             }
-        } else {
-            this.setPercent(a / this._max);
         }
+        this.setPercent(a / this._max);
     }
 
     private setLabel(str: string): void {
