@@ -1,5 +1,5 @@
 
-import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate, Button, EventHandler } from 'cc';
+import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from 'cc';
 import { DEBUG } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
