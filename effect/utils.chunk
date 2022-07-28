@@ -3,12 +3,11 @@
 bool isTrue(float defines, bool isColor, float checkValue, float index){
   float a = 0.0;
   if (isColor){
-    a = floor(floor(defines)/pow(10.,index));
+    a = floor(fract(floor(defines)/pow(10.,index+1.))*10.);
     return a == checkValue;
   }else{
-    a = fract(defines);
-    float b = checkValue/a;
-    return b - 10.0*floor(b/10.0) == 0.0;
+    a = fract(floor(fract(defines)*pow(10.,index+1.))/pow(10.,index))*pow(10.,index);
+    return a == checkValue;
   }
 }
 
