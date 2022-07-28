@@ -1,13 +1,10 @@
 
 // 判断 defined 类型状态,type为 0/1
 bool isTrue(float defines, bool isColor, float checkValue, float index){
-  float a = 0.0;
   if (isColor){
-    a = floor(fract(floor(defines)/pow(10.,index+1.))*10.);
-    return a == checkValue;
+    return floor(fract(floor(defines)/pow(10.,index+1.))*10.) == checkValue;
   }else{
-    a = fract(floor(fract(defines)*pow(10.,index+1.))/pow(10.,index))*pow(10.,index);
-    return a == checkValue;
+    return fract(floor(fract(defines)*pow(10.,index+1.))/pow(10.,index))*pow(10.,index) == checkValue;
   }
 }
 
