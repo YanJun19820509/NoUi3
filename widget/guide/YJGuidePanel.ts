@@ -110,7 +110,14 @@ export class YJGuidePanel extends YJPanel {
     }
 
     public static next(): void {
-        YJGuidePanel._ins?.nextStep();
+        this._ins?.nextStep();
+    }
+
+    /**
+     * 是否在引导中
+     */
+    public static get isGuiding(): boolean {
+        return !!this._ins;
     }
 
 }
