@@ -240,7 +240,7 @@ export namespace no {
         }
     }
 
-    export async function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
+    export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             this.emitAndOnceCallback(emitType, callbackType, resolve, args, target);
         });
@@ -252,7 +252,7 @@ export namespace no {
      * @param target
      * @param arg 标识，当事件触发时会将这个值返回
      */
-    export async function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
+    export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
         return new Promise<any>(resolve => {
             evn.once(type, () => {
                 resolve(arg);
@@ -265,7 +265,7 @@ export namespace no {
      * @param express 
      * @returns 
      */
-    export async function waitFor(express: (dt?: number) => boolean, comp: Component): Promise<void> {
+    export function waitFor(express: (dt?: number) => boolean, comp: Component): Promise<void> {
         return new Promise<void>(resolve => {
             this.callUntil(express, resolve, comp);
         });
@@ -277,7 +277,7 @@ export namespace no {
      * @param target 
      * @returns 
      */
-    export async function waiForEventValue(type: string, target?: any): Promise<any> {
+    export function waiForEventValue(type: string, target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             evn.once(type, resolve, target);
         });
@@ -290,7 +290,7 @@ export namespace no {
      * @param target 
      * @returns 
      */
-    export async function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
+    export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         return new Promise<void>(resolve => {
             evn.on(type, (v: any) => {
                 if (v == equalValue) {

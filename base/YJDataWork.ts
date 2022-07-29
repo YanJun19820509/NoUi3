@@ -68,6 +68,7 @@ export class YJDataWork extends Component {
 
     public setValue(key: string, value: any) {
         this._data.set(key, value);
+        if (!this._ready) return;
         this.onValueChange(key, value);
     }
 
@@ -75,8 +76,7 @@ export class YJDataWork extends Component {
         this._data.clear();
     }
 
-    private async onValueChange(key: string, value: any) {
-        await no.waitFor(() => { return this._ready; }, this);
+    private onValueChange(key: string, value: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];
         this.setUiData(ui, value);
         if (value instanceof Array) {

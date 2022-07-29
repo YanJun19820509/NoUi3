@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite, SpriteFrame, UITransform, view } from 'cc';
+import { _decorator, Sprite, SpriteFrame, UITransform, view, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -34,11 +34,11 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private setSpriteFrame(sf: SpriteFrame) {
-        if (!sf) return;
-        if (!this?.getComponent(YJDynamicTexture))
+        if (!sf || !isValid(this, true)) return;
+        if (!this.getComponent(YJDynamicTexture))
             this.sprite.spriteFrame = sf;
         else
-            this?.getComponent(YJDynamicTexture).packSpriteFrame(sf);
+            this.getComponent(YJDynamicTexture).packSpriteFrame(sf);
         this.checkShader();
     }
 
