@@ -185,7 +185,7 @@ export namespace no {
 
 
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
-            if (handlers.length == 0) return;
+            if (!handlers || handlers.length == 0) return;
             handlers.forEach(handler => {
                 handler.execute.apply(handler, args);
             });
