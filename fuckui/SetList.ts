@@ -171,15 +171,15 @@ export class SetList extends FuckUi {
     }
 
     private setItemData(item: Node, data = []) {
-        let a = item.getComponent(SetCreateNode) || item.getComponentInChildren(SetCreateNode);
-        if (a)
-            a.setData(JSON.stringify(data));
+        let b = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (b) {
+            b.data = data;
+            b.init();
+        }
         else {
-            let b = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-            if (b) {
-                b.data = data;
-                b.init();
-            }
+            let a = item.getComponent(SetCreateNode) || item.getComponentInChildren(SetCreateNode);
+            if (a)
+                a.setData(JSON.stringify(data));
         }
     }
 
