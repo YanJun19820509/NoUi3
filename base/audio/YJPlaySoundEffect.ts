@@ -34,7 +34,8 @@ export class YJPlaySoundEffect extends Component {
         if (this.effectType == SoundEffectType.ClickButton) {
             let btns = this.getComponentsInChildren(Button);
             btns.forEach(btn => {
-                btn.node.on(Node.EventType.TOUCH_START, this.a_play, this);
+                if (!btn.getComponent(YJPlaySoundEffect))
+                    btn.node.on(Node.EventType.TOUCH_START, this.a_play, this);
             });
         } else if (this.effectType != SoundEffectType.Other) {
             let handler = no.EventHandlerInfo.new(this.node, 'YJPlaySoundEffect', 'a_play');
@@ -57,7 +58,7 @@ export class YJPlaySoundEffect extends Component {
                 YJSoundEffectManager.ins.playCloseSoundEffect();
                 break;
             case SoundEffectType.Other:
-                YJSoundEffectManager.ins.playEffectByAtlas(this.alias);
+                YJSoundEffectManager.ins.playEffectByAlias(this.alias);
                 break;
         }
     }

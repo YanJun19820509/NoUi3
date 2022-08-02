@@ -68,11 +68,17 @@ export class YJSoundEffectManager extends Component {
         YJSoundEffectManager._ins = null;
     }
 
+    public playMusicByAlias(alias: string): void {
+        let url = this._map[alias];
+        if (url) YJAudioManager.ins.playBGM(url);
+    }
+
+
     /**
      * 根据别名播放音效
      * @param alias 
      */
-    public playEffectByAtlas(alias: string): void {
+    public playEffectByAlias(alias: string): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playEffect(url);
     }
@@ -81,21 +87,21 @@ export class YJSoundEffectManager extends Component {
      * 播放通用界面打开音效
      */
     public playClickSoundEffect(): void {
-        if (this.clickAtlas) this.playEffectByAtlas(this.clickAtlas);
+        if (this.clickAtlas) this.playEffectByAlias(this.clickAtlas);
     }
 
     /**
      * 播放通用点击音效
      */
     public playOpenSoundEffect(): void {
-        if (this.openAtlas) this.playEffectByAtlas(this.openAtlas);
+        if (this.openAtlas) this.playEffectByAlias(this.openAtlas);
     }
 
     /**
      * 播放通用关闭打开音效
      */
     public playCloseSoundEffect(): void {
-        if (this.closeAtlas) this.playEffectByAtlas(this.closeAtlas);
+        if (this.closeAtlas) this.playEffectByAlias(this.closeAtlas);
     }
 
 
