@@ -39,7 +39,7 @@ export class YJButton extends Component {
     }
 
     public a_trigger(event: EventTouch) {
-        if (event.touch.getID() != 0) return;
+        if (event?.touch?.getID() != 0) return;
         no.Throttling.ins(this).wait(this.delay).then(a => {
             if (a)
                 no.executeHandlers(this._clickEvents);
