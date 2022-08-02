@@ -32,6 +32,8 @@ export class YJDynamicTexture extends Component {
     dynamicAtlas: YJDynamicAtlas = null;
     @property
     needClear: boolean = false;
+    @property
+    canRotate: boolean = true;
 
     onLoad() {
         if (!this.enabled) return;
@@ -64,7 +66,7 @@ export class YJDynamicTexture extends Component {
         }
         frame = frame || sprite?.spriteFrame;
         if (!frame) return;
-        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, () => {
+        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, this.canRotate, () => {
             sprite.spriteFrame = frame;
         });
     }
@@ -108,7 +110,7 @@ export class YJDynamicTexture extends Component {
 
         frame._uuid = this.createLabelFrameUuid(label);
 
-        this.dynamicAtlas?.packToDynamicAtlas(label, frame);
+        this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
     }
 
     private createLabelFrameUuid(label: Label, str?: string): string {

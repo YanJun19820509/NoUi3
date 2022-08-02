@@ -105,7 +105,7 @@ export class YJDynamicAtlas extends Component {
      * @method packToDynamicAtlas
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
-    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, onFail?: () => void) {
+    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
         if (!this.isWork) return;
 
         if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
@@ -114,7 +114,7 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            const packedFrame = this.insertSpriteFrame(frame, comp instanceof Sprite);
+            const packedFrame = this.insertSpriteFrame(frame, canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
             else onFail?.();
@@ -136,7 +136,10 @@ export class YJDynamicAtlas extends Component {
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
-                } else frame._setDynamicAtlasFrame(packedFrame);
+                } else {
+                    frame._setDynamicAtlasFrame(packedFrame);
+                    frame.rotated = packedFrame.rotate;
+                }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
                 ff.rotated = packedFrame.rotate;
