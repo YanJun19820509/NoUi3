@@ -434,7 +434,10 @@ js.mixin(dynamicAtlasManager, {
             (a as any).dynamicAtlas = b.dynamicAtlas;
             (a as any).canRotate = b.canRotate;
             a.setCommonMaterial();
-        }
-        a?.pack();
+            setTimeout(() => {
+                a?.pack();
+            }, 17);
+        } else
+            a?.pack();
     }
 });

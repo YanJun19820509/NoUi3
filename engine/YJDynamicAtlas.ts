@@ -137,8 +137,8 @@ export class YJDynamicAtlas extends Component {
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
                 } else {
-                    frame._setDynamicAtlasFrame(packedFrame);
                     frame.rotated = packedFrame.rotate;
+                    frame._setDynamicAtlasFrame(packedFrame);
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
