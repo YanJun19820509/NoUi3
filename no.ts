@@ -1423,14 +1423,13 @@ export namespace no {
      * @param isInterval 是否间隔时间。如果是，则从当前时间开始计算重置时间；如果否，则从当天0点开始计算。默认false
      */
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
-        let zeroTime = zeroTimestamp(),
-            now = sysTime.now,
-            resetTime = (isInterval ? now : zeroTime) + time;
+        let now = sysTime.now;
         let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
-        let lt = lastResetTime[dataKey] || zeroTime - 1;
-        if (resetTime > lt && resetTime <= now) {
+        let lt = lastResetTime[dataKey];
+
+        if (!lt || now >= lt) {
             dataCache.setLocal(dataKey, value);
-            lastResetTime[dataKey] = now;
+            lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
             dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
         }
     }

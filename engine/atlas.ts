@@ -430,7 +430,9 @@ js.mixin(dynamicAtlasManager, {
         let a: any = comp.getComponent('YJDynamicTexture');
         if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
             a = comp.addComponent('YJDynamicTexture');
-            (a as any).dynamicAtlas = (comp.node.parent.getComponent('YJDynamicTexture') as any).dynamicAtlas;
+            let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
+            (a as any).dynamicAtlas = b.dynamicAtlas;
+            (a as any).canRotate = b.canRotate;
             a.setCommonMaterial();
         }
         a?.pack();

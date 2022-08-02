@@ -109,6 +109,7 @@ export class YJDynamicTexture extends Component {
             return;
 
         frame._uuid = this.createLabelFrameUuid(label);
+        frame.rotated = false;
 
         this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
     }

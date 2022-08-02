@@ -81,6 +81,7 @@ export class SetCreateNode extends FuckUi {
                 item.active = !!data[i];
                 if (a && data[i]) {
                     a.data = data[i];
+                    a.init();
                 }
                 item.parent = this.container;
             }
