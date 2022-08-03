@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js, Font } from 'cc';
-import { EDITOR, WECHAT } from 'cc/env';
+import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
@@ -62,9 +62,16 @@ export namespace no {
         public emit(type: string, ...args: any[]): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type];
             if (!a) return;
-            a.forEach(b => {
-                b.h.apply(b.t, args);
-            });
+            if (DEBUG) {
+                a.forEach(b => {
+                    try {
+                        b.h.apply(b.t, args);
+                    } catch (e) { console.error(e); }
+                });
+            } else
+                a.forEach(b => {
+                    b.h.apply(b.t, args);
+                });
             for (let i = a.length - 1; i >= 0; i--) {
                 let b = a[i];
                 if (b.o) {

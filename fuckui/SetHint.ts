@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, Label } from 'cc';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -27,6 +28,9 @@ export class SetHint extends FuckUi {
     @property({ type: Label, displayName: '显示红点数量', visible() { return this.isNumber; } })
     label: Label = null;
 
+    @property({ type: YJCharLabel, displayName: '显示红点数量', visible() { return this.isNumber; } })
+    charLabel: YJCharLabel = null;
+
     onLoad() {
         super.onLoad();
         this.targetNode = this.targetNode || this.node;
@@ -35,7 +39,11 @@ export class SetHint extends FuckUi {
     protected onDataChange(data: any) {
         let v = Number(data);
         this.targetNode.active = v > 0;
-        if (this.isNumber && this.label != null)
-            this.label.string = data;
+        if (this.isNumber) {
+            if (this.label != null)
+                this.label.string = data;
+            if (this.charLabel != null)
+                this.charLabel.string = data;
+        }
     }
 }

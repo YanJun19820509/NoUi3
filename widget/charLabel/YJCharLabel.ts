@@ -73,7 +73,7 @@ export class YJCharLabel extends Component {
     }
 
     public set string(v: string) {
-        this.setLabel(v);
+        this.setLabel(`${v}`);
     }
 
     public setLabel(s: string): void {
