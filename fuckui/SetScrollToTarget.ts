@@ -28,11 +28,17 @@ export class SetScrollToTarget extends SetScrollToPercent {
     protected onDataChange(data: any) {
         this.triedNum = 0;
         this.scheduleOnce(() => {
-            this.a_scrollToTarget(data);
+            this.scrollToTarget(data);
         }, this.wait);
     }
 
     public a_scrollToTarget(targetType: string) {
+        this.scheduleOnce(() => {
+            this.scrollToTarget(targetType);
+        }, this.wait);
+    }
+
+    private scrollToTarget(targetType: string) {
         if (this.scrollView == null) return;
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
