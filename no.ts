@@ -557,7 +557,7 @@ export namespace no {
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
-        let i = this.indexOfArray(array, value, key);
+        let i = indexOfArray(array, value, key);
         if (i == -1) return null;
         return array[i];
     }
@@ -565,7 +565,7 @@ export namespace no {
     export function addToArray(array: any[], value: any, key?: string): void {
         if (key == null && array.indexOf(value) == -1) {
             array[array.length] = value;
-        } else if (key != null && this.indexOfArray(array, value, key) == -1) {
+        } else if (key != null && indexOfArray(array, value, key) == -1) {
             array[array.length] = value;
         }
     }
@@ -585,7 +585,7 @@ export namespace no {
         if (key == null) {
             i = array.indexOf(value);
         } else {
-            i = this.indexOfArray(array, value, key);
+            i = indexOfArray(array, value, key);
         }
         if (i > -1) array.splice(i, 1);
     }
