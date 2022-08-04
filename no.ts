@@ -155,6 +155,9 @@ export namespace no {
 
     class st {
         private _time: number;
+        private _targets: any[];
+        private _num: number;
+        private _IdKey = '__tickTockId';
 
         public get now(): number {
             return this._time;
@@ -166,10 +169,47 @@ export namespace no {
 
         constructor() {
             this._time = Math.floor((new Date()).getTime() / 1000);
+            this._targets = [];
+            this._num = 1;
             setInterval(() => {
                 this._time++;
+                this.cb();
             }, 1000);
 
+        }
+
+        /**
+         * 注册每秒回调目标
+         * @param target 目标，可为任意类的实例，但需要实现方法doTickTock(now: number){}
+         */
+        public onTickTock(target: any): void {
+            if (target == null) return;
+            if (!target[this._IdKey])
+                target[this._IdKey] = this._num++;
+            addToArray(this._targets, target, this._IdKey);
+        }
+
+        public offTickTock(target: any): void {
+            removeFromArray(this._targets, target, this._IdKey);
+        }
+
+
+        private cb() {
+            if (DEBUG) {
+                try {
+                    for (let i = this._targets.length - 1; i >= 0; i--) {
+                        let a = this._targets[i];
+                        if (a && a.doTickTock) a.doTickTock(this._time);
+                    }
+                } catch (e) {
+                    console.log(e);
+                }
+            } else {
+                for (let i = this._targets.length - 1; i >= 0; i--) {
+                    let a = this._targets[i];
+                    if (a && a.doTickTock) a.doTickTock(this._time);
+                }
+            }
         }
     }
 
@@ -2281,11 +2321,13 @@ export namespace no {
          * @param v v为红点数量,v>0时显示红点，否则隐藏
          */
         public setHint(type: string, v: number) {
+            v = no.float(v, 0);
             this.data.set(type, v);
             this.emit(type, v, type);
         }
 
         public changeHint(type: string, v: number): void {
+            v = no.float(v, 0);
             let a = this.getHintValue(type);
             a += v;
             if (a < 0) a = 0;

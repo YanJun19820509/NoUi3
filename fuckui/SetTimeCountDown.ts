@@ -56,47 +56,49 @@ export class SetTimeCountDown extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '定时回调', visible() { return this.isTime; } })
     timeCalls: no.EventHandlerInfo[] = [];
 
-    private _countDown: number;
     private _max: number;
+    private _deadline: number;
 
     onLoad() {
         super.onLoad();
         if (this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).needClear = true;
     }
 
+    onDestroy() {
+        no.sysTime.offTickTock(this);
+    }
+
     protected onDataChange(data: any) {
         if (data instanceof Array) {
-            this._countDown = Number(data[0]);
+            this._deadline = Number(data[0]) + no.sysTime.now;
             this._max = Number(data[1]);
         } else {
             let a = Number(data);
-            this._countDown = a;
+            this._deadline = a + no.sysTime.now;
             this._max = a;
         }
-        this.unschedule(this.countdown);
-        this.countdown();
-        this.schedule(this.countdown, 1, this._countDown);
-
+        no.sysTime.onTickTock(this);
     }
 
-    private countdown() {
-        let a = this._countDown--;
+    public doTickTock(now: number) {
+        let a = this._deadline - now;
         if (this.isLabel) {
             if (this.decorator) this.setLabel(this.decorator.format(a));
             else
                 this.setLabel(no.sec2time(a, this.formatter, this.show0));
-            if (a == 0) {
-                this.scheduleOnce(() => {
-                    no.EventHandlerInfo.execute(this.endCalls);
-                }, 1);
-            } else {
-                no.EventHandlerInfo.execute(this.secondCalls);
-                if (this.isTime && a == this.time) {
-                    no.EventHandlerInfo.execute(this.timeCalls);
-                }
+        }
+        this.setPercent(a);
+        if (a == 0) {
+            no.sysTime.offTickTock(this);
+            this.scheduleOnce(() => {
+                no.EventHandlerInfo.execute(this.endCalls);
+            }, 1);
+        } else {
+            no.EventHandlerInfo.execute(this.secondCalls);
+            if (this.isTime && a == this.time) {
+                no.EventHandlerInfo.execute(this.timeCalls);
             }
         }
-        this.setPercent(a / this._max);
     }
 
     private setLabel(str: string): void {
@@ -106,6 +108,7 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     private setPercent(v: number) {
+        v /= this._max;
         if (this.is0_1) v = 1 - v;
         this.fuckUiComponents.forEach(ui => {
             ui.setData(String(v));
