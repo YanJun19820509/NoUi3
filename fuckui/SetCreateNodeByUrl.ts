@@ -64,6 +64,9 @@ export class SetCreateNodeByUrl extends FuckUi {
                 this.template = instantiate(item)
                 this.setItems(data);
                 this.clear();
+                this.scheduleOnce(() => {
+                    this.resizeContentSize();
+                });
             });
         } else {
             this.setItems(data);
@@ -102,7 +105,6 @@ export class SetCreateNodeByUrl extends FuckUi {
                 }
             }
         }
-        this.resizeContentSize();
     }
 
     private resizeContentSize() {

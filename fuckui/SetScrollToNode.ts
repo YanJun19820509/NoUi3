@@ -40,6 +40,6 @@ export class SetScrollToNode extends SetScrollToPercent {
         if (!this.scrollView.horizontal) {
             offset.x = 0;
         }
-        this.scrollToOffset(offset);
+        this.scrollToOffset(offset, this.duration);
     }
 }

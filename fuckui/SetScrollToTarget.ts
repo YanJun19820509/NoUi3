@@ -1,5 +1,5 @@
 
-import { UITransform, v2, _decorator } from 'cc';
+import { math, UITransform, v2, _decorator } from 'cc';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';
@@ -22,36 +22,57 @@ const { ccclass, menu, property } = _decorator;
 export class SetScrollToTarget extends SetScrollToPercent {
     @property
     tryNum: number = 100;
+    @property({ tooltip: '受content节点缩放影响' })
+    affectedByScale: boolean = false;
 
     private triedNum: number = 0;
+    private scrollByFrame: boolean = false;
+    private scrollTime: number;
+    private _target: YJNodeTarget;
 
     protected onDataChange(data: any) {
         this.triedNum = 0;
-        this.scheduleOnce(() => {
-            this.scrollToTarget(data);
-        }, this.wait);
+        this.a_scrollToTarget(data);
     }
 
     public a_scrollToTarget(targetType: string) {
-        this.scheduleOnce(() => {
-            this.scrollToTarget(targetType);
-        }, this.wait);
+        if (this.scrollView == null) return;
+        if (this.wait > 0)
+            this.scheduleOnce(() => {
+                this.startScroll(targetType);
+            }, this.wait);
+        else this.startScroll(targetType);
     }
 
-    private scrollToTarget(targetType: string) {
-        if (this.scrollView == null) return;
+    private startScroll(targetType: string) {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             if (this.triedNum < this.tryNum) {
                 this.triedNum++;
                 this.scheduleOnce(() => {
-                    this.a_scrollToTarget(targetType);
+                    this.startScroll(targetType);
                 });
                 return;
             }
             console.error('找不到target：', targetType);
             return;
         }
+        if (!this.affectedByScale)
+            this.scrollToTarget(target);
+        else this.scrollToTargetByFrame(target);
+    }
+
+    private scrollToTarget(target: YJNodeTarget) {
+        this.scrollToOffset(this.getOffset(target));
+    }
+
+    private scrollToTargetByFrame(target: YJNodeTarget) {
+        this.scrollByFrame = true;
+        this.scrollTime = this.duration;
+        this._target = target;
+    }
+
+    private getOffset(target: YJNodeTarget): math.Vec2 {
         let pos = target.nodeWorldPosition;
         let ut = this.scrollView.content.getComponent(UITransform);
         let anchor = ut.anchorPoint;
@@ -67,6 +88,22 @@ export class SetScrollToTarget extends SetScrollToPercent {
         if (!this.scrollView.horizontal) {
             offset.x = 0;
         }
+        if (offset.x < 0) offset.x = 0;
+        if (offset.y < 0) offset.y = 0;
+        return offset;
+    }
+
+    update(dt: number) {
+        if (!this.scrollByFrame) return;
+        let curOffset = this.scrollView.getScrollOffset();
+        let offset = this.getOffset(this._target);
+        offset.x += curOffset.x;
+        offset.y -= curOffset.y;
+        offset.multiplyScalar(Math.min(dt / this.scrollTime, 1));
+        offset.x -= curOffset.x;
+        offset.y += curOffset.y;
         this.scrollToOffset(offset);
+        this.scrollTime -= dt;
+        if (this.scrollTime <= 0) this.scrollByFrame = false;
     }
 }

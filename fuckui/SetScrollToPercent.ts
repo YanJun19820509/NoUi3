@@ -52,16 +52,16 @@ export class SetScrollToPercent extends FuckUi {
         if (!this.scrollView.horizontal) {
             offset.x = 0;
         }
-        this.scrollToOffset(offset);
+        this.scrollToOffset(offset, this.duration);
     }
 
-    protected scrollToOffset(offset: Vec2) {
+    protected scrollToOffset(offset: Vec2, duration = 0) {
         if (this.scrollView == null) return;
         let maxOffset = this.scrollView.getMaxScrollOffset();
         if (offset.x < 0) offset.x = 0;
         else if (offset.x > maxOffset.x) offset.x = maxOffset.x;
         if (offset.y < 0) offset.y = 0;
         else if (offset.y > maxOffset.y) offset.y = maxOffset.y;
-        this.scrollView.scrollToOffset(offset, this.duration);
+        this.scrollView.scrollToOffset(offset, duration);
     }
 }
