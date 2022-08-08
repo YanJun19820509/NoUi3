@@ -43,11 +43,6 @@ export class YJComboBox extends YJDataWork {
     onLoad() {
         let sv = this.getComponentInChildren(ScrollView);
         sv.node.getComponent(UITransform).setContentSize(this.size);
-        find('Canvas').on(Node.EventType.TOUCH_START, this.hideList, this);
-    }
-
-    onDestroy() {
-        find('Canvas').off(Node.EventType.TOUCH_START, this.hideList, this);
     }
 
     protected afterInit() {

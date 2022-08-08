@@ -26,7 +26,7 @@ export class YJButton extends Component {
     private _clickEvents: EventHandler[] = [];
 
     onLoad() {
-        if (EDITOR) return;
+        if (EDITOR || !this.enabled) return;
         let btn = this.getComponent(Button);
         btn.clickEvents.forEach(e => {
             this._clickEvents[this._clickEvents.length] = e;
