@@ -69,14 +69,16 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        let now = no.sysTime.now;
         if (data instanceof Array) {
-            this._deadline = Number(data[0]) + no.sysTime.now;
+            this._deadline = Number(data[0]) + now;
             this._max = Number(data[1]);
         } else {
             let a = Number(data);
-            this._deadline = a + no.sysTime.now;
+            this._deadline = a + now;
             this._max = a;
         }
+        this.doTickTock(now);
         no.sysTime.onTickTock(this);
     }
 
