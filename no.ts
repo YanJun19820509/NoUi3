@@ -14,18 +14,13 @@ export namespace no {
         }
 
         /**
-         * 监听事件，同一type且同一target只能绑定一个handler
+         * 监听事件
          * @param type 
          * @param handler 
          * @param target 
          */
         public on(type: string, handler: Function, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type] || [];
-            if (a.length > 0 && target) {
-                for (let i = 0, n = a.length; i < n; i++) {
-                    if (a[i].t == target) return;
-                }
-            }
             a[a.length] = {
                 h: handler,
                 t: target,
@@ -73,6 +68,8 @@ export namespace no {
         public emit(type: string, ...args: any[]): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type];
             if (!a) return;
+            args = args || [];
+            args[args.length] = type;
             if (DEBUG) {
                 a.forEach(b => {
                     try {

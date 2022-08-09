@@ -62,7 +62,9 @@ export class YJEventOn extends Component {
         });
     }
 
-    private _on(type: string, ...args: string[]) {
+    private _on(...args: string[]) {
+        let type = args[args.length - 1];
+        no.log('YJEventOn', type, args);
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.type == type) {

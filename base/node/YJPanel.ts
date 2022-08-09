@@ -60,6 +60,7 @@ export class YJPanel extends Component {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
         }
+        no.log('panel onLoad', this.node.name);
     }
 
     onEnable() {
