@@ -58,7 +58,7 @@ export class YJGuidePanel extends YJPanel {
     }
 
     protected onClosePanel() {
-
+        no.evn.targetOff(this);
     }
 
     //子类实现
@@ -73,8 +73,8 @@ export class YJGuidePanel extends YJPanel {
         if (info.event) {
             this.showGuideNode(info.type);
             if (info.content)
-                await no.waiForEventValueEqual(info.event, info.content[0]);
-            else await no.waitForEvent(info.event);
+                await no.waiForEventValueEqual(info.event, info.content[0], this);
+            else await no.waitForEvent(info.event, this);
             this.nextStep();
         } else this.showGuide(info);
     }

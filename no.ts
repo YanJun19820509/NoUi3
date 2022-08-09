@@ -13,8 +13,19 @@ export namespace no {
             this._map = {};
         }
 
+        /**
+         * 监听事件，同一type且同一target只能绑定一个handler
+         * @param type 
+         * @param handler 
+         * @param target 
+         */
         public on(type: string, handler: Function, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type] || [];
+            if (a.length > 0 && target) {
+                for (let i = 0, n = a.length; i < n; i++) {
+                    if (a[i].t == target) return;
+                }
+            }
             a[a.length] = {
                 h: handler,
                 t: target,
@@ -85,6 +96,23 @@ export namespace no {
             let a: any[] = this._map[type];
             return a && a.length > 0;
         }
+
+        /**
+         * 在监听回调中移除某个监听
+         * @param type 
+         * @param target 
+         * @returns 
+         */
+        public offAfterTrigger(type: string, target?: any): void {
+            let a: { h: Function, t: any, o: boolean }[] = this._map[type];
+            if (!a) return;
+            a.forEach(b => {
+                if (target) {
+                    if (b.t == target) b.o = true;
+                } else b.o = true;
+            });
+        }
+
     }
     /**
     * 消息系统
@@ -338,10 +366,12 @@ export namespace no {
      * @returns 
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
+        let e = evn;
         return new Promise<void>(resolve => {
-            evn.on(type, (v: any) => {
+            e.on(type, (v: any) => {
+                log('waiForEventValueEqual', type, v);
                 if (v == equalValue) {
-                    evn.typeOff(type);
+                    e.offAfterTrigger(type, target);
                     resolve();
                 }
             }, target);
