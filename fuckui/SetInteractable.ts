@@ -23,16 +23,17 @@ export class SetInteractable extends FuckUi {
     reverse: boolean = false;
 
     protected onDataChange(data: any) {
+        if (!this.getComponent(Button)) return;
         data = Boolean(data);
         if (this.reverse) data = !data;
         data ? this.a_enable() : this.a_disable();
     }
 
     public a_enable(): void {
-        (this.getComponent(Button) || this.getComponent(Toggle)).interactable = true;
+        this.getComponent(Button).interactable = true;
     }
 
     public a_disable(): void {
-        (this.getComponent(Button) || this.getComponent(Toggle)).interactable = false;
+        this.getComponent(Button).interactable = false;
     }
 }

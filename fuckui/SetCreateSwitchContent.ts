@@ -87,7 +87,7 @@ export class SetCreateSwitchContent extends FuckUi {
     }
 
     private hideContent(exceptName: string) {
-        this.contents.forEach(info => {
+        this.contents?.forEach(info => {
             if (info.name != exceptName) info.hide();
         });
     }

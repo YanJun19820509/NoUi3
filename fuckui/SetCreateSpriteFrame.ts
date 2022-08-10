@@ -104,6 +104,7 @@ export class SetCreateSpriteFrame extends FuckUi {
         labelNode.parent = this.node;
         return new Promise<Label>(resolve => {
             no.assetBundleManager.loadFont(d.font, f => {
+                if (!label || !label.isValid) return;
                 label.font = f;
                 resolve(label);
             });
@@ -112,8 +113,8 @@ export class SetCreateSpriteFrame extends FuckUi {
 
     private drawSpriteFrameToTexture(sf: SpriteFrame, x: number, y: number) {
         let rect = sf.rect;
-        let buffer = this.texture.getTextureBuffer(sf.texture as Texture2D, rect);
-        this.texture.drawTextureBufferAt(buffer, x - rect.width / 2, y - rect.height / 2, rect.width, rect.height);
+        let buffer = this.texture?.getTextureBuffer(sf.texture as Texture2D, rect);
+        this.texture?.drawTextureBufferAt(buffer, x - rect.width / 2, y - rect.height / 2, rect.width, rect.height);
     }
 
     private drawTTFSpriteFramesToCanvas(labels: { label: Label, x: number, y: number }[]) {
@@ -149,6 +150,7 @@ export class SetCreateSpriteFrame extends FuckUi {
     }
 
     private setSpriteFrame() {
+        if (!this || !this.isValid) return;
         let newSf = new SpriteFrame();
         newSf.texture = this.texture;
         newSf._uuid = `${no.sysTime.now}`;

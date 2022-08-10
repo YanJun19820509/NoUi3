@@ -21,9 +21,12 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 @requireComponent(Button)
 export class YJButton extends Component {
     @property({ displayName: '防连点间隔时长(s)' })
-    delay: number = 1;
+    wait: number = 1;
+    @property({ displayName: '延时生效(s)' })
+    delay: number = 0;
 
     private _clickEvents: EventHandler[] = [];
+    private _delay: number = 0;
 
     onLoad() {
         if (EDITOR || !this.enabled) return;
@@ -39,10 +42,16 @@ export class YJButton extends Component {
     }
 
     public a_trigger(event: EventTouch) {
+        if (this._delay < this.delay) return;
         if (event?.touch?.getID() != 0) return;
-        no.Throttling.ins(this).wait(this.delay).then(a => {
+        no.Throttling.ins(this).wait(this.wait).then(a => {
             if (a)
                 no.executeHandlers(this._clickEvents);
         })
+    }
+
+    update(dt: number) {
+        if (this._delay >= this.delay) return;
+        this._delay += dt;
     }
 }
