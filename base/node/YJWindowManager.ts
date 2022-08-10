@@ -168,7 +168,7 @@ export class YJWindowManager extends Component {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
             content?.children.forEach(node => {
                 let panel = node.getComponent(YJPanel);
-                if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                if (panel && panel.needClear && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
                     panel.clear();
                 }
             });

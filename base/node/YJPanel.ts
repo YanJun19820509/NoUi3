@@ -53,8 +53,11 @@ export class YJPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onClose: no.EventHandlerInfo[] = [];
 
-    @property
-    needCache: boolean = true;
+    @property({ tooltip: '需要缓存' })
+    needCache: boolean = false;
+
+    @property({ tooltip: '需要清除', visible() { return this.needCache; } })
+    needClear: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -88,9 +91,9 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
-        if (this.needCache)
+        if (this.needCache){
             this.node.active = false;
-        else this.clear();
+        }else this.clear();
     }
 
     public clear() {

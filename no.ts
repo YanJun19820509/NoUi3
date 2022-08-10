@@ -1813,6 +1813,7 @@ export namespace no {
                     this.preloadFiles(bundleName, filePaths, onProgress);
                 });
             } else {
+                no.log('preloadFiles', filePaths);
                 bundle.preload(filePaths, Asset, (finished, total, requestItem) => {
                     onProgress && onProgress(finished / total);
                 }, (err, items) => {
