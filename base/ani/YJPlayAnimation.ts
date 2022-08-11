@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, Animation } from 'cc';
+import { no } from '../../no';
 const { ccclass, property, requireComponent } = _decorator;
 
 /**
@@ -18,12 +19,20 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(Animation)
 export class YJPlayAnimation extends Component {
     @property
-    playonEnable: boolean = false;
+    playOnNodeActive: boolean = false;
 
-    onEnable() {
-        if (this.playonEnable) {
-            let ani = this.getComponent(Animation);
-            ani.play(ani.defaultClip.name);
+    start() {
+        this.play();
+    }
+
+    async onEnable() {
+        if (this.playOnNodeActive) {
+            this.play();
         }
+    }
+
+    private play() {
+        let ani = this.getComponent(Animation);
+        ani.play(ani.clips[0].name);
     }
 }

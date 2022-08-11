@@ -100,6 +100,11 @@ export class SetList extends FuckUi {
                 item.destroy();
             });
             this.listItems = [];
+        } else if (this.wait > 0) {
+            for (let i = 0, n = this.listItems.length; i < n; i++) {
+                let item = this.listItems[i];
+                item.active = false;
+            }
         }
     }
 
@@ -112,6 +117,12 @@ export class SetList extends FuckUi {
         this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
+        if (this.wait > 0) {
+            for (let i = 0, n = this.listItems.length; i < n; i++) {
+                let item = this.listItems[i];
+                item.active = false;
+            }
+        }
         let a = [].concat(data);
         if (this.columnNumber > 1) {
             a = no.arrayToArrays(a, this.columnNumber);
@@ -151,10 +162,6 @@ export class SetList extends FuckUi {
     private async setList(start: number) {
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this.listItems.length >= this.showNum; }, this);
-        for (let i = 0, n = this.listItems.length; i < n; i++) {
-            let item = this.listItems[i];
-            item.active = false;
-        }
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
@@ -171,7 +178,9 @@ export class SetList extends FuckUi {
             this.lastIndex = start;
         }
         this.stopWait = false;
-        this.setItem(start, 0);
+        this.scheduleOnce(() => {
+            this.setItem(start, 0);
+        }, this.wait);
     }
 
     private stopWait: boolean = false;
@@ -182,7 +191,7 @@ export class SetList extends FuckUi {
         this.setItemData(item, this.listData[start + i]);
         item.active = true;
         i++;
-        if (this.stopWait)
+        if (this.stopWait || this.wait == 0)
             this.setItem(start, i);
         else
             this.scheduleOnce(() => {
