@@ -21,10 +21,13 @@ export class YJReleasePrefab extends Component {
     @property({ displayName: '强制释放' })
     force: boolean = true;
     private prefabUuid: string;
+    private aa: boolean = false;
     onLoad() {
         this.prefabUuid = this.node['_prefab']?.asset._uuid;
+        this.aa = this.enabled;
     }
     onDestroy() {
-        no.assetBundleManager.release(this.prefabUuid, this.force);
+        if (this.aa)
+            no.assetBundleManager.release(this.prefabUuid, this.force);
     }
 }

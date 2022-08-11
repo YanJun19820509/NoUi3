@@ -22,9 +22,14 @@ export class YJResetScrollView extends Component {
     @property({ min: 0, step: 0.1, displayName: '动效时长(s)' })
     duration: number = 0.1;
     onEnable() {
+        this.a_reset();
+    }
+
+    public a_reset(): void {
         let sv = this.getComponent(ScrollView);
         if (!sv) return;
         if (sv.horizontal) sv.scrollToPercentHorizontal(this.topLeft ? 0 : 1, this.duration, true);
         if (sv.vertical) sv.scrollToPercentVertical(this.topLeft ? 1 : 0, this.duration, true);
     }
+
 }
