@@ -55,6 +55,8 @@ export class YJLoadAssets extends Component {
     atlasInfos: LoadAssetsInfo[] = [];
     @property(LoadAssetsInfo)
     spriteFrameInfos: LoadAssetsInfo[] = [];
+    @property(LoadAssetsInfo)
+    prefabInfos: LoadAssetsInfo[] = [];
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
@@ -81,6 +83,7 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
+        let all = this.spriteFrameInfos.length + this.atlasInfos.length + this.prefabInfos.length;
         let n = 0;
         this.spriteFrameInfos.forEach(info => {
             info.load(() => {
@@ -94,7 +97,12 @@ export class YJLoadAssets extends Component {
                 ++n;
             });
         });
-        await no.waitFor(() => { return n == (this.spriteFrameInfos.length + this.atlasInfos.length); }, this);
+        this.prefabInfos.forEach(info => {
+            info.load(() => {
+                ++n;
+            });
+        });
+        await no.waitFor(() => { return n == all; }, this);
     }
 
     /**
