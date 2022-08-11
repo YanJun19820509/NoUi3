@@ -33,6 +33,10 @@ export class SetCreateNode extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+
+    @property({ displayName: '创建间隔(s)', step: .1, min: 0 })
+    wait: number = 0;
+
     @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
     onlyOne: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
@@ -84,6 +88,8 @@ export class SetCreateNode extends FuckUi {
                     a.init();
                 }
                 item.parent = this.container;
+                if (this.wait > 0)
+                    await no.sleep(this.wait, this);
             }
         }
 

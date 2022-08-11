@@ -34,6 +34,9 @@ export class SetList extends FuckUi {
     @property({ displayName: '列数', step: 1, min: 1 })
     columnNumber: number = 1;
 
+    @property({ displayName: '创建间隔(s)', step: .1, min: 0 })
+    wait: number = 0;
+
     @property(ScrollView)
     scrollView: ScrollView = null;
     @property(YJDynamicAtlas)
@@ -106,6 +109,7 @@ export class SetList extends FuckUi {
     }
 
     protected async onDataChange(data: any) {
+        this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
         let a = [].concat(data);
@@ -147,6 +151,10 @@ export class SetList extends FuckUi {
     private async setList(start: number) {
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this.listItems.length >= this.showNum; }, this);
+        for (let i = 0, n = this.listItems.length; i < n; i++) {
+            let item = this.listItems[i];
+            item.active = false;
+        }
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
@@ -162,12 +170,24 @@ export class SetList extends FuckUi {
             this.content.setPosition(p);
             this.lastIndex = start;
         }
+        this.stopWait = false;
+        this.setItem(start, 0);
+    }
 
-        for (let i = 0, n = this.listItems.length; i < n; i++) {
-            let item = this.listItems[i];
-            this.setItemPosition(item, start + i);
-            this.setItemData(item, this.listData[start + i]);
-        }
+    private stopWait: boolean = false;
+    private setItem(start: number, i: number) {
+        let item = this.listItems[i];
+        if (!item) return;
+        this.setItemPosition(item, start + i);
+        this.setItemData(item, this.listData[start + i]);
+        item.active = true;
+        i++;
+        if (this.stopWait)
+            this.setItem(start, i);
+        else
+            this.scheduleOnce(() => {
+                this.setItem(start, i);
+            }, this.wait);
     }
 
     private setItemData(item: Node, data = []) {
@@ -215,6 +235,7 @@ export class SetList extends FuckUi {
 
         let diff = startIndex - this.lastIndex;
         if (diff != 0) {
+            this.stopWait = true;
             this.lastIndex = startIndex;
             let n = this.listItems.length;
             for (let i = 0; i < n; i++) {
