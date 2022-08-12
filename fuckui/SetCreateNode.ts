@@ -34,7 +34,7 @@ export class SetCreateNode extends FuckUi {
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
 
-    @property({ displayName: '创建间隔(s)', step: .1, min: 0 })
+    @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
 
     @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
@@ -75,36 +75,38 @@ export class SetCreateNode extends FuckUi {
 
         let n = data.length
         let l = this.container.children.length;
+        for (let i = 0; i < l; i++) {
+            this.container.children[i].active = false;
+        }
+
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 }
-                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                item.active = !!data[i];
-                if (a && data[i]) {
-                    a.data = data[i];
-                    a.init();
-                }
                 item.parent = this.container;
-                if (this.wait > 0)
-                    await no.sleep(this.wait, this);
             }
         }
+        this.setItem(data, 0);
+    }
 
-        for (let i = 0; i < l; i++) {
-            let item = this.container.children[i];
-            if (data[i] == null) item.active = false;
-            else {
-                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                item.active = !!data[i];
-                if (a && data[i]) {
-                    a.data = data[i];
-                    a.init();
-                }
-            }
+    private setItem(data: any[], i: number) {
+        if (data[i] == null) return;
+        let item = this.container.children[i];
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            a.data = data[i];
+            a.init();
         }
+        item.active = true;
+        i++;
+        if (this.wait == 0)
+            this.setItem(data, i);
+        else
+            this.scheduleOnce(() => {
+                this.setItem(data, i);
+            }, this.wait);
     }
 
     protected async setDynamicAtlasNode(data: any) {

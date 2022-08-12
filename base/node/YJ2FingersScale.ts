@@ -25,6 +25,7 @@ export class YJ2FingersScale extends Component {
 
     private touched: boolean = false;
     private startDis: number;
+    private startScale: number;
 
     onEnable() {
         this.target = this.target || this.node;
@@ -47,6 +48,7 @@ export class YJ2FingersScale extends Component {
         e.propagationStopped = true;
         this.touched = true;
         this.startDis = this.touchesDistance(touches);
+        this.startScale = this.target.scale.x;
     }
 
     private onTouchMove(e: EventTouch) {
@@ -56,7 +58,11 @@ export class YJ2FingersScale extends Component {
         }
         e.propagationStopped = true;
         let dis = this.touchesDistance(e.getAllTouches());
-        let scale = math.clamp(this.target.scale.x + (dis - this.startDis) / this.startDis / 10, this.minScale, this.maxScale);
+        let scale = math.clamp(this.startScale + (dis - this.startDis) / this.startDis, this.minScale, this.maxScale);
+        if (scale == this.minScale || scale == this.maxScale) {
+            this.startScale = scale;
+            this.startDis = dis;
+        }
         this.target.setScale(scale, scale);
     }
 

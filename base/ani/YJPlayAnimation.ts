@@ -21,11 +21,7 @@ export class YJPlayAnimation extends Component {
     @property
     playOnNodeActive: boolean = false;
 
-    start() {
-        this.play();
-    }
-
-    async onEnable() {
+    onEnable() {
         if (this.playOnNodeActive) {
             this.play();
         }

@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -68,22 +69,19 @@ export class SetCreateSwitchContent extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        this.showContent(data);
+        this.showContent(data, 0);
     }
 
-    private async showContent(name: string) {
-        for (let i = 0, n = this.contents.length; i < n; i++) {
-            let info = this.contents[i];
-            if (info.name == name) {
-                let node = await info.load();
-                node.parent = this.container;
-                node.active = true;
-                this.scheduleOnce(() => {
-                    this.hideContent(name);
-                })
-                break;
-            }
-        }
+    private async showContent(name: string, i: number) {
+        let info = this.contents[i];
+        if (info.name == name) {
+            let node = await info.load();
+            node.parent = this.container;
+            node.active = true;
+            this.scheduleOnce(() => {
+                this.hideContent(name);
+            });
+        } else this.showContent(name, ++i);
     }
 
     private hideContent(exceptName: string) {

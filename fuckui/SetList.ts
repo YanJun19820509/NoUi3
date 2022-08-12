@@ -34,7 +34,7 @@ export class SetList extends FuckUi {
     @property({ displayName: '列数', step: 1, min: 1 })
     columnNumber: number = 1;
 
-    @property({ displayName: '创建间隔(s)', step: .1, min: 0 })
+    @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
 
     @property(ScrollView)
@@ -153,7 +153,7 @@ export class SetList extends FuckUi {
         }
         for (let i = this.listItems.length; i < this.showNum; i++) {
             let item = instantiate(this.template);
-            item.active = true;
+            // item.active = true;
             item.parent = this.content;
             this.listItems[this.listItems.length] = item;
         }
@@ -178,9 +178,7 @@ export class SetList extends FuckUi {
             this.lastIndex = start;
         }
         this.stopWait = false;
-        this.scheduleOnce(() => {
-            this.setItem(start, 0);
-        }, this.wait);
+        this.setItem(start, 0);
     }
 
     private stopWait: boolean = false;
