@@ -1,7 +1,6 @@
 
 import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers } from 'cc';
 import { EDITOR } from 'cc/env';
-import { posix } from 'path';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 const { ccclass, property, executeInEditMode } = _decorator;
@@ -59,21 +58,9 @@ export class YJScrollPanel extends Component {
                 let content = new Node('content');
                 content.layer = Layers.Enum.UI_2D;
                 content.addComponent(UITransform);
+                content.addComponent(SetNodeTweenAction);
                 content.parent = this.node;
                 this.content = content;
-            }
-        }
-    }
-
-    update() {
-        if (EDITOR) {
-            if (!this.content) return;
-            let a = this.content.getComponent(SetNodeTweenAction);
-            if (this.doubleClick) {
-                if (!a) this.content.addComponent(SetNodeTweenAction);
-                if (a.enabled) a.enabled = true;
-            } else {
-                if (a) a.destroy();
             }
         }
     }
@@ -89,6 +76,18 @@ export class YJScrollPanel extends Component {
     onDisable() {
         this.node.targetOff(this);
     }
+
+    public scrollTo(pos: math.Vec3, duration = 0): void {
+        this.fitPos(pos, this.content.scale.x);
+        if (duration <= 0) {
+            this.content.setPosition(pos);
+        } else {
+            this.setTween(duration, {
+                pos: [pos.x, pos.y]
+            });
+        }
+    }
+
 
     private onTouchStart(e: EventTouch) {
         if (!this.content) {
@@ -171,15 +170,19 @@ export class YJScrollPanel extends Component {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
         } else {
-            this.content.getComponent(SetNodeTweenAction).setData(JSON.stringify({
-                duration: 0.2,
-                to: 1,
-                props: {
-                    pos: [pos.x, pos.y],
-                    scale: [scale, scale]
-                }
-            }));
+            this.setTween(0.2, {
+                pos: [pos.x, pos.y],
+                scale: [scale, scale]
+            });
         }
+    }
+
+    private setTween(duration: number, props: any) {
+        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(JSON.stringify({
+            duration: duration,
+            to: 1,
+            props: props
+        }));
     }
 
     private touchesDistance(touches: Touch[]): number {
