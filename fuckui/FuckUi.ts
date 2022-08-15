@@ -32,7 +32,7 @@ export class FuckUi extends Component {
     private once: boolean = false;
 
     @property({ displayName: '重值忽略', tooltip: '如果输入的数据与上一次相同则忽略' })
-    private saveIgnore: boolean = true;
+    saveIgnore: boolean = true;
 
     @property({ displayName: '输出赋值日志' })
     private showValueLog: boolean = false;

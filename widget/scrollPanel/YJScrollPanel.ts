@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers } from 'cc';
+import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 const { ccclass, property, executeInEditMode } = _decorator;
@@ -29,16 +30,28 @@ export class YJScrollPanel extends Component {
     support2FingerScale: boolean = false;
     @property({ displayName: '支持双击缩放' })
     doubleClick: boolean = false;
+    @property({ displayName: '双击检测时长(s)', min: .1, visible() { return this.doubleClick; } })
+    doubleClickDuration: number = 1;
+    @property({ displayName: '双击放大', min: .1, visible() { return this.doubleClick; } })
+    doubleClickScaleMax: boolean = true;
+    @property({ displayName: '双击缩小', min: .1, visible() { return this.doubleClick; } })
+    doubleClickScaleMin: boolean = false;
     @property({ min: .1, visible() { return this.support2FingerScale; } })
     minScale: number = .5;
     @property({ min: .1, visible() { return this.support2FingerScale; } })
     maxScale: number = 1.5;
+    @property({ displayName: '动画时长(s)', min: 0 })
+    duration: number = .5;
 
     private startTouchPos: math.Vec2;
     private startDis: number;
     private startScale: number;
     private doubleClickStartTime: number = 0;
     private doubleClickNum: number = 0;
+    private doubleClicking: boolean = false;
+    private doubleClickScaleToMax: boolean;
+    private triedNum: number = 0;
+    private needCheckCheckRange: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -58,11 +71,12 @@ export class YJScrollPanel extends Component {
                 let content = new Node('content');
                 content.layer = Layers.Enum.UI_2D;
                 content.addComponent(UITransform);
-                content.addComponent(SetNodeTweenAction);
+                content.addComponent(SetNodeTweenAction).saveIgnore = false;
                 content.parent = this.node;
                 this.content = content;
             }
         }
+        this.doubleClickScaleToMax = this.doubleClickScaleMax;
     }
 
     onEnable() {
@@ -77,38 +91,114 @@ export class YJScrollPanel extends Component {
         this.node.targetOff(this);
     }
 
-    public scrollTo(pos: math.Vec3, duration = 0): void {
+    /**
+     * 
+     * @param pos scrollPanel内的坐标系上的点
+     */
+    public scrollTo(pos: math.Vec3): void {
         this.fitPos(pos, this.content.scale.x);
-        if (duration <= 0) {
+        if (this.duration <= 0) {
             this.content.setPosition(pos);
         } else {
-            this.setTween(duration, {
+            this.setTween({
                 pos: [pos.x, pos.y]
             });
         }
     }
 
+    /**
+     * 
+     * @param pos scrollPanel内的坐标系上的点
+     * @param scale 
+     */
+    public scrollToAndScale(pos: math.Vec3, scale: number): void {
+        this.fitPos(pos, scale);
+        if (this.duration <= 0) {
+            this.content.setScale(scale, scale);
+            this.content.setPosition(pos);
+        } else {
+            this.setTween({
+                pos: [pos.x, pos.y],
+                scale: [scale, scale]
+            });
+        }
+    }
+
+    public scrollToTarget(targetType: string): void {
+        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+        if (!target) {
+            if (this.triedNum < 60) {
+                this.triedNum++;
+                this.scheduleOnce(() => {
+                    this.scrollToTarget(targetType);
+                });
+                return;
+            }
+            console.error('scrollToTargetAndScale找不到target：', targetType);
+            return;
+        }
+        this.triedNum = 0;
+        this.scrollTo(this.fitTargetToCenter(target));
+    }
+
+    public scrollToTargetAndScale(targetType: string, scale: number): void {
+        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+        if (!target) {
+            if (this.triedNum < 60) {
+                this.triedNum++;
+                this.scheduleOnce(() => {
+                    this.scrollToTargetAndScale(targetType, scale);
+                });
+                return;
+            }
+            console.error('scrollToTargetAndScale找不到target：', targetType);
+            return;
+        }
+        this.triedNum = 0;
+        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale);
+    }
+
+    public scaleTo(scale: number): void {
+        let pos = this.content.getPosition();
+        this.fitPos(pos, scale);
+        if (this.duration <= 0) {
+            this.content.setScale(scale, scale);
+            this.content.setPosition(pos);
+        } else {
+            this.setTween({
+                pos: [pos.x, pos.y],
+                scale: [scale, scale]
+            });
+        }
+    }
+
+    private checkScaleRange(): void {
+        let nsize = this.node.getComponent(UITransform).contentSize;
+        let csize = this.content.getComponent(UITransform).contentSize;
+        let minScale = Math.min(Math.max(nsize.width / csize.width, nsize.height / csize.height), 1);
+        if (this.minScale < minScale) this.minScale = minScale;
+        no.log('checkScaleRange', nsize, csize, this.minScale);
+    }
 
     private onTouchStart(e: EventTouch) {
         if (!this.content) {
             e.preventSwallow = true;
             return;
         }
-        this.startTouchPos = this.touchUILocationAR(e.touch.getUILocation());
+        this.startTouchPos = this.touchUILocationAR(e);
         let touches = e.getAllTouches();
         if (touches.length < 2) {
             e.preventSwallow = true;
             if (this.doubleClick) {
-                let a = no.timestampMs();
-                if (this.doubleClickNum == 0)
-                    this.doubleClickStartTime = a;
-                else if (a - this.doubleClickStartTime > 1000) {
-                    this.doubleClickStartTime = a;
+                if (!this.doubleClicking) {
+                    this.doubleClicking = true;
+                    this.doubleClickStartTime = 0;
                     this.doubleClickNum = 0;
                 }
             }
             return;
         }
+        this.doubleClicking = false;
         e.propagationStopped = true;
         this.startDis = this.touchesDistance(touches);
         this.startScale = this.content.scale.x;
@@ -120,24 +210,48 @@ export class YJScrollPanel extends Component {
             e.preventSwallow = true;
             return;
         }
-        this.doubleClickNum = 0;
-        if (e.getAllTouches().length == 1) this.move(e);
-        else this.scale(e);
+        if (e.getAllTouches().length == 1) {
+            if (e.getDeltaX() > 10 || e.getDeltaY() > 10)
+                this.doubleClicking = false;
+            this.move(e);
+        } else {
+            this.doubleClicking = false;
+            if (this.needCheckCheckRange) {
+                this.needCheckCheckRange = false;
+                this.checkScaleRange();
+            }
+            this.scale(e);
+        }
         e.propagationStopped = true;
     }
 
     private onTouchEnd(e: EventTouch) {
         e.preventSwallow = true;
         if (this.doubleClick) {
-            let a = no.timestampMs() - this.doubleClickStartTime;
-            if (a <= 1000) this.doubleClickNum++;
-            else this.doubleClickNum = 0;
-            if (this.doubleClickNum == 2) {
-                this.doubleClickNum = 0;
-                let scale = this.content.scale.x;
-                if (scale < 1 || scale > 1) scale = 1;
-                else scale = this.maxScale;
-                this.scaleContent(scale, true);
+            if (this.doubleClicking) {
+                this.doubleClickNum++;
+                if (this.doubleClickNum == 2) {
+
+                    if (this.needCheckCheckRange) {
+                        this.needCheckCheckRange = false;
+                        this.checkScaleRange();
+                    }
+
+                    let scale = this.content.scale.x;
+                    if (scale < 1 || scale > 1) scale = 1;
+                    else {
+                        if (this.doubleClickScaleToMax) {
+                            scale = this.maxScale;
+                            if (this.doubleClickScaleMin)
+                                this.doubleClickScaleToMax = false;
+                        } else {
+                            scale = this.minScale;
+                            if (this.doubleClickScaleMax)
+                                this.doubleClickScaleToMax = true;
+                        }
+                    }
+                    this.scaleContent(scale, true);
+                }
             }
         }
     }
@@ -146,7 +260,8 @@ export class YJScrollPanel extends Component {
         let delta = math.v2();
         e.touch.getDelta(delta);
         let pos = this.content.getPosition();
-        this.fitPos(pos.add3f(delta.x, delta.y, 0), this.content.scale.x);
+        let scale = this.content.scale.x;
+        this.fitPos(pos.add3f(delta.x * scale, delta.y * scale, 0), scale);
         this.content.setPosition(pos);
     }
 
@@ -170,16 +285,16 @@ export class YJScrollPanel extends Component {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
         } else {
-            this.setTween(0.2, {
+            this.setTween({
                 pos: [pos.x, pos.y],
                 scale: [scale, scale]
             });
         }
     }
 
-    private setTween(duration: number, props: any) {
+    private setTween(props: any) {
         (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(JSON.stringify({
-            duration: duration,
+            duration: this.duration,
             to: 1,
             props: props
         }));
@@ -189,13 +304,16 @@ export class YJScrollPanel extends Component {
         return math.Vec2.distance(touches[0].getLocation(), touches[1].getLocation());
     }
 
-    private touchUILocationAR(uiLocation: math.Vec2): math.Vec2 {
-        let pos = math.v3(uiLocation.x, uiLocation.y);
+    private touchUILocationAR(e: EventTouch): math.Vec2 {
+        let p = e.getUILocation();
+        let pos = math.v3(p.x, p.y);
         let ut = this.node.getComponent(UITransform);
-        let size = ut.contentSize;
+        let size = ut.contentSize.clone();
         let ar = ut.anchorPoint;
         pos.subtract3f(size.width * ar.x, size.height * ar.y, 0);
         ut.convertToWorldSpaceAR(pos, pos);
+        let vsize = view.getVisibleSize();
+        pos.subtract3f((vsize.width - size.width), (vsize.height - size.height), 0);
         this.content.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
         return math.v2(pos.x, pos.y);
     }
@@ -220,5 +338,19 @@ export class YJScrollPanel extends Component {
         else if (pos.x > maxX) pos.x = maxX;
         if (pos.y < minY) pos.y = minY;
         else if (pos.y > maxY) pos.y = maxY;
+    }
+
+    private fitTargetToCenter(target: YJNodeTarget, scale = 1): math.Vec3 {
+        let pos = math.v3();
+        this.node.getComponent(UITransform).convertToNodeSpaceAR(target.nodeWorldPosition, pos);
+        let p = this.content.getPosition();
+        p.subtract(pos).multiplyScalar(scale / this.content.scale.x);
+        return p;
+    }
+
+    update(dt: number) {
+        if (!this.doubleClicking) return;
+        this.doubleClickStartTime += dt;
+        if (this.doubleClickStartTime >= this.doubleClickDuration) this.doubleClicking = false;
     }
 }

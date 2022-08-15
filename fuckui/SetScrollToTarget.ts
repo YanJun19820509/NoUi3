@@ -57,6 +57,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
             console.error('找不到target：', targetType);
             return;
         }
+        this.triedNum = 0;
         if (!this.affectedByScale)
             this.scrollToTarget(target);
         else this.scrollToTargetByFrame(target);

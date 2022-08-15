@@ -63,6 +63,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         if (!item || data[idx] == null) {
             this.delegate?.afterAllCreated();
         } else {
+            await this.delegate?.beforeCreateOneNode(idx, data[idx]);
             let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
             item.active = !!data[idx];
             if (a && data[idx]) {

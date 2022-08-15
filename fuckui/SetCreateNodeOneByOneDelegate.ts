@@ -16,6 +16,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SetCreateNodeOneByOneDelegate')
 export class SetCreateNodeOneByOneDelegate extends Component {
-    public async afterCreateOneNode(idx: number, data: any, node: Node) { };
-    public afterAllCreated() { };
+    public async beforeCreateOneNode(idx: number, data: any) { }
+    public async afterCreateOneNode(idx: number, data: any, node: Node) { }
+    public afterAllCreated() { }
 }

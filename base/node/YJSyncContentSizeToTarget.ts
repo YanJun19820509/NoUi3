@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, UITransform } from 'cc';
+import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -18,6 +19,8 @@ const { ccclass, property } = _decorator;
 export class YJSyncContentSizeToTarget extends Component {
     @property(Node)
     target: Node = null;
+    @property(no.EventHandlerInfo)
+    onChange: no.EventHandlerInfo[] = [];
 
     update() {
         if (!this.target) return;
@@ -28,6 +31,7 @@ export class YJSyncContentSizeToTarget extends Component {
         let size = this.node.getComponent(UITransform).contentSize;
         if (size.width != tSize.width || size.height != tSize.height) {
             this.node.getComponent(UITransform).setContentSize(tSize);
+            no.EventHandlerInfo.execute(this.onChange);
         }
     }
 }
