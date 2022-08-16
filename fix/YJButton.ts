@@ -26,7 +26,7 @@ export class YJButton extends Component {
     wait: number = 0;
 
     private _clickEvents: EventHandler[] = [];
-    // private _wait: number = 0;
+    private needWait: boolean = false;
 
     onLoad() {
         if (EDITOR || !this.enabled) return;
@@ -46,10 +46,12 @@ export class YJButton extends Component {
 
     public a_trigger(event: EventTouch) {
         if (!event || event.getTouches().length > 1) return;
-        no.Throttling.ins(this).wait(this.delay).then(a => {
-            if (a)
-                no.executeHandlers(this._clickEvents);
-        })
+        if (this.needWait) return;
+        this.needWait = true;
+        no.executeHandlers(this._clickEvents);
+        this.scheduleOnce(() => {
+            this.needWait = false;
+        }, this.delay);
     }
 
 }

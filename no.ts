@@ -769,7 +769,7 @@ export namespace no {
             if (component != null) {
                 component.scheduleOnce(resolve, duration);
             } else {
-                window.setTimeout(resolve, duration * 1000);
+                setTimeout(resolve, duration * 1000);
             }
         });
     }
@@ -3046,15 +3046,13 @@ export namespace no {
 
         private isCd: boolean = false;
         private duration: number = 1;
-        private static _instance: Throttling;
 
         public static ins(c?: any): Throttling {
             if (c != null) {
                 c['Throttling_instance'] = c['Throttling_instance'] || new Throttling();
                 return c['Throttling_instance'];
             }
-            if (this._instance == null) this._instance = new Throttling();
-            return this._instance;
+            return new Throttling();
         }
 
         public async wait(duration: number, firstWait = false): Promise<boolean> {
