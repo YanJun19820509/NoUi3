@@ -96,6 +96,7 @@ export class YJScrollPanel extends Component {
      * @param pos scrollPanel内的坐标系上的点
      */
     public scrollTo(pos: math.Vec3): void {
+        this.doubleClicking = false;
         this.fitPos(pos, this.content.scale.x);
         if (this.duration <= 0) {
             this.content.setPosition(pos);
@@ -112,6 +113,7 @@ export class YJScrollPanel extends Component {
      * @param scale 
      */
     public scrollToAndScale(pos: math.Vec3, scale: number): void {
+        this.doubleClicking = false;
         this.fitPos(pos, scale);
         if (this.duration <= 0) {
             this.content.setScale(scale, scale);
@@ -159,6 +161,7 @@ export class YJScrollPanel extends Component {
     }
 
     public scaleTo(scale: number): void {
+        this.doubleClicking = false;
         let pos = this.content.getPosition();
         this.fitPos(pos, scale);
         if (this.duration <= 0) {
@@ -211,8 +214,9 @@ export class YJScrollPanel extends Component {
             return;
         }
         if (e.getAllTouches().length == 1) {
-            if (e.getDeltaX() > 10 || e.getDeltaY() > 10)
+            if (e.getDeltaX() > 10 || e.getDeltaY() > 10) {
                 this.doubleClicking = false;
+            }
             this.move(e);
         } else {
             this.doubleClicking = false;
@@ -226,7 +230,10 @@ export class YJScrollPanel extends Component {
     }
 
     private onTouchEnd(e: EventTouch) {
-        e.preventSwallow = true;
+        if (math.Vec2.distance(e.getStartLocation(), e.getLocation()) > 10)
+            e.propagationStopped = true;
+        else
+            e.preventSwallow = true;
         if (this.doubleClick) {
             if (this.doubleClicking) {
                 this.doubleClickNum++;

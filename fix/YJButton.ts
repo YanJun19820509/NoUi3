@@ -22,11 +22,11 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 export class YJButton extends Component {
     @property({ displayName: '防连点间隔时长(s)' })
     delay: number = 1;
-    @property({ displayName: '延时生效(s)' })
+    @property({ displayName: '延时生效(s)', min: 0 })
     wait: number = 0;
 
     private _clickEvents: EventHandler[] = [];
-    private _wait: number = 0;
+    // private _wait: number = 0;
 
     onLoad() {
         if (EDITOR || !this.enabled) return;
@@ -34,24 +34,22 @@ export class YJButton extends Component {
         btn.clickEvents.forEach(e => {
             this._clickEvents[this._clickEvents.length] = e;
         });
+        btn.clickEvents = [];
         let a = new EventHandler();
         a.target = this.node;
         a.component = 'YJButton';
         a.handler = 'a_trigger';
-        btn.clickEvents = [a];
+        this.scheduleOnce(() => {
+            btn.clickEvents = [a];
+        }, this.wait);
     }
 
     public a_trigger(event: EventTouch) {
-        if (this._wait < this.wait) return;
-        if (event?.touch?.getID() != 0) return;
+        if (!event || event.getTouches().length > 1) return;
         no.Throttling.ins(this).wait(this.delay).then(a => {
             if (a)
                 no.executeHandlers(this._clickEvents);
         })
     }
 
-    update(dt: number) {
-        if (this._wait >= this.wait) return;
-        this._wait += dt;
-    }
 }
