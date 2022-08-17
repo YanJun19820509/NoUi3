@@ -3,7 +3,6 @@ import { _decorator, Component, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -25,26 +24,22 @@ class ContentInfo {
     @property(YJLoadPrefab)
     prefab: YJLoadPrefab = null;
 
-    private content: Node;
-
     public async load(): Promise<Node> {
-        if (this.content) {
-            return Promise.resolve(this.content);
+        if (this.prefab.loaded) {
+            return Promise.resolve(this.prefab.loadedNode);
         } else {
-            let n = await this.prefab.loadPrefab();
-            this.content = instantiate(n);
-
-            if (this.content.getComponent(YJLoadAssets)) {
-                return this.content.getComponent(YJLoadAssets).load().then(() => {
-                    return Promise.resolve(this.content);
+            await this.prefab.loadPrefab();
+            if (this.prefab.loadedNode.getComponent(YJLoadAssets)) {
+                return this.prefab.loadedNode.getComponent(YJLoadAssets).load().then(() => {
+                    return Promise.resolve(this.prefab.loadedNode);
                 });
             }
-            return Promise.resolve(this.content);
+            return Promise.resolve(this.prefab.loadedNode);
         }
     }
 
     public hide(): void {
-        if (this.content) this.content.active = false;
+        if (this.prefab.loaded) this.prefab.loadedNode.active = false;
     }
 
 }
@@ -69,19 +64,22 @@ export class SetCreateSwitchContent extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        this.showContent(data, 0);
+        for (let i = 0, n = this.contents.length; i < n; i++) {
+            let info = this.contents[i];
+            if (info.name == data) {
+                this.showContent(info);
+                break;
+            }
+        }
     }
 
-    private async showContent(name: string, i: number) {
-        let info = this.contents[i];
-        if (info.name == name) {
-            let node = await info.load();
-            node.parent = this.container;
-            node.active = true;
-            this.scheduleOnce(() => {
-                this.hideContent(name);
-            });
-        } else this.showContent(name, ++i);
+    private async showContent(info: ContentInfo) {
+        let node = await info.load();
+        node.parent = this.container;
+        node.active = true;
+        this.scheduleOnce(() => {
+            this.hideContent(info.name);
+        });
     }
 
     private hideContent(exceptName: string) {
