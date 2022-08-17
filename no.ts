@@ -267,27 +267,7 @@ export namespace no {
             this.handler.emit(args);
         }
     }
-
-    /**debug用时间日志 */
-    @ccclass('TimeWatcher')
-    export class TimeWatcher {
-        public static get new(): TimeWatcher {
-            return new TimeWatcher();
-        }
-
-        private t: number;
-        constructor() {
-            this.t = timestampMs();
-            err('TimeWatcher', 'start', this.t);
-        }
-
-        public blink(Evn?: string): void {
-            let t = timestampMs();
-            err('TimeWatcher', Evn || 'blink', t, t - this.t);
-            this.t = t;
-        }
-    }
-
+    
     export function log(...Evns: any[]): void {
         console.log.call(console, '#NoUi#', Evns);
     }
