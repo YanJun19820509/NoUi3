@@ -100,11 +100,6 @@ export class SetList extends FuckUi {
                 item.destroy();
             });
             this.listItems = [];
-        } else if (this.wait > 0) {
-            for (let i = 0, n = this.listItems.length; i < n; i++) {
-                let item = this.listItems[i];
-                item.active = false;
-            }
         }
     }
 

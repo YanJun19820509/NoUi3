@@ -62,11 +62,12 @@ export class YJPanel extends Component {
     onLoad() {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
-        }
-        no.log('panel onLoad', this.node.name);
+        } else
+            no.log('panel onLoad', this.node.name);
     }
 
     onEnable() {
+        if (EDITOR) return;
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
@@ -91,9 +92,9 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
-        if (this.needCache){
+        if (this.needCache) {
             this.node.active = false;
-        }else this.clear();
+        } else this.clear();
     }
 
     public clear() {
