@@ -1,5 +1,6 @@
 
 import { _decorator } from 'cc';
+import { DEBUG } from 'cc/env';
 // import { io } from './socket.io.msgpack.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
@@ -25,6 +26,7 @@ export class YJSocketIO implements YJSocketInterface {
     private receivedData: any = {};
 
     public static new(url: string, options?: any): YJSocketIO {
+        if (DEBUG) localStorage.debug = '*';
         let a = new YJSocketIO();
         a.initWebSocket(url, options);
         return a;
@@ -39,7 +41,7 @@ export class YJSocketIO implements YJSocketInterface {
         });
 
         this.ws.on('disconnect', (reason: string) => {
-            no.log(`socketio disconnect:${this.url}`);
+            no.log(`socketio disconnect:${reason}`);
             if (reason === "io server disconnect") {
                 // the disconnection was initiated by the server, you need to reconnect manually
                 this.ws.connect();
@@ -47,8 +49,8 @@ export class YJSocketIO implements YJSocketInterface {
             // else the socket will automatically try to reconnect
         });
 
-        this.ws.on('connect_error', () => {
-            no.log(`socketio connect_error:${this.url}`);
+        this.ws.on('connect_error', (err: any) => {
+            no.log(`socketio connect_error:${err.type}`);
         });
 
         this.ws.onAny((code: string, args: any) => {

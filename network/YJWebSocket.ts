@@ -30,6 +30,7 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     private initWebSocket(url: string) {
+        this.url = url;
         this.ws = new WebSocket(url);
 
         this.ws.onopen = (event) => {
@@ -54,16 +55,16 @@ export class YJWebSocket implements YJSocketInterface {
 
     private onMessage(data: any) {
         if (data == null || data == '') return;
-        let a = window.atob(data);
+        let a = decodeURI(data);
         let b = JSON.parse(a);
-        this.receivedData[b.c] = b.v;
+        this.receivedData[b.c] = b.p;
     }
 
     private reInit() {
         if (this.reIniting) return;
         if (this.url != null) {
             this.reIniting = true;
-            this.ws?.close();
+            // this.ws?.close();
             this.ws = null;
             this.initWebSocket(this.url);
         }
@@ -97,7 +98,7 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public async sendDataToServer(code: string, args?: any) {
         if (await this.isOk()) {
-            let v = window.btoa(JSON.stringify({ c: code, p: args }));
+            let v = encodeURI(JSON.stringify({ c: code, p: args }));
             this.ws.send(v);
         }
     }
@@ -109,7 +110,7 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public async getDataFromServer(code: string, args?: any): Promise<any> {
         if (await this.isOk()) {
-            let v = window.btoa(JSON.stringify({ c: code, p: args }));
+            let v = encodeURI(JSON.stringify({ c: code, p: args }));
             this.ws.send(v);
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
