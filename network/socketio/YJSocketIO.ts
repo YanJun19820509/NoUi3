@@ -1,8 +1,8 @@
 
 import { _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-// import * as socket from './socket.io.msgpack.min.js';
-import * as socket from './socket.io.js';
+import * as socket from './socket.io.msgpack.min.js';
+// import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
 const { ccclass } = _decorator;
@@ -17,6 +17,13 @@ const { ccclass } = _decorator;
  * URL = db://assets/NoUi3/network/socketio/YJSocketIO.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
+ */
+
+/**
+ * 注意！！！
+ * 使用socket.io.msgpack.min.js，需要在服务器opt 中加入默认 parser，parser: require("socket.io-msgpack-parser")，
+ * 否则会出现 transport close
+ * 使用socket.io.min.js则不需要
  */
 
 @ccclass('YJSocketIO')
