@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJAddPanelToMetaKey, YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
+import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -34,6 +35,8 @@ export class YJWindowManager extends Component {
     infos: LayerInfo[] = [];
     @property({ displayName: '清理间隔时长(s)', min: 3, step: 1 })
     duration: number = 10;
+    @property(YJPreinstantiatePanel)
+    preinstantiatePanel: YJPreinstantiatePanel = null;
 
     private static _ins: YJWindowManager;
 
@@ -60,8 +63,7 @@ export class YJWindowManager extends Component {
         return content;
     }
 
-    private static initPrefab<T extends YJPanel>(pf: Prefab, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
-        let node = instantiate(pf);
+    private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         let dynamicAtlas = content.getComponent(YJDynamicAtlas);
         if (dynamicAtlas) {
             let la = node.getComponent('YJLoadAssets');
@@ -102,10 +104,16 @@ export class YJWindowManager extends Component {
             a.node.setSiblingIndex(content.children.length - 1);
             return;
         }
-        let url = comp.prototype[YJPanelPrefabMetaKey];
-        no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-            this.initPrefab(pf, comp as (typeof YJPanel), content, beforeInit, afterInit);
-        });
+        let node = this._ins.preinstantiatePanel?.getPanelNodeAndRemove(comp.name);
+        if (node) {
+            this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+        } else {
+            let url = comp.prototype[YJPanelPrefabMetaKey];
+            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+                let node = instantiate(pf);
+                this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+            });
+        }
     }
 
     public static OpenPanelAndCloseOther(name: string, to: string) {
