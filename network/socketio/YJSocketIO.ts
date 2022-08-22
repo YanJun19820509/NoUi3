@@ -1,8 +1,8 @@
 
 import { _decorator } from 'cc';
 import { DEBUG } from 'cc/env';
-import * as socket from './socket.io.msgpack.min.js';
-// import * as socket from './socket.io.min.js';
+// import * as socket from './socket.io.msgpack.min.js';
+import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
 const { ccclass } = _decorator;
@@ -24,6 +24,8 @@ const { ccclass } = _decorator;
  * 使用socket.io.msgpack.min.js，需要在服务器opt 中加入默认 parser，parser: require("socket.io-msgpack-parser")，
  * 否则会出现 transport close
  * 使用socket.io.min.js则不需要
+ * android中client不能使用socket.io.msgpack.min.js，否则报Unable to parse TLS packet header，所以在原生环境下只能用socket.io.min.js
+ * 在android下也不能用wss，且需要在AndroidManifest.xml文件中在Application标签下添加android:usesCleartextTraffic="true"
  */
 
 @ccclass('YJSocketIO')
@@ -70,26 +72,27 @@ export class YJSocketIO implements YJSocketInterface {
     /**
      * 向服务器发送数据
      * @param code 指令
-     * @param args 参数
+     * @param args 参数，不要执行JSON.stringify
      */
     public sendDataToServer(code: string, args?: any): void {
+        if (args) args = no.base64_encode(JSON.stringify(args));
         this.ws.volatile.emit(code, args);
     }
 
     /**
      * 向服务器请求数据
      * @param code 指令
-     * @param args 参数
+     * @param args 参数，不要执行JSON.stringify
      */
     public getDataFromServer(code: string, args?: any): Promise<any> {
-        this.ws.volatile.emit(code, args);
+        this.sendDataToServer(code, args);
         if (this.ws.connected) {
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
                     let d = this.receivedData[code];
                     if (d != null) {
                         clearInterval(a);
-                        resolve(d);
+                        resolve(JSON.parse(no.base64_decode(d)));
                         this.receivedData[code] = null;
                     }
                 }, 50 / 3);
