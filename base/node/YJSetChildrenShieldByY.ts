@@ -23,25 +23,17 @@ export class YJSetChildrenShieldByY extends Component {
 
     private _num = 0;
 
-    start() {
+    private resort() {
         let children = this.node.children;
         no.sortArray(children, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
-        for (let i = 0, n = children.length; i < n; i++) {
-            children[i].setSiblingIndex(i);
-        }
+        this.node._updateSiblingIndex();
     }
 
     update() {
         if (this._num == 0) {
-            let children = this.node.children;
-            no.insertionSort(children, (b, a) => {
-                return b.position.y > a.position.y;
-            }, true);
-            for (let i = 0, n = children.length; i < n; i++) {
-                children[i].setSiblingIndex(i);
-            }
+            this.resort();
             this._num = this.frameNum;
         } else {
             this._num--;
