@@ -55,7 +55,7 @@ export class YJWebSocket implements YJSocketInterface {
 
     private onMessage(data: any) {
         if (data == null || data == '') return;
-        let a = decodeURI(data);
+        let a = no.base64_decode(data);
         let b = JSON.parse(a);
         this.receivedData[b.c] = b.p;
     }
@@ -98,8 +98,9 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public async sendDataToServer(code: string, args?: any) {
         if (await this.isOk()) {
-            let v = encodeURI(JSON.stringify({ c: code, p: args }));
+            let v = no.base64_encode(JSON.stringify({ c: code, p: args }));
             this.ws.send(v);
+            Uint8Array
         }
     }
 
@@ -110,7 +111,7 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public async getDataFromServer(code: string, args?: any): Promise<any> {
         if (await this.isOk()) {
-            let v = encodeURI(JSON.stringify({ c: code, p: args }));
+            let v = no.base64_encode(JSON.stringify({ c: code, p: args }));
             this.ws.send(v);
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {

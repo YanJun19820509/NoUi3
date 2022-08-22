@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js, Font } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
+import { base64 } from './base64';
 
 const { ccclass, property } = _decorator;
 
@@ -267,7 +268,7 @@ export namespace no {
             this.handler.emit(args);
         }
     }
-    
+
     export function log(...Evns: any[]): void {
         console.log.call(console, '#NoUi#', Evns);
     }
@@ -3251,4 +3252,64 @@ export namespace no {
         let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
         return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
     }
+
+
+    ///////////////////////////base64  start////////////////////
+
+    function string2ArrayBuffer(str: string): ArrayBuffer {
+        const buffer = new ArrayBuffer(str.length);
+        const bytes = new Uint8Array(buffer);
+
+        str.split('').forEach(function (str, i) {
+            bytes[i] = str.charCodeAt(0);
+        });
+
+        return buffer;
+    }
+
+    function arrayBuffer2String(buffer: ArrayBuffer): string {
+        const bytes = new Uint8Array(buffer);
+        let sArr: string[] = [];
+        bytes.forEach(c => {
+            sArr[sArr.length] = String.fromCharCode(c);
+        });
+        return sArr.join('');
+    }
+
+    function testArrayBuffers(buffer1: ArrayBuffer, buffer2: ArrayBuffer): boolean {
+        const len1 = buffer1.byteLength;
+        const len2 = buffer2.byteLength;
+        const view1 = new Uint8Array(buffer1);
+        const view2 = new Uint8Array(buffer2);
+
+        if (len1 !== len2) {
+            return false;
+        }
+
+        for (let i = 0; i < len1; i++) {
+            if (view1[i] === undefined || view1[i] !== view2[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
+     * base64编/解码
+     */
+    export function base64_encode(s: string): string {
+        const buffer = string2ArrayBuffer(s);
+        return base64.encode(buffer);
+    }
+
+
+    /**
+     * base64编/解码
+     */
+    export function base64_decode(s: string): string {
+        let buffer = base64.decode(s);
+        return arrayBuffer2String(buffer);
+    }
+    /////////////////////////////////////base64 end///////////////////////////////
 }
