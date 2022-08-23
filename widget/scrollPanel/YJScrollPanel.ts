@@ -40,6 +40,8 @@ export class YJScrollPanel extends Component {
     minScale: number = .5;
     @property({ min: .1, visible() { return this.support2FingerScale; } })
     maxScale: number = 1.5;
+    @property({ type: math.Vec2, displayName: '滚动偏移', tooltip: '滚动到某点时需要的偏移' })
+    offset: math.Vec2 = math.v2();
     @property({ displayName: '动画时长(s)', min: 0 })
     duration: number = .5;
 
@@ -97,6 +99,8 @@ export class YJScrollPanel extends Component {
      */
     public scrollTo(pos: math.Vec3): void {
         this.doubleClicking = false;
+        pos.x += this.offset.x;
+        pos.y += this.offset.y;
         this.fitPos(pos, this.content.scale.x);
         if (this.duration <= 0) {
             this.content.setPosition(pos);
@@ -114,6 +118,8 @@ export class YJScrollPanel extends Component {
      */
     public scrollToAndScale(pos: math.Vec3, scale: number): void {
         this.doubleClicking = false;
+        pos.x += this.offset.x;
+        pos.y += this.offset.y;
         this.fitPos(pos, scale);
         if (this.duration <= 0) {
             this.content.setScale(scale, scale);
