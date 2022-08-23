@@ -26,6 +26,8 @@ const { ccclass } = _decorator;
  * 使用socket.io.min.js则不需要
  * android中client不能使用socket.io.msgpack.min.js，否则报Unable to parse TLS packet header，所以在原生环境下只能用socket.io.min.js
  * 在android下也不能用wss，且需要在AndroidManifest.xml文件中在Application标签下添加android:usesCleartextTraffic="true"
+ * 
+ * 查看日志：localStorage.debug = '*';
  */
 
 @ccclass('YJSocketIO')
@@ -36,7 +38,6 @@ export class YJSocketIO implements YJSocketInterface {
     private receivedData: any = {};
 
     public static new(url: string, options?: any): YJSocketIO {
-        if (DEBUG) localStorage.debug = '*';
         let a = new YJSocketIO();
         a.initWebSocket(url, options);
         return a;
