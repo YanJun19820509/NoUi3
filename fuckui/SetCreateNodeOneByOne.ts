@@ -30,6 +30,10 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
         }
+        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
+            this.needSetDynamicAtlas = false;
+            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+        }
         if (!this.container) this.container = this.node;
 
         if (this.onlyOne) {
@@ -46,9 +50,6 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
-                if (this.dynamicAtlas) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                }
                 item.active = false;
                 item.parent = this.container;
             }

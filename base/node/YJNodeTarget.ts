@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, Button, Toggle, v3, Vec2, Vec3, UITransform, EventTouch } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
+const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables
@@ -19,6 +19,7 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 @ccclass('YJNodeTarget')
 @menu('NoUi/node/YJNodeTarget(节点目标)')
 @executeInEditMode()
+@disallowMultiple()
 export class YJNodeTarget extends Component {
     @property
     type: string = '';

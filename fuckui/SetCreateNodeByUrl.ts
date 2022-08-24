@@ -62,6 +62,9 @@ export class SetCreateNodeByUrl extends FuckUi {
             this.setNeedDestroyChildren();
             no.assetBundleManager.loadPrefab(url, item => {
                 this.template = instantiate(item)
+                if (this.dynamicAtlas) {
+                    YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+                }
                 this.setItems(data);
                 this.clear();
                 this.scheduleOnce(() => {
@@ -82,9 +85,6 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
-                if (this.dynamicAtlas) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                }
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {

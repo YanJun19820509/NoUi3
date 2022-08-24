@@ -37,6 +37,7 @@ export class SetCreateCacheNode extends FuckUi {
     dynamicAtlas: YJDynamicAtlas = null;
 
     private recycleType: string;
+    private needSetDynamicAtlas: boolean = true;
 
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
@@ -51,10 +52,12 @@ export class SetCreateCacheNode extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
-            if (this.dynamicAtlas) {
-                YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
-            }
             await this.template.getComponent(YJLoadAssets)?.load();
+        }
+
+        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
+            this.needSetDynamicAtlas = false;
+            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
         if (!this.container) this.container = this.node;
         if (!this.recycleType) this.recycleType = this.template.getComponent(YJCacheObject).recycleType;

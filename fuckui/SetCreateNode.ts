@@ -44,6 +44,8 @@ export class SetCreateNode extends FuckUi {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
+    protected needSetDynamicAtlas: boolean = true;
+
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
             this.template.destroy();
@@ -66,6 +68,11 @@ export class SetCreateNode extends FuckUi {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
         }
+
+        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
+            this.needSetDynamicAtlas = false;
+            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+        }
         if (!this.container) this.container = this.node;
 
         if (this.onlyOne) {
@@ -82,9 +89,6 @@ export class SetCreateNode extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
-                if (this.dynamicAtlas) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                }
                 item.parent = this.container;
             }
         }
@@ -113,10 +117,7 @@ export class SetCreateNode extends FuckUi {
         if (data == null) return;
         let item = this.container.children[0];
         if (!item) {
-            item = this.template;
-            if (this.dynamicAtlas) {
-                YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-            }
+            item = instantiate(this.template);
             await item.getComponent(YJLoadAssets)?.load();
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
