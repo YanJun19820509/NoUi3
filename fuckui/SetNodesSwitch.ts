@@ -22,9 +22,10 @@ export class SwitchInfo {
     @property({ type: Node, displayName: '显示节点' })
     nodes: Node[] = [];
 
-    public show(v: boolean) {
+    public checkShow(v: string) {
+        let a = this.condition == v;
         this.nodes.forEach(node => {
-            node.active = v;
+            node.active = a;
         });
     }
 }
@@ -36,12 +37,9 @@ export class SetNodesSwitch extends FuckUi {
     infos: SwitchInfo[] = [];
 
     protected onDataChange(data: any) {
-        let idx = 0;
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
-            info.show(false);
-            if (info.condition == data) idx = i;
+            info.checkShow(data);
         }
-        this.infos[idx].show(true);
     }
 }
