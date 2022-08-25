@@ -1,7 +1,7 @@
 
 import { _decorator, BlockInputEvents } from 'cc';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu } = _decorator;
+const { ccclass, menu, property } = _decorator;
 
 /**
  * Predefined variables
@@ -18,8 +18,12 @@ const { ccclass, menu } = _decorator;
 @ccclass('SetBlockInputEvents')
 @menu('NoUi/ui/SetBlockInputEvents(设置输入拦截:bool)')
 export class SetBlockInputEvents extends FuckUi {
+    @property({ displayName: '取反' })
+    reverse: boolean = false;
+
     protected onDataChange(data: any) {
         data = Boolean(data);
+        if (this.reverse) data = !data;
         let bie = this.getComponent(BlockInputEvents);
         if (data === true) {
             if (bie == null) bie = this.addComponent(BlockInputEvents);
