@@ -47,15 +47,15 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private lateSet(data: any): void {
-        let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
-        let viewSize = view.getVisibleSize();
+        // let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
+        // let viewSize = view.getVisibleSize();
 
-        if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
-            this.scheduleOnce(() => {
-                this.lateSet(data);
-            });
-            return;
-        }
+        // if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
+        //     this.scheduleOnce(() => {
+        //         this.lateSet(data);
+        //     });
+        //     return;
+        // }
 
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;

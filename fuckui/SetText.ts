@@ -69,17 +69,17 @@ export class SetText extends FuckUi {
     }
 
     private lateSet(): void {
-        if (!EDITOR) {
-            let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
-            let viewSize = view.getVisibleSize();
+        // if (!EDITOR) {
+        //     let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
+        //     let viewSize = view.getVisibleSize();
 
-            if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
-                this.scheduleOnce(() => {
-                    this.lateSet();
-                });
-                return;
-            }
-        }
+        //     if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
+        //         this.scheduleOnce(() => {
+        //             this.lateSet();
+        //         });
+        //         return;
+        //     }
+        // }
         let data = this.newData;
         if (typeof data == 'object') {
             for (let k in data) {

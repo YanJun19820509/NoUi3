@@ -142,6 +142,7 @@ export class YJDynamicAtlas extends Component {
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
+                ff._uuid = frame._uuid;
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
