@@ -267,7 +267,7 @@ vec4 wave(sampler2D _texture, vec2 _uv, float _amplitude,float _angularVelocity,
 void graphicsWave(vec4 _o, vec2 _uv, float _amplitude,float _angularVelocity, float _frequency, float _offset, bool _toLeft){
   float y = _amplitude * sin((_angularVelocity * _uv.x) + ((_frequency * cc_time.x) * (_toLeft ? 1. : -1.))) + _offset;
     //超出偏移的丢弃
-  if (_uv.y > y) discard;
+  if (_uv.y < y) discard;
 }
 
 

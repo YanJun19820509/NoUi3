@@ -927,6 +927,10 @@ export namespace no {
         return formatSeconds(sec, '{h}:{M}', show0);
     }
 
+    export function formatTime_hh(sec: number, show0 = true): string {
+        return formatSeconds(sec, '{h}', show0);
+    }
+
     export function formatTime_MMss(sec: number, show0 = true): string {
         return formatSeconds(sec, '{M}:{s}', show0);
     }
