@@ -2212,6 +2212,16 @@ export namespace no {
             return assetManager.assets.get(uuid);
         }
 
+        public loadAny<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void): void {
+            assetManager.loadAny({ 'path': path, 'type': type }, (e: Error, f: T) => {
+                if (e != null) {
+                    no.err(path, e.stack);
+                }
+                this.addRef(f);//增加引用计数
+                callback?.(f);
+            });
+        }
+
     }
 
     /**全局资源管理器 */
