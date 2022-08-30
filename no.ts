@@ -295,7 +295,7 @@ export namespace no {
 
     export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
         return new Promise<any>(resolve => {
-            this.emitAndOnceCallback(emitType, callbackType, resolve, args, target);
+            emitAndOnceCallback(emitType, callbackType, resolve, args, target);
         });
     }
 
@@ -320,7 +320,7 @@ export namespace no {
      */
     export function waitFor(express: (dt?: number) => boolean, comp: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            this.callUntil(express, resolve, comp);
+            callUntil(express, resolve, comp);
         });
     }
 
@@ -380,8 +380,8 @@ export namespace no {
     }
 
     export function evalFormateStr(formatter: string, data: any) {
-        let str = this.formatString(formatter, data);
-        return this.eval(str);
+        let str = formatString(formatter, data);
+        return eval(str);
     }
 
     /**
@@ -484,7 +484,7 @@ export namespace no {
      */
     export function getValuePath(data: Object, path: any[], def?: any): void {
         let k = path.join('.');
-        return this.getValue(data, k) || def
+        return getValue(data, k) || def
     }
 
     /**
@@ -522,7 +522,7 @@ export namespace no {
      */
     export function setValuePath(data: Object, path: any[], value: any): void {
         let k = path.join('.');
-        this.setValue(data, k, value)
+        setValue(data, k, value)
     }
 
     /**
@@ -567,7 +567,7 @@ export namespace no {
      * @param strs
      */
     export function join(...strs: string[]): string {
-        return this.joinStrings('.', ...strs);
+        return joinStrings('.', ...strs);
     }
 
     /**
@@ -866,14 +866,14 @@ export namespace no {
         // 负数不处理
         if (sec <= 0) {
             let a = show0 ? '00' : '0';
-            return this.formatString(formatter, { h: a, m: a, s: a });
+            return formatString(formatter, { h: a, m: a, s: a });
         }
         let d = Math.floor(sec / 3600 / 24);
         let h = Math.floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
             formatter = `{d}{h}`;
-            return this.formatString(formatter, { h: h, d: d });
+            return formatString(formatter, { h: h, d: d });
         }
 
         let m: any = Math.floor(sec / 60 % 60);
@@ -956,7 +956,7 @@ export namespace no {
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        let p = this.nodeWorldPosition(node, out);
+        let p = nodeWorldPosition(node, out);
         otherNode.getComponent(UITransform).convertToNodeSpaceAR(p, out);
         return out;
     }
@@ -1015,7 +1015,7 @@ export namespace no {
         offset = offset || v2();
         subSize = subSize || Size.ZERO;
         let origin = v3();
-        origin = this.nodeWorldPosition(node, origin);
+        origin = nodeWorldPosition(node, origin);
         let anchor = node.getComponent(UITransform).anchorPoint;
         let size = node.getComponent(UITransform).contentSize;
         let rect = new Rect();
@@ -1030,7 +1030,7 @@ export namespace no {
      * @param node
      */
     export function nodeContainsPoint(node: Node, point: Vec2, offset?: Vec2, subSize?: Size): boolean {
-        let rect = this.nodeBoundingBox(node, offset, subSize);
+        let rect = nodeBoundingBox(node, offset, subSize);
         return rect.contains(point);
     }
 
@@ -1041,8 +1041,8 @@ export namespace no {
      * @returns
      */
     export function nodeIntersects(node: Node, otherNode: Node): boolean {
-        let rect = this.nodeBoundingBox(node),
-            rect1 = this.nodeBoundingBox(otherNode);
+        let rect = nodeBoundingBox(node),
+            rect1 = nodeBoundingBox(otherNode);
         return rect.intersects(rect1);
     }
 
@@ -1116,7 +1116,7 @@ export namespace no {
         weight.forEach(item => {
             a[a.length] = Number(item[key]);
         });
-        return this.weightRandom(a);
+        return weightRandom(a);
     }
 
     export function fract(v: number): number {
