@@ -25,12 +25,12 @@ export class YJHttpRequest implements YJSocketInterface {
     }
 
     sendDataToServer(code: string, args?: any): void {
-        this.httpRequest('POST', this.url + code, args);
+        this.httpRequest('POST', this.url + '/' + code, args);
     }
 
     getDataFromServer(code: string, args?: any): Promise<any> {
         return new Promise<any>(resolve => {
-            this.httpRequest('POST', this.url + code, args, v => {
+            this.httpRequest('POST', this.url + '/' + code, args, v => {
                 resolve(v);
             }, v => {
                 resolve(null);
@@ -55,10 +55,10 @@ export class YJHttpRequest implements YJSocketInterface {
             }
         };
         xhr.open(type, url, true);
+        // xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
         if (type == 'POST') {
             xhr.setRequestHeader('Content-Type', 'application/json');
         }
-        xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
         if (data)
             xhr.send(JSON.stringify(data));
         else xhr.send();
