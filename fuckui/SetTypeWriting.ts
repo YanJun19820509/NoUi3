@@ -25,33 +25,59 @@ const { ccclass, property, requireComponent } = _decorator;
 @ccclass('SetTypeWritting')
 @requireComponent(Label)
 export class SetTypeWritting extends FuckUi {
-    @property({ displayName: '每秒打字个数' })
+    @property({ displayName: '每秒打字个数', min: 1, step: 1 })
     speed: number = 3;
+    @property({ displayName: '段落间隔时长(s)', min: 0 })
+    duration: number = .5;
     @property(no.EventHandlerInfo)
     onStop: no.EventHandlerInfo[] = [];
 
+    private _paragraphs: string[];
     private _content: string[];
+    private _idx: number;
 
     protected onDataChange(data: any) {
         if (!data.stop) {
             this.getComponent(Label).string = '';
-            this._content = String(data.content).split('');
-            this.writing();
+            this._paragraphs = [].concat(data.content);
+            this._idx = -1;
+            this.setParagraph();
         } else {
             this.unscheduleAllCallbacks();
-            this.getComponent(Label).string += this._content.join('');
+            this.getComponent(Label).string = this._paragraphs.join('\n');
             no.EventHandlerInfo.execute(this.onStop);
         }
     }
 
-    private writing() {
-        if (this._content.length == 0) {
+    private setParagraph() {
+        this._idx++;
+        if (this._paragraphs[this._idx] == null) {
             no.EventHandlerInfo.execute(this.onStop);
             return;
         }
-        this.getComponent(Label).string += this._content.shift();
+
+        this._content = String(this._paragraphs[this._idx]).split('');
+
+        this.writing();
+    }
+
+    private writing() {
+        this.setStr();
         this.scheduleOnce(() => {
-            this.writing();
+            if (this._content.length == 0) {
+                this.setWrap();
+                this.scheduleOnce(() => {
+                    this.setParagraph();
+                }, this.duration);
+            } else this.writing();
         }, 1 / this.speed);
+    }
+
+    private setStr() {
+        this.getComponent(Label).string += this._content.shift();
+    }
+
+    private setWrap() {
+        this.getComponent(Label).string += '\n';
     }
 }
