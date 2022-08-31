@@ -34,6 +34,8 @@ export class YJCharLabel extends Component {
     lineHeight: number = 22;
     @property
     letterSpacing: number = 0;
+    @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制' })
+    maxWidth: number = 0;
     @property
     italic: boolean = false;
     @property
@@ -61,8 +63,10 @@ export class YJCharLabel extends Component {
             return;
         }
         let layout = this.getComponent(Layout);
-        layout.type = Layout.Type.HORIZONTAL;
-        layout.resizeMode = Layout.ResizeMode.CONTAINER;
+        if (layout.type == Layout.Type.NONE) {
+            layout.type = Layout.Type.HORIZONTAL;
+            layout.resizeMode = Layout.ResizeMode.CONTAINER;
+        }
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 
@@ -108,6 +112,9 @@ export class YJCharLabel extends Component {
                 this.usedCharNode[this.usedCharNode.length] = labelNode;
             }
         }
+        this.scheduleOnce(() => {
+            this.setScale();
+        });
     }
 
     private createCharNode(v: string): Node {
@@ -164,6 +171,17 @@ export class YJCharLabel extends Component {
             labelNode.parent = this.node;
             labelNode.active = true;
             return labelNode;
+        }
+    }
+
+    private setScale() {
+        if (this.maxWidth == 0) return;
+        let ut = this.getComponent(UITransform);
+        if (ut.width <= this.maxWidth)
+            this.node.setScale(1, 1);
+        else {
+            let s = this.maxWidth / ut.width;
+            this.node.setScale(s, s);
         }
     }
 
