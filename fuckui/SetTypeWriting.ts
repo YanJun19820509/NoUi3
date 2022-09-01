@@ -37,15 +37,23 @@ export class SetTypeWritting extends FuckUi {
     private _idx: number;
 
     protected onDataChange(data: any) {
-        if (!data.stop) {
-            this.getComponent(Label).string = '';
+        let label = this.getComponent(Label);
+        if (data.stop) {
+            this.unscheduleAllCallbacks();
+            label.string = this._paragraphs.join('\n');
+            no.EventHandlerInfo.execute(this.onStop);
+        } else if (data.next) {
+            this.unscheduleAllCallbacks();
+            label.string = '';
+            for (let i = 0, n = Math.min(this._idx, this._paragraphs.length - 1); i <= n; i++) {
+                label.string += this._paragraphs[i] + '\n';
+            }
+            this.setParagraph();
+        } else {
+            label.string = '';
             this._paragraphs = [].concat(data.content);
             this._idx = -1;
             this.setParagraph();
-        } else {
-            this.unscheduleAllCallbacks();
-            this.getComponent(Label).string = this._paragraphs.join('\n');
-            no.EventHandlerInfo.execute(this.onStop);
         }
     }
 
@@ -55,9 +63,7 @@ export class SetTypeWritting extends FuckUi {
             no.EventHandlerInfo.execute(this.onStop);
             return;
         }
-
         this._content = String(this._paragraphs[this._idx]).split('');
-
         this.writing();
     }
 
