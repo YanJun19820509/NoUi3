@@ -1,6 +1,5 @@
 
 import { _decorator } from 'cc';
-import { DEBUG } from 'cc/env';
 // import * as socket from './socket.io.msgpack.min.js';
 import * as socket from './socket.io.min.js';
 import { no } from '../../no';

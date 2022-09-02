@@ -21,8 +21,10 @@ const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decora
 @executeInEditMode()
 @disallowMultiple()
 export class YJNodeTarget extends Component {
-    @property
+    @property({ tooltip: '在no.nodeTargetManager中注册的标识' })
     type: string = '';
+    @property({ tooltip: '用于区分在一个节点的子节点中不同的YJNodeTarget' })
+    subType: string = '';
     @property
     autoSet: boolean = false;
 
@@ -92,13 +94,13 @@ export class YJNodeTarget extends Component {
 
     /**
      * 获取子节点中的目标节点
-     * @param type 
+     * @param subType 
      * @returns 
      */
-    public getSubTarget(type: string): YJNodeTarget {
+    public getSubTarget(subType: string): YJNodeTarget {
         let arr = this.getComponentsInChildren(YJNodeTarget);
         for (let i = 0, n = arr.length; i < n; i++) {
-            if (arr[i].type == type) return arr[i];
+            if (arr[i].subType == subType) return arr[i];
         }
     }
 
