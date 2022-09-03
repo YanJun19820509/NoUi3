@@ -18,30 +18,34 @@ import * as JSZip from './jszip.min.js';
 
 @ccclass('YJZip')
 export class YJZip {
-    public static unzip(url: string, cb: (relativePath: string, isDir: boolean, data?: Uint8Array) => void) {
+    public static unzip(url: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
         assetManager.loadRemote(url, (err, file: BufferAsset) => {
-            if (err) no.log(err);
-            else {
-                this.unZipFile(file.buffer(), cb);
+            if (err) {
+                no.log(err);
+                onErr && onErr();
+            } else {
+                let jszip = JSZip.default();
+                jszip.loadAsync(file.buffer())
+                    .then(function (zip) {
+                        let total = 0;
+                        zip.forEach((relativePath, data) => {
+                            if (!data.dir) total++;
+                            else cb && cb(relativePath, data.dir);
+                        });
+                        zip.forEach((relativePath, data) => {
+                            if (cb) {
+                                if (!data.dir) {
+                                    zip.file(data.name).async('uint8array').then(v => {
+                                        cb(relativePath, data.dir, total, v);
+                                    });
+                                }
+                            }
+                        });
+                    }, function (e) {
+                        no.log(e);
+                        onErr && onErr();
+                    });
             }
         });
-    }
-
-    private static unZipFile(file: ArrayBuffer | null, cb: (relativePath: string, isDir: boolean, data?: Uint8Array) => void) {
-        let jszip = JSZip.default();
-        jszip.loadAsync(file)
-            .then(function (zip) {
-                zip.forEach((relativePath, data) => {
-                    cb && cb(relativePath, data.dir, !data.dir ? data._data.compressedContent: null);
-                    // let path = `${dest}/${relativePath}`;
-                    // if (data.dir) {
-                    //     if (!jsb.fileUtils.isDirectoryExist(path)) jsb.fileUtils.createDirectory(path);
-                    // } else {
-                    //     jsb.fileUtils.writeValueVectorToFile(, path);
-                    // }
-                });
-            }, function (e) {
-                console.log(e);
-            });
     }
 }

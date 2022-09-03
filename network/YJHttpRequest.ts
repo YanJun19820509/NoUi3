@@ -44,6 +44,7 @@ export class YJHttpRequest implements YJSocketInterface {
             if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
                 var response = xhr.responseText;
                 let a = JSON.parse(response);
+                no.log('response', response);
                 if (a.code == 0) {
                     okCall?.(a.data);
                 } else {
