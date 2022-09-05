@@ -28,7 +28,7 @@ export class YJHttpRequest implements YJSocketInterface {
         this.httpRequest('POST', this.url + '/' + code, args);
     }
 
-    getDataFromServer(code: string, args?: any): Promise<any> {
+    getDataFromServer(code: string, args?: any): Promise<any | null> {
         return new Promise<any>(resolve => {
             this.httpRequest('POST', this.url + '/' + code, args, v => {
                 resolve(v);
@@ -40,8 +40,17 @@ export class YJHttpRequest implements YJSocketInterface {
 
     private httpRequest(type: string, url: string, data: any, okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
         let xhr = new XMLHttpRequest();
+        xhr.open(type, url, true);
+        if (type == 'POST') {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+        }
+
         xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
+            no.log('http ready state change:', xhr.readyState);
+        };
+
+        xhr.onload = function () {
+            if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
                 var response = xhr.responseText;
                 let a = JSON.parse(response);
                 no.log('response', response);
@@ -51,15 +60,19 @@ export class YJHttpRequest implements YJSocketInterface {
                     no.err(a.msg);
                     errorCall?.(a);
                 }
-            } else if (xhr.readyState == 4 && xhr.status == 0) {
-                errorCall?.('no_server');
             }
         };
-        xhr.open(type, url, true);
-        // xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
-        if (type == 'POST') {
-            xhr.setRequestHeader('Content-Type', 'application/json');
-        }
+
+        xhr.onerror = function () {
+            no.err('无法连接服务器：', url);
+            errorCall?.('no_server');
+        };
+
+        xhr.ontimeout = function(){
+            no.err('连接超时：', url);
+            errorCall?.('timeout');
+        };
+
         if (data)
             xhr.send(JSON.stringify(data));
         else xhr.send();
