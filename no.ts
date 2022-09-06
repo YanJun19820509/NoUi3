@@ -1265,7 +1265,7 @@ export namespace no {
      *          size: [100,100],
      *          anchor: [0, 1]
      *      },
-     *      easing?: 'quadIn',
+     *      easing?: "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
      *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
      * }
      * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。

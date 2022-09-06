@@ -169,6 +169,25 @@ export class YJWindowManager extends Component {
         }
     }
 
+    /**
+     * 已开窗口
+     * @param comp 窗口类名
+     * @param to 所属节点
+     * @returns 
+     */
+    public static opennedPanel<T extends YJPanel>(comp: typeof YJPanel | string, to?: string): T | null {
+        if (!comp) return null;
+        if (typeof comp == 'string')
+            comp = js.getClassByName(comp) as (typeof YJPanel);
+        if (!comp) return null;
+        to = to || comp.prototype[YJAddPanelToMetaKey];
+        let content: Node = YJWindowManager._ins.getContent(to);
+        let a = content.getComponentInChildren(comp);
+        if (!a) return null
+        return a as T;
+    }
+
+
     private clearClosedPanel() {
         let t = no.sysTime.now;
         for (let i = 0, n = this.infos.length; i < n; i++) {

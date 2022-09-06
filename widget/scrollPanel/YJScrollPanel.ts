@@ -97,17 +97,18 @@ export class YJScrollPanel extends Component {
      * 
      * @param pos scrollPanel内的坐标系上的点
      */
-    public scrollTo(pos: math.Vec3): void {
+    public scrollTo(pos: math.Vec3, duration?: number): void {
+        if (duration == null) duration = this.duration;
         this.doubleClicking = false;
         pos.x += this.offset.x;
         pos.y += this.offset.y;
         this.fitPos(pos, this.content.scale.x);
-        if (this.duration <= 0) {
+        if (duration <= 0) {
             this.content.setPosition(pos);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y]
-            });
+            }, duration);
         }
     }
 
@@ -116,29 +117,30 @@ export class YJScrollPanel extends Component {
      * @param pos scrollPanel内的坐标系上的点
      * @param scale 
      */
-    public scrollToAndScale(pos: math.Vec3, scale: number): void {
+    public scrollToAndScale(pos: math.Vec3, scale: number, duration?: number): void {
+        if (duration == null) duration = this.duration;
         this.doubleClicking = false;
         pos.x += this.offset.x;
         pos.y += this.offset.y;
         this.fitPos(pos, scale);
-        if (this.duration <= 0) {
+        if (duration <= 0) {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y],
                 scale: [scale, scale]
-            });
+            }, duration);
         }
     }
 
-    public scrollToTarget(targetType: string): void {
+    public scrollToTarget(targetType: string, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             if (this.triedNum < 60) {
                 this.triedNum++;
                 this.scheduleOnce(() => {
-                    this.scrollToTarget(targetType);
+                    this.scrollToTarget(targetType, duration);
                 });
                 return;
             }
@@ -146,16 +148,16 @@ export class YJScrollPanel extends Component {
             return;
         }
         this.triedNum = 0;
-        this.scrollTo(this.fitTargetToCenter(target));
+        this.scrollTo(this.fitTargetToCenter(target), duration);
     }
 
-    public scrollToTargetAndScale(targetType: string, scale: number): void {
+    public scrollToTargetAndScale(targetType: string, scale: number, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             if (this.triedNum < 60) {
                 this.triedNum++;
                 this.scheduleOnce(() => {
-                    this.scrollToTargetAndScale(targetType, scale);
+                    this.scrollToTargetAndScale(targetType, scale, duration);
                 });
                 return;
             }
@@ -163,21 +165,22 @@ export class YJScrollPanel extends Component {
             return;
         }
         this.triedNum = 0;
-        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale);
+        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, duration);
     }
 
-    public scaleTo(scale: number): void {
+    public scaleTo(scale: number, duration?: number): void {
+        if (duration == null) duration = this.duration;
         this.doubleClicking = false;
         let pos = this.content.getPosition();
         this.fitPos(pos, scale);
-        if (this.duration <= 0) {
+        if (duration <= 0) {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y],
                 scale: [scale, scale]
-            });
+            }, duration);
         }
     }
 
@@ -305,9 +308,10 @@ export class YJScrollPanel extends Component {
         }
     }
 
-    private setTween(props: any) {
+    private setTween(props: any, duration?: number) {
+        if (duration == null) duration = this.duration;
         (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(JSON.stringify({
-            duration: this.duration,
+            duration: duration,
             to: 1,
             props: props
         }));
