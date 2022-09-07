@@ -1,6 +1,8 @@
 
 import { _decorator, Component, RenderComponent, Vec4, gfx, Sprite, Label, math, BitmapFont } from 'cc';
-const { ccclass, property } = _decorator;
+import { EDITOR } from 'cc/env';
+import { SetEffect } from '../fuckui/SetEffect';
+const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -15,6 +17,7 @@ const { ccclass, property } = _decorator;
  */
 
 @ccclass('YJVertexColorTransition')
+@executeInEditMode()
 export class YJVertexColorTransition extends Component {
 
     private renderComp: RenderComponent;
@@ -29,6 +32,10 @@ export class YJVertexColorTransition extends Component {
     private _originColor: math.Color;
 
     onLoad() {
+        if (EDITOR) {
+            if (!this.getComponent(SetEffect)) this.destroy();
+            return;
+        }
         if (!this.renderComp)
             this.renderComp = this.getComponent(RenderComponent);
         if (!this.renderComp) return;
@@ -120,6 +127,7 @@ export class YJVertexColorTransition extends Component {
     }
 
     lateUpdate() {
+        if (EDITOR) return;
         if (!this._needUpdate) return;
         this._needUpdate = false;
         this._updateVB();

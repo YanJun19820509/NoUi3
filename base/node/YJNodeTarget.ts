@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec2, Vec3, UITransform, EventTouch } from 'cc';
+import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
@@ -30,6 +30,19 @@ export class YJNodeTarget extends Component {
 
     private pos: Vec3;
     private registed: boolean = false;
+    private lastTriggerTouchTime: number = 0;
+
+    onLoad() {
+        this.lastTriggerTouchTime = 0;
+        let btn = this.getComponent(Button);
+        if (btn) {
+            let a = new EventHandler();
+            a.target = this.node;
+            a.component = 'YJNodeTarget';
+            a.handler = 'setTriggerTouchTime';
+            btn.clickEvents.push(a);
+        }
+    }
 
     onEnable() {
         this.registed = false;
@@ -104,4 +117,18 @@ export class YJNodeTarget extends Component {
         }
     }
 
+    /**
+     * 判断是否已经触发点击，将最近一次点击的时间戳a与输入时间戳time进行比较，如果time>a，那么可以认为在比较之前没有触发点击，否则为已触发
+     * @param time (ms)默认为当前时间戳
+     * @returns true：未触发，false：已触发
+     */
+    public compareLastTriggerTouchTime(time?: number): boolean {
+        time = time || (new Date()).getTime();
+        return time - this.lastTriggerTouchTime > 0;
+    }
+
+
+    private setTriggerTouchTime() {
+        this.lastTriggerTouchTime = (new Date()).getTime();
+    }
 }
