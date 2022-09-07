@@ -20,11 +20,16 @@ const { ccclass, menu, property } = _decorator;
 export class SetToggleCheck extends FuckUi {
     @property({ displayName: '取反' })
     reverse: boolean = false;
+    @property({ tooltip: '设置 isChecked 而不调用 checkEvents 回调' })
+    setCheckedWithoutNotify: boolean = false;
 
     protected onDataChange(data: any) {
         let a = Boolean(data);
         if (this.reverse) a = !a;
-        this.getComponent(Toggle).isChecked = a;
+        if (this.setCheckedWithoutNotify)
+            this.getComponent(Toggle).setIsCheckedWithoutNotify(a);
+        else
+            this.getComponent(Toggle).isChecked = a;
     }
 
     public a_setChecked(): void {

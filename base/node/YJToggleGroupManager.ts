@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ToggleContainer, Toggle, CCBoolean } from 'cc';
+import { _decorator, Component, Node, ToggleContainer, Toggle, EventHandler } from 'cc';
 import { no } from '../../no';
 const { ccclass, property, menu, requireComponent } = _decorator;
 
@@ -14,7 +14,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-
+//无需也不能与ToggleContainer的checkEvents绑定
 @ccclass('YJToggleGroupManager')
 @menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
 @requireComponent(ToggleContainer)
@@ -31,8 +31,24 @@ export class YJToggleGroupManager extends Component {
     @property
     checkOnEnabel: boolean = true;
 
+    @property({ min: 0, displayName: '切换间隔时长(s)' })
+    duration: number = 0;
+
     private checkedToggleUuid: string = null;
     private defaultCheckedIdx: number;
+    private needWait: boolean = false;
+
+    onLoad() {
+        let items = this.getComponent(ToggleContainer).toggleItems;
+        for (let i = 0, n = items.length; i < n; i++) {
+            let toggle = items[i];
+            let a = new EventHandler();
+            a.target = this.node;
+            a.component = 'YJToggleGroupManager';
+            a.handler = 'a_onCheck';
+            toggle.checkEvents.push(a);
+        }
+    }
 
     onEnable() {
         let items = this.getComponent(ToggleContainer).toggleItems;
@@ -56,6 +72,11 @@ export class YJToggleGroupManager extends Component {
     }
 
     public a_onCheck(toggle: Toggle): void {
+        if (!toggle.isChecked) return;
+        if (!this.checkDuration()) {
+            toggle.setIsCheckedWithoutNotify(false);
+            return;
+        }
         //避免重复点击
         if (!this.redo && toggle.uuid == this.checkedToggleUuid) return;
         //onToggleChecked回调方法只有1个，则所有toggle checked共用。
@@ -66,11 +87,23 @@ export class YJToggleGroupManager extends Component {
     }
 
     public a_check(idx: number): void {
+        if (!this.checkDuration()) {
+            return;
+        }
         idx = Number(idx);
         let items = this.getComponent(ToggleContainer).toggleItems;
         if (items[idx])
             items[idx].isChecked = true;
     }
 
+    private checkDuration(): boolean {
+        if (this.duration == 0) return true;
+        if (this.needWait) return false;
+        this.needWait = true;
+        this.scheduleOnce(() => {
+            this.needWait = false;
+        }, this.duration);
+        return true;
+    }
 }
 

@@ -33,6 +33,7 @@ export class YJNodeTarget extends Component {
     private lastTriggerTouchTime: number = 0;
 
     onLoad() {
+        if (EDITOR) return;
         this.lastTriggerTouchTime = 0;
         let btn = this.getComponent(Button);
         if (btn) {
