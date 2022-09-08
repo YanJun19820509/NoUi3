@@ -33,7 +33,9 @@ export class YJVertexColorTransition extends Component {
 
     onLoad() {
         if (EDITOR) {
-            if (!this.getComponent(SetEffect)) this.destroy();
+            this.scheduleOnce(() => {
+                if (!this.getComponent(SetEffect)) this.destroy();
+            }, .1);
             return;
         }
         if (!this.renderComp)
