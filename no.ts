@@ -1544,7 +1544,9 @@ export namespace no {
 
         /**转成json string */
         public get json(): string {
-            return JSON.stringify(this._data);
+            let a = clone(this._data);
+            a.__ut = sysTime.now;
+            return JSON.stringify(a);
         }
 
         /**将json string转成data */
@@ -1562,10 +1564,10 @@ export namespace no {
             if (paths == null || paths == '*') return this._data;
             paths = [].concat(paths);
             if (paths.length == 1) {
-                return no.getValue(this._data, paths[0]);
+                return getValue(this._data, paths[0]);
             } else {
                 let p = paths.join('.');
-                let a = no.getValue(this._data, p);
+                let a = getValue(this._data, p);
                 if (!a) return null;
                 return clone(a);
             }
@@ -1581,7 +1583,7 @@ export namespace no {
             }
             if (value instanceof Object && value['constructor'] === Object) {
                 if (Object.keys(value).length == 0) {
-                    no.setValue(this._data, path, value);
+                    setValue(this._data, path, value);
                 } else {
                     for (let key in value) {
                         let v = value[key];
@@ -1589,7 +1591,7 @@ export namespace no {
                     }
                 }
             } else {
-                no.setValue(this._data, path, value);
+                setValue(this._data, path, value);
             }
             this.handleDataChange();
         }
@@ -1615,7 +1617,7 @@ export namespace no {
          */
         public delete(path: string): any {
             if (this._data == null) return null;
-            return no.deleteValue(this._data, path);
+            return deleteValue(this._data, path);
         }
 
         public clear(): void {
@@ -1798,13 +1800,13 @@ export namespace no {
                     this.preloadFiles(bundleName, filePaths, onProgress);
                 });
             } else {
-                no.log('preloadFiles', filePaths);
+                log('preloadFiles', filePaths);
                 bundle.preload(filePaths, Asset, (finished, total, requestItem) => {
                     onProgress && onProgress(finished / total);
                 }, (err, items) => {
                     if (items == null || items.length == 0) {
                         onProgress && onProgress(1);
-                        no.log('preloadFiles', filePaths, err.message);
+                        log('preloadFiles', filePaths, err.message);
                     }
                 });
             }
@@ -1820,7 +1822,7 @@ export namespace no {
                 // onProgress && onProgress((finished / total) || 0);
             }, (err) => {
                 if (err) {
-                    no.log('preloadScene', name, err.message);
+                    log('preloadScene', name, err.message);
                 } else {
                     onProgress && onProgress(1);
                 }
@@ -1839,7 +1841,7 @@ export namespace no {
             }
             assetManager.loadBundle(name, (err, b) => {
                 if (err != null) {
-                    no.log('loadBundle', name, err);
+                    log('loadBundle', name, err);
                 } else {
                     callback && callback();
                 }
@@ -1876,7 +1878,7 @@ export namespace no {
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
-                        no.log('load', fileName, err.message);
+                        log('load', fileName, err.message);
                     } else {
                         this.addRef(item);//增加引用计数
                         callback && callback(item);
@@ -1888,7 +1890,7 @@ export namespace no {
                 if (bundle != null) {
                     bundle.load(fileName, type, (err, item) => {
                         if (item == null) {
-                            no.log('load', fileName, err.message);
+                            log('load', fileName, err.message);
                         } else {
                             this.addRef(item);//增加引用计数
                             callback && callback(item);
@@ -1970,7 +1972,7 @@ export namespace no {
             }, (err, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(0);
-                    no.log('loadFiles', filePaths, err.message);
+                    log('loadFiles', filePaths, err.message);
                 } else {
                     items.forEach(item => {
                         this.addRef(item);//增加引用计数
@@ -1978,7 +1980,7 @@ export namespace no {
                     });
                     onComplete && onComplete(items);
                 }
-                no.log('loadFiles', items);
+                log('loadFiles', items);
             });
         }
         /**
@@ -1998,7 +2000,7 @@ export namespace no {
         public loadRemoteFile<T extends Asset>(url: string, callback: (file: T) => void) {
             assetManager.loadRemote<T>(url, (err, file) => {
                 if (file == null) {
-                    no.log('loadRemoteFile', url, err.message);
+                    log('loadRemoteFile', url, err.message);
                     callback && callback(null);
                 } else {
                     this.addRef(file);//增加引用计数
@@ -2080,7 +2082,7 @@ export namespace no {
         public loadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
-                no.err(`${folderName}没有设置ab包`);
+                err(`${folderName}没有设置ab包`);
                 return;
             }
             p.file += '/';
@@ -2098,7 +2100,7 @@ export namespace no {
         public preloadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void) {
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
-                no.err(`${folderName}没有设置ab包`);
+                err(`${folderName}没有设置ab包`);
                 return;
             }
             p.file += '/';
@@ -2157,7 +2159,7 @@ export namespace no {
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {
-                    no.err(uuid, e.stack);
+                    err(uuid, e.stack);
                 }
                 this.addRef(f);//增加引用计数
                 callback?.(f);
@@ -2184,7 +2186,7 @@ export namespace no {
                 a.push({ uuid: uuid });
             });
             assetManager.loadAny(a, (e, item) => {
-                if (item == null) no.err(uuid, e.message);
+                if (item == null) err(uuid, e.message);
             });
         }
 
@@ -2215,7 +2217,7 @@ export namespace no {
         public loadAny<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void): void {
             assetManager.loadAny({ 'path': path, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {
-                    no.err(path, e.stack);
+                    err(path, e.stack);
                 }
                 this.addRef(f);//增加引用计数
                 callback?.(f);
@@ -2277,13 +2279,13 @@ export namespace no {
             if (have) return;
             a.push({
                 o: object,
-                t: no.sysTime.now + (canRelease ? 0 : 999999)
+                t: sysTime.now + (canRelease ? 0 : 999999)
             });
             this.cacheMap.set(type, a);
         }
 
         public clearAll(): void {
-            let types = no.MapKeys2Array(this.cacheMap);
+            let types = MapKeys2Array(this.cacheMap);
             let n = types.length;
             for (let i = 0; i < n; i++) {
                 this.clear(types[i]);
@@ -2303,13 +2305,13 @@ export namespace no {
 
         private _clear(obj: any): void {
             if (obj instanceof Node) obj.destroy();
-            else if (obj instanceof Asset) no.assetBundleManager.release(obj);
+            else if (obj instanceof Asset) assetBundleManager.release(obj);
             else obj = null;
         }
 
         private checkClear() {
-            let t = no.timestamp();
-            let types = no.MapKeys2Array(this.cacheMap);
+            let t = timestamp();
+            let types = MapKeys2Array(this.cacheMap);
             types.forEach(type => {
                 let arr = this.cacheMap.get(type);
                 for (let i = arr.length - 1; i >= 0; i--) {
@@ -2344,13 +2346,13 @@ export namespace no {
          * @param v v为红点数量,v>0时显示红点，否则隐藏
          */
         public setHint(type: string, v: number) {
-            v = no.float(v, 0);
+            v = float(v, 0);
             this.data.set(type, v);
             this.emit(type, v, type);
         }
 
         public changeHint(type: string, v: number): void {
-            v = no.float(v, 0);
+            v = float(v, 0);
             let a = this.getHintValue(type);
             a += v;
             if (a < 0) a = 0;
@@ -3328,6 +3330,6 @@ export namespace no {
     /////////////////////////////////////base64 end///////////////////////////////
 }
 
-if(DEBUG){
+if (DEBUG) {
     window['no'] = no;
 }

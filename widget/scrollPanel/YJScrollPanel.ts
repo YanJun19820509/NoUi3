@@ -199,6 +199,8 @@ export class YJScrollPanel extends Component {
         }
         this.startTouchPos = this.touchUILocationAR(e);
         let touches = e.getAllTouches();
+        this.startDis = null;
+        this.startScale = null;
         if (touches.length < 2) {
             e.preventSwallow = true;
             if (this.doubleClick) {
@@ -239,6 +241,10 @@ export class YJScrollPanel extends Component {
     }
 
     private onTouchEnd(e: EventTouch) {
+        if (!this.content) {
+            e.preventSwallow = true;
+            return;
+        }
         if (math.Vec2.distance(e.getStartLocation(), e.getLocation()) > 10)
             e.propagationStopped = true;
         else
@@ -284,6 +290,7 @@ export class YJScrollPanel extends Component {
     private scale(e: EventTouch) {
         let dis = this.touchesDistance(e.getAllTouches());
         let scale = math.clamp(this.startScale + (dis - this.startDis) / this.startDis, this.minScale, this.maxScale);
+        if (isNaN(scale)) return;
         if (scale == this.minScale || scale == this.maxScale) {
             this.startScale = scale;
             this.startDis = dis;

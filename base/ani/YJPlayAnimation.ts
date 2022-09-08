@@ -36,7 +36,7 @@ export class YJPlayAnimation extends Component {
         }
     }
 
-    private play() {
+    public play() {
         let ani = this.getComponent(Animation);
         ani.on(Animation.EventType.PLAY, this.onPlay, this);
         ani.on(Animation.EventType.FINISHED, this.onFinished, this);
