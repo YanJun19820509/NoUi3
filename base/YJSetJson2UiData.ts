@@ -30,11 +30,19 @@ export class Json2UiDataInfo {
 export class YJSetJson2UiData extends Component {
     @property(Json2UiDataInfo)
     infos: Json2UiDataInfo[] = [];
+    @property
+    autoSet: boolean = true;
 
     start() {
-        this.infos.forEach(info => {
-            if (info.json == '' || !info.ui) return;
-            info.ui.setData(info.json.replace(/\n/g, '').replace(/\'/g, '\"'));
-        });
+        if (!this.autoSet) return;
+        for (let i = 0, n = this.infos.length; i < n; i++) {
+            this.a_set(i);
+        }
+    }
+
+    public a_set(idx: string | number) {
+        let info = this.infos[Number(idx)];
+        if (!info || info.json == '' || !info.ui) return;
+        info.ui.setData(info.json.replace(/\n/g, '').replace(/\'/g, '\"'));
     }
 }

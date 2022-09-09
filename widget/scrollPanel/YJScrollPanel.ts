@@ -44,6 +44,10 @@ export class YJScrollPanel extends Component {
     offset: math.Vec2 = math.v2();
     @property({ displayName: '动画时长(s)', min: 0 })
     duration: number = .5;
+    @property({ type: no.EventHandlerInfo })
+    onMoveStart: no.EventHandlerInfo[] = [];
+    @property({ type: no.EventHandlerInfo })
+    onMoveStop: no.EventHandlerInfo[] = [];
 
     private startTouchPos: math.Vec2;
     private startDis: number;
@@ -54,6 +58,7 @@ export class YJScrollPanel extends Component {
     private doubleClickScaleToMax: boolean;
     private triedNum: number = 0;
     private needCheckCheckRange: boolean = true;
+    private startMove: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -249,6 +254,10 @@ export class YJScrollPanel extends Component {
             e.propagationStopped = true;
         else
             e.preventSwallow = true;
+        if (this.startMove) {
+            this.startMove = false;
+            no.EventHandlerInfo.execute(this.onMoveStop);
+        }
         if (this.doubleClick) {
             if (this.doubleClicking) {
                 this.doubleClickNum++;
@@ -279,6 +288,10 @@ export class YJScrollPanel extends Component {
     }
 
     private move(e: EventTouch) {
+        if (!this.startMove) {
+            this.startMove = true;
+            no.EventHandlerInfo.execute(this.onMoveStart);
+        }
         let delta = math.v2();
         e.touch.getDelta(delta);
         let pos = this.content.getPosition();

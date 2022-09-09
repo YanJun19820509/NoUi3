@@ -60,7 +60,7 @@ export class SetGray extends FuckUi {
         if (this.recursive) {
             this.getComponentsInChildren(RenderComponent).forEach(child => {
                 if (a?.uuid == child.uuid) return;
-                (child.getComponent(SetGray) || child.addComponent(SetGray)).setData(JSON.stringify(v));
+                child.getComponent(SetGray)?.setData(JSON.stringify(v));
             });
         }
     }

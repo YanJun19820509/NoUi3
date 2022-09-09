@@ -37,7 +37,7 @@ vec4 vert() {
 
   def = a_color.r;
   if (def < 0.0){
-    color = vec4(1, 1, 1, 1);
+    color = vec4(1, 1, 1, a_color.a);
     //设置扩展参数
     ext = a_color.gba;
   }else{
