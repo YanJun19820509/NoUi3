@@ -256,6 +256,13 @@ export namespace no {
             return a;
         }
 
+        public static newInEditor(target: Node, compId: string, handler: string): EventHandlerInfo {
+            let a = new EventHandlerInfo();
+            a.handler.target = target;
+            a.handler._componentId = compId;
+            a.handler.handler = handler;
+            return a;
+        }
 
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (!handlers || handlers.length == 0) return;
