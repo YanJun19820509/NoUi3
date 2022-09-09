@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate, Size, game, Sprite, Renderable2D } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate, Size, game, Sprite, Renderable2D, UIOpacity } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -60,6 +60,8 @@ export class YJCharLabel extends Component {
 
     onLoad() {
         if (!EDITOR) {
+            if (!this.getComponent(UIOpacity))
+                this.addComponent(UIOpacity);
             return;
         }
         let layout = this.getComponent(Layout);
@@ -108,6 +110,7 @@ export class YJCharLabel extends Component {
                 } else {
                     labelNode.setSiblingIndex(i);
                     labelNode.active = true;
+                    labelNode.getComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
                 }
                 this.usedCharNode[this.usedCharNode.length] = labelNode;
             }
@@ -144,12 +147,11 @@ export class YJCharLabel extends Component {
         shadow.offset = this.shadowOffset;
         shadow.blur = this.shadowBlur;
         labelNode.addComponent(YJDynamicTexture).dynamicAtlas = this.dynamicAtlas;
+        labelNode.addComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
         if (EDITOR) label.string = v;
         else
             labelNode.getComponent(YJDynamicTexture).packLabelFrame(v);
         labelNode.parent = this.node;
-        this.scheduleOnce(() => {
-        }, game.deltaTime * 2);
         return labelNode;
     }
 
@@ -164,6 +166,7 @@ export class YJCharLabel extends Component {
             ut.setContentSize(s.spriteFrame.rect.size);
             labelNode.active = true;
             labelNode.parent = this.node;
+            labelNode.addComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
             this.charModels[temp.name] = labelNode;
             return labelNode;
         } else {

@@ -52,7 +52,7 @@ export class YJTouchController extends Component {
 
     private checkTouched(event: EventTouch): boolean {
         if (this._touched && !this.multiable && this.currentTouch != null) {
-            if (event.getTouches().length == 1) return true;
+            if (event.getAllTouches().length == 1) return true;
             return this.currentTouch?.getID() == event.touch.getID();
         }
         return true;
