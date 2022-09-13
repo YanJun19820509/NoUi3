@@ -60,8 +60,6 @@ export class YJCharLabel extends Component {
 
     onLoad() {
         if (!EDITOR) {
-            if (!this.getComponent(UIOpacity))
-                this.addComponent(UIOpacity);
             return;
         }
         let layout = this.getComponent(Layout);
@@ -110,7 +108,7 @@ export class YJCharLabel extends Component {
                 } else {
                     labelNode.setSiblingIndex(i);
                     labelNode.active = true;
-                    labelNode.getComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
+                    labelNode.getComponent(UIOpacity);
                 }
                 this.usedCharNode[this.usedCharNode.length] = labelNode;
             }
@@ -147,7 +145,7 @@ export class YJCharLabel extends Component {
         shadow.offset = this.shadowOffset;
         shadow.blur = this.shadowBlur;
         labelNode.addComponent(YJDynamicTexture).dynamicAtlas = this.dynamicAtlas;
-        labelNode.addComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
+        labelNode.addComponent(UIOpacity);
         if (EDITOR) label.string = v;
         else
             labelNode.getComponent(YJDynamicTexture).packLabelFrame(v);
@@ -166,7 +164,7 @@ export class YJCharLabel extends Component {
             ut.setContentSize(s.spriteFrame.rect.size);
             labelNode.active = true;
             labelNode.parent = this.node;
-            labelNode.addComponent(UIOpacity).opacity = this.getComponent(UIOpacity).opacity;
+            labelNode.addComponent(UIOpacity);
             this.charModels[temp.name] = labelNode;
             return labelNode;
         } else {
