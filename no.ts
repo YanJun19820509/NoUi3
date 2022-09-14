@@ -893,7 +893,7 @@ export namespace no {
         return formatString(formatter, { h: h, m: m, s: s });
     }
 
-    function formatSeconds(sec: number, formatter: string, show0: boolean): string {
+    function _formatSeconds(sec: number, formatter: string, show0: boolean): string {
         if (sec <= 0) {
             let a = show0 ? '00' : '0';
             return formatString(formatter, { h: a, M: a, s: a });
@@ -907,7 +907,7 @@ export namespace no {
         return formatString(formatter, { h: h, M: m, s: s });
     }
 
-    function formatTime(sec: number, formatter: string, show0: boolean): string {
+    function _formatTime(sec: number, formatter: string, show0: boolean): string {
         if (sec <= 0) return '';
         let { y, m, d, h, M, s }: { y: number, m: any, d: any, h: any, M: any, s: any } = parseTimestamp(sec);
         if (m <= 9 && show0) { m = `0${m}`; }
@@ -919,31 +919,43 @@ export namespace no {
     }
 
     export function formatTime_yymmddhhMMss(sec: number, show0 = true): string {
-        return formatTime(sec, '{y}.{m}.{d} {h}:{M}:{s}', show0);
+        return _formatTime(sec, '{y}.{m}.{d} {h}:{M}:{s}', show0);
     }
 
     export function formatTime_yymmdd(sec: number, show0 = true): string {
-        return formatTime(sec, '{y}.{m}.{d}', show0);
+        return _formatTime(sec, '{y}.{m}.{d}', show0);
     }
 
     export function formatTime_hhMMss(sec: number, show0 = true): string {
-        return formatSeconds(sec, '{h}:{M}:{s}', show0);
+        return _formatSeconds(sec, '{h}:{M}:{s}', show0);
     }
 
     export function formatTime_hhMM(sec: number, show0 = true): string {
-        return formatSeconds(sec, '{h}:{M}', show0);
+        return _formatSeconds(sec, '{h}:{M}', show0);
     }
 
     export function formatTime_hh(sec: number, show0 = true): string {
-        return formatSeconds(sec, '{h}', show0);
+        return _formatSeconds(sec, '{h}', show0);
     }
 
     export function formatTime_MMss(sec: number, show0 = true): string {
-        return formatSeconds(sec, '{M}:{s}', show0);
+        return _formatSeconds(sec, '{M}:{s}', show0);
     }
 
     export function formatTime_ss(sec: number, show0 = true): string {
-        return formatSeconds(sec, '{s}', show0);
+        return _formatSeconds(sec, '{s}', show0);
+    }
+
+    export function formatTime(sec: number, fmt: 'yymmddhhMMss' | 'yymmdd' | 'hhMMss' | 'hhMM' | 'hh' | 'MMss' | 'ss', show0 = true): string {
+        switch (fmt) {
+            case 'yymmddhhMMss': return formatTime_yymmddhhMMss(sec, show0);
+            case 'yymmdd': return formatTime_yymmdd(sec, show0);
+            case 'hhMMss': return formatTime_hhMMss(sec, show0);
+            case 'hhMM': return formatTime_hhMM(sec, show0);
+            case 'hh': return formatTime_hh(sec, show0);
+            case 'MMss': return formatTime_MMss(sec, show0);
+            case 'ss': return formatTime_ss(sec, show0);
+        }
     }
 
     /**
@@ -3335,6 +3347,44 @@ export namespace no {
         return arrayBuffer2String(buffer);
     }
     /////////////////////////////////////base64 end///////////////////////////////
+
+    ////////////////////////////////////给richtext添加bbcode start///////////////////////
+    /**
+     * 给richtext添加bbcode
+     * @param text 原richtext
+     * @param tag 标签
+     * @param value 标签值
+     */
+    export function addBBCode(text: string, tag: string, value?: number | string): string;
+    /**
+     * 给richtext添加bbcode
+     * @param text 原richtext
+     * @param tag 标签
+     * @param props 属性
+     */
+    export function addBBCode(text: string, tag: string, props: { key: string, value: any } | { key: string, value: any }[]): string;
+    export function addBBCode(text: string, tag: string, props?: number | string | { key: string, value: any } | { key: string, value: any }[]): string {
+        if (tag == 'br') return `${text}<br/>`;
+
+        const tagFormat = '<{tag}{props}>{content}</{tag}>';
+        const propFormat = '{key}={value}';
+
+        if (props) {
+            if (typeof props == 'number' || typeof props == 'string') {
+                return no.formatString(tagFormat, { tag: tag, props: `=${props}`, content: text });
+            }
+
+            let ps: string[] = [''];
+            props = [].concat(props);
+            props.forEach(p => {
+                ps[ps.length] = no.formatString(propFormat, p);
+            });
+
+            return no.formatString(tagFormat, { tag: tag, props: ps.join(' '), content: text });
+        } else
+            return no.formatString(tagFormat, { tag: tag, props: '', content: text });
+    }
+    ////////////////////////////////////给richtext添加bbcode end///////////////////////
 }
 
 if (DEBUG) {
