@@ -64,7 +64,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
     }
 
     private scrollToTarget(target: YJNodeTarget) {
-        this.scrollToOffset(this.getOffset(target));
+        this.scrollToOffset(this.getOffset(target), this.duration);
     }
 
     private scrollToTargetByFrame(target: YJNodeTarget) {
