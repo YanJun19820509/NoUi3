@@ -34,6 +34,8 @@ export class SetCreateNode extends FuckUi {
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
 
+    @property({ tooltip: '仅第一次创建时有创建间隔' })
+    onlyFirstTime: boolean = false;
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
 
@@ -45,6 +47,8 @@ export class SetCreateNode extends FuckUi {
     dynamicAtlas: YJDynamicAtlas = null;
 
     protected needSetDynamicAtlas: boolean = true;
+    private isFirst: boolean = true;
+    private waitTime: number;
 
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
@@ -61,6 +65,12 @@ export class SetCreateNode extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        if (this.onlyFirstTime) {
+            if (this.isFirst) {
+                this.isFirst = false;
+                this.waitTime = this.wait;
+            } else this.waitTime = 0;
+        }
         this.setItems([].concat(data));
     }
 
@@ -105,12 +115,12 @@ export class SetCreateNode extends FuckUi {
         }
         item.active = true;
         i++;
-        if (this.wait == 0)
+        if (this.waitTime == 0)
             this.setItem(data, i);
         else
             this.scheduleOnce(() => {
                 this.setItem(data, i);
-            }, this.wait);
+            }, this.waitTime);
     }
 
     protected async setDynamicAtlasNode(data: any) {
