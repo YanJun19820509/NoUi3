@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
+import { decode, encode } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 const { ccclass, property } = _decorator;
@@ -24,14 +25,15 @@ export class YJHttpRequest implements YJSocketInterface {
         this.url = url;
     }
 
-    sendDataToServer(code: string, args?: any): void {
-        this.httpRequest('POST', this.url + '/' + code, args);
+    sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void {
+        this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null);
     }
 
-    getDataFromServer(code: string, args?: any): Promise<any | null> {
+    getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any | null> {
         return new Promise<any>(resolve => {
-            this.httpRequest('POST', this.url + '/' + code, args, v => {
-                resolve(v);
+            this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, v => {
+                let a = decode(v, encryptType);
+                resolve(JSON.parse(a));
             }, v => {
                 resolve(null);
             });
@@ -51,15 +53,7 @@ export class YJHttpRequest implements YJSocketInterface {
 
         xhr.onload = function () {
             if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
-                var response = xhr.responseText;
-                let a = JSON.parse(response);
-                no.log('response', response);
-                if (a.code == 0) {
-                    okCall?.(a.data);
-                } else {
-                    no.err(a.msg);
-                    errorCall?.(a);
-                }
+                okCall?.(xhr.response);
             }
         };
 
@@ -68,13 +62,13 @@ export class YJHttpRequest implements YJSocketInterface {
             errorCall?.('no_server');
         };
 
-        xhr.ontimeout = function(){
+        xhr.ontimeout = function () {
             no.err('连接超时：', url);
             errorCall?.('timeout');
         };
 
         if (data)
-            xhr.send(JSON.stringify(data));
+            xhr.send(data);
         else xhr.send();
     }
 }

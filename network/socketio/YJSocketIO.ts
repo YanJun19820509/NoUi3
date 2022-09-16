@@ -4,6 +4,7 @@ import { _decorator } from 'cc';
 import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
+import { decode, encode } from '../../encrypt/encrypt';
 const { ccclass } = _decorator;
 
 /**
@@ -34,7 +35,7 @@ export class YJSocketIO implements YJSocketInterface {
 
     private ws: any;
     private url: string;
-    private receivedData: any = {};
+    private receivedData: any[] = [];
 
     public static new(url: string, options?: any): YJSocketIO {
         let a = new YJSocketIO();
@@ -63,9 +64,8 @@ export class YJSocketIO implements YJSocketInterface {
             no.log(`socketio connect_error:${err.type}`);
         });
 
-        this.ws.onAny((code: string, args: any) => {
-            no.log(`socketio receive:${code}`, args);
-            this.receivedData[code] = args;
+        this.ws.onAny((v: any) => {
+            this.receivedData[this.receivedData.length] = v;
         });
     }
 
@@ -74,9 +74,8 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public sendDataToServer(code: string, args?: any): void {
-        if (args) args = no.base64_encode(JSON.stringify(args));
-        this.ws.volatile.emit(code, args);
+    public sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void {
+        this.ws.volatile.emit(code, args ? encode(args, encryptType) : null);
     }
 
     /**
@@ -84,19 +83,30 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public getDataFromServer(code: string, args?: any): Promise<any> {
-        this.sendDataToServer(code, args);
+    public getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any> {
+        this.sendDataToServer(encryptType, code, args);
         if (this.ws.connected) {
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
-                    let d = this.receivedData[code];
+                    let d = this.getReceiveData(encryptType);
                     if (d != null) {
                         clearInterval(a);
-                        resolve(JSON.parse(no.base64_decode(d)));
-                        this.receivedData[code] = null;
+                        resolve(d);
                     }
                 }, 50 / 3);
             });
         } else return Promise.resolve(null);
+    }
+
+    private getReceiveData(type: 'base64' | 'aes' | 'rsa'): any {
+        for (let i = 0, n = this.receivedData.length; i < n; i++) {
+            try {
+                let s = decode(this.receivedData[i], type);
+                let a = JSON.parse(s);
+                this.receivedData.splice(i, 1);
+                return a;
+            } catch (e) { }
+        }
+        return null;
     }
 }

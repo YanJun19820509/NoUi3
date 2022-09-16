@@ -1,5 +1,6 @@
 
 import { _decorator } from 'cc';
+import { decode, encode } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 const { ccclass } = _decorator;
@@ -21,7 +22,7 @@ export class YJWebSocket implements YJSocketInterface {
     private ws: WebSocket;
     private url: string;
     private reIniting: boolean = false;
-    private receivedData: any = {};
+    private receivedData: any[] = [];
 
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
@@ -55,9 +56,7 @@ export class YJWebSocket implements YJSocketInterface {
 
     private onMessage(data: any) {
         if (data == null || data == '') return;
-        let a = no.base64_decode(data);
-        let b = JSON.parse(a);
-        this.receivedData[b.c] = b.p;
+        this.receivedData[this.receivedData.length] = data;
     }
 
     private reInit() {
@@ -96,11 +95,11 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async sendDataToServer(code: string, args?: any) {
+    public async sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any) {
         if (await this.isOk()) {
-            let v = no.base64_encode(JSON.stringify({ c: code, p: args }));
+            let d = { c: code, p: args };
+            let v: string | ArrayBuffer = encode(d, encryptType);
             this.ws.send(v);
-            Uint8Array
         }
     }
 
@@ -109,21 +108,32 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async getDataFromServer(code: string, args?: any): Promise<any> {
+    public async getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any> {
         if (await this.isOk()) {
-            let v = no.base64_encode(JSON.stringify({ c: code, p: args }));
+            let d = { c: code, p: args };
+            let v: string | ArrayBufferLike = encode(d, encryptType);
             this.ws.send(v);
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
-                    let d = this.receivedData[code];
+                    let d = this.getReceiveData(encryptType);
                     if (d != null) {
                         clearInterval(a);
                         resolve(d);
-                        this.receivedData[code] = null;
                     }
                 }, 50 / 3);
             });
         } else return Promise.resolve(null);
     }
 
+    private getReceiveData(type: 'base64' | 'aes' | 'rsa'): any {
+        for (let i = 0, n = this.receivedData.length; i < n; i++) {
+            try {
+                let s = decode(this.receivedData[i], type);
+                let a = JSON.parse(s);
+                this.receivedData.splice(i, 1);
+                return a;
+            } catch (e) { }
+        }
+        return null;
+    }
 }

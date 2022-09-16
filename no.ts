@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, Vec4, v4, view, __private, js, Font } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
-import { base64 } from './base64';
 
 const { ccclass, property } = _decorator;
 
@@ -3292,10 +3291,7 @@ export namespace no {
         return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
     }
 
-
-    ///////////////////////////base64  start////////////////////
-
-    function string2ArrayBuffer(str: string): ArrayBuffer {
+    export function string2ArrayBuffer(str: string): ArrayBuffer {
         const buffer = new ArrayBuffer(str.length);
         const bytes = new Uint8Array(buffer);
 
@@ -3306,7 +3302,7 @@ export namespace no {
         return buffer;
     }
 
-    function arrayBuffer2String(buffer: ArrayBuffer): string {
+    export function arrayBuffer2String(buffer: ArrayBuffer): string {
         const bytes = new Uint8Array(buffer);
         let sArr: string[] = [];
         bytes.forEach(c => {
@@ -3332,25 +3328,6 @@ export namespace no {
         }
         return true;
     }
-
-
-    /**
-     * base64编/解码
-     */
-    export function base64_encode(s: string): string {
-        const buffer = string2ArrayBuffer(s);
-        return base64.encode(buffer);
-    }
-
-
-    /**
-     * base64编/解码
-     */
-    export function base64_decode(s: string): string {
-        let buffer = base64.decode(s);
-        return arrayBuffer2String(buffer);
-    }
-    /////////////////////////////////////base64 end///////////////////////////////
 
     ////////////////////////////////////给richtext添加bbcode start///////////////////////
     /**

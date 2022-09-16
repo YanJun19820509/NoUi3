@@ -11,8 +11,8 @@
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
+
 export interface YJSocketInterface {
-    sendDataToServer(code: string, args?: any): void;
-    getDataFromServer(code: string, args?: any): Promise<any>;
+    sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void;
+    getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any>;
 }
