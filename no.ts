@@ -448,8 +448,9 @@ export namespace no {
      * 从数组里随机n个元素
      * @param arr
      * @param n
+     * @param repeatable 随机的元素能否重复
      */
-    export function arrayRandom(arr: any, n = 1): any {
+    export function arrayRandom(arr: any, n = 1, repeatable = false): any {
         if (!arr || arr.length == 0) return null;
         if (arr.length == 1) return arr[0];
         let a = [].concat(arr);
@@ -458,7 +459,10 @@ export namespace no {
             let al = a.length;
             if (al == 0) break;
             let b = Math.floor(Math.random() * al);
-            c = [].concat(c, a.splice(b, 1));
+            if (!repeatable)
+                c = [].concat(c, a.splice(b, 1));
+            else
+                c = [].concat(c, a[b]);
         }
         return n == 1 ? c[0] : c;
     }
