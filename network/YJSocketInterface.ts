@@ -12,7 +12,9 @@
  *
  */
 
+import { EncryptType } from "../encrypt/encrypt";
+
 export interface YJSocketInterface {
-    sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void;
-    getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any>;
+    sendDataToServer(encryptType: EncryptType, code: string, args?: any): void;
+    getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any>;
 }

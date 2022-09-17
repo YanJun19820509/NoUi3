@@ -5,11 +5,11 @@ export namespace YJCrypto {
     let CryptoJS = window['CryptoJS'];
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&*=';
     const hexs = '0123456789abcdef';
-    const AESKey = no.arrayRandom(chars.split(''), 16, true).join('');
-    const AESIv = no.arrayRandom(hexs.split(''), 16, true).join('');
+    let AESKey: string;
+    let AESIv = '0000000000000000';
 
-    const key = CryptoJS.enc.Utf8.parse(AESKey);//十六位十六进制数作为密钥
-    const iv = CryptoJS.enc.Utf8.parse(AESIv);//十六位十六进制数作为密钥偏移量
+    let key: any; //十六位十六进制数作为密钥
+    let iv: any;//十六位十六进制数作为密钥偏移量
 
     function ArrayBufferToWordArray(arrayBuffer: ArrayBuffer) {
         const u8 = new Uint8Array(arrayBuffer, 0, arrayBuffer.byteLength);
@@ -30,6 +30,15 @@ export namespace YJCrypto {
             u8[i] = byte;
         }
         return u8;
+    }
+
+    export function createAESKey(cb: (d: any) => void, newAESIv = false) {
+        AESKey = no.arrayRandom(chars.split(''), 16, true).join('');
+        if (newAESIv) AESIv = no.arrayRandom(hexs.split(''), 16, true).join('');
+        if (!newAESIv) cb?.(AESKey);
+        else cb?.({ key: AESKey, iv: AESIv });
+        key = CryptoJS.enc.Utf8.parse(AESKey);
+        iv = CryptoJS.enc.Utf8.parse(AESIv);
     }
 
     /**

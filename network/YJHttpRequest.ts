@@ -1,6 +1,6 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { decode, encode } from '../encrypt/encrypt';
+import { decode, encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 const { ccclass, property } = _decorator;
@@ -25,11 +25,11 @@ export class YJHttpRequest implements YJSocketInterface {
         this.url = url;
     }
 
-    sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void {
+    sendDataToServer(encryptType: EncryptType, code: string, args?: any): void {
         this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null);
     }
 
-    getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any | null> {
+    getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any | null> {
         return new Promise<any>(resolve => {
             this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, v => {
                 let a = decode(v, encryptType);

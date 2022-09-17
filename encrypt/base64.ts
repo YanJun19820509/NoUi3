@@ -1,3 +1,5 @@
+import { no } from "../no";
+
 export namespace base64 {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
@@ -7,9 +9,12 @@ export namespace base64 {
         lookup[chars.charCodeAt(i)] = i;
     }
 
-    export const encode = (arraybuffer: ArrayBuffer): string => {
+    export const encode = (d: string | object): string => {
+        let v = d;
+        if (typeof v != 'string') v = JSON.stringify(v);
+        let arraybuffer: ArrayBuffer = no.string2ArrayBuffer(v);
         let bytes = new Uint8Array(arraybuffer),
-            i,
+            i: number,
             len = bytes.length,
             base64 = '';
 
@@ -29,7 +34,9 @@ export namespace base64 {
         return base64;
     };
 
-    export const decode = (base64: string): ArrayBuffer => {
+    export const decode = (d: string | ArrayBufferLike): string => {
+        let base64 = d;
+        if (typeof base64 != 'string') base64 = no.arrayBuffer2String(base64);
         let bufferLength = base64.length * 0.75,
             len = base64.length,
             i,
@@ -60,6 +67,6 @@ export namespace base64 {
             bytes[p++] = ((encoded3 & 3) << 6) | (encoded4 & 63);
         }
 
-        return arraybuffer;
+        return no.arrayBuffer2String(arraybuffer);
     };
 }

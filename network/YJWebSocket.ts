@@ -1,6 +1,6 @@
 
 import { _decorator } from 'cc';
-import { decode, encode } from '../encrypt/encrypt';
+import { decode, encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 const { ccclass } = _decorator;
@@ -95,7 +95,7 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any) {
+    public async sendDataToServer(encryptType: EncryptType, code: string, args?: any) {
         if (await this.isOk()) {
             let d = { c: code, p: args };
             let v: string | ArrayBuffer = encode(d, encryptType);
@@ -108,7 +108,7 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any> {
+    public async getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any> {
         if (await this.isOk()) {
             let d = { c: code, p: args };
             let v: string | ArrayBufferLike = encode(d, encryptType);
@@ -125,7 +125,7 @@ export class YJWebSocket implements YJSocketInterface {
         } else return Promise.resolve(null);
     }
 
-    private getReceiveData(type: 'base64' | 'aes' | 'rsa'): any {
+    private getReceiveData(type: EncryptType): any {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             try {
                 let s = decode(this.receivedData[i], type);

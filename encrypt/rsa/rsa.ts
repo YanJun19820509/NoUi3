@@ -1,4 +1,5 @@
 import { DEBUG } from "cc/env";
+import { no } from "../../no";
 import JSEncrypt from './jsencrypt.min.js'
 
 export namespace rsa {
@@ -20,14 +21,23 @@ export namespace rsa {
     psLBYuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRUnU8Jfm3Oz
     uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876`;
     const encrypt = new JSEncrypt();
-    encrypt.setPublicKey(pukey);
-    encrypt.setPrivateKey(prkey);
 
-    export function encode(v: string): string {
+    export function init(publicKey?: string, privateKey?: string) {
+        publicKey = publicKey || pukey;
+        privateKey = privateKey || prkey;
+        encrypt.setPublicKey(publicKey);
+        // encrypt.setPrivateKey(privateKey);
+    }
+
+    export function encode(d: string | object): string {
+        let v = d;
+        if (typeof v != 'string') v = JSON.stringify(v);
         return encrypt.encrypt(v);
     }
 
-    export function decode(v: string): string {
+    export function decode(d: string | ArrayBufferLike): string {
+        let v = d;
+        if (typeof v != 'string') v = no.arrayBuffer2String(v);
         return encrypt.decrypt(v);
     }
 }

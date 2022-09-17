@@ -18,9 +18,9 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SetRichText')
 export class SetRichText extends SetText {
-    @property({ type: Color })
+    @property
     color: Color = Color.BLACK.clone();
-    @property({ type: Color })
+    @property
     outlineColor: Color = Color.BLACK.clone();
     @property({ min: 0 })
     outlineWidth: number = 1;

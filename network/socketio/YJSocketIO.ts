@@ -4,7 +4,7 @@ import { _decorator } from 'cc';
 import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
-import { decode, encode } from '../../encrypt/encrypt';
+import { decode, encode, EncryptType } from '../../encrypt/encrypt';
 const { ccclass } = _decorator;
 
 /**
@@ -74,7 +74,7 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public sendDataToServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): void {
+    public sendDataToServer(encryptType: EncryptType, code: string, args?: any): void {
         this.ws.volatile.emit(code, args ? encode(args, encryptType) : null);
     }
 
@@ -83,7 +83,7 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public getDataFromServer(encryptType: 'base64' | 'aes' | 'rsa', code: string, args?: any): Promise<any> {
+    public getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any> {
         this.sendDataToServer(encryptType, code, args);
         if (this.ws.connected) {
             return new Promise<any>(resolve => {
@@ -98,7 +98,7 @@ export class YJSocketIO implements YJSocketInterface {
         } else return Promise.resolve(null);
     }
 
-    private getReceiveData(type: 'base64' | 'aes' | 'rsa'): any {
+    private getReceiveData(type: EncryptType): any {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             try {
                 let s = decode(this.receivedData[i], type);

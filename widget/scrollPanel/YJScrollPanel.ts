@@ -40,7 +40,7 @@ export class YJScrollPanel extends Component {
     minScale: number = .5;
     @property({ min: .1, visible() { return this.support2FingerScale; } })
     maxScale: number = 1.5;
-    @property({ type: math.Vec2, displayName: '滚动偏移', tooltip: '滚动到某点时需要的偏移' })
+    @property({ displayName: '滚动偏移', tooltip: '滚动到某点时需要的偏移' })
     offset: math.Vec2 = math.v2();
     @property({ displayName: '动画时长(s)', min: 0 })
     duration: number = .5;

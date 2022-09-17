@@ -70,6 +70,8 @@ export class SetCreateNode extends FuckUi {
                 this.isFirst = false;
                 this.waitTime = this.wait;
             } else this.waitTime = 0;
+        } else {
+            this.waitTime = this.wait;
         }
         this.setItems([].concat(data));
     }

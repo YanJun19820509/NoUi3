@@ -17,14 +17,14 @@ const { ccclass, property } = _decorator;
 //监听no.state状态组件
 @ccclass('StateValueInfo')
 export class StateValueInfo {
-    @property({ type: CCString })
+    @property
     value: string = '';
     @property({ type: no.EventHandlerInfo })
     handlers: no.EventHandlerInfo[] = [];
 }
 @ccclass('StateInfo')
 export class StateInfo {
-    @property({ type: CCString })
+    @property
     key: string = '';
     @property({ type: StateValueInfo })
     values: StateValueInfo[] = [];
