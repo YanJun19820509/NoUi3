@@ -22,7 +22,7 @@ export class YJToggleGroupManager extends Component {
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
 
-    @property({ tooltip: '是否能重复点击，默认false，checked后点击无效' })
+    @property({ tooltip: '是否能重复点击，默认false' })
     redo: boolean = false;
 
     @property({ tooltip: '在disable时重置选中项' })
