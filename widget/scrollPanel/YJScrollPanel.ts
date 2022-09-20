@@ -102,11 +102,12 @@ export class YJScrollPanel extends Component {
      * 
      * @param pos scrollPanel内的坐标系上的点
      */
-    public scrollTo(pos: math.Vec3, duration?: number): void {
+    public scrollTo(pos: math.Vec3, offset?: math.Vec2, duration?: number): void {
         if (duration == null) duration = this.duration;
+        if (offset == null) offset = this.offset;
         this.doubleClicking = false;
-        pos.x += this.offset.x;
-        pos.y += this.offset.y;
+        pos.x += offset.x;
+        pos.y += offset.y;
         this.fitPos(pos, this.content.scale.x);
         if (duration <= 0) {
             this.content.setPosition(pos);
@@ -122,11 +123,12 @@ export class YJScrollPanel extends Component {
      * @param pos scrollPanel内的坐标系上的点
      * @param scale 
      */
-    public scrollToAndScale(pos: math.Vec3, scale: number, duration?: number): void {
+    public scrollToAndScale(pos: math.Vec3, scale: number, offset?: math.Vec2, duration?: number): void {
         if (duration == null) duration = this.duration;
+        if (offset == null) offset = this.offset;
         this.doubleClicking = false;
-        pos.x += this.offset.x;
-        pos.y += this.offset.y;
+        pos.x += offset.x;
+        pos.y += offset.y;
         this.fitPos(pos, scale);
         if (duration <= 0) {
             this.content.setScale(scale, scale);
@@ -139,13 +141,13 @@ export class YJScrollPanel extends Component {
         }
     }
 
-    public scrollToTarget(targetType: string, duration?: number): void {
+    public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             if (this.triedNum < 60) {
                 this.triedNum++;
                 this.scheduleOnce(() => {
-                    this.scrollToTarget(targetType, duration);
+                    this.scrollToTarget(targetType, offset, duration);
                 });
                 return;
             }
@@ -153,16 +155,16 @@ export class YJScrollPanel extends Component {
             return;
         }
         this.triedNum = 0;
-        this.scrollTo(this.fitTargetToCenter(target), duration);
+        this.scrollTo(this.fitTargetToCenter(target), offset, duration);
     }
 
-    public scrollToTargetAndScale(targetType: string, scale: number, duration?: number): void {
+    public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             if (this.triedNum < 60) {
                 this.triedNum++;
                 this.scheduleOnce(() => {
-                    this.scrollToTargetAndScale(targetType, scale, duration);
+                    this.scrollToTargetAndScale(targetType, scale, offset, duration);
                 });
                 return;
             }
@@ -170,7 +172,7 @@ export class YJScrollPanel extends Component {
             return;
         }
         this.triedNum = 0;
-        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, duration);
+        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, offset, duration);
     }
 
     public scaleTo(scale: number, duration?: number): void {

@@ -21,7 +21,8 @@ const { ccclass, property, requireComponent } = _decorator;
  * data:{
  *     pos?: [x,y],
  *     target?: string,
- *     scale?: number
+ *     scale?: number,
+ *     offset?: number[],
  *     duration?: number
  * }
  */
@@ -29,15 +30,16 @@ const { ccclass, property, requireComponent } = _decorator;
 @requireComponent(YJScrollPanel)
 export class SetScrollPanel extends FuckUi {
     protected onDataChange(data: any) {
-        let { pos, target, scale, duration }: { pos: number[], target: string, scale: number, duration?: number } = data;
+        let { pos, target, scale, offset, duration }: { pos?: number[], target?: string, scale?: number, offset?: number[], duration?: number } = data;
         let sp = this.getComponent(YJScrollPanel);
-
+        let os = offset ? math.v2(offset[0], offset[1]) : null;
         if (pos) {
-            if (scale) sp.scrollToAndScale(math.v3(pos[0], pos[1]), scale, duration);
-            else sp.scrollTo(math.v3(pos[0], pos[1]), duration);
+            let p = math.v3(pos[0], pos[1]);
+            if (scale) sp.scrollToAndScale(p, scale, os, duration);
+            else sp.scrollTo(p, os, duration);
         } else if (target) {
-            if (scale) sp.scrollToTargetAndScale(target, scale, duration);
-            else sp.scrollToTarget(target, duration);
+            if (scale) sp.scrollToTargetAndScale(target, scale, os, duration);
+            else sp.scrollToTarget(target, os, duration);
         } else if (scale) sp.scaleTo(scale, duration);
     }
 }
