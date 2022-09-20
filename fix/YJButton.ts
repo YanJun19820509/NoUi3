@@ -48,7 +48,7 @@ export class YJButton extends Component {
         if (event?.touch?.getID() != 0) return;
         if (this.needWait) return;
         this.needWait = true;
-        no.executeHandlers(this._clickEvents);
+        no.executeHandlers(this._clickEvents, event);
         this.scheduleOnce(() => {
             this.needWait = false;
         }, this.delay);

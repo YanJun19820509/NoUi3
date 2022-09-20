@@ -1,6 +1,7 @@
 
 import { _decorator, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
+import { on } from 'events';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
@@ -38,6 +39,8 @@ export class SetCreateNode extends FuckUi {
     onlyFirstTime: boolean = false;
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
+    @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
+    onComplete: no.EventHandlerInfo[] = [];
 
     @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
     onlyOne: boolean = false;
@@ -108,7 +111,10 @@ export class SetCreateNode extends FuckUi {
     }
 
     private setItem(data: any[], i: number) {
-        if (data[i] == null) return;
+        if (data[i] == null) {
+            no.EventHandlerInfo.execute(this.onComplete);
+            return;
+        }
         let item = this.container.children[i];
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {

@@ -38,6 +38,9 @@ export class SetTypeWritting extends FuckUi {
 
     protected onDataChange(data: any) {
         let label = this.getComponent(Label);
+        if (data.content){
+            this._paragraphs = [].concat(data.content);
+        }
         if (data.stop) {
             this.unscheduleAllCallbacks();
             label.string = this._paragraphs.join('\n');
@@ -51,7 +54,6 @@ export class SetTypeWritting extends FuckUi {
             this.setParagraph();
         } else {
             label.string = '';
-            this._paragraphs = [].concat(data.content);
             this._idx = -1;
             this.setParagraph();
         }

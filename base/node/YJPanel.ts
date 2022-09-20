@@ -62,8 +62,10 @@ export class YJPanel extends Component {
     onLoad() {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
-        } else
+        } else {
             no.log('panel onLoad', this.node.name);
+            this.onLoadPanel();
+        }
     }
 
     onEnable() {
@@ -102,7 +104,16 @@ export class YJPanel extends Component {
     }
 
     //////由子类实现
+    /**
+     * 初始化预制体内已有的数据节点逻辑放在这里
+     */
     protected onInitPanel() {
+
+    }
+    /**
+     * 需要动态创建节点的逻辑放在这里
+     */
+    protected onLoadPanel() {
 
     }
 
