@@ -21,6 +21,9 @@ export class YJPlayAnimation extends Component {
     @property
     playOnNodeActive: boolean = false;
 
+    @property({ displayName: '播放完成后回到第0帧' })
+    backOnEnd: boolean = false;
+
     @property({ type: no.EventHandlerInfo, displayName: '播放开始前的回调' })
     beforeStartHandlers: no.EventHandlerInfo[] = [];
 
@@ -43,11 +46,25 @@ export class YJPlayAnimation extends Component {
         ani.play(ani.clips[0].name);
     }
 
+    public stop() {
+        this.getComponent(Animation)?.stop();
+        this.setTime(0);
+    }
+
+    public setTime(t: number) {
+        let ani = this.getComponent(Animation);
+        let state = ani.getState(ani.defaultClip.name);
+        state.setTime(t);
+        state.sample();
+    }
+
+
     private onPlay() {
         no.EventHandlerInfo.execute(this.beforeStartHandlers);
     }
 
     private onFinished() {
+        if (this.backOnEnd) this.setTime(0);
         no.EventHandlerInfo.execute(this.afterEndHandlers);
     }
 
