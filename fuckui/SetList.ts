@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform } from 'cc';
+import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
@@ -219,7 +219,10 @@ export class SetList extends FuckUi {
     }
 
     update() {
-        if (EDITOR) return;
+        if (EDITOR) {
+            this.getComponent(Layout)?.destroy();
+            return;
+        }
         if (this.listData == null || this.listItems == null || this.listItems.length == 0) return;
         let curPos = 0;
         let startIndex = 0;

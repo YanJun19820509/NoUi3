@@ -48,27 +48,32 @@ export class YJPlayAnimation extends Component {
 
     public stop() {
         this.getComponent(Animation)?.stop();
-        this.setTime(0);
+        this.backTo0();
     }
 
     public setTime(t: number) {
-        let ani = this.getComponent(Animation);
-        let state = ani.getState(ani.defaultClip.name);
-        state.setTime(t);
-        state.sample();
+        let ani = this?.getComponent(Animation);
+        let state = ani?.getState(ani.defaultClip.name);
+        state?.setTime(t);
+        state?.sample();
     }
 
+    public backTo0() {
+        this.setTime(0);
+    }
 
     private onPlay() {
         no.EventHandlerInfo.execute(this.beforeStartHandlers);
     }
 
     private onFinished() {
-        if (this.backOnEnd) this.setTime(0);
+        if (this.backOnEnd) this.backTo0();
         no.EventHandlerInfo.execute(this.afterEndHandlers);
+        console.log('Animation onFinished', this.getComponent(Animation).clips[0].name);
     }
 
     public onFrameEvent(v: any): void {
         no.EventHandlerInfo.execute(this.eventHandlers, v);
+        console.log('Animation onFrameEvent', this.getComponent(Animation).clips[0].name);
     }
 }
