@@ -96,8 +96,13 @@ export class YJGuidePanel extends YJPanel {
 
     protected showGuideNode(type: string) {
         for (let k in this.guideNodeMap) {
-            this.guideNodeMap[k].active = k == type;
+            if (this.onShowGuideNode(k))
+                this.guideNodeMap[k].active = k == type;
         }
+    }
+
+    protected onShowGuideNode(type: string): boolean {
+        return true;
     }
 
     protected nextStep() {
