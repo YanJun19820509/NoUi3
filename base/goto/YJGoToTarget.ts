@@ -19,9 +19,13 @@ const { ccclass, property } = _decorator;
 export class YJGoToTarget extends Component {
     @property(no.EventHandlerInfo)
     cbs: no.EventHandlerInfo[] = [];
+    @property({ displayName: '延时执行(s)', min: 0 })
+    delay: number = 0;
 
     public trigger(args: any): void {
-        no.EventHandlerInfo.execute(this.cbs, args);
+        this.scheduleOnce(() => {
+            no.EventHandlerInfo.execute(this.cbs, args);
+        }, this.delay);
     }
 
 }
