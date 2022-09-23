@@ -87,9 +87,9 @@ export class YJToggleGroupManager extends Component {
     }
 
     public a_check(idx: number): void {
-        if (!this.checkDuration()) {
-            return;
-        }
+        // if (!this.checkDuration()) {
+        //     return;
+        // }
         idx = Number(idx);
         let items = this.getComponent(ToggleContainer).toggleItems;
         if (items[idx])
