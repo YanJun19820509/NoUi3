@@ -59,6 +59,7 @@ export class SetCreateNode extends FuckUi {
     }
 
     onDisable() {
+        this.unscheduleAllCallbacks();
         if (this.clearOnDisable) {
             this.a_clearData();
             this.container?.children.forEach(child => {

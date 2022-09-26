@@ -39,15 +39,15 @@ export class YJToggleGroupManager extends Component {
     private needWait: boolean = false;
 
     onLoad() {
-        let items = this.getComponent(ToggleContainer).toggleItems;
-        for (let i = 0, n = items.length; i < n; i++) {
-            let toggle = items[i];
-            let a = new EventHandler();
-            a.target = this.node;
-            a.component = 'YJToggleGroupManager';
-            a.handler = 'a_onCheck';
-            toggle.checkEvents.push(a);
-        }
+        // let items = this.getComponent(ToggleContainer).toggleItems;
+        // for (let i = 0, n = items.length; i < n; i++) {
+        //     let toggle = items[i];
+        //     let a = new EventHandler();
+        //     a.target = this.node;
+        //     a.component = 'YJToggleGroupManager';
+        //     a.handler = 'a_onCheck';
+        //     toggle.checkEvents.push(a);
+        // }
     }
 
     onEnable() {
@@ -73,15 +73,18 @@ export class YJToggleGroupManager extends Component {
 
     public a_onCheck(toggle: Toggle): void {
         if (!toggle.isChecked) return;
-        if (!this.checkDuration()) {
+        //避免重复点击
+        if (!this.redo && toggle.uuid == this.checkedToggleUuid) return;
+        if (toggle.uuid != this.checkedToggleUuid && !this.checkDuration()) {
             toggle.setIsCheckedWithoutNotify(false);
             return;
         }
-        //避免重复点击
-        if (!this.redo && toggle.uuid == this.checkedToggleUuid) return;
+        if (toggle.uuid == this.checkedToggleUuid) {
+            toggle.setIsCheckedWithoutNotify(false);
+        } else
+            this.checkedToggleUuid = toggle.uuid;
         //onToggleChecked回调方法只有1个，则所有toggle checked共用。
         //否则按下标调用对应的回调方法
-        this.checkedToggleUuid = toggle.uuid;
         let i = no.indexOfArray(this.getComponent(ToggleContainer).toggleItems, toggle, 'uuid');
         (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
     }
@@ -89,6 +92,7 @@ export class YJToggleGroupManager extends Component {
     public a_check(idx: number): void {
         idx = Number(idx);
         let items = this.getComponent(ToggleContainer).toggleItems;
+        if (items[idx].uuid == this.checkedToggleUuid) return;
         if (items[idx])
             items[idx].isChecked = true;
     }
