@@ -3289,6 +3289,25 @@ export namespace no {
         return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
     }
 
+    export function string2Bytes(str: string): Uint8Array {
+        const buffer = new ArrayBuffer(str.length);
+        const bytes = new Uint8Array(buffer);
+
+        str.split('').forEach(function (str, i) {
+            bytes[i] = str.charCodeAt(0);
+        });
+
+        return bytes;
+    }
+
+    export function bytes2String(bytes: Uint8Array): string {
+        let sArr: string[] = [];
+        bytes.forEach(c => {
+            sArr[sArr.length] = String.fromCharCode(c);
+        });
+        return sArr.join('');
+    }
+
     export function string2ArrayBuffer(str: string): ArrayBuffer {
         const buffer = new ArrayBuffer(str.length);
         const bytes = new Uint8Array(buffer);
@@ -3302,11 +3321,7 @@ export namespace no {
 
     export function arrayBuffer2String(buffer: ArrayBuffer): string {
         const bytes = new Uint8Array(buffer);
-        let sArr: string[] = [];
-        bytes.forEach(c => {
-            sArr[sArr.length] = String.fromCharCode(c);
-        });
-        return sArr.join('');
+        return bytes2String(bytes);
     }
 
     function testArrayBuffers(buffer1: ArrayBuffer, buffer2: ArrayBuffer): boolean {

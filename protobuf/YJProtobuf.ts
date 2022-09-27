@@ -32,21 +32,25 @@ export class YJProtobuf {
     }
 
     public encode(data: any): Uint8Array {
-        let msg_type = this._root.lookupType(`${this.dataName}package.${this.dataName}`);
+        let msg_type = this.getMessageType();
         let err = msg_type.verify(data);
         if (err) {
-            return err;
+            console.error(err);
+            return null;
         }
         let msg = msg_type.create(data);
         return msg_type.encode(msg).finish();
     }
 
     public decode(buffer: Uint8Array): any {
-        let msg_type = this._root.lookupType(`${this.dataName}package.${this.dataName}`);
+        let msg_type = this.getMessageType();
         let msg = msg_type.decode(buffer);
         return msg_type.toObject(msg);
     }
 
+    private getMessageType(): any {
+        return this._root.lookupType(`${this.dataName}package.${this.dataName}`);
+    }
 
     public static createProtoDefine(jsonObject: any, objectName: string, pkgName: string): string {
         let df = `package ${pkgName};
@@ -71,7 +75,7 @@ export class YJProtobuf {
     }
 
     private static createAttr(key: string, datatype: string, value: any, id: number, protoDefine: string): string {
-        let t = '', pre = 'optional';
+        let t = '';
         switch (datatype) {
             case 'bigint':
                 t = 'int64';
@@ -92,10 +96,10 @@ export class YJProtobuf {
                 } else if (value instanceof Object) {
                     let name = `msg_${key}`;
                     this.createMessage(name, value, protoDefine);
-                    return `${pre} ${name} ${key} = ${id};`
+                    return `${name} ${key} = ${id};`
                 }
                 break;
         }
-        return `${pre} ${t} ${key} = ${id};`;
+        return `${t} ${key} = ${id};`;
     }
 }

@@ -10,16 +10,16 @@ export type EncryptType = 'none' | 'base64' | 'aes' | 'rsa';
  * @param encryptType 
  * @returns 
  */
-export function encode(d: string | object, encryptType: EncryptType): string | ArrayBufferLike {
+export function encode(d: string | object, encryptType: EncryptType): any {
     switch (encryptType) {
         case 'base64':
             return base64.encode(d);
         case 'aes':
-            return YJCrypto.aesEncode(d, true);
+            return YJCrypto.aesEncode(d);
         case 'rsa':
             return rsa.encode(d);
         default:
-            return typeof d != 'string' ? JSON.stringify(d) : d;
+            return d;
     }
 }
 /**
@@ -28,7 +28,7 @@ export function encode(d: string | object, encryptType: EncryptType): string | A
  * @param encryptType 
  * @returns 
  */
-export function decode(d: string | ArrayBufferLike, encryptType: EncryptType): string {
+export function decode(d: string | ArrayBufferLike, encryptType: EncryptType): any {
     switch (encryptType) {
         case 'base64':
             return base64.decode(d);
@@ -37,6 +37,6 @@ export function decode(d: string | ArrayBufferLike, encryptType: EncryptType): s
         case 'rsa':
             return rsa.decode(d);
         default:
-            return typeof d != 'string' ? no.arrayBuffer2String(d) : d;
+            return d;
     }
 }

@@ -15,6 +15,6 @@
 import { EncryptType } from "../encrypt/encrypt";
 
 export interface YJSocketInterface {
-    sendDataToServer(encryptType: EncryptType, code: string, args?: any): void;
-    getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any>;
+    sendDataToServer(encryptType: EncryptType, data: any): void;
+    getDataFromServer(encryptType: EncryptType, data: any): Promise<any>;
 }

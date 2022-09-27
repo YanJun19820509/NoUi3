@@ -56,7 +56,11 @@ export class YJWebSocket implements YJSocketInterface {
 
     private onMessage(data: any) {
         if (data == null || data == '') return;
-        this.receivedData[this.receivedData.length] = data;
+        if (data instanceof Blob) {
+            data.arrayBuffer().then(v => {
+                this.receivedData[this.receivedData.length] = v;
+            });
+        } else this.receivedData[this.receivedData.length] = data;
     }
 
     private reInit() {
@@ -95,10 +99,9 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async sendDataToServer(encryptType: EncryptType, code: string, args?: any) {
+    public async sendDataToServer(encryptType: EncryptType, data: any) {
         if (await this.isOk()) {
-            let d = { c: code, p: args };
-            let v: string | ArrayBuffer = encode(d, encryptType);
+            let v: string | ArrayBuffer = encode(data, encryptType);
             this.ws.send(v);
         }
     }
@@ -108,10 +111,10 @@ export class YJWebSocket implements YJSocketInterface {
      * @param code 指令
      * @param args 参数
      */
-    public async getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any> {
+    public async getDataFromServer(encryptType: EncryptType, data: any): Promise<any> {
         if (await this.isOk()) {
-            let d = { c: code, p: args };
-            let v: string | ArrayBufferLike = encode(d, encryptType);
+            let v: string | ArrayBufferLike = encode(data, encryptType);
+            if (!v) return Promise.resolve(null);
             this.ws.send(v);
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
@@ -129,9 +132,9 @@ export class YJWebSocket implements YJSocketInterface {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             try {
                 let s = decode(this.receivedData[i], type);
-                let a = JSON.parse(s);
+                if (!s) return null;
                 this.receivedData.splice(i, 1);
-                return a;
+                return s;
             } catch (e) { }
         }
         return null;

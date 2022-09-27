@@ -11,8 +11,11 @@ export namespace YJCrypto {
     let key: any; //十六位十六进制数作为密钥
     let iv: any;//十六位十六进制数作为密钥偏移量
 
-    function ArrayBufferToWordArray(arrayBuffer: ArrayBuffer) {
-        const u8 = new Uint8Array(arrayBuffer, 0, arrayBuffer.byteLength);
+    function ArrayBufferToWordArray(arrayBuffer: ArrayBuffer | Uint8Array) {
+        let u8: Uint8Array;
+        if (arrayBuffer instanceof ArrayBuffer)
+            u8 = new Uint8Array(arrayBuffer, 0, arrayBuffer.byteLength);
+        else u8 = arrayBuffer;
         const len = u8.length;
         const words = [];
         for (let i = 0; i < len; i += 1) {
@@ -32,7 +35,7 @@ export namespace YJCrypto {
         return u8;
     }
 
-    export function createAESKey(cb: (d: any) => void, newAESIv = false) {
+    export function createAESKey(cb: (d: { key: string, iv: string } | string) => void, newAESIv = false) {
         AESKey = no.arrayRandom(chars.split(''), 16, true).join('');
         if (newAESIv) AESIv = no.arrayRandom(hexs.split(''), 16, true).join('');
         if (!newAESIv) cb?.(AESKey);
@@ -47,21 +50,30 @@ export namespace YJCrypto {
      * @param toBuffer 是否输出ArrayBuffer，默认false，输出string
      * @returns 
      */
-    export function aesEncode(data: string | object, toBuffer = false): string | ArrayBuffer {
-        let str = "";
-        if (typeof (data) == 'string') {
-            str = data;
-        } else if (typeof (data) == 'object') {//对象格式的转成json字符串
-            str = JSON.stringify(data);
-        }
-        if (!toBuffer) {
-            let encrypted = CryptoJS.AES.encrypt(str, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-            return encrypted.toString();
+    export function aesEncode(data: Uint8Array): ArrayBuffer;
+    export function aesEncode(data: string | object, toBuffer?: boolean): string | ArrayBuffer
+    export function aesEncode(data: string | object | Uint8Array, toBuffer = false): string | ArrayBuffer {
+        let encrypted: any;
+        if (data instanceof Uint8Array) {
+            let wordBuffer = ArrayBufferToWordArray(data);
+            encrypted = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+            return WordArrayToArrayBuffer(encrypted.ciphertext);
         } else {
-            let arrayBuffer = no.string2ArrayBuffer(str);
-            let wordBuffer = ArrayBufferToWordArray(arrayBuffer);
-            let encrypt = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-            return WordArrayToArrayBuffer(encrypt.ciphertext);
+            let str = "";
+            if (typeof (data) == 'string') {
+                str = data;
+            } else if (typeof (data) == 'object') {//对象格式的转成json字符串
+                str = JSON.stringify(data);
+            }
+            if (!toBuffer) {
+                let encrypted = CryptoJS.AES.encrypt(str, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                return encrypted.toString();
+            } else {
+                let arrayBuffer = no.string2ArrayBuffer(str);
+                let wordBuffer = ArrayBufferToWordArray(arrayBuffer);
+                let encrypt = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                return WordArrayToArrayBuffer(encrypt.ciphertext);
+            }
         }
     }
 
@@ -70,18 +82,16 @@ export namespace YJCrypto {
      * @param data 
      * @returns 
      */
-    export function aesDecode(data: string | ArrayBufferLike): string {
-        let str: string;
+    export function aesDecode(data: string | ArrayBufferLike): string | ArrayBuffer {
         if (typeof data == 'string') {
             let decrypt = CryptoJS.AES.decrypt(data, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-            str = decrypt.toString(CryptoJS.enc.Utf8);
+            return decrypt.toString(CryptoJS.enc.Utf8);
         } else {
             let wordArr = ArrayBufferToWordArray(data)
             let decrypt = CryptoJS.AES.decrypt(wordArr.toString(CryptoJS.enc.Base64),
                 key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-            str = no.arrayBuffer2String(WordArrayToArrayBuffer(decrypt));
+            return WordArrayToArrayBuffer(decrypt);
         }
-        return str;
     }
 
     // /**

@@ -74,8 +74,8 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public sendDataToServer(encryptType: EncryptType, code: string, args?: any): void {
-        this.ws.volatile.emit(code, args ? encode(args, encryptType) : null);
+    public sendDataToServer(encryptType: EncryptType, data: any): void {
+        this.ws.volatile.emit('', encode(data, encryptType));
     }
 
     /**
@@ -83,8 +83,8 @@ export class YJSocketIO implements YJSocketInterface {
      * @param code 指令
      * @param args 参数，不要执行JSON.stringify
      */
-    public getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any> {
-        this.sendDataToServer(encryptType, code, args);
+    public getDataFromServer(encryptType: EncryptType, data: any): Promise<any> {
+        this.sendDataToServer(encryptType, data);
         if (this.ws.connected) {
             return new Promise<any>(resolve => {
                 let a = setInterval(() => {
@@ -102,9 +102,9 @@ export class YJSocketIO implements YJSocketInterface {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             try {
                 let s = decode(this.receivedData[i], type);
-                let a = JSON.parse(s);
+                if (!s) return null;
                 this.receivedData.splice(i, 1);
-                return a;
+                return s;
             } catch (e) { }
         }
         return null;
