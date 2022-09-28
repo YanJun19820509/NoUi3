@@ -29,6 +29,8 @@ export class YJPlaySoundEffect extends Component {
     effectType: SoundEffectType = SoundEffectType.Other;
     @property({ displayName: '音效别名', visible() { return this.effectType == SoundEffectType.Other } })
     alias: string = '';
+    @property({ visible() { return this.effectType == SoundEffectType.Other; } })
+    autoPlay: boolean = false;
 
     onLoad() {
         if (this.effectType == SoundEffectType.ClickButton) {
@@ -43,6 +45,8 @@ export class YJPlaySoundEffect extends Component {
             if (this.effectType == SoundEffectType.OpenWindow) {
                 panel.onOpen.unshift(handler)
             } else panel.onClose.unshift(handler);
+        } else if (this.autoPlay) {
+            this.a_play();
         }
     }
 

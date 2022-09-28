@@ -20,6 +20,8 @@ const { ccclass, property, requireComponent } = _decorator;
 export class YJPlayAnimation extends Component {
     @property
     playOnNodeActive: boolean = false;
+    @property({ visible() { return this.playOnNodeActive; } })
+    playOnce: boolean = false;
 
     @property({ displayName: '播放完成后回到第0帧' })
     backOnEnd: boolean = false;
@@ -33,9 +35,14 @@ export class YJPlayAnimation extends Component {
     @property({ type: no.EventHandlerInfo, displayName: '帧事件触发的回调' })
     eventHandlers: no.EventHandlerInfo[] = [];
 
+    private _played: boolean = false;
+
     onEnable() {
         if (this.playOnNodeActive) {
-            this.play();
+            if (!this.playOnce || (this.playOnce && !this._played)) {
+                this._played = true;
+                this.play();
+            }
         }
     }
 

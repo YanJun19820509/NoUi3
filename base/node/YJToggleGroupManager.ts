@@ -81,10 +81,10 @@ export class YJToggleGroupManager extends Component {
         this.checkedToggleUuid = null;
     }
 
-    public a_onCheck(d: any): void {
-        let toggle: Toggle;
-        if (d instanceof Toggle) toggle = d;
-        else if (d instanceof EventTouch) toggle = d.target.getComponent(Toggle);
+    public a_onCheck(d: any, toggle?: Toggle): void {
+        if (!toggle)
+            if (d instanceof Toggle) toggle = d;
+            else if (d instanceof EventTouch) toggle = d.target.getComponent(Toggle);
 
         if (toggle.isChecked)
             if (!this.canSwitchOff) {

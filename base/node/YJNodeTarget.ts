@@ -99,9 +99,9 @@ export class YJNodeTarget extends Component {
         let a = rect.contains(e.getUIStartLocation());
         if (a && trigger) {
             let btn = this.getComponent(Button);
+            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e, btn);
             if (btn instanceof Toggle)
                 btn.isChecked = true;
-            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e);
         }
         return a;
     }
