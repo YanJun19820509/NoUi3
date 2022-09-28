@@ -44,15 +44,7 @@ export class YJToggleGroupManager extends Component {
     onLoad() {
         if (EDITOR) {
             this.getComponent(ToggleContainer)?.destroy();
-            let items = this.getComponentsInChildren(Toggle);
-            for (let i = 0, n = items.length; i < n; i++) {
-                let toggle = items[i];
-                let a = new EventHandler();
-                a.target = this.node;
-                a._componentId = js._getClassId(YJToggleGroupManager);
-                a.handler = 'a_onCheck';
-                toggle.clickEvents = [a];
-            }
+            this.initToggles();
             return;
         }
     }
@@ -80,6 +72,20 @@ export class YJToggleGroupManager extends Component {
         if (EDITOR) return;
         this.checkedToggleUuid = null;
     }
+
+    public initToggles(): void {
+        let items = this.getComponentsInChildren(Toggle);
+        for (let i = 0, n = items.length; i < n; i++) {
+            let toggle = items[i];
+            let a = new EventHandler();
+            a.target = this.node;
+            a._componentId = js._getClassId(YJToggleGroupManager);
+            a.handler = 'a_onCheck';
+            toggle.clickEvents = [a];
+        }
+        this.onEnable();
+    }
+
 
     public a_onCheck(d: any, toggle?: Toggle): void {
         if (!toggle)
