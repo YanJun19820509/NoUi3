@@ -117,6 +117,7 @@ export class YJToggleGroupManager extends Component {
         idx = Number(idx);
         let items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
+            if (idx == i && !items[i].isChecked) this.a_onCheck(items[i]);
             items[i].isChecked = idx == i;
             if (!this.canSwitchOff)
                 items[i].interactable = !items[i].isChecked;
