@@ -726,6 +726,14 @@ export namespace no {
     }
 
     /**
+     * Vec2转Vec3
+     * @param v2
+     */
+    export function vec2ToVec3(v2: Vec2): Vec3 {
+        return new Vec3(v2.x, v2.y);
+    }
+
+    /**
      * 创建一个EventHandler
      * @param target
      * @param component

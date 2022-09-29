@@ -65,7 +65,9 @@ export class SetText extends FuckUi {
     }
 
     private checkShader() {
-        this.getComponent(SetEffect)?.work();
+        this.scheduleOnce(() => {
+            this.getComponent(SetEffect)?.work();
+        });
     }
 
     private lateSet(): void {

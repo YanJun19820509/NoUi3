@@ -65,4 +65,13 @@ export class SetComponentEnable extends FuckUi {
         let list = Enum.getList(e);
         CCClass.Attr.setClassAttr(SetComponentEnable, 'component', 'enumList', list);
     }
+
+    public a_enable(): void {
+        this.onDataChange(true);
+    }
+
+    public a_disable(): void {
+        this.onDataChange(false);
+    }
+
 }
