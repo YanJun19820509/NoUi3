@@ -31,8 +31,8 @@ export class YJTouchListener extends Component {
     cancelHandlers: no.EventHandlerInfo[] = [];
 
     //是否在区域内
-    private isTouchIn: boolean = false;
-    private rect: Rect;
+    protected isTouchIn: boolean = false;
+    protected rect: Rect;
 
     async onEnable() {
         await no.waitFor(() => { return YJTouchDispatcher.ins != null; }, this)
