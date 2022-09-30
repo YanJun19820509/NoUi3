@@ -181,8 +181,10 @@ export class SetList extends FuckUi {
         let item = this.listItems[i];
         if (!item) return;
         this.setItemPosition(item, start + i);
-        this.setItemData(item, this.listData[start + i]);
-        item.active = true;
+        if (this.listData[start + i]) {
+            this.setItemData(item, this.listData[start + i]);
+            item.active = true;
+        }
         i++;
         if (this.stopWait || this.wait == 0)
             this.setItem(start, i);
