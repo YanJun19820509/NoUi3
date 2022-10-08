@@ -1,8 +1,8 @@
 
-import { _decorator, Component, Node, Label } from 'cc';
+import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, requireComponent } = _decorator;
+const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -23,7 +23,6 @@ const { ccclass, property, requireComponent } = _decorator;
  * }
  */
 @ccclass('SetTypeWritting')
-@requireComponent(Label)
 export class SetTypeWritting extends FuckUi {
     @property({ displayName: '每秒打字个数', min: 1, step: 1 })
     speed: number = 3;
@@ -35,25 +34,36 @@ export class SetTypeWritting extends FuckUi {
     private _paragraphs: string[];
     private _content: string[];
     private _idx: number;
+    private _label: Label | RichText;
+    private _isRichText: boolean = false;
+    private _br: string = '\n';
 
     protected onDataChange(data: any) {
-        let label = this.getComponent(Label);
-        if (data.content){
+        if (!this._label) {
+            this._label = this.getComponent(Label);
+            if (!this._label) {
+                this._label = this.getComponent(RichText);
+                this._isRichText = true;
+                this._br = '<br/>';
+            }
+        }
+        if (!this._label) return;
+        if (data.content) {
             this._paragraphs = [].concat(data.content);
         }
         if (data.stop) {
             this.unscheduleAllCallbacks();
-            label.string = this._paragraphs.join('\n');
+            this._label.string = this._paragraphs.join(this._br);
             no.EventHandlerInfo.execute(this.onStop);
         } else if (data.next) {
             this.unscheduleAllCallbacks();
-            label.string = '';
+            this._label.string = '';
             for (let i = 0, n = Math.min(this._idx, this._paragraphs.length - 1); i <= n; i++) {
-                label.string += this._paragraphs[i] + '\n';
+                this._label.string += this._paragraphs[i] + this._br;
             }
             this.setParagraph();
         } else {
-            label.string = '';
+            this._label.string = '';
             this._idx = -1;
             this.setParagraph();
         }
@@ -65,7 +75,8 @@ export class SetTypeWritting extends FuckUi {
             no.EventHandlerInfo.execute(this.onStop);
             return;
         }
-        this._content = String(this._paragraphs[this._idx]).split('');
+        let s = String(this._paragraphs[this._idx]);
+        this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
         this.writing();
     }
 
@@ -82,10 +93,38 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private setStr() {
-        this.getComponent(Label).string += this._content.shift();
+        this._label.string += this._content.shift();
     }
 
     private setWrap() {
-        this.getComponent(Label).string += '\n';
+        this._label.string += this._br;
+    }
+
+    private splitHtmlString(htmlStr: string): string[] {
+        let a = new HtmlTextParser().parse(htmlStr);
+        let b: string[] = [];
+        a.forEach(aa => {
+            b = b.concat(this.createHtmlStrings(aa));
+        });
+        return b;
+    }
+
+    private createHtmlStrings(o: IHtmlTextParserResultObj): string[] {
+        if (!o.style) return o.text.split('');
+        if (o.text == '' && o.style.isNewLine) return ['<br/>'];
+        let a = o.text.split(''), b: string[] = [];
+        a.forEach(aa => {
+            if (o.style.bold) aa = no.addBBCode(aa, 'b');
+            if (o.style.italic) aa = no.addBBCode(aa, 'i');
+            if (o.style.underline) aa = no.addBBCode(aa, 'u');
+            if (o.style.color) aa = no.addBBCode(aa, 'color', o.style.color);
+            if (o.style.size) aa = no.addBBCode(aa, 'size', o.style.size);
+            if (o.style.outline) aa = no.addBBCode(aa, 'outline', [
+                { key: 'color', value: o.style.outline.color },
+                { key: 'width', value: o.style.outline.width }
+            ]);
+            b[b.length] = aa;
+        });
+        return b;
     }
 }
