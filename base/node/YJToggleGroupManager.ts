@@ -92,13 +92,11 @@ export class YJToggleGroupManager extends Component {
             if (d instanceof Toggle) toggle = d;
             else if (d instanceof EventTouch) toggle = d.target.getComponent(Toggle);
 
-        if (toggle.isChecked)
-            if (!this.canSwitchOff) {
-                return;
-            } else {
+        if (toggle.isChecked) {
+            if (this.canSwitchOff)
                 this.a_check(this.defaultCheckedIndexOnSwitchOff);
-            }
-        else if (!this.checkDuration()) {
+            return;
+        } else if (!this.checkDuration()) {
             this.setCheckByUuid(this.checkedToggleUuid);
             return;
         } else {
@@ -118,9 +116,6 @@ export class YJToggleGroupManager extends Component {
         let items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
             if (idx == i && !items[i].isChecked) this.a_onCheck(items[i]);
-            items[i].isChecked = idx == i;
-            if (!this.canSwitchOff)
-                items[i].interactable = !items[i].isChecked;
         }
     }
 
