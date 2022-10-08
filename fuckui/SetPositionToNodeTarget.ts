@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform } from 'cc';
+import { _decorator, Component, Node, UITransform, math } from 'cc';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetPosition } from './SetPosition';
@@ -19,6 +19,8 @@ const { ccclass, property } = _decorator;
 
 @ccclass('SetPositionToNodeTarget')
 export class SetPositionToNodeTarget extends SetPosition {
+    @property
+    offset: math.Vec2 = math.v2();
 
     protected onDataChange(data: any) {
         this.setPosition(data);
@@ -35,7 +37,7 @@ export class SetPositionToNodeTarget extends SetPosition {
 
         let pos = target.nodeWorldPosition;
         this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
-        super.onDataChange([pos.x, pos.y]);
+        super.onDataChange([pos.x + this.offset.x, pos.y + this.offset.y]);
     }
 
 }

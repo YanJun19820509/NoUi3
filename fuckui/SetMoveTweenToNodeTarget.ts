@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, v3, Vec3 } from 'cc';
+import { _decorator, Component, Node, UITransform, v3, Vec3, math } from 'cc';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -23,6 +23,8 @@ const { ccclass, property, requireComponent } = _decorator;
 export class SetMoveTweenToNodeTarget extends FuckUi {
     @property({ min: 1 })
     speed: number = 10;
+    @property
+    offset: math.Vec2 = math.v2();
 
     protected onDataChange(data: any) {
         this.setTween(data);
@@ -46,7 +48,7 @@ export class SetMoveTweenToNodeTarget extends FuckUi {
             duration: duration,
             to: 1,
             props: {
-                pos: [pos.x, pos.y]
+                pos: [pos.x + this.offset.x, pos.y + this.offset.y]
             }
         }));
     }
