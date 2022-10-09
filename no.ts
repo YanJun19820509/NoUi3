@@ -3372,6 +3372,7 @@ export namespace no {
             tags.forEach(t => {
                 a = addBBCode(a, t.tag, t.value);
             });
+            return a;
         } else {
             const tagFormat = '<{tag}{props}>{content}</{tag}>';
             const propFormat = '{key}={value}';
