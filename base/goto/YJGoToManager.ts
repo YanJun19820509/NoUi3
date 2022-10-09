@@ -34,14 +34,15 @@ export class YJGoToManager extends Component {
         YJGoToManager._ins = null;
     }
 
-    public static goTo(alias: string, args?: any, cb?: () => void): void {
+    public static goTo(alias: string, args?: any, before?: () => void, after?: () => void): void {
         let info = YJGoToManager._ins?.delegate?.getInfoByAlias(alias);
         if (!info) return;
+        before?.();
         if (info.accompany != '') {
-            this.goTo(info.accompany, null, () => {
-                this.show(info, args, cb, true);
+            this.goTo(info.accompany, null, null, () => {
+                this.show(info, args, after, true);
             });
-        } else this.show(info, args, cb);
+        } else this.show(info, args, after);
     }
 
     private static show(info: YJGoToInfo, args: any, cb: () => void, noCreate = false) {

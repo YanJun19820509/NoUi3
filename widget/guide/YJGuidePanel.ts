@@ -1,6 +1,5 @@
 
 import { _decorator, Node } from 'cc';
-import { YJGoToManager } from '../../base/goto/YJGoToManager';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
 import { panelPrefabPath, YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';
