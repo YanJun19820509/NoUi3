@@ -3351,40 +3351,46 @@ export namespace no {
     }
 
     ////////////////////////////////////给richtext添加bbcode start///////////////////////
+
     /**
      * 给richtext添加bbcode
      * @param text 原richtext
-     * @param tag 标签
-     * @param value 标签值
+     * @param tags 标签列表
      */
-    export function addBBCode(text: string, tag: string, value?: number | string): string;
+    export function addBBCode(text: string, tags: { tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[] }[]): string;
     /**
      * 给richtext添加bbcode
      * @param text 原richtext
      * @param tag 标签
      * @param props 属性
      */
-    export function addBBCode(text: string, tag: string, props: { key: string, value: any } | { key: string, value: any }[]): string;
-    export function addBBCode(text: string, tag: string, props?: number | string | { key: string, value: any } | { key: string, value: any }[]): string {
-        if (tag == 'br') return `${text}<br/>`;
-
-        const tagFormat = '<{tag}{props}>{content}</{tag}>';
-        const propFormat = '{key}={value}';
-
-        if (props) {
-            if (typeof props == 'number' || typeof props == 'string') {
-                return no.formatString(tagFormat, { tag: tag, props: `=${props}`, content: text });
-            }
-
-            let ps: string[] = [''];
-            props = [].concat(props);
-            props.forEach(p => {
-                ps[ps.length] = no.formatString(propFormat, p);
+    export function addBBCode(text: string, tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[]): string;
+    export function addBBCode(text: string, tags: string | { tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[] }[], props?: number | string | { key: string, value: any } | { key: string, value: any }[]): string {
+        if (tags == 'br') return `${text}<br/>`;
+        if (tags instanceof Array) {
+            let a = text;
+            tags.forEach(t => {
+                a = addBBCode(a, t.tag, t.value);
             });
+        } else {
+            const tagFormat = '<{tag}{props}>{content}</{tag}>';
+            const propFormat = '{key}={value}';
 
-            return no.formatString(tagFormat, { tag: tag, props: ps.join(' '), content: text });
-        } else
-            return no.formatString(tagFormat, { tag: tag, props: '', content: text });
+            if (props) {
+                if (typeof props == 'number' || typeof props == 'string') {
+                    return no.formatString(tagFormat, { tag: tags, props: `=${props}`, content: text });
+                }
+
+                let ps: string[] = [''];
+                props = [].concat(props);
+                props.forEach(p => {
+                    ps[ps.length] = no.formatString(propFormat, p);
+                });
+
+                return no.formatString(tagFormat, { tag: tags, props: ps.join(' '), content: text });
+            } else
+                return no.formatString(tagFormat, { tag: tags, props: '', content: text });
+        }
     }
     ////////////////////////////////////给richtext添加bbcode end///////////////////////
 }
