@@ -67,7 +67,8 @@ export class SetSpriteFrame extends FuckUi {
                 this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
             });
         } else if (!this.sprite.spriteAtlas) {
-            no.assetBundleManager.loadSprite(`${this.path != '' ? this.path + '/' : ''}${data}/spriteFrame`, spriteFrame => {
+            if (this.path != '' && data.indexOf(this.path) == -1) data = this.path + '/' + data;
+            no.assetBundleManager.loadSprite(`${data}/spriteFrame`, spriteFrame => {
                 this.setSpriteFrame(spriteFrame);
             });
         } else if (this.sprite.spriteAtlas?.spriteFrames) {
