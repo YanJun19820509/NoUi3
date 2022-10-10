@@ -48,10 +48,10 @@ export class YJGoToManager extends Component {
     private static show(info: YJGoToInfo, args: any, cb: () => void, noCreate = false) {
         args = args || info.args;
         let panel = YJWindowManager.opennedPanel(info.target);
-        if (panel) this.trigger(panel, args, cb);
+        if (panel) this._ins.trigger(panel, args, cb);
         else if (!noCreate)
             YJWindowManager.createPanel(info.target, null, null, panel => {
-                this.trigger(panel, args, cb);
+                this._ins.trigger(panel, args, cb);
             });
         else {
             this._ins.scheduleOnce(() => {
@@ -60,7 +60,13 @@ export class YJGoToManager extends Component {
         }
     }
 
-    private static trigger(panel: Component, args: any, cb: () => void) {
+    private trigger(panel: Component, args: any, cb: () => void) {
+        if (!panel.node.activeInHierarchy) {
+            this.scheduleOnce(() => {
+                this.trigger(panel, args, cb);
+            });
+            return;
+        }
         let a = panel.getComponent(YJGoToTarget) || panel.getComponentInChildren(YJGoToTarget);
         a?.trigger(args);
         cb?.();
