@@ -24,17 +24,17 @@ class ContentInfo {
     @property(YJLoadPrefab)
     prefab: YJLoadPrefab = null;
 
+    private loadedNode: Node;
+
     public async load(): Promise<Node> {
-        if (this.prefab.loaded) {
-            return Promise.resolve(this.prefab.loadedNode);
+        if (this.loadedNode) {
+            return this.loadedNode;
         } else {
-            await this.prefab.loadPrefab();
-            if (this.prefab.loadedNode.getComponent(YJLoadAssets)) {
-                return this.prefab.loadedNode.getComponent(YJLoadAssets).load().then(() => {
-                    return Promise.resolve(this.prefab.loadedNode);
-                });
+            this.loadedNode = await this.prefab.loadPrefab();
+            if (this.loadedNode.getComponent(YJLoadAssets)) {
+                await this.loadedNode.getComponent(YJLoadAssets).load();
             }
-            return Promise.resolve(this.prefab.loadedNode);
+            return this.loadedNode;
         }
     }
 
