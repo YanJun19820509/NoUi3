@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Animation } from 'cc';
+import { _decorator, Component, Node, Animation, AnimationState, AnimationClip } from 'cc';
 import { no } from '../../no';
 const { ccclass, property, requireComponent } = _decorator;
 
@@ -46,11 +46,14 @@ export class YJPlayAnimation extends Component {
         }
     }
 
-    public play() {
+    public play(wrapMode?: AnimationClip.WrapMode) {
         let ani = this.getComponent(Animation);
         ani.on(Animation.EventType.PLAY, this.onPlay, this);
         ani.on(Animation.EventType.FINISHED, this.onFinished, this);
-        ani.play(ani.clips[0].name);
+        let state = ani.getState(ani.clips[0].name);
+        if (wrapMode != undefined)
+            state.wrapMode = wrapMode;
+        state.play();
     }
 
     public stop() {
@@ -68,6 +71,31 @@ export class YJPlayAnimation extends Component {
     public backTo0() {
         this.setTime(0);
     }
+
+    public normalPlay() {
+        this.play(AnimationClip.WrapMode.Normal);
+    }
+
+    public loopPlay() {
+        this.play(AnimationClip.WrapMode.Loop);
+    }
+
+    public loopReversePlay() {
+        this.play(AnimationClip.WrapMode.LoopReverse);
+    }
+
+    public pingPongPlay() {
+        this.play(AnimationClip.WrapMode.PingPong);
+    }
+
+    public pingPongReversePlay() {
+        this.play(AnimationClip.WrapMode.PingPongReverse);
+    }
+
+    public reversePlay() {
+        this.play(AnimationClip.WrapMode.Reverse);
+    }
+
 
     private onPlay() {
         no.EventHandlerInfo.execute(this.beforeStartHandlers);

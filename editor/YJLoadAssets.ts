@@ -57,6 +57,8 @@ export class YJLoadAssets extends Component {
     spriteFrameInfos: LoadAssetsInfo[] = [];
     @property(LoadAssetsInfo)
     prefabInfos: LoadAssetsInfo[] = [];
+    @property({ type: LoadAssetsInfo, tooltip: '可在panel创建完成后加载的资源' })
+    backgroundLoadInfos: LoadAssetsInfo[] = [];
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
@@ -103,6 +105,9 @@ export class YJLoadAssets extends Component {
             });
         });
         await no.waitFor(() => { return n == all; }, this);
+        this.backgroundLoadInfos.forEach(info => {
+            info.load();
+        });
     }
 
     /**

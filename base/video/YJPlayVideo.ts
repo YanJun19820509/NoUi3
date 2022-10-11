@@ -20,6 +20,8 @@ const { ccclass, property, requireComponent, executeInEditMode } = _decorator;
 @requireComponent(VideoPlayer)
 @executeInEditMode()
 export class YJPlayVideo extends Component {
+    @property({ tooltip: '播放完成后释放资源' })
+    releaseOnCompleted: boolean = true;
     @property({ type: no.EventHandlerInfo, tooltip: '视频的元信息已加载完成，你可以调用 getDuration 来获取视频总时长' })
     onLoaded: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, tooltip: '视频准备好了，可以开始播放了' })
@@ -67,6 +69,7 @@ export class YJPlayVideo extends Component {
                 break;
             case VideoPlayer.EventType.COMPLETED:
                 handler = this.onCompleted;
+                this.releaseAsset();
                 break;
             case VideoPlayer.EventType.ERROR:
                 handler = this.onError;
@@ -106,4 +109,8 @@ export class YJPlayVideo extends Component {
         this.getComponent(VideoPlayer).volume = v;
     }
 
+    private releaseAsset() {
+        if (!this.releaseOnCompleted) return;
+        no.assetBundleManager.release(this.getComponent(VideoPlayer).clip, true);
+    }
 }
