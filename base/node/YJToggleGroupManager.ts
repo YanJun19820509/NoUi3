@@ -54,15 +54,17 @@ export class YJToggleGroupManager extends Component {
         let items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
             let toggle = items[i];
-            if (this.checkOnEnabel) {
-                if (this.defaultCheckedIdx != null && this.reset) {
-                    toggle.isChecked = this.defaultCheckedIdx == i;
-                }
-                if (toggle.isChecked) {
+
+            if (this.defaultCheckedIdx != null && this.reset) {
+                toggle.isChecked = this.defaultCheckedIdx == i;
+            }
+
+            if (toggle.isChecked) {
+                if (this.defaultCheckedIdx == null) this.defaultCheckedIdx = i;
+
+                if (this.checkOnEnabel) {
                     toggle.isChecked = false;
-                    if (this.defaultCheckedIdx == null) this.defaultCheckedIdx = i;
                     this.a_onCheck(toggle);
-                    break;
                 }
             }
         }

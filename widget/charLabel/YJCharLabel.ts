@@ -129,7 +129,8 @@ export class YJCharLabel extends Component {
         labelNode.addComponent(UITransform);
         this.charModels[v] = labelNode;
         let label = labelNode.addComponent(Label);
-        label.customMaterial = this.dynamicAtlas?.commonMaterial;
+        if (this.dynamicAtlas?.commonMaterial)
+            label.customMaterial = this.dynamicAtlas?.commonMaterial;
         label.color = this.color;
         label.font = this.font;
         label.fontSize = this.fontSize;
@@ -159,7 +160,8 @@ export class YJCharLabel extends Component {
             labelNode.layer = Layers.Enum.UI_2D;
             let ut = labelNode.addComponent(UITransform);
             let s = labelNode.addComponent(Sprite);
-            s.customMaterial = this.dynamicAtlas?.commonMaterial;
+            if (this.dynamicAtlas?.commonMaterial)
+                s.customMaterial = this.dynamicAtlas?.commonMaterial;
             s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
             ut.setContentSize(s.spriteFrame.rect.size);
             labelNode.active = true;

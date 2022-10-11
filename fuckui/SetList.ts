@@ -116,11 +116,9 @@ export class SetList extends FuckUi {
         this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
-        if (this.wait > 0) {
-            for (let i = 0, n = this.listItems.length; i < n; i++) {
-                let item = this.listItems[i];
-                item.active = false;
-            }
+        for (let i = 0, n = this.listItems.length; i < n; i++) {
+            let item = this.listItems[i];
+            item.active = false;
         }
         let a = [].concat(data);
         if (this.columnNumber > 1) {
