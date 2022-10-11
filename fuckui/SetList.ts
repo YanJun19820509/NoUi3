@@ -48,6 +48,9 @@ export class SetList extends FuckUi {
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = true;
 
+    @property({ displayName: '预初始元素节点' })
+    preInitItems: boolean = false;
+
     private listData: any[];
     private listItems: Node[] = [];
     private viewSize: Size;
@@ -84,6 +87,7 @@ export class SetList extends FuckUi {
         this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
         this.content = this.scrollView.content;
+        this.listItems = this.content.children;
 
         if (this.isVertical) {
             this.showMax = Math.ceil(this.viewSize.height / this.itemSize.height);
@@ -97,9 +101,9 @@ export class SetList extends FuckUi {
         if (this.clearOnDisable) {
             this.a_clearData();
             this.listItems?.forEach(item => {
-                item.destroy();
+                item.active = false;
             });
-            this.listItems = [];
+            // this.listItems = [];
         }
     }
 
@@ -150,7 +154,7 @@ export class SetList extends FuckUi {
             let item = instantiate(this.template);
             // item.active = true;
             item.parent = this.content;
-            this.listItems[this.listItems.length] = item;
+            // this.listItems[this.listItems.length] = item;
         }
     }
 
@@ -223,6 +227,7 @@ export class SetList extends FuckUi {
     update() {
         if (EDITOR) {
             this.getComponent(Layout)?.destroy();
+            this.preCreateItems();
             return;
         }
         if (this.listData == null || this.listItems == null || this.listItems.length == 0) return;
@@ -259,6 +264,31 @@ export class SetList extends FuckUi {
                         this.setItemPosition(item, dataIndex + n);
                     }
                 }
+            }
+        }
+    }
+
+    private async preCreateItems() {
+        if (!this.scrollView || !this.template) return;
+        if (!this.preInitItems && this.scrollView.content.children.length > 0) {
+            this.scrollView.content.removeAllChildren();
+        } else if (this.preInitItems && this.scrollView.content.children.length == 0) {
+            let itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
+            let viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+            let isVertical = this.scrollView.vertical;
+            let showMax: number;
+            if (isVertical) {
+                showMax = Math.ceil(viewSize.height / itemSize.height);
+            } else {
+                showMax = Math.ceil(viewSize.width / itemSize.width);
+            }
+            showMax += 2;
+            while (showMax-- > 0) {
+                let temp = instantiate(this.template);
+                if (this.dynamicAtlas) {
+                    YJDynamicAtlas.setDynamicAtlas(temp, this.dynamicAtlas);
+                }
+                temp.parent = this.scrollView.content;
             }
         }
     }
