@@ -62,17 +62,31 @@ export class SetCreateCacheNode extends FuckUi {
         if (!this.container) this.container = this.node;
         if (!this.recycleType) this.recycleType = this.template.getComponent(YJCacheObject).recycleType;
 
-        for (let i = 0, n = data.length; i < n; i++) {
-            if (!data[i]) continue;
-            let item = no.cachePool.reuse<Node>(this.recycleType) || instantiate(this.template);
-            let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-            item.active = true;
-            item.parent = this.container;
-            if (a) {
-                a.data = data[i];
-                a.init();
-            }
+        this.setItem(data, 0);
+    }
+
+    private setItem(data: any[], i: number) {
+        if (i >= data.length) return;
+        if (!data[i]) {
+            this.setItem(data, ++i);
+            return;
+        };
+        let item = no.cachePool.reuse<Node>(this.recycleType), needWait = false;
+        if (!item) {
+            item = instantiate(this.template);
+            needWait = true;
         }
+        item.active = true;
+        item.parent = this.container;
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            a.data = data[i];
+            a.init();
+        }
+        if (needWait) this.scheduleOnce(() => {
+            this.setItem(data, ++i);
+        });
+        else this.setItem(data, ++i);
     }
 
     ///////////////////////////EDITOR///////////////
