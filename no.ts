@@ -283,6 +283,15 @@ export namespace no {
         console.error.call(console, '#NoUi#', Evns);
     }
 
+    let _uuid = 0;
+    /**
+     * 创建唯一标识
+     * @returns 
+     */
+    export function uuid(): string {
+        return `yj${_uuid++}`;
+    }
+
     /**
      * 发出消息并回调一次
      * @param type
