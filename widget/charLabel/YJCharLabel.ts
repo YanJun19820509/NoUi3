@@ -95,23 +95,26 @@ export class YJCharLabel extends Component {
             for (let i = this.usedCharNode.length - 1; i >= 0; i--) {
                 let v = this.usedCharNode[i].name;
                 this.usedCharNode[i].active = false;
+                this.usedCharNode['__order'] = 99;
                 if (!this.charPool[v]) this.charPool[v] = [];
                 this.charPool[v][this.charPool[v].length] = this.usedCharNode[i];
             }
             this.usedCharNode = [];
             for (let i = 0, n = a.length; i < n; i++) {
                 if (!this.charPool[a[i]]) this.charPool[a[i]] = [];
-                let labelNode = this.charPool[a[i]].shift();
+                let labelNode: Node = this.charPool[a[i]].shift();
                 if (!labelNode) {
                     labelNode = this.createCharNode(a[i]);
-                    labelNode.setSiblingIndex(i);
                 } else {
-                    labelNode.setSiblingIndex(i);
                     labelNode.active = true;
-                    labelNode.getComponent(UIOpacity);
                 }
+                labelNode['__order'] = i;
                 this.usedCharNode[this.usedCharNode.length] = labelNode;
             }
+            this.node.children.sort((a, b) => {
+                return a['__order'] - b['__order'];
+            });
+            this.node._updateSiblingIndex();
         }
         this.scheduleOnce(() => {
             this.setScale();

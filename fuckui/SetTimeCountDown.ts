@@ -83,6 +83,7 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     public doTickTock(now: number) {
+        if (!this.enabledInHierarchy) return;
         let a = this._deadline - now;
         if (this.isLabel) {
             if (this.decorator) this.setLabel(this.decorator.format(a));

@@ -69,6 +69,7 @@ export class SetList extends FuckUi {
      */
     private lastIndex: number = 0;
     private _loaded: boolean = false;
+    private touched: boolean = false;
 
     async onLoad() {
         super.onLoad();
@@ -95,6 +96,14 @@ export class SetList extends FuckUi {
             this.showMax = Math.ceil(this.viewSize.width / this.itemSize.width);
         }
         this._loaded = true;
+
+        this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
+            this.touched = true;
+        }, this);
+
+        this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
+            this.touched = false;
+        }, this);
     }
 
     onDisable() {
@@ -116,9 +125,11 @@ export class SetList extends FuckUi {
         this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
-        for (let i = 0, n = this.listItems.length; i < n; i++) {
-            let item = this.listItems[i];
-            item.active = false;
+        if (this.wait > 0) {
+            for (let i = 0, n = this.listItems.length; i < n; i++) {
+                let item = this.listItems[i];
+                item.active = false;
+            }
         }
         let a = [].concat(data);
         if (this.columnNumber > 1) {
@@ -186,7 +197,7 @@ export class SetList extends FuckUi {
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
             item.active = true;
-        }
+        } else item.active = false;
         i++;
         if (this.stopWait || this.wait == 0)
             this.setItem(start, i);
@@ -223,6 +234,7 @@ export class SetList extends FuckUi {
     }
 
     update() {
+        if (!this.touched) return;
         if (EDITOR) {
             this.getComponent(Layout)?.destroy();
             this.preCreateItems();
