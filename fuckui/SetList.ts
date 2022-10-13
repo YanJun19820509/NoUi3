@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout } from 'cc';
+import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
@@ -48,20 +48,22 @@ export class SetList extends FuckUi {
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = true;
 
-    @property({ displayName: '预初始元素节点' })
-    preInitItems: boolean = false;
+    @property({ displayName: '设置元素模板相关数据' })
+    setTemplateInfo: boolean = false;
+    @property({ displayName: '所需元素节点个数', readonly: true })
+    showMax: number = 0;
+    @property({ visible() { return false; } })
+    itemSize: Size = size();
+
 
     private listData: any[];
     private listItems: Node[] = [];
-    private viewSize: Size;
-    private itemSize: Size;
     private isVertical: boolean;
     private content: Node;
     /**
      * 横向时指宽，纵向时指高
      */
     private contentSize: number;
-    private showMax: number;//可视区域内最多可显示的itemPanel个数
     private showNum: number;//实际最多可显示的itemPanel个数
     private allNum: number;
     /**
@@ -80,21 +82,22 @@ export class SetList extends FuckUi {
         }
         if (!this.template) {
             this.template = await this.itemPanel.loadPrefab();
+            this.preInitItems();
         }
         if (this.dynamicAtlas) {
             YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
-        this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
-        this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+        // this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
+        // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
         this.content = this.scrollView.content;
         this.listItems = this.content.children;
 
-        if (this.isVertical) {
-            this.showMax = Math.ceil(this.viewSize.height / this.itemSize.height);
-        } else {
-            this.showMax = Math.ceil(this.viewSize.width / this.itemSize.width);
-        }
+        // if (this.isVertical) {
+        //     this.showMax = Math.ceil(this.viewSize.height / this.itemSize.height);
+        // } else {
+        //     this.showMax = Math.ceil(this.viewSize.width / this.itemSize.width);
+        // }
         this._loaded = true;
 
         this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
@@ -234,12 +237,12 @@ export class SetList extends FuckUi {
     }
 
     update() {
-        if (!this.touched) return;
         if (EDITOR) {
             this.getComponent(Layout)?.destroy();
-            this.preCreateItems();
+            this.preInitItems();
             return;
         }
+        if (!this.touched) return;
         if (this.listData == null || this.listItems == null || this.listItems.length == 0) return;
         let curPos = 0;
         let startIndex = 0;
@@ -278,28 +281,22 @@ export class SetList extends FuckUi {
         }
     }
 
-    private async preCreateItems() {
-        if (!this.scrollView || !this.template) return;
-        if (!this.preInitItems && this.scrollView.content.children.length > 0) {
-            this.scrollView.content.removeAllChildren();
-        } else if (this.preInitItems && this.scrollView.content.children.length == 0) {
-            let itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
-            let viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
-            let isVertical = this.scrollView.vertical;
-            let showMax: number;
-            if (isVertical) {
-                showMax = Math.ceil(viewSize.height / itemSize.height);
-            } else {
-                showMax = Math.ceil(viewSize.width / itemSize.width);
-            }
-            showMax += 2;
-            while (showMax-- > 0) {
-                let temp = instantiate(this.template);
-                if (this.dynamicAtlas) {
-                    YJDynamicAtlas.setDynamicAtlas(temp, this.dynamicAtlas);
-                }
-                temp.parent = this.scrollView.content;
-            }
+    private preInitItems() {
+        if (!this.setTemplateInfo) return;
+        this.setTemplateInfo = false;
+        if (!this.scrollView || !this.template) {
+            console.error('scrollView 或 template 为 null!');
+            return;
         }
+        this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
+        let viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+        this.isVertical = this.scrollView.vertical;
+        let showMax: number;
+        if (this.isVertical) {
+            showMax = Math.ceil(viewSize.height / this.itemSize.height);
+        } else {
+            showMax = Math.ceil(viewSize.width / this.itemSize.width);
+        }
+        this.showMax = showMax + 2;
     }
 }

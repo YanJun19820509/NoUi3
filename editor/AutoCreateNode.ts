@@ -400,7 +400,7 @@ export class AutoCreateNode extends Component {
         }
         n.parent = parent;
         n.setPosition(x, y);
-        n.getComponent(UITransform).setContentSize(w, h);
+        n.getComponent(UITransform).setContentSize(w, h || 30);
         this.setWidget(n);
         if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         return n;
