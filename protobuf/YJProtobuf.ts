@@ -1,38 +1,52 @@
-import { _decorator } from 'cc';
+import { TextAsset, _decorator } from 'cc';
+import { no } from '../no';
 const { ccclass } = _decorator;
 
 @ccclass('YJProtobuf')
 export class YJProtobuf {
     private _root: any;
-    private dataName: string;
+    private _pkgName: string;
 
-    public static new(name: string, protoDefine: string): YJProtobuf;
-    public static new(name: string, obj: any): YJProtobuf;
-    public static new(name: string, obj: any): YJProtobuf {
-        return new YJProtobuf(name, obj);
+    public static new(): YJProtobuf;
+    public static new(pkgName: string, protoDefine: string): YJProtobuf;
+    public static new(pkgName: string, msgName: string, obj: any): YJProtobuf;
+    public static new(pkgName?: string, msgName?: string, obj?: any): YJProtobuf {
+        return new YJProtobuf(pkgName, msgName, obj);
     }
 
-    constructor(name: string, protoDefine: string);
-    constructor(name: string, obj: any);
-    constructor(name: string, obj: any) {
-        this.init(name, obj);
+    constructor();
+    constructor(pkgName: string, protoDefine: string);
+    constructor(pkgName: string, msgName: string, obj: any);
+    constructor(pkgName?: string, msgName?: string, obj?: any) {
+        if (!pkgName) return;
+        this.init(pkgName, msgName, obj);
     }
 
-    public init(name: string, protoDefine: string): void;
-    public init(name: string, obj: any): void;
-    public init(name: string, obj: any): void {
+    public init(pkgName: string, protoDefine: string): void;
+    public init(pkgName: string, msgName: string, obj: any): void;
+    public init(pkgName: string, msgName: string, obj?: any): void {
         let pbd: string;
         if (typeof obj == 'object') {
-            pbd = YJProtobuf.createProtoDefine(obj, name, `${name}package`);
+            pbd = YJProtobuf.createProtoDefine(obj, msgName, pkgName);
         } else {
-            pbd = obj;
+            pbd = msgName;
         }
         this._root = window['protobuf'].parse(pbd, { keepCase: true }).root;
-        this.dataName = name;
+        this._pkgName = pkgName;
     }
 
-    public encode(data: any): Uint8Array {
-        let msg_type = this.getMessageType();
+    public async loadProto(pkgName: string, file: string) {
+        this._pkgName = pkgName;
+        return new Promise<void>(resolve => {
+            no.assetBundleManager.loadFile(file, TextAsset, (asset: TextAsset) => {
+                this._root = window['protobuf'].parse(asset.text, { keepCase: true }).root;
+                resolve();
+            });
+        });
+    }
+
+    public encode(msgName: string, data: any): Uint8Array {
+        let msg_type = this.getMessageType(msgName);
         let err = msg_type.verify(data);
         if (err) {
             console.error(err);
@@ -42,20 +56,20 @@ export class YJProtobuf {
         return msg_type.encode(msg).finish();
     }
 
-    public decode(buffer: Uint8Array): any {
-        let msg_type = this.getMessageType();
+    public decode(msgName: string, buffer: Uint8Array): any {
+        let msg_type = this.getMessageType(msgName);
         let msg = msg_type.decode(buffer);
         return msg_type.toObject(msg);
     }
 
-    private getMessageType(): any {
-        return this._root.lookupType(`${this.dataName}package.${this.dataName}`);
+    private getMessageType(msgName: string): any {
+        return this._root.lookupType(`${this._pkgName}package.${msgName}`);
     }
 
-    public static createProtoDefine(jsonObject: any, objectName: string, pkgName: string): string {
-        let df = `package ${pkgName};
-        syntax = "proto3";`;
-        this.createMessage(objectName, jsonObject, df);
+    public static createProtoDefine(jsonObject: any, msgName: string, pkgName: string): string {
+        let df = `syntax = "proto3";
+        package ${pkgName};`;
+        this.createMessage(msgName, jsonObject, df);
         return df;
     }
 
