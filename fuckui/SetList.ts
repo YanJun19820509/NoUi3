@@ -84,6 +84,8 @@ export class SetList extends FuckUi {
             this.template = await this.itemPanel.loadPrefab();
             this.preInitItems();
         }
+        if (this.showMax == 0)
+            this.preInitItems();
         if (this.dynamicAtlas) {
             YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
@@ -239,7 +241,10 @@ export class SetList extends FuckUi {
     update() {
         if (EDITOR) {
             this.getComponent(Layout)?.destroy();
-            this.preInitItems();
+            if (this.setTemplateInfo) {
+                this.setTemplateInfo = false;
+                this.preInitItems();
+            }
             return;
         }
         if (!this.touched) return;
@@ -282,8 +287,6 @@ export class SetList extends FuckUi {
     }
 
     private preInitItems() {
-        if (!this.setTemplateInfo) return;
-        this.setTemplateInfo = false;
         if (!this.scrollView || !this.template) {
             console.error('scrollView 或 template 为 null!');
             return;
