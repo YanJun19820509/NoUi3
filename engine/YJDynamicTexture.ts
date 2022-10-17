@@ -115,7 +115,7 @@ export class YJDynamicTexture extends Component {
     }
 
     private createLabelFrameUuid(label: Label, str?: string): string {
-        let a = (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + label.fontFamily;
+        let a = (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + (label.font?.name || label.fontFamily);
         let ol = label.getComponent(LabelOutline);
         if (ol) {
             a += "_" + ol.color + '_' + ol.width;

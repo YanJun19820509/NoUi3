@@ -1,9 +1,10 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Texture2D, Vec2, v2, LabelShadow, instantiate, Size, game, Sprite, Renderable2D, UIOpacity } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, instantiate, Sprite, Renderable2D, UIOpacity, SpriteFrame, rect } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
 import { no } from '../../no';
+import { PackedFrameData } from '../../types';
 const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
 
 /**
@@ -30,6 +31,8 @@ export class YJCharLabel extends Component {
     fontSize: number = 22;
     @property(Font)
     font: Font = null;
+    @property
+    fontFamily: string = 'Arial';
     @property
     lineHeight: number = 22;
     @property
@@ -122,11 +125,15 @@ export class YJCharLabel extends Component {
     }
 
     private createCharNode(v: string): Node {
-        if (this.charModels[v] && this.charModels[v].getComponent(Renderable2D).spriteFrame.original) {
-            let node = this.clone(this.charModels[v]);
-            return node;
+        // if (this.charModels[v] && this.charModels[v].getComponent(Renderable2D).spriteFrame.original) {
+        //     let node = this.clone(this.charModels[v]);
+        //     return node;
+        // }
+        let uuid = this.createLabelFrameUuid(v);
+        let frame = this.dynamicAtlas?.getPackedFrame(uuid);
+        if (frame) {
+            return this.createSpriteNode(v, uuid, frame);
         }
-
         let labelNode = new Node(v);
         labelNode.layer = Layers.Enum.UI_2D;
         labelNode.addComponent(UITransform);
@@ -135,6 +142,7 @@ export class YJCharLabel extends Component {
         if (this.dynamicAtlas?.commonMaterial)
             label.customMaterial = this.dynamicAtlas?.commonMaterial;
         label.color = this.color;
+        label.fontFamily = this.fontFamily;
         label.font = this.font;
         label.fontSize = this.fontSize;
         label.lineHeight = this.lineHeight;
@@ -157,27 +165,48 @@ export class YJCharLabel extends Component {
         return labelNode;
     }
 
-    private clone(temp: Node): Node {
-        if (temp.getComponent(Label)) {
-            let labelNode = new Node(temp.name);
-            labelNode.layer = Layers.Enum.UI_2D;
-            let ut = labelNode.addComponent(UITransform);
-            let s = labelNode.addComponent(Sprite);
-            if (this.dynamicAtlas?.commonMaterial)
-                s.customMaterial = this.dynamicAtlas?.commonMaterial;
-            s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
-            ut.setContentSize(s.spriteFrame.rect.size);
-            labelNode.active = true;
-            labelNode.parent = this.node;
-            labelNode.addComponent(UIOpacity);
-            this.charModels[temp.name] = labelNode;
-            return labelNode;
-        } else {
-            let labelNode = instantiate(temp);
-            labelNode.parent = this.node;
-            labelNode.active = true;
-            return labelNode;
-        }
+    // private clone(temp: Node): Node {
+    //     if (temp.getComponent(Label)) {
+    //         let labelNode = new Node(temp.name);
+    //         labelNode.layer = Layers.Enum.UI_2D;
+    //         let ut = labelNode.addComponent(UITransform);
+    //         let s = labelNode.addComponent(Sprite);
+    //         if (this.dynamicAtlas?.commonMaterial)
+    //             s.customMaterial = this.dynamicAtlas?.commonMaterial;
+    //         s.spriteFrame = temp.getComponent(Label).ttfSpriteFrame;
+    //         ut.setContentSize(s.spriteFrame.rect.size);
+    //         labelNode.active = true;
+    //         labelNode.parent = this.node;
+    //         labelNode.addComponent(UIOpacity);
+    //         this.charModels[temp.name] = labelNode;
+    //         return labelNode;
+    //     } else {
+    //         let labelNode = instantiate(temp);
+    //         labelNode.parent = this.node;
+    //         labelNode.active = true;
+    //         return labelNode;
+    //     }
+    // }
+
+    private createSpriteNode(name: string, uuid: string, frame: PackedFrameData): Node {
+        let labelNode = new Node(name);
+        labelNode.layer = Layers.Enum.UI_2D;
+        let ut = labelNode.addComponent(UITransform);
+        let s = labelNode.addComponent(Sprite);
+        if (this.dynamicAtlas?.commonMaterial)
+            s.customMaterial = this.dynamicAtlas?.commonMaterial;
+        s.spriteFrame = new SpriteFrame();
+        s.spriteFrame._uuid = uuid;
+        s.spriteFrame.rotated = frame.rotate;
+        s.spriteFrame.rect = rect(0, 0, frame.w, frame.h);
+        // s.spriteFrame.offset = v2(frame.x, frame.y);
+        s.spriteFrame._setDynamicAtlasFrame(frame);
+        ut.setContentSize(frame.w, frame.h);
+        labelNode.active = true;
+        labelNode.parent = this.node;
+        labelNode.addComponent(UIOpacity);
+        this.charModels[name] = labelNode;
+        return labelNode;
     }
 
     private setScale() {
@@ -189,6 +218,11 @@ export class YJCharLabel extends Component {
             let s = this.maxWidth / ut.width;
             this.node.setScale(s, s);
         }
+    }
+
+    private createLabelFrameUuid(str: string): string {
+        let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth;
+        return a;
     }
 
     // private createSpriteFrame(v: string, label: Label) {

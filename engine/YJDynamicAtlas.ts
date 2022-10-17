@@ -69,7 +69,7 @@ export class YJDynamicAtlas extends Component {
     //     return true;
     // }
 
-    public getPackedFrame(uuid: string): { x: number, y: number, w: number, h: number, texture: Texture2D } | null {
+    public getPackedFrame(uuid: string): PackedFrameData | null {
         if (!this.isWork) return null;
         this.initAtlas();
         return this.atlas.getPackedFrame(uuid);
