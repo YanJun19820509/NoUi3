@@ -63,7 +63,7 @@ export class YJProtobuf {
     }
 
     private getMessageType(msgName: string): any {
-        return this._root.lookupType(`${this._pkgName}package.${msgName}`);
+        return this._root.lookupType(`${this._pkgName}.${msgName}`);
     }
 
     public static createProtoDefine(jsonObject: any, msgName: string, pkgName: string): string {
