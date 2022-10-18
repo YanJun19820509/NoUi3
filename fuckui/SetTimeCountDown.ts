@@ -35,7 +35,7 @@ export class SetTimeCountDown extends FuckUi {
     formatter: string = '{h}:{m}:{s}';
     @property({ displayName: '用0补位', visible() { return this.isLabel; } })
     show0: boolean = true;
-    @property({ type: YJTimeFormatDecorator, displayName: '格式化装饰器' })
+    @property({ type: YJTimeFormatDecorator, displayName: '格式化装饰器', visible() { return this.isLabel; } })
     decorator: YJTimeFormatDecorator = null;
 
     @property({ type: FuckUi, tooltip: '将倒计时转换成百分比，传给对应组件' })
@@ -71,10 +71,13 @@ export class SetTimeCountDown extends FuckUi {
     protected onDataChange(data: any) {
         let now = no.sysTime.now;
         if (data instanceof Array) {
-            this._deadline = Number(data[0]) + now;
+            let a = Number(data[0]);
+            if (a <= 0) return;
+            this._deadline = a + now;
             this._max = Number(data[1]);
         } else {
             let a = Number(data);
+            if (a <= 0) return;
             this._deadline = a + now;
             this._max = a;
         }

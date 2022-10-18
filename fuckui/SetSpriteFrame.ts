@@ -70,7 +70,7 @@ export class SetSpriteFrame extends FuckUi {
             if (this.path != '' && data.indexOf(this.path) == -1) data = this.path + '/' + data;
             let path = `${data}/spriteFrame`;
             let uuid = no.assetBundleManager.getUuidFromPath(path);
-            if (!uuid || !this.getComponent(YJDynamicTexture).setSpriteFrameWithUuid(uuid, this.sprite))
+            if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
                     this.setSpriteFrame(spriteFrame);
                 });
