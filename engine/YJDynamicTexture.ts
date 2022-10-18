@@ -133,13 +133,8 @@ export class YJDynamicTexture extends Component {
     public setSpriteFrameWithUuid(uuid: string, comp: Sprite | Label): boolean {
         if (!this.enabled) return false;
         if (!this.dynamicAtlas?.isWork) return false;
-        let packedFrame = this.dynamicAtlas.getPackedFrame(uuid);
-        if (!packedFrame) return false;
-        let spriteFrame = new SpriteFrame();
-        spriteFrame._uuid = uuid;
-        spriteFrame.rotated = packedFrame.rotate;
-        spriteFrame.rect = rect(0, 0, packedFrame.w, packedFrame.h);
-        spriteFrame._setDynamicAtlasFrame(packedFrame);
+        let spriteFrame = this.dynamicAtlas.getSpriteFrameInstance(uuid);
+        if (!spriteFrame) return false;
         if (comp instanceof Sprite)
             comp.spriteFrame = spriteFrame;
         else {
@@ -150,7 +145,6 @@ export class YJDynamicTexture extends Component {
                 comp['_ttfSpriteFrame'] = spriteFrame;
             }
         }
-        comp.getComponent(UITransform).setContentSize(packedFrame.w, packedFrame.h);
         return true;
     }
 }

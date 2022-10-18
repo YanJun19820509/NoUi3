@@ -37,7 +37,12 @@ export class YJDynamicAtlas extends Component {
 
     public atlas: Atlas;
 
+    private spriteFrameMap: any = {};
+
     onDestroy() {
+        for (const uuid in this.spriteFrameMap) {
+            (this.spriteFrameMap[uuid] as SpriteFrame).decRef();
+        }
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
         this.atlas = null;
@@ -50,24 +55,18 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    // public usePackedFrame(comp: Renderable2D, frame: SpriteFrame, uuid: string): boolean {
-    //     // return false;
-    //     if (!comp || !frame) return false;
-    //     const packedFrame = this.atlas.getPackedFrame(uuid);
-    //     if (!packedFrame) return false;
-    //     frame._resetDynamicAtlasFrame();
-    //     frame._setDynamicAtlasFrame(packedFrame);
-    //     let rect = frame.rect;
-    //     rect.width = packedFrame.w;
-    //     rect.height = packedFrame.h;
-    //     frame.rect = rect;
-    //     // if (comp instanceof Label)
-    //     //     comp.updateRenderData(true);
-    //     // else 
-    //     if (comp instanceof Sprite)
-    //         comp.markForUpdateRenderData(true);
-    //     return true;
-    // }
+    public getSpriteFrameInstance(uuid: string): SpriteFrame | null {
+        let spriteFrame: SpriteFrame = this.spriteFrameMap[uuid];
+        if (spriteFrame) return spriteFrame;
+        let packedFrame = this.getPackedFrame(uuid);
+        if (!packedFrame) return null;
+        spriteFrame = new SpriteFrame();
+        spriteFrame.texture = packedFrame.texture;
+        spriteFrame.rotated = packedFrame.rotate;
+        spriteFrame.rect = rect(packedFrame.x, packedFrame.y, packedFrame.w, packedFrame.h);
+        this.spriteFrameMap[uuid] = spriteFrame;
+        return spriteFrame;
+    }
 
     public getPackedFrame(uuid: string): PackedFrameData | null {
         if (!this.isWork) return null;

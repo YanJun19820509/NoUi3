@@ -59,23 +59,28 @@ export class SetSpriteFrame extends FuckUi {
 
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
-        this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
-        this.sprite.spriteFrame = null;
-        if (data.atlas) {
-            no.assetBundleManager.loadAtlas(data.atlas, item => {
-                this.sprite.spriteAtlas = item;
-                this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
-            });
-        } else if (!this.sprite.spriteAtlas) {
+
+        if (!this.sprite.spriteAtlas && !data.atlas) {
             if (this.path != '' && data.indexOf(this.path) == -1) data = this.path + '/' + data;
             let path = `${data}/spriteFrame`;
             let uuid = no.assetBundleManager.getUuidFromPath(path);
+            if (this.sprite.spriteFrame?._uuid == uuid) return;
+
+            this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
                     this.setSpriteFrame(spriteFrame);
                 });
-        } else if (this.sprite.spriteAtlas?.spriteFrames) {
-            this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(String(data)));
+        } else {
+            this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
+            if (data.atlas) {
+                no.assetBundleManager.loadAtlas(data.atlas, item => {
+                    this.sprite.spriteAtlas = item;
+                    this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
+                });
+            } else if (this.sprite.spriteAtlas?.spriteFrames) {
+                this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(String(data)));
+            }
         }
     }
 

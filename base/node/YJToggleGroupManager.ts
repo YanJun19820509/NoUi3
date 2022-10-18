@@ -57,6 +57,7 @@ export class YJToggleGroupManager extends Component {
 
             if (this.defaultCheckedIdx != null && this.reset) {
                 toggle.isChecked = this.defaultCheckedIdx == i;
+                toggle.interactable = !toggle.isChecked;
             }
 
             if (toggle.isChecked) {
