@@ -2262,6 +2262,11 @@ export namespace no {
                 callback?.(f);
             });
         }
+
+        public getUuidFromPath(path: string): string {
+            let a = this.assetPath(path);
+            return this.getBundle(a.bundle).getInfoWithPath(a.file, a.type).uuid;
+        }
     }
 
     /**全局资源管理器 */

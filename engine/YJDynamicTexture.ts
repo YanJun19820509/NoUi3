@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame, LabelOutline } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame, LabelOutline, rect, UITransform } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
@@ -114,7 +114,7 @@ export class YJDynamicTexture extends Component {
         this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
     }
 
-    private createLabelFrameUuid(label: Label, str?: string): string {
+    public createLabelFrameUuid(label: Label, str?: string): string {
         let a = (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + (label.font?.name || label.fontFamily);
         let ol = label.getComponent(LabelOutline);
         if (ol) {
@@ -128,5 +128,29 @@ export class YJDynamicTexture extends Component {
         if (!renderComp) return;
         if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
             renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;
+    }
+
+    public setSpriteFrameWithUuid(uuid: string, comp: Sprite | Label): boolean {
+        if (!this.enabled) return false;
+        if (!this.dynamicAtlas?.isWork) return false;
+        let packedFrame = this.dynamicAtlas.getPackedFrame(uuid);
+        if (!packedFrame) return false;
+        let spriteFrame = new SpriteFrame();
+        spriteFrame._uuid = uuid;
+        spriteFrame.rotated = packedFrame.rotate;
+        spriteFrame.rect = rect(0, 0, packedFrame.w, packedFrame.h);
+        spriteFrame._setDynamicAtlasFrame(packedFrame);
+        if (comp instanceof Sprite)
+            comp.spriteFrame = spriteFrame;
+        else {
+            if (comp.font instanceof BitmapFont) {
+                (comp.font as BitmapFont).spriteFrame = spriteFrame;
+                comp['_texture'] = spriteFrame;
+            } else {
+                comp['_ttfSpriteFrame'] = spriteFrame;
+            }
+        }
+        comp.getComponent(UITransform).setContentSize(packedFrame.w, packedFrame.h);
+        return true;
     }
 }

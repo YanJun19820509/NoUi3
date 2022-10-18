@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, instantiate, Sprite, Renderable2D, UIOpacity, SpriteFrame, rect } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, instantiate, Sprite, Renderable2D, UIOpacity, SpriteFrame, rect, Enum } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
@@ -19,10 +19,17 @@ const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
  *
  */
 
+enum YJCharLabelMode {
+    Char = 0,
+    String
+}
+
 @ccclass('YJCharLabel')
 @requireComponent(Layout)
 @executeInEditMode()
 export class YJCharLabel extends Component {
+    @property({ type: Enum(YJCharLabelMode) })
+    mode: YJCharLabelMode = YJCharLabelMode.Char;
     @property(Color)
     color: Color = Color.WHITE.clone();
     @property
@@ -85,6 +92,20 @@ export class YJCharLabel extends Component {
 
     public setLabel(s: string): void {
         this._text = s;
+        switch (this.mode) {
+            case YJCharLabelMode.Char:
+                this.setChars(s);
+                break;
+            case YJCharLabelMode.String:
+                this.setString(s);
+                break;
+        }
+        this.scheduleOnce(() => {
+            this.setScale();
+        });
+    }
+
+    private setChars(s: string) {
         let a = s.split('');
         if (EDITOR) {
             let labelNodes = this.node.children;
@@ -119,9 +140,10 @@ export class YJCharLabel extends Component {
             });
             this.node._updateSiblingIndex();
         }
-        this.scheduleOnce(() => {
-            this.setScale();
-        });
+    }
+
+    private setString(s: string) {
+        this.createCharNode(s);
     }
 
     private createCharNode(v: string): Node {
@@ -199,7 +221,6 @@ export class YJCharLabel extends Component {
         s.spriteFrame._uuid = uuid;
         s.spriteFrame.rotated = frame.rotate;
         s.spriteFrame.rect = rect(0, 0, frame.w, frame.h);
-        // s.spriteFrame.offset = v2(frame.x, frame.y);
         s.spriteFrame._setDynamicAtlasFrame(frame);
         ut.setContentSize(frame.w, frame.h);
         labelNode.active = true;

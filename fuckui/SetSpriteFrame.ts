@@ -68,9 +68,12 @@ export class SetSpriteFrame extends FuckUi {
             });
         } else if (!this.sprite.spriteAtlas) {
             if (this.path != '' && data.indexOf(this.path) == -1) data = this.path + '/' + data;
-            no.assetBundleManager.loadSprite(`${data}/spriteFrame`, spriteFrame => {
-                this.setSpriteFrame(spriteFrame);
-            });
+            let path = `${data}/spriteFrame`;
+            let uuid = no.assetBundleManager.getUuidFromPath(path);
+            if (!uuid || !this.getComponent(YJDynamicTexture).setSpriteFrameWithUuid(uuid, this.sprite))
+                no.assetBundleManager.loadSprite(path, spriteFrame => {
+                    this.setSpriteFrame(spriteFrame);
+                });
         } else if (this.sprite.spriteAtlas?.spriteFrames) {
             this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(String(data)));
         }
