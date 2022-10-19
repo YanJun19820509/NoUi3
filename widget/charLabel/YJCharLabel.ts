@@ -223,6 +223,7 @@ export class YJCharLabel extends Component {
         let labelNode = new Node(v);
         labelNode.layer = Layers.Enum.UI_2D;
         let s = labelNode.addComponent(Sprite);
+        s.sizeMode = Sprite.SizeMode.TRIMMED;
         if (this.dynamicAtlas?.commonMaterial)
             s.customMaterial = this.dynamicAtlas?.commonMaterial;
         s.spriteFrame = spriteFrame;
