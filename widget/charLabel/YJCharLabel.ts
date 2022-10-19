@@ -1,11 +1,10 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, instantiate, Sprite, Renderable2D, UIOpacity, SpriteFrame, rect, Enum } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
 import { no } from '../../no';
-import { PackedFrameData } from '../../types';
-const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
+const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -25,7 +24,6 @@ enum YJCharLabelMode {
 }
 
 @ccclass('YJCharLabel')
-@requireComponent(Layout)
 @executeInEditMode()
 export class YJCharLabel extends Component {
     @property({ type: Enum(YJCharLabelMode) })
@@ -72,11 +70,6 @@ export class YJCharLabel extends Component {
         if (!EDITOR) {
             return;
         }
-        let layout = this.getComponent(Layout);
-        if (layout.type == Layout.Type.NONE) {
-            layout.type = Layout.Type.HORIZONTAL;
-            layout.resizeMode = Layout.ResizeMode.CONTAINER;
-        }
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 
@@ -84,6 +77,13 @@ export class YJCharLabel extends Component {
         if (!EDITOR) return;
         if (this.text != this._text)
             this.setLabel(this.text);
+        if (this.mode == YJCharLabelMode.String && this.getComponent(Layout)) {
+            this.getComponent(Layout).destroy();
+        } else if (this.mode == YJCharLabelMode.Char && !this.getComponent(Layout)) {
+            let layout = this.addComponent(Layout);
+            layout.type = Layout.Type.HORIZONTAL;
+            layout.resizeMode = Layout.ResizeMode.CONTAINER;
+        }
     }
 
     public set string(v: string) {
@@ -143,7 +143,15 @@ export class YJCharLabel extends Component {
     }
 
     private setString(s: string) {
-        this.createCharNode(s);
+        this.node.removeAllChildren();
+        if (s == '') return;
+        let spriteFrame = this.getSpriteFrame(s);
+        if (!spriteFrame) {
+            this.createCharNode(s);
+        } else {
+            let sprite = this.getComponent(Sprite) || this.addComponent(Sprite);
+            sprite.spriteFrame = spriteFrame;
+        }
     }
 
     private createCharNode(v: string): Node {
@@ -151,12 +159,9 @@ export class YJCharLabel extends Component {
         //     let node = this.clone(this.charModels[v]);
         //     return node;
         // }
-        let uuid = this.createLabelFrameUuid(v);
-        let frame = this.dynamicAtlas?.getPackedFrame(uuid);
-        if (frame) {
-            return this.createSpriteNode(v, uuid, frame);
-        }
-        let labelNode = new Node(v);
+        let labelNode = this.createSpriteNode(v);
+        if (labelNode) return labelNode;
+        labelNode = new Node(v);
         labelNode.layer = Layers.Enum.UI_2D;
         labelNode.addComponent(UITransform);
         this.charModels[v] = labelNode;
@@ -210,24 +215,27 @@ export class YJCharLabel extends Component {
     //     }
     // }
 
-    private createSpriteNode(name: string, uuid: string, frame: PackedFrameData): Node {
-        let labelNode = new Node(name);
+    private createSpriteNode(v: string): Node {
+        let spriteFrame = this.getSpriteFrame(v);
+        if (!spriteFrame) {
+            return null;
+        }
+        let labelNode = new Node(v);
         labelNode.layer = Layers.Enum.UI_2D;
-        let ut = labelNode.addComponent(UITransform);
         let s = labelNode.addComponent(Sprite);
         if (this.dynamicAtlas?.commonMaterial)
             s.customMaterial = this.dynamicAtlas?.commonMaterial;
-        s.spriteFrame = new SpriteFrame();
-        s.spriteFrame._uuid = uuid;
-        s.spriteFrame.rotated = frame.rotate;
-        s.spriteFrame.rect = rect(0, 0, frame.w, frame.h);
-        s.spriteFrame._setDynamicAtlasFrame(frame);
-        ut.setContentSize(frame.w, frame.h);
+        s.spriteFrame = spriteFrame;
         labelNode.active = true;
         labelNode.parent = this.node;
         labelNode.addComponent(UIOpacity);
-        this.charModels[name] = labelNode;
+        this.charModels[v] = labelNode;
         return labelNode;
+    }
+
+    private getSpriteFrame(v: string): SpriteFrame | null {
+        let uuid = this.createLabelFrameUuid(v);
+        return this.dynamicAtlas?.getSpriteFrameInstance(uuid);
     }
 
     private setScale() {

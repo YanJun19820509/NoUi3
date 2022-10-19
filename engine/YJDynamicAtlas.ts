@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform, RenderComponent } from 'cc';
+import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform, RenderComponent, size } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { PackedFrameData } from '../types';
@@ -41,7 +41,7 @@ export class YJDynamicAtlas extends Component {
 
     onDestroy() {
         for (const uuid in this.spriteFrameMap) {
-            (this.spriteFrameMap[uuid] as SpriteFrame).decRef();
+            (this.spriteFrameMap[uuid] as SpriteFrame).destroy();
         }
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
@@ -55,17 +55,23 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
+    private createSpriteFrame(uuid: string, packedFrame: PackedFrameData): SpriteFrame {
+        let spriteFrame = new SpriteFrame();
+        spriteFrame._uuid = uuid;
+        spriteFrame.texture = packedFrame.texture;
+        spriteFrame.rotated = packedFrame.rotate;
+        spriteFrame.rect = rect(packedFrame.x, packedFrame.y, packedFrame.w, packedFrame.h);
+        // spriteFrame.originalSize = size(packedFrame.w, packedFrame.h);
+        this.spriteFrameMap[uuid] = spriteFrame;
+        return spriteFrame;
+    }
+
     public getSpriteFrameInstance(uuid: string): SpriteFrame | null {
         let spriteFrame: SpriteFrame = this.spriteFrameMap[uuid];
         if (spriteFrame) return spriteFrame;
         let packedFrame = this.getPackedFrame(uuid);
         if (!packedFrame) return null;
-        spriteFrame = new SpriteFrame();
-        spriteFrame.texture = packedFrame.texture;
-        spriteFrame.rotated = packedFrame.rotate;
-        spriteFrame.rect = rect(packedFrame.x, packedFrame.y, packedFrame.w, packedFrame.h);
-        this.spriteFrameMap[uuid] = spriteFrame;
-        return spriteFrame;
+        return this.createSpriteFrame(uuid, packedFrame);
     }
 
     public getPackedFrame(uuid: string): PackedFrameData | null {
@@ -131,13 +137,15 @@ export class YJDynamicAtlas extends Component {
             if (comp instanceof Label) {
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
-                    // ff.rotated = packedFrame.rotate;
+                    ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
+                    this.spriteFrameMap[frame._uuid] = ff;
                 } else {
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
+                    this.spriteFrameMap[frame._uuid] = frame;
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
@@ -147,6 +155,7 @@ export class YJDynamicAtlas extends Component {
                 comp.spriteFrame = ff;
                 if (!frame.original && frame.name.indexOf('default_') == -1)
                     no.assetBundleManager.release(frame);
+                this.spriteFrameMap[frame._uuid] = ff;
             }
         }
     }
