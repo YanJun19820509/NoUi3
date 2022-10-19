@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, instantiate, Prefab, UITransform } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDataWork } from '../base/YJDataWork';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -65,10 +66,11 @@ export class SetCreateNodeByUrl extends FuckUi {
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
                 }
-                this.setItems(data);
-                this.clear();
-                this.scheduleOnce(() => {
-                    this.resizeContentSize();
+                this.setItems(data).then(() => {
+                    this.clear();
+                    this.scheduleOnce(() => {
+                        this.resizeContentSize();
+                    });
                 });
             });
         } else {
@@ -76,7 +78,7 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
-    private setItems(data: any[]) {
+    private async setItems(data: any[]) {
         if (!this.template) return;
         if (!this.container) this.container = this.node;
 
@@ -85,12 +87,15 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
+                if (item.getComponent(YJLoadAssets))
+                    await item.getComponent(YJLoadAssets).load();
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
                     a.data = data[i];
                 }
                 item.parent = this.container;
+
             }
         }
         for (let i = 0; i < l; i++) {
