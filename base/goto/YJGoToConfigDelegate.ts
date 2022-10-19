@@ -24,6 +24,8 @@ export type YJGoToInfo = {
     accompany: string,
     //'参数
     args: string,
+    //是否为accompany的子功能
+    isSub: boolean,
     //'备注
     desc: string
 };

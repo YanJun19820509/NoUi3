@@ -40,22 +40,22 @@ export class YJGoToManager extends Component {
         before?.();
         if (info.accompany != '') {
             this.goTo(info.accompany, null, null, () => {
-                this.show(info, args, after, true);
+                this.show(info, args, after);
             });
         } else this.show(info, args, after);
     }
 
-    private static show(info: YJGoToInfo, args: any, cb: () => void, noCreate = false) {
+    private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
         let panel = YJWindowManager.opennedPanel(info.target);
         if (panel) this._ins.trigger(panel, args, cb);
-        else if (!noCreate)
+        else if (!info.isSub)
             YJWindowManager.createPanel(info.target, null, null, panel => {
                 this._ins.trigger(panel, args, cb);
             });
         else {
             this._ins.scheduleOnce(() => {
-                this.show(info, args, cb, noCreate);
+                this.show(info, args, cb);
             });
         }
     }
