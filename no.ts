@@ -2759,6 +2759,10 @@ export namespace no {
         }
     }
 
+    export function scientificString(v: number | string): ScientificString {
+        return new ScientificString(v);
+    }
+
     /**关系查询 */
     export class RelationQuery {
 

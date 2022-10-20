@@ -36,11 +36,9 @@ export class YJWebSocket implements YJSocketInterface {
 
         this.ws.onopen = (event) => {
             no.log(`websocket open:${this.url}`);
-            this.reIniting = false;
         };
         this.ws.onmessage = (event) => {
             no.log("response text msg: " + event.data);
-            this.reIniting = false;
             this.onMessage(event.data);
         };
         this.ws.onerror = (event) => {
@@ -51,6 +49,7 @@ export class YJWebSocket implements YJSocketInterface {
         this.ws.onclose = (event) => {
             no.log(`websocket close:${this.url}`);
             this.reIniting = false;
+            this.reInit();
         };
     }
 
