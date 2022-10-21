@@ -98,8 +98,8 @@ export class SetCreateNode extends FuckUi {
 
         let n = data.length
         let l = this.container.children.length;
-        for (let i = n; i < l; i++) {
-            this.container.children[i].active = false;
+        for (let i = 0; i < l; i++) {
+            this.container.children[i].active = !!data[i];
         }
 
         if (l < n) {
