@@ -74,6 +74,12 @@ export class YJDynamicAtlas extends Component {
         return this.createSpriteFrame(uuid, packedFrame);
     }
 
+    public packSpriteFrame(spriteFrame: SpriteFrame, canRotate = true): SpriteFrame {
+        let uuid = spriteFrame._uuid;
+        let p = this.insertSpriteFrame(spriteFrame, true);
+        return this.createSpriteFrame(uuid, p);
+    }
+
     public getPackedFrame(uuid: string): PackedFrameData | null {
         if (!this.isWork) return null;
         this.initAtlas();
