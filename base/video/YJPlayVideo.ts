@@ -41,11 +41,7 @@ export class YJPlayVideo extends Component {
 
     onLoad() {
         if (EDITOR) {
-            let a = new EventHandler();
-            a.target = this.node;
-            a._componentId = js._getClassId(YJPlayVideo);
-            a.handler = 'onEvent';
-            this.getComponent(VideoPlayer).videoPlayerEvent = [a];
+            this.getComponent(VideoPlayer).videoPlayerEvent = [no.createClickEvent(this.node, YJPlayVideo, 'onEvent')];
         }
     }
 

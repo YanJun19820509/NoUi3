@@ -107,14 +107,15 @@ export class SetLock extends FuckUi {
             ut.setAnchorPoint(nodeUt.anchorPoint);
         }
         lock.setPosition(0, 0);
-        let a = new EventHandler();
-        a.target = target;
-        a.component = 'SetLock';
-        // a._componentName = 'SetLock';
-        // a._componentId = js._getClassId(SetLock);
-        a.handler = 'a_check';
-        let btn = lock.addComponent(Button);
-        btn.clickEvents = [a];
+        // let a = new EventHandler();
+        // a.target = target;
+        // a.component = 'SetLock';
+        // // a._componentName = 'SetLock';
+        // // a._componentId = js._getClassId(SetLock);
+        // a.handler = 'a_check';
+        // let btn = lock.addComponent(Button);
+        // btn.clickEvents = [a];
+        no.addClickEventsToButton(lock.addComponent(Button), target, 'SetLock', 'a_check');
         lock.addComponent(BlockInputEvents);
         lock.parent = target;
     }

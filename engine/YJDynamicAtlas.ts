@@ -58,10 +58,10 @@ export class YJDynamicAtlas extends Component {
     private createSpriteFrame(uuid: string, packedFrame: PackedFrameData): SpriteFrame {
         let spriteFrame = new SpriteFrame();
         spriteFrame._uuid = uuid;
+        spriteFrame.originalSize = size(100, 100);
         spriteFrame.texture = packedFrame.texture;
         spriteFrame.rotated = packedFrame.rotate;
         spriteFrame.rect = rect(packedFrame.x, packedFrame.y, packedFrame.w, packedFrame.h);
-        // spriteFrame.originalSize = size(packedFrame.w, packedFrame.h);
         this.spriteFrameMap[uuid] = spriteFrame;
         return spriteFrame;
     }

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -3413,6 +3413,38 @@ export namespace no {
         }
     }
     ////////////////////////////////////给richtext添加bbcode end///////////////////////
+
+    /**
+     * 创建点击事件
+     * @param target 事件响应组件和函数所在节点
+     * @param comp 事件响应组件
+     * @param handler 响应事件函数名
+     */
+    export function createClickEvent(target: Node, comp: typeof Component | string, handler: string): EventHandler {
+        let a = new EventHandler();
+        a.target = target;
+        if (typeof comp == 'string')
+            a._componentName = comp;
+        else
+            a._componentId = js._getClassId(comp);
+        a.handler = handler;
+        return a;
+    }
+
+    /**
+     * 给btn添加点击事件
+     * @param btn 需要添加点击事件的btn
+     * @param target 事件响应组件和函数所在节点
+     * @param comp 事件响应组件
+     * @param handler 响应事件函数名
+     * @param exclusive 独占，默认true，即btn中只有当前添加的事件
+     */
+    export function addClickEventsToButton(btn: Button, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
+        let a = createClickEvent(target, comp, handler);
+        if (exclusive)
+            btn.clickEvents = [a];
+        else btn.clickEvents[btn.clickEvents.length] = a;
+    }
 }
 
 if (DEBUG) {
