@@ -101,9 +101,6 @@ export class YJCharLabel extends Component {
                 this.setString(s);
                 break;
         }
-        this.scheduleOnce(() => {
-            this.setScale();
-        });
     }
 
     private setChars(s: string) {
@@ -150,6 +147,10 @@ export class YJCharLabel extends Component {
             for (let i = a.length, n = labelNodes.length; i < n; i++) {
                 labelNodes[i].active = false;
             }
+
+            this.scheduleOnce(() => {
+                this.setScale();
+            }, .1);
         }
     }
 
@@ -160,7 +161,9 @@ export class YJCharLabel extends Component {
             let sprite = this.getComponent(Sprite) || this.addComponent(Sprite);
             sprite.spriteFrame = spriteFrame;
         });
-
+        this.scheduleOnce(() => {
+            this.setScale();
+        });
     }
 
     private async getSpriteFrame(v: string): Promise<SpriteFrame> {
@@ -215,6 +218,7 @@ export class YJCharLabel extends Component {
     private createSpriteNode(v: string): Node {
         let labelNode = new Node();
         labelNode.layer = Layers.Enum.UI_2D;
+        labelNode.addComponent(UITransform).setContentSize(10, 10);
         let s = labelNode.addComponent(Sprite);
         s.sizeMode = Sprite.SizeMode.TRIMMED;
         if (this.dynamicAtlas?.commonMaterial)
@@ -228,6 +232,7 @@ export class YJCharLabel extends Component {
 
     private setScale() {
         if (this.maxWidth == 0) return;
+        this.getComponent(Layout).updateLayout();
         let ut = this.getComponent(UITransform);
         if (ut.width <= this.maxWidth)
             this.node.setScale(1, 1);

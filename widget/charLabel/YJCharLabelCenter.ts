@@ -43,8 +43,8 @@ export class YJCharLabelCenter extends Component {
                 let sf = labelNode.getComponent(Label).ttfSpriteFrame.clone();
                 sf._uuid = uuid;
                 this.spriteFrameMap[uuid] = sf;
-                resolve(this.getSpriteFrame(uuid));
                 labelNode.active = false;
+                resolve(this.getSpriteFrame(uuid));
             });
         });
     }
