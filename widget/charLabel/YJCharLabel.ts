@@ -154,13 +154,10 @@ export class YJCharLabel extends Component {
         }
     }
 
-    private setString(s: string) {
+    private async setString(s: string) {
         this.node.removeAllChildren();
         if (s == '') return;
-        this.getSpriteFrame(s).then(spriteFrame => {
-            let sprite = this.getComponent(Sprite) || this.addComponent(Sprite);
-            sprite.spriteFrame = spriteFrame;
-        });
+        await this.setSpriteFrame(this.node, s);
         this.scheduleOnce(() => {
             this.setScale();
         });
@@ -170,23 +167,22 @@ export class YJCharLabel extends Component {
         let uuid = this.getUuid(v);
         let sf = this.dynamicAtlas?.getSpriteFrameInstance(uuid);
         if (sf) return sf;
-        sf = YJCharLabelCenter.ins.getSpriteFrame(uuid);
+        sf = await YJCharLabelCenter.ins.getSpriteFrame(uuid);
         if (!sf)
             sf = await YJCharLabelCenter.ins.createSpriteFrame(this.createCharNode(v), uuid);
         sf._uuid = uuid;
         return this.dynamicAtlas?.packSpriteFrame(sf);
     }
 
-    private setSpriteFrame(node: Node, v: string) {
-        this.getSpriteFrame(v).then(spriteFrame => {
-            node.getComponent(Sprite).spriteFrame = spriteFrame;
-        });
+    private async setSpriteFrame(node: Node, v: string) {
+        let spriteFrame = await this.getSpriteFrame(v);
+        node.getComponent(Sprite).spriteFrame = spriteFrame;
     }
 
     private createCharNode(v: string): Node {
         let labelNode = new Node();
         labelNode.layer = Layers.Enum.UI_2D;
-        labelNode.addComponent(UITransform);
+        labelNode.addComponent(UITransform).setContentSize(10, 10);
         // this.charModels[v] = labelNode;
         let label = labelNode.addComponent(Label);
         // if (this.dynamicAtlas?.commonMaterial)

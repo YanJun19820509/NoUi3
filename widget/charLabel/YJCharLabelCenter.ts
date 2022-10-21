@@ -1,7 +1,9 @@
 
 import { _decorator, Component, Node, Color, SpriteFrame, Label, LabelOutline, LabelShadow, Layers, UIOpacity, UITransform, Font } from 'cc';
-import { EDITOR } from 'cc/env';
+import { DEBUG, EDITOR } from 'cc/env';
+import { resolve } from 'path';
 import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
+import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -24,28 +26,33 @@ export class YJCharLabelCenter extends Component {
 
     onLoad() {
         YJCharLabelCenter.ins = this;
+        if (DEBUG) window['YJCharLabelCenter'] = YJCharLabelCenter.ins;
     }
 
     onDestroy() {
         YJCharLabelCenter.ins = null;
     }
 
-    public getSpriteFrame(uuid: string): SpriteFrame | null {
+    public async getSpriteFrame(uuid: string): Promise<SpriteFrame | null> {
+        if (this.spriteFrameMap[uuid] == 1)
+            return new Promise<SpriteFrame | null>(resolve => {
+                this.scheduleOnce(() => {
+                    resolve(this.getSpriteFrame(uuid));
+                });
+            });
+
         let a: SpriteFrame = this.spriteFrameMap[uuid];
         if (a) return a.clone();
         return null;
     }
 
-    public createSpriteFrame(labelNode: Node, uuid: string): Promise<SpriteFrame> {
+    public async createSpriteFrame(labelNode: Node, uuid: string): Promise<SpriteFrame> {
+        this.spriteFrameMap[uuid] = 1;
         labelNode.parent = this.node;
-        return new Promise<SpriteFrame>(resolve => {
-            this.scheduleOnce(() => {
-                let sf = labelNode.getComponent(Label).ttfSpriteFrame.clone();
-                sf._uuid = uuid;
-                this.spriteFrameMap[uuid] = sf;
-                labelNode.active = false;
-                resolve(this.getSpriteFrame(uuid));
-            });
-        });
+        let sf = labelNode.getComponent(Label).ttfSpriteFrame.clone();
+        sf._uuid = uuid;
+        this.spriteFrameMap[uuid] = sf;
+        labelNode.active = false;
+        return this.getSpriteFrame(uuid);
     }
 }
