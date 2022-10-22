@@ -24,6 +24,7 @@ export class YJCharLabelCenter extends Component {
 
     private spriteFrameMap = {};
 
+
     onLoad() {
         YJCharLabelCenter.ins = this;
         if (DEBUG) window['YJCharLabelCenter'] = YJCharLabelCenter.ins;
@@ -49,10 +50,11 @@ export class YJCharLabelCenter extends Component {
     public async createSpriteFrame(labelNode: Node, uuid: string): Promise<SpriteFrame> {
         this.spriteFrameMap[uuid] = 1;
         labelNode.parent = this.node;
-        let sf = labelNode.getComponent(Label).ttfSpriteFrame.clone();
+        let sf = labelNode.getComponent(Label).ttfSpriteFrame;
         sf._uuid = uuid;
         this.spriteFrameMap[uuid] = sf;
-        labelNode.active = false;
+        labelNode.getComponent(Label)['_ttfSpriteFrame'] = null;
+        labelNode.destroy();
         return this.getSpriteFrame(uuid);
     }
 }

@@ -39,6 +39,9 @@ export class YJDynamicAtlas extends Component {
 
     private spriteFrameMap: any = {};
 
+    //控制合图是否旋转的总开关
+    private canRotate = false;
+
     onDestroy() {
         for (const uuid in this.spriteFrameMap) {
             (this.spriteFrameMap[uuid] as SpriteFrame).destroy();
@@ -76,7 +79,7 @@ export class YJDynamicAtlas extends Component {
 
     public packSpriteFrame(spriteFrame: SpriteFrame, canRotate = true): SpriteFrame {
         let uuid = spriteFrame._uuid;
-        let p = this.insertSpriteFrame(spriteFrame, true);
+        let p = this.insertSpriteFrame(spriteFrame, this.canRotate && canRotate);
         return this.createSpriteFrame(uuid, p);
     }
 
@@ -125,7 +128,7 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            const packedFrame = this.insertSpriteFrame(frame, canRotate);
+            const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
             else onFail?.();
@@ -177,7 +180,7 @@ export class YJDynamicAtlas extends Component {
 
         this.initAtlas();
 
-        const frame = this.atlas.insertSpriteFrame(spriteFrame, canRotate, () => {
+        const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
             console.log(`${this.node.name}动态图集无空间！`);
         });
         return frame;
