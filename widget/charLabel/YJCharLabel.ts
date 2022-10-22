@@ -94,7 +94,7 @@ export class YJCharLabel extends Component {
         }
         if (this.mode == YJCharLabelMode.Char && this._fs != this.fontSize) {
             this._fs = this.fontSize;
-            this.getComponent(Layout).spacingX = -this.fontSize / 5;
+            this.getComponent(Layout).spacingX = -this.fontSize / 4;
         }
     }
 
