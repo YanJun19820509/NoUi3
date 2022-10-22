@@ -42,7 +42,7 @@ export class YJCharLabel extends Component {
     lineHeight: number = 22;
     @property
     letterSpacing: number = 0;
-    @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制' })
+    @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制', visible() { return this.mode == YJCharLabelMode.Char; } })
     maxWidth: number = 0;
     @property
     italic: boolean = false;
@@ -65,9 +65,12 @@ export class YJCharLabel extends Component {
     private charPool: any = {};
     private usedCharNode: Node[] = [];
     private charModels: any = {};
+    private _fs: number = 0;
 
     onLoad() {
         if (!EDITOR) {
+            if (this.mode == YJCharLabelMode.String)
+                this.addComponent(Sprite);
             return;
         }
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
@@ -77,12 +80,21 @@ export class YJCharLabel extends Component {
         if (!EDITOR) return;
         if (this.text != this._text)
             this.setLabel(this.text);
-        if (this.mode == YJCharLabelMode.String && this.getComponent(Layout)) {
-            this.getComponent(Layout).destroy();
-        } else if (this.mode == YJCharLabelMode.Char && !this.getComponent(Layout)) {
-            let layout = this.addComponent(Layout);
-            layout.type = Layout.Type.HORIZONTAL;
-            layout.resizeMode = Layout.ResizeMode.CONTAINER;
+        if (this.mode == YJCharLabelMode.String) {
+            this.getComponent(Layout)?.destroy();
+            !this.getComponent(Sprite) && this.addComponent(Sprite);
+        } else if (this.mode == YJCharLabelMode.Char) {
+            if (!this.getComponent(Layout)) {
+                let layout = this.addComponent(Layout);
+                layout.type = Layout.Type.HORIZONTAL;
+                layout.resizeMode = Layout.ResizeMode.CONTAINER;
+                this._fs = 0;
+            }
+            this.getComponent(Sprite)?.destroy();
+        }
+        if (this.mode == YJCharLabelMode.Char && this._fs != this.fontSize) {
+            this._fs = this.fontSize;
+            this.getComponent(Layout).spacingX = -this.fontSize / 5;
         }
     }
 

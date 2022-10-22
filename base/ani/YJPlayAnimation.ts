@@ -64,7 +64,8 @@ export class YJPlayAnimation extends Component {
     }
 
     public stop() {
-        this.getComponent(Animation)?.stop();
+        let ani = this?.getComponent(Animation);
+        ani?.getState(ani?.clips[0]?.name)?.stop();
         this.backTo0();
     }
 
