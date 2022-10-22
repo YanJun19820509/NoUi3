@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
-import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
 import { no } from '../../no';
 import { YJCharLabelCenter } from './YJCharLabelCenter';
 const { ccclass, property, executeInEditMode } = _decorator;

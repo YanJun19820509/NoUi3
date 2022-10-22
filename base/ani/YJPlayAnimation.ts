@@ -48,9 +48,16 @@ export class YJPlayAnimation extends Component {
 
     public play(wrapMode?: AnimationClip.WrapMode) {
         let ani = this.getComponent(Animation);
+        if (ani.clips.length == 0) return;
         ani.on(Animation.EventType.PLAY, this.onPlay, this);
         ani.on(Animation.EventType.FINISHED, this.onFinished, this);
         let state = ani.getState(ani.clips[0].name);
+        if (!state) {
+            this.scheduleOnce(() => {
+                this.play(wrapMode);
+            });
+            return;
+        }
         if (wrapMode != undefined)
             state.wrapMode = wrapMode;
         state.play();
