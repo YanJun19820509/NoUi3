@@ -33,6 +33,7 @@ export class YJHttpRequest implements YJSocketInterface {
         return new Promise<any>(resolve => {
             this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, v => {
                 let a = decode(v, encryptType);
+                no.log('JSON.parse', 'YJHttpRequest.getDataFromServer', a);
                 resolve(JSON.parse(a));
             }, v => {
                 resolve(null);

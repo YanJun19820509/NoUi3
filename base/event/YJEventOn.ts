@@ -47,6 +47,10 @@ export class YJEventOn extends Component {
         no.evn.targetOff(this);
     }
 
+    onDestroy() {
+        this.onDisable();
+    }
+
     public a_trigger(e: any, type?: string) {
         this._on(type || e);
     }

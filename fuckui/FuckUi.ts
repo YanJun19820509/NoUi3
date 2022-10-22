@@ -56,8 +56,10 @@ export class FuckUi extends Component {
         if (this.saveIgnore && d == this._oldData) return;
         this._oldData = d;
 
-        if (d != '')
+        if (d != '') {
+            no.log('JSON.parse', 'FuckUi.setData', d);
             d = JSON.parse(d);
+        }
 
         this.logValue(d);
         this.onDataChange(d);
@@ -97,8 +99,10 @@ export class FuckUi extends Component {
     public resetData(): void {
         if (!this._oldData) return;
         let d = this._oldData;
-        if (d != '')
+        if (d != '') {
+            no.log('JSON.parse', 'FuckUi.resetData', d);
             d = JSON.parse(d);
+        }
         this.logValue(d);
         this.onDataChange(d);
     }

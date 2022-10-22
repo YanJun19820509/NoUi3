@@ -760,6 +760,7 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
+        no.log('JSON.parse', 'clone');
         if (d instanceof Array) return JSON.parse(JSON.stringify(d));
         else if (d instanceof Object) return instantiate(d);
         else return d;
@@ -1460,6 +1461,7 @@ export namespace no {
      * @returns 
      */
     export function parse2Json(s: string): any {
+        no.log('JSON.parse', 'parse2Json', s);
         return JSON.parse(s, function (k, v) {
             if (!WECHAT)//微信小游戏平台不支持
                 if (v.indexOf && v.indexOf('function') > -1) {
@@ -1522,6 +1524,7 @@ export namespace no {
      */
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let now = sysTime.now;
+        no.log('JSON.parse', 'resetValueCheck');
         let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
         let lt = lastResetTime[dataKey];
 
@@ -1590,6 +1593,7 @@ export namespace no {
 
         /**将json string转成data */
         public set json(v: string) {
+            no.log('JSON.parse', 'Data.json', v);
             this._data = JSON.parse(v);
             this.emit(Data.DataChangeEvent, this);
         }
@@ -1710,7 +1714,8 @@ export namespace no {
         public getLocal(key: string): any {
             key = `${this._localPreKey}_${key}`;
             let a = localStorage.getItem(key);
-            if (a == null) return null;
+            if (a == null || a == undefined || a == 'undefined') return null;
+            no.log('JSON.parse', 'getLocal', key, a);
             return JSON.parse(a);
         }
         /**
@@ -3050,6 +3055,7 @@ export namespace no {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
                     var response = xhr.responseText;
+                    no.log('JSON.parse', 'httpRequest', response);
                     let a = JSON.parse(response);
                     cb?.(a);
                 } else if (xhr.readyState == 4 && xhr.status == 0) {
