@@ -276,20 +276,23 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        console.log.call(console, '#NoUi#', Evns);
+        console.log.call(console, '#NoUi#Log', Evns);
     }
 
     export function err(...Evns: any[]): void {
-        console.error.call(console, '#NoUi#', Evns);
+        console.error.call(console, '#NoUi#Err', Evns);
     }
 
-    let _uuid = 0;
     /**
      * 创建唯一标识
      * @returns 
      */
     export function uuid(): string {
-        return `yj${_uuid++}`;
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     /**
@@ -760,10 +763,14 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        no.log('JSON.parse', 'clone');
-        if (d instanceof Array) return JSON.parse(JSON.stringify(d));
+        if (d instanceof Array)
+            try {
+                return JSON.parse(JSON.stringify(d));
+            } catch (e) {
+                no.err('JSON.parse', 'clone');
+            }
         else if (d instanceof Object) return instantiate(d);
-        else return d;
+        return d;
     }
 
     /**
@@ -1461,16 +1468,20 @@ export namespace no {
      * @returns 
      */
     export function parse2Json(s: string): any {
-        no.log('JSON.parse', 'parse2Json', s);
-        return JSON.parse(s, function (k, v) {
-            if (!WECHAT)//微信小游戏平台不支持
-                if (v.indexOf && v.indexOf('function') > -1) {
-                    // return eval("(function(){return " + v + " })()");
-                    let FN = Function;
-                    return new FN(`return ${v}`)();
-                }
-            return v;
-        });
+        try {
+            return JSON.parse(s, function (k, v) {
+                if (!WECHAT)//微信小游戏平台不支持
+                    if (v.indexOf && v.indexOf('function') > -1) {
+                        // return eval("(function(){return " + v + " })()");
+                        let FN = Function;
+                        return new FN(`return ${v}`)();
+                    }
+                return v;
+            });
+        } catch (e) {
+            no.err('JSON.parse', 'parse2Json', s);
+            return null;
+        }
     }
 
     /**
@@ -1524,14 +1535,17 @@ export namespace no {
      */
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let now = sysTime.now;
-        no.log('JSON.parse', 'resetValueCheck');
-        let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
-        let lt = lastResetTime[dataKey];
+        try {
+            let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
+            let lt = lastResetTime[dataKey];
 
-        if (!lt || now >= lt) {
-            dataCache.setLocal(dataKey, value);
-            lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
-            dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
+            if (!lt || now >= lt) {
+                dataCache.setLocal(dataKey, value);
+                lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
+                dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
+            }
+        } catch (e) {
+            no.err('JSON.parse', 'resetValueCheck');
         }
     }
 
@@ -1593,8 +1607,11 @@ export namespace no {
 
         /**将json string转成data */
         public set json(v: string) {
-            no.log('JSON.parse', 'Data.json', v);
-            this._data = JSON.parse(v);
+            try {
+                this._data = JSON.parse(v);
+            } catch (e) {
+                no.err('JSON.parse', 'Data.json', v);
+            }
             this.emit(Data.DataChangeEvent, this);
         }
 
@@ -1715,8 +1732,12 @@ export namespace no {
             key = `${this._localPreKey}_${key}`;
             let a = localStorage.getItem(key);
             if (a == null || a == undefined || a == 'undefined') return null;
-            no.log('JSON.parse', 'getLocal', key, a);
-            return JSON.parse(a);
+            try {
+                return JSON.parse(a);
+            } catch (e) {
+                no.err('JSON.parse', 'getLocal', key, a);
+                return null;
+            }
         }
         /**
          * 写入本地数据
@@ -3055,9 +3076,13 @@ export namespace no {
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
                     var response = xhr.responseText;
-                    no.log('JSON.parse', 'httpRequest', response);
-                    let a = JSON.parse(response);
-                    cb?.(a);
+                    try {
+                        let a = JSON.parse(response);
+                        cb?.(a);
+                    } catch (e) {
+                        no.err('JSON.parse', 'httpRequest', response);
+                        cb?.(null);
+                    }
                 } else if (xhr.readyState == 4 && xhr.status == 0) {
                     cb?.('no_server');
                 }
