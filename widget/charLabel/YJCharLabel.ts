@@ -40,8 +40,6 @@ export class YJCharLabel extends Component {
     fontFamily: string = 'Arial';
     @property
     lineHeight: number = 22;
-    @property
-    letterSpacing: number = 0;
     @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制', visible() { return this.mode == YJCharLabelMode.Char; } })
     maxWidth: number = 0;
     @property
@@ -62,10 +60,6 @@ export class YJCharLabel extends Component {
     dynamicAtlas: YJDynamicAtlas = null;
 
     private _text: string;
-    private charPool: any = {};
-    private usedCharNode: Node[] = [];
-    private charModels: any = {};
-    private _fs: number = 0;
 
     onLoad() {
         if (!EDITOR) {
@@ -78,24 +72,29 @@ export class YJCharLabel extends Component {
 
     update() {
         if (!EDITOR) return;
-        if (this.text != this._text)
-            this.setLabel(this.text);
         if (this.mode == YJCharLabelMode.String) {
             this.getComponent(Layout)?.destroy();
-            !this.getComponent(Sprite) && this.addComponent(Sprite);
+            if (!this.getComponent(Sprite)) {
+                this.addComponent(Sprite);
+                this._text = null;
+            }
         } else if (this.mode == YJCharLabelMode.Char) {
             if (!this.getComponent(Layout)) {
                 let layout = this.addComponent(Layout);
                 layout.type = Layout.Type.HORIZONTAL;
                 layout.resizeMode = Layout.ResizeMode.CONTAINER;
-                this._fs = 0;
+                this._text = null;
             }
             this.getComponent(Sprite)?.destroy();
+            let sp = this.italic ? -this.fontSize / 4 : -2;
+            let s = this.getComponent(Layout).spacingX;
+            if (s != sp) {
+                this.getComponent(Layout).spacingX = sp;
+                this._text = null;
+            }
         }
-        if (this.mode == YJCharLabelMode.Char && this._fs != this.fontSize) {
-            this._fs = this.fontSize;
-            this.getComponent(Layout).spacingX = -this.fontSize / 4;
-        }
+        if (this.text != this._text)
+            this.setLabel(this.text);
     }
 
     public set string(v: string) {
