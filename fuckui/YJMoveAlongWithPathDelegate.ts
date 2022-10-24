@@ -55,4 +55,10 @@ export class YJMoveAlongWithPathDelegate extends Component {
     public onSpecialStep(d: any): boolean {
         return false;
     }
+    /**
+     * 抵达某个点位时
+     * @param d 
+     */
+    public onReach(d: any) { }
+
 }

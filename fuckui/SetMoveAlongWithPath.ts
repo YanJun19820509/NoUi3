@@ -136,6 +136,7 @@ export class SetMoveAlongWithPath extends FuckUi {
         this.delegate?.onMoving(this);
         this.moveDuration -= dt;
         if (this.moveDuration <= 0) {
+            this.delegate?.onReach(this.paths[this.step]);
             this.step++;
             this.move();
         }
