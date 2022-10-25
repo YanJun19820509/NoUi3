@@ -50,14 +50,9 @@ export class SetMoveAlongWithPath extends FuckUi {
         }
     }
 
-    private aa = 0;
     private move(): void {
         let p1 = this.node.position,
             p = this.paths[this.step];
-        if (this.aa == 0 && this.step == 1) this.aa++;
-        else if (this.aa > 0 && this.step == 1) {
-            console.error(this.uuid, this.step);
-        }
         if (p == null) {
             this.delegate?.onEnd();
             if (this.circular) {
@@ -147,7 +142,6 @@ export class SetMoveAlongWithPath extends FuckUi {
         this.moveVector = null;
         this.speedChanged = false;
         this.paths = [];
-        this.aa = 0;
     }
 
     public a_toNextStep() {

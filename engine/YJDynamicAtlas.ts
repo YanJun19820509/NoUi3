@@ -39,6 +39,8 @@ export class YJDynamicAtlas extends Component {
 
     private spriteFrameMap: any = {};
 
+    private waitToPackCompNum: number = 0;
+
     //控制合图是否旋转的总开关
     private canRotate = false;
 
@@ -128,6 +130,7 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
+            this.waitToPackCompNum++;
             const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
@@ -190,9 +193,14 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
-        let a = !dynamicAtlasManager.enabled;
+        let a = !dynamicAtlasManager.enabled && this.enabled;
         return a;
     }
+
+    public needWait(): boolean {
+        return this.waitToPackCompNum == 10;
+    }
+
 
     // public static setDynamicAtlasToRenderComponent(node: Node, dynamicAtlas: YJDynamicAtlas): void {
     //     let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
@@ -225,7 +233,10 @@ export class YJDynamicAtlas extends Component {
 
     //////////////EDITOR/////////////
     update() {
-        if (!EDITOR) return;
+        if (!EDITOR) {
+            this.waitToPackCompNum = 0;
+            return;
+        }
         if (!this.autoSetSubMaterial) return;
         this.autoSetSubMaterial = false;
         let renderComps = this.getComponentsInChildren(RenderComponent);

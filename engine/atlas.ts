@@ -1,4 +1,4 @@
-import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component, Label } from "cc";
 import { EDITOR } from "cc/env";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
@@ -428,17 +428,21 @@ js.mixin(dynamicAtlasManager, {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
         if (frame?.original) return;
+        if (!comp.node.parent) return;
         let a: any = comp.getComponent('YJDynamicTexture');
+        // no.log('packToDynamicAtlas', comp['string'])
         if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
             a = comp.addComponent('YJDynamicTexture');
             let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
             (a as any).dynamicAtlas = b.dynamicAtlas;
             (a as any).canRotate = b.canRotate;
+            (a as any).needClear = true;
             a.setCommonMaterial();
-            setTimeout(() => {
-                a?.pack();
-            }, 17);
-        } else
-            a?.pack();
+            // setTimeout(() => {
+            //     a?.pack();
+            // }, 17);
+        } else if (a) {
+            a.pack();
+        }
     }
 });

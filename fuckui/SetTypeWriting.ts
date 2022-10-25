@@ -1,8 +1,10 @@
 
-import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj } from 'cc';
+import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack, LabelOutline, Layers, UITransform, math, UIOpacity } from 'cc';
+import { EDITOR } from 'cc/env';
+import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property } = _decorator;
+const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -23,6 +25,7 @@ const { ccclass, property } = _decorator;
  * }
  */
 @ccclass('SetTypeWritting')
+@executeInEditMode()
 export class SetTypeWritting extends FuckUi {
     @property({ displayName: '每秒打字个数', min: 1, step: 1 })
     speed: number = 3;
@@ -32,11 +35,21 @@ export class SetTypeWritting extends FuckUi {
     onStop: no.EventHandlerInfo[] = [];
 
     private _paragraphs: string[];
-    private _content: string[];
+    private _content: any[];
     private _idx: number;
     private _label: Label | RichText;
     private _isRichText: boolean = false;
     private _br: string = '\n';
+
+    update() {
+        if (!EDITOR) return;
+        if (this.getComponent(RichText)?.enabled) this.getComponent(RichText).enabled = false;
+    }
+
+    onDisable() {
+        this.node.removeAllChildren();
+        this._x = null;
+    }
 
     protected onDataChange(data: any) {
         if (!this._label) {
@@ -53,16 +66,27 @@ export class SetTypeWritting extends FuckUi {
         }
         if (data.stop) {
             this.unscheduleAllCallbacks();
-            this._label.string = this._paragraphs.join(this._br);
+            let str = this._paragraphs.join(this._br);
+            if (!this._isRichText)
+                this._label.string = str;
+            else
+                this.createRichTextNode(str);
             no.EventHandlerInfo.execute(this.onStop);
         } else if (data.next) {
             this.unscheduleAllCallbacks();
-            this._label.string = '';
+            let str = '';
             for (let i = 0, n = Math.min(this._idx, this._paragraphs.length - 1); i <= n; i++) {
-                this._label.string += this._paragraphs[i] + this._br;
+                str += this._paragraphs[i] + this._br;
             }
-            this.setParagraph();
+            if (!this._isRichText) {
+                this._label.string = str;
+                this.setParagraph();
+            } else
+                this.createRichTextNode(str);
+
         } else {
+            this.node.removeAllChildren();
+            this._x = null;
             this._label.string = '';
             this._idx = -1;
             this.setParagraph();
@@ -82,6 +106,7 @@ export class SetTypeWritting extends FuckUi {
 
     private writing() {
         this.setStr();
+        let t = Math.max(1 / this.speed, 1 / 30);
         this.scheduleOnce(() => {
             if (this._content.length == 0) {
                 this.setWrap();
@@ -89,22 +114,48 @@ export class SetTypeWritting extends FuckUi {
                     this.setParagraph();
                 }, this.duration);
             } else this.writing();
-        }, 1 / this.speed);
+        }, t);
     }
 
     private setStr() {
-        this._label.string += this._content.shift();
+        let a = this._content.shift();
+        if (!this._isRichText)
+            this._label.string += a;
+        else {
+            this.createLableNode(a);
+        }
     }
 
     private setWrap() {
         this._label.string += this._br;
     }
 
-    private splitHtmlString(htmlStr: string): string[] {
+    private splitHtmlString(htmlStr: string): any[] {
         let a = new HtmlTextParser().parse(htmlStr);
-        let b: string[] = [];
+        let b: any[] = [];
         a.forEach(aa => {
-            b = b.concat(this.createHtmlStrings(aa));
+            b = b.concat(this.singleLetterWithStyle(aa));
+        });
+        return b;
+    }
+
+    private singleLetterWithStyle(o: IHtmlTextParserResultObj): any[] {
+        if (!o.style) return o.text.split('');
+        if (o.text == '' && o.style.isNewLine) return [o];
+        let a = o.text.split(''), b: any[] = [];
+        let richText = this.getComponent(RichText),
+            fontSize = richText.fontSize,
+            fontFamily = richText.fontFamily,
+            lineHeight = richText.lineHeight;
+        let style: IHtmlTextParserStack = o.style || {};
+        if (!style.size) style.size = fontSize;
+        a.forEach(aa => {
+            b[b.length] = {
+                text: aa,
+                style: o.style,
+                fontFamily: fontFamily,
+                lineHeight: lineHeight
+            };
         });
         return b;
     }
@@ -126,5 +177,114 @@ export class SetTypeWritting extends FuckUi {
             b[b.length] = aa;
         });
         return b;
+    }
+
+    private createLableNode(a: { text: string, style: IHtmlTextParserStack, fontFamily: string, lineHeight: number }) {
+        if (a.style.isNewLine) {
+            this.setNewLine();
+            return;
+        }
+        let labelNode = new Node();
+        labelNode.layer = Layers.Enum.UI_2D;
+        let ut = labelNode.addComponent(UITransform);
+        ut.setContentSize(10, 10);
+        ut.setAnchorPoint(0, 0);
+        labelNode.addComponent(UIOpacity).opacity = 0;
+        let label = labelNode.addComponent(Label);
+        label.color = no.str2Color(a.style.color);
+        label.fontFamily = a.fontFamily;
+        label.fontSize = a.style.size;
+        label.lineHeight = a.lineHeight;
+        label.isItalic = a.style.italic;
+        label.isBold = a.style.bold;
+        label.isUnderline = a.style.underline;
+        label.cacheMode = Label.CacheMode.BITMAP;
+        label.verticalAlign = Label.VerticalAlign.TOP;
+        if (a.style.outline) {
+            let outline = labelNode.addComponent(LabelOutline);
+            outline.color = no.str2Color(a.style.outline.color);
+            outline.width = a.style.outline.width;
+        }
+        label.string = a.text;
+        let dynamicTexture = this.getComponent(YJDynamicTexture);
+        if (dynamicTexture && dynamicTexture.enabled) {
+            labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
+            label.customMaterial = dynamicTexture.dynamicAtlas.commonMaterial;
+        }
+        labelNode.parent = this.node;
+        this.scheduleOnce(() => {
+            this.setPos(labelNode);
+            labelNode.getComponent(UIOpacity).opacity = 255;
+        });
+    }
+
+    private createRichTextNode(v: string) {
+        let rt = this.getComponent(RichText);
+        let labelNode = new Node();
+        labelNode.layer = Layers.Enum.UI_2D;
+        let ut = labelNode.addComponent(UITransform);
+        ut.setContentSize(10, 10);
+        ut.setAnchorPoint(0, 0);
+        labelNode.addComponent(UIOpacity).opacity = 0;
+        let label = labelNode.addComponent(RichText);
+        label.fontFamily = rt.fontFamily;
+        label.fontSize = rt.fontSize;
+        label.lineHeight = rt.lineHeight;
+        label.maxWidth = rt.maxWidth;
+        label.cacheMode = Label.CacheMode.BITMAP;
+        label.string = v;
+        let dynamicTexture = this.getComponent(YJDynamicTexture);
+        if (dynamicTexture && dynamicTexture.enabled) {
+            labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
+        }
+        labelNode.parent = this.node;
+        this.scheduleOnce(() => {
+            this._x = null;
+            this.setPos(labelNode);
+            labelNode.getComponent(UIOpacity).opacity = 255;
+            this.setNewLine();
+            this.setParagraph();
+            let cs = this.node.children;
+            for (let i = cs.length - 1; i >= 0; i--) {
+                let c = cs[i];
+                if (c.uuid != labelNode.uuid)
+                    c.removeFromParent();
+            }
+        });
+    }
+
+    private _x: number;
+    private _y: number;
+    private _maxY: number;
+    private _anc: math.Vec2;
+    private _width: number;
+    private setPos(node: Node) {
+        if (this._x == null) {
+            this._anc = this.node.getComponent(UITransform).anchorPoint;
+            this._width = this.node.getComponent(UITransform).width;
+            this._x = (0 - this._anc.x) * this._width;
+            this._y = 0;
+            this._maxY = 0;
+        }
+        const size = node.getComponent(UITransform).contentSize;
+        this.checkNewLine(size.width);
+        node.setPosition(this._x, this._y - size.height);
+        this._x += size.width;
+        if (size.height > this._maxY) this._maxY = size.height;
+    }
+
+    private checkNewLine(width: number) {
+        if (this._x + width > (1 - this._anc.x) * this._width) {
+            this._y -= this._maxY;
+            this._x = (0 - this._anc.x) * this._width;
+        }
+    }
+
+    /**
+     * 换行
+     */
+    private setNewLine() {
+        this._y -= this._maxY;
+        this._x = (0 - this._anc.x) * this._width;
     }
 }

@@ -66,6 +66,12 @@ export class YJDynamicTexture extends Component {
         }
         frame = frame || sprite?.spriteFrame;
         if (!frame) return;
+        if (this.dynamicAtlas?.needWait()) {
+            this.scheduleOnce(() => {
+                this.packSpriteFrame(frame);
+            });
+            return;
+        }
         this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, this.canRotate, () => {
             sprite.spriteFrame = frame;
         });
@@ -82,6 +88,12 @@ export class YJDynamicTexture extends Component {
         if (!label) return;
         if (!this.enabled || !this.dynamicAtlas?.isWork) {
             label.string = text;
+            return;
+        }
+        if (this.dynamicAtlas?.needWait()) {
+            this.scheduleOnce(() => {
+                this.packLabelFrame(text);
+            });
             return;
         }
 
