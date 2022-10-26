@@ -165,8 +165,8 @@ export class YJDynamicAtlas extends Component {
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                if (!frame.original && frame.name.indexOf('default_') == -1)
-                    no.assetBundleManager.release(frame);
+                // if (!frame.original && frame.name.indexOf('default_') == -1)
+                //     no.assetBundleManager.release(frame);
                 this.spriteFrameMap[frame._uuid] = ff;
             }
         }
@@ -198,7 +198,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     public needWait(): boolean {
-        return this.waitToPackCompNum == 10;
+        return this.waitToPackCompNum == 30;
     }
 
 

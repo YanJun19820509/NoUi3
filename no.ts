@@ -1939,7 +1939,7 @@ export namespace no {
          * @param callback
          */
         private load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
-            no.log('load', bundleName, fileName);
+            // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {

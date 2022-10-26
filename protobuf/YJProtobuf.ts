@@ -62,6 +62,40 @@ export class YJProtobuf {
         return msg_type.toObject(msg);
     }
 
+    public messagesToString(): string[] {
+        let ns = this._root.lookup(this._pkgName);
+        let arr = ns.nestedArray;
+        let s: string[] = [];
+        let t = 'export type {name} = { {props} };';
+        arr.forEach((a: { name: string, fields: any }) => {
+            s[s.length] = no.formatString(t, { name: a.name, props: this.fieldsToString(a.fields) });
+        });
+        return s;
+    }
+
+    private fieldsToString(fields: any): string {
+        let p = '{name}{required}: {type}{repeated}';
+        let m = '{ [k: {keyType}]: {type} }';
+        let s: string[] = [];
+        for (const key in fields) {
+            let f: { name: string, type: string, repeated: boolean, required: boolean, map: boolean, keyType: string } = fields[key];
+            s[s.length] = no.formatString(p, { name: f.name, repeated: f.repeated ? '[]' : '', required: f.required ? '' : '?', type: f.map ? no.formatString(m, { keyType: this.typeMap(f.keyType), type: this.typeMap(f.type) }) : this.typeMap(f.type) });
+        }
+        return s.join(', ');
+    }
+
+    private typeMap(key: string): string {
+        return {
+            string: 'string',
+            sint32: 'number',
+            sint64: 'number',
+            int32: 'number',
+            int64: 'number',
+            bytes: 'Uint8Array'
+        }[key] || key;
+    }
+
+
     private getMessageType(msgName: string): any {
         return this._root.lookupType(`${this._pkgName}.${msgName}`);
     }
