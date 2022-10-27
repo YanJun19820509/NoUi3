@@ -34,6 +34,8 @@ export class SetList extends FuckUi {
     @property({ displayName: '列数', step: 1, min: 1 })
     columnNumber: number = 1;
 
+    @property({ tooltip: '仅第一次创建时有创建间隔' })
+    onlyFirstTime: boolean = false;
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
 
@@ -72,6 +74,8 @@ export class SetList extends FuckUi {
     private lastIndex: number = 0;
     private _loaded: boolean = false;
     private touched: boolean = false;
+    private isFirst: boolean = true;
+    private waitTime: number;
 
     async onLoad() {
         super.onLoad();
@@ -127,10 +131,18 @@ export class SetList extends FuckUi {
     }
 
     protected async onDataChange(data: any) {
+        if (this.onlyFirstTime) {
+            if (this.isFirst) {
+                this.isFirst = false;
+                this.waitTime = this.wait;
+            } else this.waitTime = 0;
+        } else {
+            this.waitTime = this.wait;
+        }
         this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
-        if (this.wait > 0) {
+        if (this.waitTime > 0) {
             for (let i = 0, n = this.listItems.length; i < n; i++) {
                 let item = this.listItems[i];
                 item.active = false;
@@ -204,12 +216,12 @@ export class SetList extends FuckUi {
             item.active = true;
         } else item.active = false;
         i++;
-        if (this.stopWait || this.wait == 0)
+        if (this.stopWait || this.waitTime == 0)
             this.setItem(start, i);
         else
             this.scheduleOnce(() => {
                 this.setItem(start, i);
-            }, this.wait);
+            }, this.waitTime);
     }
 
     private setItemData(item: Node, data = []) {

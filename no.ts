@@ -1656,9 +1656,14 @@ export namespace no {
             this.handleDataChange();
         }
 
-        private async handleDataChange() {
-            if (await Throttling.ins(this).wait(0.1, true))
-                this.emit(Data.DataChangeEvent, this);
+        private aa: boolean = false;
+        private handleDataChange() {
+            if (this.aa) return;
+            this.aa = true;
+            this.emit(Data.DataChangeEvent, this);
+            setTimeout(() => {
+                this.aa = false;
+            }, 500);
         }
 
         /**

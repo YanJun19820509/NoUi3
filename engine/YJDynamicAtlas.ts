@@ -34,6 +34,8 @@ export class YJDynamicAtlas extends Component {
     commonMaterial: Material = null;
     @property({ visible() { return EDITOR; } })
     autoSetSubMaterial: boolean = false;
+    @property({ tooltip: '文本是否合图' })
+    packLabel: boolean = true;
 
     public atlas: Atlas;
 
@@ -122,7 +124,10 @@ export class YJDynamicAtlas extends Component {
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
     public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
-        if (!this.isWork) return;
+        if (!this.isWork || (comp instanceof Label && !this.packLabel)) {
+            onFail?.();
+            return;
+        }
 
         if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
             onFail?.();

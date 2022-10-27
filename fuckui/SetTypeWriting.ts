@@ -49,6 +49,7 @@ export class SetTypeWritting extends FuckUi {
     onDisable() {
         this.node.removeAllChildren();
         this._x = null;
+        this._maxY = 0;
     }
 
     protected onDataChange(data: any) {
@@ -87,6 +88,7 @@ export class SetTypeWritting extends FuckUi {
         } else {
             this.node.removeAllChildren();
             this._x = null;
+            this._maxY = 0;
             this._label.string = '';
             this._idx = -1;
             this.setParagraph();
@@ -180,6 +182,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private createLableNode(a: { text: string, style: IHtmlTextParserStack, fontFamily: string, lineHeight: number }) {
+        if (a.lineHeight > this._maxY) this._maxY = a.lineHeight;
         if (a.style.isNewLine) {
             this.setNewLine();
             return;
@@ -224,7 +227,7 @@ export class SetTypeWritting extends FuckUi {
         labelNode.layer = Layers.Enum.UI_2D;
         let ut = labelNode.addComponent(UITransform);
         ut.setContentSize(10, 10);
-        ut.setAnchorPoint(0, 0);
+        ut.setAnchorPoint(0, 1);
         labelNode.addComponent(UIOpacity).opacity = 0;
         let label = labelNode.addComponent(RichText);
         label.fontFamily = rt.fontFamily;
@@ -240,6 +243,7 @@ export class SetTypeWritting extends FuckUi {
         labelNode.parent = this.node;
         this.scheduleOnce(() => {
             this._x = null;
+            this._maxY = 0;
             this.setPos(labelNode);
             labelNode.getComponent(UIOpacity).opacity = 255;
             this.setNewLine();
@@ -264,13 +268,12 @@ export class SetTypeWritting extends FuckUi {
             this._width = this.node.getComponent(UITransform).width;
             this._x = (0 - this._anc.x) * this._width;
             this._y = 0;
-            this._maxY = 0;
         }
-        const size = node.getComponent(UITransform).contentSize;
+        let ut = node.getComponent(UITransform);
+        const size = ut.contentSize;
         this.checkNewLine(size.width);
-        node.setPosition(this._x, this._y - size.height);
+        node.setPosition(this._x, this._y - size.height * (1 - ut.anchorY));
         this._x += size.width;
-        if (size.height > this._maxY) this._maxY = size.height;
     }
 
     private checkNewLine(width: number) {

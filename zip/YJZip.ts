@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, assetManager, BufferAsset } from 'cc';
 const { ccclass, property } = _decorator;
 import { no } from '../../NoUi3/no';
-import * as JSZip from './jszip.min.js';
 
 /**
  * Predefined variables
@@ -24,7 +23,7 @@ export class YJZip {
                 no.log(err);
                 onErr && onErr();
             } else {
-                let jszip = JSZip.default();
+                let jszip = new window['JSZip']();
                 jszip.loadAsync(file.buffer())
                     .then(function (zip) {
                         let total = 0;
