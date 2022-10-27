@@ -119,7 +119,7 @@ export class YJLoadAssets extends Component {
     public release() {
         if (EDITOR) return;
         this.atlasInfos.forEach(info => {
-            info.release((file: SpriteAtlas) => {
+            info.release && info.release((file: SpriteAtlas) => {
                 let a = file.getSpriteFrames();
                 a.forEach(sf => {
                     sf._resetDynamicAtlasFrame();
@@ -127,7 +127,7 @@ export class YJLoadAssets extends Component {
             }, true);
         });
         this.spriteFrameInfos.forEach(info => {
-            info.release(null, true);
+            info.release && info.release(null, true);
         });
     }
 

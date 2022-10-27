@@ -123,6 +123,14 @@ export class YJToggleGroupManager extends Component {
         }
     }
 
+    public a_checkWithoutEvent(idx: number) {
+        idx = Number(idx);
+        let items = this.getComponentsInChildren(Toggle);
+        for (let i = 0, n = items.length; i < n; i++) {
+            items[i].setIsCheckedWithoutNotify(i == idx);
+        }
+    }
+
     private setCheckByUuid(uuid: string) {
         this.scheduleOnce(() => {
             let items = this.getComponentsInChildren(Toggle);

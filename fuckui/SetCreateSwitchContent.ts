@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -26,20 +27,20 @@ class ContentInfo {
 
     private loadedNode: Node;
 
-    public async load(): Promise<Node> {
-        if (this.loadedNode) {
-            return this.loadedNode;
-        } else {
-            this.loadedNode = await this.prefab.loadPrefab();
-            if (this.loadedNode.getComponent(YJLoadAssets)) {
-                await this.loadedNode.getComponent(YJLoadAssets).load();
-            }
-            return this.loadedNode;
+    public async loadTo(parent: Node) {
+        this.loadedNode = await this.prefab.loadPrefab();
+        if (this.loadedNode.getComponent(YJLoadAssets)) {
+            await this.loadedNode.getComponent(YJLoadAssets).load();
         }
+        this.loadedNode.parent = parent;
     }
 
-    public hide(): void {
-        if (this.prefab.loaded) this.prefab.loadedNode.active = false;
+    public show(v: boolean): void {
+        if (this.loadedNode) this.loadedNode.active = v;
+    }
+
+    public get isLoaded(): boolean {
+        return !!this.loadedNode;
     }
 
 }
@@ -64,19 +65,15 @@ export class SetCreateSwitchContent extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        for (let i = 0, n = this.contents.length; i < n; i++) {
-            let info = this.contents[i];
-            if (info.name == data) {
-                this.showContent(info);
-                break;
-            }
-        }
+        if (typeof data == 'string') this.a_showByName(data);
+        else if (typeof data == 'number') this.a_showByIndex(data);
     }
 
     private async showContent(info: ContentInfo) {
-        let node = await info.load();
-        node.parent = this.container;
-        node.active = true;
+        if (!info) return;
+        if (!info.isLoaded) {
+            await info.loadTo(this.container);
+        }
         this.scheduleOnce(() => {
             this.hideContent(info.name);
         });
@@ -84,12 +81,17 @@ export class SetCreateSwitchContent extends FuckUi {
 
     private hideContent(exceptName: string) {
         this.contents?.forEach(info => {
-            if (info.name != exceptName) info.hide();
+            info.show(info.name == exceptName);
         });
     }
 
-    public a_show(name: string) {
-        this.setData(name);
+    public a_showByName(name: string) {
+        let i = no.indexOfArray(this.contents, name, 'name');
+        if (i == -1) return;
+        this.a_showByIndex(i);
     }
 
+    public a_showByIndex(i: number) {
+        this.showContent(this.contents[Number(i)]);
+    }
 }

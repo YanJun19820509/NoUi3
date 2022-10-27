@@ -1,5 +1,8 @@
 
 import { _decorator, PageView, Vec2, EventTouch, UITransform } from 'cc';
+import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { no } from '../no';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -19,6 +22,15 @@ const { ccclass, property, menu } = _decorator;
 export class YJPageView extends PageView {
     @property({ displayName: '触发切换的偏移量' })
     offset: number = 30;
+
+    @property({ type: YJLoadPrefab })
+    pagePrefabs: YJLoadPrefab[] = [];
+
+    @property
+    releasePagesOnDisable: boolean = true;
+
+    @property({ type: no.EventHandlerInfo })
+    onPageChanged: no.EventHandlerInfo[] = [];
 
     private max: number;
 
@@ -61,5 +73,46 @@ export class YJPageView extends PageView {
 
     public a_onTouchCancel(event: EventTouch, start: Vec2, end: Vec2) {
         this.a_onTouchEnd(event, start, end);
+    }
+
+    public a_show(idx: number) {
+        if (this.curPageIdx == idx) return;
+        this.scrollToPage(idx, 0.1);
+    }
+
+    public a_removeAllPages() {
+        let pages = this.getPages();
+        pages?.forEach(p => {
+            p.destroy();
+        });
+    }
+
+    onLoad() {
+        this.node.on(PageView.EventType.SCROLL_ENDED, this.onScrollEnded, this);
+        let i = 0;
+        this.schedule(() => {
+            this.createPage(i++);
+        }, 0.05, this.pagePrefabs.length - 1);
+    }
+
+    onDisable() {
+        if (!this.releasePagesOnDisable) return;
+        this.a_removeAllPages();
+    }
+
+    onDestroy() {
+        this.node.targetOff(this);
+    }
+
+    private async createPage(i: number) {
+        let p = this.pagePrefabs[i];
+        if (!p) return;
+        let n = await p.loadPrefab();
+        await n.getComponent(YJLoadAssets)?.load();
+        this.addPage(n);
+    }
+
+    private onScrollEnded() {
+        no.EventHandlerInfo.execute(this.onPageChanged, this.curPageIdx);
     }
 }
