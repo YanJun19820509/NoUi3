@@ -49,6 +49,8 @@ export class SetList extends FuckUi {
 
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = true;
+    @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
+    recreateOnEnable: boolean = false;
 
     @property({ displayName: '设置元素模板相关数据' })
     setTemplateInfo: boolean = false;
@@ -115,13 +117,19 @@ export class SetList extends FuckUi {
         }, this);
     }
 
+    onEnable() {
+        if (this.clearOnDisable && this.recreateOnEnable) {
+            this.resetData();
+        }
+    }
+
     onDisable() {
         if (this.clearOnDisable) {
-            this.a_clearData();
+            !this.recreateOnEnable && this.a_clearData();
             this.listItems?.forEach(item => {
-                item.active = false;
+                item.destroy();
             });
-            // this.listItems = [];
+            this.listItems = [];
         }
     }
 

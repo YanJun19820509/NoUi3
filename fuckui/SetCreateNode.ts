@@ -46,6 +46,8 @@ export class SetCreateNode extends FuckUi {
     onlyOne: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
+    @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
+    recreateOnEnable: boolean = false;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
@@ -58,10 +60,17 @@ export class SetCreateNode extends FuckUi {
             this.template.destroy();
     }
 
+    onEnable() {
+        if (this.clearOnDisable && this.recreateOnEnable) {
+            this.needSetDynamicAtlas = true;
+            this.resetData();
+        }
+    }
+
     onDisable() {
         this.unscheduleAllCallbacks();
         if (this.clearOnDisable) {
-            this.a_clearData();
+            !this.recreateOnEnable && this.a_clearData();
             this.container?.children.forEach(child => {
                 child.destroy();
             });

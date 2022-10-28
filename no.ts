@@ -1660,10 +1660,10 @@ export namespace no {
         private handleDataChange() {
             if (this.aa) return;
             this.aa = true;
-            this.emit(Data.DataChangeEvent, this);
             setTimeout(() => {
+                this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 500);
+            }, 100);
         }
 
         /**
