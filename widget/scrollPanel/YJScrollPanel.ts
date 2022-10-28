@@ -56,7 +56,6 @@ export class YJScrollPanel extends Component {
     private doubleClickNum: number = 0;
     private doubleClicking: boolean = false;
     private doubleClickScaleToMax: boolean;
-    private triedNum: number = 0;
     private needCheckCheckRange: boolean = true;
     private startMove: boolean = false;
 
@@ -111,6 +110,7 @@ export class YJScrollPanel extends Component {
         this.fitPos(pos, this.content.scale.x);
         if (duration <= 0) {
             this.content.setPosition(pos);
+            no.EventHandlerInfo.execute(this.onMoveStop);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y]
@@ -133,6 +133,7 @@ export class YJScrollPanel extends Component {
         if (duration <= 0) {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
+            no.EventHandlerInfo.execute(this.onMoveStop);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y],
@@ -144,34 +145,24 @@ export class YJScrollPanel extends Component {
     public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
-            if (this.triedNum < 60) {
-                this.triedNum++;
-                this.scheduleOnce(() => {
-                    this.scrollToTarget(targetType, offset, duration);
-                });
-                return;
-            }
+            this.scheduleOnce(() => {
+                this.scrollToTarget(targetType, offset, duration);
+            });
             console.error('scrollToTargetAndScale找不到target：', targetType);
             return;
         }
-        this.triedNum = 0;
         this.scrollTo(this.fitTargetToCenter(target), offset, duration);
     }
 
     public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
-            if (this.triedNum < 60) {
-                this.triedNum++;
-                this.scheduleOnce(() => {
-                    this.scrollToTargetAndScale(targetType, scale, offset, duration);
-                });
-                return;
-            }
+            this.scheduleOnce(() => {
+                this.scrollToTargetAndScale(targetType, scale, offset, duration);
+            });
             console.error('scrollToTargetAndScale找不到target：', targetType);
             return;
         }
-        this.triedNum = 0;
         this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, offset, duration);
     }
 
@@ -183,6 +174,7 @@ export class YJScrollPanel extends Component {
         if (duration <= 0) {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
+            no.EventHandlerInfo.execute(this.onMoveStop);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y],
@@ -322,6 +314,7 @@ export class YJScrollPanel extends Component {
         if (!tween) {
             this.content.setScale(scale, scale);
             this.content.setPosition(pos);
+            no.EventHandlerInfo.execute(this.onMoveStop);
         } else {
             this.setTween({
                 pos: [pos.x, pos.y],
