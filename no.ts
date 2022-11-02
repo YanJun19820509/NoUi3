@@ -1656,6 +1656,14 @@ export namespace no {
             this.handleDataChange();
         }
 
+        public setKV(k: string, v: any) {
+            if (this._data == null) {
+                this._data = {};
+            }
+            setValue(this._data, k, v);
+        }
+
+
         private aa: boolean = false;
         private handleDataChange() {
             if (this.aa) return;
@@ -1772,7 +1780,7 @@ export namespace no {
          */
         public setJSON(json: Object): void {
             forEachKV(json, (key, value) => {
-                this._json.set(key, value);
+                this._json.setKV(key, value);
                 return false;
             });
         }

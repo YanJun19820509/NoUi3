@@ -321,8 +321,8 @@ export class YJPreload extends YJComponent {
             } else {
                 this.progress = p / this.total;
             }
-        }, (items: JsonAsset[]) => {
-            this.delegate?.onJsonLoaded(items);
+        }, async (items: JsonAsset[]) => {
+            await this.delegate?.onJsonLoaded(items);
             this.loadJsonFilesInFolder(index + 1);
         });
     }

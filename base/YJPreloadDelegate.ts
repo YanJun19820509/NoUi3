@@ -16,6 +16,6 @@ const { ccclass, property } = _decorator;
 
 @ccclass('YJPreloadDelegate')
 export class YJPreloadDelegate extends Component {
-    onJsonLoaded(assets: JsonAsset[]): void { }
+    async onJsonLoaded(assets: JsonAsset[]): Promise<void> { }
     onLoadComplete(): void { }
 }

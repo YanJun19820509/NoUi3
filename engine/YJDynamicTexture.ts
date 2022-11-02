@@ -45,13 +45,18 @@ export class YJDynamicTexture extends Component {
                 label.cacheMode = CacheMode.BITMAP;
             }
             this.setCommonMaterial();
-        } else
-            this.init();
+        }
+    }
+
+    start() {
+        this.init();
     }
 
     public init() {
         if (!this.enabledInHierarchy) return;
-        this.packSpriteFrame();
+        this.scheduleOnce(() => {
+            this.packSpriteFrame();
+        });
     }
 
     public packSpriteFrame(frame?: SpriteFrame) {

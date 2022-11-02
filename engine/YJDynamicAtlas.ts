@@ -203,7 +203,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     public needWait(): boolean {
-        return this.waitToPackCompNum == 30;
+        return this.waitToPackCompNum == 1000;
     }
 
 

@@ -94,11 +94,11 @@ export class YJLoadAssets extends Component {
         });
         this.atlasInfos.forEach(info => {
             info.load((file: SpriteAtlas) => {
-                let t = file.getTexture();
-                if (t.width <= 1000 && t.height <= 1000) {
-                    let dynamicAtlas = this.dynamicAtlas || this.getComponent(YJDynamicAtlas);
-                    dynamicAtlas?.packAtlasToDynamicAtlas(file);
-                }
+                // let t = file.getTexture();
+                // if (t.width <= 1000 && t.height <= 1000) {
+                //     let dynamicAtlas = this.dynamicAtlas || this.getComponent(YJDynamicAtlas);
+                //     dynamicAtlas?.packAtlasToDynamicAtlas(file);
+                // }
                 ++n;
             });
         });

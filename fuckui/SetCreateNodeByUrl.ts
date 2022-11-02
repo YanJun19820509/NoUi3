@@ -43,6 +43,8 @@ export class SetCreateNodeByUrl extends FuckUi {
     private template: Node;
     private url: string;
     private needDestroyChildrenUuid: string[];
+    private isDestroied: boolean = false;
+
 
     onDisable() {
         if (this.clearOnDisable) {
@@ -54,6 +56,7 @@ export class SetCreateNodeByUrl extends FuckUi {
     onDestroy() {
         if (this.template && this.template.isValid)
             this.template.destroy();
+        this.isDestroied = true;
     }
 
     protected onDataChange(d: any) {
@@ -81,7 +84,7 @@ export class SetCreateNodeByUrl extends FuckUi {
     private async setItems(data: any[]) {
         if (!this.template) return;
         if (!this.container) this.container = this.node;
-
+        if (!this.container?.isValid || this.isDestroied) return;
         let n = data.length
         let l = this.container.children.length - this.needDestroyChildrenUuid.length;
         if (l < n) {
@@ -139,6 +142,7 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     ///////////////////////////EDITOR///////////////
     onLoad() {
+        this.isDestroied = false;
         super.onLoad();
         if (!EDITOR) {
             return;

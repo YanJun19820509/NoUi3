@@ -62,7 +62,7 @@ export class YJProtobuf {
         return msg_type.toObject(msg);
     }
 
-    public messagesToString(): string[] {
+    public messagesToString(): string {
         let ns = this._root.lookup(this._pkgName);
         let arr = ns.nestedArray;
         let s: string[] = [];
@@ -70,7 +70,7 @@ export class YJProtobuf {
         arr.forEach((a: { name: string, fields: any }) => {
             s[s.length] = no.formatString(t, { name: a.name, props: this.fieldsToString(a.fields) });
         });
-        return s;
+        return s.join('|');
     }
 
     private fieldsToString(fields: any): string {
@@ -91,7 +91,8 @@ export class YJProtobuf {
             sint64: 'number',
             int32: 'number',
             int64: 'number',
-            bytes: 'Uint8Array'
+            bytes: 'Uint8Array',
+            bool: 'boolean'
         }[key] || key;
     }
 

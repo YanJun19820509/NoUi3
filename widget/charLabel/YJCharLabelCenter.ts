@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, Color, SpriteFrame, Label, LabelOutline, LabelShadow, Layers, UIOpacity, UITransform, Font } from 'cc';
-import { DEBUG, EDITOR } from 'cc/env';
-import { resolve } from 'path';
-import { YJDynamicTexture } from '../../engine/YJDynamicTexture';
+import { _decorator, Component, Node, SpriteFrame, Label } from 'cc';
+import { DEBUG } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
@@ -50,11 +48,15 @@ export class YJCharLabelCenter extends Component {
     public async createSpriteFrame(labelNode: Node, uuid: string): Promise<SpriteFrame> {
         this.spriteFrameMap[uuid] = 1;
         labelNode.parent = this.node;
+        await no.sleep(0, this);
         let sf = labelNode.getComponent(Label).ttfSpriteFrame;
         sf._uuid = uuid;
         this.spriteFrameMap[uuid] = sf;
         labelNode.getComponent(Label)['_ttfSpriteFrame'] = null;
-        labelNode.destroy();
+        this.scheduleOnce(() => {
+            labelNode.parent = null;
+            labelNode = null;
+        });
         return this.getSpriteFrame(uuid);
     }
 }

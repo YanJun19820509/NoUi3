@@ -32,8 +32,12 @@ export class SetVisibility extends FuckUi {
 
     onLoad() {
         super.onLoad();
-        if (EDITOR) return;
-        !this.dataSetted && this.setData(this.default ? 'true' : 'false');
+    }
+
+    update() {
+        super.update();
+        if (EDITOR)
+            this.node.active = this.default;
     }
 
     protected onDataChange(data: any) {

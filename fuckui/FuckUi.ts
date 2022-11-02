@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, view } from 'cc';
+import { _decorator, Component, Node } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
@@ -22,7 +22,7 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('FuckUi')
 @executeInEditMode()
 export class FuckUi extends Component {
-    @property({ type: YJFuckUiRegister, tooltip: 'deprecated,建议在 YJFuckUiManager 中注册' })
+    @property({ type: YJFuckUiRegister })
     register: YJFuckUiRegister = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
@@ -39,12 +39,27 @@ export class FuckUi extends Component {
 
     private _oldData: string;
 
+    private oldRegister: YJFuckUiRegister;
+    private oldBindKeys: string;
+
     onLoad() {
         if (EDITOR) {
             if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
-        } else
-            if (this.bind_keys != '')
+        }
+    }
+
+    update() {
+        if (EDITOR) {
+            if (this.oldRegister != this.register) {
+                this.oldRegister?.unregister(this);
                 this.register?.register(this);
+                this.oldRegister = this.register;
+            }
+            if (this.oldBindKeys != this.bind_keys) {
+                this.register?.register(this, this.oldBindKeys);
+                this.oldBindKeys = this.bind_keys;
+            }
+        }
     }
 
     public setData(d: string) {

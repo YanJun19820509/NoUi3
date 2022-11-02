@@ -4,6 +4,7 @@ import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
+import { YJJobManager } from './YJJobManager';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -26,9 +27,9 @@ export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
 
-    private _ready: boolean = false;
-
     protected _data: no.Data = new no.Data();
+
+    private changedDataKeys: string[] = [];
 
     onLoad() {
         if (EDITOR) {
@@ -43,12 +44,7 @@ export class YJDataWork extends Component {
      * @returns
      */
     public init() {
-        if (!this._ready) {
-            this.register.onNewUiRegister = (key: string, ui: FuckUi) => {
-                this.setUiData([ui], this.getValue(key));
-            };
-            this._ready = true;
-        }
+        this._setting = false;
         this.afterInit();
     }
 
@@ -68,16 +64,33 @@ export class YJDataWork extends Component {
 
     public setValue(key: string, value: any) {
         this._data.set(key, value);
-        if (!this._ready) return;
-        this.onValueChange(key, value);
+        if (!this.register.isInit) this.register.init();
+        //过滤同一帧内同一key多次赋值的情况
+        no.addToArray(this.changedDataKeys, key);
+        this.setChangedDataToUi();
     }
 
     public clear(): void {
         this._data.clear();
     }
 
-    private onValueChange(key: string, value: any) {
+    private _setting: boolean = false;
+    private async setChangedDataToUi() {
+        if (this._setting) return;
+        this._setting = true;
+        await YJJobManager.ins.execute(this.iterateChangedData, this);
+        this._setting = false;
+    }
+
+    private iterateChangedData() {
+        let k = this.changedDataKeys.shift();
+        if (k == undefined) return false;
+        this.onValueChange(k);
+    }
+
+    private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];
+        if (value == null) value = this.getValue(key);
         this.setUiData(ui, value);
         if (value instanceof Array) {
             value.forEach((v, i) => {
@@ -115,4 +128,6 @@ export class YJDataWork extends Component {
     protected afterInit() {
 
     }
+
+
 }

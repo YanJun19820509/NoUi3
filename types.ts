@@ -52,5 +52,5 @@ export type CreateSpritemFrameData = {
 
 export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
-export type _FuckUi = FuckUi;
+export type FuckUiComponent = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
