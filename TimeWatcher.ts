@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { sys, _decorator } from 'cc';
 import { no } from './no';
 const { ccclass, property } = _decorator;
 
@@ -21,7 +21,7 @@ export class TimeWatcher {
     private static t: number = 0;
 
     public static blink(Evn?: string): void {
-        let t = (new Date()).getTime();
+        let t = sys.now();
         no.err('TimeWatcher', Evn || 'blink', t, t - this.t);
         this.t = t;
     }

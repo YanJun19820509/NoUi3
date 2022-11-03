@@ -21,8 +21,10 @@ export class YJResetScrollView extends Component {
     topLeft: boolean = true;
     @property({ min: 0, step: 0.1, displayName: '动效时长(s)' })
     duration: number = 0.1;
+
+    private _needReset: boolean = false;
     onEnable() {
-        this.a_reset();
+        this._needReset = true;
     }
 
     public a_reset(): void {
@@ -32,4 +34,10 @@ export class YJResetScrollView extends Component {
         if (sv.vertical) sv.scrollToPercentVertical(this.topLeft ? 1 : 0, this.duration, true);
     }
 
+    update() {
+        if (this._needReset) {
+            this._needReset = false;
+            this.a_reset();
+        }
+    }
 }

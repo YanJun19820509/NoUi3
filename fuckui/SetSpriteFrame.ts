@@ -1,6 +1,7 @@
 
 import { _decorator, Sprite, SpriteFrame, UITransform, view, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -33,13 +34,12 @@ export class SetSpriteFrame extends FuckUi {
         this.lateSet(data);
     }
 
-    private setSpriteFrame(sf: SpriteFrame) {
-        if (!sf || !isValid(this, true)) return;
-        if (!this.getComponent(YJDynamicTexture))
-            this.sprite.spriteFrame = sf;
-        else
-            this.getComponent(YJDynamicTexture).packSpriteFrame(sf);
-        this.checkShader();
+    private packSpriteFrame() {
+        YJJobManager.ins.execute(() => {
+            this.getComponent(YJDynamicTexture).packSpriteFrame();
+            this.checkShader();
+            return false;
+        }, this)
     }
 
     private checkShader() {
@@ -47,16 +47,6 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private lateSet(data: any): void {
-        // let rect = this.node.getComponent(UITransform)?.getBoundingBoxToWorld();
-        // let viewSize = view.getVisibleSize();
-
-        // if (rect.xMax < 0 || rect.yMax < 0 || rect.xMin > viewSize.width || rect.yMin > viewSize.height) {
-        //     this.scheduleOnce(() => {
-        //         this.lateSet(data);
-        //     });
-        //     return;
-        // }
-
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
 
@@ -69,17 +59,20 @@ export class SetSpriteFrame extends FuckUi {
             this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
-                    this.setSpriteFrame(spriteFrame);
+                    this.sprite.spriteFrame = spriteFrame;
+                    this.packSpriteFrame();
                 });
         } else {
             this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (data.atlas) {
                 no.assetBundleManager.loadAtlas(data.atlas, item => {
                     this.sprite.spriteAtlas = item;
-                    this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(data.frame));
+                    this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(data.frame);
+                    this.packSpriteFrame();
                 });
             } else if (this.sprite.spriteAtlas?.spriteFrames) {
-                this.setSpriteFrame(this.sprite.spriteAtlas.getSpriteFrame(String(data)));
+                this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(String(data));
+                this.packSpriteFrame();
             }
         }
     }

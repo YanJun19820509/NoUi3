@@ -39,9 +39,31 @@ export class YJRepeatBox extends YJDataWork {
     onLoad() { }
     private _n: number = 0;
     private _max: number;
-    protected async afterInit() {return;
+    protected async afterInit() {
         this._max = Math.max(this.data.max, this.node.children.length);
         this._n = this._max;
+        this.node.active = false;
+        let temp = this.templates[this.data.type || 0].tempNode;
+        let fill = this.templates[this.fileType]?.tempNode;
+        let n = this._max;
+        for(let i = 0; i < n; i++){
+            let item = this.node.children[i];
+            if (!item) {
+                item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
+                if (item) {
+                    item.parent = this.node;
+                    item.active = true;
+                }
+            } else {
+                if (i >= this.data.max) item.active = false;
+                else {
+                    let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
+                    item.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+                    item.active = true;
+                }
+            }
+        }
+        this.node.active = true;
     }
 
     private _set() {
@@ -53,8 +75,8 @@ export class YJRepeatBox extends YJDataWork {
         if (!item) {
             item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
             if (item) {
+                item.active = false;
                 item.parent = this.node;
-                item.active = true;
             }
         } else {
             if (i >= this.data.max) item.active = false;
@@ -66,8 +88,8 @@ export class YJRepeatBox extends YJDataWork {
         }
     }
 
-    update() {
-        if (this._n == 0) return;
-        this._set();
-    }
+    // lateUpdate() {
+    //     if (this._n == 0) return;
+    //     this._set();
+    // }
 }

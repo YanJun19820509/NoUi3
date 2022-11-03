@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, sys, game } from 'cc';
 import { no } from '../no';
 const { ccclass, property } = _decorator;
 
@@ -14,7 +14,7 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-type YJJob = { func: Function, target: any };
+type YJJob = { func: Function, target: any, args?: any };
 //任务管理器，管理全局任务的调度执行
 @ccclass('YJJobManager')
 export class YJJobManager extends Component {
@@ -23,6 +23,7 @@ export class YJJobManager extends Component {
     private jobKeys: string[] = [];
     private lastJobKeyIndex: number = 0;
     private needRemoveJobKeys: string[] = [];
+    private frameStartTime: number = 0;
 
     onLoad() {
         YJJobManager.ins = this;
@@ -37,33 +38,35 @@ export class YJJobManager extends Component {
      * @param func 执行函数, 如果函数返回false将停止该任务的执行
      * @param target 执行函数对象
      */
-    public async execute(func: Function, target: any): Promise<void> {
+    public async execute(func: Function, target: any, args?: any): Promise<void> {
         const k = no.uuid();
-        this.jobs[k] = { func: func, target: target };
+        this.jobs[k] = { func: func, target: target, args: args };
         this.jobKeys[this.jobKeys.length] = k;
         return await no.waitFor(() => {
             return this.jobKeys.indexOf(k) == -1;
         }, this);
     }
 
-    private executePerFrame(duration: number) {
+    private executePerFrame(frameEndTime: number) {
         let aa = true;
         while (aa) {
+            if (sys.now() >= frameEndTime) {
+                // console.log('executePerFrame end')
+                return;
+            }
             let n = this.jobKeys.length;
             if (n == 0) {
                 aa = false;
                 return;
             }
             this.clearRemoveKeys();
-            let startTime: number;
             let k: string, job: YJJob;
             for (let i = this.lastJobKeyIndex; i < n; i++) {
-                startTime = this.time();
                 k = this.jobKeys[i];
                 job = this.jobs[k];
-                if (!job || !job.target.isValid || job.func.call(job.target) === false) this.addNeedRemoveKey(k);
-                duration -= this.time() - startTime;
-                if (duration <= 8) {
+                if (!job || !job.target.isValid || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
+                if (sys.now() >= frameEndTime) {
+                    // console.log('executePerFrame end2')
                     this.lastJobKeyIndex = i;
                     aa = false;
                     return;
@@ -71,10 +74,6 @@ export class YJJobManager extends Component {
             }
             this.lastJobKeyIndex = 0;
         }
-    }
-
-    private time(): number {
-        return new Date().getTime();
     }
 
     private addNeedRemoveKey(k: string) {
@@ -95,7 +94,11 @@ export class YJJobManager extends Component {
         this.needRemoveJobKeys = [];
     }
 
-    update(dt: number) {
-        this.executePerFrame(dt * 1000);
+    update(){
+        this.frameStartTime = sys.now();
+    }
+
+    lateUpdate() {
+        this.executePerFrame(this.frameStartTime + game.frameTime);
     }
 }

@@ -39,26 +39,9 @@ export class FuckUi extends Component {
 
     private _oldData: string;
 
-    private oldRegister: YJFuckUiRegister;
-    private oldBindKeys: string;
-
     onLoad() {
         if (EDITOR) {
             if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
-        }
-    }
-
-    update() {
-        if (EDITOR) {
-            if (this.oldRegister != this.register) {
-                this.oldRegister?.unregister(this);
-                this.register?.register(this);
-                this.oldRegister = this.register;
-            }
-            if (this.oldBindKeys != this.bind_keys) {
-                this.register?.register(this, this.oldBindKeys);
-                this.oldBindKeys = this.bind_keys;
-            }
         }
     }
 

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler } from 'cc';
+import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
@@ -124,12 +124,12 @@ export class YJNodeTarget extends Component {
      * @returns true：未触发，false：已触发
      */
     public compareLastTriggerTouchTime(time?: number): boolean {
-        time = time || (new Date()).getTime();
+        time = time || sys.now();
         return time - this.lastTriggerTouchTime > 0;
     }
 
 
     private setTriggerTouchTime() {
-        this.lastTriggerTouchTime = (new Date()).getTime();
+        this.lastTriggerTouchTime = sys.now();
     }
 }

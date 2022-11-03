@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, Prefab, UITransform } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab, UITransform, math } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
@@ -65,15 +65,13 @@ export class SetCreateNodeByUrl extends FuckUi {
             this.url = url;
             this.setNeedDestroyChildren();
             no.assetBundleManager.loadPrefab(url, item => {
-                this.template = instantiate(item)
+                this.template = instantiate(item);
+                this.resizeContentSize(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
                 }
                 this.setItems(data).then(() => {
                     this.clear();
-                    this.scheduleOnce(() => {
-                        this.resizeContentSize();
-                    });
                 });
             });
         } else {
@@ -115,11 +113,10 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
-    private resizeContentSize() {
-        if (!this.resize || this.container.children.length > 1) return;
-        let child = this.container.children[0];
-        let size = child.getComponent(UITransform).contentSize.clone();
+    private resizeContentSize(child: Node) {
+        if (!this.resize) return;
         let scale = child.scale;
+        let size = child.getComponent(UITransform).contentSize.clone();
         size.width *= scale.x;
         size.height *= scale.y;
         this.container.getComponent(UITransform).contentSize = size;

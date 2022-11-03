@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -61,7 +62,7 @@ export class SetList extends FuckUi {
 
 
     private listData: any[];
-    private listItems: Node[] = [];
+    // private listItems: Node[] = [];
     private isVertical: boolean;
     private content: Node;
     /**
@@ -78,6 +79,7 @@ export class SetList extends FuckUi {
     private touched: boolean = false;
     private isFirst: boolean = true;
     private waitTime: number;
+    private _isSettingData: boolean = false;
 
     async onLoad() {
         super.onLoad();
@@ -99,7 +101,7 @@ export class SetList extends FuckUi {
         // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
         this.content = this.scrollView.content;
-        this.listItems = this.content.children;
+        // this.listItems = this.content.children;
 
         // if (this.isVertical) {
         //     this.showMax = Math.ceil(this.viewSize.height / this.itemSize.height);
@@ -118,18 +120,20 @@ export class SetList extends FuckUi {
     }
 
     onEnable() {
+        if (this._isSettingData) return;
         if (this.clearOnDisable && this.recreateOnEnable) {
             this.resetData();
         }
     }
 
     onDisable() {
+        if (this._isSettingData) return;
         if (this.clearOnDisable) {
             !this.recreateOnEnable && this.a_clearData();
-            this.listItems?.forEach(item => {
+            this.content?.children.forEach(item => {
                 item.destroy();
             });
-            this.listItems = [];
+            // this.listItems = [];
         }
     }
 
@@ -139,6 +143,7 @@ export class SetList extends FuckUi {
     }
 
     protected async onDataChange(data: any) {
+        this._isSettingData = true;
         if (this.onlyFirstTime) {
             if (this.isFirst) {
                 this.isFirst = false;
@@ -150,9 +155,11 @@ export class SetList extends FuckUi {
         this.unscheduleAllCallbacks();
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
+        let listItems = this.content.children;
+        this.content.active = false;
         if (this.waitTime > 0) {
-            for (let i = 0, n = this.listItems.length; i < n; i++) {
-                let item = this.listItems[i];
+            for (let i = 0, n = listItems.length; i < n; i++) {
+                let item = listItems[i];
                 item.active = false;
             }
         }
@@ -161,15 +168,17 @@ export class SetList extends FuckUi {
             a = no.arrayToArrays(a, this.columnNumber);
         }
         this.allNum = a.length;
-        if (this.listItems.length == 0 || this.listData?.length != this.allNum) {
+        if (listItems.length == 0 || this.listData?.length != this.allNum) {
             if (this.showMax >= this.allNum) this.showNum = this.allNum;
             else this.showNum = this.showMax + 2;
-            this.initItems();
+            await this.initItems();
         }
         this.listData = a;
         let i = this.lastIndex;
         if (!this.listData[this.lastIndex]) i = 0;
-        this.setList(this.autoScrollBack ? 0 : i);
+        await this.setList(this.autoScrollBack ? 0 : i);
+        this.content.active = true;
+        this._isSettingData = false;
     }
 
     private async initItems() {
@@ -184,17 +193,17 @@ export class SetList extends FuckUi {
             this.content.getComponent(UITransform).width = this.contentSize;
             this.content.getComponent(UITransform).height = this.itemSize.height;
         }
-        for (let i = this.listItems.length; i < this.showNum; i++) {
+        let listItems = this.content.children;
+        for (let i = listItems.length; i < this.showNum; i++) {
             let item = instantiate(this.template);
-            // item.active = true;
             item.parent = this.content;
-            // this.listItems[this.listItems.length] = item;
         }
     }
 
     private async setList(start: number) {
         if (!this.node.isValid) return;
-        await no.waitFor(() => { return this.listItems.length >= this.showNum; }, this);
+        let listItems = this.content.children;
+        await no.waitFor(() => { return listItems.length >= this.showNum; }, this);
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
@@ -210,26 +219,21 @@ export class SetList extends FuckUi {
             this.content.setPosition(p);
             this.lastIndex = start;
         }
-        this.stopWait = false;
-        this.setItem(start, 0);
+        let i = 0, n = listItems.length;
+        await YJJobManager.ins.execute(() => {
+            this.setItem(start, i++);
+            if (i >= n) return false;
+        }, this);
     }
 
-    private stopWait: boolean = false;
     private setItem(start: number, i: number) {
-        let item = this.listItems[i];
-        if (!item) return;
+        let item = this.content.children[i];
+        if (!item) return false;
         this.setItemPosition(item, start + i);
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
             item.active = true;
         } else item.active = false;
-        i++;
-        if (this.stopWait || this.waitTime == 0)
-            this.setItem(start, i);
-        else
-            this.scheduleOnce(() => {
-                this.setItem(start, i);
-            }, this.waitTime);
     }
 
     private setItemData(item: Node, data = []) {
@@ -268,7 +272,8 @@ export class SetList extends FuckUi {
             return;
         }
         if (!this.touched) return;
-        if (this.listData == null || this.listItems == null || this.listItems.length == 0) return;
+        let listItems = this.content.children;
+        if (this.listData == null || listItems == null || listItems.length == 0) return;
         let curPos = 0;
         let startIndex = 0;
         if (this.isVertical) {
@@ -285,11 +290,10 @@ export class SetList extends FuckUi {
 
         let diff = startIndex - this.lastIndex;
         if (diff != 0) {
-            this.stopWait = true;
             this.lastIndex = startIndex;
-            let n = this.listItems.length;
+            let n = listItems.length;
             for (let i = 0; i < n; i++) {
-                let item = this.listItems[i];
+                let item = listItems[i];
                 let dataIndex = item['__dataIndex'];
                 if (diff < 0) {//向右
                     if (dataIndex - startIndex > this.showNum - 1 && dataIndex - n >= 0) {

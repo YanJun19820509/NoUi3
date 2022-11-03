@@ -35,6 +35,8 @@ export class YJDynamicTexture extends Component {
     @property
     canRotate: boolean = true;
 
+    // private _needInit: boolean = true;
+
     onLoad() {
         if (!this.enabled) return;
         if (EDITOR) {
@@ -49,14 +51,23 @@ export class YJDynamicTexture extends Component {
     }
 
     start() {
-        this.init();
+        // this._needInit = true;
+
+        this.scheduleOnce(() => {
+            this.init();
+        }, 0.2);
     }
+
+    // lateUpdate() {
+    //     // if (this._needInit) {
+    //     //     this._needInit = false;
+    //     //     this.init();
+    //     // }
+    // }
 
     public init() {
         if (!this.enabledInHierarchy) return;
-        this.scheduleOnce(() => {
-            this.packSpriteFrame();
-        });
+        this.packSpriteFrame();
     }
 
     public packSpriteFrame(frame?: SpriteFrame) {

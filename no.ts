@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -126,12 +126,12 @@ export namespace no {
         }
 
         public set(type: string, value?: any): void {
-            this._states[type] = { v: value, t: Date.now() };
+            this._states[type] = { v: value, t: sys.now() };
         }
 
         public on(type: string, target: Component) {
             this._watchers[type] = this._watchers[type] || {};
-            this._watchers[type][target.uuid] = Date.now();
+            this._watchers[type][target.uuid] = sys.now();
         }
 
 
@@ -184,6 +184,7 @@ export namespace no {
         private _num: number;
         private _IdKey = '__tickTockId';
 
+        /**当前时间s */
         public get now(): number {
             return this._time;
         }
@@ -193,7 +194,7 @@ export namespace no {
         }
 
         constructor() {
-            this._time = Math.floor((new Date()).getTime() / 1000);
+            this._time = Math.floor(sys.now() / 1000);
             this._targets = [];
             this._num = 1;
             setInterval(() => {
@@ -276,10 +277,12 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
+        if (!DEBUG) return;
         console.log.call(console, '#NoUi#Log', Evns);
     }
 
     export function err(...Evns: any[]): void {
+        if (!DEBUG) return;
         console.error.call(console, '#NoUi#Err', Evns);
     }
 
@@ -1636,12 +1639,13 @@ export namespace no {
          * 写
          * @param path
          * @param value 如果value为null，则不处理
+         * @param recursive 是否递归，默认true
          */
-        public set(path: string, value: any) {
+        public set(path: string, value: any, recursive = true) {
             if (this._data == null) {
                 this._data = {};
             }
-            if (value instanceof Object && value['constructor'] === Object) {
+            if (recursive && value instanceof Object && value['constructor'] === Object) {
                 if (Object.keys(value).length == 0) {
                     setValue(this._data, path, value);
                 } else {
@@ -2304,6 +2308,7 @@ export namespace no {
 
         public getUuidFromPath(path: string): string {
             let a = this.assetPath(path);
+            log(path);
             return this.getBundle(a.bundle).getInfoWithPath(a.file, a.type).uuid;
         }
     }

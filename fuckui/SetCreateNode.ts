@@ -1,9 +1,9 @@
 
 import { _decorator, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
-import { on } from 'events';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { YJJobManager } from '../base/YJJobManager';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -54,6 +54,7 @@ export class SetCreateNode extends FuckUi {
     protected needSetDynamicAtlas: boolean = true;
     private isFirst: boolean = true;
     private waitTime: number;
+    private _isSettingData: boolean = false;
 
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
@@ -61,6 +62,7 @@ export class SetCreateNode extends FuckUi {
     }
 
     onEnable() {
+        if (this._isSettingData) return;
         if (this.clearOnDisable && this.recreateOnEnable) {
             this.needSetDynamicAtlas = true;
             this.resetData();
@@ -68,6 +70,7 @@ export class SetCreateNode extends FuckUi {
     }
 
     onDisable() {
+        if (this._isSettingData) return;
         this.unscheduleAllCallbacks();
         if (this.clearOnDisable) {
             !this.recreateOnEnable && this.a_clearData();
@@ -78,6 +81,7 @@ export class SetCreateNode extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        this._isSettingData = true;
         if (this.onlyFirstTime) {
             if (this.isFirst) {
                 this.isFirst = false;
@@ -105,40 +109,48 @@ export class SetCreateNode extends FuckUi {
             return;
         }
 
+        this.container.active = false;
         let n = data.length
         let l = this.container.children.length;
         for (let i = 0; i < l; i++) {
             this.container.children[i].active = !!data[i];
         }
-
-        if (l < n) {
-            for (let i = l; i < n; i++) {
+        // for (let i = l; i < n; i++) {
+        //     let item = instantiate(this.template);
+        //     item.active = false;
+        //     item.parent = this.container;
+        // }
+        if (l < n)
+            await YJJobManager.ins.execute((max: number) => {
                 let item = instantiate(this.template);
+                item.active = false;
                 item.parent = this.container;
-            }
+                if (this.container.children.length >= max) return false;
+            }, this, n);
+
+        for (let i = 0; i < n; i++) {
+            this.setItem(data, i);
         }
-        this.setItem(data, 0);
+        this.container.active = true;
+        no.EventHandlerInfo.execute(this.onComplete);
+        this._isSettingData = false;
     }
 
     private setItem(data: any[], i: number) {
         if (data[i] == null) {
-            no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
         let item = this.container.children[i];
+        // if (!item) {
+        //     item = instantiate(this.template);
+        //     item.parent = this.container;
+        // }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
             a.data = data[i];
             a.init();
         }
         item.active = true;
-        i++;
-        if (this.waitTime == 0)
-            this.setItem(data, i);
-        else
-            this.scheduleOnce(() => {
-                this.setItem(data, i);
-            }, this.waitTime);
     }
 
     protected async setDynamicAtlasNode(data: any) {

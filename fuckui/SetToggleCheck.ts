@@ -27,9 +27,10 @@ export class SetToggleCheck extends FuckUi {
         let a = Boolean(data);
         if (this.reverse) a = !a;
         let toggle = this.getComponent(Toggle);
-        toggle.clickEvents.forEach(ce => {
-            ce.emit([toggle]);
-        });
+        if (a)
+            toggle.clickEvents.forEach(ce => {
+                ce.emit([toggle]);
+            });
         if (this.setCheckedWithoutNotify)
             toggle.setIsCheckedWithoutNotify(a);
         else

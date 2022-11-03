@@ -201,10 +201,10 @@ export class Atlas {
             this._texture.drawImageAt(img, x + 1, y + 1);
         }
 
-        this._texture.drawImageAt(img, x - 1, y);
-        this._texture.drawImageAt(img, x + 1, y);
-        this._texture.drawImageAt(img, x, y - 1);
-        this._texture.drawImageAt(img, x, y + 1);
+        // this._texture.drawImageAt(img, x - 1, y);
+        // this._texture.drawImageAt(img, x + 1, y);
+        // this._texture.drawImageAt(img, x, y - 1);
+        // this._texture.drawImageAt(img, x, y + 1);
 
         this._texture.drawImageAt(img, x, y);
     }

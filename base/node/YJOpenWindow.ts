@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, js, EventTouch } from 'cc';
-import { YJPanel } from './YJPanel';
+import { _decorator, Component, Node, EventTouch } from 'cc';
 import { YJWindowManager } from './YJWindowManager';
 const { ccclass, property, menu } = _decorator;
 
@@ -42,15 +41,18 @@ export class YJOpenWindow extends Component {
     }
 
     public a_open() {
-        this.infos.forEach(info => {
-            info.open();
-        });
+        let n = this.infos.length, i = 0;
+        this.schedule(() => {
+            this.openAt(i++);
+        }, 0, n - 1);
     }
 
     public a_openAt(event: EventTouch, idx: string): void {
-        let info = this.infos[Number(idx || event)];
-        info?.open();
+        this.openAt(Number(idx || event));
     }
 
-
+    private openAt(i: number) {
+        let info = this.infos[i];
+        info?.open();
+    }
 }

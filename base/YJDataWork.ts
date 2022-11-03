@@ -27,6 +27,9 @@ export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
 
+    @property({ displayName: '差异更新', tooltip: '仅修改某key下有变更的值，否则替换该key对应全部值。非差异更新性能较好，默认true' })
+    onlyDiff: boolean = true;
+
     protected _data: no.Data = new no.Data();
 
     private changedDataKeys: string[] = [];
@@ -37,6 +40,14 @@ export class YJDataWork extends Component {
             return;
         }
         this.init();
+    }
+
+    start() {
+        this.register.init();
+    }
+
+    lateUpdate() {
+        this.setChangedDataToUi();
     }
 
     /**
@@ -63,11 +74,9 @@ export class YJDataWork extends Component {
     }
 
     public setValue(key: string, value: any) {
-        this._data.set(key, value);
-        if (!this.register.isInit) this.register.init();
+        this._data.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
-        this.setChangedDataToUi();
     }
 
     public clear(): void {
@@ -77,8 +86,15 @@ export class YJDataWork extends Component {
     private _setting: boolean = false;
     private async setChangedDataToUi() {
         if (this._setting) return;
+        if (!this.register.isInit) this.register.init();
         this._setting = true;
-        await YJJobManager.ins.execute(this.iterateChangedData, this);
+        // await YJJobManager.ins.execute(this.iterateChangedData, this);
+
+        let k = this.changedDataKeys.shift();
+        while (k) {
+            this.onValueChange(k);
+            k = this.changedDataKeys.shift();
+        }
         this._setting = false;
     }
 

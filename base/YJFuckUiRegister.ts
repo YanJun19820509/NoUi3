@@ -16,14 +16,6 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-@ccclass('FuckUiData')
-export class FuckUiData {
-    @property
-    key: string = '';
-    @property
-    fuckUis: FuckUiComponent[] = [];
-}
-
 @ccclass('YJFuckUiRegister')
 @disallowMultiple()
 @executeInEditMode()
@@ -31,48 +23,14 @@ export class YJFuckUiRegister extends Component {
     @property
     autoRegister: boolean = false;
 
-    @property({ type: FuckUiData })
-    fuckUiList: FuckUiData[] = [];
+    @property(Node)
+    subFuckUiNodes: Node[] = [];
 
     protected _data2ui: object = {};
     private _inited: boolean = false;
 
-    public register(ui: FuckUiComponent, oldBindKeys?: string): void {
-        if (oldBindKeys) {
-            oldBindKeys.split(',').forEach(key => {
-                let a: FuckUiData = no.itemOfArray(this.fuckUiList, key, 'key');
-                if (a) {
-                    no.removeFromArray(a.fuckUis, ui, 'uuid');
-                }
-            });
-        }
-        let keys = ui.bindKeys;
-        keys.forEach(key => {
-            if (key == '') return;
-            let a: FuckUiData = no.itemOfArray(this.fuckUiList, key, 'key');
-            if (!a) {
-                a = new FuckUiData();
-                a.key = key;
-                this.fuckUiList[this.fuckUiList.length] = a;
-            }
-            no.addToArray(a.fuckUis, ui, 'uuid');
-        });
-    }
-
-    public unregister(ui: FuckUiComponent) {
-        let keys = ui.bindKeys;
-        keys.forEach(key => {
-            let a: FuckUiData = no.itemOfArray(this.fuckUiList, key, 'key');
-            if (a) {
-                no.removeFromArray(a.fuckUis, ui, 'uuid');
-            }
-        });
-    }
-
     public init() {
-        this.fuckUiList.forEach(ui => {
-            this._data2ui[ui.key] = ui.fuckUis;
-        });
+        this.bindSubFuckUis()
         this._inited = true;
     }
 
@@ -95,6 +53,23 @@ export class YJFuckUiRegister extends Component {
         });
     }
 
+    private bindSubFuckUis() {
+        let list: FuckUiComponent[] = this.getComponentsInChildren('FuckUi') as FuckUiComponent[];
+        this.subFuckUiNodes.forEach(sub => {
+            list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUiComponent[]);
+        });
+        for (let i = 0, n = list.length; i < n; i++) {
+            let ui = list[i];
+            if (ui.register == this) {
+                let keys = ui.bindKeys;
+                keys.forEach(key => {
+                    this._data2ui[key] = this._data2ui[key] || [];
+                    this._data2ui[key][this._data2ui[key].length] = ui;
+                });
+            }
+        }
+    }
+
     /////////IN EDITOR/////
     update() {
         if (!EDITOR) {
@@ -103,10 +78,12 @@ export class YJFuckUiRegister extends Component {
         if (this.autoRegister) {
             this.autoRegister = false;
             let list = this.getComponentsInChildren('FuckUi');
+            this.subFuckUiNodes.forEach(sub => {
+                list = list.concat(sub.getComponentsInChildren('FuckUi'));
+            });
             list.forEach((a: FuckUiComponent) => {
                 if (!a.register)
                     a.register = this;
-                if (a.register == this) this.register(a);
             });
         }
     }
