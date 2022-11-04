@@ -127,7 +127,7 @@ export class SetCreateNode extends FuckUi {
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
             }, this, n);
-
+        if (!this.container?.isValid) return;
         for (let i = 0; i < n; i++) {
             this.setItem(data, i);
         }

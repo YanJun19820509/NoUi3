@@ -83,7 +83,7 @@
         "__id__": 3
       }
     ],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 17
@@ -233,7 +233,7 @@
     "_font": null,
     "_isSystemFontUsed": true,
     "_userDefinedFont": null,
-    "_cacheMode": 0,
+    "_cacheMode": 1,
     "_imageAtlas": null,
     "_handleTouchEvent": true,
     "_id": ""
@@ -313,6 +313,8 @@
     "__prefab": {
       "__id__": 13
     },
+    "autoRegister": false,
+    "subFuckUiNodes": [],
     "_id": ""
   },
   {
@@ -332,6 +334,7 @@
     },
     "dynamicAtlas": null,
     "needClear": false,
+    "canRotate": true,
     "_id": ""
   },
   {
@@ -486,7 +489,7 @@
       "__id__": 1
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_components": [
       {
         "__id__": 27
@@ -776,10 +779,12 @@
     "register": {
       "__id__": 12
     },
+    "onlyDiff": true,
     "offset": {
-      "__type__": "cc.Vec2",
+      "__type__": "cc.Vec3",
       "x": 0,
-      "y": 0
+      "y": 0,
+      "z": 0
     },
     "_id": ""
   },
