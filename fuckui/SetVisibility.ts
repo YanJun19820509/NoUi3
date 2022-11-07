@@ -32,7 +32,7 @@ export class SetVisibility extends FuckUi {
 
     update() {
         if (EDITOR)
-            this.node.active = this.default;
+            this.show(this.reverse ? !this.default : this.default);
     }
 
     protected onDataChange(data: any) {

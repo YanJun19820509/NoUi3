@@ -89,11 +89,11 @@ export class YJDataWork extends Component {
         if (!this.register.isInit) this.register.init();
         this._setting = true;
         // await YJJobManager.ins.execute(this.iterateChangedData, this);
-
-        let k = this.changedDataKeys.shift();
+        let keys = this.changedDataKeys.splice(0,this.changedDataKeys.length);
+        let k = keys.shift();
         while (k) {
             this.onValueChange(k);
-            k = this.changedDataKeys.shift();
+            k = keys.shift();
         }
         this._setting = false;
     }
