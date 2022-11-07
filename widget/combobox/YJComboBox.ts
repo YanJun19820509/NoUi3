@@ -34,7 +34,8 @@ export class YJComboBox extends YJDataWork {
 
     @property(no.EventHandlerInfo)
     onShow: no.EventHandlerInfo[] = [];
-
+    @property(no.EventHandlerInfo)
+    onHide: no.EventHandlerInfo[] = [];
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
@@ -57,7 +58,7 @@ export class YJComboBox extends YJDataWork {
     public a_hideList(): void {
         this.setListVisible(false);
     }
-    
+
 
     public a_onSelect(d: any): void {
         this.setListVisible(false);
@@ -83,9 +84,7 @@ export class YJComboBox extends YJDataWork {
             dir: v ? -1 : 1,
             x: v ? 0 : -10000
         };
-        if (v) {
-            no.EventHandlerInfo.execute(this.onShow);
-        }
+        v ? no.EventHandlerInfo.execute(this.onShow) : no.EventHandlerInfo.execute(this.onHide);
     }
 
     private setChecked(id: string) {

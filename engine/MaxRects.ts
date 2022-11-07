@@ -69,7 +69,7 @@ export class MaxRects {
 
     constructor(width: number, height: number, padding = 2) {
         _padding = padding;
-        this._addRect(_padding, _padding, width - _padding, height - _padding);
+        this._addRect(_padding, _padding, width - _padding * 2, height - _padding * 2);
     }
 
     public get lastRects(): math.Rect[] {

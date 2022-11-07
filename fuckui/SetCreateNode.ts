@@ -1,5 +1,5 @@
 
-import { _decorator, Node, instantiate } from 'cc';
+import { _decorator, Node, instantiate, sys } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
@@ -108,18 +108,12 @@ export class SetCreateNode extends FuckUi {
             this.setDynamicAtlasNode(data[0]);
             return;
         }
-
         this.container.active = false;
         let n = data.length
         let l = this.container.children.length;
         for (let i = 0; i < l; i++) {
             this.container.children[i].active = !!data[i];
         }
-        // for (let i = l; i < n; i++) {
-        //     let item = instantiate(this.template);
-        //     item.active = false;
-        //     item.parent = this.container;
-        // }
         if (l < n)
             await YJJobManager.ins.execute((max: number) => {
                 let item = instantiate(this.template);

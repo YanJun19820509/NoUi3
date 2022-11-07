@@ -71,7 +71,8 @@ export class SetSpriteFrame extends FuckUi {
                     this.packSpriteFrame();
                 });
             } else if (this.sprite.spriteAtlas?.spriteFrames) {
-                this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(String(data));
+                let name = String(data).split('/').pop();
+                this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(name);
                 this.packSpriteFrame();
             }
         }
