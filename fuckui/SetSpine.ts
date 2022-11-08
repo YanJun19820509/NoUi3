@@ -55,7 +55,8 @@ export class SetSpine extends FuckUi {
         } else {
             spine.clearTrack(0);
         }
-        this.bindEndCall(spine);
+        if (!loop)
+            this.bindEndCall(spine);
     }
 
     public a_playOnce(animation: string) {
