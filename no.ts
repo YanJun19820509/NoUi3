@@ -183,6 +183,8 @@ export namespace no {
         private _targets: any[];
         private _num: number;
         private _IdKey = '__tickTockId';
+        /**系统时间是否为调试时间 */
+        public debugState: boolean = false;
 
         /**当前时间s */
         public get now(): number {
@@ -194,7 +196,13 @@ export namespace no {
         }
 
         constructor() {
-            this._time = Math.floor(sys.now() / 1000);
+            let t = Math.floor(sys.now() / 1000);
+            if (DEBUG) {
+                let a = localStorage.getItem('_debug_time');
+                this.debugState = !!a;
+                t += Number(a || '0');
+            }
+            this._time = t;
             this._targets = [];
             this._num = 1;
             setInterval(() => {
@@ -219,6 +227,24 @@ export namespace no {
             removeFromArray(this._targets, target, this._IdKey);
         }
 
+        /**
+         * 测试用调系统时间
+         * @param v 任意时间点的时间戳s
+         */
+        public setDebugTime(v: number) {
+            if (!DEBUG) return;
+            let a = this._time - v;
+            localStorage.setItem('_debug_time', `${a}`);
+            this._time = v;
+            this.debugState = true;
+        }
+
+        public resetDebugTime() {
+            if (!DEBUG) return;
+            localStorage.setItem('_debug_time', '0');
+            this._time = Math.floor(sys.now() / 1000);
+            this.debugState = false;
+        }
 
         private cb() {
             if (DEBUG) {
