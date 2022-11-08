@@ -53,11 +53,8 @@ export class YJPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onClose: no.EventHandlerInfo[] = [];
 
-    // @property({ tooltip: '需要缓存' })
-    // needCache: boolean = false;
-
-    // @property({ tooltip: '需要清除', visible() { return this.needCache; } })
-    // needClear: boolean = true;
+    /**是否缓存，默认缓存，特殊情况下不需要缓存的则手动设置为false */
+    public needCache: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -97,10 +94,9 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
-        // if (this.needCache) {
-            //panel都缓存起来由windowmanager来管理回收
+        if (this.needCache) {
             this.node.active = false;
-        // } else this.clear();
+        } else this.clear();
     }
 
     public clear() {
