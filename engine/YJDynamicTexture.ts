@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Material, Component, SpriteFrame, LabelOutline, rect, UITransform } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Component, SpriteFrame, LabelOutline } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
