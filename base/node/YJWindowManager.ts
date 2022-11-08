@@ -33,18 +33,19 @@ export class LayerInfo {
 export class YJWindowManager extends Component {
     @property(LayerInfo)
     infos: LayerInfo[] = [];
-    @property({ displayName: '清理间隔时长(s)', min: 3, step: 1 })
+    @property({ displayName: '自动清理缓存的panel' })
+    autoClear: boolean = false;
+    @property({ displayName: '清理间隔时长(s)', min: 3, step: 1, visible() { return this.autoClear; } })
     duration: number = 10;
-    @property(YJPreinstantiatePanel)
-    preinstantiatePanel: YJPreinstantiatePanel = null;
 
     private static _ins: YJWindowManager;
 
     onLoad() {
         YJWindowManager._ins = this;
-        this.schedule(() => {
-            this.clearClosedPanel();
-        }, 3);
+        if (this.autoClear)
+            this.schedule(() => {
+                this.clearClosedPanel();
+            }, 3);
     }
 
     onDestroy() {
@@ -103,7 +104,7 @@ export class YJWindowManager extends Component {
             a.node.setSiblingIndex(content.children.length - 1);
             return;
         }
-        let node = this._ins.preinstantiatePanel?.getPanelNodeAndRemove(comp.name);
+        let node = YJPreinstantiatePanel.ins?.getPanelNodeAndRemove(comp.name);
         if (node) {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
@@ -188,13 +189,13 @@ export class YJWindowManager extends Component {
     }
 
 
-    private clearClosedPanel() {
+    public clearClosedPanel() {
         let t = no.sysTime.now;
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
             content?.children.forEach(node => {
                 let panel = node.getComponent(YJPanel);
-                if (panel && panel.needClear && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
                     panel.clear();
                 }
             });

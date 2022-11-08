@@ -25,6 +25,9 @@ export class YJGameState extends Component {
     @property({ type: no.EventHandlerInfo, displayName: '回到前台时回调' })
     onShowCalls: no.EventHandlerInfo[] = [];
 
+    @property({ type: no.EventHandlerInfo, displayName: '内存不足时回调' })
+    onLowMemoryCalls: no.EventHandlerInfo[] = [];
+
     @property({ displayName: '进入后台多长时间执行回到前台回调(秒)' })
     duration: number = 30;
 
@@ -36,6 +39,7 @@ export class YJGameState extends Component {
     onLoad() {
         game.on(Game.EVENT_HIDE, this.onHide, this);
         game.on(Game.EVENT_SHOW, this.onShow, this);
+        game.on(Game.EVENT_LOW_MEMORY, this.onLowMemory, this);
         no.evn.on(this.type, this.a_restart, this);
     }
 
@@ -51,6 +55,10 @@ export class YJGameState extends Component {
     private onShow(): void {
         if (no.timestamp() - this.time >= this.duration)
             no.EventHandlerInfo.execute(this.onShowCalls);
+    }
+
+    private onLowMemory() {
+        no.EventHandlerInfo.execute(this.onLowMemoryCalls);
     }
 
     public a_restart() {

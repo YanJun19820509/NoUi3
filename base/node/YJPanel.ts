@@ -53,19 +53,22 @@ export class YJPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onClose: no.EventHandlerInfo[] = [];
 
-    @property({ tooltip: '需要缓存' })
-    needCache: boolean = false;
+    // @property({ tooltip: '需要缓存' })
+    // needCache: boolean = false;
 
-    @property({ tooltip: '需要清除', visible() { return this.needCache; } })
-    needClear: boolean = true;
+    // @property({ tooltip: '需要清除', visible() { return this.needCache; } })
+    // needClear: boolean = true;
 
     onLoad() {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
-        } else {
-            no.log('panel onLoad', this.node.name);
-            this.onLoadPanel();
         }
+    }
+
+    start() {
+        if (EDITOR) return;
+        no.log('panel onLoad', this.node.name);
+        this.onLoadPanel();
     }
 
     onEnable() {
@@ -94,9 +97,10 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
-        if (this.needCache) {
+        // if (this.needCache) {
+            //panel都缓存起来由windowmanager来管理回收
             this.node.active = false;
-        } else this.clear();
+        // } else this.clear();
     }
 
     public clear() {

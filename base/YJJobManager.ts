@@ -51,7 +51,7 @@ export class YJJobManager extends Component {
         let aa = true;
         while (aa) {
             if (sys.now() >= frameEndTime) {
-                console.log('executePerFrame end')
+                // console.log('executePerFrame end')
                 aa = false;
                 return;
             }
@@ -68,7 +68,7 @@ export class YJJobManager extends Component {
                 if (!job || !job.target.isValid || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
                 const a = sys.now() - frameEndTime;
                 if (a >= 0) {
-                    console.log('executePerFrame end2', a)
+                    // console.log('executePerFrame end2', a)
                     this.lastJobKeyIndex = i;
                     aa = false;
                     return;

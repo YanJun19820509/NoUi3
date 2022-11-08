@@ -108,24 +108,25 @@ export class SetCreateNode extends FuckUi {
             this.setDynamicAtlasNode(data[0]);
             return;
         }
-        this.container.active = false;
         let n = data.length
         let l = this.container.children.length;
         for (let i = 0; i < l; i++) {
             this.container.children[i].active = !!data[i];
         }
-        if (l < n)
+        if (l < n) {
+            this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 let item = instantiate(this.template);
                 item.active = false;
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
             }, this, n);
-        if (!this.container?.isValid) return;
+            if (!this.container?.isValid) return;
+            this.container.active = true;
+        }
         for (let i = 0; i < n; i++) {
             this.setItem(data, i);
         }
-        this.container.active = true;
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }

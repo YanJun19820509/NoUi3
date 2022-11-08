@@ -40,7 +40,7 @@ export class YJCharLabel extends Component {
     fontFamily: string = 'Arial';
     @property
     lineHeight: number = 22;
-    @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制', visible() { return this.mode == YJCharLabelMode.Char; } })
+    @property({ tooltip: '当整体宽度超过maxWidth时将会等比缩小,如果设置为0则不做限制' })
     maxWidth: number = 0;
     @property
     italic: boolean = false;
@@ -77,7 +77,11 @@ export class YJCharLabel extends Component {
     update() {
         if (!EDITOR) return;
         if (this.mode == YJCharLabelMode.String) {
-            this.getComponent(Layout)?.destroy();
+            if (!this.getComponent(Layout)) {
+                let layout = this.addComponent(Layout);
+                layout.type = Layout.Type.HORIZONTAL;
+                layout.resizeMode = Layout.ResizeMode.CONTAINER;
+            }
             if (!this.getComponent(Sprite)) {
                 this.addComponent(Sprite);
                 this._text = null;
@@ -181,7 +185,7 @@ export class YJCharLabel extends Component {
         if (!sf)
             sf = await YJCharLabelCenter.ins.createSpriteFrame(this.createCharNode(v), uuid);
         sf._uuid = uuid;
-        return this.dynamicAtlas?.packSpriteFrame(sf);
+        return this.dynamicAtlas?.packSpriteFrame(sf) || sf;
     }
 
     private async setSpriteFrame(node: Node, v: string) {

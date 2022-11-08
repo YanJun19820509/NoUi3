@@ -156,7 +156,6 @@ export class SetList extends FuckUi {
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
         let listItems = this.content.children;
-        this.content.active = false;
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
                 let item = listItems[i];
@@ -177,7 +176,6 @@ export class SetList extends FuckUi {
         let i = this.lastIndex;
         if (!this.listData[this.lastIndex]) i = 0;
         await this.setList(this.autoScrollBack ? 0 : i);
-        this.content.active = true;
         this._isSettingData = false;
     }
 
