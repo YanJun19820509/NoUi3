@@ -37,6 +37,9 @@ export function addPanelTo(targetName: string) {
 @executeInEditMode()
 export class YJPanel extends Component {
 
+    /**控制所有panel缓存开关，默认true，否则不缓存 */
+    public static cacheOpened: boolean = true;
+
     /**面板打开事件 */
     public static PanelOpenEvent = '_PanelOpen';
     /**面板关闭事件 */
@@ -62,17 +65,13 @@ export class YJPanel extends Component {
         }
     }
 
-    start() {
-        if (EDITOR) return;
-        no.log('panel onLoad', this.node.name);
-        this.onLoadPanel();
-    }
-
     onEnable() {
         if (EDITOR) return;
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
+        no.log('panel onLoad', this.node.name);
+        this.onLoadPanel();
     }
 
     /**
@@ -94,7 +93,7 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
-        if (this.needCache) {
+        if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();
     }
