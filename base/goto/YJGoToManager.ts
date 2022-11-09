@@ -48,7 +48,7 @@ export class YJGoToManager extends Component {
     private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
         let panel = YJWindowManager.opennedPanel(info.target);
-        if (panel) this._ins.trigger(panel, args, cb);
+        if (panel && panel.node.activeInHierarchy) this._ins.trigger(panel, args, cb);
         else if (!info.isSub)
             YJWindowManager.createPanel(info.target, null, null, panel => {
                 this._ins.trigger(panel, args, cb);

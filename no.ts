@@ -858,6 +858,40 @@ export namespace no {
         return Math.floor(a.getTime() / 1000) + v;
     }
 
+    /**本周一 零点时间戳（秒）*/
+    export function mondayZeroTimestamp(v = 0): number {
+        let a = new Date(sysTime.now * 1000);
+        a.setHours(0, 0, 0, 0);
+        a.setDate(a.getDate() - a.getDay() + 1);
+        return Math.floor(a.getTime() / 1000) + v;
+    }
+
+    /**下周一 零点时间戳（秒）*/
+    export function nextMondayZeroTimestamp(v = 0): number {
+        let a = new Date(sysTime.now * 1000);
+        a.setHours(0, 0, 0, 0);
+        a.setDate(a.getDate() - a.getDay() + 8);
+        return Math.floor(a.getTime() / 1000) + v;
+    }
+
+    /**本月1号 零点时间戳（秒）*/
+    export function date1ZeroTimestamp(v = 0): number {
+        let a = new Date(sysTime.now * 1000);
+        a.setHours(0, 0, 0, 0);
+        a.setDate(1);
+        return Math.floor(a.getTime() / 1000) + v;
+    }
+
+    /**下月1号 零点时间戳（秒）*/
+    export function nextDate1ZeroTimestamp(v = 0): number {
+        let a = new Date(sysTime.now * 1000);
+        a.setHours(0, 0, 0, 0);
+        a.setDate(1);
+        a.setMonth(a.getMonth() + 1);
+        return Math.floor(a.getTime() / 1000) + v;
+    }
+
+
     /**转换为当前零点时间戳（秒） */
     export function toZeroTimestamp(v: number): number {
         let a = new Date(v * 1000);
