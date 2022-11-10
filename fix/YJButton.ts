@@ -34,7 +34,7 @@ export class YJButton extends Component {
         btn.clickEvents.forEach(e => {
             this._clickEvents[this._clickEvents.length] = e;
         });
-        btn.clickEvents = [];
+        btn.clickEvents.length = 0;
         let a = new EventHandler();
         a.target = this.node;
         a.component = 'YJButton';

@@ -276,10 +276,10 @@ export class SetList extends FuckUi {
         let startIndex = 0;
         if (this.isVertical) {
             curPos = no.y(this.content);
-            startIndex = Math.floor(curPos / this.itemSize.height);
+            startIndex = curPos / this.itemSize.height | 0;
         } else {
             curPos = no.x(this.content);
-            startIndex = Math.floor(-curPos / this.itemSize.width);
+            startIndex = -curPos / this.itemSize.width | 0;
         }
         //到左或到顶
         if (this.lastIndex == 0 && startIndex <= this.lastIndex) return;
@@ -318,9 +318,9 @@ export class SetList extends FuckUi {
         this.isVertical = this.scrollView.vertical;
         let showMax: number;
         if (this.isVertical) {
-            showMax = Math.ceil(viewSize.height / this.itemSize.height);
+            showMax = no.ceil(viewSize.height / this.itemSize.height);
         } else {
-            showMax = Math.ceil(viewSize.width / this.itemSize.width);
+            showMax = no.ceil(viewSize.width / this.itemSize.width);
         }
         this.showMax = showMax + 2;
     }

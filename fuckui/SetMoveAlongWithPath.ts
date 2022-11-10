@@ -45,7 +45,7 @@ export class SetMoveAlongWithPath extends FuckUi {
         if (data.paths != null) {
             let pks = Object.keys(data.paths);
             //如果有多条路径则随机选择一条
-            this.paths = data.paths[pks[Math.floor(Math.random() * pks.length)]] as Vec2[];
+            this.paths = data.paths[pks[Math.random() * pks.length | 0]] as Vec2[];
             this.startMove();
         }
     }
@@ -141,7 +141,7 @@ export class SetMoveAlongWithPath extends FuckUi {
         this.moveDuration = 0;
         this.moveVector = null;
         this.speedChanged = false;
-        this.paths = [];
+        this.paths.length = 0;
     }
 
     public a_toNextStep() {

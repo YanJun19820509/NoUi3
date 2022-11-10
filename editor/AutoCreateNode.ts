@@ -180,11 +180,14 @@ export class AutoCreateNode extends Component {
                 this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
                 s.spriteFrame = f;
             }, () => {
-                no.assetBundleManager.loadSpriteFrameInEditorMode(`db://assets/resources/texture_c/${c.name}.png`, (f, info) => {
-                    this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
-                    s.spriteFrame = f;
+                no.assetBundleManager.loadSpriteAtlasInEditorMode('db://assets/resources/atlas/uis.plist', (f, info) => {
+                    if (f.getSpriteFrame(c.name)) {
+                        s.spriteAtlas = f;
+                        s.spriteFrame = f.getSpriteFrame(c.name);
+                    } else
+                        n.addComponent('SetDynamicSpriteFrame');
                 }, () => {
-                    n.addComponent('SetDynamicSpriteFrame');
+                    console.error('assets/resources/atlas/uis.plist not found!!')
                 });
             });
         }
@@ -274,7 +277,7 @@ export class AutoCreateNode extends Component {
             let bar = n.children[1] || n.children[0];
             pb.barSprite = bar.getComponent(Sprite);
             pb.totalLength = (c.children[1] || c.children[0]).w;
-            bar.setPosition(v3(-pb.totalLength / 2, 0));
+            bar.setPosition(-pb.totalLength / 2, 0);
             let sp = n.addComponent(SetProgress);
             sp.progressBar = pb;
         }

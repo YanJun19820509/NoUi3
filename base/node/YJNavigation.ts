@@ -43,6 +43,6 @@ export class YJNavigation extends Component {
     }
 
     public clear() {
-        this.windowQueue = [];
+        this.windowQueue.length = 0;
     }
 }

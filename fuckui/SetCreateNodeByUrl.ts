@@ -42,7 +42,7 @@ export class SetCreateNodeByUrl extends FuckUi {
 
     private template: Node;
     private url: string;
-    private needDestroyChildrenUuid: string[];
+    private needDestroyChildrenUuid: string[] = [];
     private isDestroied: boolean = false;
 
 
@@ -127,11 +127,11 @@ export class SetCreateNodeByUrl extends FuckUi {
             if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
                 child.destroy();
         });
-        this.needDestroyChildrenUuid = [];
+        this.needDestroyChildrenUuid.length = 0;
     }
 
     private setNeedDestroyChildren() {
-        this.needDestroyChildrenUuid = [];
+        this.needDestroyChildrenUuid.length = 0;
         this.container?.children.forEach(child => {
             this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
         });

@@ -93,7 +93,7 @@ export class YJJobManager extends Component {
                 if (this.lastJobKeyIndex > i) this.lastJobKeyIndex--;
             }
         }
-        this.needRemoveJobKeys = [];
+        this.needRemoveJobKeys.length = 0;
     }
 
     update() {

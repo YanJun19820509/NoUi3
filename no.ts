@@ -194,7 +194,7 @@ export namespace no {
         }
 
         constructor() {
-            let t = Math.floor(sys.now() / 1000);
+            let t = sys.now() / 1000 | 0;
             this._time = t;
             this._targets = [];
             this._num = 1;
@@ -455,7 +455,7 @@ export namespace no {
         } else {
             a = s[0] + s[1] + (l == 0 ? s[2] : '');
         }
-        return a + unit[Math.floor(len / 3) - 1 - (l == 0 ? 1 : 0)];
+        return a + unit[(len / 3 | 0) - 1 - (l == 0 ? 1 : 0)];
     }
 
     /**
@@ -472,7 +472,7 @@ export namespace no {
         for (var i = 0; i < n; i++) {
             let al = a.length;
             if (al == 0) break;
-            let b = Math.floor(Math.random() * al);
+            let b = Math.random() * al | 0;
             if (!repeatable)
                 c = [].concat(c, a.splice(b, 1));
             else
@@ -602,7 +602,7 @@ export namespace no {
      */
     export function arrayToArrays(array: any[], num: number): any[] {
         var dd = [];
-        let length = Math.ceil(array.length / num);
+        let length = ceil(array.length / num);
         for (var ii = 0; ii < length; ii++) {
             dd[ii] = [];
             for (var jj = 0; jj < num; jj++) {
@@ -766,12 +766,7 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array)
-            try {
-                return JSON.parse(JSON.stringify(d));
-            } catch (e) {
-                no.err('JSON.parse', 'clone');
-            }
+        if (d instanceof Array) return d.slice();
         else if (d instanceof Object) return instantiate(d);
         return d;
     }
@@ -798,7 +793,7 @@ export namespace no {
         if (min > max) {
             min = max;
         }
-        return Math.floor(min / max * maxNum);
+        return min / max * maxNum | 0;
     }
 
     /**
@@ -809,7 +804,7 @@ export namespace no {
     export function randomBetween(min: number, max: number): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        return Math.floor(Math.random() * (max - min)) + min;
+        return (Math.random() * (max - min) | 0) + min;
     }
 
     /**
@@ -817,9 +812,9 @@ export namespace no {
      * @param v 总秒数
      */
     export function parseSeconds(v: number): { d: number, h: number, M: number, s: number } {
-        let d = Math.floor(v / 86400);
-        let h = Math.floor(v / 3600) % 24;
-        let M = Math.floor((v % 3600) / 60);
+        let d = v / 86400 | 0;
+        let h = (v / 3600 | 0) % 24;
+        let M = (v % 3600) / 60 | 0;
         let s = v % 60;
         return { d: d, h: h, M: M, s: s };
     }
@@ -842,7 +837,7 @@ export namespace no {
     /**当前时间戳（秒） */
     export function timestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
     /**当前时间戳（毫秒） */
@@ -855,7 +850,7 @@ export namespace no {
     export function zeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
     /**本周一 零点时间戳（秒）*/
@@ -863,7 +858,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(a.getDate() - a.getDay() + 1);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
     /**下周一 零点时间戳（秒）*/
@@ -871,7 +866,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(a.getDate() - a.getDay() + 8);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
     /**本月1号 零点时间戳（秒）*/
@@ -879,7 +874,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(1);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
     /**下月1号 零点时间戳（秒）*/
@@ -888,7 +883,7 @@ export namespace no {
         a.setHours(0, 0, 0, 0);
         a.setDate(1);
         a.setMonth(a.getMonth() + 1);
-        return Math.floor(a.getTime() / 1000) + v;
+        return (a.getTime() / 1000 | 0) + v;
     }
 
 
@@ -896,7 +891,7 @@ export namespace no {
     export function toZeroTimestamp(v: number): number {
         let a = new Date(v * 1000);
         a.setHours(0, 0, 0, 0);
-        return Math.floor(a.getTime() / 1000);
+        return a.getTime() / 1000 | 0;
     }
 
     /**
@@ -906,8 +901,8 @@ export namespace no {
      */
     export function time2LocalFormat(time: number): string {
         let h: number, m: number, s: number;
-        h = Math.floor(time / 3600);
-        m = Math.floor((time % 3600) / 60);
+        h = time / 3600 | 0;
+        m = (time % 3600) / 60 | 0;
         s = time % 60;
         return `${h}${m}${s}`;
     }
@@ -919,8 +914,8 @@ export namespace no {
      */
     export function second2LocalString(seconds: number): string {
         let h: number, m: number, s: number;
-        h = Math.floor(seconds / 3600);
-        m = Math.floor((seconds % 3600) / 60);
+        h = seconds / 3600 | 0;
+        m = (seconds % 3600) / 60 | 0;
         s = seconds % 60;
         let a = '';
         if (h > 0) a = `${h}`;
@@ -940,16 +935,16 @@ export namespace no {
             let a = show0 ? '00' : '0';
             return formatString(formatter, { h: a, m: a, s: a });
         }
-        let d = Math.floor(sec / 3600 / 24);
-        let h = Math.floor(sec / 3600) % 24;
+        let d = sec / 3600 / 24 | 0;
+        let h = (sec / 3600 | 0) % 24;
         if (d > 0) {
             // todo i18n
             formatter = `{d}{h}`;
             return formatString(formatter, { h: h, d: d });
         }
 
-        let m: any = Math.floor(sec / 60 % 60);
-        let s: any = Math.floor(sec % 60);
+        let m: any = sec / 60 % 60 | 0;
+        let s: any = sec % 60 | 0;
 
         // if (h<=9){h = `0${h}`}
         if (m <= 9 && show0) { m = `0${m}` }
@@ -964,8 +959,8 @@ export namespace no {
             return formatString(formatter, { h: a, M: a, s: a });
         }
         let h: any, m: any, s: any;
-        h = Math.floor(sec / 3600);
-        m = Math.floor((sec % 3600) / 60);
+        h = sec / 3600 | 0;
+        m = (sec % 3600) / 60 | 0;
         s = sec % 60;
         if (m <= 9 && show0) { m = `0${m}`; }
         if (s <= 9 && show0) { s = `0${s}`; }
@@ -1203,8 +1198,29 @@ export namespace no {
         return weightRandom(a);
     }
 
+    /**
+     * 浮点数取整数位
+     * @param v 
+     * @returns 
+     */
+    export function floor(v: number): number {
+        return v | 0;
+    }
+    /**
+     * 浮点数取小数位
+     * @param v 
+     * @returns 
+     */
     export function fract(v: number): number {
-        return v - Math.floor(v);
+        return v - floor(v);
+    }
+    /**
+     * 浮点数取整数位并+1
+     * @param v 
+     * @returns 
+     */
+    export function ceil(v: number): number {
+        return floor(v) + 1;
     }
 
     export enum TweenSetType {
@@ -1596,7 +1612,7 @@ export namespace no {
         let a = Math.pow(10, 12),
             b = Math.pow(10, 12 - x),
             c = Math.pow(10, x);
-        return Math.floor(Math.ceil(v * a) / b) / c;
+        return (ceil(v * a) / b | 0) / c;
     }
 
     /**
@@ -2272,6 +2288,30 @@ export namespace no {
             }
         }
 
+        public async loadSpriteAtlasInEditorMode(url: string, callback: (file: SpriteAtlas, info: any) => void, onErr?: () => void) {
+            if (!EDITOR) return;
+            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
+            if (!info) {
+                onErr?.();
+                return;
+            }
+            for (const key in info.subAssets) {
+                let sub = info.subAssets[key];
+                if (sub.type == 'cc.SpriteAtlas') {
+                    assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteAtlas }, (err, item: SpriteAtlas) => {
+                        if (err) {
+                            console.log(url, err);
+                            onErr?.();
+                        }
+                        else {
+                            callback(item, sub);
+                        }
+                    });
+                    break;
+                }
+            }
+        }
+
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {
@@ -2769,9 +2809,9 @@ export namespace no {
         /**带单位的值 */
         public get unitValue(): string {
             if (this.index < 3) {
-                return `${Math.floor(this._coefficient * Math.pow(10, this.index))}`;
+                return `${this._coefficient * Math.pow(10, this.index) | 0}`;
             }
-            let a = Math.floor(this.index / 3),
+            let a = this.index / 3 | 0,
                 b = this.index % 3,
                 u: string;
             if (a < 4) {
@@ -2779,7 +2819,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${Math.floor(this._coefficient * Math.pow(10, b + 2)) / 100}${u}`;
+            return `${(this._coefficient * Math.pow(10, b + 2) | 0) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
@@ -2789,7 +2829,7 @@ export namespace no {
             if (a < len)
                 u = units[a];
             else {
-                let c = Math.floor(a / len);
+                let c = a / len | 0;
                 u = units[a % len];
                 u = this.getUnit(c) + u;
             }
@@ -2811,7 +2851,7 @@ export namespace no {
             if (this.index < step) {
                 return `${float(this._coefficient * Math.pow(10, this.index), digits)}`;
             }
-            let a = Math.floor(this.index / step),
+            let a = this.index / step | 0,
                 b = this.index % step,
                 u: string = units[a - 1];
             return `${float(this._coefficient * Math.pow(10, b), digits)}${u}`;

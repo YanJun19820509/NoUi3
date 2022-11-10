@@ -62,7 +62,7 @@ export class YJComponent extends Component {
         if (this.updateHandlers == null) return;
 
         this.removeHandlers(this.needRemoveHandlerKeys);
-        this.needRemoveHandlerKeys = [];
+        this.needRemoveHandlerKeys.length = 0;
         let keys = [];
         this.updateHandlers.forEach((v, k) => {
             let run = false;
