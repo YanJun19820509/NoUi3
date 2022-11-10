@@ -37,6 +37,10 @@ export class AutoCreateNode extends Component {
     private parent: Node;
     private rootPath: string;
 
+    onLoad() {
+        if (!EDITOR) this.destroy();
+    }
+
     onEnable() {
         if (EDITOR) {
             this.loadConfigFile();

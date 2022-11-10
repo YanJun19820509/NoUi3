@@ -113,7 +113,7 @@
     "_lpos": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": 402,
+      "y": 202,
       "z": 0
     },
     "_lrot": {
@@ -364,6 +364,7 @@
       "__id__": 15
     },
     "autoRegister": false,
+    "subFuckUiNodes": [],
     "_id": ""
   },
   {
@@ -602,7 +603,7 @@
     "_target": null,
     "_left": 0,
     "_right": 0,
-    "_top": -200,
+    "_top": 0,
     "_bottom": 0,
     "_horizontalCenter": 0,
     "_verticalCenter": 0,
@@ -1111,6 +1112,7 @@
       "__id__": 51
     },
     "autoRegister": false,
+    "subFuckUiNodes": [],
     "_id": ""
   },
   {
@@ -1236,6 +1238,7 @@
     "register": {
       "__id__": 50
     },
+    "onlyDiff": true,
     "_id": ""
   },
   {
@@ -1598,6 +1601,7 @@
       "__id__": 38
     },
     "columnNumber": 1,
+    "onlyFirstTime": false,
     "wait": 0,
     "scrollView": {
       "__id__": 79
@@ -1605,6 +1609,7 @@
     "dynamicAtlas": null,
     "autoScrollBack": false,
     "clearOnDisable": true,
+    "recreateOnEnable": false,
     "setTemplateInfo": false,
     "showMax": 10,
     "itemSize": {
@@ -1954,6 +1959,7 @@
     "register": {
       "__id__": 14
     },
+    "onlyDiff": true,
     "size": {
       "__type__": "cc.Size",
       "width": 200,
@@ -1962,6 +1968,7 @@
     "duration": 0.1,
     "autoShow": true,
     "onShow": [],
+    "onHide": [],
     "onChange": [],
     "_id": ""
   },

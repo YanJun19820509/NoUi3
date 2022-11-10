@@ -194,7 +194,7 @@ export namespace no {
         }
 
         constructor() {
-            let t = sys.now() / 1000 | 0;
+            let t = floor(sys.now() / 1000);
             this._time = t;
             this._targets = [];
             this._num = 1;
@@ -292,7 +292,7 @@ export namespace no {
      */
     export function uuid(): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0,
+            var r = floor(Math.random() * 16),
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
@@ -455,7 +455,7 @@ export namespace no {
         } else {
             a = s[0] + s[1] + (l == 0 ? s[2] : '');
         }
-        return a + unit[(len / 3 | 0) - 1 - (l == 0 ? 1 : 0)];
+        return a + unit[floor(len / 3) - 1 - (l == 0 ? 1 : 0)];
     }
 
     /**
@@ -472,7 +472,7 @@ export namespace no {
         for (var i = 0; i < n; i++) {
             let al = a.length;
             if (al == 0) break;
-            let b = Math.random() * al | 0;
+            let b = floor(Math.random() * al);
             if (!repeatable)
                 c = [].concat(c, a.splice(b, 1));
             else
@@ -793,7 +793,7 @@ export namespace no {
         if (min > max) {
             min = max;
         }
-        return min / max * maxNum | 0;
+        return floor(min / max * maxNum);
     }
 
     /**
@@ -804,7 +804,7 @@ export namespace no {
     export function randomBetween(min: number, max: number): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        return (Math.random() * (max - min) | 0) + min;
+        return floor(Math.random() * (max - min)) + min;
     }
 
     /**
@@ -812,9 +812,9 @@ export namespace no {
      * @param v 总秒数
      */
     export function parseSeconds(v: number): { d: number, h: number, M: number, s: number } {
-        let d = v / 86400 | 0;
-        let h = (v / 3600 | 0) % 24;
-        let M = (v % 3600) / 60 | 0;
+        let d = floor(v / 86400);
+        let h = floor(v / 3600) % 24;
+        let M = floor((v % 3600) / 60);
         let s = v % 60;
         return { d: d, h: h, M: M, s: s };
     }
@@ -837,7 +837,7 @@ export namespace no {
     /**当前时间戳（秒） */
     export function timestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
     /**当前时间戳（毫秒） */
@@ -850,7 +850,7 @@ export namespace no {
     export function zeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
     /**本周一 零点时间戳（秒）*/
@@ -858,7 +858,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(a.getDate() - a.getDay() + 1);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
     /**下周一 零点时间戳（秒）*/
@@ -866,7 +866,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(a.getDate() - a.getDay() + 8);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
     /**本月1号 零点时间戳（秒）*/
@@ -874,7 +874,7 @@ export namespace no {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(1);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
     /**下月1号 零点时间戳（秒）*/
@@ -883,7 +883,7 @@ export namespace no {
         a.setHours(0, 0, 0, 0);
         a.setDate(1);
         a.setMonth(a.getMonth() + 1);
-        return (a.getTime() / 1000 | 0) + v;
+        return floor(a.getTime() / 1000) + v;
     }
 
 
@@ -891,7 +891,7 @@ export namespace no {
     export function toZeroTimestamp(v: number): number {
         let a = new Date(v * 1000);
         a.setHours(0, 0, 0, 0);
-        return a.getTime() / 1000 | 0;
+        return floor(a.getTime() / 1000);
     }
 
     /**
@@ -901,8 +901,8 @@ export namespace no {
      */
     export function time2LocalFormat(time: number): string {
         let h: number, m: number, s: number;
-        h = time / 3600 | 0;
-        m = (time % 3600) / 60 | 0;
+        h = floor(time / 3600);
+        m = floor((time % 3600) / 60);
         s = time % 60;
         return `${h}${m}${s}`;
     }
@@ -914,8 +914,8 @@ export namespace no {
      */
     export function second2LocalString(seconds: number): string {
         let h: number, m: number, s: number;
-        h = seconds / 3600 | 0;
-        m = (seconds % 3600) / 60 | 0;
+        h = floor(seconds / 3600);
+        m = floor((seconds % 3600) / 60);
         s = seconds % 60;
         let a = '';
         if (h > 0) a = `${h}`;
@@ -935,16 +935,16 @@ export namespace no {
             let a = show0 ? '00' : '0';
             return formatString(formatter, { h: a, m: a, s: a });
         }
-        let d = sec / 3600 / 24 | 0;
-        let h = (sec / 3600 | 0) % 24;
+        let d = floor(sec / 3600 / 24);
+        let h = floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
             formatter = `{d}{h}`;
             return formatString(formatter, { h: h, d: d });
         }
 
-        let m: any = sec / 60 % 60 | 0;
-        let s: any = sec % 60 | 0;
+        let m: any = floor(sec / 60 % 60);
+        let s: any = floor(sec % 60);
 
         // if (h<=9){h = `0${h}`}
         if (m <= 9 && show0) { m = `0${m}` }
@@ -959,8 +959,8 @@ export namespace no {
             return formatString(formatter, { h: a, M: a, s: a });
         }
         let h: any, m: any, s: any;
-        h = sec / 3600 | 0;
-        m = (sec % 3600) / 60 | 0;
+        h = floor(sec / 3600);
+        m = floor((sec % 3600) / 60);
         s = sec % 60;
         if (m <= 9 && show0) { m = `0${m}`; }
         if (s <= 9 && show0) { s = `0${s}`; }
@@ -1199,12 +1199,15 @@ export namespace no {
     }
 
     /**
-     * 浮点数取整数位
+     * 浮点数取整数位，不能用于超大数据
      * @param v 
      * @returns 
      */
     export function floor(v: number): number {
-        return v | 0;
+        if (v < 1 && v >= 0) return 0;
+        let a = v | 0;
+        if (a == 0 || (v > 0 && a < 0) || (v < 0 && a > 0)) return Math.floor(v);
+        return a;
     }
     /**
      * 浮点数取小数位
@@ -1212,15 +1215,19 @@ export namespace no {
      * @returns 
      */
     export function fract(v: number): number {
-        return v - floor(v);
+        let s = String(v).split('.');
+        s[0] = '0';
+        return Number(s.join('.'));
     }
     /**
-     * 浮点数取整数位并+1
+     * 浮点数取整数位并+1，不能用于超大数据
      * @param v 
      * @returns 
      */
     export function ceil(v: number): number {
-        return floor(v) + 1;
+        let a = floor(v);
+        if (a < 0) return a;
+        return a + 1;
     }
 
     export enum TweenSetType {
@@ -1612,7 +1619,7 @@ export namespace no {
         let a = Math.pow(10, 12),
             b = Math.pow(10, 12 - x),
             c = Math.pow(10, x);
-        return (ceil(v * a) / b | 0) / c;
+        return Math.floor(Math.ceil(v * a) / b) / c;
     }
 
     /**
@@ -2809,9 +2816,9 @@ export namespace no {
         /**带单位的值 */
         public get unitValue(): string {
             if (this.index < 3) {
-                return `${this._coefficient * Math.pow(10, this.index) | 0}`;
+                return `${floor(this._coefficient * Math.pow(10, this.index))}`;
             }
-            let a = this.index / 3 | 0,
+            let a = floor(this.index / 3),
                 b = this.index % 3,
                 u: string;
             if (a < 4) {
@@ -2819,7 +2826,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${(this._coefficient * Math.pow(10, b + 2) | 0) / 100}${u}`;
+            return `${floor(this._coefficient * Math.pow(10, b + 2)) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
@@ -2829,7 +2836,7 @@ export namespace no {
             if (a < len)
                 u = units[a];
             else {
-                let c = a / len | 0;
+                let c = floor(a / len);
                 u = units[a % len];
                 u = this.getUnit(c) + u;
             }
@@ -2851,7 +2858,7 @@ export namespace no {
             if (this.index < step) {
                 return `${float(this._coefficient * Math.pow(10, this.index), digits)}`;
             }
-            let a = this.index / step | 0,
+            let a = floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a - 1];
             return `${float(this._coefficient * Math.pow(10, b), digits)}${u}`;

@@ -99,6 +99,7 @@
     "__prefab": {
       "__id__": 5
     },
+    "mode": 0,
     "color": {
       "__type__": "cc.Color",
       "r": 255,
@@ -109,8 +110,9 @@
     "text": "",
     "fontSize": 22,
     "font": null,
+    "fontFamily": "Arial",
     "lineHeight": 22,
-    "letterSpacing": 0,
+    "maxWidth": 0,
     "italic": false,
     "bold": false,
     "outlineColor": {
@@ -164,7 +166,7 @@
     "_paddingRight": 0,
     "_paddingTop": 0,
     "_paddingBottom": 0,
-    "_spacingX": 0,
+    "_spacingX": 1,
     "_spacingY": 0,
     "_verticalDirection": 1,
     "_horizontalDirection": 0,

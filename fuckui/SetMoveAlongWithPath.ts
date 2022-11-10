@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, v3, Vec2, Vec3, math } from 'cc';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJMoveAlongWithPathDelegate } from './YJMoveAlongWithPathDelegate';
 const { ccclass, property, menu } = _decorator;
@@ -45,7 +46,7 @@ export class SetMoveAlongWithPath extends FuckUi {
         if (data.paths != null) {
             let pks = Object.keys(data.paths);
             //如果有多条路径则随机选择一条
-            this.paths = data.paths[pks[Math.random() * pks.length | 0]] as Vec2[];
+            this.paths = data.paths[pks[no.floor(Math.random() * pks.length)]] as Vec2[];
             this.startMove();
         }
     }

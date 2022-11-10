@@ -51,19 +51,11 @@ export class YJDynamicTexture extends Component {
     }
 
     start() {
-        // this._needInit = true;
-
+        if (EDITOR) return;
         this.scheduleOnce(() => {
             this.init();
         }, 0.2);
     }
-
-    // lateUpdate() {
-    //     // if (this._needInit) {
-    //     //     this._needInit = false;
-    //     //     this.init();
-    //     // }
-    // }
 
     public init() {
         if (!this.enabledInHierarchy) return;

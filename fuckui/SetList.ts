@@ -276,10 +276,10 @@ export class SetList extends FuckUi {
         let startIndex = 0;
         if (this.isVertical) {
             curPos = no.y(this.content);
-            startIndex = curPos / this.itemSize.height | 0;
+            startIndex = no.floor(curPos / this.itemSize.height);
         } else {
             curPos = no.x(this.content);
-            startIndex = -curPos / this.itemSize.width | 0;
+            startIndex = no.floor(-curPos / this.itemSize.width);
         }
         //到左或到顶
         if (this.lastIndex == 0 && startIndex <= this.lastIndex) return;

@@ -57,7 +57,8 @@ export class YJPanel extends Component {
     onClose: no.EventHandlerInfo[] = [];
 
     /**是否缓存，默认缓存，特殊情况下不需要缓存的则手动设置为false */
-    public needCache: boolean = true;
+    @property
+    needCache: boolean = true;
 
     onLoad() {
         if (EDITOR) {

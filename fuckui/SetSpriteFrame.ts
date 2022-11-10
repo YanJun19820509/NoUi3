@@ -36,6 +36,7 @@ export class SetSpriteFrame extends FuckUi {
 
     private packSpriteFrame() {
         YJJobManager.ins.execute(() => {
+            if (!this.getComponent(YJDynamicTexture)) return;
             this.getComponent(YJDynamicTexture).packSpriteFrame();
             this.checkShader();
             return false;

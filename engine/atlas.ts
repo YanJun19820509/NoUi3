@@ -211,7 +211,7 @@ export class Atlas {
 
     private _rotateImageBuffer(buffer: Uint8Array, width: number, height: number, cw = true) {
         var dd = [];
-        let length = no.ceil(buffer.length / 4);
+        let length = Math.ceil(buffer.length / 4);
         for (var ii = 0; ii < length; ii++) {
             dd[ii] = [];
             for (var jj = 0; jj < 4; jj++) {
