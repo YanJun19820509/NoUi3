@@ -22,6 +22,8 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 export class YJToggleGroupManager extends Component {
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
+    @property(no.EventHandlerInfo)
+    onClick: no.EventHandlerInfo[] = [];
 
     @property({ tooltip: '在disable时重置选中项' })
     reset: boolean = true;
@@ -40,6 +42,7 @@ export class YJToggleGroupManager extends Component {
     private checkedToggleUuid: string = null;
     private defaultCheckedIdx: number;
     private needWait: boolean = false;
+    private isInit: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -51,6 +54,7 @@ export class YJToggleGroupManager extends Component {
 
     onEnable() {
         if (EDITOR) return;
+        this.isInit = true;
         let items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
             let toggle = items[i];
@@ -85,7 +89,8 @@ export class YJToggleGroupManager extends Component {
             // a._componentId = js._getClassId(YJToggleGroupManager);
             // a.handler = 'a_onCheck';
             // toggle.clickEvents = [a];
-            no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck');
+            no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
+            no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, '_onClick', false);
         }
         this.onEnable();
     }
@@ -113,6 +118,15 @@ export class YJToggleGroupManager extends Component {
         //否则按下标调用对应的回调方法
         let i = no.indexOfArray(this.getComponentsInChildren(Toggle), toggle, 'uuid');
         (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
+    }
+
+
+    private _onClick(): void {
+        if (this.isInit) {
+            this.isInit = false;
+            return;
+        }
+        no.EventHandlerInfo.execute(this.onClick);
     }
 
     public a_check(idx: number): void {
