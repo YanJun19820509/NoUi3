@@ -94,7 +94,7 @@ export class YJCharLabel extends Component {
                 this._text = null;
             }
             this.getComponent(Sprite)?.destroy();
-            let sp = this.italic ? -this.fontSize / 7 : 1;
+            let sp = this.italic ? -this.fontSize / 4 : -2;
             let s = this.getComponent(Layout).spacingX;
             if (s != sp) {
                 this.getComponent(Layout).spacingX = sp;
