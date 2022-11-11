@@ -29,17 +29,35 @@ const { ccclass, property, requireComponent } = _decorator;
 @ccclass('SetScrollPanel')
 @requireComponent(YJScrollPanel)
 export class SetScrollPanel extends FuckUi {
+    @property({ type: no.EventHandlerInfo })
+    onScrollEnd: no.EventHandlerInfo[] = [];
+
     protected onDataChange(data: any) {
         let { pos, target, scale, offset, duration }: { pos?: number[], target?: string, scale?: number, offset?: number[], duration?: number } = data;
+        if (duration < 0) duration = 0;
         let sp = this.getComponent(YJScrollPanel);
         let os = offset ? math.v2(offset[0], offset[1]) : null;
         if (pos) {
             let p = math.v3(pos[0], pos[1]);
             if (scale) sp.scrollToAndScale(p, scale, os, duration);
             else sp.scrollTo(p, os, duration);
+            this.endCall(duration);
         } else if (target) {
-            if (scale) sp.scrollToTargetAndScale(target, scale, os, duration);
-            else sp.scrollToTarget(target, os, duration);
-        } else if (scale) sp.scaleTo(scale, duration);
+            if (scale) sp.scrollToTargetAndScale(target, scale, os, duration, () => {
+                this.endCall(duration);
+            });
+            else sp.scrollToTarget(target, os, duration, () => {
+                this.endCall(duration);
+            });
+        } else if (scale) {
+            sp.scaleTo(scale, duration);
+            this.endCall(duration);
+        }
+    }
+
+    private endCall(duration = 0) {
+        this.scheduleOnce(() => {
+            no.EventHandlerInfo.execute(this.onScrollEnd);
+        }, duration);
     }
 }

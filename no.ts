@@ -766,7 +766,12 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array) return d.slice();
+        if (d instanceof Array)
+            try {
+                return JSON.parse(JSON.stringify(d));
+            } catch (e) {
+                no.err('JSON.parse', 'clone');
+            }
         else if (d instanceof Object) return instantiate(d);
         return d;
     }

@@ -142,27 +142,29 @@ export class YJScrollPanel extends Component {
         }
     }
 
-    public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number): void {
+    public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             this.scheduleOnce(() => {
-                this.scrollToTarget(targetType, offset, duration);
-            });
+                this.scrollToTarget(targetType, offset, duration, cb);
+            }, 1 / 30);
             console.error('scrollToTargetAndScale找不到target：', targetType);
             return;
         }
+        cb?.(target);
         this.scrollTo(this.fitTargetToCenter(target), offset, duration);
     }
 
-    public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number): void {
+    public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             this.scheduleOnce(() => {
-                this.scrollToTargetAndScale(targetType, scale, offset, duration);
-            });
+                this.scrollToTargetAndScale(targetType, scale, offset, duration, cb);
+            }, 1 / 30);
             console.error('scrollToTargetAndScale找不到target：', targetType);
             return;
         }
+        cb?.(target);
         this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, offset, duration);
     }
 
