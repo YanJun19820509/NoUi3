@@ -38,6 +38,10 @@ export class SetProgress extends FuckUi {
 
     onDisable() {
         this.isFirst = true;
+        if (this.targetValue >= 0) {
+            this.progressBar.progress = this.targetValue;
+            this.targetValue = -1;
+        }
     }
 
     protected onDataChange(data: any) {
@@ -52,7 +56,7 @@ export class SetProgress extends FuckUi {
         }
     }
 
-    update(dt: number): void {
+    private setProgressByFrame(dt: number) {
         if (this.targetValue >= 0) {
             let p = this.progressBar.progress + this.speed * this.dir * dt;
             if (this.dir > 0 && p >= this.targetValue || this.dir < 0 && p <= this.targetValue) {
@@ -61,5 +65,9 @@ export class SetProgress extends FuckUi {
             }
             this.progressBar.progress = p;
         }
+    }
+
+    update(dt: number): void {
+        this.setProgressByFrame(dt);
     }
 }
