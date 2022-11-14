@@ -45,16 +45,28 @@ export class SetCreateSpriteFrame extends FuckUi {
             let arr: { frame: SpriteFrame, x: number, y: number }[] = [];
             for (let i = 0, n = spriteFrames.length; i < n; i++) {
                 let a = spriteFrames[i];
-                no.assetBundleManager.loadSprite(a.url + '/spriteFrame', sf => {
-                    arr[arr.length] = {
-                        frame: sf,
-                        x: a.x,
-                        y: a.y
-                    };
-                    if (arr.length == n) {
-                        resolve(this.drawSpriteFramesToTexture(arr));
-                    }
-                });
+                if (a.atlas)
+                    no.assetBundleManager.loadAtlas(a.atlas, atlas => {
+                        arr[arr.length] = {
+                            frame: atlas.getSpriteFrame(a.url),
+                            x: a.x,
+                            y: a.y
+                        };
+                        if (arr.length == n) {
+                            resolve(this.drawSpriteFramesToTexture(arr));
+                        }
+                    });
+                else
+                    no.assetBundleManager.loadSprite(a.url + '/spriteFrame', sf => {
+                        arr[arr.length] = {
+                            frame: sf,
+                            x: a.x,
+                            y: a.y
+                        };
+                        if (arr.length == n) {
+                            resolve(this.drawSpriteFramesToTexture(arr));
+                        }
+                    });
             }
         });
     }
@@ -112,9 +124,44 @@ export class SetCreateSpriteFrame extends FuckUi {
     }
 
     private drawSpriteFrameToTexture(sf: SpriteFrame, x: number, y: number) {
-        let rect = sf.rect;
+        let rect = sf.rect.clone();
+        if (sf.rotated) {
+            const temp = rect.width;
+            rect.width = rect.height;
+            rect.height = temp;
+        }
         let buffer = this.texture?.getTextureBuffer(sf.texture as Texture2D, rect);
+        if (sf.rotated) {
+            this._rotateImageBuffer(buffer, rect.width, rect.height, false);
+            const temp = rect.width;
+            rect.width = rect.height;
+            rect.height = temp;
+        }
         this.texture?.drawTextureBufferAt(buffer, x - rect.width / 2, y - rect.height / 2, rect.width, rect.height);
+    }
+
+    private _rotateImageBuffer(buffer: Uint8Array, width: number, height: number, cw = true) {
+        var dd = [];
+        let length = Math.ceil(buffer.length / 4);
+        for (var ii = 0; ii < length; ii++) {
+            dd[ii] = [];
+            for (var jj = 0; jj < 4; jj++) {
+                dd[ii][jj] = buffer[ii * 4 + jj];
+            }
+        }
+        cw && (dd = dd.reverse());
+        let bb = [];
+        for (var y = 0; y < height; y++) {
+            for (var x = 0; x < width; x++) {
+                const [_x, _y] = [y, width - x - 1];
+                bb[_y * height + _x] = dd[y * width + x];
+            }
+        }
+        for (var i = 0; i < length; i++) {
+            for (var j = 0; j < 4; j++) {
+                buffer[i * 4 + j] = bb[i][j];
+            }
+        }
     }
 
     private drawTTFSpriteFramesToCanvas(labels: { label: Label, x: number, y: number }[]) {

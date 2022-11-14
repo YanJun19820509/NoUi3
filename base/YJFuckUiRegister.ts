@@ -56,7 +56,8 @@ export class YJFuckUiRegister extends Component {
     private bindSubFuckUis() {
         let list: FuckUiComponent[] = this.getComponentsInChildren('FuckUi') as FuckUiComponent[];
         this.subFuckUiNodes.forEach(sub => {
-            list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUiComponent[]);
+            if (sub)
+                list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUiComponent[]);
         });
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];

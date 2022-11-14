@@ -188,12 +188,14 @@ export class SetTypeWritting extends FuckUi {
             return;
         }
         let labelNode = new Node();
+        labelNode.active = false;
         labelNode.layer = Layers.Enum.UI_2D;
         let ut = labelNode.addComponent(UITransform);
-        ut.setContentSize(10, 10);
+        ut.setContentSize(a.style.size, a.lineHeight);
         ut.setAnchorPoint(0, 0);
         labelNode.addComponent(UIOpacity).opacity = 0;
         let label = labelNode.addComponent(Label);
+        label.string = '';
         label.color = no.str2Color(a.style.color);
         label.fontFamily = a.fontFamily;
         label.fontSize = a.style.size;
@@ -208,13 +210,14 @@ export class SetTypeWritting extends FuckUi {
             outline.color = no.str2Color(a.style.outline.color);
             outline.width = a.style.outline.width;
         }
-        label.string = a.text;
         let dynamicTexture = this.getComponent(YJDynamicTexture);
         if (dynamicTexture && dynamicTexture.enabled) {
             labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
             label.customMaterial = dynamicTexture.dynamicAtlas.commonMaterial;
         }
+        label.string = a.text;
         labelNode.parent = this.node;
+        labelNode.active = true;
         this.scheduleOnce(() => {
             this.setPos(labelNode);
             labelNode.getComponent(UIOpacity).opacity = 255;
@@ -224,23 +227,26 @@ export class SetTypeWritting extends FuckUi {
     private createRichTextNode(v: string) {
         let rt = this.getComponent(RichText);
         let labelNode = new Node();
+        labelNode.active = false;
         labelNode.layer = Layers.Enum.UI_2D;
         let ut = labelNode.addComponent(UITransform);
-        ut.setContentSize(10, 10);
+        ut.setContentSize(rt.fontSize, rt.lineHeight);
         ut.setAnchorPoint(0, 1);
         labelNode.addComponent(UIOpacity).opacity = 0;
         let label = labelNode.addComponent(RichText);
+        label.string = '';
         label.fontFamily = rt.fontFamily;
         label.fontSize = rt.fontSize;
         label.lineHeight = rt.lineHeight;
         label.maxWidth = rt.maxWidth;
         label.cacheMode = Label.CacheMode.BITMAP;
-        label.string = v;
         let dynamicTexture = this.getComponent(YJDynamicTexture);
         if (dynamicTexture && dynamicTexture.enabled) {
             labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
         }
+        label.string = v;
         labelNode.parent = this.node;
+        labelNode.active = true;
         this.scheduleOnce(() => {
             this._x = null;
             this._maxY = 0;

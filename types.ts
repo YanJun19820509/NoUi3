@@ -24,7 +24,7 @@ export enum AlignType {
     Right
 };
 
-export type CreateSpritemFrameSFData = { url: string, x: number, y: number };
+export type CreateSpritemFrameSFData = { url: string, x: number, y: number, atlas?: string };
 
 export type CreateSpritemFrameLabelData = {
     string: string,

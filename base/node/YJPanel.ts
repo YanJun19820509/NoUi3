@@ -59,6 +59,8 @@ export class YJPanel extends Component {
     /**是否缓存，默认缓存，特殊情况下不需要缓存的则手动设置为false */
     @property
     needCache: boolean = true;
+    @property({ visible() { return this.needCache; } })
+    needClear: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -100,6 +102,7 @@ export class YJPanel extends Component {
     }
 
     public clear() {
+        if (YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         this.node.destroy();
     }
 
