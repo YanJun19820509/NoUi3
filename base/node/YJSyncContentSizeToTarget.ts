@@ -19,7 +19,7 @@ const { ccclass, property } = _decorator;
 export class YJSyncContentSizeToTarget extends Component {
     @property(Node)
     target: Node = null;
-    @property({ type: math.Size })
+    @property
     offset: math.Size = math.size();
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
