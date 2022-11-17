@@ -1,5 +1,6 @@
 import { TextAsset, _decorator } from 'cc';
 import { no } from '../no';
+import protobuf from './protobuf.js'
 const { ccclass } = _decorator;
 
 @ccclass('YJProtobuf')
@@ -31,7 +32,7 @@ export class YJProtobuf {
         } else {
             pbd = msgName;
         }
-        this._root = window['protobuf'].parse(pbd, { keepCase: true }).root;
+        this._root = protobuf.parse(pbd, { keepCase: true }).root;
         this._pkgName = pkgName;
     }
 
@@ -39,7 +40,7 @@ export class YJProtobuf {
         this._pkgName = pkgName;
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadFile(file, TextAsset, (asset: TextAsset) => {
-                this._root = window['protobuf'].parse(asset.text, { keepCase: true }).root;
+                this._root = protobuf.parse(asset.text, { keepCase: true }).root;
                 resolve();
             });
         });
