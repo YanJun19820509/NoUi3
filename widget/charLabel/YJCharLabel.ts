@@ -94,7 +94,7 @@ export class YJCharLabel extends Component {
                 this._text = null;
             }
             this.getComponent(Sprite)?.destroy();
-            let sp = this.italic ? -this.fontSize / 4 : -2;
+            let sp = this.italic ? -this.fontSize / 5 : 0;
             let s = this.getComponent(Layout).spacingX;
             if (s != sp) {
                 this.getComponent(Layout).spacingX = sp;
@@ -197,7 +197,7 @@ export class YJCharLabel extends Component {
     private _tempCharNode: Node;
     private createCharNode(v: string): Node {
         let labelNode: Node;
-        if (this._tempCharNode) {
+        if (!EDITOR && this._tempCharNode) {
             labelNode = instantiate(this._tempCharNode);
         } else {
             labelNode = new Node();

@@ -4,7 +4,7 @@ bool isTrue(float defines, bool isColor, float checkValue, float index){
   if (isColor){
     return floor(fract(floor(defines)/pow(10.,index+1.))*10.) == checkValue;
   }else{
-    return fract(floor(fract(defines)*pow(10.,index+1.))/pow(10.,index))*pow(10.,index) == checkValue;
+    return fract(floor(fract(defines)*pow(10.,index+1.))/10.)*10. == checkValue;
   }
 }
 
