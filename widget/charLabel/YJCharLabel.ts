@@ -91,13 +91,12 @@ export class YJCharLabel extends Component {
                 let layout = this.addComponent(Layout);
                 layout.type = Layout.Type.HORIZONTAL;
                 layout.resizeMode = Layout.ResizeMode.CONTAINER;
-                this._text = null;
-            }
-            this.getComponent(Sprite)?.destroy();
-            let sp = this.italic ? -this.fontSize / 5 : 0;
-            let s = this.getComponent(Layout).spacingX;
-            if (s != sp) {
-                this.getComponent(Layout).spacingX = sp;
+                this.getComponent(Sprite)?.destroy();
+                let sp = this.italic ? -this.fontSize / 5 : 0;
+                let s = this.getComponent(Layout).spacingX;
+                if (s != sp) {
+                    this.getComponent(Layout).spacingX = sp;
+                }
                 this._text = null;
             }
         }
