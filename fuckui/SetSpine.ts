@@ -17,7 +17,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
  */
 
 @ccclass('SetSpine')
-@menu('NoUi/ui/SetSpine(设置spine动画:{path, animation, loop, timeScale})')
+@menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
 @requireComponent(sp.Skeleton)
 export class SetSpine extends FuckUi {
 
@@ -42,17 +42,21 @@ export class SetSpine extends FuckUi {
     }
 
     protected onDataChange(data: any) {
-        let { path, animation, loop, timeScale }: { path: string, animation: string, loop: boolean, timeScale: number } = data;
-        let spine = this.getComponent(sp.Skeleton);
+        let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
+        const spine = this.getComponent(sp.Skeleton);
         if (path) {
             spine.enabled = true;
             no.assetBundleManager.loadSpine(path, res => {
                 spine.skeletonData = res;
+                spine.loop = loop;
+                !!skin && spine.setSkin(skin);
                 spine.setAnimation(0, animation, loop);
                 spine.timeScale = timeScale || 1;
             });
         } else if (animation) {
             spine.enabled = true;
+            spine.loop = loop;
+            !!skin && spine.setSkin(skin);
             spine.setAnimation(0, animation, loop);
             spine.timeScale = timeScale || 1;
         } else {
@@ -64,20 +68,28 @@ export class SetSpine extends FuckUi {
     }
 
     public a_playOnce(animation: string) {
-        let spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(sp.Skeleton);
         spine.enabled = true;
-        spine?.setAnimation(0, animation, false);
+        spine.loop = false;
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        !!skin && spine.setSkin(skin);
+        spine?.setAnimation(0, name, false);
         this.bindEndCall(spine);
     }
 
     public a_playLoop(animation: string) {
-        let spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(sp.Skeleton);
         spine.enabled = true;
-        spine?.setAnimation(0, animation, true);
+        spine.loop = true;
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        !!skin && spine.setSkin(skin);
+        spine?.setAnimation(0, name, true);
     }
 
     public a_stop(): void {
-        let spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(sp.Skeleton);
         spine.clearTrack(0);
         spine.enabled = false;
     }
@@ -88,7 +100,6 @@ export class SetSpine extends FuckUi {
     }
 
     private bindEndCall(spine: sp.Skeleton) {
-        if (spine.loop) return;
         spine?.setCompleteListener(() => {
             this.endCall.execute();
             spine.setCompleteListener(() => { });

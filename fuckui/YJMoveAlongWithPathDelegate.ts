@@ -29,7 +29,7 @@ export class YJMoveAlongWithPathDelegate extends Component {
      * @param from
      * @param to
      */
-    public onChangeDirection(from: Vec3, to: Vec3): void { }
+    public onChangeDirection(from: Vec3, to: Vec3, vector: Vec3): void { }
     /**
      * 移动中
      * @param m

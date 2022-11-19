@@ -2638,8 +2638,14 @@ export namespace no {
         /**指数 */
         public index: number = 0;
 
-        constructor(v?: string | number) {
-            this.value = String(v || 0);
+        constructor(v?: string | number | { _coefficient: number, index: number }) {
+            v = v || 0;
+            if (v['_coefficient'] !== undefined) {
+                this._coefficient = v['_coefficient'];
+                this.index = v['index'];
+            }
+            else
+                this.value = String(v);
         }
 
         public static get new(): ScientificString {

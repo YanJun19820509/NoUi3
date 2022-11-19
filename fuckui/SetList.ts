@@ -120,6 +120,7 @@ export class SetList extends FuckUi {
     }
 
     onEnable() {
+        if (EDITOR) return;
         if (this._isSettingData) return;
         if (this.clearOnDisable && this.recreateOnEnable) {
             this.resetData();
@@ -127,6 +128,7 @@ export class SetList extends FuckUi {
     }
 
     onDisable() {
+        if (EDITOR) return;
         if (this._isSettingData) return;
         if (this.clearOnDisable) {
             !this.recreateOnEnable && this.a_clearData();
@@ -138,6 +140,7 @@ export class SetList extends FuckUi {
     }
 
     onDestroy() {
+        if (EDITOR) return;
         if (this.template && this.template.isValid)
             this.template.destroy();
     }

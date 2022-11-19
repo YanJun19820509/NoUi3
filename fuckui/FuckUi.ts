@@ -26,7 +26,7 @@ export class FuckUi extends Component {
     register: YJFuckUiRegister = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
-    private bind_keys: string = '';
+    bind_keys: string = '';
 
     @property({ displayName: '只赋值一次' })
     private once: boolean = false;

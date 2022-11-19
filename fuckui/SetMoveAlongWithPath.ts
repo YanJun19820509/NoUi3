@@ -66,8 +66,8 @@ export class SetMoveAlongWithPath extends FuckUi {
         if (this.delegate?.onSpecialStep(p)) return;
         let p2 = v3(p.x, p.y);
         this.moveDuration = Vec3.distance(p1, p2) / this.speed;
-        this.moveVector = p2.subtract(p1).divide3f(this.moveDuration, this.moveDuration, this.moveDuration);
-        this.delegate?.onChangeDirection(p1, p2);
+        this.moveVector = p2.clone().subtract(p1).divide3f(this.moveDuration, this.moveDuration, this.moveDuration);
+        this.delegate?.onChangeDirection(p1, p2, this.moveVector);
     }
 
     private startMove() {

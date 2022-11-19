@@ -35,6 +35,9 @@ export class SetCreateNode extends FuckUi {
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
 
+    @property({ displayName: '仅新增' })
+    onlyAdd: boolean = false;
+
     @property({ tooltip: '仅第一次创建时有创建间隔' })
     onlyFirstTime: boolean = false;
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
@@ -108,34 +111,40 @@ export class SetCreateNode extends FuckUi {
             this.setDynamicAtlasNode(data[0]);
             return;
         }
-        let n = data.length
+        let n = data.length;
         let l = this.container.children.length;
-        for (let i = 0; i < l; i++) {
-            this.container.children[i].active = !!data[i];
-        }
-        if (l < n) {
+        if (!this.onlyAdd)
+            for (let i = 0; i < l; i++) {
+                this.container.children[i].active = !!data[i];
+            }
+        if (!this.onlyAdd && n - l > 1 || (this.onlyAdd && n > 1)) {
             this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 let item = instantiate(this.template);
                 item.active = false;
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
-            }, this, n);
+            }, this, !this.onlyAdd ? n : n + l);
             if (!this.container?.isValid) return;
             this.container.active = true;
+        } else if (!this.onlyAdd && n - l == 1 || (this.onlyAdd && n == 1)) {
+            let item = instantiate(this.template);
+            item.active = false;
+            item.parent = this.container;
         }
+        let start = !this.onlyAdd ? 0 : l;
         for (let i = 0; i < n; i++) {
-            this.setItem(data, i);
+            this.setItem(data, start, i);
         }
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }
 
-    private setItem(data: any[], i: number) {
+    private setItem(data: any[], start: number, i: number) {
         if (data[i] == null) {
             return;
         }
-        let item = this.container.children[i];
+        let item = this.container.children[start + i];
         // if (!item) {
         //     item = instantiate(this.template);
         //     item.parent = this.container;

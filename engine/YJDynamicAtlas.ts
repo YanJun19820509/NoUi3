@@ -36,6 +36,8 @@ export class YJDynamicAtlas extends Component {
     autoSetSubMaterial: boolean = false;
     @property({ tooltip: '文本是否合图' })
     packLabel: boolean = true;
+    @property({ type: SpriteAtlas })
+    atlases: SpriteAtlas[] = [];
 
     public atlas: Atlas;
 
@@ -53,6 +55,11 @@ export class YJDynamicAtlas extends Component {
         YJShowDynamicAtlasDebug.ins.remove(this.node.name);
         this.atlas?.destroy();
         this.atlas = null;
+    }
+
+    public get texture() {
+        this.initAtlas();
+        return this.atlas._texture;
     }
 
     private initAtlas() {

@@ -60,7 +60,9 @@ export class YJProtobuf {
     public decode(msgName: string, buffer: Uint8Array): any {
         let msg_type = this.getMessageType(msgName);
         let msg = msg_type.decode(buffer);
-        return msg_type.toObject(msg);
+        let a = msg_type.toObject(msg);
+        no.log('YJProtobuf decode', msgName, a);
+        return a;
     }
 
     public messagesToString(): string {

@@ -1,6 +1,9 @@
 
-import { _decorator, Component, Node, SpriteAtlas, Sprite, SpriteFrame, UITransform } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform, math } from 'cc';
+import { EDITOR } from 'cc/env';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, requireComponent } = _decorator;
 
@@ -17,45 +20,63 @@ const { ccclass, property, requireComponent } = _decorator;
  */
 /**
  * 用于设置材质中挂载的纹理采样的区域
- * data = {
- * define: string,
- * name: string
- * } | string
- * define:挂载纹理的属性标识，用于区分多个纹理属性
- * name:图集中 spriteFrame 的 name
+ * data:string,为指定spriteFrame的名称
  */
 
 @ccclass('SetSpriteFrameInSampler2D')
 @requireComponent([Sprite, YJVertexColorTransition])
 export class SetSpriteFrameInSampler2D extends FuckUi {
-    @property({ type: SpriteAtlas })
-    atlases: SpriteAtlas[] = [];
-    @property
-    define: string = '';
+    @property({ readonly: true })
+    defaultName: string = '';
+    @property({ readonly: true, tooltip: '用于判断顶点数据类型，0为color类型，1为坐标类型。而shader中具体使用哪个贴图，需要通过atlases的下标+1来判断' })
+    defineIndex: number = 1;
+    @property({ type: YJDynamicAtlas, readonly: true })
+    dynamicAtlas: YJDynamicAtlas = null;
 
-    onDataChange(data: any) {
-        let defines: any = {};
-        let key = data.define || this.define;
-        defines[key] = true;
-        let spriteFrame = this.getSpriteFrameInAtlas(data.name || data);
-        if (!spriteFrame) return;
-        let properties: number[],
-            rect = spriteFrame.rect,
-            x1 = rect.x,
-            y1 = rect.y,
-            x2 = x1 + rect.width,
-            y2 = y1 + rect.height;
-        properties = [x1 + y1 / 10000, x2 + y2 / 10000];
-        this.resize(rect.width, rect.height);
-        this.getComponent(YJVertexColorTransition).setEffect(defines, properties);
+    onLoad() {
+        super.onLoad();
+        if (EDITOR) {
+            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            if (!this.dynamicAtlas) return;
+        } else {
+            if (!this.dynamicAtlas) return;
+            if (this.defaultName) this.setSpriteFrame(this.defaultName);
+        }
     }
 
-    private getSpriteFrameInAtlas(name: string): SpriteFrame | null {
-        for (let i = 0, n = this.atlases.length; i < n; i++) {
-            let s = this.atlases[i].getSpriteFrame(name);
-            if (s) return s;
+    update() {
+        if (EDITOR) {
+            let name = this.getComponent(Sprite).spriteFrame?.name || '';
+            if (this.defaultName != name) this.defaultName = name;
         }
-        return null;
+    }
+
+    onDataChange(data: any) {
+        this.setSpriteFrame(data);
+    }
+
+    private setSpriteFrame(name: string) {
+        if (!this.dynamicAtlas) return;
+        this.setTexture();
+        let spriteFrame: SpriteFrame, i = 0;
+        for (let n = this.dynamicAtlas.atlases.length; i < n; i++) {
+            const s = this.dynamicAtlas.atlases[i].getSpriteFrame(name);
+            if (s) {
+                spriteFrame = s;
+                break;
+            }
+        }
+        if (!spriteFrame) return;
+        let n: any = i + 1;
+        if (n > 9) n = `0${n - 9}`;
+        const defines: any = { [`${this.defineIndex}-${n}`]: true };
+        let rect = spriteFrame.rect;
+        this.resize(rect.width, rect.height);
+        this.getComponent(Sprite).spriteFrame.unbiasUV = spriteFrame.unbiasUV;
+        this.getComponent(Sprite).spriteFrame.uv = spriteFrame.uv;
+        this.getComponent(Sprite).spriteFrame.uvSliced = spriteFrame.uvSliced;
+        this.getComponent(Sprite).spriteFrame['_capInsets'] = spriteFrame['_capInsets'];
+        this.getComponent(YJVertexColorTransition).setEffect(defines);
     }
 
     private resize(width: number, height: number) {
@@ -63,5 +84,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (sprite.sizeMode == Sprite.SizeMode.CUSTOM) return;
         const ut = this.getComponent(UITransform);
         ut.setContentSize(width, height);
+    }
+
+    private setTexture() {
+        const spriteFrame = new SpriteFrame();
+        spriteFrame.originalSize = math.size(this.dynamicAtlas.width, this.dynamicAtlas.height);
+        spriteFrame.texture = this.dynamicAtlas.texture;
+        spriteFrame.rect = math.rect(0, 0, this.dynamicAtlas.width, this.dynamicAtlas.height);
+        this.getComponent(Sprite).spriteFrame = spriteFrame;
     }
 }
