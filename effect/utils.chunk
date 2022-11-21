@@ -1,19 +1,18 @@
-float defineVal(float defines, bool isColor,float start, float len){
-  float index = start + len;
-  if (isColor){
-    return floor(fract(defines/pow(10.,index))*pow(10.,len));
+float defineVal(float defines, bool isFloor,float start, float n){
+  if (isFloor){
+    return floor(fract(defines/pow(10.,start + n))*pow(10.,n));
   }else{
-    return fract(floor(fract(defines)*pow(10.,index))/pow(10.,len))*pow(10.,len);
+    return floor(fract(defines*pow(10.,start))*pow(10.,n));
   }
 }
 
-// 判断 defined 类型状态,type为 0/1
-bool isTrue(float defines, bool isColor, float checkValue, float index){
-  return defineVal(defines, isColor, index, 1.) == checkValue;
+// 判断 defined 类型状态, isFloor是否正数，checkValue检验值，start 取值开始位数0 开始
+bool isTrue(float defines, bool isFloor, float checkValue, float start){
+  return defineVal(defines, isFloor, start, 1.) == checkValue;
 }
 
-bool hasDefineType(float defines, bool isColor, float index){
-  return defineVal(defines, isColor, index, 1.) > 0.;
+bool hasDefineType(float defines, bool isFloor, float start){
+  return defineVal(defines, isFloor, start, 1.) > 0.;
 }
 
 // 从扩展数据里解析颜色数据
