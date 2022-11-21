@@ -48,6 +48,10 @@ export class YJButton extends Component {
         this.needWait = false;
     }
 
+    public addClickHandler(handler: EventHandler) {
+        this._clickEvents[this._clickEvents.length] = handler;
+    }
+
     public a_trigger(event: EventTouch) {
         if (event?.touch?.getID() != 0) return;
         if (this.needWait) return;
