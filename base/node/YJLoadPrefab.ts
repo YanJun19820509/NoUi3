@@ -30,10 +30,7 @@ export default class YJLoadPrefab extends Component {
     }
 
     onDestroy() {
-        this.loadedNode?.destroy();
-        this.loadedNode = null;
-        this.loaded = false;
-        no.assetBundleManager.release(this.prefUuid, true);
+        this.clear();
     }
 
     public async loadPrefab(): Promise<Node> {
@@ -58,7 +55,10 @@ export default class YJLoadPrefab extends Component {
     }
 
     public clear(): void {
-        
+        this.loadedNode?.destroy();
+        this.loadedNode = null;
+        this.loaded = false;
+        no.assetBundleManager.release(this.prefUuid, true);
     }
 
     ////////////EDITOR MODE//////////////////////

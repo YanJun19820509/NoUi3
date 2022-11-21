@@ -1,7 +1,7 @@
 float defineVal(float defines, bool isColor,float start, float len){
   float index = start + len;
   if (isColor){
-    return floor(fract(floor(defines)/pow(10.,index))*pow(10.,len));
+    return floor(fract(defines/pow(10.,index))*pow(10.,len));
   }else{
     return fract(floor(fract(defines)*pow(10.,index))/pow(10.,len))*pow(10.,len);
   }

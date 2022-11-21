@@ -43,6 +43,10 @@ class ContentInfo {
         return !!this.loadedNode;
     }
 
+    public clear() {
+        this.prefab.clear();
+        this.loadedNode = null;
+    }
 }
 
 /**
@@ -56,6 +60,8 @@ export class SetCreateSwitchContent extends FuckUi {
     contents: ContentInfo[] = [];
     @property(Node)
     container: Node = null;
+    @property
+    noCache: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -81,7 +87,9 @@ export class SetCreateSwitchContent extends FuckUi {
 
     private hideContent(exceptName: string) {
         this.contents?.forEach(info => {
-            info.show(info.name == exceptName);
+            if (this.noCache && info.name != exceptName) info.clear();
+            else
+                info.show(info.name == exceptName);
         });
     }
 

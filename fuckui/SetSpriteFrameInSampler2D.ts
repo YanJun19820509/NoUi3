@@ -5,7 +5,7 @@ import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, requireComponent } = _decorator;
+const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables
@@ -25,6 +25,7 @@ const { ccclass, property, requireComponent } = _decorator;
 
 @ccclass('SetSpriteFrameInSampler2D')
 @requireComponent([Sprite, YJVertexColorTransition])
+@disallowMultiple()
 export class SetSpriteFrameInSampler2D extends FuckUi {
     @property({ readonly: true })
     defaultName: string = '';
@@ -38,9 +39,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (EDITOR) {
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
             if (!this.dynamicAtlas) return;
-        } else {
-            if (!this.dynamicAtlas) return;
-            if (this.defaultName) this.setSpriteFrame(this.defaultName);
         }
     }
 
@@ -51,25 +49,33 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
     }
 
+    start() {
+        if (EDITOR) return;
+        if (!this.dynamicAtlas) return;
+        this.scheduleOnce(() => {
+            if (this.defaultName) this.setSpriteFrame(this.defaultName);
+        }, 0.1);
+    }
+
     onDataChange(data: any) {
-        this.setSpriteFrame(data);
+        this.scheduleOnce(() => {
+            this.setSpriteFrame(data);
+        }, 0.1);
     }
 
     private setSpriteFrame(name: string) {
         if (!this.dynamicAtlas) return;
-        this.setTexture();
-        let spriteFrame: SpriteFrame, i = 0;
-        for (let n = this.dynamicAtlas.atlases.length; i < n; i++) {
-            const s = this.dynamicAtlas.atlases[i].getSpriteFrame(name);
-            if (s) {
-                spriteFrame = s;
-                break;
-            }
+        const [i, spriteFrame] = this.dynamicAtlas.getSpriteFrameInAtlas(name);
+        if (!spriteFrame) {
+            no.log('setSpriteFrame not get', name);
+            return;
         }
-        if (!spriteFrame) return;
+        this.setTexture();
         let n: any = i + 1;
-        if (n > 9) n = `0${n - 9}`;
+        if (n > 9) n = `000${n - 9}`;
+        else n = `00${n}`;
         const defines: any = { [`${this.defineIndex}-${n}`]: true };
+        no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
         let rect = spriteFrame.rect;
         this.resize(rect.width, rect.height);
         this.getComponent(Sprite).spriteFrame.unbiasUV = spriteFrame.unbiasUV;
@@ -82,12 +88,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private resize(width: number, height: number) {
         const sprite = this.getComponent(Sprite);
         if (sprite.sizeMode == Sprite.SizeMode.CUSTOM) return;
-        const ut = this.getComponent(UITransform);
+        let ut = this.getComponent(UITransform);
         ut.setContentSize(width, height);
     }
 
     private setTexture() {
-        const spriteFrame = new SpriteFrame();
+        if (this.getComponent(Sprite)?.spriteFrame.texture._uuid == this.dynamicAtlas.texture._uuid) return;
+        let spriteFrame = new SpriteFrame();
         spriteFrame.originalSize = math.size(this.dynamicAtlas.width, this.dynamicAtlas.height);
         spriteFrame.texture = this.dynamicAtlas.texture;
         spriteFrame.rect = math.rect(0, 0, this.dynamicAtlas.width, this.dynamicAtlas.height);
