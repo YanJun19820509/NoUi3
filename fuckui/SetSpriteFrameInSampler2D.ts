@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform, math } from 'cc';
 import { EDITOR } from 'cc/env';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -29,16 +30,18 @@ const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 export class SetSpriteFrameInSampler2D extends FuckUi {
     @property({ readonly: true })
     defaultName: string = '';
-    @property({ readonly: true, tooltip: '用于判断顶点数据类型，0为color类型，1为坐标类型。而shader中具体使用哪个贴图，需要通过atlases的下标+1来判断' })
-    defineIndex: number = 1;
+    @property({ readonly: true, tooltip: '用于判断顶点数据类型，0为color类型，1为坐标类型。而shader中具体使用哪个贴图，需要通过atlases的下标+1来判断', visible() { return false; } })
+    defineIndex: number = 0;
+    @property({ type: YJLoadAssets, readonly: true })
+    loadAsset: YJLoadAssets = null;
     @property({ type: YJDynamicAtlas, readonly: true })
     dynamicAtlas: YJDynamicAtlas = null;
 
     onLoad() {
         super.onLoad();
         if (EDITOR) {
+            if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-            if (!this.dynamicAtlas) return;
         }
     }
 
@@ -52,30 +55,23 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     start() {
         if (EDITOR) return;
         if (!this.dynamicAtlas) return;
-        this.scheduleOnce(() => {
-            if (this.defaultName) this.setSpriteFrame(this.defaultName);
-        }, 0.1);
+        if (this.defaultName) this.setSpriteFrame(this.defaultName);
     }
 
     onDataChange(data: any) {
-        this.scheduleOnce(() => {
-            this.setSpriteFrame(data);
-        }, 0.1);
+        this.setSpriteFrame(data);
     }
 
     private setSpriteFrame(name: string) {
-        if (!this.dynamicAtlas) return;
-        const [i, spriteFrame] = this.dynamicAtlas.getSpriteFrameInAtlas(name);
+        if (!this.loadAsset) return;
+        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.log('setSpriteFrame not get', name);
             return;
         }
         this.setTexture();
-        let n: any = i + 1;
-        if (n > 9) n = `000${n - 9}`;
-        else n = `00${n}`;
-        const defines: any = { [`${this.defineIndex}-${n}`]: true };
-        no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
+        const defines: any = { [`${this.defineIndex}-${i + 1}00`]: true };
+        // no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
         let rect = spriteFrame.rect;
         this.resize(rect.width, rect.height);
         this.getComponent(Sprite).spriteFrame.unbiasUV = spriteFrame.unbiasUV;
@@ -93,7 +89,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setTexture() {
-        if (this.getComponent(Sprite)?.spriteFrame.texture._uuid == this.dynamicAtlas.texture._uuid) return;
+        if (this.getComponent(Sprite)?.spriteFrame?.texture?._uuid == this.dynamicAtlas.texture._uuid) return;
         let spriteFrame = new SpriteFrame();
         spriteFrame.originalSize = math.size(this.dynamicAtlas.width, this.dynamicAtlas.height);
         spriteFrame.texture = this.dynamicAtlas.texture;

@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro } from 'cc';
 import { EDITOR } from 'cc/env';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
@@ -21,29 +20,88 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export class LoadAssetsInfo {
     @property
     assetUuid: string = '';
+    @property({ displayName: '强制释放' })
+    forceRelease: boolean = false;
 
     constructor(uuid: string) {
         this.assetUuid = uuid;
     }
 
-    public load(cb?: (asset: Asset) => void): void {
+    public async load(): Promise<Asset> {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
-            cb?.(file);
+            return file;
         } else
-            no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
-                cb?.(file);
+            return new Promise<Asset>(resolve => {
+                no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                    resolve(file);
+                });
             });
     }
 
-    public release(cb?: (asset: Asset) => void, force = false): void {
+    public release(cb?: (asset: Asset) => void): void {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
             cb?.(file);
-            no.assetBundleManager.release(file, force);
+            no.assetBundleManager.release(file, this.forceRelease);
         }
     }
+}
+@ccclass('SpriteAtlasInfo')
+export class SpriteAtlasInfo extends LoadAssetsInfo {
+    @property({ type: SpriteAtlas, editorOnly: true })
+    atlas: SpriteAtlas = null;
 
+    public check() {
+        if (EDITOR) {
+            if (this.atlas) {
+                this.assetUuid = this.atlas._uuid;
+                this.atlas = null;
+            }
+        }
+    }
+}
+@ccclass('MaterialInfo')
+export class MaterialInfo extends LoadAssetsInfo {
+    @property({ type: Material, editorOnly: true })
+    material: Material = null;
+
+    public check() {
+        if (EDITOR) {
+            if (this.material) {
+                this.assetUuid = this.material._uuid;
+                this.material = null;
+            }
+        }
+    }
+}
+@ccclass('SpriteFrameInfo')
+export class SpriteFrameInfo extends LoadAssetsInfo {
+    @property({ type: SpriteFrame, editorOnly: true })
+    spriteFrame: SpriteFrame = null;
+
+    public check() {
+        if (EDITOR) {
+            if (this.spriteFrame) {
+                this.assetUuid = this.spriteFrame._uuid;
+                this.spriteFrame = null;
+            }
+        }
+    }
+}
+@ccclass('PrefabInfo')
+export class PrefabInfo extends LoadAssetsInfo {
+    @property({ type: Prefab, editorOnly: true })
+    prefab: Prefab = null;
+
+    public check() {
+        if (EDITOR) {
+            if (this.prefab) {
+                this.assetUuid = this.prefab._uuid;
+                this.prefab = null;
+            }
+        }
+    }
 }
 
 @ccclass('YJLoadAssets')
@@ -51,16 +109,26 @@ export class LoadAssetsInfo {
 @executeInEditMode()
 export class YJLoadAssets extends Component {
 
-    @property(LoadAssetsInfo)
-    atlasInfos: LoadAssetsInfo[] = [];
-    @property(LoadAssetsInfo)
-    spriteFrameInfos: LoadAssetsInfo[] = [];
-    @property(LoadAssetsInfo)
-    prefabInfos: LoadAssetsInfo[] = [];
+    @property(MaterialInfo)
+    materialInfos: MaterialInfo[] = [];
+    @property(SpriteAtlasInfo)
+    atlasInfos: SpriteAtlasInfo[] = [];
+    @property(SpriteFrameInfo)
+    spriteFrameInfos: SpriteFrameInfo[] = [];
+    @property(PrefabInfo)
+    prefabInfos: PrefabInfo[] = [];
     @property({ type: LoadAssetsInfo, tooltip: '可在panel创建完成后加载的资源' })
     backgroundLoadInfos: LoadAssetsInfo[] = [];
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
+    @property({ editorOnly: true })
+    doCheck: boolean = false;
+
+    private atlases: SpriteAtlas[] = [];
+
+    onLoad() {
+        if (!EDITOR) {
+            this.checkInfos = () => { };
+        }
+    }
 
     onDestroy() {
         this.release();
@@ -86,28 +154,21 @@ export class YJLoadAssets extends Component {
     public async load() {
         if (EDITOR) return;
         let all = this.spriteFrameInfos.length + this.atlasInfos.length + this.prefabInfos.length;
-        let n = 0;
-        this.spriteFrameInfos.forEach(info => {
-            info.load(() => {
-                ++n;
-            });
-        });
-        this.atlasInfos.forEach(info => {
-            info.load((file: SpriteAtlas) => {
-                let t = file.getTexture();
-                // if (t.width <= 1000 && t.height <= 1000) {
-                let dynamicAtlas = this.dynamicAtlas || this.getComponent(YJDynamicAtlas);
-                dynamicAtlas?.packAtlasToDynamicAtlas(file);
-                // }
-                ++n;
-            });
-        });
-        this.prefabInfos.forEach(info => {
-            info.load(() => {
-                ++n;
-            });
-        });
-        await no.waitFor(() => { return n == all; }, this);
+        let an = 0;
+        for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
+            await this.spriteFrameInfos[i].load();
+            ++an;
+        }
+        for (let i = 0, n = this.atlasInfos.length; i < n; i++) {
+            let f = await this.atlasInfos[i].load();
+            this.atlases[i] = f as SpriteAtlas;
+            ++an;
+        }
+        for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
+            await this.prefabInfos[i].load();
+            ++an;
+        }
+        await no.waitFor(() => { return an == all; }, this);
         this.backgroundLoadInfos.forEach(info => {
             info.load();
         });
@@ -119,16 +180,52 @@ export class YJLoadAssets extends Component {
     public release() {
         if (EDITOR) return;
         this.atlasInfos.forEach(info => {
-            info.release && info.release((file: SpriteAtlas) => {
-                let a = file.getSpriteFrames();
-                a.forEach(sf => {
-                    sf._resetDynamicAtlasFrame();
-                });
-            }, true);
+            info.release && info.release(null);
         });
         this.spriteFrameInfos.forEach(info => {
-            info.release && info.release(null, true);
+            info.release && info.release(null);
         });
     }
 
+
+    /**
+     * 从atlas中获取spriteFrame
+     * @param name spriteFrame的名称
+     * @returns [所属atlas下标，spriteFrame]
+     */
+    public getSpriteFrameInAtlas(name: string): [number, SpriteFrame] {
+        let spriteFrame: SpriteFrame, idx: number;
+        for (let i = 0, n = this.atlases.length; i < n; i++) {
+            const s = this.atlases[i].getSpriteFrame(name);
+            if (s) {
+                spriteFrame = s;
+                idx = i;
+                break;
+            }
+        }
+        return [idx, spriteFrame];
+    }
+
+    private checkInfos() {
+        if (!EDITOR) return;
+        if (!this.doCheck) return;
+        this.doCheck = false;
+        this.atlasInfos.forEach(info => {
+            info.check();
+        });
+        this.materialInfos.forEach(info => {
+            info.check();
+        });
+        this.spriteFrameInfos.forEach(info => {
+            info.check();
+        });
+        this.prefabInfos.forEach(info => {
+            info.check();
+        });
+    }
+
+
+    update() {
+        this.checkInfos();
+    }
 }

@@ -1,6 +1,6 @@
 
 import { _decorator, Component, RenderComponent, Vec4, Sprite, Label, math, BitmapFont } from 'cc';
-const { ccclass, property, executeInEditMode } = _decorator;
+const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables
@@ -15,7 +15,7 @@ const { ccclass, property, executeInEditMode } = _decorator;
  */
 
 @ccclass('YJVertexColorTransition')
-@executeInEditMode()
+@disallowMultiple()
 export class YJVertexColorTransition extends Component {
 
     private renderComp: RenderComponent;
@@ -87,9 +87,10 @@ export class YJVertexColorTransition extends Component {
             return;
         }
         let type = `${Math.abs(this._data.x)}`.split('.');
-        if (v && type[offset] != id)
+        if (v && type[offset] != id) {
+            if (type[offset].length != id.length) id = `${Number(type[offset]) + Number(id)}`;
             type[offset] = id;
-        else if (!v && type[0] == id)
+        } else if (!v && type[0] == id)
             type[offset] = '0';
         this._data.x = -Number(type.join('.'));
         this._setColor();

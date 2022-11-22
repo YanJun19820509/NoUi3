@@ -22,13 +22,6 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
  * 将子节点Label及特定SpriteFrame添加进入动态图集
  * 【不能与原生动态合图同时使用】。
  */
-@ccclass('AtlasInfo')
-export class AtlasInfo {
-    @property({ min: 0, step: 1 })
-    index: number = 0;
-    @property({ type: SpriteAtlas })
-    atlas: SpriteAtlas = null;
-}
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
 @executeInEditMode()
@@ -43,8 +36,6 @@ export class YJDynamicAtlas extends Component {
     autoSetSubMaterial: boolean = false;
     @property({ tooltip: '文本是否合图' })
     packLabel: boolean = true;
-    @property({ type: AtlasInfo })
-    atlases: AtlasInfo[] = [];
 
     public atlas: Atlas;
 
@@ -249,24 +240,6 @@ export class YJDynamicAtlas extends Component {
         bs.forEach(b => {
             b.dynamicAtlas = dynamicAtlas;
         });
-    }
-
-    /**
-     * 从atlas中获取spriteFrame
-     * @param name spriteFrame的名称
-     * @returns [所属atlas下标，spriteFrame]
-     */
-    public getSpriteFrameInAtlas(name: string): [number, SpriteFrame] {
-        let spriteFrame: SpriteFrame, idx: number;
-        for (let i = 0, n = this.atlases.length; i < n; i++) {
-            const s = this.atlases[i].atlas.getSpriteFrame(name);
-            if (s) {
-                spriteFrame = s;
-                idx = this.atlases[i].index;
-                break;
-            }
-        }
-        return [idx, spriteFrame];
     }
 
 
