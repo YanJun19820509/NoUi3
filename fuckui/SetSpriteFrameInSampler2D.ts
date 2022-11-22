@@ -59,7 +59,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDataChange(data: any) {
-        this.setSpriteFrame(data);
+        let name = String(data).split('/').pop();
+        this.setSpriteFrame(name);
     }
 
     private setSpriteFrame(name: string) {
