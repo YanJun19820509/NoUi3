@@ -1,8 +1,12 @@
-float defineVal(float defines, bool isFloor,float start, float n){
+float defineVal(float defines,const bool isFloor,const float start,const float n){
   if (isFloor){
-    return floor(fract(defines/pow(10.,start + n))*pow(10.,n));
+    float a = defines/pow(10.,start + n);
+    a = fract(a)*pow(10.,n);
+    return floor(a);
   }else{
-    return floor(fract(defines*pow(10.,start))*pow(10.,n));
+    float a = defines*pow(10.,start);
+    a = fract(a)*pow(10.,n);
+    return floor(a);
   }
 }
 

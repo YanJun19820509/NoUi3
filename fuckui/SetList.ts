@@ -4,6 +4,7 @@ import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -44,6 +45,8 @@ export class SetList extends FuckUi {
     scrollView: ScrollView = null;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
+    @property(YJLoadAssets)
+    loadAsset: YJLoadAssets = null;
 
     @property({ displayName: '数据更新时自动回滚到第1个' })
     autoScrollBack: boolean = false;
@@ -86,6 +89,7 @@ export class SetList extends FuckUi {
         if (EDITOR) {
             if (!this.itemPanel) this.itemPanel = this.getComponent(YJLoadPrefab);
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
             return;
         }
         if (!this.template) {
@@ -96,6 +100,7 @@ export class SetList extends FuckUi {
             this.preInitItems();
         if (this.dynamicAtlas) {
             YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+            YJLoadAssets.setLoadAsset(this.template, this.loadAsset);
         }
         // this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
         // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;

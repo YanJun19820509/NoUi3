@@ -1,5 +1,6 @@
 
-import { _decorator, Component, RenderComponent, Vec4, Sprite, Label, math, BitmapFont } from 'cc';
+import { _decorator, Component, RenderComponent, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from 'cc';
+import { no } from '../no';
 const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
@@ -28,6 +29,7 @@ export class YJVertexColorTransition extends Component {
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
     private _originColor: math.Color;
+    private _defineIds: number[][] = [[], []];
 
     onLoad() {
         if (!this.renderComp)
@@ -40,25 +42,25 @@ export class YJVertexColorTransition extends Component {
             this.renderComp = this.getComponent(RenderComponent);
         if (!this.renderComp || !defines) return;
 
-        for (const key in defines) {
-            this._setDefines(key, defines[key]);
-        }
+        this._setDefines(defines);
         this._setProperties(properties);
         this._needUpdate = true;
     }
 
     private _setColor() {
         let c = this.renderComp.color;
+        let opacity = this.getComponent(UIOpacity)?.opacity;
+        if (opacity == null) opacity = 255;
         if (this._data.x == 0) {
             this._data.x = c.r / 255;
             this._data.y = c.g / 255;
             this._data.z = c.b / 255;
-            this._data.w = c.a / 255;
+            this._data.w = opacity / 255;
         } else {
-            let rg = c.r * 1000 + c.g, ba = c.b * 1000 + c.a;
+            let rg = c.r * 1000 + c.g, ba = c.b * 1000 + opacity;
             this._data.y = rg;
             this._data.z = ba;
-            this._data.w = c.a / 255;
+            this._data.w = opacity / 255;
         }
     }
 
@@ -71,27 +73,41 @@ export class YJVertexColorTransition extends Component {
     private _setBMFontGray(v: boolean) {
         //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
         if (!this._originColor) this._originColor = this.renderComp.color.clone();
+        let opacity = this.getComponent(UIOpacity)?.opacity;
+        if (opacity == null) opacity = 255;
+        this._originColor.a = opacity;
         if (v) {
             let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
             this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
         } else this.renderComp.color = this._originColor;
     }
 
-    private _setDefines(key: string, v: boolean) {
-        if (key == 'IS_GRAY') key = '0-2';
-        let keys = key.split('-');
-        let offset = Number(keys[0]);
-        let id = keys[1];
-        if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont && offset == 0 && id == '2') {
-            this._setBMFontGray(v);
-            return;
+    private _setDefines(defines: any) {
+        for (let key in defines) {
+            let v = defines[key];
+            if (key == 'IS_GRAY') key = '0-2';
+            let keys = key.split('-');
+            let offset = Number(keys[0]);
+            let id = Number(keys[1]);
+            let ids = this._defineIds[offset];
+            if (v) {
+                no.addToArray(ids, id);
+            } else {
+                no.removeFromArray(ids, id);
+            }
         }
-        let type = `${Math.abs(this._data.x)}`.split('.');
-        if (v && type[offset] != id) {
-            if (type[offset].length != id.length) id = `${Number(type[offset]) + Number(id)}`;
-            type[offset] = id;
-        } else if (!v && type[0] == id)
-            type[offset] = '0';
+        // if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont && offset == 0 && id == 2) {
+        //     this._setBMFontGray(v);
+        //     return;
+        // }
+        let type: number[] = [];
+        this._defineIds.forEach((ids, i) => {
+            let sum = 0;
+            ids.forEach(a => {
+                sum += a;
+            });
+            type[i] = sum;
+        });
         this._data.x = -Number(type.join('.'));
         this._setColor();
     }

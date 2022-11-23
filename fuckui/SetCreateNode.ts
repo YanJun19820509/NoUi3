@@ -53,6 +53,8 @@ export class SetCreateNode extends FuckUi {
     recreateOnEnable: boolean = false;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
+    @property(YJLoadAssets)
+    loadAsset: YJLoadAssets = null;
 
     protected needSetDynamicAtlas: boolean = true;
     private isFirst: boolean = true;
@@ -104,6 +106,7 @@ export class SetCreateNode extends FuckUi {
         if (this.dynamicAtlas && this.needSetDynamicAtlas) {
             this.needSetDynamicAtlas = false;
             YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+            YJLoadAssets.setLoadAsset(this.template, this.loadAsset);
         }
         if (!this.container) this.container = this.node;
 
@@ -181,5 +184,6 @@ export class SetCreateNode extends FuckUi {
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }

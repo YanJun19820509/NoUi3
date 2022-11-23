@@ -108,7 +108,8 @@ export class PrefabInfo extends LoadAssetsInfo {
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
 @executeInEditMode()
 export class YJLoadAssets extends Component {
-
+    @property
+    autoLoad: boolean = false;
     @property(MaterialInfo)
     materialInfos: MaterialInfo[] = [];
     @property(SpriteAtlasInfo)
@@ -123,10 +124,12 @@ export class YJLoadAssets extends Component {
     doCheck: boolean = false;
 
     private atlases: SpriteAtlas[] = [];
+    private _loaded: boolean = false;
 
     onLoad() {
         if (!EDITOR) {
             this.checkInfos = () => { };
+            this.autoLoad && this.load();
         }
     }
 
@@ -169,6 +172,7 @@ export class YJLoadAssets extends Component {
             ++an;
         }
         await no.waitFor(() => { return an == all; }, this);
+        this._loaded = true;
         this.backgroundLoadInfos.forEach(info => {
             info.load();
         });
@@ -193,7 +197,8 @@ export class YJLoadAssets extends Component {
      * @param name spriteFrame的名称
      * @returns [所属atlas下标，spriteFrame]
      */
-    public getSpriteFrameInAtlas(name: string): [number, SpriteFrame] {
+    public async getSpriteFrameInAtlas(name: string): Promise<[number, SpriteFrame]> {
+        await no.waitFor(() => { return this._loaded; }, this);
         let spriteFrame: SpriteFrame, idx: number;
         for (let i = 0, n = this.atlases.length; i < n; i++) {
             const s = this.atlases[i].getSpriteFrame(name);
@@ -227,5 +232,12 @@ export class YJLoadAssets extends Component {
 
     update() {
         this.checkInfos();
+    }
+
+    public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {
+        let bs: any[] = node.getComponentsInChildren('SetSpriteFrameInSampler2D');
+        bs.forEach(b => {
+            b.loadAsset = loadAsset;
+        });
     }
 }

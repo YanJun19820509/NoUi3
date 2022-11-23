@@ -228,6 +228,7 @@ export class YJDynamicAtlas extends Component {
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
         let bs = [].concat(
             node.getComponentsInChildren('YJCreateNode'),
+            node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             node.getComponentsInChildren('SetCreateCacheNode'),
             node.getComponentsInChildren('SetCreateNode'),
             node.getComponentsInChildren('SetCreateNodeByUrl'),

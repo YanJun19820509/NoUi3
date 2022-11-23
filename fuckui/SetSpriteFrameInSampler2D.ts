@@ -37,6 +37,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     @property({ type: YJDynamicAtlas, readonly: true })
     dynamicAtlas: YJDynamicAtlas = null;
 
+    private lastDefine: string;
+
     onLoad() {
         super.onLoad();
         if (EDITOR) {
@@ -63,15 +65,21 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.setSpriteFrame(name);
     }
 
-    private setSpriteFrame(name: string) {
+    private async setSpriteFrame(name: string) {
         if (!this.loadAsset) return;
-        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
+        const [i, spriteFrame] = await this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.log('setSpriteFrame not get', name);
             return;
         }
         this.setTexture();
-        const defines: any = { [`${this.defineIndex}-${i + 1}00`]: true };
+        let t = `${this.defineIndex}-${i + 1}00`;
+        const defines: any = {};
+        defines[t] = true;
+        if (this.lastDefine && this.lastDefine != t) {
+            defines[this.lastDefine] = false;
+        }
+        this.lastDefine = t;
         // no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
         let rect = spriteFrame.rect;
         this.resize(rect.width, rect.height);
@@ -79,6 +87,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.getComponent(Sprite).spriteFrame.uv = spriteFrame.uv;
         this.getComponent(Sprite).spriteFrame.uvSliced = spriteFrame.uvSliced;
         this.getComponent(Sprite).spriteFrame['_capInsets'] = spriteFrame['_capInsets'];
+        this.getComponent(Sprite)['_updateUVs']();
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }
 
@@ -96,5 +105,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         spriteFrame.texture = this.dynamicAtlas.texture;
         spriteFrame.rect = math.rect(0, 0, this.dynamicAtlas.width, this.dynamicAtlas.height);
         this.getComponent(Sprite).spriteFrame = spriteFrame;
+    }
+
+    public a_setEmpty(): void {
+        if (this.getComponent(Sprite).spriteFrame)
+            this.getComponent(Sprite).spriteFrame = null;
     }
 }

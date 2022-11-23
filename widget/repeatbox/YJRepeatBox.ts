@@ -46,7 +46,7 @@ export class YJRepeatBox extends YJDataWork {
         let temp = this.templates[this.data.type || 0].tempNode;
         let fill = this.templates[this.fileType]?.tempNode;
         let n = this._max;
-        for(let i = 0; i < n; i++){
+        for (let i = 0; i < n; i++) {
             let item = this.node.children[i];
             if (!item) {
                 item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
@@ -58,7 +58,7 @@ export class YJRepeatBox extends YJDataWork {
                 if (i >= this.data.max) item.active = false;
                 else {
                     let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
-                    item.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+                    item.getComponent('YJDynamicTexture')?.['packSpriteFrame'](sf);
                     item.active = true;
                 }
             }
@@ -82,7 +82,7 @@ export class YJRepeatBox extends YJDataWork {
             if (i >= this.data.max) item.active = false;
             else {
                 let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
-                item.getComponent('YJDynamicTexture')['packSpriteFrame'](sf);
+                item.getComponent('YJDynamicTexture')?.['packSpriteFrame'](sf);
                 item.active = true;
             }
         }
