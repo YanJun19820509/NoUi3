@@ -72,6 +72,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             no.log('setSpriteFrame not get', name);
             return;
         }
+        let sprite = this.getComponent(Sprite);
+        if (sprite.type == Sprite.Type.FILLED) {
+            sprite.spriteFrame = spriteFrame;
+            return;
+        }
         this.setTexture();
         let t = `${this.defineIndex}-${i + 1}00`;
         const defines: any = {};
@@ -83,11 +88,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         // no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
         let rect = spriteFrame.rect;
         this.resize(rect.width, rect.height);
-        this.getComponent(Sprite).spriteFrame.unbiasUV = spriteFrame.unbiasUV;
-        this.getComponent(Sprite).spriteFrame.uv = spriteFrame.uv;
-        this.getComponent(Sprite).spriteFrame.uvSliced = spriteFrame.uvSliced;
-        this.getComponent(Sprite).spriteFrame['_capInsets'] = spriteFrame['_capInsets'];
-        this.getComponent(Sprite)['_updateUVs']();
+        sprite.spriteFrame.unbiasUV = spriteFrame.unbiasUV;
+        sprite.spriteFrame.uv = spriteFrame.uv;
+        sprite.spriteFrame.uvSliced = spriteFrame.uvSliced;
+        sprite.spriteFrame['_capInsets'] = spriteFrame['_capInsets'];
+        sprite['_updateUVs']();
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }
 
@@ -101,7 +106,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private setTexture() {
         if (this.getComponent(Sprite)?.spriteFrame?.texture?._uuid == this.dynamicAtlas.texture._uuid) return;
         let spriteFrame = new SpriteFrame();
-        spriteFrame.originalSize = math.size(this.dynamicAtlas.width, this.dynamicAtlas.height);
         spriteFrame.texture = this.dynamicAtlas.texture;
         spriteFrame.rect = math.rect(0, 0, this.dynamicAtlas.width, this.dynamicAtlas.height);
         this.getComponent(Sprite).spriteFrame = spriteFrame;
