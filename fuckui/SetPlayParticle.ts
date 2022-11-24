@@ -20,8 +20,15 @@ const { ccclass, property, menu } = _decorator;
 @menu('NoUi/ui/SetPlayParticle(粒子播放控制:bool)')
 export class SetPlayParticle extends FuckUi {
 
+    @property
+    playOnEnable: boolean = false;
+
     @property({ type: no.EventHandlerInfo, displayName: '播放完回调' })
     endCalls: no.EventHandlerInfo[] = [];
+
+    onEnable() {
+        this.playOnEnable && this._play();
+    }
 
     protected onDataChange(data: any) {
         if (Boolean(data)) this._play();

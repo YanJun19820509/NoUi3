@@ -53,7 +53,7 @@ export class YJButton extends Component {
     }
 
     public a_trigger(event: EventTouch) {
-        if (event?.touch?.getID() != 0) return;
+        if (event && event.touch?.getID() != 0) return;
         if (this.needWait) return;
         this.needWait = true;
         no.executeHandlers(this._clickEvents, event);

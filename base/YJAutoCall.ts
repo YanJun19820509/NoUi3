@@ -27,20 +27,27 @@ export class YJAutoCall extends Component {
     @property({ displayName: '加载时执行' })
     callOnLoad: boolean = false;
 
+    @property({ displayName: '激活时执行' })
+    callOnEnable: boolean = false;
+
     @property({ displayName: '仅执行一次' })
     once: boolean = false;
 
     private _done = false;
     onLoad() {
-        this.callOnLoad && this.a_call();
+        this.callOnLoad && !this.callOnEnable && this.a_call();
     }
 
-    public async a_call() {
+    onEnable() {
+        this.unscheduleAllCallbacks();
+        this.callOnEnable && this.a_call();
+    }
+
+    public a_call() {
         if (this.once && this._done) return;
         this._done = true;
-        if (this.delay > 0) {
-            await no.sleep(this.delay / 1000);
-        }
-        no.EventHandlerInfo.execute(this.calls);
+        this.scheduleOnce(() => {
+            no.EventHandlerInfo.execute(this.calls);
+        }, this.delay / 1000);
     }
 }
