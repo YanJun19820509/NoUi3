@@ -35,12 +35,8 @@ export class YJButton extends Component {
             this._clickEvents[this._clickEvents.length] = e;
         });
         btn.clickEvents.length = 0;
-        let a = new EventHandler();
-        a.target = this.node;
-        a.component = 'YJButton';
-        a.handler = 'a_trigger';
         this.scheduleOnce(() => {
-            btn.clickEvents = [a];
+            btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
         }, this.wait);
     }
 
