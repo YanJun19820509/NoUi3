@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
+import { TimeWatcher } from '../TimeWatcher';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -20,8 +21,8 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export class LoadAssetsInfo {
     @property
     assetUuid: string = '';
-    @property({ displayName: '强制释放' })
-    forceRelease: boolean = false;
+    @property({ readonly: true })
+    assetName: string = '';
 
     constructor(uuid: string) {
         this.assetUuid = uuid;
@@ -30,6 +31,7 @@ export class LoadAssetsInfo {
     public async load(): Promise<Asset> {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
+            file.addRef();
             return file;
         } else
             return new Promise<Asset>(resolve => {
@@ -43,7 +45,7 @@ export class LoadAssetsInfo {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
             cb?.(file);
-            no.assetBundleManager.release(file, this.forceRelease);
+            no.assetBundleManager.release(file);
         }
     }
 }
@@ -56,6 +58,7 @@ export class SpriteAtlasInfo extends LoadAssetsInfo {
         if (EDITOR) {
             if (this.atlas) {
                 this.assetUuid = this.atlas._uuid;
+                this.assetName = this.atlas.name;
                 this.atlas = null;
             }
         }
@@ -70,6 +73,7 @@ export class MaterialInfo extends LoadAssetsInfo {
         if (EDITOR) {
             if (this.material) {
                 this.assetUuid = this.material._uuid;
+                this.assetName = this.material.name;
                 this.material = null;
             }
         }
@@ -84,6 +88,7 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
         if (EDITOR) {
             if (this.spriteFrame) {
                 this.assetUuid = this.spriteFrame._uuid;
+                this.assetName = this.spriteFrame.name;
                 this.spriteFrame = null;
             }
         }
@@ -98,6 +103,7 @@ export class PrefabInfo extends LoadAssetsInfo {
         if (EDITOR) {
             if (this.prefab) {
                 this.assetUuid = this.prefab._uuid;
+                this.assetName = this.prefab.name;
                 this.prefab = null;
             }
         }
@@ -156,25 +162,32 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
-        let all = this.spriteFrameInfos.length + this.atlasInfos.length + this.prefabInfos.length;
-        let an = 0;
+        let requests: { uuid: string }[] = [];
+        TimeWatcher.blink('start');
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            await this.spriteFrameInfos[i].load();
-            ++an;
+            requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid };
         }
+        let atlasUuids: string[] = [];
         for (let i = 0, n = this.atlasInfos.length; i < n; i++) {
-            let f = await this.atlasInfos[i].load();
-            this.atlases[i] = f as SpriteAtlas;
-            ++an;
+            atlasUuids[atlasUuids.length] = this.atlasInfos[i].assetUuid;
+            requests[requests.length] = { uuid: this.atlasInfos[i].assetUuid };
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            await this.prefabInfos[i].load();
-            ++an;
+            requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid };
         }
-        await no.waitFor(() => { return an == all; }, this);
-        this._loaded = true;
-        this.backgroundLoadInfos.forEach(info => {
-            info.load();
+        return new Promise<void>(resolve => {
+            no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
+                atlasUuids.forEach((uuid, i) => {
+                    let item = no.itemOfArray(items, uuid, '_uuid');
+                    this.atlases[i] = item as SpriteAtlas;
+                });
+                TimeWatcher.blink('end');
+                this._loaded = true;
+                resolve();
+                this.backgroundLoadInfos.forEach(info => {
+                    info.load();
+                });
+            });
         });
     }
 

@@ -1955,6 +1955,18 @@ export namespace no {
             }
         }
 
+        public preloadAny(requests: { 'uuid': string }[], onProgress: (progress: number) => void): void {
+            log('preloadAny', requests);
+            assetManager.preloadAny(requests, (finished, total, requestItem) => {
+                onProgress && onProgress(finished / total);
+            }, (err, items) => {
+                if (items == null || items.length == 0) {
+                    onProgress && onProgress(1);
+                    log('preloadAny', requests, err.message);
+                }
+            });
+        }
+
         /**
          * 预加载场景
          * @param name
@@ -2247,16 +2259,15 @@ export namespace no {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
-            p.file += '/';
             let bundle = this.getBundle(p.bundle);
-            let keys = Object.keys(bundle['_config'].paths._map);
-            let paths: string[] = [];
-            keys.forEach(key => {
-                if (key.indexOf(p.file) == 0) {
-                    paths.push(key);
+            let infos = bundle.getDirWithPath(p.file);
+            let requests: { uuid: string }[] = [];
+            infos.forEach(a => {
+                if (a.uuid.indexOf('@') == -1) {
+                    requests[requests.length] = { uuid: a.uuid };
                 }
             });
-            this.preloadFiles(p.bundle, paths, onProgress);
+            this.loadAnyFiles(requests, onProgress);
         }
 
         public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: AssetInfo) => void, onErr?: () => void) {
@@ -2380,6 +2391,25 @@ export namespace no {
 
         public getAssetFromCache(uuid: string): Asset {
             return assetManager.assets.get(uuid);
+        }
+
+
+        public loadAnyFiles(requests: { 'uuid': string }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
+            log('loadAnyFiles', requests);
+            assetManager.loadAny(requests, (finished, total, requestItem) => {
+                onProgress && onProgress(finished / total);
+            }, (err, items) => {
+                if (items == null || items.length == 0) {
+                    onProgress && onProgress(1);
+                    log('loadAnyFiles', requests, err.message);
+                } else {
+                    items = [].concat(items);
+                    items.forEach(item => {
+                        this.addRef(item);
+                    });
+                    onComplete?.(items);
+                }
+            });
         }
 
         public loadAny<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void): void {
