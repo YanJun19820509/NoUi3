@@ -49,7 +49,7 @@ export class YJVertexColorTransition extends Component {
 
     private _setColor() {
         let c = this.renderComp.color;
-        let opacity = this.getComponent(UIOpacity)?.opacity;
+        let opacity = no.getComponentInParents<UIOpacity>(this.node, UIOpacity)?.opacity;
         if (opacity == null) opacity = 255;
         if (this._data.x == 0) {
             this._data.x = c.r / 255;
