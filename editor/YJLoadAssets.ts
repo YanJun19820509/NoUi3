@@ -175,6 +175,7 @@ export class YJLoadAssets extends Component {
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
             requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid };
         }
+        if (requests.length == 0) return;
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
                 atlasUuids.forEach((uuid, i) => {
