@@ -29,7 +29,7 @@ export class SetText extends FuckUi {
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
 
-    private label: Label | RichText | YJCharLabel;
+    protected label: Label | RichText | YJCharLabel;
     private newData: any;
 
     protected onDataChange(data: any) {
@@ -37,7 +37,7 @@ export class SetText extends FuckUi {
         this.lateSet();
     }
 
-    private setLabel(data: any): void {
+    protected setLabel(data: any): void {
         if (this.label == null) return;
         let s = '';
         if (typeof data == 'string') {

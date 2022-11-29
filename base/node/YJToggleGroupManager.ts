@@ -90,7 +90,7 @@ export class YJToggleGroupManager extends Component {
             // a.handler = 'a_onCheck';
             // toggle.clickEvents = [a];
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
-            no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, '_onClick', false);
+            no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'p_onClick', false);
         }
         this.onEnable();
     }
@@ -121,7 +121,7 @@ export class YJToggleGroupManager extends Component {
     }
 
 
-    private _onClick(): void {
+    private p_onClick(): void {
         if (this.isInit) {
             this.isInit = false;
             return;

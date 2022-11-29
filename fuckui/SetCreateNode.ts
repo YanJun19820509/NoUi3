@@ -136,9 +136,15 @@ export class SetCreateNode extends FuckUi {
             item.parent = this.container;
         }
         let start = !this.onlyAdd ? 0 : l;
-        for (let i = 0; i < n; i++) {
+        // for (let i = 0; i < n; i++) {
+        //     this.setItem(data, start, i);
+        // }
+        let i = 0;
+        await YJJobManager.ins.execute((max: number) => {
             this.setItem(data, start, i);
-        }
+            i++;
+            if (i == max) return false;
+        }, this, n);
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }

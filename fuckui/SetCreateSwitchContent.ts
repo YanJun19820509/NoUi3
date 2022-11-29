@@ -3,6 +3,7 @@ import { _decorator, Component, Node, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, executeInEditMode } = _decorator;
@@ -27,11 +28,15 @@ class ContentInfo {
 
     private loadedNode: Node;
 
-    public async loadTo(parent: Node) {
+    public async loadTo(parent: Node, dynamicAtlas: YJDynamicAtlas, loadAsset: YJLoadAssets) {
         this.loadedNode = await this.prefab.loadPrefab();
-        if (this.loadedNode.getComponent(YJLoadAssets)) {
+
+        if (!this.loadedNode.getComponent(YJDynamicAtlas) && dynamicAtlas)
+            YJDynamicAtlas.setDynamicAtlas(this.loadedNode, dynamicAtlas);
+        if (this.loadedNode.getComponent(YJLoadAssets))
             await this.loadedNode.getComponent(YJLoadAssets).load();
-        }
+        else
+            YJLoadAssets.setLoadAsset(this.loadedNode, loadAsset);
         this.loadedNode.parent = parent;
     }
 
@@ -62,6 +67,10 @@ export class SetCreateSwitchContent extends FuckUi {
     container: Node = null;
     @property
     noCache: boolean = false;
+    @property(YJDynamicAtlas)
+    dynamicAtlas: YJDynamicAtlas = null;
+    @property(YJLoadAssets)
+    loadAsset: YJLoadAssets = null;
 
     onLoad() {
         if (EDITOR) {
@@ -78,7 +87,7 @@ export class SetCreateSwitchContent extends FuckUi {
     private async showContent(info: ContentInfo) {
         if (!info) return;
         if (!info.isLoaded) {
-            await info.loadTo(this.container);
+            await info.loadTo(this.container, this.dynamicAtlas, this.loadAsset);
         }
         this.scheduleOnce(() => {
             this.hideContent(info.name);

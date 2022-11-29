@@ -883,7 +883,7 @@ export namespace no {
     }
 
     /**下月1号 零点时间戳（秒）*/
-    export function nextDate1ZeroTimestamp(v = 0): number {
+    export function nextMonthDate1ZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
         a.setDate(1);
@@ -1233,6 +1233,18 @@ export namespace no {
         let a = floor(v);
         if (a < 0) return a;
         return a + 1;
+    }
+
+    /**
+     * 循环比较，v < min时返回max，v > max时返回min，否则返回v
+     * @param v 
+     * @param min 
+     * @param max 
+     */
+    export function cyclic(v: number, min: number, max: number): number {
+        if (v < min) return max;
+        if (v > max) return min;
+        return v;
     }
 
     export enum TweenSetType {
@@ -3614,7 +3626,17 @@ export namespace no {
         let a = createClickEvent(target, comp, handler);
         if (exclusive)
             btn.clickEvents = [a];
-        else btn.clickEvents[btn.clickEvents.length] = a;
+        else {
+            let b = true;
+            for (let i = 0, n = btn.clickEvents.length; i < n; i++) {
+                let ce = btn.clickEvents[i];
+                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                    b = false;
+                    break;
+                }
+            }
+            b && (btn.clickEvents[btn.clickEvents.length] = a);
+        }
     }
 }
 

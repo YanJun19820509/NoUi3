@@ -249,7 +249,10 @@ export class YJLoadAssets extends Component {
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {
-        let bs: any[] = node.getComponentsInChildren('SetSpriteFrameInSampler2D');
+        let bs: any[] = [].concat(node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+            node.getComponentsInChildren('SetCreateNode'),
+            node.getComponentsInChildren('SetList')
+        );
         bs.forEach(b => {
             b.loadAsset = loadAsset;
         });

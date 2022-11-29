@@ -28,7 +28,9 @@ const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 @requireComponent([Sprite, YJVertexColorTransition])
 @disallowMultiple()
 export class SetSpriteFrameInSampler2D extends FuckUi {
-    @property({ readonly: true })
+    @property({ editorOnly: true })
+    defaultSpriteFrameUuid: string = '';
+    @property
     defaultName: string = '';
     @property({ readonly: true, tooltip: '用于判断顶点数据类型，0为color类型，1为坐标类型。而shader中具体使用哪个贴图，需要通过atlases的下标+1来判断', visible() { return false; } })
     defineIndex: number = 0;
@@ -49,8 +51,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     update() {
         if (EDITOR) {
-            let name = this.getComponent(Sprite).spriteFrame?.name || '';
-            if (this.defaultName != name) this.defaultName = name;
+            let name = this.getComponent(Sprite).spriteFrame?.name;
+            if (!!name && this.defaultName != name) {
+                this.defaultName = name;
+            }
+            if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame._uuid != this.defaultSpriteFrameUuid))
+                this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame._uuid;
         }
     }
 
@@ -114,5 +120,18 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public a_setEmpty(): void {
         if (this.getComponent(Sprite).spriteFrame)
             this.getComponent(Sprite).spriteFrame = null;
+    }
+
+    public resetSprite() {
+        if (!EDITOR) return;
+        if (this.defaultSpriteFrameUuid)
+            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                this.getComponent(Sprite).spriteFrame = file;
+            });
+    }
+
+    public removeSprite() {
+        if (!EDITOR) return;
+        this.getComponent(Sprite).spriteFrame = null;
     }
 }

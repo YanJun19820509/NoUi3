@@ -204,7 +204,8 @@ export class SetTypeWritting extends FuckUi {
         label.isBold = a.style.bold;
         label.isUnderline = a.style.underline;
         label.cacheMode = Label.CacheMode.BITMAP;
-        label.verticalAlign = Label.VerticalAlign.TOP;
+        label.verticalAlign = Label.VerticalAlign.CENTER;
+        label.horizontalAlign = Label.HorizontalAlign.CENTER;
         if (a.style.outline) {
             let outline = labelNode.addComponent(LabelOutline);
             outline.color = no.str2Color(a.style.outline.color);

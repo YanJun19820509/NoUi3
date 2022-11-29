@@ -39,12 +39,12 @@ export class YJAutoCall extends Component {
     }
 
     onEnable() {
-        this.unscheduleAllCallbacks();
         this.callOnEnable && this.a_call();
     }
 
     public a_call() {
         if (this.once && this._done) return;
+        this.unscheduleAllCallbacks();
         this._done = true;
         this.scheduleOnce(() => {
             no.EventHandlerInfo.execute(this.calls);
