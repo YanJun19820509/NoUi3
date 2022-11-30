@@ -78,35 +78,12 @@ export class YJSocketIO implements YJSocketInterface {
         this.ws.volatile.emit('', encode(data, encryptType));
     }
 
-    /**
-     * 向服务器请求数据
-     * @param code 指令
-     * @param args 参数，不要执行JSON.stringify
-     */
-    public getDataFromServer(encryptType: EncryptType, data: any): Promise<any> {
-        this.sendDataToServer(encryptType, data);
-        if (this.ws.connected) {
-            return new Promise<any>(resolve => {
-                let a = setInterval(() => {
-                    let d = this.getReceiveData(encryptType);
-                    if (d != null) {
-                        clearInterval(a);
-                        resolve(d);
-                    }
-                }, 50 / 3);
-            });
-        } else return Promise.resolve(null);
-    }
-
-    private getReceiveData(type: EncryptType): any {
+    public findReceiveData(handler: (data: any) => boolean) {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
-            try {
-                let s = decode(this.receivedData[i], type);
-                if (!s) return null;
+            if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
-                return s;
-            } catch (e) { }
+                break;
+            }
         }
-        return null;
     }
 }

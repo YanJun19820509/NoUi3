@@ -1,6 +1,6 @@
 
 import { _decorator } from 'cc';
-import { decode, encode, EncryptType } from '../encrypt/encrypt';
+import { encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 const { ccclass } = _decorator;
@@ -19,10 +19,10 @@ const { ccclass } = _decorator;
 
 @ccclass('YJWebSocket')
 export class YJWebSocket implements YJSocketInterface {
-    private ws: WebSocket;
+    protected ws: WebSocket;
     private url: string;
     private reIniting: boolean = false;
-    private receivedData: any[] = [];
+    protected receivedData: any[] = [];
 
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
@@ -30,7 +30,7 @@ export class YJWebSocket implements YJSocketInterface {
         return a;
     }
 
-    private initWebSocket(url: string) {
+    protected initWebSocket(url: string) {
         this.url = url;
         this.ws = new WebSocket(url);
 
@@ -72,7 +72,7 @@ export class YJWebSocket implements YJSocketInterface {
         }
     }
 
-    private async isOk(): Promise<boolean> {
+    public async isOk(): Promise<boolean> {
         return new Promise<boolean>(resolve => {
             if (this.ws?.readyState !== WebSocket.OPEN) {
                 if (this.url != null) {
@@ -95,8 +95,8 @@ export class YJWebSocket implements YJSocketInterface {
 
     /**
      * 向服务器发送数据
-     * @param code 指令
-     * @param args 参数
+     * @param encryptType 加密方式
+     * @param data 
      */
     public async sendDataToServer(encryptType: EncryptType, data: any) {
         if (await this.isOk()) {
@@ -106,36 +106,15 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     /**
-     * 向服务器请求数据
-     * @param code 指令
-     * @param args 参数
+     * 从服务器返回的数据中查找
+     * @param handler 
      */
-    public async getDataFromServer(encryptType: EncryptType, data: any): Promise<any> {
-        if (await this.isOk()) {
-            let v: string | ArrayBufferLike = encode(data, encryptType);
-            if (!v) return Promise.resolve(null);
-            this.ws.send(v);
-            return new Promise<any>(resolve => {
-                let a = setInterval(() => {
-                    let d = this.getReceiveData(encryptType);
-                    if (d != null) {
-                        clearInterval(a);
-                        resolve(d);
-                    }
-                }, 50 / 3);
-            });
-        } else return Promise.resolve(null);
-    }
-
-    private getReceiveData(type: EncryptType): any {
+    public findReceiveData(handler: (data: any) => boolean) {
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
-            try {
-                let s = decode(this.receivedData[i], type);
-                if (!s) return null;
+            if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
-                return s;
-            } catch (e) { }
+                break;
+            }
         }
-        return null;
     }
 }
