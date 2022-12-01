@@ -1,8 +1,7 @@
 
-import { _decorator, Component, SpriteFrame, RichText, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, v2, rect, SpriteAtlas, Material, UITransform, RenderComponent, size } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math } from 'cc';
 import { EDITOR } from 'cc/env';
-import { no } from '../no';
-import { PackedFrameData } from '../types';
+import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
@@ -213,17 +212,23 @@ export class YJDynamicAtlas extends Component {
         return this.waitToPackCompNum == 1000;
     }
 
+    public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
+        let newSpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
+        if (!newSpriteFrame) {
+            newSpriteFrame = new SpriteFrame();
+            newSpriteFrame.texture = this.texture;
+            newSpriteFrame.originalSize = math.size(spriteFrame.width, spriteFrame.height);
+            newSpriteFrame.rect = math.rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
+            newSpriteFrame.unbiasUV = spriteFrame.unbiasUV;
+            newSpriteFrame.uv = spriteFrame.uv;
+            newSpriteFrame.uvSliced = spriteFrame.uvSliced;
+            newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
+            this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
+        }
+        sprite.spriteFrame = newSpriteFrame;
+        sprite['_updateUVs']();
+    }
 
-    // public static setDynamicAtlasToRenderComponent(node: Node, dynamicAtlas: YJDynamicAtlas): void {
-    //     let comps = [].concat(node.getComponentsInChildren(Label), node.getComponentsInChildren(Sprite), node.getComponentsInChildren(RichText));
-    //     comps.forEach(comp => {
-    //         let a: any = comp.getComponent('YJDynamicTexture') || comp.addComponent('YJDynamicTexture');
-    //         if (!a.enabled) return;
-    //         a.dynamicAtlas = dynamicAtlas;
-    //         a.setCommonMaterial();
-    //         if (!comp.getComponent('YJVertexColorTransition')) comp.addComponent('YJVertexColorTransition');
-    //     });
-    // }
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
         let bs = [].concat(

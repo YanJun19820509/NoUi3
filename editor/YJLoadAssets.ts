@@ -1,8 +1,9 @@
 
-import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro } from 'cc';
+import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro, JsonAsset } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { TimeWatcher } from '../TimeWatcher';
+import { SpriteFrameDataType } from '../types';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -49,17 +50,17 @@ export class LoadAssetsInfo {
         }
     }
 }
-@ccclass('SpriteAtlasInfo')
-export class SpriteAtlasInfo extends LoadAssetsInfo {
-    @property({ type: SpriteAtlas, editorOnly: true })
-    atlas: SpriteAtlas = null;
+@ccclass('JsonInfo')
+export class JsonInfo extends LoadAssetsInfo {
+    @property({ type: JsonAsset, editorOnly: true })
+    json: JsonAsset = null;
 
     public check() {
         if (EDITOR) {
-            if (this.atlas) {
-                this.assetUuid = this.atlas._uuid;
-                this.assetName = this.atlas.name;
-                this.atlas = null;
+            if (this.json) {
+                this.assetUuid = this.json._uuid;
+                this.assetName = this.json.name;
+                this.json = null;
             }
         }
     }
@@ -118,8 +119,8 @@ export class YJLoadAssets extends Component {
     autoLoad: boolean = false;
     @property(MaterialInfo)
     materialInfos: MaterialInfo[] = [];
-    @property(SpriteAtlasInfo)
-    atlasInfos: SpriteAtlasInfo[] = [];
+    @property(JsonInfo)
+    jsonInfos: JsonInfo[] = [];
     @property(SpriteFrameInfo)
     spriteFrameInfos: SpriteFrameInfo[] = [];
     @property(PrefabInfo)
@@ -128,8 +129,10 @@ export class YJLoadAssets extends Component {
     backgroundLoadInfos: LoadAssetsInfo[] = [];
     @property({ editorOnly: true })
     doCheck: boolean = false;
+    @property
+    autoSetSubLoadAsset: boolean = false;
 
-    private atlases: SpriteAtlas[] = [];
+    private atlases: any[] = [];
     private _loaded: boolean = false;
 
     onLoad() {
@@ -146,7 +149,7 @@ export class YJLoadAssets extends Component {
     public addAtlasUuid(uuid: string) {
         if (EDITOR) {
             let a = new LoadAssetsInfo(uuid);
-            no.addToArray(this.atlasInfos, a, 'assetUuid');
+            no.addToArray(this.jsonInfos, a, 'assetUuid');
         }
     }
 
@@ -162,25 +165,25 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
-        let requests: { uuid: string }[] = [];
+        let requests: { uuid: string, type: typeof Asset }[] = [];
         TimeWatcher.blink('start');
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid };
+            requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
         }
         let atlasUuids: string[] = [];
-        for (let i = 0, n = this.atlasInfos.length; i < n; i++) {
-            atlasUuids[atlasUuids.length] = this.atlasInfos[i].assetUuid;
-            requests[requests.length] = { uuid: this.atlasInfos[i].assetUuid };
+        for (let i = 0, n = this.jsonInfos.length; i < n; i++) {
+            atlasUuids[atlasUuids.length] = this.jsonInfos[i].assetUuid;
+            requests[requests.length] = { uuid: this.jsonInfos[i].assetUuid, type: JsonAsset };
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid };
+            requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
         if (requests.length == 0) return;
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
                 atlasUuids.forEach((uuid, i) => {
-                    let item = no.itemOfArray(items, uuid, '_uuid');
-                    this.atlases[i] = item as SpriteAtlas;
+                    let item: JsonAsset = no.itemOfArray(items, uuid, '_uuid');
+                    this.atlases[i] = item.json;
                 });
                 TimeWatcher.blink('end');
                 this._loaded = true;
@@ -197,9 +200,6 @@ export class YJLoadAssets extends Component {
      */
     public release() {
         if (EDITOR) return;
-        this.atlasInfos.forEach(info => {
-            info.release && info.release(null);
-        });
         this.spriteFrameInfos.forEach(info => {
             info.release && info.release(null);
         });
@@ -207,29 +207,29 @@ export class YJLoadAssets extends Component {
 
 
     /**
-     * 从atlas中获取spriteFrame
+     * 从spriteframe的数据文件中获取spriteFrameInfo
      * @param name spriteFrame的名称
-     * @returns [所属atlas下标，spriteFrame]
+     * @returns [所属atlas下标，SpriteFrameInfo]
      */
-    public async getSpriteFrameInAtlas(name: string): Promise<[number, SpriteFrame]> {
+    public async getSpriteFrameInAtlas(name: string): Promise<[number, SpriteFrameDataType]> {
         await no.waitFor(() => { return this._loaded; }, this);
-        let spriteFrame: SpriteFrame, idx: number;
+        let info: SpriteFrameDataType, idx: number;
         for (let i = 0, n = this.atlases.length; i < n; i++) {
-            const s = this.atlases[i].getSpriteFrame(name);
+            const s = this.atlases[i][name];
             if (s) {
-                spriteFrame = s;
+                info = s;
                 idx = i;
                 break;
             }
         }
-        return [idx, spriteFrame];
+        return [idx, info];
     }
 
     private checkInfos() {
         if (!EDITOR) return;
         if (!this.doCheck) return;
         this.doCheck = false;
-        this.atlasInfos.forEach(info => {
+        this.jsonInfos.forEach(info => {
             info.check();
         });
         this.materialInfos.forEach(info => {
@@ -246,6 +246,12 @@ export class YJLoadAssets extends Component {
 
     update() {
         this.checkInfos();
+        if (EDITOR) {
+            if (this.autoSetSubLoadAsset) {
+                this.autoSetSubLoadAsset = false;
+                YJLoadAssets.setLoadAsset(this.node, this);
+            }
+        }
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {

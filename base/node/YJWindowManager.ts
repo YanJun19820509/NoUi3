@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
+import { TimeWatcher } from '../../TimeWatcher';
 import { YJAddPanelToMetaKey, YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 const { ccclass, property, menu } = _decorator;
@@ -109,7 +110,9 @@ export class YJWindowManager extends Component {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
             let url = comp.prototype[YJPanelPrefabMetaKey];
+            TimeWatcher.blink('loadPrefab start')
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
+                TimeWatcher.blink('loadPrefab end')
                 let node = instantiate(pf);
                 this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             });

@@ -30,10 +30,10 @@
         "__id__": 6
       },
       {
-        "__id__": 8
+        "__id__": 10
       },
       {
-        "__id__": 10
+        "__id__": 8
       }
     ],
     "_prefab": {
@@ -142,6 +142,13 @@
     "__prefab": {
       "__id__": 7
     },
+    "autoRegister": false,
+    "subFuckUiNodes": [],
+    "subFuckUis": [
+      {
+        "__id__": 8
+      }
+    ],
     "_id": ""
   },
   {
@@ -149,7 +156,7 @@
     "fileId": "02UHdUcq1EgLDQGkMEGgKF"
   },
   {
-    "__type__": "285a2fAsbtI97WV95mqklAH",
+    "__type__": "13b3bIM7TVDXJ5v647nTNPD",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -162,15 +169,21 @@
     "register": {
       "__id__": 6
     },
-    "tempNode": null,
+    "bind_keys": "",
+    "once": false,
+    "saveIgnore": true,
+    "showValueLog": false,
+    "dataWork": {
+      "__id__": 10
+    },
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "7aw9iWDghGNIIBN8ZDq2M6"
+    "fileId": "f1by9lBC9CdqCnCF2HBCKo"
   },
   {
-    "__type__": "13b3bIM7TVDXJ5v647nTNPD",
+    "__type__": "285a2fAsbtI97WV95mqklAH",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -180,19 +193,17 @@
     "__prefab": {
       "__id__": 11
     },
-    "register": null,
-    "bind_keys": "",
-    "once": false,
-    "saveIgnore": true,
-    "showValueLog": false,
-    "dataWork": {
-      "__id__": 8
+    "register": {
+      "__id__": 6
     },
+    "onlyDiff": true,
+    "templates": [],
+    "fileType": 0,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "f1by9lBC9CdqCnCF2HBCKo"
+    "fileId": "7aw9iWDghGNIIBN8ZDq2M6"
   },
   {
     "__type__": "cc.PrefabInfo",

@@ -2273,10 +2273,10 @@ export namespace no {
             }
             let bundle = this.getBundle(p.bundle);
             let infos = bundle.getDirWithPath(p.file);
-            let requests: { uuid: string }[] = [];
+            let requests: { uuid: string, type: typeof Asset }[] = [];
             infos.forEach(a => {
                 if (a.uuid.indexOf('@') == -1) {
-                    requests[requests.length] = { uuid: a.uuid };
+                    requests[requests.length] = { uuid: a.uuid, type: Asset };
                 }
             });
             this.loadAnyFiles(requests, onProgress);
@@ -2406,7 +2406,7 @@ export namespace no {
         }
 
 
-        public loadAnyFiles(requests: { 'uuid': string }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
+        public loadAnyFiles(requests: { 'uuid': string, 'type': typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
             log('loadAnyFiles', requests);
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);

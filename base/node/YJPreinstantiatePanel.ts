@@ -27,7 +27,7 @@ export class YJPreinstantiatePanel extends Component {
 
     public static ins: YJPreinstantiatePanel;
 
-    onLoad() {
+    onLoad() {return;
         YJPreinstantiatePanel.ins = this;
         this.panelNodes = {};
         this.panelComponentNames.forEach(name => {

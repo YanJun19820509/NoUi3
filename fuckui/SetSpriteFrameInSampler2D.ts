@@ -28,12 +28,10 @@ const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 @requireComponent([Sprite, YJVertexColorTransition])
 @disallowMultiple()
 export class SetSpriteFrameInSampler2D extends FuckUi {
-    @property({ editorOnly: true })
+    @property
     defaultSpriteFrameUuid: string = '';
     @property
     defaultName: string = '';
-    @property({ readonly: true, tooltip: '用于判断顶点数据类型，0为color类型，1为坐标类型。而shader中具体使用哪个贴图，需要通过atlases的下标+1来判断', visible() { return false; } })
-    defineIndex: number = 0;
     @property({ type: YJLoadAssets, readonly: true })
     loadAsset: YJLoadAssets = null;
     @property({ type: YJDynamicAtlas, readonly: true })
@@ -41,11 +39,15 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private lastDefine: string;
 
+    private defineIndex: number = 0;
+
     onLoad() {
         super.onLoad();
         if (EDITOR) {
             if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            if (this.getComponent(Sprite).spriteAtlas)
+                this.getComponent(Sprite).spriteAtlas = null;
         }
     }
 
@@ -80,10 +82,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         let sprite = this.getComponent(Sprite);
         if (sprite.type == Sprite.Type.FILLED) {
-            sprite.spriteFrame = spriteFrame;
+            // sprite.spriteFrame = spriteFrame;
             return;
         }
-        this.setTexture();
         let t = `${this.defineIndex}-${i + 1}00`;
         const defines: any = {};
         defines[t] = true;
@@ -91,14 +92,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             defines[this.lastDefine] = false;
         }
         this.lastDefine = t;
-        // no.log('setSpriteFrame get', name, i, JSON.stringify(defines));
-        let rect = spriteFrame.rect;
-        this.resize(rect.width, rect.height);
-        sprite.spriteFrame.unbiasUV = spriteFrame.unbiasUV;
-        sprite.spriteFrame.uv = spriteFrame.uv;
-        sprite.spriteFrame.uvSliced = spriteFrame.uvSliced;
-        sprite.spriteFrame['_capInsets'] = spriteFrame['_capInsets'];
-        sprite['_updateUVs']();
+        this.resize(spriteFrame.width, spriteFrame.height);
+        this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }
 
@@ -107,14 +102,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (sprite.sizeMode == Sprite.SizeMode.CUSTOM) return;
         let ut = this.getComponent(UITransform);
         ut.setContentSize(width, height);
-    }
-
-    private setTexture() {
-        if (this.getComponent(Sprite)?.spriteFrame?.texture?._uuid == this.dynamicAtlas.texture._uuid) return;
-        let spriteFrame = new SpriteFrame();
-        spriteFrame.texture = this.dynamicAtlas.texture;
-        spriteFrame.rect = math.rect(0, 0, this.dynamicAtlas.width, this.dynamicAtlas.height);
-        this.getComponent(Sprite).spriteFrame = spriteFrame;
     }
 
     public a_setEmpty(): void {
@@ -133,5 +120,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public removeSprite() {
         if (!EDITOR) return;
         this.getComponent(Sprite).spriteFrame = null;
+        this.getComponent(Sprite).spriteAtlas = null;
     }
 }

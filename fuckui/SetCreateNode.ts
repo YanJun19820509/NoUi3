@@ -99,6 +99,7 @@ export class SetCreateNode extends FuckUi {
     }
 
     protected async setItems(data: any[]) {
+        if (data.length == 0) return;
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
         }

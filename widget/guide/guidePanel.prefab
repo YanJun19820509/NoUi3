@@ -222,6 +222,7 @@
     "once": false,
     "saveIgnore": true,
     "showValueLog": false,
+    "reverse": false,
     "_id": ""
   },
   {
@@ -239,6 +240,13 @@
     "__prefab": {
       "__id__": 12
     },
+    "autoRegister": false,
+    "subFuckUiNodes": [],
+    "subFuckUis": [
+      {
+        "__id__": 9
+      }
+    ],
     "_id": ""
   },
   {
@@ -332,11 +340,14 @@
     "onOpen": [],
     "onClose": [],
     "needCache": true,
+    "needClear": true,
+    "dataWork": null,
     "guideTypes": [
       {
         "__id__": 20
       }
     ],
+    "container": null,
     "_id": ""
   },
   {
@@ -362,6 +373,7 @@
     "register": {
       "__id__": 11
     },
+    "onlyDiff": true,
     "_id": ""
   },
   {

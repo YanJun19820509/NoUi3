@@ -26,7 +26,11 @@ export class YJFuckUiRegister extends Component {
     @property(Node)
     subFuckUiNodes: Node[] = [];
 
+    @property({ readonly: true })
+    private subFuckUis: FuckUiComponent[] = [];
+
     protected _data2ui: object = {};
+
     private _inited: boolean = false;
 
     public init() {
@@ -54,14 +58,15 @@ export class YJFuckUiRegister extends Component {
     }
 
     private bindSubFuckUis() {
-        let list: FuckUiComponent[] = this.getComponentsInChildren('FuckUi') as FuckUiComponent[];
-        this.subFuckUiNodes.forEach(sub => {
-            if (sub)
-                list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUiComponent[]);
-        });
+        // let list: FuckUiComponent[] = this.getComponentsInChildren('FuckUi') as FuckUiComponent[];
+        // this.subFuckUiNodes.forEach(sub => {
+        //     if (sub)
+        //         list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUiComponent[]);
+        // });
+        let list = this.subFuckUis;
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];
-            if (ui.register == this) {
+            if (ui?.register == this) {
                 let keys = ui.bindKeys;
                 keys.forEach(key => {
                     this._data2ui[key] = this._data2ui[key] || [];
@@ -83,8 +88,16 @@ export class YJFuckUiRegister extends Component {
                 list = list.concat(sub.getComponentsInChildren('FuckUi'));
             });
             list.forEach((a: FuckUiComponent) => {
-                if (!a.register)
+                if (!a.register) {
                     a.register = this;
+                }
+            });
+
+            this.subFuckUis = [];
+            list.forEach((a: FuckUiComponent) => {
+                if (a.register == this) {
+                    this.subFuckUis[this.subFuckUis.length] = a;
+                }
             });
         }
     }

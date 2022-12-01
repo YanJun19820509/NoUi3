@@ -209,6 +209,7 @@
     "container": {
       "__id__": 2
     },
+    "dynamicAtlas": null,
     "_id": ""
   },
   {
@@ -226,6 +227,13 @@
     "__prefab": {
       "__id__": 10
     },
+    "autoRegister": false,
+    "subFuckUiNodes": [],
+    "subFuckUis": [
+      {
+        "__id__": 7
+      }
+    ],
     "_id": ""
   },
   {
@@ -247,22 +255,22 @@
     "_active": false,
     "_components": [
       {
-        "__id__": 24
-      },
-      {
-        "__id__": 26
-      },
-      {
         "__id__": 28
-      },
-      {
-        "__id__": 21
       },
       {
         "__id__": 30
       },
       {
         "__id__": 32
+      },
+      {
+        "__id__": 21
+      },
+      {
+        "__id__": 34
+      },
+      {
+        "__id__": 23
       },
       {
         "__id__": 36
@@ -326,7 +334,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 23
+      "__id__": 27
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -403,7 +411,7 @@
     "_font": null,
     "_isSystemFontUsed": true,
     "_userDefinedFont": null,
-    "_cacheMode": 0,
+    "_cacheMode": 1,
     "_imageAtlas": null,
     "_handleTouchEvent": false,
     "_id": ""
@@ -423,6 +431,9 @@
     "__prefab": {
       "__id__": 18
     },
+    "dynamicAtlas": null,
+    "needClear": false,
+    "canRotate": true,
     "_id": ""
   },
   {
@@ -465,11 +476,67 @@
     "__prefab": {
       "__id__": 22
     },
+    "autoRegister": false,
+    "subFuckUiNodes": [],
+    "subFuckUis": [
+      {
+        "__id__": 23
+      },
+      {
+        "__id__": 19
+      }
+    ],
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "e9s+B1kZpGQo1dZNHez3ap"
+  },
+  {
+    "__type__": "4bb0c0DXzRJUIss9deyGeFy",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 11
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 24
+    },
+    "register": {
+      "__id__": 21
+    },
+    "bind_keys": "move",
+    "once": false,
+    "saveIgnore": false,
+    "showValueLog": false,
+    "beforeCall": [],
+    "endCall": [
+      {
+        "__id__": 25
+      }
+    ],
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "ed3RRJOWtDLq6znJsyNDUx"
+  },
+  {
+    "__type__": "EventHandlerInfo",
+    "handler": {
+      "__id__": 26
+    }
+  },
+  {
+    "__type__": "cc.ClickEvent",
+    "target": {
+      "__id__": 11
+    },
+    "component": "",
+    "_componentId": "e32804GAWdALq1z6VzlET7E",
+    "handler": "recycle",
+    "customEventData": ""
   },
   {
     "__type__": "cc.PrefabInfo",
@@ -490,7 +557,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 25
+      "__id__": 29
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -517,7 +584,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 27
+      "__id__": 31
     },
     "_visFlags": 0,
     "_customMaterial": null,
@@ -562,7 +629,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 29
+      "__id__": 33
     },
     "_resizeMode": 1,
     "_layoutType": 1,
@@ -599,62 +666,17 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 31
+      "__id__": 35
     },
     "register": {
       "__id__": 21
     },
+    "onlyDiff": true,
     "_id": ""
   },
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "22HPkdktxNKYtvSmlL9kK3"
-  },
-  {
-    "__type__": "4bb0c0DXzRJUIss9deyGeFy",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 11
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 33
-    },
-    "register": {
-      "__id__": 21
-    },
-    "bind_keys": "move",
-    "once": false,
-    "saveIgnore": false,
-    "showValueLog": false,
-    "beforeCall": [],
-    "endCall": [
-      {
-        "__id__": 34
-      }
-    ],
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "ed3RRJOWtDLq6znJsyNDUx"
-  },
-  {
-    "__type__": "EventHandlerInfo",
-    "handler": {
-      "__id__": 35
-    }
-  },
-  {
-    "__type__": "cc.ClickEvent",
-    "target": {
-      "__id__": 11
-    },
-    "component": "",
-    "_componentId": "e32804GAWdALq1z6VzlET7E",
-    "handler": "recycle",
-    "customEventData": ""
   },
   {
     "__type__": "e32804GAWdALq1z6VzlET7E",
@@ -669,6 +691,7 @@
     },
     "recycleType": "floatTips_item",
     "recycleOnDisable": false,
+    "needRelease": true,
     "_id": ""
   },
   {
@@ -789,9 +812,11 @@
     "register": {
       "__id__": 9
     },
+    "onlyDiff": true,
     "delay": 0.1,
     "upDuration": 0.5,
     "stayDuration": 1,
+    "maxHeight": 100,
     "_id": ""
   },
   {
