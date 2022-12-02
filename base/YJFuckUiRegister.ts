@@ -83,22 +83,27 @@ export class YJFuckUiRegister extends Component {
         }
         if (this.autoRegister) {
             this.autoRegister = false;
-            let list = this.getComponentsInChildren('FuckUi');
-            this.subFuckUiNodes.forEach(sub => {
-                list = list.concat(sub.getComponentsInChildren('FuckUi'));
-            });
-            list.forEach((a: FuckUiComponent) => {
-                if (!a.register) {
-                    a.register = this;
-                }
-            });
-
-            this.subFuckUis = [];
-            list.forEach((a: FuckUiComponent) => {
-                if (a.register == this) {
-                    this.subFuckUis[this.subFuckUis.length] = a;
-                }
-            });
+            this.autoSetSubRegister();
         }
+    }
+
+    public autoSetSubRegister() {
+        if (!EDITOR) return;
+        let list = this.getComponentsInChildren('FuckUi');
+        this.subFuckUiNodes.forEach(sub => {
+            list = list.concat(sub.getComponentsInChildren('FuckUi'));
+        });
+        list.forEach((a: FuckUiComponent) => {
+            if (!a.register) {
+                a.register = this;
+            }
+        });
+
+        this.subFuckUis = [];
+        list.forEach((a: FuckUiComponent) => {
+            if (a.register == this) {
+                this.subFuckUis[this.subFuckUis.length] = a;
+            }
+        });
     }
 }
