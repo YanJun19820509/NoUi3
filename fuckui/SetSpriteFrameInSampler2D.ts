@@ -43,6 +43,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     onLoad() {
         super.onLoad();
+        this.setDynamicAtlas();
+    }
+
+    update() {
+        this.initSpriteFrameInfo();
+    }
+
+    public setDynamicAtlas() {
         if (EDITOR) {
             if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
@@ -51,16 +59,16 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
     }
 
-    update() {
-        if (EDITOR) {
-            let name = this.getComponent(Sprite).spriteFrame?.name;
-            if (!!name && this.defaultName != name) {
-                this.defaultName = name;
-            }
-            if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame._uuid != this.defaultSpriteFrameUuid))
-                this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame._uuid;
+    public initSpriteFrameInfo() {
+        if (!EDITOR) return;
+        let name = this.getComponent(Sprite).spriteFrame?.name;
+        if (!!name && this.defaultName != name) {
+            this.defaultName = name;
         }
+        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame._uuid != this.defaultSpriteFrameUuid))
+            this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame._uuid;
     }
+
 
     start() {
         if (EDITOR) return;
