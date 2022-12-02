@@ -39,6 +39,8 @@ export class SetCreateNodeByUrl extends FuckUi {
     clearOnDisable: boolean = false;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
+    @property(YJLoadAssets)
+    loadAsset: YJLoadAssets = null;
 
     private template: Node;
     private url: string;
@@ -69,6 +71,7 @@ export class SetCreateNodeByUrl extends FuckUi {
                 this.resizeContentSize(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+                    YJLoadAssets.setLoadAsset(this.template, this.loadAsset);
                 }
                 this.setItems(data).then(() => {
                     this.clear();
@@ -147,5 +150,6 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
         if (!this.container) this.container = this.node;
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }
