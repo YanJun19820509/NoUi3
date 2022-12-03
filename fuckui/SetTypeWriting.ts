@@ -279,7 +279,7 @@ export class SetTypeWritting extends FuckUi {
         let ut = node.getComponent(UITransform);
         const size = ut.contentSize;
         this.checkNewLine(size.width);
-        node.setPosition(this._x, this._y - size.height * (1 - ut.anchorY));
+        node.setPosition(this._x, this._y - size.height * (1 - ut.anchorY) / 1.22);
         this._x += size.width;
     }
 
