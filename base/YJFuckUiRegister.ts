@@ -69,8 +69,10 @@ export class YJFuckUiRegister extends Component {
             if (ui?.register == this) {
                 let keys = ui.bindKeys;
                 keys.forEach(key => {
-                    this._data2ui[key] = this._data2ui[key] || [];
-                    this._data2ui[key][this._data2ui[key].length] = ui;
+                    if (!!key) {
+                        this._data2ui[key] = this._data2ui[key] || [];
+                        no.addToArray(this._data2ui[key], ui, 'uuid');
+                    }
                 });
             }
         }
