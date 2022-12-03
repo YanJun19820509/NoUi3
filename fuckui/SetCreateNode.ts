@@ -99,7 +99,6 @@ export class SetCreateNode extends FuckUi {
     }
 
     protected async setItems(data: any[]) {
-        if (data.length == 0) return;
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
         }
@@ -142,9 +141,9 @@ export class SetCreateNode extends FuckUi {
         // }
         let i = 0;
         await YJJobManager.ins.execute((max: number) => {
+            if (i == max) return false;
             this.setItem(data, start, i);
             i++;
-            if (i == max) return false;
         }, this, n);
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
