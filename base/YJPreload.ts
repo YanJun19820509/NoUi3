@@ -1,10 +1,11 @@
 
-import { _decorator, Component, Node, CCString, JsonAsset } from 'cc';
+import { _decorator, Component, Node, CCString, JsonAsset, Prefab } from 'cc';
+import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
 import { YJPreloadDelegate } from './YJPreloadDelegate';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -25,11 +26,35 @@ enum PreloadState {
     LoadingBundleFiles,
     LoadingFolderFiles,
     LoadingJsonFiles,
+    LoadingPrefabFiles,
     LoadingScene
+}
+
+@ccclass('PrefabFileInfo')
+export class PrefabFileInfo {
+    @property({ type: Prefab })
+    prefab: Prefab = null;
+    @property({ readonly: true })
+    name: string = '';
+    @property({ readonly: true })
+    _uuid: string = '';
+    @property({ readonly: true })
+    url: string = '';
+
+    public async chek() {
+        if (this.prefab) {
+            let info = await Editor.Message.request('asset-db', 'query-asset-info', this.prefab._uuid);
+            this.name = info.name;
+            this._uuid = info.uuid;
+            this.url = info.url;
+            this.prefab = null;
+        }
+    }
 }
 
 @ccclass('YJPreload')
 @menu('NoUi/base/YJPreload(资源预加载)')
+@executeInEditMode()
 export class YJPreload extends YJComponent {
     @property({ type: CCString, displayName: '加载包' })
     bundles: string[] = [];
@@ -45,6 +70,11 @@ export class YJPreload extends YJComponent {
 
     @property({ type: CCString, displayName: '加载json文件夹' })
     jsonFiles: string[] = [];
+    @property({ type: PrefabFileInfo, displayName: '加载prefab文件' })
+    prefabFiles: PrefabFileInfo[] = [];
+    @property({ displayName: '加了prefab后check一下' })
+    needCheck: boolean = false;
+
 
     @property({ displayName: '跳转的场景' })
     scene: string = '';
@@ -111,7 +141,7 @@ export class YJPreload extends YJComponent {
                 i.push(f);
             }
         });
-        this.total = 1 + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + (this.scene != '' ? 1 : 0);
+        this.total = 1 + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length + (this.scene != '' ? 1 : 0);
     }
 
     protected loadBundles() {
@@ -168,6 +198,28 @@ export class YJPreload extends YJComponent {
         }
     }
 
+    protected loadPrefabFiles() {
+        this.state = PreloadState.LoadingPrefabFiles;
+        if (this.prefabFiles.length == 0) {
+            this.loadNext = true;
+            this.progress = 0;
+        } else {
+            let request = [];
+            this.prefabFiles.forEach(info => {
+                request[request.length] = { uuid: info._uuid, type: Prefab };
+            });
+            this.finished += request.length;
+            no.assetBundleManager.loadAnyFiles(request, p => {
+                if (p == 1) {
+                    this.progress = 0;
+                    this.loadNext = true;
+                } else {
+                    this.progress = p / this.total;
+                }
+            });
+        }
+    }
+
     protected loadScene() {
         this.showNewScene = false;
         this.state = PreloadState.LoadingScene;
@@ -188,24 +240,36 @@ export class YJPreload extends YJComponent {
     }
 
     update() {
-        if (this.loadNext) {
-            this.loadNext = false;
-            switch (this.state) {
-                case PreloadState.LoadingBundles:
-                    this.loadFiles();
-                    break;
-                case PreloadState.LoadingFiles:
-                    this.loadBundleFiles();
-                    break;
-                case PreloadState.LoadingBundleFiles:
-                    this.loadFolderFiles();
-                    break;
-                case PreloadState.LoadingFolderFiles:
-                    this.loadJsonFiles();
-                    break;
-                case PreloadState.LoadingJsonFiles:
-                    this.loadScene();
-                    break;
+        if (EDITOR) {
+            if (this.needCheck) {
+                this.needCheck = false;
+                this.prefabFiles.forEach(info => {
+                    info.chek();
+                });
+            }
+        } else {
+            if (this.loadNext) {
+                this.loadNext = false;
+                switch (this.state) {
+                    case PreloadState.LoadingBundles:
+                        this.loadFiles();
+                        break;
+                    case PreloadState.LoadingFiles:
+                        this.loadBundleFiles();
+                        break;
+                    case PreloadState.LoadingBundleFiles:
+                        this.loadFolderFiles();
+                        break;
+                    case PreloadState.LoadingFolderFiles:
+                        this.loadJsonFiles();
+                        break;
+                    case PreloadState.LoadingJsonFiles:
+                        this.loadPrefabFiles();
+                        break;
+                    case PreloadState.LoadingPrefabFiles:
+                        this.loadScene();
+                        break;
+                }
             }
         }
     }
