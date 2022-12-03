@@ -22,7 +22,7 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('FuckUi')
 @executeInEditMode()
 export class FuckUi extends Component {
-    @property({ type: YJFuckUiRegister, editorOnly: true })
+    @property({ type: YJFuckUiRegister })
     register: YJFuckUiRegister = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
