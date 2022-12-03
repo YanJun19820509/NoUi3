@@ -36,11 +36,12 @@ export class YJProtobuf {
         this._pkgName = pkgName;
     }
 
-    public async loadProto(pkgName: string, file: string) {
-        this._pkgName = pkgName;
+    public async loadProto(file: string) {
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadFile(file, TextAsset, (asset: TextAsset) => {
-                this._root = protobuf.parse(asset.text, { keepCase: true }).root;
+                let a = protobuf.parse(asset.text, { keepCase: true });
+                this._root = a.root;
+                this._pkgName = a.package;
                 resolve();
             });
         });
