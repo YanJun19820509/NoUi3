@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, CCString, JsonAsset, Prefab } from 'cc';
+import { _decorator, Component, Node, CCString, JsonAsset, Prefab, instantiate } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
@@ -32,16 +32,16 @@ enum PreloadState {
 
 @ccclass('PrefabFileInfo')
 export class PrefabFileInfo {
-    @property({ type: Prefab })
+    @property({ type: Prefab, editorOnly: true })
     prefab: Prefab = null;
-    @property({ readonly: true })
+    @property({ readonly: true, editorOnly: true })
     name: string = '';
     @property({ readonly: true })
     _uuid: string = '';
-    @property({ readonly: true })
+    @property({ readonly: true, editorOnly: true })
     url: string = '';
 
-    public async chek() {
+    public async check() {
         if (this.prefab) {
             let info = await Editor.Message.request('asset-db', 'query-asset-info', this.prefab._uuid);
             this.name = info.name;
@@ -216,6 +216,12 @@ export class YJPreload extends YJComponent {
                 } else {
                     this.progress = p / this.total;
                 }
+            }, items => {
+                items.forEach((item: Prefab) => {
+                    item.optimizationPolicy = 2;
+                    let a = instantiate(item);
+                    a.getComponent('YJCacheObject')?.['preCreate']();
+                });
             });
         }
     }
@@ -244,7 +250,7 @@ export class YJPreload extends YJComponent {
             if (this.needCheck) {
                 this.needCheck = false;
                 this.prefabFiles.forEach(info => {
-                    info.chek();
+                    info.check();
                 });
             }
         } else {
@@ -365,6 +371,14 @@ export class YJPreload extends YJComponent {
             } else {
                 this.progress = p / this.total;
             }
+        }, items => {
+            items.forEach(item => {
+                if (item instanceof Prefab) {
+                    item.optimizationPolicy = 2;
+                    let a = instantiate(item);
+                    a.getComponent('YJCacheObject')?.['preCreate']();
+                }
+            });
         });
     }
 

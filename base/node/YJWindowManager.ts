@@ -114,6 +114,7 @@ export class YJWindowManager extends Component {
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
                 TimeWatcher.blink('loadPrefab end')
                 let node = instantiate(pf);
+                TimeWatcher.blink('loadPrefab instantiate')
                 this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             });
         }

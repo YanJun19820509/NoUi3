@@ -38,7 +38,11 @@ export class SetSpine extends FuckUi {
     }
 
     onDestroy() {
-        this.getComponent(sp.Skeleton)?.skeletonData?.decRef();
+        const spine = this.getComponent(sp.Skeleton);
+        if (spine) {
+            spine.setCompleteListener(() => { });
+            spine.skeletonData?.decRef();
+        }
     }
 
     protected onDataChange(data: any) {
@@ -101,8 +105,8 @@ export class SetSpine extends FuckUi {
 
     private bindEndCall(spine: sp.Skeleton) {
         spine?.setCompleteListener(() => {
-            this.endCall.execute();
-            spine.setCompleteListener(() => { });
+            this?.endCall?.execute();
+            spine?.setCompleteListener(() => { });
         });
     }
 }

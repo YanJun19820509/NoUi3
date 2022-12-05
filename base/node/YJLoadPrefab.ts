@@ -22,6 +22,7 @@ export default class YJLoadPrefab extends Component {
     public loaded: boolean = false;
     public loadedNode: Node = null;
     private prefUuid: string;
+    private loadedPrefab: Prefab = null;
 
     onLoad() {
         if (EDITOR) return;
@@ -40,6 +41,7 @@ export default class YJLoadPrefab extends Component {
             no.assetBundleManager.loadPrefab(this.url, (p) => {
                 if (p == null) resolve(null);
                 else {
+                    this.loadedPrefab = p;
                     this.prefUuid = p._uuid;
                     this.loadedNode = instantiate(p);
                     this.loaded = true;
@@ -54,11 +56,15 @@ export default class YJLoadPrefab extends Component {
         return instantiate(this.loadedNode);
     }
 
+    public instantiateNode(): Node {
+        return instantiate(this.loadedPrefab);
+    }
+
     public clear(): void {
         this.loadedNode?.destroy();
         this.loadedNode = null;
         this.loaded = false;
-        no.assetBundleManager.release(this.prefUuid, true);
+        // no.assetBundleManager.release(this.prefUuid, false);
     }
 
     ////////////EDITOR MODE//////////////////////

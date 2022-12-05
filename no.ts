@@ -2269,7 +2269,7 @@ export namespace no {
             this.loadFiles(p.bundle, paths, onProgress, onComplete);
         }
 
-        public preloadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void) {
+        public preloadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
                 err(`${folderName}没有设置ab包`);
@@ -2283,7 +2283,7 @@ export namespace no {
                     requests[requests.length] = { uuid: a.uuid, type: Asset };
                 }
             });
-            this.loadAnyFiles(requests, onProgress);
+            this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
         public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: AssetInfo) => void, onErr?: () => void) {
@@ -2501,6 +2501,10 @@ export namespace no {
                 t: sysTime.now + (canRelease ? 0 : 999999)
             });
             this.cacheMap.set(type, a);
+        }
+
+        public canReuseNumber(type: string): number {
+            return (this.cacheMap.get(type) || []).length;
         }
 
         public clearAll(): void {
