@@ -26,7 +26,7 @@ export class YJReleasePrefab extends Component {
         this.prefabUuid = this.node['_prefab']?.asset._uuid;
         this.aa = this.enabled;
     }
-    onDestroy() {return;
+    onDestroy() {
         if (this.aa)
             no.assetBundleManager.release(this.prefabUuid, this.force);
     }

@@ -60,6 +60,7 @@ export class YJCharLabel extends Component {
     dynamicAtlas: YJDynamicAtlas = null;
 
     private _text: string;
+    private _needInitMode: boolean = true;
 
     onLoad() {
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
@@ -71,6 +72,12 @@ export class YJCharLabel extends Component {
 
     update() {
         if (!EDITOR) return;
+        this.initMode();
+        if (this.text != this._text)
+            this.setLabel(this.text);
+    }
+
+    private initMode() {
         if (this.mode == YJCharLabelMode.String) {
             if (!this.getComponent(Layout)) {
                 let layout = this.addComponent(Layout);
@@ -95,11 +102,13 @@ export class YJCharLabel extends Component {
                 this._text = null;
             }
         }
-        if (this.text != this._text)
-            this.setLabel(this.text);
     }
 
     public set string(v: string) {
+        if (this._needInitMode) {
+            if (!this.getComponent('SetTimeCountDown')) this.mode = YJCharLabelMode.String;
+            this.initMode();
+        }
         this.setLabel(`${v}`);
     }
 
