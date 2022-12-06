@@ -33,10 +33,10 @@ export class YJi18n extends no.Data {
      * @param fileUrl json文件url
      * @param language 语言标识
      */
-    public loadProperties(fileUrl: string, language?: string) {
+    public loadProperties(fileUrl: string, cb?: () => void) {
         no.assetBundleManager.loadJSON(fileUrl, item => {
             this.data = item.json;
-            this._lan = language;
+            cb?.();
         });
     }
 
@@ -46,6 +46,11 @@ export class YJi18n extends no.Data {
     public set language(v: string) {
         this._lan = v;
     }
+
+    public get language(): string {
+        return this._lan;
+    }
+
 
     /**
      * 获取指定语言文本

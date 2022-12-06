@@ -211,8 +211,7 @@ export class YJLoadAssets extends Component {
      * @param name spriteFrame的名称
      * @returns [所属atlas下标，SpriteFrameInfo]
      */
-    public async getSpriteFrameInAtlas(name: string): Promise<[number, SpriteFrameDataType]> {
-        await no.waitFor(() => { return this._loaded; }, this);
+    public getSpriteFrameInAtlas(name: string): [number, SpriteFrameDataType] {
         let info: SpriteFrameDataType, idx: number;
         for (let i = 0, n = this.atlases.length; i < n; i++) {
             const s = this.atlases[i][name];

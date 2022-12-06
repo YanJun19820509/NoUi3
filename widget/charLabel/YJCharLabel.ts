@@ -62,11 +62,6 @@ export class YJCharLabel extends Component {
     private _text: string;
 
     onLoad() {
-        if (!EDITOR) {
-            if (this.mode == YJCharLabelMode.String)
-                this.addComponent(Sprite);
-            return;
-        }
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 
@@ -190,7 +185,7 @@ export class YJCharLabel extends Component {
     private async setSpriteFrame(node: Node, v: string) {
         let spriteFrame = await this.getSpriteFrame(v);
         if (node.isValid)
-            node.getComponent(Sprite).spriteFrame = spriteFrame;
+            (node.getComponent(Sprite) || node.addComponent(Sprite)).spriteFrame = spriteFrame;
     }
 
     private _tempCharNode: Node;

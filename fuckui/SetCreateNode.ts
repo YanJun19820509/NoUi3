@@ -114,8 +114,8 @@ export class SetCreateNode extends FuckUi {
                 this.container.children[i].active = !!data[i];
             }
 
-        const prefabUrl = this.loadPrefab.prefabUrl;
-        if (YJPreCreateNode.ins.has(prefabUrl)) {
+        const prefabUrl = this.loadPrefab?.prefabUrl;
+        if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
             let nn = !this.onlyAdd ? n - l : n;
             for (let i = 0; i < nn; i++) {
                 let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
@@ -139,7 +139,7 @@ export class SetCreateNode extends FuckUi {
             this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 TimeWatcher.blink('createnode start')
-                let item = this.loadPrefab.instantiateNode();
+                let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
@@ -152,7 +152,7 @@ export class SetCreateNode extends FuckUi {
             if (!this.container?.isValid) return;
             this.container.active = true;
         } else if (!this.onlyAdd && n - l == 1 || (this.onlyAdd && n == 1)) {
-            let item = this.loadPrefab.instantiateNode();
+            let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
             if (this.dynamicAtlas) {
                 YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 YJLoadAssets.setLoadAsset(item, this.loadAsset);
@@ -161,15 +161,15 @@ export class SetCreateNode extends FuckUi {
             item.parent = this.container;
         }
         let start = !this.onlyAdd ? 0 : l;
-        // for (let i = 0; i < n; i++) {
-        //     this.setItem(data, start, i);
-        // }
-        let i = 0;
-        await YJJobManager.ins.execute((max: number) => {
-            if (i == max) return false;
+        for (let i = 0; i < n; i++) {
             this.setItem(data, start, i);
-            i++;
-        }, this, n);
+        }
+        // let i = 0;
+        // await YJJobManager.ins.execute((max: number) => {
+        //     if (i == max) return false;
+        //     this.setItem(data, start, i);
+        //     i++;
+        // }, this, n);
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }
