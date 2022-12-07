@@ -247,7 +247,7 @@ export class YJDynamicAtlas extends Component {
             b.dynamicAtlas = dynamicAtlas;
         });
 
-        let r = node.getComponentsInChildren(RenderComponent);
+        let r = [].concat(node.getComponentsInChildren(Sprite), node.getComponentsInChildren(Label));
         r.forEach(rr => {
             if (dynamicAtlas.commonMaterial != rr.customMaterial)
                 rr.customMaterial = dynamicAtlas.commonMaterial;
