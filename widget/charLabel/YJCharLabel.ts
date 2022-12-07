@@ -107,6 +107,7 @@ export class YJCharLabel extends Component {
     public set string(v: string) {
         if (this._needInitMode) {
             if (!this.getComponent('SetTimeCountDown')) this.mode = YJCharLabelMode.String;
+            this._needInitMode = false;
             this.initMode();
         }
         this.setLabel(`${v}`);
@@ -173,7 +174,11 @@ export class YJCharLabel extends Component {
 
     private async setString(s: string) {
         this.node.removeAllChildren();
-        if (s == '') return;
+        if (s == '') {
+            this.node.getComponent(Sprite).spriteFrame = null;
+            this.getComponent(UITransform).width = 0;
+            return;
+        }
         await this.setSpriteFrame(this.node, s);
         this.scheduleOnce(() => {
             this.setScale();
