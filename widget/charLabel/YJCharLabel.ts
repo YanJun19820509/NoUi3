@@ -105,11 +105,11 @@ export class YJCharLabel extends Component {
     }
 
     public set string(v: string) {
-        if (this._needInitMode) {
-            if (!this.getComponent('SetTimeCountDown')) this.mode = YJCharLabelMode.String;
-            this._needInitMode = false;
-            this.initMode();
-        }
+        // if (this._needInitMode) {
+        //     if (!this.getComponent('SetTimeCountDown')) this.mode = YJCharLabelMode.String;
+        //     this._needInitMode = false;
+        //     this.initMode();
+        // }
         this.setLabel(`${v}`);
     }
 
@@ -137,38 +137,38 @@ export class YJCharLabel extends Component {
             }
         } else {
             this.unscheduleAllCallbacks();
-            let i = 0, n = a.length;
-            this.schedule(() => {
-                let labelNode = labelNodes[i];
-                if (!labelNode) {
-                    labelNode = this.createSpriteNode(a[i]);
-                } else labelNode.active = true;
-                this.setSpriteFrame(labelNode, a[i]);
-                i++;
-                if (i == n) {
-                    for (n = labelNodes.length; i < n; i++) {
-                        labelNodes[i].active = false;
-                    }
-
-                    this.scheduleOnce(() => {
-                        this.setScale();
-                    }, .1);
-                }
-            }, 1 / 60, n - 1);
-            // for (let i = 0; i < a.length; i++) {
+            // let i = 0, n = a.length;
+            // this.schedule(() => {
             //     let labelNode = labelNodes[i];
             //     if (!labelNode) {
             //         labelNode = this.createSpriteNode(a[i]);
             //     } else labelNode.active = true;
             //     this.setSpriteFrame(labelNode, a[i]);
-            // }
-            // for (let i = a.length, n = labelNodes.length; i < n; i++) {
-            //     labelNodes[i].active = false;
-            // }
+            //     i++;
+            //     if (i == n) {
+            //         for (n = labelNodes.length; i < n; i++) {
+            //             labelNodes[i].active = false;
+            //         }
 
-            // this.scheduleOnce(() => {
-            //     this.setScale();
-            // }, .1);
+            //         this.scheduleOnce(() => {
+            //             this.setScale();
+            //         }, .1);
+            //     }
+            // }, 1 / 60, n - 1);
+            for (let i = 0; i < a.length; i++) {
+                let labelNode = labelNodes[i];
+                if (!labelNode) {
+                    labelNode = this.createSpriteNode(a[i]);
+                } else labelNode.active = true;
+                this.setSpriteFrame(labelNode, a[i]);
+            }
+            for (let i = a.length, n = labelNodes.length; i < n; i++) {
+                labelNodes[i].active = false;
+            }
+
+            this.scheduleOnce(() => {
+                this.setScale();
+            }, 0.05);
         }
     }
 
@@ -241,6 +241,7 @@ export class YJCharLabel extends Component {
 
     private createSpriteNode(v: string): Node {
         let labelNode = new Node();
+        labelNode.name = v;
         labelNode.layer = Layers.Enum.UI_2D;
         labelNode.addComponent(UITransform).setContentSize(10, 10);
         let s = labelNode.addComponent(Sprite);
