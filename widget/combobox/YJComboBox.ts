@@ -42,6 +42,7 @@ export class YJComboBox extends YJDataWork {
     private isShow: boolean = false;
 
     onLoad() {
+        super.onLoad();
         let sv = this.getComponentInChildren(ScrollView);
         sv.node.getComponent(UITransform).setContentSize(this.size);
     }
