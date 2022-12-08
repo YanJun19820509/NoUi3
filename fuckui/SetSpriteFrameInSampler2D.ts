@@ -100,7 +100,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             defines[this.lastDefine] = false;
         }
         this.lastDefine = t;
-        this.resize(spriteFrame.width, spriteFrame.height);
+        // this.resize(spriteFrame.width, spriteFrame.height);
         this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }

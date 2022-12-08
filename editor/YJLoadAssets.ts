@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro, JsonAsset } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
-import { TimeWatcher } from '../TimeWatcher';
 import { SpriteFrameDataType } from '../types';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
@@ -166,7 +165,6 @@ export class YJLoadAssets extends Component {
     public async load() {
         if (EDITOR) return;
         let requests: { uuid: string, type: typeof Asset }[] = [];
-        TimeWatcher.blink('start');
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
         }
@@ -185,7 +183,6 @@ export class YJLoadAssets extends Component {
                     let item: JsonAsset = no.itemOfArray(items, uuid, '_uuid');
                     this.atlases[i] = item.json;
                 });
-                TimeWatcher.blink('end');
                 this._loaded = true;
                 resolve();
                 this.backgroundLoadInfos.forEach(info => {

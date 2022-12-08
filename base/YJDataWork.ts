@@ -34,11 +34,14 @@ export class YJDataWork extends Component {
 
     private changedDataKeys: string[] = [];
 
+    private _loaded: boolean = false;
+
     onLoad() {
         if (EDITOR) {
             this.register = this.getComponent(YJFuckUiRegister);
             return;
         }
+        this._loaded = true;
         this.init();
     }
 
@@ -56,6 +59,7 @@ export class YJDataWork extends Component {
      */
     public init() {
         this._setting = false;
+        if (!this._loaded) return;
         this.afterInit();
     }
 
@@ -89,7 +93,7 @@ export class YJDataWork extends Component {
         if (!this.register.isInit) this.register.init();
         this._setting = true;
         // await YJJobManager.ins.execute(this.iterateChangedData, this);
-        let keys = this.changedDataKeys.splice(0,this.changedDataKeys.length);
+        let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
         let k = keys.shift();
         while (k) {
             this.onValueChange(k);

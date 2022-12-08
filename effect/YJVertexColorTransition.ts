@@ -44,7 +44,7 @@ export class YJVertexColorTransition extends Component {
 
         this._setDefines(defines);
         this._setProperties(properties);
-        this._needUpdate = true;
+        this._updateVB();
     }
 
     private _setColor() {
@@ -113,6 +113,10 @@ export class YJVertexColorTransition extends Component {
     }
 
     private _updateVB() {
+        if (!this.renderComp.renderData) {
+            this._needUpdate = true;
+            return;
+        }
         if (this.renderComp instanceof Sprite) {
             switch (this.renderComp.type) {
                 case Sprite.Type.SIMPLE:

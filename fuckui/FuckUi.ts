@@ -63,7 +63,8 @@ export class FuckUi extends Component {
         }
 
         this.logValue(d);
-        this.onDataChange(d);
+        if (this.enabled)
+            this.onDataChange(d);
         if (this.once) this.destroy();
     }
 
@@ -108,7 +109,8 @@ export class FuckUi extends Component {
             }
         }
         this.logValue(d);
-        this.onDataChange(d);
+        if (this.enabled)
+            this.onDataChange(d);
     }
 
     protected get oldData(): string {

@@ -8,7 +8,6 @@ import { YJPreCreateNode } from '../base/YJPreCreateNode';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
-import { TimeWatcher } from '../TimeWatcher';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
@@ -138,13 +137,11 @@ export class SetCreateNode extends FuckUi {
         if (!this.onlyAdd && n - l > 1 || (this.onlyAdd && n > 1)) {
             this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
-                TimeWatcher.blink('createnode start')
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                TimeWatcher.blink('createnode end')
                 item.active = false;
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;

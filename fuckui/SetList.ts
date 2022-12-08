@@ -98,10 +98,6 @@ export class SetList extends FuckUi {
         }
         if (this.showMax == 0)
             this.preInitItems();
-        if (this.dynamicAtlas) {
-            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
-            YJLoadAssets.setLoadAsset(this.template, this.loadAsset);
-        }
         // this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
         // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
@@ -203,6 +199,10 @@ export class SetList extends FuckUi {
         for (let i = listItems.length; i < this.showNum; i++) {
             let item = instantiate(this.template);
             item.parent = this.content;
+            if (this.dynamicAtlas) {
+                YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
+                YJLoadAssets.setLoadAsset(item, this.loadAsset);
+            }
         }
     }
 

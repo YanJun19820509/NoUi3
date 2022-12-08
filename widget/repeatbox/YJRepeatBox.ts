@@ -36,7 +36,6 @@ export class YJRepeatBox extends YJDataWork {
     @property({ step: 1, tooltip: '填充类型，当重复个数不足最大个数时，用来填充的templates下标，如果找不到则不填充' })
     fileType: number = 0;
 
-    onLoad() { }
     private _n: number = 0;
     private _max: number;
     protected afterInit() {

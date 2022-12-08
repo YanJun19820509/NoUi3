@@ -174,6 +174,7 @@ export class YJCharLabel extends Component {
 
     private async setString(s: string) {
         this.node.removeAllChildren();
+        if (!this.node.getComponent(Sprite)) this.node.addComponent(Sprite);
         if (s == '') {
             this.node.getComponent(Sprite).spriteFrame = null;
             this.getComponent(UITransform).width = 0;
