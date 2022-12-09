@@ -39,6 +39,7 @@ export class YJRepeatBox extends YJDataWork {
     private _n: number = 0;
     private _max: number;
     protected afterInit() {
+        if (!this.data) return;
         this._max = Math.max(this.data.max, this.node.children.length);
         this._n = this._max;
         this.node.active = false;

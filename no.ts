@@ -1231,7 +1231,7 @@ export namespace no {
      */
     export function ceil(v: number): number {
         let a = floor(v);
-        if (a < 0) return a;
+        if (a < 0 || a >= v) return a;
         return a + 1;
     }
 
