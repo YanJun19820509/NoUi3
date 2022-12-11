@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, SpriteFrame, Label } from 'cc';
+import { _decorator, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, instantiate, LabelShadow, Layers, UITransform } from 'cc';
 import { DEBUG } from 'cc/env';
 import { no } from '../../no';
+import { TimeWatcher } from '../../TimeWatcher';
 const { ccclass, property } = _decorator;
 
 /**
@@ -16,8 +17,43 @@ const { ccclass, property } = _decorator;
  *
  */
 
+@ccclass("YJCharLabelStyle")
+export class YJCharLabelStyle {
+    @property(Color)
+    color: Color = Color.WHITE.clone();
+    @property
+    fontSize: number = 22;
+    @property(Font)
+    font: Font = null;
+    @property
+    fontFamily: string = 'Arial';
+    @property
+    lineHeight: number = 22;
+    @property
+    italic: boolean = false;
+    @property
+    bold: boolean = false;
+    @property
+    outlineColor: Color = Color.BLACK.clone();
+    @property
+    outlineWidth: number = 2;
+    @property
+    shadowColor: Color = Color.BLACK.clone();
+    @property
+    shadowOffset: Vec2 = v2();
+    @property
+    shadowBlur: number = 0;
+
+    public getUuid(str: string): string {
+        return str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth;
+    }
+}
+
 @ccclass('YJCharLabelCenter')
 export class YJCharLabelCenter extends Component {
+    @property({ type: YJCharLabelStyle })
+    labelStyles: YJCharLabelStyle[] = [];
+
     public static ins: YJCharLabelCenter;
 
     private spriteFrameMap = {};
@@ -30,6 +66,30 @@ export class YJCharLabelCenter extends Component {
 
     onDestroy() {
         YJCharLabelCenter.ins = null;
+    }
+
+    public init() {
+        TimeWatcher.blink('1')
+        let nodes: Node[] = [];
+        for (let i = 0, n = this.labelStyles.length; i < n; i++) {
+            const style = this.labelStyles[i];
+            for (let j = 0; j < 10; j++) {
+                const s = `${j}`;
+                let labelNode = this.createCharNode(s, style);
+                nodes[nodes.length] = labelNode;
+                this._createSpriteFrame(labelNode, style.getUuid(s));
+            }
+        }
+
+        TimeWatcher.blink('2')
+        this.scheduleOnce(() => {
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                nodes[i].parent = null;
+                nodes[i] = null;
+            }
+            nodes = null;
+            TimeWatcher.blink('3')
+        });
     }
 
     public async getSpriteFrame(uuid: string): Promise<SpriteFrame | null> {
@@ -58,5 +118,42 @@ export class YJCharLabelCenter extends Component {
             labelNode = null;
         });
         return this.getSpriteFrame(uuid);
+    }
+
+    private _createSpriteFrame(labelNode: Node, uuid: string): void {
+        labelNode.parent = this.node;
+        let sf = labelNode.getComponent(Label).ttfSpriteFrame;
+        sf._uuid = uuid;
+        this.spriteFrameMap[uuid] = sf;
+        labelNode.getComponent(Label)['_ttfSpriteFrame'] = null;
+    }
+
+    private createCharNode(v: string, style: YJCharLabelStyle): Node {
+        let labelNode: Node = new Node();
+        labelNode.layer = Layers.Enum.UI_2D;
+        labelNode.addComponent(UITransform).setContentSize(10, 10);
+        let label = labelNode.addComponent(Label);
+        label.string = '';
+        label.color = style.color;
+        label.fontFamily = style.fontFamily;
+        label.font = style.font;
+        label.fontSize = style.fontSize;
+        label.lineHeight = style.lineHeight;
+        label.isItalic = style.italic;
+        label.isBold = style.bold;
+        label.cacheMode = Label.CacheMode.NONE;
+        if (style.outlineWidth > 0) {
+            let outline = labelNode.addComponent(LabelOutline);
+            outline.color = style.outlineColor;
+            outline.width = style.outlineWidth;
+        }
+        if (style.shadowBlur != 0) {
+            let shadow = labelNode.addComponent(LabelShadow);
+            shadow.color = style.shadowColor;
+            shadow.offset = style.shadowOffset;
+            shadow.blur = style.shadowBlur;
+        }
+        label.string = v;
+        return labelNode;
     }
 }
