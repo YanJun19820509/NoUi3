@@ -1837,7 +1837,7 @@ export namespace no {
          */
         public setLocal(key: string, value: any): void {
             key = `${this._localPreKey}_${key}`;
-            if (value === null)
+            if (value === null || value === undefined || value === 'undefined')
                 localStorage.removeItem(key);
             else
                 localStorage.setItem(key, JSON.stringify(value));

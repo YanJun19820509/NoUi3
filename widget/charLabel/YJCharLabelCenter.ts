@@ -1,9 +1,9 @@
 
-import { _decorator, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, instantiate, LabelShadow, Layers, UITransform } from 'cc';
-import { DEBUG } from 'cc/env';
+import { _decorator, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, instantiate, LabelShadow, Layers, UITransform, math, assetManager } from 'cc';
+import { DEBUG, EDITOR } from 'cc/env';
 import { no } from '../../no';
 import { TimeWatcher } from '../../TimeWatcher';
-const { ccclass, property } = _decorator;
+const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -50,26 +50,67 @@ export class YJCharLabelStyle {
 }
 
 @ccclass('YJCharLabelCenter')
+@executeInEditMode()
 export class YJCharLabelCenter extends Component {
     @property({ type: YJCharLabelStyle })
     labelStyles: YJCharLabelStyle[] = [];
+    @property({ multiline: true, editorOnly: true })
+    styleContent: string = '';
+    @property({ editorOnly: true })
+    pasteCharLabelStyle: boolean = false;
 
     public static ins: YJCharLabelCenter;
 
     private spriteFrameMap = {};
 
+    update() {
+        if (EDITOR) {
+            if (this.pasteCharLabelStyle) {
+                this.pasteCharLabelStyle = false;
+                try {
+                    console.log('111',this.styleContent)
+                    let a = JSON.parse(this.styleContent);
+                    console.log(a);
+                    if (a.font) {
+                        assetManager.loadAny({ 'uuid': a.font, 'type': Font }, (err, item: Font) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                            else {
+                                let ls = new YJCharLabelStyle();
+                                ls.color = new math.Color(a.color);
+                                ls.fontSize = a.fontSize;
+                                ls.fontFamily = a.fontFamily;
+                                ls.font = item;
+                                ls.bold = a.bold;
+                                ls.italic = a.italic;
+                                ls.lineHeight = a.lineHeight;
+                                ls.outlineColor = new math.Color(a.outlineColor);
+                                ls.outlineWidth = a.outlineWidth;
+                                ls.shadowColor = new math.Color(a.shadowColor);
+                                ls.shadowBlur = a.shadowBlur;
+                                ls.shadowOffset = math.v2(a.shadowOffset[0], a.shadowOffset[1]);
+                                this.labelStyles[this.labelStyles.length] = ls;
+                            }
+                        });
+                    }
+                } catch (e) {console.error(e); }
+            }
+        }
+    }
 
     onLoad() {
+        if (EDITOR) return;
         YJCharLabelCenter.ins = this;
         if (DEBUG) window['YJCharLabelCenter'] = YJCharLabelCenter.ins;
     }
 
     onDestroy() {
+        if (EDITOR) return;
         YJCharLabelCenter.ins = null;
     }
 
     public init() {
-        TimeWatcher.blink('1')
         let nodes: Node[] = [];
         for (let i = 0, n = this.labelStyles.length; i < n; i++) {
             const style = this.labelStyles[i];
@@ -81,7 +122,6 @@ export class YJCharLabelCenter extends Component {
             }
         }
 
-        TimeWatcher.blink('2')
         this.scheduleOnce(() => {
             for (let i = nodes.length - 1; i >= 0; i--) {
                 nodes[i].parent = null;

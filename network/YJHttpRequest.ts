@@ -29,9 +29,9 @@ export class YJHttpRequest implements YJSocketInterface {
         this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null);
     }
 
-    getDataFromServer(encryptType: EncryptType, code: string, args?: any): Promise<any | null> {
+    getDataFromServer(encryptType: EncryptType, code: string, args?: any, contentType?: string): Promise<any | null> {
         return new Promise<any>(resolve => {
-            this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, v => {
+            this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, contentType, v => {
                 let a = decode(v, encryptType);
                 try {
                     resolve(JSON.parse(a));
@@ -44,11 +44,11 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
-    private httpRequest(type: string, url: string, data: any, okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
+    private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
-            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Content-Type', contentType);
         }
 
         xhr.onreadystatechange = function () {

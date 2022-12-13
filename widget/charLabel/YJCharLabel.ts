@@ -59,6 +59,9 @@ export class YJCharLabel extends Component {
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
 
+    @property
+    logStypeInfo: boolean = false;
+
     private _text: string;
     private _needInitMode: boolean = true;
 
@@ -72,6 +75,24 @@ export class YJCharLabel extends Component {
 
     update() {
         if (!EDITOR) return;
+        if (this.logStypeInfo) {
+            this.logStypeInfo = false;
+            let a = {
+                color: this.color.toHEX('#rrggbb'),
+                fontSize: this.fontSize,
+                font: this.font?._uuid,
+                fontFamily: this.fontFamily,
+                lineHeight: this.lineHeight,
+                italic: this.italic,
+                bold: this.bold,
+                outlineColor: this.outlineColor.toHEX('#rrggbb'),
+                outlineWidth: this.outlineWidth,
+                shadowColor: this.shadowColor.toHEX('#rrggbb'),
+                shadowOffset: [this.shadowOffset.x, this.shadowOffset.y],
+                shadowBlur: this.shadowBlur
+            };
+            console.log('YJCharLabelStyle--', {info: JSON.stringify(a)});
+        }
         this.initMode();
         if (this.text != this._text)
             this.setLabel(this.text);

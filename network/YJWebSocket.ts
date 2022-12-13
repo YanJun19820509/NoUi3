@@ -43,13 +43,11 @@ export class YJWebSocket implements YJSocketInterface {
         };
         this.ws.onerror = (event) => {
             no.log('websocket error', event);
-            this.reIniting = false;
-            this.reInit();
+            this.onClose();
         };
         this.ws.onclose = (event) => {
             no.log(`websocket close:${this.url}`);
-            this.reIniting = false;
-            this.reInit();
+            this.onClose();
         };
     }
 
@@ -60,6 +58,11 @@ export class YJWebSocket implements YJSocketInterface {
                 this.receivedData[this.receivedData.length] = v;
             });
         } else this.receivedData[this.receivedData.length] = data;
+    }
+
+    public onClose() {
+        this.reIniting = false;
+        this.reInit();
     }
 
     private reInit() {
