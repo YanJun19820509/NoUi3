@@ -180,7 +180,6 @@ export class YJCharLabel extends Component {
             this.getComponent(UITransform).width = 0;
             return;
         }
-        this.dynamicAtlas.removeFromDynamicAtlas(this.node.getComponent(Sprite).spriteFrame);
         await this.setSpriteFrame(this.node, s);
         this.scheduleOnce(() => {
             this.setScale();
