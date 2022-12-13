@@ -42,7 +42,6 @@ export class SetCreateNodeByUrl extends FuckUi {
     @property(YJLoadAssets)
     loadAsset: YJLoadAssets = null;
 
-    // private template: Node;
     private url: string;
     private needDestroyChildrenUuid: string[] = [];
     private isDestroied: boolean = false;
@@ -52,14 +51,11 @@ export class SetCreateNodeByUrl extends FuckUi {
     onDisable() {
         if (this.clearOnDisable) {
             this.a_clearData();
-            // this.clear(true);
+            this.clear(true);
         }
     }
 
     onDestroy() {
-        // if (this.template && this.template.isValid)
-        //     this.template.destroy();
-        no.assetBundleManager.release(this.prefab);
         this.isDestroied = true;
     }
 
@@ -67,11 +63,12 @@ export class SetCreateNodeByUrl extends FuckUi {
         let { url, data }: { url: string, data: any[] } = d;
         if (url && this.url != url) {
             this.url = url;
-            no.assetBundleManager.release(this.prefab);
             no.assetBundleManager.loadPrefab(url, item => {
                 this.prefab = item;
-                this.container?.removeAllChildren();
-                this.setItems(data);
+                this.setNeedDestroyChildren();
+                this.setItems(data).then(() => {
+                    this.clear();
+                });
             });
         } else {
             this.setItems(data);
@@ -87,21 +84,21 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.prefab);
-                item.active = false;
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
                 if (item.getComponent(YJLoadAssets))
                     await item.getComponent(YJLoadAssets).load();
+                item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
                     a.data = data[i];
                 }
                 item.parent = this.container;
-                item.active = true;
+
             }
-            if (n == 1) this.resizeContentSize()
+            if (n == 1) this.resizeContentSize(this.container.children[0]);
         }
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
@@ -117,31 +114,31 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
     }
 
-    private resizeContentSize() {
+    private resizeContentSize(child: Node) {
         if (!this.resize) return;
-        const child = this.container.children[0];
-        const scale = child.scale;
-        const size = child.getComponent(UITransform).contentSize.clone();
+        let scale = child.scale;
+        let size = child.getComponent(UITransform).contentSize.clone();
         size.width *= scale.x;
         size.height *= scale.y;
         this.container.getComponent(UITransform).contentSize = size;
     }
 
-    // private clear(all = false) {
-    //     this.container?.children.forEach(child => {
-    //         if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
-    //             child.destroy();
-    //     });
-    //     if (!this.isValid) return;
-    //     this.needDestroyChildrenUuid.length = 0;
-    // }
+    private clear(all = false) {
+        this.container?.children.forEach(child => {
+            if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
+                child.destroy();
+        });
+        if (!this.isValid) return;
+        this.needDestroyChildrenUuid.length = 0;
+    }
 
-    // private setNeedDestroyChildren() {
-    //     this.needDestroyChildrenUuid.length = 0;
-    //     this.container?.children.forEach(child => {
-    //         this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
-    //     });
-    // }
+    private setNeedDestroyChildren() {
+        this.needDestroyChildrenUuid.length = 0;
+        this.container?.children.forEach(child => {
+            this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
+            child.active = false;
+        });
+    }
 
     ///////////////////////////EDITOR///////////////
     onLoad() {
