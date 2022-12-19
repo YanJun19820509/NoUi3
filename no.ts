@@ -339,9 +339,9 @@ export namespace no {
      * @param express 
      * @returns 
      */
-    export function waitFor(express: (dt?: number) => boolean, comp: Component): Promise<void> {
+    export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            callUntil(express, resolve, comp);
+            callUntil(express, resolve);
         });
     }
 
@@ -377,13 +377,13 @@ export namespace no {
         });
     }
 
-    export function callUntil(express: (dt?: number) => boolean, callback: () => void, comp: Component): void {
-        if (!comp?.isValid) return;
-        comp?.scheduleOnce((dt: number) => {
-            if (express(dt)) {
+    export function callUntil(express: (dt?: number) => boolean, callback: () => void): void {
+        let a = setInterval(() => {
+            if (express()) {
+                clearInterval(a);
                 callback?.();
-            } else callUntil(express, callback, comp);
-        });
+            }
+        }, 20);
     }
 
     /**
