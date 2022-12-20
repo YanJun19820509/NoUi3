@@ -64,6 +64,7 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (url && this.url != url) {
             this.url = url;
             no.assetBundleManager.loadPrefab(url, item => {
+                if (data.length == 1) this.resizeContentSize(item.data);
                 this.prefab = item;
                 this.setNeedDestroyChildren();
                 this.setItems(data).then(() => {
@@ -98,7 +99,6 @@ export class SetCreateNodeByUrl extends FuckUi {
                 item.parent = this.container;
 
             }
-            if (n == 1) this.resizeContentSize(this.container.children[0]);
         }
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
