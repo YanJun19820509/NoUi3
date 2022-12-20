@@ -106,6 +106,7 @@ export class YJPreload extends YJComponent {
     private showNewScene: boolean = false;
 
     protected onEnable(): void {
+        if (EDITOR) return;
         this.auto && this.a_startLoad();
     }
 
