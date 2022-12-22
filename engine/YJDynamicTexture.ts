@@ -105,8 +105,8 @@ export class YJDynamicTexture extends Component {
             return;
         }
 
-        if (this.needClear)
-            this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
+        // if (this.needClear)
+        //     this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
         else if (label.ttfSpriteFrame) {
             label.ttfSpriteFrame?._resetDynamicAtlasFrame();
             label.ttfSpriteFrame._uuid = '';
