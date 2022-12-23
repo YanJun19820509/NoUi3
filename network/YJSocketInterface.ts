@@ -19,4 +19,5 @@ export interface YJSocketInterface {
     getDataFromServer?(encryptType: EncryptType, data: any): Promise<any>;
     findReceiveData?(handler: (data: any) => boolean): void;
     onClose?(): void;
+    clear?(): void;
 }

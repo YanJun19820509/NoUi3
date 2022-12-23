@@ -120,4 +120,9 @@ export class YJWebSocket implements YJSocketInterface {
             }
         }
     }
+
+    public clear(): void {
+        this.receivedData.length = 0;
+        this.ws.close();
+    }
 }
