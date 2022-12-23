@@ -36,11 +36,11 @@ export class YJTouchListener extends Component {
 
     async onEnable() {
         await no.waitFor(() => { return YJTouchDispatcher.ins != null; }, this)
-        YJTouchDispatcher.ins.addListener(this);
+        YJTouchDispatcher.ins?.addListener(this);
     }
 
     onDisable() {
-        YJTouchDispatcher.ins.removeListener(this);
+        YJTouchDispatcher.ins?.removeListener(this);
     }
 
     public onStart(event: EventTouch) {
