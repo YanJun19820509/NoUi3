@@ -39,3 +39,6 @@ export function decode(d: string | ArrayBufferLike, encryptType: EncryptType): a
             return d;
     }
 }
+
+window['encode'] = encode;
+window['decode'] = decode;

@@ -3646,6 +3646,36 @@ export namespace no {
             b && (btn.clickEvents[btn.clickEvents.length] = a);
         }
     }
+
+    export function SPEncrypt1_0_Encrypt1(b: any) {
+        b = ToUTF8(b);
+        for (var e = Math.floor(1e8 * 1), d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), c = [], a = 0; a < d; a++)
+            (c[a] = b[4 * a] | (b[4 * a + 1] << 8) | (b[4 * a + 2] << 16) | (b[4 * a + 3] << 24)), (c[a] ^= e);
+        c[d] = e;
+        b = [];
+        for (a = 0; a <= d; a++)
+            (b[4 * a] = c[a] & 255), (b[4 * a + 1] = (c[a] >> 8) & 255), (b[4 * a + 2] = (c[a] >> 16) & 255), (b[4 * a + 3] = (c[a] >> 24) & 255);
+        return bytes2String(b);
+    }
+
+    export function ToUTF8(str: string) {
+        var result = new Array();
+        var k = 0;
+        for (var i = 0; i < str.length; i++) {
+            var j = encodeURI(str[i]);
+            if (j.length == 1) {
+                // 未转换的字符
+                result[k++] = j.charCodeAt(0);
+            } else {
+                // 转换成%XX形式的字符
+                var bytes = j.split('%');
+                for (var l = 1; l < bytes.length; l++) {
+                    result[k++] = parseInt('0x' + bytes[l]);
+                }
+            }
+        }
+        return result;
+    }
 }
 
 if (DEBUG) {
