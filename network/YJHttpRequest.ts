@@ -44,10 +44,25 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
+    getJsonFromServer(code: string): Promise<any | null> {
+        return new Promise<any>(resolve => {
+            this.httpRequest('GET', this.url + '/' + code, null, 'application/json', v => {
+                try {
+                    resolve(JSON.parse(v));
+                } catch (e) {
+                    no.err('JSON.parse', 'YJHttpRequest.getJsonFromServer', v);
+                }
+            }, v => {
+                resolve(null);
+            });
+        });
+    }
+
     private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
+            xhr.setRequestHeader('Accept', contentType);
             xhr.setRequestHeader('Content-Type', contentType);
         }
 

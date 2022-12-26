@@ -41,6 +41,7 @@ export class YJCreateNode extends Component {
     private _recycleType: string;
 
     start() {
+        if (EDITOR) return;
         this.autoCreate && this.a_create();
     }
 
