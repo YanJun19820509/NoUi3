@@ -1667,6 +1667,7 @@ export namespace no {
         private _data: any;
 
         public get data(): any {
+            if (this._data == null) this._data = {};
             return this._data;
         }
 
@@ -1677,6 +1678,7 @@ export namespace no {
 
         /**转成json string */
         public get json(): string {
+            if (this._data == null) this._data = {};
             let a = clone(this._data);
             a.__ut = sysTime.now;
             return JSON.stringify(a);
