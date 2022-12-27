@@ -39,7 +39,7 @@ export class YJBubble extends YJDataWork {
             let p = nt.nodeWorldPosition;
             pos.x = p.x;
             pos.y = p.y;
-        }
+        } else return;
         this.node.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
         this.setValue('pos', [pos.x + this.offset.x, pos.y + this.offset.y]);
         this.setValue('show', true);
