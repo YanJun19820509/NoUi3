@@ -1667,7 +1667,6 @@ export namespace no {
         private _data: any;
 
         public get data(): any {
-            if (this._data == null) this._data = {};
             return this._data;
         }
 
@@ -1690,6 +1689,7 @@ export namespace no {
                 this._data = JSON.parse(v);
             } catch (e) {
                 no.err('JSON.parse', 'Data.json', v);
+                this._data = {};
             }
             this.emit(Data.DataChangeEvent, this);
         }
