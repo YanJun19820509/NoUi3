@@ -79,6 +79,7 @@ export class YJGuidePanel extends YJPanel {
     }
 
     protected async showGuide(info: any) {
+        if (!this.node.isValid) return;
         let guideNode: Node = this.guideNodeMap[info.type];
         if (!guideNode) {
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
