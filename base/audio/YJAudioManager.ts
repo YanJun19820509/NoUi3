@@ -93,10 +93,10 @@ export class YJAudioManager extends Component {
      * @param path 音频剪辑路径
      */
     public playBGM(path?: string): void {
-        if (!this.isBGMOn) return;
         if (path) this._lastBGM = path;
         else path = this._lastBGM;
         if (!path) return;
+        if (!this.isBGMOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
             this._playClip(c, path);
