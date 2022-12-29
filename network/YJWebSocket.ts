@@ -93,7 +93,8 @@ export class YJWebSocket implements YJSocketInterface {
 
     /**断开 */
     public close() {
-        this.ws.close(1);
+        this.ws.close();
+        this.ws = null;
     }
 
     /**
@@ -123,6 +124,7 @@ export class YJWebSocket implements YJSocketInterface {
 
     public clear(): void {
         this.receivedData.length = 0;
-        this.ws.close();
+        this.ws?.close();
+        this.ws = null;
     }
 }
