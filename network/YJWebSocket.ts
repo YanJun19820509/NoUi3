@@ -23,19 +23,22 @@ export class YJWebSocket implements YJSocketInterface {
     private url: string;
     private reIniting: boolean = false;
     protected receivedData: any[] = [];
+    private isClosed: boolean = true;
 
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
-        a.initWebSocket(url);
+        a.url = url;
         return a;
     }
 
-    protected initWebSocket(url: string) {
-        this.url = url;
-        this.ws = new WebSocket(url);
+    protected initWebSocket() {
+        no.log('initWebSocket');
+        this.ws = new WebSocket(this.url);
+        this.ws['_uuid'] = no.uuid();
 
         this.ws.onopen = (event) => {
             no.log(`websocket open:${this.url}`);
+            this.isClosed = false;
         };
         this.ws.onmessage = (event) => {
             no.log("response text msg: " + event.data);
@@ -43,10 +46,12 @@ export class YJWebSocket implements YJSocketInterface {
         };
         this.ws.onerror = (event) => {
             no.log('websocket error', event);
+            this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
             no.log(`websocket close:${this.url}`);
+            this.isClosed = true;
             this.onClose();
         };
     }
@@ -61,33 +66,38 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     public onClose() {
-        this.reIniting = false;
-        this.reInit();
+
+    }
+
+    public connect() {
+        this.clear();
+        this.initWebSocket();
     }
 
     private reInit() {
         if (this.reIniting) return;
         if (this.url != null) {
             this.reIniting = true;
-            // this.ws?.close();
-            this.ws = null;
-            this.initWebSocket(this.url);
+            this.connect();
         }
     }
 
     public async isOk(): Promise<boolean> {
+        if (!this.isClosed) return true;
         return new Promise<boolean>(resolve => {
-            if (this.ws?.readyState !== WebSocket.OPEN) {
-                if (this.url != null) {
-                    this.reInit();
-                    let a = setInterval(() => {
-                        if (this.ws?.readyState === WebSocket.OPEN) {
-                            clearInterval(a);
-                            resolve(true);
-                        }
-                    }, 500);
-                } else resolve(false);
-            } else resolve(true);
+            let n = 0;
+            let a = setInterval(() => {
+                if (!this.isClosed) {
+                    clearInterval(a);
+                    resolve(true);
+                } else {
+                    n++;
+                    if (n >= 20) {
+                        clearInterval(a);
+                        resolve(false);
+                    }
+                }
+            }, 500);
         });
     }
 
@@ -105,8 +115,11 @@ export class YJWebSocket implements YJSocketInterface {
     public async sendDataToServer(encryptType: EncryptType, data: any) {
         if (await this.isOk()) {
             let v: string | ArrayBuffer = encode(data, encryptType);
+            no.log('sendDataToServer', this.ws['_uuid']);
             this.ws.send(v);
+            return true;
         }
+        return false;
     }
 
     /**
