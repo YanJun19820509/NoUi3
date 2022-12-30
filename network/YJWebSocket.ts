@@ -115,7 +115,7 @@ export class YJWebSocket implements YJSocketInterface {
     public async sendDataToServer(encryptType: EncryptType, data: any) {
         if (await this.isOk()) {
             let v: string | ArrayBuffer = encode(data, encryptType);
-            no.log('sendDataToServer', this.ws['_uuid']);
+            // no.log('sendDataToServer', this.ws['_uuid']);
             this.ws.send(v);
             return true;
         }
