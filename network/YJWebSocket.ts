@@ -1,5 +1,6 @@
 
 import { _decorator } from 'cc';
+import { JSB } from 'cc/env';
 import { encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
@@ -32,8 +33,28 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     protected initWebSocket() {
+        if (JSB && jsb.fileUtils) {
+            let AdapterWebSocket: any = WebSocket;
+            let realPath = "cacert.pem";
+            let fileUtils = jsb.fileUtils;
+            // 兼容3.5 和2.x引擎
+            let ca_cache_path = fileUtils.getWritablePath() + "cacert.pem";
+            if (!fileUtils.isFileExist(ca_cache_path)) {
+                if (!fileUtils.isFileExist(realPath)) {
+                    realPath = "PublicRes/" + realPath;
+                }
+                let content = fileUtils.getStringFromFile(realPath);
+                if (content) {
+                    fileUtils.writeStringToFile(content, ca_cache_path);
+                }
+            }
+            realPath = ca_cache_path;
+            this.ws = new AdapterWebSocket(this.url, [], realPath);
+        } else {
+            this.ws = new WebSocket(this.url);
+        }
+        // Android 必须加入CA证书才能使用wss
         no.log('initWebSocket');
-        this.ws = new WebSocket(this.url);
         this.ws['_uuid'] = no.uuid();
 
         this.ws.onopen = (event) => {
