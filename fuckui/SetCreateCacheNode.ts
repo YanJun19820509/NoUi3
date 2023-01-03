@@ -35,9 +35,10 @@ export class SetCreateCacheNode extends FuckUi {
     container: Node = null;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
+    @property(YJLoadAssets)
+    loadAsset: YJLoadAssets = null;
 
     private recycleType: string;
-    private needSetDynamicAtlas: boolean = true;
 
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
@@ -53,11 +54,6 @@ export class SetCreateCacheNode extends FuckUi {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
             await this.template.getComponent(YJLoadAssets)?.load();
-        }
-
-        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
-            this.needSetDynamicAtlas = false;
-            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
         if (!this.container) this.container = this.node;
         if (!this.recycleType) this.recycleType = this.template.getComponent(YJCacheObject).recycleType;
@@ -76,13 +72,17 @@ export class SetCreateCacheNode extends FuckUi {
             item = instantiate(this.template);
             needWait = true;
         }
-        item.active = true;
+        if (this.dynamicAtlas) {
+            YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
+            YJLoadAssets.setLoadAsset(item, this.loadAsset);
+        }
         item.parent = this.container;
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
             a.data = data[i];
             a.init();
         }
+        item.active = true;
         if (needWait) this.scheduleOnce(() => {
             this.setItem(data, ++i);
         });
@@ -98,5 +98,6 @@ export class SetCreateCacheNode extends FuckUi {
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }
