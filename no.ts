@@ -1688,7 +1688,7 @@ export namespace no {
             try {
                 this._data = JSON.parse(v);
             } catch (e) {
-                no.err('JSON.parse', 'Data.json', v);
+                no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
                 this._data = {};
             }
             this.emit(Data.DataChangeEvent, this);

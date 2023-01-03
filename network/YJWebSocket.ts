@@ -63,7 +63,7 @@ export class YJWebSocket implements YJSocketInterface {
         };
         this.ws.onmessage = (event) => {
             no.log("response text msg: " + event.data);
-            this.onMessage(event.data);
+            this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
             no.log('websocket error', event);
@@ -77,13 +77,17 @@ export class YJWebSocket implements YJSocketInterface {
         };
     }
 
-    private onMessage(data: any) {
+    private _onMessage(data: any) {
         if (data == null || data == '') return;
         if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
-                this.receivedData[this.receivedData.length] = v;
+                this.receivedData[this.receivedData.length] = this.onMessage(v);
             });
-        } else this.receivedData[this.receivedData.length] = data;
+        } else this.receivedData[this.receivedData.length] = this.onMessage(data);
+    }
+
+    public onMessage(v: any): any {
+        return v;
     }
 
     public onClose() {
