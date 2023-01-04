@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, macro } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
@@ -35,6 +35,7 @@ export class YJDataWork extends Component {
     private changedDataKeys: string[] = [];
 
     private _loaded: boolean = false;
+    private _handler: any;
 
     onLoad() {
         if (EDITOR) {
@@ -49,6 +50,11 @@ export class YJDataWork extends Component {
         this.register.init();
     }
 
+    onDestroy() {
+        if (this._handler)
+            clearInterval(this._handler);
+    }
+
     lateUpdate() {
         this.setChangedDataToUi();
     }
@@ -61,10 +67,17 @@ export class YJDataWork extends Component {
         this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
+
+        this._handler = setInterval(() => {
+            if (!!this.data) {
+                clearInterval(this._handler);
+                this.afterDataInit();
+            }
+        }, 100);
     }
 
     public get data(): any {
-        return this._data.data;
+        return this._data?.data;
     }
 
     public set data(d: any) {
@@ -145,7 +158,12 @@ export class YJDataWork extends Component {
     }
 
     //子类实现
+    /**此时data不一定有值 */
     protected afterInit() {
+
+    }
+    /**此时data一定有值 */
+    protected afterDataInit() {
 
     }
 
