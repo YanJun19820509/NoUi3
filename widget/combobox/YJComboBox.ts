@@ -47,7 +47,7 @@ export class YJComboBox extends YJDataWork {
         sv.node.getComponent(UITransform).setContentSize(this.size);
     }
 
-    protected afterInit() {
+    protected afterDataInit() {
         this.setListVisible(this.autoShow);
         this.setChecked(this.data.selected);
     }
@@ -90,7 +90,7 @@ export class YJComboBox extends YJDataWork {
 
     private setChecked(id: string) {
         let list = this.data.list;
-        list.forEach((a: any) => {
+        list?.forEach((a: any) => {
             a.checked = a.id == id;
             if (a.checked) {
                 this.data = {
