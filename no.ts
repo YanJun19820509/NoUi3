@@ -267,7 +267,7 @@ export namespace no {
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (!handlers || handlers.length == 0) return;
             handlers.forEach(handler => {
-                handler.execute.apply(handler, args);
+                handler?.execute.apply(handler, args);
             });
         }
 
