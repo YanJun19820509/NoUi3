@@ -48,20 +48,18 @@ export class SetSpine extends FuckUi {
     protected onDataChange(data: any) {
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
         const spine = this.getComponent(sp.Skeleton);
-        if (path) {
+        if (path && animation != null) {
             spine.enabled = true;
             no.assetBundleManager.loadSpine(path, res => {
                 spine.skeletonData = res;
-                spine.loop = loop;
                 !!skin && spine.setSkin(skin);
-                spine.setAnimation(0, animation, loop);
+                spine.setAnimation(0, animation, loop || false);
                 spine.timeScale = timeScale || 1;
             });
-        } else if (animation) {
+        } else if (animation != null) {
             spine.enabled = true;
-            spine.loop = loop;
             !!skin && spine.setSkin(skin);
-            spine.setAnimation(0, animation, loop);
+            spine.setAnimation(0, animation, loop || false);
             spine.timeScale = timeScale || 1;
         } else {
             spine.clearTrack(0);
@@ -72,22 +70,26 @@ export class SetSpine extends FuckUi {
     }
 
     public a_playOnce(animation: string) {
+        if (!animation) return;
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         spine.enabled = true;
         spine.loop = false;
-        const a = animation.split(':');
-        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         !!skin && spine.setSkin(skin);
         spine?.setAnimation(0, name, false);
         this.bindEndCall(spine);
     }
 
     public a_playLoop(animation: string) {
+        if (!animation) return;
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         spine.enabled = true;
         spine.loop = true;
-        const a = animation.split(':');
-        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         !!skin && spine.setSkin(skin);
         spine?.setAnimation(0, name, true);
     }
