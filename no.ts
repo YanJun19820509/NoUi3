@@ -3293,19 +3293,18 @@ export namespace no {
         }
 
         public async wait(duration: number, firstWait = false): Promise<boolean> {
-            this.duration = duration;
             if (this.isCd) {
-                return Promise.resolve(false);
+                return false;
             } else {
+                this.duration = duration;
                 if (firstWait)
                     await this.setCd();
                 else
                     this.setCd();
 
-                return Promise.resolve(true);
+                return true;
             }
         }
-
 
         private async setCd() {
             this.isCd = true;
