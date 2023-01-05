@@ -606,6 +606,7 @@ export namespace no {
         for (var ii = 0; ii < length; ii++) {
             dd[ii] = [];
             for (var jj = 0; jj < num; jj++) {
+                if (array[ii * num + jj] == undefined) continue;
                 dd[ii][jj] = array[ii * num + jj];
             }
         }
@@ -1685,13 +1686,14 @@ export namespace no {
 
         /**将json string转成data */
         public set json(v: string) {
-            try {
-                this._data = JSON.parse(v);
-            } catch (e) {
-                no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
-                this._data = {};
+            if (v != undefined) {
+                try {
+                    this._data = JSON.parse(v);
+                    this.emit(Data.DataChangeEvent, this);
+                } catch (e) {
+                    no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
+                }
             }
-            this.emit(Data.DataChangeEvent, this);
         }
 
         /**
