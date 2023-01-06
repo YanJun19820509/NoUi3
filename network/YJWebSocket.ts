@@ -128,8 +128,10 @@ export class YJWebSocket implements YJSocketInterface {
 
     /**断开 */
     public close() {
-        this.ws.close();
-        this.ws = null;
+        if (this.ws && this.ws.readyState == WebSocket.CONNECTING) {
+            this.ws.close();
+            this.ws = null;
+        }
     }
 
     /**
@@ -152,6 +154,7 @@ export class YJWebSocket implements YJSocketInterface {
      * @param handler 
      */
     public findReceiveData(handler: (data: any) => boolean) {
+        if (this.isClosed) return;
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
@@ -162,7 +165,5 @@ export class YJWebSocket implements YJSocketInterface {
 
     public clear(): void {
         this.receivedData.length = 0;
-        this.ws?.close();
-        this.ws = null;
     }
 }
