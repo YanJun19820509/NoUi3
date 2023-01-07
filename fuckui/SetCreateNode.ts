@@ -135,7 +135,8 @@ export class SetCreateNode extends FuckUi {
             }
         }
         if (!this.onlyAdd && n - l > 1 || (this.onlyAdd && n > 1)) {
-            this.container.active = false;
+            if (!this.onlyAdd)
+                this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 if (this.dynamicAtlas) {
