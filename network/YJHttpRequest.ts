@@ -47,10 +47,14 @@ export class YJHttpRequest implements YJSocketInterface {
     getJsonFromServer(code: string): Promise<any | null> {
         return new Promise<any>(resolve => {
             this.httpRequest('GET', this.url + '/' + code, null, 'application/json', v => {
-                try {
-                    resolve(JSON.parse(v));
-                } catch (e) {
-                    no.err('JSON.parse', 'YJHttpRequest.getJsonFromServer', v);
+                if (v instanceof Object) {
+                    resolve(v);
+                } else {
+                    try {
+                        resolve(JSON.parse(v));
+                    } catch (e) {
+                        no.err('JSON.parse', 'YJHttpRequest.getJsonFromServer', v);
+                    }
                 }
             }, v => {
                 resolve(null);

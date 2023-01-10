@@ -20,6 +20,7 @@ const { ccclass, menu } = _decorator;
 @menu('NoUi/node/YJShowForDebug(debug模式下显示)')
 export class YJShowForDebug extends Component {
     onLoad() {
+        if (!this.enabled) return;
         !DEBUG && this.node.destroy();
 
         if (DEBUG) {

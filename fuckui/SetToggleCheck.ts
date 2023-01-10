@@ -1,7 +1,10 @@
 
 import { _decorator, Toggle } from 'cc';
+import { EDITOR } from 'cc/env';
+import { YJDataWork } from '../base/YJDataWork';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu, property } = _decorator;
+const { ccclass, menu, property, executeInEditMode, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -17,11 +20,34 @@ const { ccclass, menu, property } = _decorator;
 
 @ccclass('SetToggleCheck')
 @menu('NoUi/ui/SetToggleCheck(设置复选框选中状态:bool)')
+@executeInEditMode()
+@requireComponent(Toggle)
 export class SetToggleCheck extends FuckUi {
     @property({ displayName: '取反' })
     reverse: boolean = false;
     @property({ tooltip: '设置 isChecked 而不调用 checkEvents 回调' })
     setCheckedWithoutNotify: boolean = false;
+    @property({ type: YJDataWork })
+    dataWork: YJDataWork = null;
+    @property
+    bindCheckEvents: boolean = false;
+
+    onLoad() {
+        super.onLoad();
+        if (EDITOR) {
+            this.dataWork = no.getComponentInParents(this.node, YJDataWork);
+            return;
+        }
+    }
+
+    update() {
+        if (EDITOR) {
+            if (this.bindCheckEvents) {
+                this.bindCheckEvents = false;
+                this.getComponent(Toggle).checkEvents = [no.createEventHandler(this.node, SetToggleCheck, 'onCheckChange')];
+            }
+        }
+    }
 
     protected onDataChange(data: any) {
         let a = Boolean(data);
@@ -45,4 +71,8 @@ export class SetToggleCheck extends FuckUi {
         this.setData('false');
     }
 
+    private onCheckChange(toggle: Toggle) {
+        if (String(toggle.isChecked) == this.oldData) return;
+        this.dataWork?.setValue(this.bind_keys, toggle.isChecked);
+    }
 }

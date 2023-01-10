@@ -18,6 +18,7 @@ const { ccclass, property } = _decorator;
 @ccclass('YJShowForWeb')
 export class YJShowForWeb extends Component {
     onLoad() {
+        if (!this.enabled) return;
         JSB && this.node.destroy();
     }
 }

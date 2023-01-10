@@ -1,7 +1,10 @@
 
 import { _decorator, Component, Node, EditBox } from 'cc';
+import { EDITOR } from 'cc/env';
+import { YJDataWork } from '../base/YJDataWork';
+import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, requireComponent, menu } = _decorator;
+const { ccclass, requireComponent, menu, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -16,9 +19,33 @@ const { ccclass, requireComponent, menu } = _decorator;
  */
 
 @ccclass('SetEditBox')
+@executeInEditMode()
 @requireComponent(EditBox)
 @menu('NoUi/ui/SetEditBox(设置输入框内容:string)')
 export class SetEditBox extends FuckUi {
+    @property({ type: YJDataWork })
+    dataWork: YJDataWork = null;
+    @property
+    bindEditiongDidEnded: boolean = false;
+
+    onLoad() {
+        super.onLoad();
+        if (EDITOR) {
+            this.dataWork = no.getComponentInParents(this.node, YJDataWork);
+            return;
+        }
+
+    }
+
+    update() {
+        if (EDITOR) {
+            if (this.bindEditiongDidEnded) {
+                this.bindEditiongDidEnded = false;
+                this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, SetEditBox, 'onEditEnd')];
+            }
+        }
+    }
+
     protected onDataChange(data: any) {
         if (typeof data == 'object') {
             for (let k in data) {
@@ -26,5 +53,11 @@ export class SetEditBox extends FuckUi {
             }
         }
         this.getComponent(EditBox).string = String(data);
+    }
+
+    private onEditEnd(editor: EditBox) {
+        const v = editor.string;
+        if (v == this.oldData) return;
+        this.dataWork?.setValue(this.bind_keys, v);
     }
 }

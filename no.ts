@@ -756,10 +756,13 @@ export namespace no {
      * @param handler
      * @param arg
      */
-    export function createEventHandler(target: Node, component: string, handler: string, arg = ''): EventHandler {
+    export function createEventHandler(target: Node, comp: string | typeof Component, handler: string, arg = ''): EventHandler {
         let a = new EventHandler();
         a.target = target;
-        a.component = component;
+        if (typeof comp == 'string')
+            a._componentName = comp;
+        else
+            a._componentId = js._getClassId(comp);
         a.handler = handler;
         a.customEventData = arg;
         return a;

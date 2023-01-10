@@ -18,6 +18,7 @@ const { ccclass, property } = _decorator;
 @ccclass('YJShowForJSB')
 export class YJShowForJSB extends Component {
     onLoad() {
+        if (!this.enabled) return;
         !JSB && this.node.destroy();
     }
 }
