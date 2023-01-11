@@ -1251,6 +1251,42 @@ export namespace no {
         return v;
     }
 
+    function decimalDigits(n: number): number {
+        let a = n.toString().split('.');
+        return !!a[1] ? a[1].length : 0;
+    }
+
+    /**加 */
+    export function add(n1: number, n2: number): number {
+        let r1: number = decimalDigits(n1),
+            r2: number = decimalDigits(n2),
+            m: number = Math.pow(10, Math.max(r1, r2));
+        return (n1 * m + n2 * m) / m;
+    }
+    /**减 */
+    export function minus(n1: number, n2: number): number {
+        let r1: number = decimalDigits(n1),
+            r2: number = decimalDigits(n2),
+            n: number = Math.max(r1, r2),
+            m: number = Math.pow(10, n);
+        return Number(((n1 * m - n2 * m) / m).toFixed(n));
+    }
+    /**乘 */
+    export function mutiply(n1: number, n2: number): number {
+        let m: number = decimalDigits(n1) + decimalDigits(n2),
+            s1 = n1.toString().replace('.', ''),
+            s2 = n2.toString().replace('.', '');
+        return Number(s1) * Number(s2) / Math.pow(10, m);
+    }
+    /**除 */
+    export function divide(n1: number, n2: number): number {
+        let r1: number = decimalDigits(n1),
+            r2: number = decimalDigits(n2),
+            s1 = n1.toString().replace('.', ''),
+            s2 = n2.toString().replace('.', '');
+        return (Number(s1) / Number(s2)) * Math.pow(10, r2 - r1);
+    }
+
     export enum TweenSetType {
         Node = 'node',
         Transform = 'transform',
@@ -2769,7 +2805,7 @@ export namespace no {
         public add(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = float(this._coefficient + other._coefficient * Math.pow(10, other.index - this.index));
+                this.coefficient = add(this._coefficient, mutiply(other._coefficient, Math.pow(10, other.index - this.index)));
             } else {
                 other = new ScientificString(other);
                 this.add(other);
@@ -2790,7 +2826,7 @@ export namespace no {
         public minus(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = float(this._coefficient - other._coefficient * Math.pow(10, other.index - this.index));
+                this.coefficient = minus(this._coefficient, mutiply(other._coefficient, Math.pow(10, other.index - this.index)));
             } else {
                 other = new ScientificString(other);
                 this.minus(other);
@@ -2811,7 +2847,7 @@ export namespace no {
         public mul(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = float(this._coefficient * other._coefficient);
+                this.coefficient = mutiply(this._coefficient, other._coefficient);
                 this.index += other.index;
             } else {
                 other = new ScientificString(other);
@@ -2833,7 +2869,7 @@ export namespace no {
         public div(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = float(this._coefficient / other._coefficient);
+                this.coefficient = divide(this._coefficient, other._coefficient);
                 this.index -= other.index;
             } else {
                 other = new ScientificString(other);
@@ -2884,7 +2920,7 @@ export namespace no {
         /**带单位的值 */
         public get unitValue(): string {
             if (this.index < 3) {
-                return `${floor(this._coefficient * Math.pow(10, this.index))}`;
+                return `${this.numberValue}`;
             }
             let a = floor(this.index / 3),
                 b = this.index % 3,
@@ -2894,7 +2930,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${floor(this._coefficient * Math.pow(10, b + 2)) / 100}${u}`;
+            return `${mutiply(this._coefficient, Math.pow(10, b + 2)) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
@@ -2912,7 +2948,7 @@ export namespace no {
         }
 
         public get numberValue(): number {
-            return this._coefficient * Math.pow(10, this.index);
+            return mutiply(this._coefficient, Math.pow(10, this.index));
         }
 
         /**
@@ -2924,12 +2960,12 @@ export namespace no {
          */
         public toUnitString(units: string[], step = 3, digits = 2): string {
             if (this.index < step) {
-                return `${float(this._coefficient * Math.pow(10, this.index), digits)}`;
+                return `${mutiply(this._coefficient, Math.pow(10, this.index))}`;
             }
             let a = floor(this.index / step),
                 b = this.index % step,
                 u: string = units[a - 1];
-            return `${float(this._coefficient * Math.pow(10, b), digits)}${u}`;
+            return `${float(mutiply(this._coefficient, Math.pow(10, b)), digits)}${u}`;
         }
 
         /**
