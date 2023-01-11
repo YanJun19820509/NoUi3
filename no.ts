@@ -2960,7 +2960,7 @@ export namespace no {
          */
         public toUnitString(units: string[], step = 3, digits = 2): string {
             if (this.index < step) {
-                return `${mutiply(this._coefficient, Math.pow(10, this.index))}`;
+                return `${float(mutiply(this._coefficient, Math.pow(10, this.index)), digits)}`;
             }
             let a = floor(this.index / step),
                 b = this.index % step,
