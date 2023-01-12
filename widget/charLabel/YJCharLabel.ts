@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
@@ -64,13 +64,19 @@ export class YJCharLabel extends Component {
 
     private _text: string;
     private _needInitMode: boolean = true;
+    private _ing: boolean = false;
 
     onLoad() {
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+
+        if (this.maxWidth != 0) {
+            this.node.on(Node.EventType.SIZE_CHANGED, this.onNodeSizeChange, this);
+        }
     }
 
     onDestroy() {
         this.unscheduleAllCallbacks();
+        this.node.targetOff(this);
     }
 
     update() {
@@ -91,7 +97,7 @@ export class YJCharLabel extends Component {
                 shadowOffset: [this.shadowOffset.x, this.shadowOffset.y],
                 shadowBlur: this.shadowBlur
             };
-            console.log('YJCharLabelStyle--', {info: JSON.stringify(a)});
+            console.log('YJCharLabelStyle--', { info: JSON.stringify(a) });
         }
         this.initMode();
         if (this.text != this._text)
@@ -187,9 +193,9 @@ export class YJCharLabel extends Component {
                 labelNodes[i].active = false;
             }
 
-            this.scheduleOnce(() => {
-                this.setScale();
-            }, 0.05);
+            // this.scheduleOnce(() => {
+            //     this.setScale();
+            // }, 0.05);
         }
     }
 
@@ -202,9 +208,9 @@ export class YJCharLabel extends Component {
             return;
         }
         await this.setSpriteFrame(this.node, s);
-        this.scheduleOnce(() => {
-            this.setScale();
-        });
+        // this.scheduleOnce(() => {
+        //     this.setScale();
+        // });
     }
 
     private async getSpriteFrame(v: string): Promise<SpriteFrame> {
@@ -276,7 +282,9 @@ export class YJCharLabel extends Component {
     }
 
     private setScale() {
+        // no.log('setScale===============>')
         if (this.maxWidth == 0) return;
+        if (!isValid(this)) return;
         this.getComponent(Layout).updateLayout();
         let ut = this.getComponent(UITransform);
         if (ut.width <= this.maxWidth)
@@ -285,6 +293,15 @@ export class YJCharLabel extends Component {
             let s = this.maxWidth / ut.width;
             this.node.setScale(s, s);
         }
+    }
+
+    private onNodeSizeChange() {
+        if (this._ing) return;
+        this._ing = true;
+        this.scheduleOnce(() => {
+            this._ing = false;
+            this.setScale();
+        }, 0.1);
     }
 
     private getUuid(str: string): string {
