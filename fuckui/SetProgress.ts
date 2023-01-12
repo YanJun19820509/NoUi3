@@ -30,6 +30,7 @@ export class SetProgress extends FuckUi {
     private dir: number;
     private targetValue: number = -1;
     private isFirst: boolean = true;
+    private lastValue: number = 0;
 
     onLoad() {
         super.onLoad();
@@ -47,13 +48,14 @@ export class SetProgress extends FuckUi {
     protected onDataChange(data: any) {
         if (data > 0 && data < this.initValue)
             data = this.initValue;
-        if (this.motionSpeed == 0 || this.isFirst) {
+        if (this.motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
             this.progressBar.progress = data;
             this.isFirst = false;
         } else {
             this.targetValue = data;
             this.dir = data > this.progressBar.progress ? 1 : -1;
         }
+        this.lastValue = data;
     }
 
     private setProgressByFrame(dt: number) {
