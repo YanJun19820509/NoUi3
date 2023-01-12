@@ -22,4 +22,5 @@ export interface YJSocketInterface {
     onClose?(): void;
     clear?(): void;
     connect?(): void;
+    close?(): void;
 }

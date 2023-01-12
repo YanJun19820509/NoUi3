@@ -128,7 +128,7 @@ export class YJWebSocket implements YJSocketInterface {
 
     /**断开 */
     public close() {
-        if (this.ws && this.ws.readyState == WebSocket.CONNECTING) {
+        if (this.ws && this.ws.readyState == WebSocket.OPEN) {
             this.ws.close();
             this.ws = null;
         }
