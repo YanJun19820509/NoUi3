@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -266,6 +266,7 @@ export class YJDynamicAtlas extends Component {
         this.autoSetSubMaterial = false;
         let renderComps = this.getComponentsInChildren(RenderComponent);
         renderComps.forEach(comp => {
+            if (comp instanceof Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)
                 comp.customMaterial = this.commonMaterial;
         });

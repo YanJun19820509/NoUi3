@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Material, RenderComponent } from 'cc';
+import { _decorator, Component, Node, Material, RenderComponent, Skeleton } from 'cc';
 import { EDITOR } from 'cc/env';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -30,6 +30,7 @@ export class YJSetMaterial extends Component {
         this.autoSet = false;
         let renderComps = this.getComponentsInChildren(RenderComponent);
         renderComps.forEach(comp => {
+            if (comp instanceof Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)
                 comp.customMaterial = this.commonMaterial;
         });
