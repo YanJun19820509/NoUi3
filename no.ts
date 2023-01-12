@@ -2454,13 +2454,13 @@ export namespace no {
 
 
         public loadAnyFiles(requests: { 'uuid': string, 'type': typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
-            log('loadAnyFiles', requests);
+            // log('loadAnyFiles', requests);
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
-            }, (err, items) => {
+            }, (e, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(1);
-                    log('loadAnyFiles', requests, err.message);
+                    err('loadAnyFiles', requests, e.message);
                 } else {
                     items = [].concat(items);
                     items.forEach(item => {

@@ -2,7 +2,6 @@
 import { _decorator, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, instantiate, LabelShadow, Layers, UITransform, math, assetManager } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { no } from '../../no';
-import { TimeWatcher } from '../../TimeWatcher';
 const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
@@ -128,7 +127,6 @@ export class YJCharLabelCenter extends Component {
                 nodes[i] = null;
             }
             nodes = null;
-            TimeWatcher.blink('3')
         });
     }
 
