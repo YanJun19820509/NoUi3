@@ -278,12 +278,12 @@ export namespace no {
 
     export function log(...Evns: any[]): void {
         if (!DEBUG) return;
-        console.log.call(console, '#NoUi#Log', Evns);
+        console.log.call(console, '#NoUi#Log', JSON.stringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
         if (!DEBUG) return;
-        console.error.call(console, '#NoUi#Err', Evns);
+        console.error.call(console, '#NoUi#Err', JSON.stringify(Evns));
     }
 
     /**
@@ -2187,7 +2187,7 @@ export namespace no {
             }, (err, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(0);
-                    log('loadFiles', filePaths, err.message);
+                    // log('loadFiles', filePaths, err.message);
                 } else {
                     items.forEach(item => {
                         this.addRef(item);//增加引用计数
@@ -2195,7 +2195,7 @@ export namespace no {
                     });
                     onComplete && onComplete(items);
                 }
-                log('loadFiles', items);
+                // log('loadFiles', items);
             });
         }
         /**
@@ -3715,6 +3715,16 @@ export namespace no {
                     result[k++] = parseInt('0x' + bytes[l]);
                 }
             }
+        }
+        return result;
+    }
+
+
+    export function pathjoin(...args: string[]) {
+        let l = args.length;
+        let result = "";
+        for (let i = 0; i < l; i++) {
+            result = (result + (result === "" ? "" : "/") + args[i]).replace(/(\/|\\\\)$/, "");
         }
         return result;
     }
