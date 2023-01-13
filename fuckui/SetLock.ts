@@ -1,5 +1,5 @@
 
-import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate } from 'cc';
+import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate, UIOpacity } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -21,7 +21,8 @@ const { ccclass, property, menu } = _decorator;
 enum LockType {
     Gray = 0,
     Hide,
-    Sprite
+    Sprite,
+    Opacity
 }
 
 @ccclass('SetLock')
@@ -33,7 +34,7 @@ export class SetLock extends FuckUi {
     @property({ type: Enum(LockType) })
     lockType: LockType = LockType.Hide;
 
-    @property({ type: Node, visible() { return this.lockType != LockType.Hide; } })
+    @property({ type: Node, visible() { return this.lockType != LockType.Hide && this.lockType != LockType.Opacity; } })
     lockNode: Node = null;
 
     @property
@@ -72,21 +73,25 @@ export class SetLock extends FuckUi {
     }
 
     private setLock() {
-        if (this.lockType != LockType.Hide) {
+        if (this.lockType != LockType.Hide && this.lockType != LockType.Opacity) {
             this.createLockNode();
             this.setGray(this.lockType == LockType.Gray);
-        } else {
+        } else if (this.lockType == LockType.Hide) {
             this.target.active = false;
+        } else if (this.lockType == LockType.Opacity) {
+            (this.target.getComponent(UIOpacity) || this.target.addComponent(UIOpacity)).opacity = 0;
         }
     }
 
     private setUnlock() {
-        if (this.lockType != LockType.Hide) {
+        if (this.lockType != LockType.Hide && this.lockType != LockType.Opacity) {
             this.target.getChildByName('_lock_')?.destroy();
             if (this.lockType == LockType.Gray)
                 this.setGray(false);
-        } else {
+        } else if (this.lockType == LockType.Hide) {
             this.target.active = true;
+        } else if (this.lockType == LockType.Opacity && this.target.getComponent(UIOpacity)) {
+            this.target.getComponent(UIOpacity).opacity = 255;
         }
     }
 
