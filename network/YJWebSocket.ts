@@ -66,12 +66,12 @@ export class YJWebSocket implements YJSocketInterface {
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.log('websocket error', event);
+            no.err('websocket error', event);
             this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
-            no.log(`websocket close:${this.url}`);
+            no.err(`websocket close:${this.url}`);
             this.isClosed = true;
             this.onClose();
         };
