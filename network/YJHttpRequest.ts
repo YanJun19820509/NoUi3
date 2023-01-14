@@ -36,6 +36,7 @@ export class YJHttpRequest implements YJSocketInterface {
                 try {
                     resolve(JSON.parse(a));
                 } catch (e) {
+                    resolve(a);
                     no.err('JSON.parse', 'YJHttpRequest.getDataFromServer', a);
                 }
             }, v => {
