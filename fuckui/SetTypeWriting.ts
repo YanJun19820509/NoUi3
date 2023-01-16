@@ -182,6 +182,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private createLableNode(a: { text: string, style: IHtmlTextParserStack, fontFamily: string, lineHeight: number }) {
+        a.lineHeight = Math.max(a.style.size, a.lineHeight)
         if (a.lineHeight > this._maxY) this._maxY = a.lineHeight;
         if (a.style.isNewLine) {
             this.setNewLine();
@@ -231,14 +232,14 @@ export class SetTypeWritting extends FuckUi {
         labelNode.active = false;
         labelNode.layer = Layers.Enum.UI_2D;
         let ut = labelNode.addComponent(UITransform);
-        ut.setContentSize(rt.fontSize, rt.lineHeight);
+        ut.setContentSize(rt.fontSize, Math.max(rt.fontSize, rt.lineHeight));
         ut.setAnchorPoint(0, 1);
         labelNode.addComponent(UIOpacity).opacity = 0;
         let label = labelNode.addComponent(RichText);
         label.string = '';
         label.fontFamily = rt.fontFamily;
         label.fontSize = rt.fontSize;
-        label.lineHeight = rt.lineHeight;
+        label.lineHeight = Math.max(rt.fontSize, rt.lineHeight);
         label.maxWidth = rt.maxWidth;
         label.cacheMode = Label.CacheMode.BITMAP;
         let dynamicTexture = this.getComponent(YJDynamicTexture);
