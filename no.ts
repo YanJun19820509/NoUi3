@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, ResolutionPolicy, screen, Camera, math } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
@@ -3727,6 +3727,32 @@ export namespace no {
             result = (result + (result === "" ? "" : "/") + args[i]).replace(/(\/|\\\\)$/, "");
         }
         return result;
+    }
+
+    export function fixScreen(): math.Rect {
+        const size = screen.windowSize,
+            dsize = view.getDesignResolutionSize(),
+            ss = size.width / size.height,
+            dss = dsize.width / dsize.height;
+        let policyType: number, rect = math.rect();
+        if (dss < 1) {//竖屏
+            if (ss > 9 / 16) policyType = ResolutionPolicy.FIXED_HEIGHT;
+            else policyType = ResolutionPolicy.FIXED_WIDTH;
+        } else {//横屏
+            if (ss > 16 / 9) policyType = ResolutionPolicy.FIXED_HEIGHT;
+            else policyType = ResolutionPolicy.SHOW_ALL;
+        }
+        view.setDesignResolutionSize(dsize.width, dsize.height, policyType);
+        const result = view.getResolutionPolicy()['_contentStrategy']['_result'],
+            scale: number[] = result.scale,
+            viewport: math.Rect = result.viewport,
+            w = dsize.width * scale[0],
+            h = dsize.height * scale[1];
+        rect.width = w / size.width;
+        rect.height = h / size.height;
+        rect.x = 0.5 - rect.width / 2;
+        rect.y = 0.5 - rect.height / 2;
+        return rect;
     }
 }
 
