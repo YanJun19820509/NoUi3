@@ -3728,32 +3728,6 @@ export namespace no {
         }
         return result;
     }
-
-    export function fixScreen(): math.Rect {
-        const size = screen.windowSize,
-            dsize = view.getDesignResolutionSize(),
-            ss = size.width / size.height,
-            dss = dsize.width / dsize.height;
-        let policyType: number, rect = math.rect();
-        if (dss < 1) {//竖屏
-            if (ss > 9 / 16) policyType = ResolutionPolicy.FIXED_HEIGHT;
-            else policyType = ResolutionPolicy.FIXED_WIDTH;
-        } else {//横屏
-            if (ss > 16 / 9) policyType = ResolutionPolicy.FIXED_HEIGHT;
-            else policyType = ResolutionPolicy.SHOW_ALL;
-        }
-        view.setDesignResolutionSize(dsize.width, dsize.height, policyType);
-        const result = view.getResolutionPolicy()['_contentStrategy']['_result'],
-            scale: number[] = result.scale,
-            viewport: math.Rect = result.viewport,
-            w = dsize.width * scale[0],
-            h = dsize.height * scale[1];
-        rect.width = w / size.width;
-        rect.height = h / size.height;
-        rect.x = 0.5 - rect.width / 2;
-        rect.y = 0.5 - rect.height / 2;
-        return rect;
-    }
 }
 
 if (DEBUG) {
