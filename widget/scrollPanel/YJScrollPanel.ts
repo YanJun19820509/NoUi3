@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
+import { YJFitScreen } from '../../base/YJFitScreen';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 const { ccclass, property, executeInEditMode } = _decorator;
@@ -354,7 +355,7 @@ export class YJScrollPanel extends Component {
         let ar = ut.anchorPoint;
         pos.subtract3f(size.width * ar.x, size.height * ar.y, 0);
         ut.convertToWorldSpaceAR(pos, pos);
-        let vsize = view.getVisibleSize();
+        let vsize = YJFitScreen.getVisibleSize();
         pos.subtract3f((vsize.width - size.width), (vsize.height - size.height), 0);
         this.content.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
         return math.v2(pos.x, pos.y);

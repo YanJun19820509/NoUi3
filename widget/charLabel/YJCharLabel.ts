@@ -268,7 +268,6 @@ export class YJCharLabel extends Component {
 
     private createSpriteNode(v: string): Node {
         let labelNode = new Node();
-        labelNode.name = v;
         labelNode.layer = Layers.Enum.UI_2D;
         labelNode.addComponent(UITransform).setContentSize(10, 10);
         let s = labelNode.addComponent(Sprite);

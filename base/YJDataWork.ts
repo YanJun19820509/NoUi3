@@ -105,6 +105,7 @@ export class YJDataWork extends Component {
 
     private _setting: boolean = false;
     private async setChangedDataToUi() {
+        if (!this.enabled || !this.node?.isValid) return;
         if (this._setting) return;
         if (!this.register.isInit) this.register.init();
         this._setting = true;

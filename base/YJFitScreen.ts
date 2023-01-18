@@ -101,4 +101,9 @@ export class YJFitScreen extends Component {
         }
         return touchLocation;
     }
+
+    public static getVisibleSize(): math.Size {
+        if (this.policy == ResolutionPolicy.FIXED_WIDTH) return view.getVisibleSize();
+        else if (this.policy == ResolutionPolicy.FIXED_HEIGHT) return view.getDesignResolutionSize();
+    }
 }
