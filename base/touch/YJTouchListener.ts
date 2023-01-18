@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, EventTouch, Rect } from 'cc';
 import { no } from '../../no';
+import { YJFitScreen } from '../YJFitScreen';
 import { YJTouchDispatcher } from './YJTouchDispatcher';
 const { ccclass, property, menu } = _decorator;
 
@@ -45,7 +46,7 @@ export class YJTouchListener extends Component {
 
     public onStart(event: EventTouch) {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
-        this.isTouchIn = this.rect.contains(event.getUIStartLocation());
+        this.isTouchIn = this.rect.contains(YJFitScreen.fitTouchPoint(event.touch));
         if (!this.isTouchIn) return;
         no.EventHandlerInfo.execute(this.startHandlers, event);
     }

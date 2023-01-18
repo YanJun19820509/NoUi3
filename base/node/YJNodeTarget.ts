@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys } from 'cc';
+import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, view, ResolutionPolicy } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
+import { YJFitScreen } from '../YJFitScreen';
 const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
 
 /**
@@ -96,7 +97,7 @@ export class YJNodeTarget extends Component {
      */
     public checkTouch(e: EventTouch, trigger = true): boolean {
         let rect = no.nodeBoundingBox(this.node);
-        let a = rect.contains(e.getUIStartLocation());
+        let a = rect.contains(YJFitScreen.fitTouchPoint(e.touch));
         if (a && trigger) {
             let btn = this.getComponent(Button);
             if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e, btn);

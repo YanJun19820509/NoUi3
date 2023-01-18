@@ -1,5 +1,6 @@
 
 import { _decorator, Component, Node, EventTouch, math, Touch } from 'cc';
+import { YJFitScreen } from '../YJFitScreen';
 const { ccclass, property } = _decorator;
 
 /**
@@ -72,6 +73,6 @@ export class YJ2FingersScale extends Component {
     }
 
     private touchesDistance(touches: Touch[]): number {
-        return math.Vec2.distance(touches[0].getLocation(), touches[1].getLocation());
+        return math.Vec2.distance(YJFitScreen.fitTouchPoint(touches[0]), YJFitScreen.fitTouchPoint(touches[1]));
     }
 }

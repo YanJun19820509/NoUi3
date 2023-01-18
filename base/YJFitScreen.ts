@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Canvas, Camera, screen, view, math, ResolutionPolicy, Widget, UITransform } from 'cc';
+import { _decorator, Component, Node, Canvas, Camera, screen, view, math, ResolutionPolicy, Widget, UITransform, Touch } from 'cc';
 import { no } from '../no';
-import { YJCameraManager } from './YJRegisterCamera';
 const { ccclass, property } = _decorator;
 
 /**
@@ -23,10 +22,21 @@ export class YJFitScreen extends Component {
     @property({ type: Camera })
     camera: Camera = null;
 
+    /**显示区域矢量值 */
+    public static rectV: math.Rect = math.rect(0, 0, 1, 1);
+    /**显示区域，相对于屏幕 */
+    public static rect: math.Rect = math.rect();
+
+    public static policy: number = ResolutionPolicy.NO_BORDER;
+
     onLoad() {
-        if (!this.enabled) return;
-        const size = screen.windowSize,
-            dsize = view.getDesignResolutionSize().clone(),
+        const size = screen.windowSize;
+        if (!this.enabled) {
+            YJFitScreen.rect = math.rect(0, 0, size.width, size.height);
+            return;
+        }
+
+        const dsize = view.getDesignResolutionSize().clone(),
             ss = size.width / size.height,
             dss = dsize.width / dsize.height;
         let policyType: number, rect = math.rect(0, 0, 1, 1);
@@ -37,6 +47,7 @@ export class YJFitScreen extends Component {
             if (ss < 16 / 10) policyType = ResolutionPolicy.FIXED_WIDTH;
             else policyType = ResolutionPolicy.FIXED_HEIGHT;
         }
+        YJFitScreen.policy = policyType;
 
         const canvasSize = this.canvas.node.getComponent(UITransform).contentSize;
 
@@ -53,6 +64,8 @@ export class YJFitScreen extends Component {
             rect.y = 0.5 - rect.height / 2;
 
             this.camera.rect = rect;
+            YJFitScreen.rectV = rect;
+            YJFitScreen.rect = math.rect(rect.x * size.width, rect.y * size.height, w, h);
         }
 
         const widget = this.canvas.getComponent(Widget) || this.canvas.addComponent(Widget);
@@ -74,5 +87,18 @@ export class YJFitScreen extends Component {
             widget.bottom = 0;
         }
         widget.updateAlignment();
+    }
+
+    public static fitTouchPoint(touch: Touch): math.Vec2 {
+        let touchLocation = touch.getUILocation();
+        if (this.policy == ResolutionPolicy.FIXED_WIDTH) {
+            return touchLocation;
+        } else if (this.policy == ResolutionPolicy.FIXED_HEIGHT) {
+            const scaleSize = view.getVisibleSize(),
+                screenSize = view.getVisibleSizeInPixel();
+            let scale = 1 / view.getScaleX();
+            touchLocation.x -= (screenSize.width - scaleSize.width) / 2 * scale;
+        }
+        return touchLocation;
     }
 }
