@@ -203,7 +203,7 @@ export class SetTypeWritting extends FuckUi {
         label.isItalic = a.style.italic;
         label.isBold = a.style.bold;
         label.isUnderline = a.style.underline;
-        label.cacheMode = Label.CacheMode.BITMAP;
+        label.cacheMode = Label.CacheMode.NONE;
         label.verticalAlign = Label.VerticalAlign.CENTER;
         label.horizontalAlign = Label.HorizontalAlign.CENTER;
         if (a.style.outline) {
@@ -240,7 +240,7 @@ export class SetTypeWritting extends FuckUi {
         label.fontSize = rt.fontSize;
         label.lineHeight = Math.max(rt.fontSize, rt.lineHeight);
         label.maxWidth = rt.maxWidth;
-        label.cacheMode = Label.CacheMode.BITMAP;
+        label.cacheMode = Label.CacheMode.NONE;
         let dynamicTexture = this.getComponent(YJDynamicTexture);
         if (dynamicTexture && dynamicTexture.enabled) {
             labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
