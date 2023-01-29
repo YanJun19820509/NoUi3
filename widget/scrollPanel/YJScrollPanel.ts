@@ -306,6 +306,7 @@ export class YJScrollPanel extends Component {
     }
 
     private scale(e: EventTouch) {
+        if (!this.support2FingerScale) return;
         let dis = this.touchesDistance(e.getAllTouches());
         let scale = math.clamp(this.startScale + (dis - this.startDis) / this.startDis, this.minScale, this.maxScale);
         if (isNaN(scale)) return;

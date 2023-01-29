@@ -47,7 +47,6 @@ export class SetTypeWritting extends FuckUi {
     }
 
     onDisable() {
-        this.node.removeAllChildren();
         this._x = null;
         this._maxY = 0;
     }
