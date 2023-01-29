@@ -19,6 +19,8 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 export const YJPanelPrefabMetaKey = 'prefabPath';
 export const YJAddPanelToMetaKey = 'addPanelToTargetName';
+export const YJAllowMultipleOpen = 'allowmultipleopen';
+export const YJPanelCreated = 'panelcreated';
 /**
  * 注解，向YJPanel添加prefab path 元数据
  * @param path
@@ -30,6 +32,10 @@ export function panelPrefabPath(path: string) {
 
 export function addPanelTo(targetName: string) {
     return no.addMeta(YJAddPanelToMetaKey, targetName);
+}
+
+export function AllowMultipleOpen() {
+    return no.addMeta(YJAllowMultipleOpen, '1');
 }
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
@@ -103,6 +109,7 @@ export class YJPanel extends Component {
 
     public clear() {
         if (YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+        this['__proto__'][YJPanelCreated] = '0';
         this.node.destroy();
     }
 

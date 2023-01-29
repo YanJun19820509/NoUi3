@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { YJAddPanelToMetaKey, YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanel, YJPanelCreated, YJPanelPrefabMetaKey } from './YJPanel';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 const { ccclass, property, menu } = _decorator;
 
@@ -37,6 +37,8 @@ export class YJWindowManager extends Component {
     autoClear: boolean = false;
     @property({ displayName: '清理间隔时长(s)', min: 3, step: 1, visible() { return this.autoClear; } })
     duration: number = 10;
+
+    private createdPanel: string[] = [];
 
     private static _ins: YJWindowManager;
 
@@ -88,27 +90,35 @@ export class YJWindowManager extends Component {
      * @returns
      */
     public static createPanel<T extends YJPanel>(comp: typeof YJPanel | string, to?: string, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
-        if (!comp) return null;
+        if (!comp) return;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
-        if (!comp) return null;
+        if (!comp) return;
+        const self = YJWindowManager._ins;
         to = to || comp.prototype[YJAddPanelToMetaKey];
-        let content: Node = YJWindowManager._ins.getContent(to);
-        let a = content.getComponentInChildren(comp);
-        if (a != null) {
-            beforeInit?.(a as T);
-            a.initPanel().then(() => {
-                a.node.active = true;
-                afterInit?.(a as T);
-            });
-            a.node.setSiblingIndex(content.children.length - 1);
-            return;
+        let content: Node = self.getContent(to);
+        const allowMultipleOpen = comp.prototype[YJAllowMultipleOpen] == '1';
+        if (!allowMultipleOpen) {
+            let a = content.getComponentInChildren(comp);
+            if (a != null) {
+                beforeInit?.(a as T);
+                a.initPanel().then(() => {
+                    a.node.active = true;
+                    afterInit?.(a as T);
+                });
+                a.node.setSiblingIndex(content.children.length - 1);
+                return;
+            }
+        }
+        if (!allowMultipleOpen) {
+            if (comp.prototype[YJPanelCreated] == '1') return;
+            else comp.prototype[YJPanelCreated] = '1';
         }
         let node = YJPreinstantiatePanel.ins?.getPanelNodeAndRemove(comp.name);
         if (node) {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
-            let url = comp.prototype[YJPanelPrefabMetaKey];
+            const url = comp.prototype[YJPanelPrefabMetaKey];
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
                 let node = instantiate(pf);
                 this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
@@ -168,6 +178,7 @@ export class YJWindowManager extends Component {
         for (let i = 0, n = self.infos.length; i < n; i++) {
             this.closePanelIn(self.infos[i].type);
         }
+        self.createdPanel.length = 0;
     }
 
     /**
