@@ -2370,28 +2370,38 @@ export namespace no {
             }
         }
 
-        public async loadSpriteAtlasInEditorMode(url: string, callback: (file: SpriteAtlas, info: any) => void, onErr?: () => void) {
+        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos: any[]) => void, onErr?: () => void) {
             if (!EDITOR) return;
-            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
-            if (!info) {
+            let requests: any[] = [];
+            let infos: any[] = [];
+            urls = [].concat(urls);
+            for (let i = 0, n = urls.length; i < n; i++) {
+                let info = await Editor.Message.request('asset-db', 'query-asset-info', urls[i]);
+                if (!info)
+                    console.log('query-asset-info url无效', urls[i]);
+                else {
+                    for (const key in info.subAssets) {
+                        let sub = info.subAssets[key];
+                        if (sub.type == 'cc.SpriteAtlas') {
+                            requests[requests.length] = { 'uuid': sub.uuid, 'type': SpriteAtlas };
+                            infos[infos.length] = info;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!requests.length) {
                 onErr?.();
                 return;
             }
-            for (const key in info.subAssets) {
-                let sub = info.subAssets[key];
-                if (sub.type == 'cc.SpriteAtlas') {
-                    assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteAtlas }, (err, item: SpriteAtlas) => {
-                        if (err) {
-                            console.log(url, err);
-                            onErr?.();
-                        }
-                        else {
-                            callback(item, sub);
-                        }
-                    });
-                    break;
+            assetManager.loadAny(requests, (err: any, items: SpriteAtlas[]) => {
+                if (err) {
+                    onErr?.();
                 }
-            }
+                else {
+                    callback(items, infos);
+                }
+            });
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {

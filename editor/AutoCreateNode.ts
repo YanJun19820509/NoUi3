@@ -13,6 +13,8 @@ import { SetText } from '../fuckui/SetText';
 import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
+import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
+import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -68,8 +70,8 @@ export class AutoCreateNode extends Component {
                 // console.log(dest);
                 no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     this.atlas = s;
-                    let atlasManager = this.getComponent(YJLoadAssets) || this.addComponent(YJLoadAssets);
-                    atlasManager?.addAtlasUuid(info.uuid);
+                    if (!this.getComponent(YJLoadAssets)) this.addComponent(YJLoadAssets);
+                    // atlasManager?.addAtlasUuid(info.uuid);
                     // console.log(s);
                     this.loadJson(dest, name);
                 }, () => {
@@ -102,6 +104,8 @@ export class AutoCreateNode extends Component {
             this.node.getComponent(UITransform).setContentSize(size);
             if (!this.node.getComponent(YJReleasePrefab))
                 this.node.addComponent(YJReleasePrefab);
+            if (!this.node.getComponent(YJShowSpriteFrameInSample2D))
+                this.node.addComponent(YJShowSpriteFrameInSample2D);
             this.parent = this.node.getChildByName('Canvas') || this.node;
             if (!this.node.getComponent(Widget)) {
                 let widget = this.node.addComponent(Widget);
@@ -126,6 +130,7 @@ export class AutoCreateNode extends Component {
 
     private parseType(n: any, parent: Node) {
         switch (n.type) {
+            case 'char':
             case 'label':
                 this.createLabelNode(n, parent);
                 break;
@@ -138,10 +143,9 @@ export class AutoCreateNode extends Component {
             case 'progress':
                 this.createProgress(n, parent);
                 break;
-            case 'char':
-                this.createLabelNode(n, parent);
-                // this.createChar(n, parent);
-                break;
+            // case 'char':
+            //     this.createChar(n, parent);
+            //     break;
             case 'toggleGroup':
                 this.createToggleGroup(n, parent);
                 break;
@@ -173,30 +177,39 @@ export class AutoCreateNode extends Component {
     }
 
     private createSpriteNode(c: any, parent: Node): Node {
-        let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
+        let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
-        s.sizeMode = Sprite.SizeMode.CUSTOM;
+        if (c['9']) {
+            s.sizeMode = Sprite.SizeMode.CUSTOM;
+            s.type = Sprite.Type.SLICED;
+        } else {
+            s.sizeMode = Sprite.SizeMode.RAW;
+            s.type = Sprite.Type.SIMPLE;
+        }
         s.spriteFrame = this.atlas?.getSpriteFrame(c.name);
-        if (s.spriteFrame)
-            s.spriteAtlas = this.atlas;
-        else {
+        if (!s.spriteFrame) {
             no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
-                this.getComponent(YJLoadAssets)?.addSpriteFrameUuid(info.uuid);
                 s.spriteFrame = f;
             }, () => {
-                no.assetBundleManager.loadSpriteAtlasInEditorMode('db://assets/resources/atlas/uis.plist', (f, info) => {
-                    if (f.getSpriteFrame(c.name)) {
-                        s.spriteAtlas = f;
-                        s.spriteFrame = f.getSpriteFrame(c.name);
-                    } else
-                        n.addComponent('SetDynamicSpriteFrame');
+                let urls: string[] = [];
+                for (let i = 0; i < 3; i++) {
+                    urls[urls.length] = `db://assets/resources/sample/atlas_${i}.plist`;
+                }
+                no.assetBundleManager.loadSpriteAtlasInEditorMode(urls, (fs, infos) => {
+                    for (let i = 0, m = fs.length; i < m; i++) {
+                        const f = fs[i];
+                        if (f.getSpriteFrame(c.name)) {
+                            s.spriteFrame = f.getSpriteFrame(c.name);
+                            if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
+                            break;
+                        }
+                    }
                 }, () => {
-                    console.error('assets/resources/atlas/uis.plist not found!!')
+                    console.error(`${urls} not found!!`)
                 });
             });
-        }
-        if (c['9']) {
-            s.type = Sprite.Type.SLICED;
+        } else {
+            if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
         }
         return n;
     }
@@ -415,7 +428,7 @@ export class AutoCreateNode extends Component {
 
     private async setWidget(node: Node) {
         if (node.parent.getComponent(Layout)) return;
-        // await no.sleep(0.1);
+        await no.sleep(0.1);
         let widget = node.getComponent(Widget) || node.addComponent(Widget);
         if (!widget.enabled) return;
         let size = node.parent.getComponent(UITransform).contentSize;
