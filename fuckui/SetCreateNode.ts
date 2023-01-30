@@ -63,11 +63,17 @@ export class SetCreateNode extends FuckUi {
     private _isSettingData: boolean = false;
 
     onDestroy() {
+        if (EDITOR) {
+            return;
+        }
         if (this.loadPrefab && this.template && this.template.isValid)
             this.template.destroy();
     }
 
     onEnable() {
+        if (EDITOR) {
+            return;
+        }
         if (this._isSettingData) return;
         if (this.clearOnDisable && this.recreateOnEnable) {
             this.needSetDynamicAtlas = true;
@@ -76,6 +82,9 @@ export class SetCreateNode extends FuckUi {
     }
 
     onDisable() {
+        if (EDITOR) {
+            return;
+        }
         if (this._isSettingData) return;
         this.unscheduleAllCallbacks();
         if (this.clearOnDisable) {
