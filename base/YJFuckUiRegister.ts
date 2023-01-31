@@ -103,7 +103,7 @@ export class YJFuckUiRegister extends Component {
 
         this.subFuckUis = [];
         list.forEach((a: FuckUiComponent) => {
-            if (a.register == this) {
+            if (a.register == this && a.bind_keys != '') {
                 this.subFuckUis[this.subFuckUis.length] = a;
             }
         });

@@ -19,7 +19,10 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
-
+/**
+ * 设置倒计时
+ * data: 时间段 秒
+ */
 @ccclass('SetTimeCountDown')
 @menu('NoUi/ui/SetTimeCountDown(设置倒计时:number)')
 @executeInEditMode()
