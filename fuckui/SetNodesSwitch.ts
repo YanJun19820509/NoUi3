@@ -40,6 +40,7 @@ export class SetNodesSwitch extends FuckUi {
     infos: SwitchInfo[] = [];
 
     protected onDataChange(data: any) {
+        data = String(data);
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             info.checkShow(data);

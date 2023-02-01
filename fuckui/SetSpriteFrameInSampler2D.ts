@@ -85,7 +85,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!this.loadAsset) return;
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
-            no.log('setSpriteFrame not get', name);
+            no.err('setSpriteFrame not get', name);
             return;
         }
         let sprite = this.getComponent(Sprite);

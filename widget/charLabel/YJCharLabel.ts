@@ -163,7 +163,7 @@ export class YJCharLabel extends Component {
                 this.createCharNode(a[i]).parent = this.node;
             }
         } else {
-            this.unscheduleAllCallbacks();
+            // this.unscheduleAllCallbacks();
             // let i = 0, n = a.length;
             // this.schedule(() => {
             //     let labelNode = labelNodes[i];

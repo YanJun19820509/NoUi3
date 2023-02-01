@@ -3,6 +3,7 @@ import { _decorator, Node } from 'cc';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
 import { panelPrefabPath, YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';
+import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJGuideManager } from './YJGuideManager';
 const { ccclass, property } = _decorator;
@@ -84,6 +85,8 @@ export class YJGuidePanel extends YJPanel {
         if (!guideNode) {
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
             guideNode = await a.loadPrefab.loadPrefab();
+            if (guideNode.getComponent(YJLoadAssets))
+                await guideNode.getComponent(YJLoadAssets).load();
             guideNode.parent = this.container;
             this.guideNodeMap[info.type] = guideNode;
         }
