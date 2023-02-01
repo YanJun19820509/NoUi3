@@ -2,7 +2,7 @@
 import { _decorator, AnimationClip, Animation } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property } = _decorator;
+const { ccclass, property, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -17,6 +17,7 @@ const { ccclass, property } = _decorator;
  */
 
 @ccclass('SetAnimation')
+@requireComponent(Animation)
 export class SetAnimation extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '播放开始前的回调' })
     beforeStartHandlers: no.EventHandlerInfo[] = [];
@@ -67,6 +68,7 @@ export class SetAnimation extends FuckUi {
         let state = ani.getState(name);
         if (repeat == 0) {
             state?.stop();
+            state?.setTime(0);
             return;
         }
         if (state) {

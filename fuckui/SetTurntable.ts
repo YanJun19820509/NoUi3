@@ -31,12 +31,15 @@ export class SetTurntable extends FuckUi {
     duration: number = 0;
     @property({ displayName: '减速角度', min: 0, tooltip: '剩余多少角度时开始减速' })
     slowAngle: number = 0;
+    @property({ type: no.EventHandlerInfo, displayName: '转动减速回调' })
+    slowdownCall: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '转动结束回调' })
     endCall: no.EventHandlerInfo[] = [];
 
     private quickAnglePerSecond: number;
     private slowAnglePerSecond: number;
     private turnningAngle: number = 0;
+    private slowdownCalled: boolean = false;
 
     onLoad() {
         super.onLoad();
@@ -44,7 +47,7 @@ export class SetTurntable extends FuckUi {
             if (!this.turntable) this.turntable = this.node;
         } else {
             this.quickAnglePerSecond = 360 * this.speed;
-            this.slowAnglePerSecond = this.quickAnglePerSecond / 3;
+            this.slowAnglePerSecond = this.quickAnglePerSecond / 20;
         }
     }
 
@@ -54,7 +57,8 @@ export class SetTurntable extends FuckUi {
     }
 
     private setTurnning(stopAngle: number) {
-        this.turnningAngle = stopAngle - this.turntable.angle + this.speed * this.duration * 360;
+        this.slowdownCalled = false;
+        this.turnningAngle = stopAngle - this.turntable.angle + Math.ceil(this.speed * this.duration) * 360;
     }
 
     update(dt: number) {
@@ -65,8 +69,13 @@ export class SetTurntable extends FuckUi {
             a = this.quickAnglePerSecond * dt;
         } else {
             a = this.slowAnglePerSecond * dt;
+            if (!this.slowdownCalled) {
+                this.slowdownCalled = true;
+                no.EventHandlerInfo.execute(this.slowdownCall);
+            }
         }
         this.turntable.angle = (this.turntable.angle + a) % 360;
         this.turnningAngle -= a;
+        if (this.turnningAngle <= 0) no.EventHandlerInfo.execute(this.endCall);
     }
 }

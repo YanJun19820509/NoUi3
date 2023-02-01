@@ -16,14 +16,17 @@ const { ccclass, property, menu } = _decorator;
  */
 @ccclass("SwitchInfo")
 export class SwitchInfo {
-    @property
+    @property({ displayName: '条件', tooltip: '多条件用,分隔' })
     condition: string = '';
 
     @property({ type: Node, displayName: '显示节点' })
     nodes: Node[] = [];
 
+    private conditions: string[];
+
     public checkShow(v: string) {
-        let a = this.condition == v;
+        if (!this.conditions) this.conditions = this.condition.split(',');
+        let a = this.conditions.indexOf(v) != -1;
         this.nodes.forEach(node => {
             node.active = a;
         });
