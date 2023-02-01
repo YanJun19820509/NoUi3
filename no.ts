@@ -277,12 +277,10 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        if (!DEBUG) return;
         console.log.call(console, '#NoUi#Log', JSON.stringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
-        if (!DEBUG) return;
         console.error.call(console, '#NoUi#Err', JSON.stringify(Evns));
     }
 
