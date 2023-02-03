@@ -141,12 +141,14 @@ export class SetCreateNode extends FuckUi {
         } else {
             if (!this.template) {
                 this.template = await this.loadPrefab.loadPrefab();
+                if (!this?.node?.isValid) return;
             }
         }
         if (!this.onlyAdd && n - l > 1 || (this.onlyAdd && n > 1)) {
             if (!this.onlyAdd)
                 this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
+                if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
@@ -204,6 +206,7 @@ export class SetCreateNode extends FuckUi {
         if (!item) {
             item = instantiate(this.template);
             await item.getComponent(YJLoadAssets)?.load();
+            if (!this?.node?.isValid) return;
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {

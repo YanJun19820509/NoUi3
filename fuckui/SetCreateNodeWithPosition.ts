@@ -126,6 +126,7 @@ export class SetCreateNodeWithPosition extends FuckUi {
     protected async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
         }
 
         if (this.dynamicAtlas && this.needSetDynamicAtlas) {
@@ -143,6 +144,7 @@ export class SetCreateNodeWithPosition extends FuckUi {
         if (n > l) {
             this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
+                if (!this?.node?.isValid) return false;
                 let item = instantiate(this.template);
                 item.active = false;
                 item.parent = this.container;

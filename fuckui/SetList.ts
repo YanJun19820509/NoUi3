@@ -94,6 +94,7 @@ export class SetList extends FuckUi {
         }
         if (!this.template) {
             this.template = await this.itemPanel.loadPrefab();
+            if (!this?.node?.isValid) return;
             this.preInitItems();
         }
         if (this.showMax == 0)
@@ -175,11 +176,13 @@ export class SetList extends FuckUi {
             if (this.showMax >= this.allNum) this.showNum = this.allNum;
             else this.showNum = this.showMax + 2;
             await this.initItems();
+            if (!this?.node?.isValid) return;
         }
         this.listData = a;
         let i = this.lastIndex;
         if (!this.listData[this.lastIndex]) i = 0;
         await this.setList(this.autoScrollBack ? 0 : i);
+        if (!this?.node?.isValid) return;
         this._isSettingData = false;
     }
 
@@ -227,6 +230,7 @@ export class SetList extends FuckUi {
         }
         let i = 0, n = listItems.length;
         await YJJobManager.ins.execute(() => {
+            if (!this?.node?.isValid) return false;
             this.setItem(start, i++);
             if (i >= n) return false;
         }, this);

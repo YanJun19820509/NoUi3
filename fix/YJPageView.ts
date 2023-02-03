@@ -108,7 +108,9 @@ export class YJPageView extends PageView {
         let p = this.pagePrefabs[i];
         if (!p) return;
         let n = await p.loadPrefab();
+        if (!this?.node?.isValid) return;
         await n.getComponent(YJLoadAssets)?.load();
+        if (!this?.node?.isValid) return;
         this.addPage(n);
     }
 

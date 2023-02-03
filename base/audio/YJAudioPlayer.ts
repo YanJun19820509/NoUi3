@@ -33,6 +33,7 @@ export class YJAudioPlayer extends Component {
     public async a_play() {
         let a = this.getComponent(YJLoadAudioClip);
         let clip = await a.loadClip();
+        if (!this?.node?.isValid) return;
         let b = YJAudioManager.ins;
         b.setClip(a.clipUrl, clip);
         if (this.once) YJAudioManager.ins.playClip(clip, false);

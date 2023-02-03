@@ -75,6 +75,7 @@ export class YJGuidePanel extends YJPanel {
             if (info.content)
                 await no.waiForEventValueEqual(info.event, info.content[0], this);
             else await no.waitForEvent(info.event, this);
+            if (!this?.node?.isValid) return;
             this.nextStep();
         } else this.showGuide(info);
     }
@@ -85,8 +86,10 @@ export class YJGuidePanel extends YJPanel {
         if (!guideNode) {
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
             guideNode = await a.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
             if (guideNode.getComponent(YJLoadAssets))
                 await guideNode.getComponent(YJLoadAssets).load();
+            if (!this?.node?.isValid) return;
             guideNode.parent = this.container;
             this.guideNodeMap[info.type] = guideNode;
         }

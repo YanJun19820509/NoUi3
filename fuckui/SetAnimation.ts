@@ -47,18 +47,20 @@ export class SetAnimation extends FuckUi {
 
         if (name) {
             if (!ani.getState(name) && path) {
-                await this._loadClip(path, name);
+                if (!await this._loadClip(path, name)) return;
             }
             this._play(name, speed, repeat);
         }
     }
 
-    private async _loadClip(path: string, name: string): Promise<void> {
-        return new Promise<void>(resolve => {
+    private async _loadClip(path: string, name: string): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
             no.assetBundleManager.loadAnimationClip(path, (clip) => {
-                no.addToArray(this.needReleaseClips, clip);
-                this.getComponent(Animation).createState(clip, name);
-                resolve();
+                if (this?.node?.isValid) {
+                    no.addToArray(this.needReleaseClips, clip);
+                    this.getComponent(Animation).createState(clip, name);
+                    resolve(true);
+                } else resolve(false);
             });
         });
     }

@@ -218,14 +218,17 @@ export class YJCharLabel extends Component {
         let sf = this.dynamicAtlas?.getSpriteFrameInstance(uuid);
         if (sf) return sf;
         sf = await YJCharLabelCenter.ins.getSpriteFrame(uuid);
+        if (!this?.node?.isValid) return;
         if (!sf)
             sf = await YJCharLabelCenter.ins.createSpriteFrame(this.createCharNode(v), uuid);
+        if (!this?.node?.isValid) return;
         sf._uuid = uuid;
         return this.dynamicAtlas?.packSpriteFrame(sf) || sf;
     }
 
     private async setSpriteFrame(node: Node, v: string) {
         let spriteFrame = await this.getSpriteFrame(v);
+        if (!this?.node?.isValid) return;
         if (node.isValid)
             (node.getComponent(Sprite) || node.addComponent(Sprite)).spriteFrame = spriteFrame;
     }

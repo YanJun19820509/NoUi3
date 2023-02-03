@@ -43,6 +43,7 @@ export class SetTiledMap extends FuckUi {
             this.delegate?.onInitObjects(layers[i], this.mapData.getLayerObjects(layers[i]));
         }
         await no.sleep(0, this);
+        if (!this?.node?.isValid) return;
         this.delegate?.onInitComplete();
     }
 }

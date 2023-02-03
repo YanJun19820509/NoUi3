@@ -89,8 +89,10 @@ export class SetCreateNodeByUrl extends FuckUi {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                if (item.getComponent(YJLoadAssets))
+                if (item.getComponent(YJLoadAssets)) {
                     await item.getComponent(YJLoadAssets).load();
+                    if (!this?.node?.isValid) return;
+                }
                 item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {

@@ -29,6 +29,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
     protected async setItems(data: any[]) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
         }
         if (this.dynamicAtlas && this.needSetDynamicAtlas) {
             this.needSetDynamicAtlas = false;
@@ -65,6 +66,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
             this.delegate?.afterAllCreated();
         } else {
             await this.delegate?.beforeCreateOneNode(idx, data[idx]);
+            if (!this?.node?.isValid) return;
             let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
             item.active = !!data[idx];
             if (a && data[idx]) {
@@ -72,6 +74,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
                 a.init();
             }
             await this.delegate?.afterCreateOneNode(idx, data[idx], item);
+            if (!this?.node?.isValid) return;
             await no.sleep(this.duration, this);
             this.showItemsOneByOne(data, ++idx);
         }

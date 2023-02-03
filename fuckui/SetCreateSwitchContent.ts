@@ -88,6 +88,7 @@ export class SetCreateSwitchContent extends FuckUi {
         if (!info) return;
         if (!info.isLoaded) {
             await info.loadTo(this.container, this.dynamicAtlas, this.loadAsset);
+            if (!this?.node?.isValid) return;
         }
         this.scheduleOnce(() => {
             this.hideContent(info.name);
