@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite, RenderComponent } from 'cc';
+import { _decorator, Sprite, UIRenderer } from 'cc';
 import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
@@ -45,7 +45,7 @@ export class SetGray extends FuckUi {
     }
 
     private setGray(v: boolean) {
-        let a = this.getComponent(RenderComponent);
+        let a = this.getComponent(UIRenderer);
         if (a) {
             let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
             setEffect.setData(JSON.stringify(
@@ -58,7 +58,7 @@ export class SetGray extends FuckUi {
             ));
         }
         if (this.recursive) {
-            this.getComponentsInChildren(RenderComponent).forEach(child => {
+            this.getComponentsInChildren(UIRenderer).forEach(child => {
                 if (a?.uuid == child.uuid) return;
                 child.getComponent(SetGray)?.setData(JSON.stringify(v));
             });
@@ -71,7 +71,7 @@ export class SetGray extends FuckUi {
         this.autoSetChildren = false;
 
         if (this.recursive) {
-            this.getComponentsInChildren(RenderComponent).forEach(child => {
+            this.getComponentsInChildren(UIRenderer).forEach(child => {
                 (child.getComponent(SetGray) || child.addComponent(SetGray));
             });
         }

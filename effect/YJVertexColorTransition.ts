@@ -1,5 +1,5 @@
 
-import { _decorator, Component, RenderComponent, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from 'cc';
+import { _decorator, Component, UIRenderer, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from 'cc';
 import { no } from '../no';
 const { ccclass, property, disallowMultiple } = _decorator;
 
@@ -19,7 +19,7 @@ const { ccclass, property, disallowMultiple } = _decorator;
 @disallowMultiple()
 export class YJVertexColorTransition extends Component {
 
-    private renderComp: RenderComponent;
+    private renderComp: UIRenderer;
     /**
      * _data数据说明，
      * x用来存放宏定义的类型，为负值，非负则为正常状态，整数部分为 color相关，小数部分为uv 相关
@@ -33,13 +33,13 @@ export class YJVertexColorTransition extends Component {
 
     onLoad() {
         if (!this.renderComp)
-            this.renderComp = this.getComponent(RenderComponent);
+            this.renderComp = this.getComponent(UIRenderer);
         if (!this.renderComp) return;
     }
 
     public setEffect(defines: any, properties?: number[]) {
         if (!this.renderComp)
-            this.renderComp = this.getComponent(RenderComponent);
+            this.renderComp = this.getComponent(UIRenderer);
         if (!this.renderComp || !defines) return;
 
         this._setDefines(defines);

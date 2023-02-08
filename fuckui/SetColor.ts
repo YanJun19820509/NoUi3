@@ -1,5 +1,5 @@
 
-import { _decorator, Color, RenderComponent } from 'cc';
+import { _decorator, Color, UIRenderer } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, menu } = _decorator;
@@ -26,7 +26,7 @@ export class SetColor extends FuckUi {
         } else if (data instanceof Color) {
             color = data;
         }
-        let renders = this.node.getComponentsInChildren(RenderComponent);
+        let renders = this.node.getComponentsInChildren(UIRenderer);
         renders.forEach(render => {
             render.color = color;
         });

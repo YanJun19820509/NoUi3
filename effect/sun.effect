@@ -26,16 +26,16 @@ CCEffect %{
 }%
 
 CCProgram vs %{
-  #include <common-vs>
+  #include <./common-vs>
 }%
 
 CCProgram unlit-fs %{
   precision highp float;
-  #include <cc-global>
-  #include <embedded-alpha> 
-  #include <alpha-test>
-  #include <common-fs>
-  #include <utils>
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha> 
+  #include <builtin/internal/alpha-test>
+  #include <./common-fs>
+  #include <./utils>
 
 float rgb2luma(vec3 color) {
     return dot(color, vec3(0.299, 0.587, 0.114));

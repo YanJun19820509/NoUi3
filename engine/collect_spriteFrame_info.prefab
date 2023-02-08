@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "",
+    "_name": "collect_spriteFrame_info",
     "_objFlags": 0,
     "_native": "",
     "data": {

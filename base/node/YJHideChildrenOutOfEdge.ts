@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderable, v3, Vec3, UIOpacity } from 'cc';
+import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderer, v3, Vec3, UIOpacity } from 'cc';
 const { ccclass, property, menu } = _decorator;
 
 /**

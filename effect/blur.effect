@@ -13,7 +13,7 @@ CCEffect %{
         - blend: true
           blendSrc: src_alpha
           blendDst: one_minus_src_alpha
-          blendDstAlpha: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha 
       rasterizerState:
         cullMode: none
       properties:
@@ -21,16 +21,16 @@ CCEffect %{
 }%
 
 CCProgram vs %{
-  #include <common-vs> 
+  #include <./common-vs>
 }%
 
-CCProgram unlit-fs %{
+CCProgram unlit-fs %{ 
   precision highp float;
-  #include <cc-global>
-  #include <embedded-alpha>
-  #include <alpha-test> 
-  #include <common-fs>
-  #include <utils> 
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test> 
+  #include <./common-fs>
+  #include <./utils> 
   
   uniform Constant{ 
     float offset;

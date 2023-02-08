@@ -27,15 +27,15 @@ CCEffect %{
 }%
 
 CCProgram vs %{
-  #include <common-vs>
+  #include <./common-vs>
 }%
 
 CCProgram unlit-fs %{
   precision highp float;
-  #include <embedded-alpha> 
-  #include <alpha-test>
-  #include <common-fs> 
-  #include <utils>
+  #include <builtin/internal/embedded-alpha> 
+  #include <builtin/internal/alpha-test>
+  #include <./common-fs> 
+  #include <./utils>
 
   uniform Constant{ 
     vec2 center;

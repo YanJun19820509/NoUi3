@@ -1,6 +1,6 @@
 // //drawcall优化，对引擎相关代码的扩充或修改
 
-// import { dynamicAtlasManager, js, Widget,  director, BlockInputEvents,  ScrollView, Layout, SpriteFrame, Sprite,  Label, RenderTexture, Node, RenderComponent,  math, WebGL2Device } from "cc";
+// import { dynamicAtlasManager, js, Widget,  director, BlockInputEvents,  ScrollView, Layout, SpriteFrame, Sprite,  Label, RenderTexture, Node, UIRenderer,  math, WebGL2Device } from "cc";
 // import { EDITOR, DEBUG } from "cc/env";
 // import { no } from "../no";
 // import { MaxRects } from "./MaxRects";
@@ -20,7 +20,7 @@
 //             if (EDITOR) return;
 //             if (comp instanceof Label && !(frame instanceof SpriteFrame)) {
 //                 if (comp.string == '') return;
-//                 frame._texture._uuid = comp.string + "_" + comp.node.getComponent(RenderComponent).color + "_" + comp.fontSize + comp.fontFamily;
+//                 frame._texture._uuid = comp.string + "_" + comp.node.getComponent(UIRenderer).color + "_" + comp.fontSize + comp.fontFamily;
 //             }
 //             let packedFrame = dynamicAtlasManager['insertSpriteFrame1'](frame, comp);
 //             if (packedFrame) {

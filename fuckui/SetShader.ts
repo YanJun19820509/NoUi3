@@ -1,4 +1,4 @@
-// import { _decorator, Label, Material, RenderComponent, Sprite, Vec4 } from 'cc';
+// import { _decorator, Label, Material, UIRenderer, Sprite, Vec4 } from 'cc';
 // import { no } from '../no';
 // import { FuckUi } from './FuckUi';
 // const { ccclass, menu } = _decorator;
@@ -18,12 +18,12 @@
 // @ccclass('SetShader')
 // @menu('NoUi/ui/SetShader(设置shader:{path:string,properties:{}})')
 // export class SetShader extends FuckUi {
-//     private _renderComp: RenderComponent;
+//     private _renderComp: UIRenderer;
 //     private _loaded: boolean = false;
 
 //     protected onDataChange(data: any) {
 //         if (!this._renderComp) {
-//             this._renderComp = this.getComponent(RenderComponent);
+//             this._renderComp = this.getComponent(UIRenderer);
 //             if (!this._renderComp) return;
 //         }
 //         let { path, properties, defines, states }: { path: string, properties: {}, defines: {}, states: {} } = data;

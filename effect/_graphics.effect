@@ -34,15 +34,15 @@ CCEffect %{
 }%
 
 CCProgram vs %{
-  #include <graphics-vs>
+  #include <./graphics-vs>
 }%
 
 CCProgram fs %{
-  #include <graphics-fs>
-  #include <cc-global>
-  #include <embedded-alpha>
-  #include <alpha-test>
-  #include <utils>
+  #include <./graphics-fs>
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  #include <./utils>
 
     uniform sampler2D switchTexture;
      

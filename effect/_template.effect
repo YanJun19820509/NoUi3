@@ -21,13 +21,13 @@ CCEffect %{
 }%
 
 CCProgram sprite-vs %{
-  #include "common-vs"
+  #include "./common-vs"
 }%
 
 CCProgram sprite-fs %{
   precision highp float;
-  #include <embedded-alpha>
-  #include <alpha-test>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
 
   in vec4 color;
 

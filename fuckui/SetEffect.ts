@@ -1,5 +1,5 @@
 
-import { Material, RenderComponent, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from 'cc';
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from 'cc';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -32,11 +32,11 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 export class SetEffect extends FuckUi {
     @property({ min: 0, step: 1, displayName: '合图属性下标', tooltip: '区分同一材质中多个合图中的纹理需要对应的其在合图中的rect属性，如idx=0，着色器中对应属性为factRect0' })
     idx: number = 0;
-    protected _renderComp: RenderComponent;
+    protected _renderComp: UIRenderer;
 
     protected onDataChange(data: any) {
         if (!this._renderComp) {
-            this._renderComp = this.getComponent(RenderComponent);
+            this._renderComp = this.getComponent(UIRenderer);
             if (!this._renderComp) return;
         }
         let { path, properties, defines }: { path: string, properties: any, defines: any } = data;
@@ -128,7 +128,7 @@ export class SetEffect extends FuckUi {
      */
     public work() {
         if (!this._renderComp) {
-            this._renderComp = this.getComponent(RenderComponent);
+            this._renderComp = this.getComponent(UIRenderer);
             if (!this._renderComp) return;
         }
         if (!this._renderComp.renderData?.frame) {
