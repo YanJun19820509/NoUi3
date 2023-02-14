@@ -15,6 +15,7 @@ import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
+import { SoundEffectType, YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -51,6 +52,9 @@ export class AutoCreateNode extends Component {
 
     private async loadConfigFile() {
         if (!this.getComponent(YJLoadAssets)) this.addComponent(YJLoadAssets);
+        if (this.getComponent(YJPlaySoundEffect)) {
+            this.addComponent(YJPlaySoundEffect).effectType = SoundEffectType.ClickButton;
+        }
         try {
             this.nameMap = {};
             let name = this.node.name;
