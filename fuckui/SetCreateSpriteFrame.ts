@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite } from 'cc';
+import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite, SpriteAtlas } from 'cc';
 import { DynamicAtlasTexture } from '../engine/atlas';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -25,6 +25,8 @@ const { ccclass, property, requireComponent } = _decorator;
 @ccclass('SetCreateSpriteFrame')
 @requireComponent(Sprite)
 export class SetCreateSpriteFrame extends FuckUi {
+    @property({ type: SpriteAtlas })
+    atlases: SpriteAtlas[] = [];
 
     private texture: DynamicAtlasTexture;
 
@@ -40,33 +42,28 @@ export class SetCreateSpriteFrame extends FuckUi {
         });
     }
 
+    private findSpriteFrame(name: string): SpriteFrame {
+        for (let i = 0, n = this.atlases.length; i < n; i++) {
+            let sf = this.atlases[i].getSpriteFrame(name);
+            if (sf) return sf;
+        }
+        return null;
+    }
+
     private drawSpriteFrames(spriteFrames: CreateSpritemFrameSFData[]): Promise<void> {
         return new Promise<void>(resolve => {
             let arr: { frame: SpriteFrame, x: number, y: number }[] = [];
             for (let i = 0, n = spriteFrames.length; i < n; i++) {
-                let a = spriteFrames[i];
-                if (a.atlas)
-                    no.assetBundleManager.loadAtlas(a.atlas, atlas => {
-                        arr[arr.length] = {
-                            frame: atlas.getSpriteFrame(a.url),
-                            x: a.x,
-                            y: a.y
-                        };
-                        if (arr.length == n) {
-                            resolve(this.drawSpriteFramesToTexture(arr));
-                        }
-                    });
-                else
-                    no.assetBundleManager.loadSprite(a.url + '/spriteFrame', sf => {
-                        arr[arr.length] = {
-                            frame: sf,
-                            x: a.x,
-                            y: a.y
-                        };
-                        if (arr.length == n) {
-                            resolve(this.drawSpriteFramesToTexture(arr));
-                        }
-                    });
+                const a = spriteFrames[i];
+                const sf = this.findSpriteFrame(a.name);
+                arr[arr.length] = {
+                    frame: sf,
+                    x: a.x,
+                    y: a.y
+                };
+                if (arr.length == n) {
+                    resolve(this.drawSpriteFramesToTexture(arr));
+                }
             }
         });
     }
