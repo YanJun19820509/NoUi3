@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow } from 'cc';
+import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -34,7 +34,7 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 @executeInEditMode(true)
 export class AutoCreateNode extends Component {
 
-    private atlas: SpriteAtlas;
+    private atlases: SpriteAtlas[] = [];
     private nameMap: any;
     private parent: Node;
     private rootPath: string;
@@ -50,6 +50,7 @@ export class AutoCreateNode extends Component {
     }
 
     private async loadConfigFile() {
+        if (!this.getComponent(YJLoadAssets)) this.addComponent(YJLoadAssets);
         try {
             this.nameMap = {};
             let name = this.node.name;
@@ -68,19 +69,41 @@ export class AutoCreateNode extends Component {
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 // console.log(dest);
-                no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
-                    this.atlas = s;
-                    if (!this.getComponent(YJLoadAssets)) this.addComponent(YJLoadAssets);
-                    // atlasManager?.addAtlasUuid(info.uuid);
-                    // console.log(s);
-                    this.loadJson(dest, name);
-                }, () => {
-                    this.loadJson(dest, name);
+                let url: string = `db://assets/resources/sample/atlas.plist`;
+                no.assetBundleManager.loadSpriteAtlasInEditorMode(url, (fs, infos) => {
+                    this.atlases = this.atlases.concat(fs);
+                    // console.log(1);
+                    // console.log(this.atlases);
+                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
+                        this.atlases = this.atlases.concat(assets);
+                        // console.log(2);
+                        // console.log(this.atlases);
+                        this.loadJson(dest, name);
+                    });
+
+                    // no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
+                    //     this.atlases = this.atlases.concat()
+                    //     // atlasManager?.addAtlasUuid(info.uuid);
+                    //     // console.log(s);
+                    //     this.loadJson(dest, name);
+                    // }, () => {
+                    //     this.loadJson(dest, name);
+                    // });
                 });
             }
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private getSpriteFrame(name: string): SpriteFrame {
+        for (let i = 0; i < this.atlases.length; i++) {
+            let sf = this.atlases[i].getSpriteFrame(name);
+            if (sf) {
+                return sf;
+            }
+        }
+        return null;
     }
 
     private loadJson(dest: string, name: string) {
@@ -186,28 +209,11 @@ export class AutoCreateNode extends Component {
             s.sizeMode = Sprite.SizeMode.RAW;
             s.type = Sprite.Type.SIMPLE;
         }
-        s.spriteFrame = this.atlas?.getSpriteFrame(c.name);
+        s.spriteFrame = this.getSpriteFrame(c.name);
         if (!s.spriteFrame) {
             no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
                 s.spriteFrame = f;
-            }, () => {
-                let urls: string[] = [];
-                for (let i = 0; i < 3; i++) {
-                    urls[urls.length] = `db://assets/resources/sample/atlas_${i}.plist`;
-                }
-                no.assetBundleManager.loadSpriteAtlasInEditorMode(urls, (fs, infos) => {
-                    for (let i = 0, m = fs.length; i < m; i++) {
-                        const f = fs[i];
-                        if (f.getSpriteFrame(c.name)) {
-                            s.spriteFrame = f.getSpriteFrame(c.name);
-                            if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
-                            break;
-                        }
-                    }
-                }, () => {
-                    console.error(`${urls} not found!!`)
-                });
-            });
+            }, () => { });
         } else {
             if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
         }

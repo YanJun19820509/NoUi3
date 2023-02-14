@@ -2368,7 +2368,7 @@ export namespace no {
             }
         }
 
-        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos: any[]) => void, onErr?: () => void) {
+        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos?: any[]) => void) {
             if (!EDITOR) return;
             let requests: any[] = [];
             let infos: any[] = [];
@@ -2378,27 +2378,41 @@ export namespace no {
                 if (!info)
                     console.log('query-asset-info url无效', urls[i]);
                 else {
-                    for (const key in info.subAssets) {
-                        let sub = info.subAssets[key];
-                        if (sub.type == 'cc.SpriteAtlas') {
-                            requests[requests.length] = { 'uuid': sub.uuid, 'type': SpriteAtlas };
-                            infos[infos.length] = info;
-                            break;
-                        }
-                    }
+                    requests[requests.length] = { 'uuid': info.uuid, 'type': SpriteAtlas };
+                    infos[infos.length] = info;
                 }
             }
             if (!requests.length) {
-                onErr?.();
+                callback?.([]);
                 return;
             }
             assetManager.loadAny(requests, (err: any, items: SpriteAtlas[]) => {
                 if (err) {
-                    onErr?.();
+                    callback?.([]);
                 }
                 else {
                     callback(items, infos);
                 }
+            });
+        }
+
+        public async loadAssetsInEditorModeUnderFolder<T extends Asset>(url: string, ccType: string, callback: (assets: T | T[]) => void) {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: any[]) => {
+                let aa = [];
+                assets.forEach(a => {
+                    if (a['url'].indexOf(url) == 0) {
+                        aa[aa.length] = { uuid: a.uuid, type: a.type };
+                    }
+                });
+                if (!aa.length) {
+                    callback?.([]);
+                    return;
+                }
+                assetManager.loadAny(aa, (err, items: T | T[]) => {
+                    if (!err) {
+                        callback?.(items);
+                    } else callback?.([]);
+                });
             });
         }
 
