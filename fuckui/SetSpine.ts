@@ -40,8 +40,8 @@ export class SetSpine extends FuckUi {
     onDestroy() {
         const spine = this.getComponent(sp.Skeleton);
         if (spine) {
-            spine.setCompleteListener(() => { });
-            spine.skeletonData?.decRef();
+            spine?.setCompleteListener(() => { });
+            spine?.skeletonData?.decRef();
         }
     }
 
