@@ -45,11 +45,17 @@ export class YJDynamicAtlas extends Component {
     //控制合图是否旋转的总开关
     private canRotate = false;
 
+    private thisNodeName: string;
+
+    onLoad() {
+        this.thisNodeName = this.node.name;
+    }
+
     onDestroy() {
         for (const uuid in this.spriteFrameMap) {
             (this.spriteFrameMap[uuid] as SpriteFrame).destroy();
         }
-        YJShowDynamicAtlasDebug.ins.remove(this.node.name);
+        YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
         this.atlas = null;
     }
@@ -62,7 +68,7 @@ export class YJDynamicAtlas extends Component {
     private initAtlas() {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
         }
     }
 
@@ -196,7 +202,7 @@ export class YJDynamicAtlas extends Component {
         this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            console.log(`${this.node.name}动态图集无空间！`);
+            console.log(`${this.thisNodeName}动态图集无空间！`);
         });
         return frame;
     }
