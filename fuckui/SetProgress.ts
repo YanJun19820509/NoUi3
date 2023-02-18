@@ -46,6 +46,7 @@ export class SetProgress extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        this.progressBar.progress = 0;
         this.targetValue = -1;
         if (data > 0 && data < this.initValue)
             data = this.initValue;
