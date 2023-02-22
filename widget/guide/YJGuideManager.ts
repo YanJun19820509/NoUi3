@@ -29,6 +29,8 @@ export class YJGuideManager extends Component {
     @property
     isWork: boolean = true;
 
+    public saveSteps: string[] = [];
+
     private static _ins: YJGuideManager;
 
     public static get ins(): YJGuideManager {
@@ -55,10 +57,8 @@ export class YJGuideManager extends Component {
         YJGuideManager._ins = null;
     }
 
-    public save(step: string) {
-        let a = no.dataCache.getLocal('guide_steps') || [];
-        a[a.length] = step;
-        no.dataCache.setLocal('guide_steps', a);
+    public save(steps: string | string[]) {
+        this.saveSteps = [].concat(this.saveSteps, steps);
     }
 
     public getGuideInfo(path: string): any {
@@ -67,8 +67,7 @@ export class YJGuideManager extends Component {
 
     public check(step: string): boolean {
         if (!this.isWork) return false;
-        let a: string[] = no.dataCache.getLocal('guide_steps') || [];
-        if (a.indexOf(step) != -1) return false;
+        if (this.saveSteps.indexOf(step) != -1) return false;
         YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
             panel.curStep = step;
         });
