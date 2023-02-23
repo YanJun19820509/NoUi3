@@ -104,12 +104,11 @@ export class YJDataWork extends Component {
     }
 
     private _setting: boolean = false;
-    private async setChangedDataToUi() {
-        if (!this.enabled || !this.node?.isValid) return;
+    private setChangedDataToUi() {
+        if (!this?.node?.isValid) return;
         if (this._setting) return;
         if (!this.register.isInit) this.register.init();
         this._setting = true;
-        // await YJJobManager.ins.execute(this.iterateChangedData, this);
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
         let k = keys.shift();
         while (k) {

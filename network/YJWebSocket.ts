@@ -155,7 +155,7 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public findReceiveData(handler: (data: any) => boolean) {
         if (this.isClosed) return;
-        for (let i = 0, n = this.receivedData.length; i < n; i++) {
+        for (let i = 0, n = this.receivedData?.length || 0; i < n; i++) {
             if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
                 break;

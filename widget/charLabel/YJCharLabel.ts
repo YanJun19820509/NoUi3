@@ -152,7 +152,7 @@ export class YJCharLabel extends Component {
         }
     }
 
-    private async setChars(s: string) {
+    private setChars(s: string) {
         let a = s.split('');
         let labelNodes = this.node.children;
         if (EDITOR) {

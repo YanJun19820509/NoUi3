@@ -442,6 +442,7 @@ export namespace no {
      * @param n
      */
     export function num2str(n: number): string {
+        if (n == null) return '';
         if (n < 1000) return String(n);
         let unit = ['k', 'm', 'b'];
         var a = '';
@@ -599,6 +600,8 @@ export namespace no {
      * @param num 子数组最大长度
      */
     export function arrayToArrays(array: any[], num: number): any[] {
+        if (!array) return [];
+        if (!num) return array;
         var dd = [];
         let length = ceil(array.length / num);
         for (var ii = 0; ii < length; ii++) {
@@ -635,6 +638,7 @@ export namespace no {
     }
 
     export function addToArray(array: any[], value: any, key?: string): void {
+        if (!array) return;
         if (key == null && array.indexOf(value) == -1) {
             array[array.length] = value;
         } else if (key != null && indexOfArray(array, value, key) == -1) {
@@ -648,6 +652,7 @@ export namespace no {
      * @param value
      */
     export function pushToArray(array: any[], value: any): void {
+        if (!array) return;
         if (value == null) return;
         array[array.length] = value;
     }
@@ -1173,6 +1178,7 @@ export namespace no {
      * @returns 权重索引
      */
     export function weightRandom(weight: number[], except?: number[]): number {
+        if (!weight) return 0;
         let sum = 0;
         except = except || [];
         weight.forEach((w, i) => {
@@ -1198,6 +1204,7 @@ export namespace no {
      * @returns 权重索引
      */
     export function weightRandomObject(weight: any[], key: string): number {
+        if (!weight) return 0;
         let a: number[] = [];
         weight.forEach(item => {
             a[a.length] = Number(item[key]);
@@ -2551,7 +2558,7 @@ export namespace no {
                 object.parent = null;
                 object.active = false;
             }
-            let a = this.cacheMap.get(type);
+            let a = this.cacheMap.get(type) || [];
             let have = false;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
@@ -2601,7 +2608,7 @@ export namespace no {
             let t = timestamp();
             let types = MapKeys2Array(this.cacheMap);
             types.forEach(type => {
-                let arr = this.cacheMap.get(type);
+                let arr = this.cacheMap.get(type) || [];
                 for (let i = arr.length - 1; i >= 0; i--) {
                     let a = arr[i];
                     if (t - a.t >= this.checkDuration) {
@@ -3572,10 +3579,10 @@ export namespace no {
     }
 
     export function string2Bytes(str: string): Uint8Array {
-        const buffer = new ArrayBuffer(str.length);
+        const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str.split('').forEach(function (str, i) {
+        str?.split('').forEach(function (str, i) {
             bytes[i] = str.charCodeAt(0);
         });
 
@@ -3584,17 +3591,17 @@ export namespace no {
 
     export function bytes2String(bytes: Uint8Array): string {
         let sArr: string[] = [];
-        bytes.forEach(c => {
+        bytes?.forEach(c => {
             sArr[sArr.length] = String.fromCharCode(c);
         });
         return sArr.join('');
     }
 
     export function string2ArrayBuffer(str: string): ArrayBuffer {
-        const buffer = new ArrayBuffer(str.length);
+        const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str.split('').forEach(function (str, i) {
+        str?.split('').forEach(function (str, i) {
             bytes[i] = str.charCodeAt(0);
         });
 
@@ -3695,6 +3702,7 @@ export namespace no {
      * @param exclusive 独占，默认true，即btn中只有当前添加的事件
      */
     export function addClickEventsToButton(btn: Button, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
+        if (!btn?.clickEvents) return;
         let a = createClickEvent(target, comp, handler);
         if (exclusive)
             btn.clickEvents = [a];
@@ -3712,6 +3720,7 @@ export namespace no {
     }
 
     export function SPEncrypt1_0_Encrypt1(b: any) {
+        if (b == null) return '';
         b = ToUTF8(b);
         for (var e = Math.floor(1e8 * 1), d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), c = [], a = 0; a < d; a++)
             (c[a] = b[4 * a] | (b[4 * a + 1] << 8) | (b[4 * a + 2] << 16) | (b[4 * a + 3] << 24)), (c[a] ^= e);
@@ -3723,6 +3732,7 @@ export namespace no {
     }
 
     export function ToUTF8(str: string) {
+        if (str == null) return [];
         var result = new Array();
         var k = 0;
         for (var i = 0; i < str.length; i++) {
