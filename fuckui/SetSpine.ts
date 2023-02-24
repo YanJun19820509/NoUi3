@@ -28,6 +28,7 @@ export class SetSpine extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
 
+    curPath: string;
 
     onEnable() {
         if (this.autoPlayOnEnable) {
@@ -48,9 +49,17 @@ export class SetSpine extends FuckUi {
     protected onDataChange(data: any) {
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
         const spine = this.getComponent(sp.Skeleton);
-        if (path && animation != null) {
+
+        if (this.curPath && this.curPath != path) {
+            spine?.skeletonData?.decRef();
+        }
+
+        if (path && this.curPath != path && animation != null) {
             spine.enabled = true;
             no.assetBundleManager.loadSpine(path, res => {
+
+                this.curPath = path;
+
                 spine.skeletonData = res;
                 !!skin && spine.setSkin(skin);
                 spine.setAnimation(0, animation, loop || false);
