@@ -50,7 +50,10 @@ export class SetSpine extends FuckUi {
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
         const spine = this.getComponent(sp.Skeleton);
 
-        if (this.curPath && this.curPath != path) {
+        /**
+         * 如果传入路径和之前的资源路径不一致   释放之前的
+         */
+        if (path && this.curPath && this.curPath != path) {
             spine?.skeletonData?.decRef();
         }
 
