@@ -64,6 +64,7 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (url && this.url != url) {
             this.url = url;
             no.assetBundleManager.loadPrefab(url, item => {
+                if (!this?.node?.isValid) return;
                 if (data.length == 1) this.resizeContentSize(item.data);
                 this.prefab = item;
                 this.setNeedDestroyChildren();
@@ -131,11 +132,13 @@ export class SetCreateNodeByUrl extends FuckUi {
                 child.destroy();
         });
         if (!this.isValid) return;
-        this.needDestroyChildrenUuid.length = 0;
+        if (this.needDestroyChildrenUuid)
+            this.needDestroyChildrenUuid.length = 0;
     }
 
     private setNeedDestroyChildren() {
-        this.needDestroyChildrenUuid.length = 0;
+        if (this.needDestroyChildrenUuid)
+            this.needDestroyChildrenUuid.length = 0;
         this.container?.children.forEach(child => {
             this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
             child.active = false;
