@@ -238,12 +238,12 @@ export class SetList extends FuckUi {
 
     private setItem(start: number, i: number) {
         let item = this.content.children[i];
-        if (!item) return false;
+        if (!item) return;
         this.setItemPosition(item, start + i);
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
-            item.active = true;
-        } else item.active = false;
+        }
+        item.active = i < this.showNum;
     }
 
     private setItemData(item: Node, data = []) {
