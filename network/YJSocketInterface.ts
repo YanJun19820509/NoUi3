@@ -23,4 +23,5 @@ export interface YJSocketInterface {
     clear?(): void;
     connect?(): void;
     close?(): void;
+    setHeader?(key: string, value: string): void;
 }

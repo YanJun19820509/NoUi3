@@ -20,6 +20,7 @@ const { ccclass, property } = _decorator;
 @ccclass('YJHttpRequest')
 export class YJHttpRequest implements YJSocketInterface {
     private url: string;
+    private headers: { name: string, value: string }[] = [];
 
     constructor(url: string) {
         this.url = url;
@@ -63,12 +64,22 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
+    setHeader?(name: string, value: string): void {
+        this.headers.push({ name: name, value: value });
+    }
+
     private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
             xhr.setRequestHeader('Accept', contentType);
             xhr.setRequestHeader('Content-Type', contentType);
+        }
+
+        if (this.headers.length > 0) {
+            this.headers.forEach(header => {
+                xhr.setRequestHeader(header.name, header.value);
+            });
         }
 
         xhr.onreadystatechange = function () {
