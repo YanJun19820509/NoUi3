@@ -60,7 +60,7 @@ export class SetSpriteFrame extends FuckUi {
             this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
-                    if (this.sprite.isValid) {
+                    if (this.sprite?.isValid) {
                         this.sprite.spriteFrame = spriteFrame;
                         this.packSpriteFrame();
                     }
