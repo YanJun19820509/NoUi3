@@ -109,8 +109,8 @@ export class YJSoundEffectManager extends Component {
     update() {
         if (!EDITOR) return;
         if (this.isParse) {
-            this.parse();
             this.isParse = false;
+            this.parse();
         }
     }
 
@@ -129,17 +129,16 @@ export class YJSoundEffectManager extends Component {
             if (file.indexOf('.meta') > -1) return;
             let p = info.path + '/' + file;
             no.assetBundleManager.loadFileInEditorMode(p, AudioClip, (file: any, fileInfo: AssetInfo) => {
-                const i = no.indexOfArray(this.soundEffects, fileInfo.uuid, 'assetUuid');
+                let effectInfo = new SoundEffectInfo();
+                let name = fileInfo.name.split('.')[0];
+                effectInfo.alias = name;
+                effectInfo.assetUrl = fileInfo.url;
+                effectInfo.assetUuid = fileInfo.uuid;
+                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
                 if (i > -1) {
-                    this.soundEffects[i].assetUrl = fileInfo.url;
-                } else {
-                    let effectInfo = new SoundEffectInfo();
-                    let name = fileInfo.name.split('.')[0];
-                    effectInfo.alias = name;
-                    effectInfo.assetUrl = fileInfo.url;
-                    effectInfo.assetUuid = fileInfo.uuid;
-                    this.soundEffects[this.soundEffects.length] = effectInfo;
-                }
+                    effectInfo.alias = this.soundEffects[i].alias;
+                    this.soundEffects.splice(i, 1, effectInfo);
+                } else this.soundEffects[this.soundEffects.length] = effectInfo;
             });
         });
         console.log('YJSoundEffectManager解析完成，请刷新组件！')
