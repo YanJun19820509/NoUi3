@@ -66,7 +66,7 @@ export class YJProtobuf {
             no.log('YJProtobuf decode', msgName, a);
             return a;
         } catch (e) {
-            no.err('YJProtobuf decode', e);
+            no.err('YJProtobuf decode', e.stack);
             return null;
         }
     }
