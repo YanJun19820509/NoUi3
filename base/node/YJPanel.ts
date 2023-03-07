@@ -107,8 +107,8 @@ export class YJPanel extends Component {
         } else this.clear();
     }
 
-    public clear() {
-        if (YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+    public clear(force = false) {
+        if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         this['__proto__'][YJPanelCreated] = '0';
         this.node.destroy();
     }

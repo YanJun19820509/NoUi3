@@ -212,4 +212,17 @@ export class YJWindowManager extends Component {
             });
         }
     }
+
+    public static clearAll() {
+        let self = YJWindowManager._ins;
+        for (let i = 0, n = self.infos.length; i < n; i++) {
+            let content = YJWindowManager._ins.getContent(self.infos[i].type);
+            
+            for (let j = content.children.length - 1; j >= 0; j--) {
+                const panel = content.children[j].getComponent(YJPanel);
+                panel?.clear(true);
+            }
+        }
+    }
+
 }

@@ -129,6 +129,8 @@ export class YJWebSocket implements YJSocketInterface {
     /**断开 */
     public close() {
         if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+            this.ws.onclose = () => { };
+            this.ws.onerror = () => { };
             this.ws.close();
             this.ws = null;
         }
@@ -143,7 +145,7 @@ export class YJWebSocket implements YJSocketInterface {
         if (await this.isOk()) {
             let v: string | ArrayBuffer = encode(data, encryptType);
             // no.log('sendDataToServer', this.ws['_uuid']);
-            this.ws.send(v);
+            this.ws?.send(v);
             return true;
         }
         return false;
