@@ -1408,10 +1408,10 @@ export namespace no {
             if (tweenSet instanceof Array) {
                 tweenSet.forEach((t, i) => {
                     if (i == 0)
-                        t.start().then(endCall);
+                        t.start().then(endCall).catch(e => { err(e); });
                     else t.start();
                 });
-            } else tweenSet.start().then(endCall);
+            } else tweenSet.start().then(endCall).catch(e => { err(e); });
         }
     }
 
@@ -2420,7 +2420,7 @@ export namespace no {
                         callback?.(items);
                     } else callback?.([]);
                 });
-            });
+            }).catch(e => { err(e); });
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {

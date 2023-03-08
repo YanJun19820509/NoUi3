@@ -91,7 +91,7 @@ export class YJPanel extends Component {
             return this.getComponent(YJLoadAssets).load().then(() => {
                 this.onInitPanel();
                 return Promise.resolve();
-            });
+            }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
         return Promise.resolve();

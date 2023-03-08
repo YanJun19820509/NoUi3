@@ -39,7 +39,7 @@ export class SetCreateSpriteFrame extends FuckUi {
             else {
                 this.setSpriteFrame();
             }
-        });
+        }).catch(e => { no.err(e); });
     }
 
     private findSpriteFrame(name: string): SpriteFrame {
@@ -83,7 +83,7 @@ export class SetCreateSpriteFrame extends FuckUi {
                         this.setSpriteFrame();
                     });
                 }
-            });
+            }).catch(e => { no.err(e); });
         });
     }
 

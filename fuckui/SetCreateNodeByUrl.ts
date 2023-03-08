@@ -70,7 +70,7 @@ export class SetCreateNodeByUrl extends FuckUi {
                 this.setNeedDestroyChildren();
                 this.setItems(data).then(() => {
                     this.clear();
-                });
+                }).catch(e => { no.err(e); });
             });
         } else {
             this.setItems(data);

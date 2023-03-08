@@ -82,7 +82,7 @@ export class YJWebSocket implements YJSocketInterface {
         if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
                 this.receivedData[this.receivedData.length] = this.onMessage(v);
-            });
+            }).catch(e => { no.err(e); });
         } else this.receivedData[this.receivedData.length] = this.onMessage(data);
     }
 
