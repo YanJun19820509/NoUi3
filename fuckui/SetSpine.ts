@@ -1,5 +1,5 @@
 
-import { _decorator, sp } from 'cc';
+import { _decorator, sp, assetManager } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu, requireComponent } = _decorator;
@@ -29,6 +29,7 @@ export class SetSpine extends FuckUi {
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
 
     curPath: string;
+    cacheSke: sp.SkeletonData;
 
     onEnable() {
         if (this.autoPlayOnEnable) {
@@ -44,6 +45,7 @@ export class SetSpine extends FuckUi {
             spine?.setCompleteListener(() => { });
             spine?.skeletonData?.decRef();
         }
+        this.cacheSke && no.assetBundleManager.decRef(this.cacheSke);
     }
 
     protected onDataChange(data: any) {
@@ -64,6 +66,8 @@ export class SetSpine extends FuckUi {
                 this.curPath = path;
 
                 spine.skeletonData = res;
+                this.cacheSke = res;
+
                 !!skin && spine.setSkin(skin);
                 spine.setAnimation(0, animation, loop || false);
                 spine.timeScale = timeScale || 1;
