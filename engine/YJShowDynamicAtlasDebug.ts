@@ -1,6 +1,5 @@
 
 import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from 'cc';
-import { DEBUG } from 'cc/env';
 import { no } from '../no';
 import { Atlas } from './atlas';
 const { ccclass, property } = _decorator;
@@ -52,7 +51,7 @@ export class YJShowDynamicAtlasDebug {
     }
 
     public showDebug(name?: string) {
-        if (!DEBUG) return;
+        if (!no.isDebug()) return;
         this._clearDebugNode();
         if (name) {
             let texture = this.list[name]?._texture;

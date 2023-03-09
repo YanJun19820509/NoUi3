@@ -6,6 +6,14 @@ import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/a
 const { ccclass, property } = _decorator;
 
 export namespace no {
+    let _debug: boolean = DEBUG;
+
+    export function isDebug(): boolean {
+        return _debug;
+    }
+    export function setDebug(v: boolean) {
+        _debug = v;
+    }
     class Event {
         private _map: any;
 

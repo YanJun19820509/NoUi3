@@ -1,6 +1,5 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { DEBUG } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, menu } = _decorator;
 
