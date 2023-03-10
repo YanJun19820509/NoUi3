@@ -156,12 +156,24 @@ export class YJWebSocket implements YJSocketInterface {
      * @param handler 
      */
     public findReceiveData(handler: (data: any) => boolean) {
-        if (this.isClosed) return;
-        for (let i = 0, n = this.receivedData?.length || 0; i < n; i++) {
+        if (this.isClosed || !this.receivedData?.length) return;
+        for (let i = 0, n = this.receivedData.length; i < n; i++) {
             if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
                 break;
             }
+        }
+    }
+
+    /**
+     * 外部处理已返回的数据，并从队列中移除
+     * @param handler 
+     */
+    public dealReceivedData(handler: (data: any) => void): void {
+        if (this.isClosed || !this.receivedData?.length) return;
+        for (let i = this.receivedData.length - 1; i >= 0; i--) {
+            handler(this.receivedData[i]);
+            this.receivedData.splice(i, 1);
         }
     }
 

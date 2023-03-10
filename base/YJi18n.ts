@@ -21,6 +21,7 @@ const { ccclass } = _decorator;
 export class YJi18n extends no.Data {
     private static _ins: YJi18n;
     private _lan: string;
+    private _defLan: string;
 
     public static get ins(): YJi18n {
         if (!this._ins)
@@ -51,6 +52,17 @@ export class YJi18n extends no.Data {
         return this._lan;
     }
 
+    /**
+     * 设置默认语言
+     */
+    public set defaultLanguage(v: string) {
+        this._defLan = v;
+    }
+
+    public get defaultLanguage(): string {
+        return this._defLan;
+    }
+
 
     /**
      * 获取指定语言文本
@@ -59,7 +71,7 @@ export class YJi18n extends no.Data {
      * @returns 
      */
     public to(key: string, args?: any): string {
-        let s = this.get(`${key}.${this._lan}`);
+        let s = this.get(`${key}.${this._lan}`) || this.get(`${key}.${this._defLan}`);
         if (s == null) {
             // console.error(`指定的多语言无效，id：${key}`);
             return s;
