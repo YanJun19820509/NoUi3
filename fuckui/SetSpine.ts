@@ -40,11 +40,11 @@ export class SetSpine extends FuckUi {
     }
 
     onDestroy() {
-        const spine = this.getComponent(sp.Skeleton);
-        if (spine) {
-            spine?.setCompleteListener(() => { });
-            spine?.skeletonData?.decRef();
-        }
+        // const spine = this.getComponent(sp.Skeleton);
+        // if (spine) {
+        //     spine?.setCompleteListener(() => { });
+        //     spine?.skeletonData?.decRef();
+        // }
         this.cacheSke && no.assetBundleManager.decRef(this.cacheSke);
     }
 
