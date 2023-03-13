@@ -1,12 +1,20 @@
+float ffract(float a){
+  return fract(a + 1.);
+}
+
+float ffloor(float a){
+  return floor(a+ 0.00000001);
+}
+
 float defineVal(float defines,const bool isFloor,const float start,const float n){
   if (isFloor){
     float a = defines/pow(10.,start + n);
-    a = fract(a)*pow(10.,n);
-    return floor(a);
+    a = ffract(a)*pow(10.,n);
+    return ffloor(a);
   }else{
     float a = defines*pow(10.,start);
-    a = fract(a)*pow(10.,n);
-    return floor(a);
+    a = ffract(a)*pow(10.,n);
+    return ffloor(a);
   }
 }
 
@@ -21,15 +29,15 @@ bool hasDefineType(float defines, bool isFloor, float start){
 
 // 从扩展数据里解析颜色数据
 vec4 getColorFromExt(vec3 ext){
-  float r = floor(ext.x / 1000.0);
+  float r = ffloor(ext.x / 1000.0);
   float g = ext.x - r * 1000.0;
-  float b = floor(ext.y / 1000.0);
+  float b = ffloor(ext.y / 1000.0);
   color = vec4(r/255.0,g/255.0,b/255.0,ext.z);
 }
 
 //随机函数
 float rand(vec2 st){
-  return fract(sin(dot(st,vec2(12.9898,78.233)))*43758.5453123);
+  return ffract(sin(dot(st,vec2(12.9898,78.233)))*43758.5453123);
 }
 
 
@@ -238,7 +246,7 @@ float isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
 
 //流动
 vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVerse) {
-  float offset = fract(cc_time.x*_speed);
+  float offset = ffract(cc_time.x*_speed);
   if (isVerse) offset = 1. - offset;
   vec2 uv = _uv + vec2(isVertical ? 0. : offset, isVertical ? offset : 0.);
   uv -= step(1., uv);
@@ -248,7 +256,7 @@ vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVe
 
 //纹理UV切换
 vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps){
-  float index = floor(cc_time.x * _fps);
+  float index = ffloor(cc_time.x * _fps);
 
   float row = _cells.x;
   float col = _cells.y;
@@ -291,9 +299,9 @@ _offsetY y 方向偏移
 **/
 vec2 tiled(vec2 _uv, float _scale, float _speed, float _offsetY){
   vec2 uv = _uv * _scale - vec2(cc_time.x,cc_time.x) / _speed;
-  float b = floor(uv.x);
+  float b = ffloor(uv.x);
   uv.y -= b / _offsetY;
-  if (mod(b,2.) == 1. || mod(floor(uv.y),2.) == 1.) {discard;}
+  if (mod(b,2.) == 1. || mod(ffloor(uv.y),2.) == 1.) {discard;}
   uv = fract(uv);
   return uv;
 }
