@@ -303,7 +303,7 @@ export class YJCharLabel extends Component {
         this.scheduleOnce(() => {
             this._ing = false;
             this.setScale();
-        }, 0.1);
+        }, 0);
     }
 
     private getUuid(str: string): string {
