@@ -55,7 +55,7 @@ export class YJHotUpdateChecker extends YJComponent {
     }
 
     public a_download() {
-        console.log('start updateFiles');
+        no.log('start updateFiles');
         YJHotUpdate.ins.updateFiles();
         this.addUpdateHandlerByFrame(this.checkDownload);
     }
@@ -74,7 +74,7 @@ export class YJHotUpdateChecker extends YJComponent {
                     progress: d.bytesPer
                 };
             }
-            console.log('update progress' + d.bytesPer);
+            no.log('update progress' + d.bytesPer);
             return true;
         } else {
             no.EventHandlerInfo.execute(this.downloadCompleteCall);

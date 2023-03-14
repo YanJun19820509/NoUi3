@@ -236,7 +236,7 @@ export namespace no {
                         if (a && a.doTickTock) a.doTickTock(this._time);
                     }
                 } catch (e) {
-                    console.log(e);
+                    log(e);
                 }
             } else {
                 for (let i = this._targets.length - 1; i >= 0; i--) {
@@ -2351,7 +2351,7 @@ export namespace no {
             }
             assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
                 if (err) {
-                    console.log(url, err);
+                    log(url, err);
                     onErr?.();
                 }
                 else
@@ -2371,7 +2371,7 @@ export namespace no {
                 if (sub.type == 'cc.SpriteFrame') {
                     assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteFrame }, (err, item: SpriteFrame) => {
                         if (err) {
-                            console.log(url, err);
+                            log(url, err);
                             onErr?.();
                         }
                         else {
@@ -2391,7 +2391,7 @@ export namespace no {
             for (let i = 0, n = urls.length; i < n; i++) {
                 let info = await Editor.Message.request('asset-db', 'query-asset-info', urls[i]);
                 if (!info)
-                    console.log('query-asset-info url无效', urls[i]);
+                    log('query-asset-info url无效', urls[i]);
                 else {
                     requests[requests.length] = { 'uuid': info.uuid, 'type': SpriteAtlas };
                     infos[infos.length] = info;

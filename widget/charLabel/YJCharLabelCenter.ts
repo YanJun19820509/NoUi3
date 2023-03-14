@@ -67,7 +67,6 @@ export class YJCharLabelCenter extends Component {
             if (this.pasteCharLabelStyle) {
                 this.pasteCharLabelStyle = false;
                 try {
-                    console.log('111',this.styleContent)
                     let a = JSON.parse(this.styleContent);
                     console.log(a);
                     if (a.font) {

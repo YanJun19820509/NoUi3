@@ -70,7 +70,7 @@ export class YJSetShaderProperties extends Component {
             properties: properties,
             defines: defines
         };
-        console.log(d);
+        no.log(d);
         ss.setData(JSON.stringify(d));
     }
 
