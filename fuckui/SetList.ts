@@ -158,8 +158,9 @@ export class SetList extends FuckUi {
             this.waitTime = this.wait;
         }
         this.unscheduleAllCallbacks();
-        if (!this.node.isValid) return;
+        if (!this?.node?.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
+        if (!this?.node?.isValid || !this?.content?.isValid) return;
         let listItems = this.content.children;
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
