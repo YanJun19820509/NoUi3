@@ -2523,6 +2523,10 @@ export namespace no {
             log(path);
             return this.getBundle(a.bundle).getInfoWithPath(a.file, a.type).uuid;
         }
+
+        public clear() {
+            assetManager.releaseAll();
+        }
     }
 
     /**全局资源管理器 */

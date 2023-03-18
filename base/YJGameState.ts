@@ -63,7 +63,10 @@ export class YJGameState extends Component {
 
     public a_restart() {
         if (JSB)
-            game.restart();
+            this.scheduleOnce(() => {
+                //重启一定要有足够的延时才不会异常
+                game.restart();
+            }, 1);
         else if (sys.isBrowser)
             window.document.location.reload();
     }
