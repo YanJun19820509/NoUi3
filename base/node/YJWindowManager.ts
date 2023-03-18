@@ -121,6 +121,9 @@ export class YJWindowManager extends Component {
             const url = comp.prototype[YJPanelPrefabMetaKey];
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
                 let node = instantiate(pf);
+                if (!content?.isValid) {
+                    return
+                }
                 this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             });
         }

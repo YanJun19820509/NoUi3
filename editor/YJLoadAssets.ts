@@ -179,6 +179,9 @@ export class YJLoadAssets extends Component {
         if (requests.length == 0) return;
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
+                if (!this?.isValid) {
+                    return;
+                }
                 atlasUuids.forEach((uuid, i) => {
                     let item: JsonAsset = no.itemOfArray(items, uuid, '_uuid');
                     this.atlases[i] = item.json;
