@@ -7689,7 +7689,7 @@ LongBits.prototype.toNumber = function toNumber(unsigned) {
             hi = hi + 1 >>> 0;
         return -(lo + hi * 4294967296);
     }
-    return this.lo + this.hi * 4294967296;
+    return (BigInt(this.lo) + BigInt(this.hi * 4294967296)).toString();
 };
 
 /**
