@@ -34,6 +34,9 @@ export class YJGameState extends Component {
     @property({ displayName: '触发游戏重启的事件类型' })
     type: string = 'game_restart'
 
+    @property({ displayName: '当触发游戏重启时直接退出' })
+    exit: boolean = false;
+
     private time: number;
 
     onLoad() {
@@ -63,10 +66,12 @@ export class YJGameState extends Component {
 
     public a_restart() {
         if (JSB)
-            this.scheduleOnce(() => {
-                //重启一定要有足够的延时才不会异常
-                game.restart();
-            }, 1);
+            if (this.exit) game.end();
+            else
+                this.scheduleOnce(() => {
+                    //重启一定要有足够的延时才不会异常
+                    game.restart();
+                }, 1);
         else if (sys.isBrowser)
             window.document.location.reload();
     }
