@@ -32,10 +32,7 @@ export class YJGameState extends Component {
     duration: number = 30;
 
     @property({ displayName: '触发游戏重启的事件类型' })
-    type: string = 'game_restart'
-
-    @property({ displayName: '当触发游戏重启时直接退出' })
-    exit: boolean = false;
+    type: string = 'game_restart';
 
     private time: number;
 
@@ -64,9 +61,9 @@ export class YJGameState extends Component {
         no.EventHandlerInfo.execute(this.onLowMemoryCalls);
     }
 
-    public a_restart() {
+    public a_restart(type: string, exit = false) {
         if (JSB)
-            if (this.exit) game.end();
+            if (exit) game.end();
             else
                 this.scheduleOnce(() => {
                     //重启一定要有足够的延时才不会异常
