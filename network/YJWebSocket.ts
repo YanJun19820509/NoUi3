@@ -95,8 +95,8 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     public connect() {
-        this.clear();
-        this.initWebSocket();
+        if (this.ws?.readyState != WebSocket.OPEN)
+            this.initWebSocket();
     }
 
     private reInit() {
@@ -179,5 +179,9 @@ export class YJWebSocket implements YJSocketInterface {
 
     public clear(): void {
         this.receivedData.length = 0;
+    }
+
+    public isOpen(): boolean {
+        return this.ws?.readyState == WebSocket.OPEN;
     }
 }
