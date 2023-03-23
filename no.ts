@@ -2482,7 +2482,11 @@ export namespace no {
             }
             if (!asset) return;
             if (force) assetManager.releaseAsset(asset);
-            else asset.decRef();
+            else {
+                setTimeout(() => {
+                    (<Asset>asset).decRef();
+                }, 20);
+            }
         }
 
         public getAssetFromCache(uuid: string): Asset {
