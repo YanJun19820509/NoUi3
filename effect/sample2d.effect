@@ -1,0 +1,168 @@
+// Effect Syntax Guide: https://docs.cocos.com/creator/manual/zh/shader/index.html
+
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: vs:vert 
+      frag: unlit-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        # 合图中的区域
+        factRect1: { value: [0.0,0.0,1.0,1.0], editor: {visible: false}}
+        atlas0: {value: black}
+        atlas1: {value: black}
+        atlas2: {value: black}
+        atlas3: {value: black}
+        atlas4: {value: black}
+        atlas5: {value: black}
+        # 合图中的比率
+        # ratio: { value: 1.0, editor: {visible: false}}
+        # startColor_0: { value: [1.0, 1.0, 1.0, 1.0], editor: {type: color} }
+        # endColor_0: { value: [1.0, 1.0, 1.0, 1.0], editor: {type: color} }
+      #   alphaThreshold: { value: 0.5 }
+}%
+
+CCProgram vs %{
+  #include <./common-vs>
+}%
+
+CCProgram unlit-fs %{
+  precision mediump float;
+  #include <cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+  #include <./common-fs>
+  #include <./utils>
+
+  uniform sampler2D atlas0;
+  uniform sampler2D atlas1;
+  uniform sampler2D atlas2;
+  uniform sampler2D atlas3;
+  uniform sampler2D atlas4;
+  uniform sampler2D atlas5;
+
+    uniform Constant{
+      vec4 factRect1;
+    };
+
+  vec4 setTexture(float type, vec2 uv, vec4 _color){
+    //贴图纹理取值0
+    if (type == 1.){ 
+      _color *= texture(atlas0, uv);
+    }
+
+    //贴图纹理取值1
+    else if (type == 2.){ 
+      _color *= texture(atlas1, uv);
+    }
+
+    //贴图纹理取值2
+    else if (type == 3.){ 
+      _color *= texture(atlas2, uv);
+    }
+
+    //贴图纹理取值3
+    else if (type == 4.){ 
+      _color *= normalTexture(atlas3, uv);
+    }
+
+    //贴图纹理取值4
+    else if (type == 5.){ 
+      _color *= normalTexture(atlas4, uv);
+    }
+
+    //贴图纹理取值5
+    else if (type == 6.){ 
+      _color *= normalTexture(atlas5, uv);
+    }else {
+      #if USE_TEXTURE
+        _color *= normalTexture(cc_spriteTexture, uv);
+      #endif
+    }
+    return _color;
+  }
+
+  vec4 setEffect(float type, vec4 _color){
+      //置灰
+      if(type == 2.){ 
+        _color = gray(_color);
+      }
+      
+      //挖方孔
+      if(type == 3.){ 
+          vec2 uv = uv0;
+          uv.y *= cc_screenSize.y / cc_screenSize.x;
+          float x1 = floor(ext.x) / 100.;
+          float y1 = fract(ext.x) * cc_screenSize.y / cc_screenSize.x;
+          float x2 = floor(ext.y) / 100.;
+          float y2 = fract(ext.y) * cc_screenSize.y / cc_screenSize.x;
+          
+          if(uv.x > x1 && uv.x < x2 && uv.y > y1 && uv.y < y2){
+            _color.a = 0.;
+          }
+      }
+
+      //挖圆孔
+      if(type == 4.){ 
+          vec2 uv = uv0;
+          uv.y *= cc_screenSize.y / cc_screenSize.x;
+          float x = floor(ext.x) / 100.;
+          float y = fract(ext.x) * cc_screenSize.y / cc_screenSize.x;
+          float r = ext.y;
+          float dis = distance(uv, vec2(x,y));
+          
+          if(dis<=r){
+            _color.a *= smoothstep(.8, 1., dis/r);
+          }
+      }
+
+      //遮罩上色
+      else if(type == 5.){
+          _color = maskColor(_color);
+      }
+
+      //黑色遮罩上色
+      else if(type == 6.){
+          _color = blackMaskColor(_color);
+      }
+
+      //进度条
+      else if(type == 7.){
+        _color.a *= (1. - step(ext.x, uv0.x)) * (1. - step(ext.y, uv0.y));
+      }
+      return _color;
+  }
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+    
+    if (def < 0.0){
+      float defs = abs(def);
+      //合图中的uv转换
+      // vec2 uv10 = (uv0 - factRect.xy) / factRect.zw;
+      float t1 = floor((defs+1.)/100.);//有些手机整除后floor后会-1，所以不能整除
+      float t2 = (defs - t1 * 100.);
+      o = setTexture(t1, uv0, o);
+      o = setEffect(t2, o);
+    } else {
+      #if USE_TEXTURE
+        o *= normalTexture(cc_spriteTexture, uv0);
+      #endif
+    }
+
+    o*=color;
+    
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

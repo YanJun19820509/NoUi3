@@ -1,7 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { no } from '../../no';
-const { ccclass, property, menu } = _decorator;
+const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -17,6 +17,7 @@ const { ccclass, property, menu } = _decorator;
 
 @ccclass('YJSetChildrenShieldByY')
 @menu('NoUi/node/YJSetChildrenShieldByY(设置子节点之间的遮挡关系)')
+@executeInEditMode()
 export class YJSetChildrenShieldByY extends Component {
     @property({ displayName: '更新频率(帧)' })
     frameNum: number = 10;
@@ -28,7 +29,7 @@ export class YJSetChildrenShieldByY extends Component {
         no.sortArray(children, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
-        this.node._updateSiblingIndex();
+        // this.node._updateSiblingIndex();
     }
 
     update() {

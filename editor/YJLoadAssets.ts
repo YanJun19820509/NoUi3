@@ -19,34 +19,48 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 @ccclass("LoadAssetsInfo")
 export class LoadAssetsInfo {
-    @property
-    assetUuid: string = '';
-    @property({ readonly: true })
+    @property({})
+    assetUrl: string = '';
+    @property({})
     assetName: string = '';
+    @property({})
+    assetPath: string = '';
 
-    constructor(uuid: string) {
-        this.assetUuid = uuid;
+    private _uuid: string;
+
+    constructor(url?: string) {
+        this.assetUrl = url;
     }
 
     public async load(): Promise<Asset> {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        const path = this.path;
+        this._uuid = no.assetBundleManager.getUuidFromPath(path);
+        let file = no.assetBundleManager.getAssetFromCache(this._uuid);
         if (file) {
             file.addRef();
             return file;
         } else
             return new Promise<Asset>(resolve => {
-                no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                no.assetBundleManager.loadByPath<Asset>(path, Asset, file => {
                     resolve(file);
                 });
             });
     }
 
     public release(cb?: (asset: Asset) => void): void {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        let file = no.assetBundleManager.getAssetFromCache(this._uuid);
         if (file) {
             cb?.(file);
             no.assetBundleManager.release(file);
         }
+    }
+
+    public get path(): string {
+        return this.assetPath.replace('db://assets/', '');
+    }
+
+    public get url(): string {
+        return this.assetUrl.replace('db://assets/', '');
     }
 }
 @ccclass('JsonInfo')
@@ -57,8 +71,12 @@ export class JsonInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.json) {
-                this.assetUuid = this.json._uuid;
-                this.assetName = this.json.name;
+                const name = this.json.name;
+                no.assetBundleManager.getAssetInfoWithNameInEditorMode(`${name}.json`, JsonAsset).then(info => {
+                    this.assetPath = info.path;
+                    this.assetUrl = info.url;
+                });
+                this.assetName = name;
                 this.json = null;
             }
         }
@@ -72,8 +90,11 @@ export class MaterialInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.material) {
-                this.assetUuid = this.material._uuid;
-                this.assetName = this.material.name;
+                const name = this.material.name;
+                no.assetBundleManager.getAssetInfoWithNameInEditorMode(`${name}.mtl`, Material).then(info => {
+                    this.assetPath = info.path;
+                    this.assetUrl = info.url;
+                });
                 this.material = null;
             }
         }
@@ -87,8 +108,12 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.spriteFrame) {
-                this.assetUuid = this.spriteFrame._uuid;
-                this.assetName = this.spriteFrame.name;
+                const name = this.spriteFrame.name;
+                no.assetBundleManager.getAssetInfoWithNameInEditorMode(`${name}`, SpriteFrame).then(info => {
+                    this.assetPath = info.path;
+                    this.assetUrl = info.url;
+                });
+                this.assetName = name;
                 this.spriteFrame = null;
             }
         }
@@ -102,8 +127,12 @@ export class PrefabInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.prefab) {
-                this.assetUuid = this.prefab._uuid;
-                this.assetName = this.prefab.name;
+                const name = this.prefab.name;
+                no.assetBundleManager.getAssetInfoWithNameInEditorMode(`${name}.prefab`, Prefab).then(info => {
+                    this.assetPath = info.path;
+                    this.assetUrl = info.url;
+                });
+                this.assetName = name;
                 this.prefab = null;
             }
         }
@@ -148,14 +177,14 @@ export class YJLoadAssets extends Component {
     public addAtlasUuid(uuid: string) {
         if (EDITOR) {
             let a = new LoadAssetsInfo(uuid);
-            no.addToArray(this.jsonInfos, a, 'assetUuid');
+            no.addToArray(this.jsonInfos, a, 'assetPath');
         }
     }
 
     public addSpriteFrameUuid(uuid: string) {
         if (EDITOR) {
             let a = new LoadAssetsInfo(uuid);
-            no.addToArray(this.spriteFrameInfos, a, 'assetUuid');
+            no.addToArray(this.spriteFrameInfos, a, 'assetPath');
         }
     }
 
@@ -164,23 +193,25 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         if (EDITOR) return;
-        let requests: { uuid: string, type: typeof Asset }[] = [];
-        for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
-        }
-        let atlasUuids: string[] = [];
+        let requests: { path: string, type: typeof Asset, bundle: string }[] = [];
+        // for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
+        //     requests[requests.length] = { path: this.spriteFrameInfos[i].path, ext: SpriteFrame };
+        // }
+        let atlasNames: string[] = [];
         for (let i = 0, n = this.jsonInfos.length; i < n; i++) {
-            atlasUuids[atlasUuids.length] = this.jsonInfos[i].assetUuid;
-            requests[requests.length] = { uuid: this.jsonInfos[i].assetUuid, type: JsonAsset };
+            const info = this.jsonInfos[i];
+            const p = no.assetBundleManager.assetPath(info.url);
+            atlasNames[atlasNames.length] = p.file;
+            requests[requests.length] = { path: p.path, type: p.type, bundle: p.bundle };
         }
-        for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
-        }
+        // for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
+        //     requests[requests.length] = { path: this.prefabInfos[i].path, type: Prefab };
+        // }
         if (requests.length == 0) return;
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
-                atlasUuids.forEach((uuid, i) => {
-                    let item: JsonAsset = no.itemOfArray(items, uuid, '_uuid');
+                atlasNames.forEach((name, i) => {
+                    let item: JsonAsset = no.itemOfArray(items, name, 'name');
                     this.atlases[i] = item.json;
                 });
                 this._loaded = true;
@@ -251,6 +282,7 @@ export class YJLoadAssets extends Component {
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {
+        if (!node) return;
         let bs: any[] = [].concat(node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             node.getComponentsInChildren('SetCreateNode'),
             node.getComponentsInChildren('SetList'),

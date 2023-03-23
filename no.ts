@@ -1,7 +1,7 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, ResolutionPolicy, screen, Camera, math } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
-import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
+import { AssetInfo } from '../cc_editor/@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
 
@@ -1698,6 +1698,24 @@ export namespace no {
         return null;
     }
 
+    /**
+     * 从父节点获取某个组件实例
+     * @param self 
+     * @param comp 
+     * @returns 
+     */
+    export function getNodeInParents(self: Node, nodeName: string): Node | null {
+        let c = self.getChildByName(nodeName);
+        if (c) return c;
+
+        if (self.parent) {
+            c = self.parent.getChildByName(nodeName);
+            if (!c) return getNodeInParents(self.parent, nodeName);
+            else return c;
+        }
+        return null;
+    }
+
     /**基础数据类 */
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
@@ -1938,17 +1956,7 @@ export namespace no {
 
     /**资源管理 */
 
-    class AssetPath {
-        public bundle: string;
-        public file: string;
-        public type: typeof Asset;
-
-        constructor(bundle?: string, file?: string, type?: typeof Asset) {
-            this.bundle = bundle;
-            this.file = file;
-            this.type = type;
-        }
-    }
+    export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset };
     class AssetBundleManager {
 
         private needReleaseAssets: Asset[] = [];
@@ -2071,7 +2079,7 @@ export namespace no {
          */
         public loadFile(path: string, type: typeof Asset, callback: (asset: Asset) => void): void {
             let p = this.assetPath(path);
-            this.load(p.bundle, p.file, type, (asset: Asset) => {
+            this.load(p.bundle, p.path, type, (asset: Asset) => {
                 callback(asset);
             });
         }
@@ -2232,14 +2240,15 @@ export namespace no {
          * @returns  `{'bundle','file','type'}
          */
         public assetPath(path: string): AssetPath {
+            path = path.replace('db://assets/', '');
             let p = path.split('/');
             let file = p.pop().split('.');
-            let fileName = file[0],
-                fileType = file[1];
+            let fileType = file.pop(),
+                fileName = file.join('.') || fileType;
             let bundle = p.shift();
+            let a: AssetPath = { bundle: bundle, file: fileName };
             p[p.length] = fileName;
-            fileName = p.join('/');
-            let a = new AssetPath(bundle, fileName);
+            a.path = p.join('/');
             let s: typeof Asset;
             if (fileType != null) {
                 switch (fileType.toLowerCase()) {
@@ -2298,12 +2307,12 @@ export namespace no {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
-            p.file += '/';
+            p.path += '/';
             let bundle = this.getBundle(p.bundle);
             let keys = Object.keys(bundle['_config'].paths._map);
             let paths: string[] = [];
             keys.forEach(key => {
-                if (key.indexOf(p.file) == 0) {
+                if (key.indexOf(p.path) == 0) {
                     paths.push(key);
                 }
             });
@@ -2317,7 +2326,7 @@ export namespace no {
                 return;
             }
             let bundle = this.getBundle(p.bundle);
-            let infos = bundle.getDirWithPath(p.file);
+            let infos = bundle.getDirWithPath(p.path);
             let requests: { uuid: string, type: typeof Asset }[] = [];
             infos.forEach(a => {
                 if (a.uuid.indexOf('@') == -1) {
@@ -2412,6 +2421,27 @@ export namespace no {
             });
         }
 
+        public loadByPath<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void) {
+            assetManager.loadAny({ 'path': path, 'type': type }, (e: Error, f: T) => {
+                if (e != null) {
+                    err(uuid, e.stack);
+                }
+                this.addRef(f);//增加引用计数
+                callback?.(f);
+            });
+        }
+
+        public loadByUrl<T extends Asset>(url: string, callback?: (file: T) => void) {
+            const p = this.assetPath(url);
+            assetManager.loadAny({ 'path': p.path, 'type': p.type, bundle: p.bundle }, (e: Error, f: T) => {
+                if (e != null) {
+                    err(uuid, e.stack);
+                }
+                this.addRef(f);//增加引用计数
+                callback?.(f);
+            });
+        }
+
         public addRef(asset: Asset): void {
             asset?.addRef();
         }
@@ -2461,14 +2491,14 @@ export namespace no {
         }
 
 
-        public loadAnyFiles(requests: { 'uuid': string, 'type': typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
+        public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'type'?: typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
             // log('loadAnyFiles', requests);
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
             }, (e, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(1);
-                    err('loadAnyFiles', requests, e.message);
+                    err('loadAnyFiles', requests, e.stack);
                 } else {
                     items = [].concat(items);
                     items.forEach(item => {
@@ -2480,7 +2510,7 @@ export namespace no {
         }
 
         public loadAny<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void): void {
-            assetManager.loadAny({ 'path': path, 'type': type }, (e: Error, f: T) => {
+            assetManager.loadAny({ path: path, type: type }, (e: Error, f: T) => {
                 if (e != null) {
                     err(path, e.stack);
                 }
@@ -2489,11 +2519,26 @@ export namespace no {
             });
         }
 
-        public getUuidFromPath(path: string): string {
+        public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
-            log(path);
-            return this.getBundle(a.bundle).getInfoWithPath(a.file, a.type).uuid;
+            return this.getBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
         }
+
+        public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<AssetInfo | null> {
+            let ccType: string = `cc.${type.name}`;
+            return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: AssetInfo[]) => {
+                let info: AssetInfo;
+                for (let i = 0, n = assets.length; i < n; i++) {
+                    const asset = assets[i];
+                    if (asset.name == name) {
+                        info = asset;
+                        break;
+                    }
+                }
+                return info;
+            }).catch(e => { err(e.stack); return null; });
+        }
+
     }
 
     /**全局资源管理器 */

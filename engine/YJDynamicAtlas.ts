@@ -26,9 +26,9 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 @executeInEditMode()
 export class YJDynamicAtlas extends Component {
     @property({ min: 128, max: 2048, step: 1 })
-    width: number = 512;
+    width: number = 128;
     @property({ min: 128, max: 2048, step: 1 })
-    height: number = 512;
+    height: number = 128;
     @property(Material)
     commonMaterial: Material = null;
     @property({ visible() { return EDITOR; } })
@@ -232,6 +232,7 @@ export class YJDynamicAtlas extends Component {
 
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
+        if (!node) return;
         let bs = [].concat(
             node.getComponentsInChildren('YJCreateNode'),
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),

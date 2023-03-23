@@ -320,3 +320,16 @@ vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleM
   return o;
 }
 
+//遮罩颜色
+vec4 maskColor(vec4 _o){
+  vec4 maskcolor = vec4(.5, .5, .5, 1);
+  _o*=maskcolor;
+  return _o;
+}
+
+//遮罩颜色
+vec4 blackMaskColor(vec4 _o){
+  vec4 maskcolor = vec4(0, 0, 0, 1);
+  _o*=maskcolor;
+  return _o;
+}

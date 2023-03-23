@@ -1,6 +1,9 @@
+import { _decorator, ValueType, math } from 'cc';
 import { IUV, Texture2D } from 'cc';
 import { FuckUi } from './fuckui/FuckUi';
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
+import { no } from './no';
+const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -63,3 +66,81 @@ export type PackedFrameData = { x: number, y: number, w: number, h: number, rota
 export type FuckUiComponent = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
 export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], unbiasUV: number[], uvSliced: IUV[], capInsets: number[] };
+
+@ccclass('Range')
+export class Range {
+    @property({ step: 1 })
+    min: number = 0;
+    @property({ step: 1 })
+    max: number = 0;
+
+    constructor(min = 0, max = 0) {
+        this.min = min;
+        this.max = max;
+    }
+
+    clone(): Range {
+        return new Range(this.min, this.max);
+    }
+
+    equals(other: Range): boolean {
+        return this.min == other.min && this.max == other.max;
+    }
+
+    set(other: Range): void;
+    set(min?: number, max?: number): void;
+    set(other: Range | number, max?: number) {
+        if (typeof other == 'number') {
+            this.min = other;
+        } else {
+            this.min = other.min;
+            max = other.max;
+        }
+        if (max != null)
+            this.max = max;
+    }
+    toString(): string {
+        return `min=${this.min},max=${this.max}`;
+    }
+
+    get randomValue(): number {
+        return no.randomBetween(this.min, this.max);
+    }
+}
+
+@ccclass('UV')
+export class UV {
+    @property({ step: 1 })
+    u: number = 0;
+    @property({ step: 1 })
+    v: number = 0;
+
+    constructor(u = 0, v = 0) {
+        this.u = u;
+        this.v = v;
+    }
+
+    clone(): UV {
+        return new UV(this.u, this.v);
+    }
+
+    equals(other: UV): boolean {
+        return this.u == other.u && this.v == other.v;
+    }
+
+    set(other: UV): void;
+    set(u?: number, v?: number): void;
+    set(other: UV | number, v?: number) {
+        if (typeof other == 'number') {
+            this.u = other;
+        } else {
+            this.u = other.u;
+            v = other.v;
+        }
+        if (v != null)
+            this.v = v;
+    }
+    toString(): string {
+        return `u=${this.u},max=${this.v}`;
+    }
+}

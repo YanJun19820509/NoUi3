@@ -34,40 +34,50 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
     private queryAllPlist() {
         Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
             let aa = [];
+            let path = {};
+            // console.log(assets)
             assets.forEach(a => {
                 aa[aa.length] = { uuid: a.uuid, type: SpriteAtlas };
+                const name = a.name.replace('.plist', '');
+                path[name] = a.path;
             });
+            console.log(path);
             let infos: { [k: string]: { [t: string]: SpriteFrameDataType } } = {};
             assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas[]) => {
-                console.log(err);
                 if (!err) {
                     console.log(atlases.length);
                     atlases.forEach(atlas => {
                         infos[atlas.name] = this.getSpriteFramesInfo(atlas);
                     });
+                    for (const name in infos) {
+                        const file = `${path[name]}.json`;
+                        console.log(`save ${file}`);
+                        Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                    }
 
-                    Editor.Dialog.select({
-                        title: '创建spriteFrame数据json文件',
-                        path: Editor.Project.path + '\\assets\\resources',
-                        multi: false,
-                        type: 'directory',
-                        button: '选择'
-                    }).then(a => {
-                        if (!a.canceled) {
-                            let path = a.filePaths[0];
-                            // console.log(path);
-                            path = path.replace(/\\/g, '/');
-                            let root = Editor.Project.path.replace(/\\/g, '/');
-                            path = path.replace(root + '/', 'db://');
-                            // console.log(path);
-                            for (const name in infos) {
-                                const file = `${path}/${name}.json`;
-                                console.log(`save ${file}`);
-                                Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
-                            }
-                        }
-                    });
-                }
+                    // Editor.Dialog.select({
+                    //     title: '创建spriteFrame数据json文件',
+                    //     path: Editor.Project.path + '\\assets\\resources',
+                    //     multi: false,
+                    //     type: 'directory',
+                    //     button: '选择'
+                    // }).then(a => {
+                    //     if (!a.canceled) {
+                    //         let path = a.filePaths[0];
+                    //         // console.log(path);
+                    //         path = path.replace(/\\/g, '/');
+                    //         let root = Editor.Project.path.replace(/\\/g, '/');
+                    //         path = path.replace(root + '/', 'db://');
+                    //         // console.log(path);
+                    //         for (const name in infos) {
+                    //             const file = `${path}/${name}.json`;
+                    //             console.log(`save ${file}`);
+                    //             Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                    //         }
+                    //     }
+                    // });
+                } else
+                    console.log(err);
             });
         });
     }
@@ -87,6 +97,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 capInsets: sf['_capInsets']
             };
         });
+        console.log(atlas);
         return infoMap;
     }
 }
