@@ -36,6 +36,9 @@ export class YJBubble extends YJDataWork {
             pos.y = this.data.position[1];
         } else if (this.data.target) {
             let nt = no.nodeTargetManager.get<YJNodeTarget>(this.data.target);
+            if (!nt) {
+                return
+            }
             let p = nt.nodeWorldPosition;
             pos.x = p.x;
             pos.y = p.y;
