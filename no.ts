@@ -2446,7 +2446,9 @@ export namespace no {
         }
 
         public decRef(asset: Asset): void {
-            asset?.decRef();
+            setTimeout(() => {
+                asset?.decRef();
+            }, 20);
         }
 
         /**
