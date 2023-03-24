@@ -24,17 +24,16 @@ export class YJZip {
                     no.log(err.message);
                     onErr && onErr();
                 } else {
-                    this._unzipBuffer(file.buffer(), cb, onErr);
-
+                    this.unzipBuffer(file.buffer(), cb, onErr);
                 }
             });
         else this._unzipFile(url, cb, onErr);
     }
 
-    private static _unzipFile(path: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
-        no.log('_unzipFile');
+    public static unzipBuffer(buffer: ArrayBuffer | Uint8Array | Blob, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
+        no.log('unzipBuffer');
         let jszip = new window['JSZip']();
-        jszip.loadAsync(path)
+        jszip.loadAsync(buffer)
             .then(zip => {
                 this._unzip(zip, cb);
             }, (e) => {
@@ -43,10 +42,10 @@ export class YJZip {
             });
     }
 
-    private static _unzipBuffer(buffer: ArrayBuffer, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
-        no.log('_unzipBuffer');
+    private static _unzipFile(path: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
+        no.log('_unzipFile');
         let jszip = new window['JSZip']();
-        jszip.loadAsync(buffer)
+        jszip.loadAsync(path)
             .then(zip => {
                 this._unzip(zip, cb);
             }, (e) => {
