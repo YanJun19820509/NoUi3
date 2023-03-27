@@ -231,7 +231,7 @@ export class YJDynamicAtlas extends Component {
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
             this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
-            newSpriteFrame.rotated = spriteFrame._rotated;
+            newSpriteFrame['_rotated'] = spriteFrame._rotated;
         }
         sprite.spriteFrame = newSpriteFrame;
         sprite['_updateUVs']();
