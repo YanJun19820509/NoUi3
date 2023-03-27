@@ -84,7 +84,8 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 uv: sf.uv,
                 unbiasUV: sf.unbiasUV,
                 uvSliced: sf.uvSliced,
-                capInsets: sf['_capInsets']
+                capInsets: sf['_capInsets'],
+                _rotated: sf.rotated,
             };
         });
         return infoMap;

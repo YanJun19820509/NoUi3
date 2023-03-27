@@ -62,4 +62,4 @@ export type PackedFrameData = { x: number, y: number, w: number, h: number, rota
 
 export type FuckUiComponent = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
-export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], unbiasUV: number[], uvSliced: IUV[], capInsets: number[] };
+export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], unbiasUV: number[], uvSliced: IUV[], capInsets: number[], _rotated: boolean };

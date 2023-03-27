@@ -220,7 +220,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
-        let newSpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
+        let newSpriteFrame: SpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
         if (!newSpriteFrame) {
             newSpriteFrame = new SpriteFrame();
             newSpriteFrame.texture = this.texture;
@@ -231,6 +231,7 @@ export class YJDynamicAtlas extends Component {
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
             this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
+            newSpriteFrame.rotated = spriteFrame._rotated;
         }
         sprite.spriteFrame = newSpriteFrame;
         sprite['_updateUVs']();
