@@ -91,7 +91,7 @@ export class FuckUi extends Component {
 
     public a_setData(e: any, v: any) {
         v = v || e;
-        this.setData(v);
+        this.setData(JSON.stringify(v));
     }
 
     public a_clearData() {

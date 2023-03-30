@@ -3778,6 +3778,15 @@ export namespace no {
         }
         return result;
     }
+
+    export class SingleObject {
+        private static _ins: any;
+
+        public static get ins(): any {
+            if (!this._ins) this._ins = new this();
+            return this._ins;
+        }
+    }
 }
 
 if (DEBUG) {
