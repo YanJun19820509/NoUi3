@@ -150,6 +150,20 @@ export class YJAudioManager extends Component {
     }
 
     /**
+     * 暂停音效
+     */
+    public pauseEffect() {
+        this._isEffectOn = false;
+    }
+
+    /**
+     * 恢复音效
+     */
+    public resumeEffect() {
+        this._isEffectOn = localStorage.getItem(this.effectOn) == '1';
+    }
+
+    /**
      * 播放音频剪辑
      * @param clip 音频剪辑
      * @param loop 是否循环，默认true
