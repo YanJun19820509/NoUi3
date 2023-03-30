@@ -285,6 +285,7 @@ export class YJPreload extends YJComponent {
     }
 
     private checkState(): boolean {
+        const p = this.dataWork?.data.allProgress || 0;
         if (this.finished >= this.total) {
             // no.EventHandlerInfo.execute(this.progressingCall, this.total, this.finished, this.progress);
             if (this.dataWork) {
@@ -292,7 +293,7 @@ export class YJPreload extends YJComponent {
                     total: this.total,
                     finished: this.finished,
                     progress: this.progress * this.maxProgress,
-                    allProgress: (this.progress + this.finished / this.total) * this.maxProgress
+                    allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
             this.delegate?.onLoadComplete();
@@ -307,7 +308,7 @@ export class YJPreload extends YJComponent {
                     total: this.total,
                     finished: this.finished,
                     progress: this.progress * this.maxProgress,
-                    allProgress: (this.progress + this.finished / this.total) * this.maxProgress
+                    allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
             return true;
