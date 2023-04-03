@@ -1,5 +1,5 @@
 import { _decorator, ValueType, math } from 'cc';
-import { IUV, Texture2D } from 'cc';
+import { Texture2D } from 'cc';
 import { FuckUi } from './fuckui/FuckUi';
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
@@ -16,6 +16,11 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
+
+export interface IUV {
+    u: number;
+    v: number;
+}
 
 export enum AlignType {
     None = 0,

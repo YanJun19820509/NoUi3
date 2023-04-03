@@ -25,8 +25,7 @@ export class YJFuckUiRegister extends Component {
 
     @property(Node)
     subFuckUiNodes: Node[] = [];
-
-    @property({ readonly: true })
+    @property
     private subFuckUis: FuckUiComponent[] = [];
 
     protected _data2ui: object = {};
@@ -107,5 +106,6 @@ export class YJFuckUiRegister extends Component {
                 this.subFuckUis[this.subFuckUis.length] = a;
             }
         });
+        console.log(this.subFuckUis)
     }
 }

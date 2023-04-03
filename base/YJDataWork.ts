@@ -37,7 +37,7 @@ export class YJDataWork extends Component {
     private _loaded: boolean = false;
     private _handler: any;
 
-    onLoad() {
+    protected onLoad() {
         if (EDITOR) {
             this.register = this.getComponent(YJFuckUiRegister);
             return;
@@ -46,16 +46,16 @@ export class YJDataWork extends Component {
         this.init();
     }
 
-    start() {
+    protected start() {
         this.register.init();
     }
 
-    onDestroy() {
+    protected onDestroy() {
         if (this._handler)
             clearInterval(this._handler);
     }
 
-    lateUpdate() {
+    protected lateUpdate() {
         this.setChangedDataToUi();
     }
 

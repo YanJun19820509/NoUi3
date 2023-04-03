@@ -122,8 +122,8 @@ export class SetCreateNode extends FuckUi {
                 this.container.children[i].active = !!data[i];
             }
 
-        const prefabUrl = this.loadPrefab?.prefabUrl;
-        if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
+        const prefabUrl = this.loadPrefab?.prefabPath;
+        if (prefabUrl && YJPreCreateNode.ins?.has(prefabUrl)) {
             let nn = !this.onlyAdd ? n - l : n;
             for (let i = 0; i < nn; i++) {
                 let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
@@ -147,7 +147,7 @@ export class SetCreateNode extends FuckUi {
         if (!this.onlyAdd && n - l > 1 || (this.onlyAdd && n > 1)) {
             if (!this.onlyAdd)
                 this.container.active = false;
-            await YJJobManager.ins.execute((max: number) => {
+            await YJJobManager.ins?.execute((max: number) => {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 if (this.dynamicAtlas) {
