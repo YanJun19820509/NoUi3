@@ -114,8 +114,8 @@ export class YJTiledMapData {
         for (let i = 0, len = objects.length; i < len; i++) {
             let obj = objects[i];
             let a: any = {
-                x: (1 - this.anchor.x * 2) * obj.x + this.anchor.x * this.mapSize.width,
-                y: (1 - this.anchor.y * 2) * obj.y + this.anchor.y * this.mapSize.height,
+                x: obj.x,
+                y: this.mapSize.height - obj.y,
             };
             if (obj.properties != null)
                 obj.properties.forEach((p: any) => {
