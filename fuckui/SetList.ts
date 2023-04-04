@@ -190,6 +190,7 @@ export class SetList extends FuckUi {
     private async initItems() {
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this.template != null; }, this);
+        if (!this.itemSize) return;
         if (this.isVertical) {
             this.contentSize = this.allNum * this.itemSize.height;
             this.content.getComponent(UITransform).width = this.itemSize.width;
@@ -214,6 +215,7 @@ export class SetList extends FuckUi {
         if (!this.node.isValid) return;
         let listItems = this.content.children;
         await no.waitFor(() => { return listItems.length >= this.showNum; }, this);
+        if (!this.itemSize) return;
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
