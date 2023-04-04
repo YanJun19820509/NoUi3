@@ -62,11 +62,11 @@ export class YJWebSocket implements YJSocketInterface {
             this.isClosed = false;
         };
         this.ws.onmessage = (event) => {
-            no.log("response text msg: " + event.data);
+            // no.log("response text msg: " + event.data);
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.err('websocket error', event);
+            no.err(`websocket error:${this.url}`);
             this.isClosed = true;
             this.onClose();
         };
@@ -82,7 +82,7 @@ export class YJWebSocket implements YJSocketInterface {
         if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
                 this.receivedData[this.receivedData.length] = this.onMessage(v);
-            }).catch(e => { no.err(e); });
+            }).catch(e => { no.err('YJWebSocket _onMessage error'); });
         } else this.receivedData[this.receivedData.length] = this.onMessage(data);
     }
 
