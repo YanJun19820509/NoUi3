@@ -41,7 +41,7 @@ export class SetScrollToPercent extends FuckUi {
     }
 
     public a_scrollToPercent(per: number) {
-        if (this.scrollView == null) return;
+        if (!this.scrollView?.isValid) return;
         let cs = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
 

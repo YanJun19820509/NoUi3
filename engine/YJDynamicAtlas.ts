@@ -163,6 +163,7 @@ export class YJDynamicAtlas extends Component {
     }
 
     private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: PackedFrameData) {
+        if (!this.spriteFrameMap) return;
         if (packedFrame) {
             if (comp instanceof Label) {
                 if (comp.font instanceof BitmapFont) {

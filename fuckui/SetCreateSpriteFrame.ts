@@ -31,6 +31,7 @@ export class SetCreateSpriteFrame extends FuckUi {
     private texture: DynamicAtlasTexture;
 
     protected onDataChange(data: CreateSpritemFrameData) {
+        if (!data) return;
         this.texture = new DynamicAtlasTexture();
         this.texture.initWithSize(data.width, data.height);
         this.drawSpriteFrames(data.spriteFrames).then(() => {

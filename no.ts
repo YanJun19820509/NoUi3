@@ -1534,7 +1534,7 @@ export namespace no {
      * @returns
      */
     export function width(node: Node, width?: number): number {
-        if (!node) return;
+        if (!node || !node.getComponent(UITransform)) return;
         if (width != undefined)
             node.getComponent(UITransform).width = width;
         return node.getComponent(UITransform).width;
@@ -1547,7 +1547,7 @@ export namespace no {
      * @returns
      */
     export function height(node: Node, height?: number): number {
-        if (!node) return;
+        if (!node || !node.getComponent(UITransform)) return;
         if (height != undefined)
             node.getComponent(UITransform).height = height;
         return node.getComponent(UITransform).height;

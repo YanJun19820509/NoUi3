@@ -26,7 +26,7 @@ export class SetScrollToNode extends SetScrollToPercent {
     }
 
     public a_scrollToNode(name: string) {
-        if (this.scrollView == null) return;
+        if (!this.scrollView?.isValid) return;
         let node = this.scrollView.content.getChildByName(name);
         if (node == null) return;
         let ut = this.scrollView.content.getComponent(UITransform);
