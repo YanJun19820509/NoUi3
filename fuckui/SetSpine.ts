@@ -85,26 +85,32 @@ export class SetSpine extends FuckUi {
             this.bindEndCall(spine);
     }
 
-    public a_playOnce(animation: string) {
+    public a_playOnce(e: any, animation: string) {
+        animation = animation || e;
         if (!animation) return;
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
-        spine.enabled = true;
+        if (spine.enabled)
+            spine.clearTrack(0);
+        else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
         spine?.setAnimation(0, name, false);
         this.bindEndCall(spine);
     }
 
-    public a_playLoop(animation: string) {
+    public a_playLoop(e: any, animation: string) {
+        animation = animation || e;
         if (!animation) return;
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
-        spine.enabled = true;
+        if (spine.enabled)
+            spine.clearTrack(0);
+        else spine.enabled = true;
         spine.loop = true;
         !!skin && spine.setSkin(skin);
         spine?.setAnimation(0, name, true);
