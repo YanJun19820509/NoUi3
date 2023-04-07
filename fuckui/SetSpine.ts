@@ -34,17 +34,12 @@ export class SetSpine extends FuckUi {
     onEnable() {
         if (this.autoPlayOnEnable) {
             let spine = this.getComponent(sp.Skeleton);
-            spine.setAnimation(0, this.animationName, spine.loop);
-            this.bindEndCall(spine);
+            if (spine.loop) this.a_playLoop(null, this.animationName);
+            else this.a_playOnce(null, this.animationName);
         }
     }
 
     onDestroy() {
-        // const spine = this.getComponent(sp.Skeleton);
-        // if (spine) {
-        //     spine?.setCompleteListener(() => { });
-        //     spine?.skeletonData?.decRef();
-        // }
         this.cacheSke && no.assetBundleManager.decRef(this.cacheSke);
     }
 
@@ -93,7 +88,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         if (spine.enabled)
-            spine.clearTrack(0);
+            spine.clearTracks();
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
@@ -109,7 +104,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         if (spine.enabled)
-            spine.clearTrack(0);
+            spine.clearTracks();
         else spine.enabled = true;
         spine.loop = true;
         !!skin && spine.setSkin(skin);
