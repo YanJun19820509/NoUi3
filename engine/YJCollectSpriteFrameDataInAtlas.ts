@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, SpriteAtlas, assetManager } from 'cc';
 import { EDITOR } from 'cc/env';
 import { SpriteFrameDataType } from '../types';
+import { no } from '../no';
 const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
@@ -32,7 +33,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
     }
 
     private queryAllPlist() {
-        Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
+        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder('db://assets/', 'cc.SpriteAtlas', assets => {
             let aa = [];
             assets.forEach(a => {
                 aa[aa.length] = { uuid: a.uuid, type: SpriteAtlas };

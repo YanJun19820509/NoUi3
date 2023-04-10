@@ -2431,6 +2431,16 @@ export namespace no {
             }).catch(e => { err(e); });
         }
 
+        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: AssetInfo[]) => void) {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((infos: any[]) => {
+                let a: AssetInfo[] = [];
+                infos.forEach(info => {
+                    if (info.url.indexOf(url) > -1) a[a.length] = info;
+                });
+                callback?.(a);
+            }).catch(e => { err(e); });
+        }
+
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {

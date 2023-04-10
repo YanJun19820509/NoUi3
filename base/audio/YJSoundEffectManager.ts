@@ -116,24 +116,24 @@ export class YJSoundEffectManager extends Component {
     private async parse() {
         if (!EDITOR || !this.folder) return;
         console.log(this.folder);
-        let infos = await Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.AudioClip' });
-        console.log(infos);
-        if (!infos) {
-            return;
-        }
-        infos.forEach(info => {
-            if (info.path.indexOf(this.folder) == -1) return;
-            let effectInfo = new SoundEffectInfo();
-            let name = info.name.split('.')[0];
-            effectInfo.alias = name;
-            effectInfo.assetUrl = info.url;
-            effectInfo.assetUuid = info.uuid;
-            let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
-            if (i > -1) {
-                effectInfo.alias = this.soundEffects[i].alias;
-                this.soundEffects.splice(i, 1, effectInfo);
-            } else this.soundEffects[this.soundEffects.length] = effectInfo;
+        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.folder, 'cc.AudioClip', infos => {
+            console.log(infos);
+            if (!infos.length) {
+                return;
+            }
+            infos.forEach(info => {
+                let effectInfo = new SoundEffectInfo();
+                let name = info.name.split('.')[0];
+                effectInfo.alias = name;
+                effectInfo.assetUrl = info.url;
+                effectInfo.assetUuid = info.uuid;
+                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
+                if (i > -1) {
+                    effectInfo.alias = this.soundEffects[i].alias;
+                    this.soundEffects.splice(i, 1, effectInfo);
+                } else this.soundEffects[this.soundEffects.length] = effectInfo;
+            });
+            console.log('YJSoundEffectManager解析完成，请刷新组件！')
         });
-        console.log('YJSoundEffectManager解析完成，请刷新组件！')
     }
 }
