@@ -32,6 +32,10 @@ export class YJWebSocket implements YJSocketInterface {
         return a;
     }
 
+    constructor() {
+        this['uuid'] = no.uuid();
+    }
+
     protected initWebSocket() {
         if (JSB && jsb.fileUtils) {
             let AdapterWebSocket: any = WebSocket;
@@ -111,18 +115,18 @@ export class YJWebSocket implements YJSocketInterface {
         if (!this.isClosed) return true;
         return new Promise<boolean>(resolve => {
             let n = 0;
-            let a = setInterval(() => {
+            no.scheduleForever(() => {
                 if (!this.isClosed) {
-                    clearInterval(a);
+                    no.unschedule(this);
                     resolve(true);
                 } else {
                     n++;
                     if (n >= 20) {
-                        clearInterval(a);
+                        no.unschedule(this);
                         resolve(false);
                     }
                 }
-            }, 500);
+            }, .5, this);
         });
     }
 

@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, ResolutionPolicy, screen, Camera, math } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
+import { Scheduler } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -803,7 +804,7 @@ export namespace no {
             if (component != null) {
                 component.scheduleOnce(resolve, duration);
             } else {
-                setTimeout(resolve, duration * 1000);
+                scheduleOnce(() => { resolve(); }, duration);
             }
         });
     }
@@ -1802,10 +1803,10 @@ export namespace no {
         private handleDataChange() {
             if (this.aa) return;
             this.aa = true;
-            setTimeout(() => {
+            scheduleOnce(dt => {
                 this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 100);
+            }, 0, this);
         }
 
         /**
@@ -2456,9 +2457,9 @@ export namespace no {
         }
 
         public decRef(asset: Asset): void {
-            setTimeout(() => {
+            scheduleOnce(() => {
                 asset?.decRef();
-            }, 20);
+            }, .02);
         }
 
         /**
@@ -2495,9 +2496,9 @@ export namespace no {
             if (!asset) return;
             if (force) assetManager.releaseAsset(asset);
             else {
-                setTimeout(() => {
+                scheduleOnce(() => {
                     (<Asset>asset).decRef();
-                }, 20);
+                }, .02);
             }
         }
 
@@ -3795,6 +3796,85 @@ export namespace no {
         public static get ins(): any {
             if (!this._ins) this._ins = new this();
             return this._ins;
+        }
+    }
+
+    const _scheduler: Scheduler = director.getScheduler();
+    /**
+     * 定时器
+     * @param cb 
+     * @param interval 秒
+     * @param repeat 
+     * @param delay 秒
+     * @param target 
+     */
+    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any) {
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        _scheduler.schedule((dt: number) => {
+            if (!target)
+                cb?.(dt);
+            else if (isValid(target))
+                cb?.call(target, dt);
+            else unschedule(target);
+        }, target, interval, repeat, delay, false);
+    }
+    /**
+     * 定时执行一次
+     * @param cb 
+     * @param delay 秒
+     * @param target 
+     */
+    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target = {}) {
+        schedule(cb, delay, 0, 0, target);
+    }
+    /**
+     * 定时执行无限次
+     * @param cb 
+     * @param interval 秒
+     * @param target 
+     */
+    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any) {
+        schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
+    }
+    /**
+     * 取消target所有定时回调
+     * @param target 
+     */
+    export function unschedule(target: any) {
+        if (!target) return;
+        _scheduler.unscheduleAllForTarget(target);
+    }
+    /**
+     * 每帧执行target的update方法
+     * @param target 
+     * @param priority  优先级的值越低，定时器被触发的越早
+     */
+    export function scheduleTargetUpdateFunction(target: any, priority: number) {
+        if (!target || !target['update'] || typeof target['update'] != 'function') return;
+        if (target.uuid == undefined) target.uuid = uuid();
+        _scheduler.scheduleUpdate(target, priority, false);
+    }
+
+    /**
+     * 判断目标是否可用
+     * @param target 
+     * @returns 
+     */
+    export function isValid(target: any): boolean {
+        if (target instanceof Component) return target.isValid;
+        return typeof target !== 'undefined';
+    }
+
+    /**
+     * 安全赋值，会先判断target是否存在
+     * @param target 
+     * @param key 
+     * @param value 
+     */
+    export function setValueSafely(target: Component | any, data: { [k: string]: any }) {
+        if (!isValid(target)) return;
+        for (const key in data) {
+            target[key] = data[key];
         }
     }
 }

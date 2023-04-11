@@ -28,8 +28,7 @@ export class YJBubble extends YJDataWork {
     @property(Vec3)
     offset: Vec3 = v3();
 
-    protected afterInit() {
-        if (!this.data) return;
+    protected afterDataInit() {
         let pos = v3();
         if (this.data.position) {
             pos.x = this.data.position[0];

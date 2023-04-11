@@ -57,7 +57,7 @@ export class SetSpine extends FuckUi {
         if (path && this.curPath != path && animation != null) {
             spine.enabled = true;
             no.assetBundleManager.loadSpine(path, res => {
-                if (!spine) return;
+                if (!spine?.isValid) return;
                 this.curPath = path;
 
                 spine.skeletonData = res;

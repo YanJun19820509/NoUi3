@@ -35,7 +35,10 @@ export class YJDataWork extends Component {
     private changedDataKeys: string[] = [];
 
     private _loaded: boolean = false;
-    private _handler: any;
+
+    protected onDestroy(): void {
+
+    }
 
     onLoad() {
         if (EDITOR) {
@@ -50,11 +53,6 @@ export class YJDataWork extends Component {
         this.register.init();
     }
 
-    onDestroy() {
-        if (this._handler)
-            clearInterval(this._handler);
-    }
-
     lateUpdate() {
         this.setChangedDataToUi();
     }
@@ -67,16 +65,13 @@ export class YJDataWork extends Component {
         this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
-
-        if (!this._handler) {
-            this._handler = setInterval(() => {
-                if (!!this.data) {
-                    clearInterval(this._handler);
-                    this._handler = null;
-                    this.afterDataInit();
-                }
-            }, 100);
-        }
+        no.unschedule(this);
+        no.scheduleForever(() => {
+            if (!!this.data) {
+                no.unschedule(this);
+                this.afterDataInit();
+            }
+        }, .1, this);
     }
 
     public get data(): any {

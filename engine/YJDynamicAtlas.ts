@@ -4,6 +4,7 @@ import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
+import { no } from '../no';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -165,6 +166,7 @@ export class YJDynamicAtlas extends Component {
     private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: PackedFrameData) {
         if (!this.spriteFrameMap) return;
         if (packedFrame) {
+            const uuid = frame._uuid;
             if (comp instanceof Label) {
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
@@ -172,21 +174,25 @@ export class YJDynamicAtlas extends Component {
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
-                    this.spriteFrameMap[frame._uuid] = ff;
+                    // this.spriteFrameMap[uuid] = ff;
+                    no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    this.spriteFrameMap[frame._uuid] = frame;
+                    // this.spriteFrameMap[uuid] = frame;
+                    no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
-                ff._uuid = frame._uuid;
+                ff._uuid = uuid;
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
                 // if (!frame.original && frame.name.indexOf('default_') == -1)
                 //     no.assetBundleManager.release(frame);
-                this.spriteFrameMap[frame._uuid] = ff;
+                
+                // this.spriteFrameMap[uuid] = ff;
+                no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }
         }
     }
