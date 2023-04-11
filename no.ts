@@ -3807,16 +3807,23 @@ export namespace no {
      * @param repeat 
      * @param delay 秒
      * @param target 
+     * @param endCb 定时结束时回调
      */
-    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any) {
+    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
+        let n: number;
+        if (endCb)
+            n = repeat - 1;
         _scheduler.schedule((dt: number) => {
             if (!target)
                 cb?.(dt);
             else if (isValid(target))
                 cb?.call(target, dt);
             else unschedule(target);
-        }, target, interval, repeat, delay, false);
+            if (endCb && --n == 0) {
+                endCb.call(target);
+            }
+        }, target, interval, repeat - 1, delay, false);
     }
     /**
      * 定时执行一次
