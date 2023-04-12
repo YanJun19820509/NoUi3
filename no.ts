@@ -821,11 +821,13 @@ export namespace no {
      * 取两值之间的随机值
      * @param min
      * @param max
+     * @param isInt 是否取整
      */
-    export function randomBetween(min: number, max: number): number {
+    export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        return floor(Math.random() * (max - min)) + min;
+        const a = Math.random() * (max - min);
+        return (isInt ? floor(a) : a) + min;
     }
 
     /**
