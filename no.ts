@@ -1044,6 +1044,7 @@ export namespace no {
      * @param node
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
+        if (!isValid(node)) return;
         out = out || v3();
         node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
         return out;
@@ -3832,7 +3833,7 @@ export namespace no {
      * @param target 
      */
     export function scheduleOnce(cb: (dt?: number) => void, delay: number, target = {}) {
-        schedule(cb, delay, 0, 0, target);
+        schedule(cb, delay, 1, 0, target);
     }
     /**
      * 定时执行无限次
