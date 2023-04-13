@@ -68,10 +68,11 @@ export class YJi18n extends no.Data {
      * 获取指定语言文本
      * @param key 
      * @param args 格式化参数
+     * @param lan 指定语言
      * @returns 
      */
-    public to(key: string, args?: any): string {
-        let s = this.get(`${key}.${this._lan}`) || this.get(`${key}.${this._defLan}`);
+    public to(key: string, args?: any, lan?: string): string {
+        let s = this.get(`${key}.${lan || this._lan}`) || this.get(`${key}.${this._defLan}`);
         if (s == null) {
             // console.error(`指定的多语言无效，id：${key}`);
             return s;
