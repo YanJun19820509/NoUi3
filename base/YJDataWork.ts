@@ -66,12 +66,9 @@ export class YJDataWork extends Component {
         if (!this._loaded) return;
         this.afterInit();
         no.unschedule(this);
-        no.scheduleForever(() => {
-            if (!!this.data) {
-                no.unschedule(this);
-                this.afterDataInit();
-            }
-        }, .1, this);
+        no.scheduleUpdateCheck(() => {
+            return !!this.data;
+        }, this.afterDataInit, this, 180);
     }
 
     public get data(): any {

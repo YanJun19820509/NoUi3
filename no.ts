@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro } from 'cc';
+import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 import { Scheduler } from 'cc';
@@ -1046,7 +1046,7 @@ export namespace no {
      * @param node
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
-        if (!isValid(node)) return;
+        if (!checkValid(node)) return;
         out = out || v3();
         node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
         return out;
@@ -3812,21 +3812,22 @@ export namespace no {
      * @param target 
      * @param endCb 定时结束时回调
      */
-    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any, endCb?: () => void) {
+    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
+        const targetT = { uuid: target.uuid };
         let n: number;
         if (endCb)
             n = repeat - 1;
         _scheduler.schedule((dt: number) => {
             if (!target)
                 cb?.(dt);
-            else if (isValid(target))
+            else if (checkValid(target)) {
                 cb?.call(target, dt);
-            else unschedule(target);
-            if (endCb && --n == 0) {
-                endCb.call(target);
-            }
-        }, target, interval, repeat - 1, delay, false);
+                if (endCb && --n == 0) {
+                    endCb.call(target);
+                }
+            } else unschedule(targetT);
+        }, targetT, interval, repeat - 1, delay, false);
     }
     /**
      * 定时执行一次
@@ -3834,7 +3835,7 @@ export namespace no {
      * @param delay 秒
      * @param target 
      */
-    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target = {}) {
+    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target: any = {}) {
         schedule(cb, delay, 1, 0, target);
     }
     /**
@@ -3843,8 +3844,32 @@ export namespace no {
      * @param interval 秒
      * @param target 
      */
-    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any) {
+    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
         schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
+    }
+    /**
+     * 每帧执行target的check方法，当返回true时执行onChecked并停止
+     * @param check 
+     * @param onChecked 
+     * @param target 
+     * @param maxTry 最大尝试次数
+     */
+    export function scheduleUpdateCheck(check: (dt?: number) => boolean, onChecked: () => void, target: any = {}, maxTry?: number) {
+        if (!check || !onChecked) return;
+        if (check.call(target, 0)) {
+            onChecked.call(target);
+            return;
+        }
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        const targetT = { uuid: target.uuid };
+        if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
+        _scheduler.schedule((dt) => {
+            if (!checkValid(target)) unschedule(targetT);
+            else if (check.call(target, dt)) {
+                onChecked.call(target);
+                unschedule(targetT);
+            }
+        }, targetT, 0, maxTry, 0, false);
     }
     /**
      * 取消target所有定时回调
@@ -3870,9 +3895,9 @@ export namespace no {
      * @param target 
      * @returns 
      */
-    export function isValid(target: any): boolean {
-        if (target instanceof Component) return target.isValid;
-        return typeof target !== 'undefined';
+    export function checkValid(target: any): boolean {
+        if (target instanceof Component || target instanceof Node) return isValid(target, true);
+        return typeof target !== 'undefined' && target !== null;
     }
 
     /**
@@ -3882,7 +3907,7 @@ export namespace no {
      * @param value 
      */
     export function setValueSafely(target: Component | any, data: { [k: string]: any }) {
-        if (!isValid(target)) return;
+        if (!checkValid(target)) return;
         for (const key in data) {
             target[key] = data[key];
         }

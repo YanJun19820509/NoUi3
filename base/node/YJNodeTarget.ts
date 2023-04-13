@@ -96,7 +96,7 @@ export class YJNodeTarget extends Component {
      * @returns boolean
      */
     public checkTouch(e: EventTouch, trigger = true): boolean {
-        if (!no.isValid(this.node)) return false;
+        if (!no.checkValid(this.node)) return false;
         let rect = no.nodeBoundingBox(this.node);
         let a = rect.contains(YJFitScreen.fitTouchPoint(e.touch));
         if (a && trigger) {
