@@ -3816,8 +3816,11 @@ export namespace no {
         if (target && target.uuid == undefined) target.uuid = uuid();
         const targetT = { uuid: target.uuid };
         let n: number;
-        if (endCb)
-            n = repeat - 1;
+        repeat--;
+        if (endCb) {
+            repeat++;
+            n = repeat;
+        }
         _scheduler.schedule((dt: number) => {
             if (!target)
                 cb?.(dt);
@@ -3827,7 +3830,7 @@ export namespace no {
                     endCb.call(target);
                 }
             } else unschedule(targetT);
-        }, targetT, interval, repeat - 1, delay, false);
+        }, targetT, interval, repeat, delay, false);
     }
     /**
      * 定时执行一次

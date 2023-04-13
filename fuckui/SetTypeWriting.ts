@@ -49,6 +49,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     onDisable() {
+        this.node.removeAllChildren();
         this._x = null;
         this._maxY = 0;
     }
@@ -67,7 +68,9 @@ export class SetTypeWritting extends FuckUi {
             this._paragraphs = [].concat(data.content);
         }
         this._label.enabled = true;
+
         if (data.stop) {
+            if (this.noType) return;
             this.unscheduleAllCallbacks();
             let str = this._paragraphs.join(this._br);
             if (!this._isRichText)
@@ -76,6 +79,7 @@ export class SetTypeWritting extends FuckUi {
                 this.createRichTextNode(str);
             no.EventHandlerInfo.execute(this.onStop);
         } else if (data.next) {
+            if (this.noType) return;
             this.unscheduleAllCallbacks();
             let str = '';
             for (let i = 0, n = Math.min(this._idx, this._paragraphs.length - 1); i <= n; i++) {
@@ -104,18 +108,32 @@ export class SetTypeWritting extends FuckUi {
             return;
         }
         let s = String(this._paragraphs[this._idx]);
+        this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
 
-        if (this.noType) {
-            this._label.string += s;
+
+        if (this.noType)
+            this.write();
+        else
+            this.writing();
+    }
+
+    private write() {
+        const n = this._content.length;
+        // for (let i = 0; i < n; i++) {
+        //     this.setStr();
+        // }
+        // this.setWrap();
+        // this.scheduleOnce(() => {
+        //     this.setParagraph();
+        // }, this.duration);
+        no.schedule(() => {
+            this.setStr();
+        }, 0, n, 0, this, () => {
             this.setWrap();
             this.scheduleOnce(() => {
                 this.setParagraph();
             }, this.duration);
-            return;
-        }
-
-        this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
-        this.writing();
+        });
     }
 
     private writing() {
@@ -132,6 +150,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private setStr() {
+        if (this._content.length == 0) return;
         let a = this._content.shift();
         if (!this._isRichText)
             this._label.string += a;
@@ -141,6 +160,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private setWrap() {
+        if (this._paragraphs.length == 1) return;
         this._label.string += this._br;
     }
 
