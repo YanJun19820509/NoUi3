@@ -33,6 +33,8 @@ export class SetTypeWritting extends FuckUi {
     duration: number = .5;
     @property(no.EventHandlerInfo)
     onStop: no.EventHandlerInfo[] = [];
+    @property({ displayName: '直接输出' })
+    noType: boolean = false;
 
     private _paragraphs: string[];
     private _content: any[];
@@ -64,6 +66,7 @@ export class SetTypeWritting extends FuckUi {
         if (data.content) {
             this._paragraphs = [].concat(data.content);
         }
+        this._label.enabled = true;
         if (data.stop) {
             this.unscheduleAllCallbacks();
             let str = this._paragraphs.join(this._br);
@@ -101,6 +104,16 @@ export class SetTypeWritting extends FuckUi {
             return;
         }
         let s = String(this._paragraphs[this._idx]);
+
+        if (this.noType) {
+            this._label.string += s;
+            this.setWrap();
+            this.scheduleOnce(() => {
+                this.setParagraph();
+            }, this.duration);
+            return;
+        }
+
         this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
         this.writing();
     }
