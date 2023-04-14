@@ -111,10 +111,12 @@ export class SetTypeWritting extends FuckUi {
         this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
 
 
-        if (this.noType)
-            this.write();
-        else
-            this.writing();
+        this.scheduleOnce(() => {
+            if (this.noType)
+                this.write();
+            else
+                this.writing();
+        }, this._idx > 0 ? this.duration : 0);
     }
 
     private write() {
@@ -124,9 +126,7 @@ export class SetTypeWritting extends FuckUi {
                 this.setStr();
             }
             this.setWrap();
-            this.scheduleOnce(() => {
-                this.setParagraph();
-            }, this.duration);
+            this.setParagraph();
         }, .1);
         // no.schedule(() => {
         //     this.setStr();
