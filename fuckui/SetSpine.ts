@@ -54,8 +54,7 @@ export class SetSpine extends FuckUi {
             spine?.skeletonData?.decRef();
         }
 
-        if (path && this.curPath != path && animation != null) {
-            spine.enabled = true;
+        if (path && this.curPath != path) {
             no.assetBundleManager.loadSpine(path, res => {
                 if (!spine?.isValid) return;
                 this.curPath = path;
@@ -63,24 +62,23 @@ export class SetSpine extends FuckUi {
                 spine.skeletonData = res;
                 this.cacheSke = res;
 
-                !!skin && spine.setSkin(skin);
-                spine.setAnimation(0, animation, loop || false);
                 spine.timeScale = timeScale || 1;
+                if (loop) this.a_playLoop(animation);
+                else this.a_playOnce(animation);
             });
         } else if (animation != null) {
-            spine.enabled = true;
-            !!skin && spine.setSkin(skin);
-            spine.setAnimation(0, animation, loop || false);
             spine.timeScale = timeScale || 1;
+            if (loop) this.a_playLoop(animation);
+            else this.a_playOnce(animation);
         } else {
-            spine.clearTrack(0);
+            spine.clearTracks();
             spine.enabled = false;
         }
         if (loop === false)
             this.bindEndCall(spine);
     }
 
-    public a_playOnce(e: any, animation: string) {
+    public a_playOnce(e: any, animation?: string) {
         animation = animation || e;
         if (!animation) return;
         const a = animation.split(':');
@@ -96,7 +94,7 @@ export class SetSpine extends FuckUi {
         this.bindEndCall(spine);
     }
 
-    public a_playLoop(e: any, animation: string) {
+    public a_playLoop(e: any, animation?: string) {
         animation = animation || e;
         if (!animation) return;
         const a = animation.split(':');
