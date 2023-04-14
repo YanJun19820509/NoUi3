@@ -63,13 +63,15 @@ export class SetSpine extends FuckUi {
                 this.cacheSke = res;
 
                 spine.timeScale = timeScale || 1;
-                if (loop) this.a_playLoop(animation);
-                else this.a_playOnce(animation);
+                let tempStr = (skin ? (skin + ':') : '') + animation;
+                if (loop) this.a_playLoop(tempStr);
+                else this.a_playOnce(tempStr);
             });
         } else if (animation != null) {
             spine.timeScale = timeScale || 1;
-            if (loop) this.a_playLoop(animation);
-            else this.a_playOnce(animation);
+            let tempStr = (skin ? (skin + ':') : '') + animation;
+            if (loop) this.a_playLoop(tempStr);
+            else this.a_playOnce(tempStr);
         } else {
             spine.clearTracks();
             spine.enabled = false;
