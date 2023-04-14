@@ -52,7 +52,7 @@ export class YJGuidePanel extends YJPanel {
         YJGuidePanel._ins = null;
     }
 
-    protected onInitPanel() {
+    protected onLoadPanel() {
         this.guideNodeMap = this.guideNodeMap || {};
         this.setGuide();
     }
