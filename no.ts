@@ -207,10 +207,10 @@ export namespace no {
             this._time = t;
             this._targets = [];
             this._num = 1;
-            setInterval(() => {
+            scheduleForever(() => {
                 this._time++;
                 this.cb();
-            }, 1000);
+            }, 1, this);
 
         }
 
@@ -348,7 +348,7 @@ export namespace no {
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            callUntil(express, resolve);
+            scheduleUpdateCheck(express, () => { resolve(); }, comp);
         });
     }
 
@@ -382,15 +382,6 @@ export namespace no {
                 }
             }, target);
         });
-    }
-
-    export function callUntil(express: (dt?: number) => boolean, callback: () => void): void {
-        let a = setInterval(() => {
-            if (express()) {
-                clearInterval(a);
-                callback?.();
-            }
-        }, 20);
     }
 
     /**
@@ -2558,9 +2549,9 @@ export namespace no {
         private checkDuration = 60;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
-            setInterval(() => {
+            scheduleForever(() => {
                 this.checkClear();
-            }, this.checkDuration * 500);
+            }, this.checkDuration / 2, this);
         }
 
         /**
@@ -2662,9 +2653,9 @@ export namespace no {
 
         constructor() {
             super();
-            setInterval(() => {
+            scheduleForever(() => {
                 this.checkHint();
-            }, 2000);
+            }, 2, this);
         }
 
         /**
