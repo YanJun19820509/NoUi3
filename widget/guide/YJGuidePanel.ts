@@ -131,4 +131,12 @@ export class YJGuidePanel extends YJPanel {
         return !!this._ins;
     }
 
+    /**
+     * 隐藏所有类型引导节点
+     */
+    public hideAllGuideNodes() {
+        for (let k in this.guideNodeMap) {
+            this.guideNodeMap[k].active = false;
+        }
+    }
 }
