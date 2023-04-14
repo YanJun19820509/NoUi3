@@ -31,8 +31,17 @@ export class YJGameState extends Component {
     @property({ displayName: '进入后台多长时间执行回到前台回调(秒)' })
     duration: number = 30;
 
-    @property({ displayName: '触发游戏重启的事件类型' })
-    type: string = 'game_restart';
+    @property({ displayName: '游戏退出的事件', readonly: true })
+    event_end: string = 'game_end';
+
+    @property({ displayName: '游戏重启的事件', readonly: true })
+    event_restart: string = 'game_restart';
+
+    @property({ displayName: '引擎重启' })
+    isEngineRestart: boolean = false;
+
+    @property({ type: no.EventHandlerInfo, displayName: '游戏重启时回调', visible() { return !this.isEngineRestart; } })
+    onGameRestart: no.EventHandlerInfo[] = [];
 
     private time: number;
 
@@ -40,7 +49,8 @@ export class YJGameState extends Component {
         game.on(Game.EVENT_HIDE, this.onHide, this);
         game.on(Game.EVENT_SHOW, this.onShow, this);
         game.on(Game.EVENT_LOW_MEMORY, this.onLowMemory, this);
-        no.evn.on(this.type, this.a_restart, this);
+        no.evn.on(this.event_end, this.onEvent, this);
+        no.evn.on(this.event_restart, this.onEvent, this);
     }
 
     onDestroy() {
@@ -61,15 +71,27 @@ export class YJGameState extends Component {
         no.EventHandlerInfo.execute(this.onLowMemoryCalls);
     }
 
-    public a_restart(type: string, exit = false) {
-        if (JSB)
-            if (exit) game.end();
-            else
+    private onEvent(type: string) {
+        if (type == this.event_end) {
+            if (JSB)
+                game.end();
+            else if (sys.isBrowser)
+                window.document.location.reload();
+        } else {
+            if (this.isEngineRestart)
                 this.scheduleOnce(() => {
                     //重启一定要有足够的延时才不会异常
                     game.restart();
                 }, 1);
-        else if (sys.isBrowser)
-            window.document.location.reload();
+            else no.EventHandlerInfo.execute(this.onGameRestart);
+        }
+    }
+
+    public a_restartGame() {
+        this.onEvent(this.event_restart);
+    }
+
+    public a_endGame() {
+        this.onEvent(this.event_end);
     }
 }
