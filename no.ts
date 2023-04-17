@@ -35,7 +35,8 @@ export namespace no {
             n = repeat;
         }
         if (!_scheduler) _scheduler = director.getScheduler();
-        _scheduler.schedule((dt: number) => {
+
+        const callback = (dt: number) => {
             if (!target)
                 cb?.(dt);
             else if (checkValid(target)) {
@@ -43,8 +44,10 @@ export namespace no {
                 if (endCb && --n == 0) {
                     endCb.call(target);
                 }
-            } else unschedule(targetT);
-        }, targetT, interval, repeat, delay, false);
+            } else unschedule(targetT, callback);
+        };
+
+        _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
     }
     /**
      * 定时执行一次
@@ -81,21 +84,25 @@ export namespace no {
         const targetT = { uuid: target.uuid };
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
         if (!_scheduler) _scheduler = director.getScheduler();
-        _scheduler.schedule((dt) => {
-            if (!checkValid(target)) unschedule(targetT);
+        const callback = (dt: number) => {
+            if (!checkValid(target)) unschedule(targetT, callback);
             else if (check.call(target, dt)) {
                 onChecked.call(target);
-                unschedule(targetT);
+                unschedule(targetT, callback);
             }
-        }, targetT, 0, maxTry, 0, false);
+        };
+        _scheduler.schedule(callback, targetT, 0, maxTry, 0, false);
     }
     /**
      * 取消target所有定时回调
      * @param target 
      */
-    export function unschedule(target: any) {
+    export function unschedule(target: any, cb?: any) {
         if (!target) return;
-        _scheduler?.unscheduleAllForTarget(target);
+        if (!cb)
+            _scheduler?.unscheduleAllForTarget(target);
+        else
+            _scheduler.unschedule(cb, target);
     }
     /**
      * 每帧执行target的update方法
@@ -107,6 +114,16 @@ export namespace no {
         if (target.uuid == undefined) target.uuid = uuid();
         if (!_scheduler) _scheduler = director.getScheduler();
         _scheduler.scheduleUpdate(target, priority, false);
+    }
+
+    /**
+     * 取消每帧执行target的update方法
+     * @param target 
+     * @returns 
+     */
+    export function unscheduleTargetUpdateFunction(target: any) {
+        if (!target) return;
+        _scheduler?.unscheduleUpdate(target);
     }
     class Event {
         private _map: any;
