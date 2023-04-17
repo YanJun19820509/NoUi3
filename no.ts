@@ -3793,7 +3793,7 @@ export namespace no {
         }
     }
 
-    const _scheduler: Scheduler = director.getScheduler();
+    let _scheduler: Scheduler;
     /**
      * 定时器
      * @param cb 
@@ -3812,6 +3812,7 @@ export namespace no {
             repeat++;
             n = repeat;
         }
+        if (!_scheduler) _scheduler = director.getScheduler();
         _scheduler.schedule((dt: number) => {
             if (!target)
                 cb?.(dt);
@@ -3857,6 +3858,7 @@ export namespace no {
         if (target && target.uuid == undefined) target.uuid = uuid();
         const targetT = { uuid: target.uuid };
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
+        if (!_scheduler) _scheduler = director.getScheduler();
         _scheduler.schedule((dt) => {
             if (!checkValid(target)) unschedule(targetT);
             else if (check.call(target, dt)) {
@@ -3871,7 +3873,7 @@ export namespace no {
      */
     export function unschedule(target: any) {
         if (!target) return;
-        _scheduler.unscheduleAllForTarget(target);
+        _scheduler?.unscheduleAllForTarget(target);
     }
     /**
      * 每帧执行target的update方法
@@ -3881,6 +3883,7 @@ export namespace no {
     export function scheduleTargetUpdateFunction(target: any, priority: number) {
         if (!target || !target['update'] || typeof target['update'] != 'function') return;
         if (target.uuid == undefined) target.uuid = uuid();
+        if (!_scheduler) _scheduler = director.getScheduler();
         _scheduler.scheduleUpdate(target, priority, false);
     }
 
