@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
+import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
-import { Scheduler } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -14,6 +13,100 @@ export namespace no {
     }
     export function setDebug(v: boolean) {
         _debug = v;
+    }
+
+    let _scheduler: Scheduler = null;
+    /**
+     * 定时器
+     * @param cb 
+     * @param interval 秒
+     * @param repeat 
+     * @param delay 秒
+     * @param target 
+     * @param endCb 定时结束时回调
+     */
+    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        const targetT = { uuid: target.uuid };
+        let n: number;
+        repeat--;
+        if (endCb) {
+            repeat++;
+            n = repeat;
+        }
+        if (!_scheduler) _scheduler = director.getScheduler();
+        _scheduler.schedule((dt: number) => {
+            if (!target)
+                cb?.(dt);
+            else if (checkValid(target)) {
+                cb?.call(target, dt);
+                if (endCb && --n == 0) {
+                    endCb.call(target);
+                }
+            } else unschedule(targetT);
+        }, targetT, interval, repeat, delay, false);
+    }
+    /**
+     * 定时执行一次
+     * @param cb 
+     * @param delay 秒
+     * @param target 
+     */
+    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target: any = {}) {
+        schedule(cb, delay, 1, 0, target);
+    }
+    /**
+     * 定时执行无限次
+     * @param cb 
+     * @param interval 秒 
+     * @param target 
+     */
+    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
+        schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
+    }
+    /**
+     * 每帧执行target的check方法，当返回true时执行onChecked并停止
+     * @param check 
+     * @param onChecked 
+     * @param target 
+     * @param maxTry 最大尝试次数
+     */
+    export function scheduleUpdateCheck(check: (dt?: number) => boolean, onChecked: () => void, target: any = {}, maxTry?: number) {
+        if (!check || !onChecked) return;
+        if (check.call(target, 0)) {
+            onChecked.call(target);
+            return;
+        }
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        const targetT = { uuid: target.uuid };
+        if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
+        if (!_scheduler) _scheduler = director.getScheduler();
+        _scheduler.schedule((dt) => {
+            if (!checkValid(target)) unschedule(targetT);
+            else if (check.call(target, dt)) {
+                onChecked.call(target);
+                unschedule(targetT);
+            }
+        }, targetT, 0, maxTry, 0, false);
+    }
+    /**
+     * 取消target所有定时回调
+     * @param target 
+     */
+    export function unschedule(target: any) {
+        if (!target) return;
+        _scheduler?.unscheduleAllForTarget(target);
+    }
+    /**
+     * 每帧执行target的update方法
+     * @param target 
+     * @param priority  优先级的值越低，定时器被触发的越早
+     */
+    export function scheduleTargetUpdateFunction(target: any, priority: number) {
+        if (!target || !target['update'] || typeof target['update'] != 'function') return;
+        if (target.uuid == undefined) target.uuid = uuid();
+        if (!_scheduler) _scheduler = director.getScheduler();
+        _scheduler.scheduleUpdate(target, priority, false);
     }
     class Event {
         private _map: any;
@@ -3791,100 +3884,6 @@ export namespace no {
             if (!this._ins) this._ins = new this();
             return this._ins;
         }
-    }
-
-    let _scheduler: Scheduler;
-    /**
-     * 定时器
-     * @param cb 
-     * @param interval 秒
-     * @param repeat 
-     * @param delay 秒
-     * @param target 
-     * @param endCb 定时结束时回调
-     */
-    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
-        let n: number;
-        repeat--;
-        if (endCb) {
-            repeat++;
-            n = repeat;
-        }
-        if (!_scheduler) _scheduler = director.getScheduler();
-        _scheduler.schedule((dt: number) => {
-            if (!target)
-                cb?.(dt);
-            else if (checkValid(target)) {
-                cb?.call(target, dt);
-                if (endCb && --n == 0) {
-                    endCb.call(target);
-                }
-            } else unschedule(targetT);
-        }, targetT, interval, repeat, delay, false);
-    }
-    /**
-     * 定时执行一次
-     * @param cb 
-     * @param delay 秒
-     * @param target 
-     */
-    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target: any = {}) {
-        schedule(cb, delay, 1, 0, target);
-    }
-    /**
-     * 定时执行无限次
-     * @param cb 
-     * @param interval 秒
-     * @param target 
-     */
-    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
-        schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
-    }
-    /**
-     * 每帧执行target的check方法，当返回true时执行onChecked并停止
-     * @param check 
-     * @param onChecked 
-     * @param target 
-     * @param maxTry 最大尝试次数
-     */
-    export function scheduleUpdateCheck(check: (dt?: number) => boolean, onChecked: () => void, target: any = {}, maxTry?: number) {
-        if (!check || !onChecked) return;
-        if (check.call(target, 0)) {
-            onChecked.call(target);
-            return;
-        }
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
-        if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
-        if (!_scheduler) _scheduler = director.getScheduler();
-        _scheduler.schedule((dt) => {
-            if (!checkValid(target)) unschedule(targetT);
-            else if (check.call(target, dt)) {
-                onChecked.call(target);
-                unschedule(targetT);
-            }
-        }, targetT, 0, maxTry, 0, false);
-    }
-    /**
-     * 取消target所有定时回调
-     * @param target 
-     */
-    export function unschedule(target: any) {
-        if (!target) return;
-        _scheduler?.unscheduleAllForTarget(target);
-    }
-    /**
-     * 每帧执行target的update方法
-     * @param target 
-     * @param priority  优先级的值越低，定时器被触发的越早
-     */
-    export function scheduleTargetUpdateFunction(target: any, priority: number) {
-        if (!target || !target['update'] || typeof target['update'] != 'function') return;
-        if (target.uuid == undefined) target.uuid = uuid();
-        if (!_scheduler) _scheduler = director.getScheduler();
-        _scheduler.scheduleUpdate(target, priority, false);
     }
 
     /**
