@@ -458,7 +458,7 @@ export namespace no {
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            scheduleUpdateCheck(express, () => { resolve(); }, comp);
+            scheduleUpdateCheck(express, resolve, comp);
         });
     }
 

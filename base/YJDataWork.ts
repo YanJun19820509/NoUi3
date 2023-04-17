@@ -5,6 +5,7 @@ import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
 import { YJJobManager } from './YJJobManager';
+import { YJComponent } from './YJComponent';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -23,7 +24,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @requireComponent(YJFuckUiRegister)
 @executeInEditMode()
-export class YJDataWork extends Component {
+export class YJDataWork extends YJComponent {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
 
@@ -53,7 +54,8 @@ export class YJDataWork extends Component {
         this.register.init();
     }
 
-    lateUpdate() {
+    lateUpdate(dt: number) {
+        super.lateUpdate(dt);
         this.setChangedDataToUi();
     }
 
@@ -65,10 +67,18 @@ export class YJDataWork extends Component {
         this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
-        no.unschedule(this);
-        no.scheduleUpdateCheck(() => {
-            return !!this.data;
-        }, this.afterDataInit, this, 180);
+        this.clearUpdateHandlers();
+        let n = 180;
+        this.addUpdateHandlerByFrame(() => {
+            n--;
+            if (!!this.data) {
+                this.afterDataInit();
+                return false;
+            }
+            if (n <= 0)
+                return false;
+            return true;
+        })
     }
 
     public get data(): any {
