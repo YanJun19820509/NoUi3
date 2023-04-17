@@ -64,15 +64,20 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
-    static downloadFile(url: string): Promise<Blob | null> {
+    static downloadFile(url: string, onProgress?: (loaded: number, total: number) => void): Promise<Blob | null> {
         return new Promise<any>(resolve => {
             no.log('开始下载', url);
             let xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
+            xhr.addEventListener('progress', ev => {
+                if (ev.lengthComputable) {
+                    onProgress?.(ev.loaded, ev.total);
+                }
+            });
             xhr.responseType = 'arraybuffer';
             xhr.onload = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    console.log(xhr.response)
+                    no.log('downloadFile complete')
                     resolve(xhr.response);
                 } else {
                     no.log('downloadFile fail')
