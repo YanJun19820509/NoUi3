@@ -93,6 +93,28 @@ export namespace no {
         };
         _scheduler.schedule(callback, targetT, 0, maxTry, 0, false);
     }
+
+    /**
+     * 定时执行cb，直到until返回true结束
+     * @param cb 
+     * @param interval 
+     * @param until 
+     * @param delay 
+     * @param target 
+     */
+    export function scheduleUntil(cb: (dt?: number) => void, interval: number, until: () => boolean, delay?: number, target: any = {}) {
+        if (until.call(target)) return;
+        if (!_scheduler) _scheduler = director.getScheduler();
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        const targetT = { uuid: target.uuid };
+        const callback = (dt: number) => {
+            if (!checkValid(target) || until.call(target)) unschedule(targetT, callback);
+            else {
+                cb?.call(target, dt);
+            }
+        };
+        _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
+    }
     /**
      * 取消target所有定时回调
      * @param target 
