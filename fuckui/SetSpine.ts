@@ -27,6 +27,8 @@ export class SetSpine extends FuckUi {
     animationName: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
+    @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
+    needClearTracks: boolean = true;
 
     curPath: string;
     cacheSke: sp.SkeletonData;
@@ -88,7 +90,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         if (spine.enabled)
-            spine.clearTracks();
+            this.needClearTracks && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
@@ -104,7 +106,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(sp.Skeleton);
         if (spine.enabled)
-            spine.clearTracks();
+            this.needClearTracks && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = true;
         !!skin && spine.setSkin(skin);
