@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, macro, Node } from 'cc';
 const { ccclass, property } = _decorator;
 
 /**
@@ -13,7 +13,7 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
+
 @ccclass('YJComponent')
 export class YJComponent extends Component {
     private updateHandlers: Map<number, any>;
@@ -115,9 +115,13 @@ export class YJComponent extends Component {
             callback?.();
             return;
         }
-        this.scheduleOnce((dt: number) => {
-            this.callUntil(express, callback, dt);
-        }, 0);
+        const cb = (dt: number) => {
+            if (express(dt)) {
+                callback?.();
+                this.unschedule(cb);
+            }
+        }
+        this.schedule(cb, 0, macro.REPEAT_FOREVER);
     }
 
     /**
