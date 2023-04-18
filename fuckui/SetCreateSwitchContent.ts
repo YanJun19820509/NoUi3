@@ -30,7 +30,7 @@ class ContentInfo {
 
     public async loadTo(parent: Node, dynamicAtlas: YJDynamicAtlas, loadAsset: YJLoadAssets) {
         this.loadedNode = await this.prefab.loadPrefab();
-
+        if (!no.checkValid(parent)) return;
         if (!this.loadedNode.getComponent(YJDynamicAtlas) && dynamicAtlas)
             YJDynamicAtlas.setDynamicAtlas(this.loadedNode, dynamicAtlas);
         if (this.loadedNode.getComponent(YJLoadAssets))
