@@ -89,7 +89,7 @@ export class YJDragDropNode extends YJTouchListener {
 
     private moveBack() {
         if (!this.canBack) return;
-        this.getComponent(SetNodeTweenAction).setData(JSON.stringify({
+        this.getComponent(SetNodeTweenAction).setData(no.jsonStringify({
             duration: 0.2,
             to: 1,
             props: {

@@ -337,7 +337,7 @@ export class YJScrollPanel extends Component {
 
     private setTween(props: any, duration?: number) {
         if (duration == null) duration = this.duration;
-        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(JSON.stringify({
+        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(no.jsonStringify({
             duration: duration,
             to: 1,
             props: props

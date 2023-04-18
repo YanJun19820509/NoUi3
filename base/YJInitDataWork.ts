@@ -66,7 +66,7 @@ export class YJInitDataWork extends Component {
                         break;
                     case SimpleValueType.Array:
                     case SimpleValueType.Object:
-                        v = JSON.parse(info.value);
+                        v = no.parse2Json(info.value);
                         break;
                 }
                 d[info.key] = v;

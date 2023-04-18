@@ -63,7 +63,7 @@ export namespace YJCrypto {
             if (typeof (data) == 'string') {
                 str = data;
             } else if (typeof (data) == 'object') {//对象格式的转成json字符串
-                str = JSON.stringify(data);
+                str = no.jsonStringify(data);
             }
             if (!toBuffer) {
                 let encrypted = CryptoJS.AES.encrypt(str, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });

@@ -258,7 +258,7 @@ export class SetList extends FuckUi {
         else {
             let a = item.getComponent(SetCreateNode);
             if (a)
-                a.setData(JSON.stringify(data));
+                a.setData(no.jsonStringify(data));
         }
     }
 

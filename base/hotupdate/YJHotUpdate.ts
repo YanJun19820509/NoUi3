@@ -191,7 +191,7 @@ export class YJHotUpdate extends Component {
                 this.updateProgressInfo.downloadedFiles = event.getDownloadedFiles();
                 this.updateProgressInfo.bytesPer = event.getPercent();
                 this.updateProgressInfo.filesPer = event.getPercentByFile();
-                // no.log(JSON.stringify(this.updateProgressInfo));
+                // no.log(no.jsonStringify(this.updateProgressInfo));
                 break;
             case jsb.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
             case jsb.EventAssetsManager.ERROR_PARSE_MANIFEST:
@@ -233,7 +233,7 @@ export class YJHotUpdate extends Component {
                     searchPaths.unshift(path);
                 }
             });
-            let a = JSON.stringify(searchPaths);
+            let a = no.jsonStringify(searchPaths);
             no.log(a);
             // This value will be retrieved and appended to the default search path during game startup,
             // please refer to samples/js-tests/main.js for detailed usage.

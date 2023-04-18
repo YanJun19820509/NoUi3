@@ -64,7 +64,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                             for (const name in infos) {
                                 const file = `${path}/${name}.json`;
                                 console.log(`save ${file}`);
-                                Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                                Editor.Message.send('asset-db', 'create-asset', file, no.jsonStringify(infos[name]), { overwrite: true });
                             }
                         }
                     });

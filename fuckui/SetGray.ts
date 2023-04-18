@@ -3,6 +3,7 @@ import { _decorator, Sprite, RenderComponent } from 'cc';
 import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
+import { no } from '../no';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -48,7 +49,7 @@ export class SetGray extends FuckUi {
         let a = this.getComponent(RenderComponent);
         if (a) {
             let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-            setEffect.setData(JSON.stringify(
+            setEffect.setData(no.jsonStringify(
                 {
                     path: 'NoUi3/effect/gray',
                     defines: {
@@ -60,7 +61,7 @@ export class SetGray extends FuckUi {
         if (this.recursive) {
             this.getComponentsInChildren(RenderComponent).forEach(child => {
                 if (a?.uuid == child.uuid) return;
-                child.getComponent(SetGray)?.setData(JSON.stringify(v));
+                child.getComponent(SetGray)?.setData(no.jsonStringify(v));
             });
         }
     }

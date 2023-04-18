@@ -97,7 +97,7 @@ export class YJCharLabel extends Component {
                 shadowOffset: [this.shadowOffset.x, this.shadowOffset.y],
                 shadowBlur: this.shadowBlur
             };
-            console.log('YJCharLabelStyle--', { info: JSON.stringify(a) });
+            console.log('YJCharLabelStyle--', { info: no.jsonStringify(a) });
         }
         this.initMode();
         if (this.text != this._text)

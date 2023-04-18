@@ -72,7 +72,7 @@ export class YJSocketIO implements YJSocketInterface {
     /**
      * 向服务器发送数据
      * @param code 指令
-     * @param args 参数，不要执行JSON.stringify
+     * @param args 参数，不要执行no.jsonStringify
      */
     public sendDataToServer(encryptType: EncryptType, data: any): void {
         this.ws.volatile.emit('', encode(data, encryptType));

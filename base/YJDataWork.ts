@@ -151,13 +151,13 @@ export class YJDataWork extends YJComponent {
         uis.forEach(ui => {
             let keys = ui.bindKeys;
             if (keys.length == 1) {
-                ui.setData(JSON.stringify(data));
+                ui.setData(no.jsonStringify(data));
             } else {
                 let a = {};
                 keys.forEach(key => {
                     a[key] = this._data.get(key);
                 });
-                ui.setData(JSON.stringify(a));
+                ui.setData(no.jsonStringify(a));
             }
         });
     }

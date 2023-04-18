@@ -56,9 +56,9 @@ export class FuckUi extends Component {
 
         if (d != '') {
             try {
-                d = JSON.parse(d);
+                d = no.parse2Json(d);
             } catch (e) {
-                no.err('JSON.parse', 'FuckUi.setData', d);
+                no.err('no.parse2Json', 'FuckUi.setData', d);
             }
         }
 
@@ -91,7 +91,7 @@ export class FuckUi extends Component {
 
     public a_setData(e: any, v: any) {
         v = v || e;
-        this.setData(JSON.stringify(v));
+        this.setData(no.jsonStringify(v));
     }
 
     public a_clearData() {
@@ -103,9 +103,9 @@ export class FuckUi extends Component {
         let d = this._oldData;
         if (d != '') {
             try {
-                d = JSON.parse(d);
+                d = no.parse2Json(d);
             } catch (e) {
-                no.err('JSON.parse', 'FuckUi.resetData', d);
+                no.err('no.parse2Json', 'FuckUi.resetData', d);
             }
         }
         this.logValue(d);

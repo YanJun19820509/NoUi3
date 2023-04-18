@@ -11,7 +11,7 @@ export namespace base64 {
 
     export const encode = (d: string | object): string => {
         let v = d;
-        if (typeof v != 'string') v = JSON.stringify(v);
+        if (typeof v != 'string') v = no.jsonStringify(v);
         let arraybuffer: ArrayBuffer = no.string2ArrayBuffer(v);
         let bytes = new Uint8Array(arraybuffer),
             i: number,

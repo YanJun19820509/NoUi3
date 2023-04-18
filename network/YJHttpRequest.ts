@@ -35,10 +35,10 @@ export class YJHttpRequest implements YJSocketInterface {
             this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, contentType, v => {
                 let a = decode(v, encryptType);
                 try {
-                    resolve(JSON.parse(a));
+                    resolve(no.parse2Json(a));
                 } catch (e) {
                     resolve(a);
-                    no.err('JSON.parse', 'YJHttpRequest.getDataFromServer', a);
+                    no.err('no.parse2Json', 'YJHttpRequest.getDataFromServer', a);
                 }
             }, v => {
                 resolve(null);
@@ -53,9 +53,9 @@ export class YJHttpRequest implements YJSocketInterface {
                     resolve(v);
                 } else {
                     try {
-                        resolve(JSON.parse(v));
+                        resolve(no.parse2Json(v));
                     } catch (e) {
-                        no.err('JSON.parse', 'YJHttpRequest.getJsonFromServer', v);
+                        no.err('no.parse2Json', 'YJHttpRequest.getJsonFromServer', v);
                     }
                 }
             }, v => {

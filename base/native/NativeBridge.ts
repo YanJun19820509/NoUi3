@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node, EventTarget } from 'cc';
 import { JSB } from 'cc/env';
+import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -54,7 +55,7 @@ export class NativeBridge extends EventTarget {
      * @param args 回调参数
      */
     public static onNativeCallback(type: string, args: string) {
-        let a = JSON.parse(args);
+        let a = no.parse2Json(args);
         console.log('onNativeCallback', type, a);
         switch (type) {
             case 'login':
@@ -120,7 +121,7 @@ export class NativeBridge extends EventTarget {
      * @param args
      */
     public callOther(type: string, args?: any) {
-        this.callNativeMethod(this.className, this.methodName, JSON.stringify({
+        this.callNativeMethod(this.className, this.methodName, no.jsonStringify({
             'type': type,
             'data': args
         }));

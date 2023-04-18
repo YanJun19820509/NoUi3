@@ -418,11 +418,11 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        console.log.call(console, '#NoUi#Log', JSON.stringify(Evns));
+        console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
-        console.error.call(console, '#NoUi#Err', JSON.stringify(Evns));
+        console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
     }
 
     /**
@@ -907,7 +907,7 @@ export namespace no {
     export function clone(d: any): any {
         if (d instanceof Array)
             try {
-                return JSON.parse(JSON.stringify(d));
+                return parse2Json(jsonStringify(d));
             } catch (e) {
                 no.err('JSON.parse', 'clone');
             }
@@ -1747,13 +1747,23 @@ export namespace no {
      * @returns 
      */
     export function jsonStringify(json: any): string {
+        let cache: any[] = [];
         return JSON.stringify(json, function (key, val) {
             if (!WECHAT)//微信小游戏平台不支持
                 if (typeof val === 'function') {
                     return val + '';
                 }
+            if (typeof val === 'object' && val !== null) {
+                if (cache.indexOf(val) !== -1) {
+                    // 移除
+                    return;
+                }
+                // 收集所有的值
+                cache.push(val);
+            }
             return val;
         });
+
     }
 
     export async function getAssetUrlInEditorMode(uuid: string): Promise<string> {
@@ -1793,13 +1803,13 @@ export namespace no {
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let now = sysTime.now;
         try {
-            let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
+            let lastResetTime = parse2Json(dataCache.getLocal('reset_data_check_time') || '{}');
             let lt = lastResetTime[dataKey];
 
             if (!lt || now >= lt) {
                 dataCache.setLocal(dataKey, value);
                 lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
-                dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
+                dataCache.setLocal('reset_data_check_time', jsonStringify(lastResetTime));
             }
         } catch (e) {
             no.err('JSON.parse', 'resetValueCheck');
@@ -1860,14 +1870,14 @@ export namespace no {
             if (this._data == null) this._data = {};
             let a = clone(this._data);
             a.__ut = sysTime.now;
-            return JSON.stringify(a);
+            return jsonStringify(a);
         }
 
         /**将json string转成data */
         public set json(v: string) {
             if (v != undefined) {
                 try {
-                    this._data = JSON.parse(v);
+                    this._data = parse2Json(v);
                     this.emit(Data.DataChangeEvent, this);
                 } catch (e) {
                     no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
@@ -2007,7 +2017,7 @@ export namespace no {
             let a = localStorage.getItem(key);
             if (a == null || a == undefined || a == 'undefined') return null;
             try {
-                return JSON.parse(a);
+                return parse2Json(a);
             } catch (e) {
                 no.err('JSON.parse', 'getLocal', key, a);
                 return null;
@@ -2023,7 +2033,7 @@ export namespace no {
             if (value === null || value === undefined || value === 'undefined')
                 localStorage.removeItem(key);
             else
-                localStorage.setItem(key, JSON.stringify(value));
+                localStorage.setItem(key, jsonStringify(value));
             this.emit(key, value);
         }
 
@@ -3464,7 +3474,7 @@ export namespace no {
                 if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
                     var response = xhr.responseText;
                     try {
-                        let a = JSON.parse(response);
+                        let a = parse2Json(response);
                         cb?.(a);
                     } catch (e) {
                         no.err('JSON.parse', 'httpRequest', response);
@@ -3481,7 +3491,7 @@ export namespace no {
             xhr.setRequestHeader('Authorization', this.Authorization);
             xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
             if (typeof data == 'object') {
-                data = JSON.stringify(data);
+                data = jsonStringify(data);
             }
             xhr.send(data);
         }

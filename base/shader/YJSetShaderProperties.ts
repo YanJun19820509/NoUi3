@@ -71,7 +71,7 @@ export class YJSetShaderProperties extends Component {
             defines: defines
         };
         no.log(d);
-        ss.setData(JSON.stringify(d));
+        ss.setData(no.jsonStringify(d));
     }
 
     ////////////EDITOR MODE//////////////////////
