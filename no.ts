@@ -1728,7 +1728,7 @@ export namespace no {
         try {
             return JSON.parse(s, function (k, v) {
                 if (!WECHAT)//微信小游戏平台不支持
-                    if (v.indexOf && v.indexOf('function') > -1) {
+                    if (v && v.indexOf && v.indexOf('function') > -1) {
                         // return eval("(function(){return " + v + " })()");
                         let FN = Function;
                         return new FN(`return ${v}`)();
