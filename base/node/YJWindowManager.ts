@@ -221,8 +221,11 @@ export class YJWindowManager extends Component {
             let content = this.getContent(this.infos[i].type);
 
             for (let j = content.children.length - 1; j >= 0; j--) {
-                const panel = content.children[j].getComponent(YJPanel);
-                panel?.clear(true);
+                const child = content.children[j];
+                const panel = child.getComponent(YJPanel);
+                if (panel)
+                    panel.clear(true);
+                else child.destroy();
             }
         }
     }
