@@ -32,10 +32,10 @@ export class YJGameState extends Component {
     duration: number = 30;
 
     @property({ displayName: '游戏退出的事件', readonly: true })
-    event_end: string = 'game_end';
+    event_end: string = 'game_state_event_end';
 
     @property({ displayName: '游戏重启的事件', readonly: true })
-    event_restart: string = 'game_restart';
+    event_restart: string = 'game_state_event_restart';
 
     @property({ displayName: '引擎重启' })
     isEngineRestart: boolean = false;
