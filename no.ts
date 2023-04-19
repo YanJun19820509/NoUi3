@@ -2959,6 +2959,11 @@ export namespace no {
             return `${this._coefficient}E${this.index}`;
         }
 
+        public setValue(v: string | number): ScientificString {
+            this.value = v;
+            return this;
+        }
+
         /**系数 */
         public get coefficient(): number {
             return this._coefficient;
@@ -3179,6 +3184,11 @@ export namespace no {
             let a = this.clone;
             a._coefficient = Math.abs(a._coefficient);
             return a;
+        }
+
+        public static toUnitString(v: string | number): string{
+            const a = new ScientificString(v);
+            return a.unitValue;
         }
     }
 

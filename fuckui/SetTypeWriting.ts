@@ -65,10 +65,7 @@ export class SetTypeWritting extends FuckUi {
         }
         if (!this._label) return;
         if (data.content) {
-            this._paragraphs = [];
-            [].concat(data.content).forEach(c => {
-                this._paragraphs = [].concat(this._paragraphs, c.split(this._br));
-            });
+            this._paragraphs = [].concat(data.content);
         }
         this._label.enabled = true;
 
