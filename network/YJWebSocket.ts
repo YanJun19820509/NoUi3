@@ -58,7 +58,7 @@ export class YJWebSocket implements YJSocketInterface {
             this.ws = new WebSocket(this.url);
         }
         // Android 必须加入CA证书才能使用wss
-        no.log('initWebSocket');
+        no.log('YJWebSocket initWebSocket');
         this.ws['_uuid'] = no.uuid();
 
         this.ws.onopen = (event) => {
