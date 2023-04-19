@@ -120,22 +120,23 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private write() {
-        this.scheduleOnce(() => {
-            const n = this._content.length;
-            for (let i = 0; i < n; i++) {
-                this.setStr();
-            }
-            this.setWrap();
-            this.setParagraph();
-        }, .1);
-        // no.schedule(() => {
-        //     this.setStr();
-        // }, 0, n, 0, this, () => {
+        // this.scheduleOnce(() => {
+        //     const n = this._content.length;
+        //     for (let i = 0; i < n; i++) {
+        //         this.setStr();
+        //     }
         //     this.setWrap();
-        //     this.scheduleOnce(() => {
-        //         this.setParagraph();
-        //     }, this.duration);
-        // });
+        //     this.setParagraph();
+        // }, .1);
+        const n = this._content.length;
+        no.schedule(() => {
+            this.setStr();
+        }, 0, n, 0, this, () => {
+            this.setWrap();
+            this.scheduleOnce(() => {
+                this.setParagraph();
+            }, this.duration);
+        });
     }
 
     private writing() {
