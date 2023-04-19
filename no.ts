@@ -28,23 +28,25 @@ export namespace no {
     export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
         const targetT = { uuid: target.uuid };
-        let n: number;
-        repeat--;
-        if (endCb) {
-            repeat++;
-            n = repeat;
+        let n: number = repeat;
+        if (!endCb) {
+            repeat--;
         }
         if (!_scheduler) _scheduler = director.getScheduler();
 
         const callback = (dt: number) => {
-            if (!target)
-                cb?.(dt);
-            else if (checkValid(target)) {
-                cb?.call(target, dt);
-                if (endCb && --n == 0) {
-                    endCb.call(target);
-                }
-            } else unschedule(targetT, callback);
+            if (n > 0) {
+                if (!target)
+                    cb?.(dt);
+                else if (checkValid(target)) {
+                    cb?.call(target, dt);
+                } else unschedule(targetT, callback);
+            }
+
+            if (endCb && n == 0) {
+                endCb.call(target);
+            }
+            --n;
         };
 
         _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
@@ -3186,7 +3188,7 @@ export namespace no {
             return a;
         }
 
-        public static toUnitString(v: string | number): string{
+        public static toUnitString(v: string | number): string {
             const a = new ScientificString(v);
             return a.unitValue;
         }
