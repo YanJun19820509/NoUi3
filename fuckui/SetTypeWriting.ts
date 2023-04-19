@@ -65,7 +65,10 @@ export class SetTypeWritting extends FuckUi {
         }
         if (!this._label) return;
         if (data.content) {
-            this._paragraphs = [].concat(data.content);
+            this._paragraphs = [];
+            [].concat(data.content).forEach(c => {
+                this._paragraphs = [].concat(this._paragraphs, c.split(this._br));
+            });
         }
         this._label.enabled = true;
 
@@ -110,7 +113,6 @@ export class SetTypeWritting extends FuckUi {
         let s = String(this._paragraphs[this._idx]);
         this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
 
-
         this.scheduleOnce(() => {
             if (this.noType)
                 this.write();
@@ -128,15 +130,19 @@ export class SetTypeWritting extends FuckUi {
         //     this.setWrap();
         //     this.setParagraph();
         // }, .1);
-        const n = this._content.length;
-        no.schedule(() => {
-            this.setStr();
-        }, 0, n, 0, this, () => {
-            this.setWrap();
-            this.scheduleOnce(() => {
+        if (this._isRichText) {
+            const n = this._content.length;
+            no.schedule(() => {
+                this.setStr();
+            }, 0, n, 0, this, () => {
+                this.setWrap();
                 this.setParagraph();
-            }, this.duration);
-        });
+            });
+        } else {
+            this._label.string += this._content.join('');
+            this.setWrap();
+            this.setParagraph();
+        }
     }
 
     private writing() {
