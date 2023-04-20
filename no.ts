@@ -272,13 +272,15 @@ export namespace no {
             this._states[type] = { v: value, t: sys.now() };
         }
 
-        public on(type: string, target: Component) {
+        public on(type: string, target: any) {
+            if (!target.uuid) target.uuid = uuid();
             this._watchers[type] = this._watchers[type] || {};
             this._watchers[type][target.uuid] = sys.now();
         }
 
 
-        public off(type: string, target: Component) {
+        public off(type: string, target: any) {
+            if (!target.uuid) return;
             if (this._watchers[type])
                 delete this._watchers[type][target.uuid];
         }
@@ -293,10 +295,11 @@ export namespace no {
             this._watchers = {};
         }
 
-        public check(type: string, target: Component): { state: boolean, value?: any } {
+        public check(type: string, target: any): { state: boolean, value?: any } {
             let c = { state: false, value: null };
             let b: { v: any, t: number } = this._states[type];
             if (!b) return c;
+            if (!target.uuid) target.uuid = uuid();
             let a = this._watchers[type];
             if (!a) {
                 this._watchers[type] = {};
@@ -307,7 +310,7 @@ export namespace no {
             return c;
         }
 
-        public async checkTrue(type: string, target: Component): Promise<any> {
+        public async checkTrue(type: string, target: any): Promise<any> {
             if (!target?.isValid) return Promise.resolve(null);
             let a = this.check(type, target);
             if (a.state) return Promise.resolve(a.value);
