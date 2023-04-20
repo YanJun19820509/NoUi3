@@ -771,13 +771,16 @@ export namespace no {
         return array[i];
     }
 
-    export function addToArray(array: any[], value: any, key?: string): void {
-        if (!array) return;
+    export function addToArray(array: any[], value: any, key?: string): boolean {
+        if (!array) return false;
         if (key == null && array.indexOf(value) == -1) {
             array[array.length] = value;
+            return true;
         } else if (key != null && indexOfArray(array, value, key) == -1) {
             array[array.length] = value;
+            return true;
         }
+        return false;
     }
 
     /**
