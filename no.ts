@@ -469,8 +469,9 @@ export namespace no {
      */
     export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
         return new Promise<any>(resolve => {
-            evn.once(type, () => {
-                resolve(arg);
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') resolve(null);
+                else resolve(arg);
             }, target);
         });
     }
@@ -493,8 +494,11 @@ export namespace no {
      * @returns 
      */
     export function waiForEventValue(type: string, target?: any): Promise<any> {
-        return new Promise<any>(resolve => {
-            evn.once(type, resolve, target);
+        return new Promise<any>((resolve, reject) => {
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') reject(null);
+                else resolve(v);
+            }, target);
         });
     }
 
@@ -507,15 +511,27 @@ export namespace no {
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         let e = evn;
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve, reject) => {
             e.on(type, (v: any) => {
-                log('waiForEventValueEqual', type, v);
-                if (v == equalValue) {
-                    e.offAfterTrigger(type, target);
-                    resolve();
+                if (v == '__clear_Wait_For_Event__') resolve();
+                else {
+                    log('waiForEventValueEqual', type, v);
+                    if (v == equalValue) {
+                        e.offAfterTrigger(type, target);
+                        resolve();
+                    }
                 }
             }, target);
         });
+    }
+
+    /**
+     * 取消
+     * @param type 
+     */
+    export function clearWaitForEvent(type: string) {
+        evn.emit(type, '__clear_Wait_For_Event__');
+        evn.typeOff(type);
     }
 
     /**
