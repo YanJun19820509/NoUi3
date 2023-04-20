@@ -43,6 +43,7 @@ export class YJGuidePanel extends YJPanel {
     public curStep: string;
     private static _ins: YJGuidePanel;
     private guideNodeMap: Object;
+    protected isGuiding: boolean = false;
 
     onLoad() {
         YJGuidePanel._ins = this;
@@ -58,6 +59,7 @@ export class YJGuidePanel extends YJPanel {
     }
 
     protected onClosePanel() {
+        this.isGuiding = false;
         no.evn.targetOff(this);
     }
 
@@ -128,7 +130,7 @@ export class YJGuidePanel extends YJPanel {
      * 是否在引导中
      */
     public static get isGuiding(): boolean {
-        return !!this._ins;
+        return !!this._ins?.isGuiding;
     }
 
     /**
