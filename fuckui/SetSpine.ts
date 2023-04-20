@@ -18,7 +18,7 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
-@requireComponent(sp.Skeleton)
+// @requireComponent(sp.Skeleton)
 export class SetSpine extends FuckUi {
 
     @property
@@ -30,8 +30,8 @@ export class SetSpine extends FuckUi {
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
 
+    private needRelease: boolean = false;
     curPath: string;
-    cacheSke: sp.SkeletonData;
 
     onEnable() {
         if (this.autoPlayOnEnable) {
@@ -41,8 +41,12 @@ export class SetSpine extends FuckUi {
         }
     }
 
-    onDestroy() {
-        this.cacheSke && no.assetBundleManager.decRef(this.cacheSke);
+    onDisable() {
+        const spine = this.getComponent(sp.Skeleton);
+        if (no.checkValid(spine)) {
+            spine.clearTracks();
+            this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
+        }
     }
 
     protected onDataChange(data: any) {
@@ -53,16 +57,19 @@ export class SetSpine extends FuckUi {
          * 如果传入路径和之前的资源路径不一致   释放之前的
          */
         if (path && this.curPath && this.curPath != path) {
-            spine?.skeletonData?.decRef();
+            no.assetBundleManager.decRef(spine?.skeletonData);
         }
 
         if (path && this.curPath != path) {
             no.assetBundleManager.loadSpine(path, res => {
-                if (!spine?.isValid) return;
+                if (!spine?.isValid) {
+                    no.assetBundleManager.decRef(res);
+                    return;
+                }
+                this.needRelease = true;
                 this.curPath = path;
 
                 spine.skeletonData = res;
-                this.cacheSke = res;
 
                 spine.timeScale = timeScale || 1;
                 let tempStr = (skin ? (skin + ':') : '') + animation;

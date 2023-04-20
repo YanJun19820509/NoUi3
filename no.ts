@@ -122,7 +122,7 @@ export namespace no {
      * @param target 
      */
     export function unschedule(target: any, cb?: any) {
-        if (!target) return;
+        if (!target || !target.uuid) return;
         if (!cb)
             _scheduler?.unscheduleAllForTarget(target);
         else
