@@ -22,10 +22,10 @@ js.mixin(StencilManager.prototype, {
 });
 
 
-const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];
-js.mixin(cc['internal']?.['Batcher2D']['prototype'], {
-    commitIA(renderComp: any, ia: any, tex?: any, mat?: any, transform?: Node) {
-        if (!tex || !tex.getGFXSampler()) tex = null;
-        return _commitIA.call(this, renderComp, ia, tex, mat, transform);
-    }
-});
+// const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];
+// js.mixin(cc['internal']?.['Batcher2D']['prototype'], {
+//     commitIA(renderComp: any, ia: any, tex?: any, mat?: any, transform?: Node) {
+//         if (!tex || !tex.getGFXSampler()) tex = null;
+//         return _commitIA.call(this, renderComp, ia, tex, mat, transform);
+//     }
+// });
