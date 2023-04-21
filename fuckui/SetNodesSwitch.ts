@@ -24,14 +24,11 @@ export class SwitchInfo {
 
     private conditions: string[];
 
-    public checkShow(v: string): boolean {
+    public checkShow(v: string) {
         if (!this.conditions) this.conditions = this.condition.split(',');
-        return this.conditions.indexOf(v) != -1;
-    }
-
-    public show(v: boolean) {
+        let a = this.conditions.indexOf(v) != -1;
         this.nodes.forEach(node => {
-            node.active = v;
+            node.active = a;
         });
     }
 }
@@ -44,12 +41,9 @@ export class SetNodesSwitch extends FuckUi {
 
     protected onDataChange(data: any) {
         data = String(data);
-        let showIdx = 0;
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
-            if (info.checkShow(data)) showIdx = i;
-            else (info.show(false));
+            info.checkShow(data);
         }
-        this.infos[showIdx].show(true);
     }
 }
