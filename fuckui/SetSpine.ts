@@ -41,9 +41,9 @@ export class SetSpine extends FuckUi {
         }
     }
 
-    onDisable() {
+    onDestroy() {
         const spine = this.getComponent(sp.Skeleton);
-        if (no.checkValid(spine)) {
+        if (no.checkValid(spine) && !!spine.skeletonData) {
             spine.clearTracks();
             // this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
         }
