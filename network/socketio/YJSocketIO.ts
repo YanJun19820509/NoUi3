@@ -1,7 +1,7 @@
 
 import { _decorator } from 'cc';
 // import * as socket from './socket.io.msgpack.min.js';
-import * as socket from './socket.io.min.js';
+// import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
 import { decode, encode, EncryptType } from '../../encrypt/encrypt';
@@ -45,7 +45,7 @@ export class YJSocketIO implements YJSocketInterface {
 
     private initWebSocket(url: string, options: any) {
         this.url = url;
-        this.ws = socket.default.io(url, options);
+        // this.ws = socket.default.io(url, options);
 
         this.ws.on('connect', () => {
             no.log(`socketio connect:${this.url}`);
