@@ -76,10 +76,11 @@ export default class YJLoadPrefab extends Component {
         }
     }
 
-    private async setPrefabUrl() {
-        let url = await no.getAssetUrlInEditorMode(this.prefab._uuid);
-        this.prefabUrl = url;
-        // this.prefabUuid = this.prefab._uuid;
-        this.prefab = null;
+    private setPrefabUrl() {
+        no.getAssetUrlInEditorMode(this.prefab._uuid, url => {
+            if (!url) return;
+            this.prefabUrl = url;
+            this.prefab = null;
+        });
     }
 }

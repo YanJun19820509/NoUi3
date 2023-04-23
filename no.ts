@@ -1,7 +1,7 @@
 
 import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
-import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
+import { AssetInfo } from './@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
 
@@ -1790,10 +1790,12 @@ export namespace no {
 
     }
 
-    export async function getAssetUrlInEditorMode(uuid: string): Promise<string> {
-        if (!EDITOR) return null;
-        let info = await Editor.Message.request('asset-db', 'query-asset-info', uuid);
-        return info.url;
+    export function getAssetUrlInEditorMode(uuid: string, cb: (url: string) => void) {
+        if (!EDITOR) cb?.(null);
+        else
+            Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
+                cb?.(info?.url);
+            })
     }
 
     /**

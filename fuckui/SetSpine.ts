@@ -2,7 +2,8 @@
 import { _decorator, sp, assetManager } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu, requireComponent } = _decorator;
+import { EDITOR } from 'cc/env';
+const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -18,11 +19,14 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
-// @requireComponent(sp.Skeleton)
+@executeInEditMode()
+@requireComponent(sp.Skeleton)
 export class SetSpine extends FuckUi {
 
     @property
     autoPlayOnEnable: boolean = false;
+    @property
+    spineUrl: string = '';
     @property({ visible() { return this.autoPlayOnEnable; } })
     animationName: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
@@ -33,11 +37,29 @@ export class SetSpine extends FuckUi {
     private needRelease: boolean = false;
     curPath: string;
 
+    onLoad() {
+        super.onLoad();
+        if (EDITOR) {
+
+        }
+    }
+
+    protected update(dt: number): void {
+        if (!EDITOR) return;
+        const skeletonData = this.getComponent(sp.Skeleton).skeletonData;
+        if (skeletonData && !this.spineUrl) {
+            no.getAssetUrlInEditorMode(skeletonData._uuid, url => {
+                if (!url) return;
+                this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
+                this.getComponent(sp.Skeleton).skeletonData = null;
+            });
+        }
+    }
+
     onEnable() {
         if (this.autoPlayOnEnable) {
             let spine = this.getComponent(sp.Skeleton);
-            if (spine.loop) this.a_playLoop(null, this.animationName);
-            else this.a_playOnce(null, this.animationName);
+            this.onDataChange({ animation: this.animationName, loop: spine.loop });
         }
     }
 
@@ -45,13 +67,17 @@ export class SetSpine extends FuckUi {
         const spine = this.getComponent(sp.Skeleton);
         if (no.checkValid(spine) && !!spine.skeletonData) {
             spine.clearTracks();
-            // this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
+            this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
         }
     }
 
     protected onDataChange(data: any) {
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
         const spine = this.getComponent(sp.Skeleton);
+
+        if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
+            path = this.spineUrl;
+        }
 
         /**
          * 如果传入路径和之前的资源路径不一致   释放之前的
