@@ -34,9 +34,13 @@ export class SetSpine extends FuckUi {
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
 
+    /**当帧率较低时禁止播放spine */
+    public static disableSpineWhenLowFPS: boolean = false;
+
     private needRelease: boolean = false;
     curPath: string;
     private isSpineEnable: boolean = null;
+    private canSetSpine: boolean = true;
 
     onLoad() {
         super.onLoad();
@@ -48,7 +52,19 @@ export class SetSpine extends FuckUi {
     }
 
     protected update(dt: number): void {
-        if (!EDITOR) return;
+        if (!EDITOR) {
+            if (SetSpine.disableSpineWhenLowFPS) {
+                const fps = 1 / dt;
+                if (fps < 45 && this.canSetSpine) {
+                    this.canSetSpine = false;
+                    this.getComponent(sp.Skeleton).enabled = false;
+                } else if (fps > 55 && !this.canSetSpine) {
+                    this.canSetSpine = true;
+                    this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
+                }
+            }
+            return;
+        }
         const skeletonData = this.getComponent(sp.Skeleton).skeletonData;
         if (skeletonData && !this.spineUrl) {
             no.getAssetUrlInEditorMode(skeletonData._uuid, url => {
@@ -75,6 +91,7 @@ export class SetSpine extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        if (!this.canSetSpine) return;
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
         const spine = this.getComponent(sp.Skeleton);
 
@@ -168,6 +185,7 @@ export class SetSpine extends FuckUi {
     }
 
     public setSpineEnable(v: boolean) {
+        if (!this.canSetSpine) return;
         if (v) {
             this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
         } else {
