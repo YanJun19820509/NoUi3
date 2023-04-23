@@ -67,6 +67,8 @@ export class YJPanel extends Component {
     needCache: boolean = true;
     @property({ visible() { return this.needCache; } })
     needClear: boolean = true;
+    @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
+    isFullScreen: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -90,10 +92,14 @@ export class YJPanel extends Component {
         if (this.getComponent(YJLoadAssets)) {
             return this.getComponent(YJLoadAssets).load().then(() => {
                 this.onInitPanel();
+                if (this.isFullScreen)
+                    no.evn.emit('_full_screen_panel_open');
                 return Promise.resolve();
             }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
+        if (this.isFullScreen)
+            no.evn.emit('_full_screen_panel_open');
         return Promise.resolve();
     }
 
@@ -102,6 +108,8 @@ export class YJPanel extends Component {
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
+        if (this.isFullScreen)
+            no.evn.emit('_full_screen_panel_close');
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();

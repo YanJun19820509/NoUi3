@@ -1,5 +1,5 @@
 
-import { _decorator, sp, assetManager } from 'cc';
+import { _decorator, sp } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { EDITOR } from 'cc/env';
@@ -36,11 +36,14 @@ export class SetSpine extends FuckUi {
 
     private needRelease: boolean = false;
     curPath: string;
+    private isSpineEnable: boolean = null;
 
     onLoad() {
         super.onLoad();
         if (EDITOR) {
 
+        } else {
+            this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
         }
     }
 
@@ -162,5 +165,14 @@ export class SetSpine extends FuckUi {
             this?.endCall?.execute();
             spine?.setCompleteListener(() => { });
         });
+    }
+
+    public setSpineEnable(v: boolean) {
+        if (v) {
+            this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
+        } else {
+            this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
+            this.getComponent(sp.Skeleton).enabled = false;
+        }
     }
 }

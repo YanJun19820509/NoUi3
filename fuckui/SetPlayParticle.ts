@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, ParticleSystem2D } from 'cc';
+import { _decorator, Component, Node, ParticleSystem, ParticleSystem2D } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { EDITOR } from 'cc/env';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -26,6 +27,16 @@ export class SetPlayParticle extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '播放完回调' })
     endCalls: no.EventHandlerInfo[] = [];
 
+    private isParticleEnable: boolean = null;
+
+    onLoad(): void {
+        super.onLoad();
+        if (!EDITOR) {
+            let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
+            this.isParticleEnable = p.enabled;
+        }
+    }
+
     onEnable() {
         this.playOnEnable && this._play();
     }
@@ -36,19 +47,40 @@ export class SetPlayParticle extends FuckUi {
     }
 
     private _play() {
-        let p = this.getComponent(ParticleSystem2D);
-        p.resetSystem();
+        let p: ParticleSystem2D | ParticleSystem = this.getComponent(ParticleSystem2D);
+        if (p) {
+            p.resetSystem();
+        } else {
+            p = this.getComponent(ParticleSystem);
+            p.play();
+        }
         if (p.duration > -1) {
             this.scheduleOnce(this._onEnd, p.duration);
         }
     }
 
     private _stop() {
-        this.getComponent(ParticleSystem2D).stopSystem();
+        let p: ParticleSystem2D | ParticleSystem = this.getComponent(ParticleSystem2D);
+        if (p) {
+            p.stopSystem();
+        } else {
+            p = this.getComponent(ParticleSystem);
+            p.stop();
+        }
         this.unschedule(this._onEnd);
     }
 
     private _onEnd() {
         no.EventHandlerInfo.execute(this.endCalls);
+    }
+
+    public setParticleEnable(v: boolean) {
+        let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
+        if (v) {
+            p.enabled = this.isParticleEnable;
+        } else {
+            this.isParticleEnable = p.enabled;
+            p.enabled = false;
+        }
     }
 }
