@@ -27,6 +27,8 @@ export class YJShowHideAllSubRenderNode extends Component {
     @property
     catchFullScreenPanelEvent: boolean = false;
 
+    private isShow: boolean = true;
+
     protected onLoad(): void {
         if (this.enabled) {
             no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
@@ -51,6 +53,8 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     public showSubRenderNode(v: boolean) {
+        if (v == this.isShow) return;
+        this.isShow = v;
         this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {
             c.setSpriteEnable(v);
         });
