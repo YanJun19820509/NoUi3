@@ -65,9 +65,9 @@ export class SetSpine extends FuckUi {
             }
             return;
         }
-        const skeletonData = this.getComponent(sp.Skeleton).skeletonData;
-        if (skeletonData && !this.spineUrl) {
-            no.getAssetUrlInEditorMode(skeletonData._uuid, url => {
+        const spine = this.getComponent(sp.Skeleton);
+        if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
+            no.getAssetUrlInEditorMode(spine.skeletonData._uuid, url => {
                 if (!url) return;
                 this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
                 this.getComponent(sp.Skeleton).skeletonData = null;
