@@ -30,6 +30,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     private isShow: boolean = true;
 
     protected onLoad(): void {
+        return;
         if (this.enabled) {
             no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
             no.evn.on(this.hideSubRenderNodeEvent, this.onHide, this);
