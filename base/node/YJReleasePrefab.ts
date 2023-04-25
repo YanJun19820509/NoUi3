@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { no } from '../../no';
+import { JSB } from 'cc/env';
 const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
@@ -27,8 +28,7 @@ export class YJReleasePrefab extends Component {
         this.aa = this.enabled;
     }
     onDestroy() {
-        return;
-        if (this.aa)
+        if (this.aa && !JSB)
             no.assetBundleManager.release(this.prefabUuid, this.force);
     }
 }

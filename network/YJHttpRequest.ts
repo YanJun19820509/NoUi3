@@ -64,7 +64,7 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
-    static downloadFile(url: string, onProgress?: (loaded: number, total: number) => void): Promise<Blob | null> {
+    static downloadFile(url: string, onProgress?: (loaded: number, total: number) => void, responseType?: XMLHttpRequestResponseType): Promise<Blob | string | null> {
         return new Promise<any>(resolve => {
             no.log('开始下载', url);
             let xhr = new XMLHttpRequest();
@@ -74,7 +74,7 @@ export class YJHttpRequest implements YJSocketInterface {
                     onProgress?.(ev.loaded, ev.total);
                 }
             });
-            xhr.responseType = 'arraybuffer';
+            xhr.responseType = responseType || 'arraybuffer';
             xhr.onload = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     no.log('downloadFile complete')

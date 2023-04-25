@@ -114,7 +114,8 @@ export class SetSpine extends FuckUi {
                 }
                 this.needRelease = true;
                 this.curPath = path;
-
+                //在设置新SkeletonData 之前清理下RenderData
+                spine.destroyRenderData();
                 spine.skeletonData = res;
 
                 spine.timeScale = timeScale || 1;
