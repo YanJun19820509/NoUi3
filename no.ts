@@ -7,12 +7,21 @@ const { ccclass, property } = _decorator;
 
 export namespace no {
     let _debug: boolean = DEBUG;
+    let _version: string;
 
     export function isDebug(): boolean {
         return _debug;
     }
     export function setDebug(v: boolean) {
         _debug = v;
+    }
+
+    export function gameVersion(): string {
+        return _version;
+    }
+
+    export function setGameVersion(v: string) {
+        _version = v;
     }
 
     let _scheduler: Scheduler = null;
@@ -2409,6 +2418,13 @@ export namespace no {
 
         public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
             this.loadRemoteFile<TextAsset>(url, callback);
+        }
+
+        public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
+            assetManager.loadBundle(url, opts, (err, bundle) => {
+                if (err) log(err);
+                callback?.(bundle);
+            });
         }
 
         /**

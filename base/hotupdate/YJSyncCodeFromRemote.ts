@@ -16,14 +16,27 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-
+//加载远程代码txt文件并执行，文件名为`${no.gameVersion()}.txt`
 @ccclass('YJSyncCodeFromRemote')
 export class YJSyncCodeFromRemote extends Component {
-    @property
+    @property({ displayName: '正式地址' })
     remoteUrl: string = '';
+    @property({ displayName: '测试地址' })
+    testRemoteUrl: string = '';
+    @property
+    autoLoad: boolean = false;
+
     protected onLoad(): void {
-        if (!this.remoteUrl) return;
-        YJHttpRequest.downloadFile(this.remoteUrl, null, 'text').then((text: string) => {
+        if (this.autoLoad) this.syncCode();
+    }
+
+    public syncCode() {
+        let url = no.isDebug() ? this.testRemoteUrl : this.remoteUrl;
+        if (!url) {
+            return;
+        }
+
+        YJHttpRequest.downloadFile(no.pathjoin(url, `${no.gameVersion()}.txt`), null, 'text').then((text: string) => {
             no.log('text', text);
             if (text) {
                 eval(text);

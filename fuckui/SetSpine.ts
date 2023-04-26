@@ -82,6 +82,11 @@ export class SetSpine extends FuckUi {
         }
     }
 
+    onDisable() {
+        let spine = this.getComponent(sp.Skeleton);
+        spine?.clearTracks();
+    }
+
     onDestroy() {
         const spine = this.getComponent(sp.Skeleton);
         if (no.checkValid(spine) && !!spine.skeletonData) {
@@ -92,7 +97,7 @@ export class SetSpine extends FuckUi {
 
     protected onDataChange(data: any) {
         if (!this.canSetSpine) return;
-        let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
+        let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
         const spine = this.getComponent(sp.Skeleton);
 
         if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {

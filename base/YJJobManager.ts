@@ -50,11 +50,11 @@ export class YJJobManager extends Component {
     private executePerFrame(frameEndTime: number) {
         let aa = true;
         while (aa) {
-            if (sys.now() >= frameEndTime) {
-                // console.log('executePerFrame end')
-                aa = false;
-                return;
-            }
+            // if (sys.now() >= frameEndTime) {
+            //     // console.log('executePerFrame end')
+            //     aa = false;
+            //     return;
+            // }
             let n = this.jobKeys.length;
             if (n == 0) {
                 aa = false;
