@@ -53,6 +53,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     public showSubRenderNode(v: boolean) {
+        return;
         if (v == this.isShow) return;
         this.isShow = v;
         this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {
