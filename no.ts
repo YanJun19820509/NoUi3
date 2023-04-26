@@ -2422,7 +2422,7 @@ export namespace no {
 
         public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
             assetManager.loadBundle(url, opts, (e, bundle) => {
-                if (e) err(e);
+                if (e) err(e.stack);
                 callback?.(bundle);
             });
         }
