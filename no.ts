@@ -2421,8 +2421,8 @@ export namespace no {
         }
 
         public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
-            assetManager.loadBundle(url, opts, (err, bundle) => {
-                if (err) log(err);
+            assetManager.loadBundle(url, opts, (e, bundle) => {
+                if (e) err(e);
                 callback?.(bundle);
             });
         }
