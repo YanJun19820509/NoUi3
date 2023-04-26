@@ -1415,9 +1415,16 @@ export namespace no {
         return v;
     }
 
+    function eIndex(n: number): number {
+        let s = n.toString().toLowerCase();
+        let a = s.split('e');
+        if (!a[1]) return 0;
+        return Number(a[1]);
+    }
+
     function decimalDigits(n: number): number {
-        let a = n.toString().split('.');
-        return !!a[1] ? a[1].length : 0;
+        let a = n.toString().toLowerCase().split('e')[0].split('.');
+        return (!!a[1] ? a[1].length : 0) - eIndex(n);
     }
 
     /**加 */
@@ -1438,16 +1445,16 @@ export namespace no {
     /**乘 */
     export function mutiply(n1: number, n2: number): number {
         let m: number = decimalDigits(n1) + decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return Number(s1) * Number(s2) / Math.pow(10, m);
     }
     /**除 */
     export function divide(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return (Number(s1) / Number(s2)) * Math.pow(10, r2 - r1);
     }
 
