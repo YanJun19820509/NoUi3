@@ -39,17 +39,11 @@ export class SetSpine extends FuckUi {
 
     private needRelease: boolean = false;
     curPath: string;
-    private isSpineEnable: boolean = null;
     private canSetSpine: boolean = true;
 
-    onLoad() {
-        super.onLoad();
-        if (EDITOR) {
-
-        } else {
-            this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
-        }
-    }
+    // onLoad() {
+    //     super.onLoad();
+    // }
 
     protected update(dt: number): void {
         if (!EDITOR) {
@@ -60,7 +54,6 @@ export class SetSpine extends FuckUi {
                     this.getComponent(sp.Skeleton).enabled = false;
                 } else if (fps > 55 && !this.canSetSpine) {
                     this.canSetSpine = true;
-                    this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
                 }
             }
             return;
@@ -83,6 +76,7 @@ export class SetSpine extends FuckUi {
     }
 
     onDisable() {
+        this.a_clearData();
         let spine = this.getComponent(sp.Skeleton);
         spine?.clearTracks();
     }
@@ -190,13 +184,15 @@ export class SetSpine extends FuckUi {
         });
     }
 
-    public setSpineEnable(v: boolean) {
-        if (!this.canSetSpine) return;
-        if (v) {
-            this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
-        } else {
-            this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
-            this.getComponent(sp.Skeleton).enabled = false;
-        }
-    }
+    //todo 对循环播放的动画考虑按需暂停
+
+    // public setSpineEnable(v: boolean) {
+    //     if (!this.canSetSpine) return;
+    //     if (v) {
+    //         this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
+    //     } else {
+    //         this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
+    //         this.getComponent(sp.Skeleton).enabled = false;
+    //     }
+    // }
 }

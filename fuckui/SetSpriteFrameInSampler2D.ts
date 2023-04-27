@@ -40,7 +40,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private lastDefine: string;
 
     private defineIndex: number = 0;
-    private isSpriteEnable: boolean = null;
 
     onLoad() {
         super.onLoad();
@@ -57,8 +56,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
             if (this.getComponent(Sprite).spriteAtlas)
                 this.getComponent(Sprite).spriteAtlas = null;
-        } else
-            this.isSpriteEnable = this.getComponent(Sprite).enabled;
+        }
     }
 
     public initSpriteFrameInfo() {
@@ -135,11 +133,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteEnable(v: boolean) {
-        if (v) {
-            this.getComponent(Sprite).enabled = this.isSpriteEnable;
-        } else {
-            this.isSpriteEnable = this.getComponent(Sprite).enabled;
-            this.getComponent(Sprite).enabled = false;
-        }
+        if (!this.node.active) return;
+        this.getComponent(Sprite).enabled = v;
     }
 }

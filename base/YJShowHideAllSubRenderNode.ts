@@ -30,25 +30,25 @@ export class YJShowHideAllSubRenderNode extends Component {
     private isShow: boolean = true;
 
     protected onLoad(): void {
-        if (this.enabled) {
-            no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
-            no.evn.on(this.hideSubRenderNodeEvent, this.onHide, this);
-            if (this.catchFullScreenPanelEvent) {
-                no.evn.on('_full_screen_panel_open', this.onHide, this);
-                no.evn.on('_full_screen_panel_close', this.onShow, this);
-            }
-        }
+        // if (this.enabled) {
+        //     no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
+        //     no.evn.on(this.hideSubRenderNodeEvent, this.onHide, this);
+        //     if (this.catchFullScreenPanelEvent) {
+        //         no.evn.on('_full_screen_panel_open', this.onHide, this);
+        //         no.evn.on('_full_screen_panel_close', this.onShow, this);
+        //     }
+        // }
     }
 
     protected onDestroy(): void {
         no.evn.targetOff(this);
     }
 
-    private onShow() {
+    private onShow(type: string) {
         this.showSubRenderNode(true);
     }
 
-    private onHide() {
+    private onHide(type: string) {
         this.showSubRenderNode(false);
     }
 

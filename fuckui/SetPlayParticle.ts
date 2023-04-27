@@ -27,15 +27,15 @@ export class SetPlayParticle extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '播放完回调' })
     endCalls: no.EventHandlerInfo[] = [];
 
-    private isParticleEnable: boolean = null;
+    // private isParticleEnable: boolean = null;
 
-    onLoad(): void {
-        super.onLoad();
-        if (!EDITOR) {
-            let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
-            this.isParticleEnable = p.enabled;
-        }
-    }
+    // onLoad(): void {
+    //     super.onLoad();
+    //     if (!EDITOR) {
+    //         let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
+    //         this.isParticleEnable = p.enabled;
+    //     }
+    // }
 
     onEnable() {
         this.playOnEnable && this._play();
@@ -74,13 +74,14 @@ export class SetPlayParticle extends FuckUi {
         no.EventHandlerInfo.execute(this.endCalls);
     }
 
-    public setParticleEnable(v: boolean) {
-        let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
-        if (v) {
-            p.enabled = this.isParticleEnable;
-        } else {
-            this.isParticleEnable = p.enabled;
-            p.enabled = false;
-        }
-    }
+    //todo 对循环播放的考虑按需暂停
+    // public setParticleEnable(v: boolean) {
+    //     let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
+    //     if (v) {
+    //         p.enabled = this.isParticleEnable;
+    //     } else {
+    //         this.isParticleEnable = p.enabled;
+    //         p.enabled = false;
+    //     }
+    // }
 }
