@@ -102,7 +102,7 @@ export namespace no {
                 unschedule(targetT, callback);
             }
         };
-        _scheduler.schedule(callback, targetT, 0, maxTry, 0, false);
+        _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
     }
 
     /**
