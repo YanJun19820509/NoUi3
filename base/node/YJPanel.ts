@@ -81,7 +81,7 @@ export class YJPanel extends Component {
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
-        no.log('panel onLoad', this.node.name);
+        no.log('panel load', this.node.name);
         this.onLoadPanel();
     }
 
@@ -104,6 +104,7 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
+        no.log('panel close', this.node.name);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
