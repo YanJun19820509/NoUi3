@@ -4,8 +4,6 @@ import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
-import { YJJobManager } from './YJJobManager';
-import { YJComponent } from './YJComponent';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -24,7 +22,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @requireComponent(YJFuckUiRegister)
 @executeInEditMode()
-export class YJDataWork extends YJComponent {
+export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
 
@@ -36,9 +34,10 @@ export class YJDataWork extends YJComponent {
     private changedDataKeys: string[] = [];
 
     private _loaded: boolean = false;
+    private _handler: number;
 
     protected onDestroy(): void {
-
+        // this.clearUpdateHandlers();
     }
 
     onLoad() {
@@ -48,15 +47,11 @@ export class YJDataWork extends YJComponent {
         }
         this._loaded = true;
         this.init();
+        this.schedule(this.setChangedDataToUi, .05, macro.REPEAT_FOREVER);
     }
 
     start() {
         this.register.init();
-    }
-
-    lateUpdate(dt: number) {
-        super.lateUpdate(dt);
-        this.setChangedDataToUi();
     }
 
     /**
@@ -67,18 +62,15 @@ export class YJDataWork extends YJComponent {
         this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
-        this.clearUpdateHandlers();
-        let n = 180;
-        this.addUpdateHandlerByFrame(() => {
-            n--;
-            if (!!this.data) {
-                this.afterDataInit();
-                return false;
-            }
-            if (n <= 0)
-                return false;
-            return true;
-        })
+        this.unschedule(this._checkData);
+        this.schedule(this._checkData, 0.1, 180);
+    }
+
+    private _checkData() {
+        if (!!this.data) {
+            this.unschedule(this._checkData);
+            this.afterDataInit();
+        }
     }
 
     public get data(): any {
@@ -108,8 +100,9 @@ export class YJDataWork extends YJComponent {
     private _setting: boolean = false;
     private setChangedDataToUi() {
         if (!this?.node?.isValid) return;
-        if (this._setting) return;
+        if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
+        if (this._setting) return;
         this._setting = true;
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
         let k = keys.shift();

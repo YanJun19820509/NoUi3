@@ -51,6 +51,7 @@ export class YJComponent extends Component {
      * @param handlerKey 设置时反回的key
      */
     public removeUpdateHandler(handlerKey: number): void {
+        if (handlerKey == null) return;
         this.needRemoveHandlerKeys.push(handlerKey);
     }
 
