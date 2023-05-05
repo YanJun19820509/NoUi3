@@ -46,6 +46,7 @@ export class FuckUi extends Component {
     }
 
     public setData(d: string) {
+        if (!this.enabled) return;
         if (d == 'null') {
             this.a_setEmpty();
             this._oldData = null;
