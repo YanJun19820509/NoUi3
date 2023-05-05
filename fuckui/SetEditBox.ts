@@ -42,6 +42,7 @@ export class SetEditBox extends FuckUi {
             if (this.bindEditiongDidEnded) {
                 this.bindEditiongDidEnded = false;
                 this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, SetEditBox, 'onEditEnd')];
+                this.getComponent(EditBox).editingReturn = [no.createEventHandler(this.node, SetEditBox, 'onEditEnd')];
             }
         }
     }

@@ -427,7 +427,8 @@ export namespace no {
         }
 
         public execute(...args: any[]): void {
-            this.handler.emit(args);
+            if (isValid(this.handler?.target, true))
+                this.handler.emit(args);
         }
     }
 
