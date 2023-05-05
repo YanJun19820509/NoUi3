@@ -63,7 +63,9 @@ export class YJDataWork extends Component {
         if (!this._loaded) return;
         this.afterInit();
         this.unschedule(this._checkData);
-        this.schedule(this._checkData, 0.1, 180);
+        if (!this.data)
+            this.schedule(this._checkData, 0.1, 180);
+        else this.afterDataInit();
     }
 
     private _checkData() {
