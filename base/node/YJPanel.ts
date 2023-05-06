@@ -93,13 +93,13 @@ export class YJPanel extends Component {
             return this.getComponent(YJLoadAssets).load().then(() => {
                 this.onInitPanel();
                 if (this.isFullScreen)
-                    no.evn.emit('_full_screen_panel_open');
+                    no.evn.emit('_full_screen_panel_open', this.panelType);
                 return Promise.resolve();
             }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
         if (this.isFullScreen)
-            no.evn.emit('_full_screen_panel_open');
+            no.evn.emit('_full_screen_panel_open', this.panelType);
         return Promise.resolve();
     }
 
@@ -110,7 +110,7 @@ export class YJPanel extends Component {
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
         if (this.isFullScreen)
-            no.evn.emit('_full_screen_panel_close');
+            no.evn.emit('_full_screen_panel_close', this.panelType);
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();

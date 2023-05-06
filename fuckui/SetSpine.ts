@@ -33,6 +33,8 @@ export class SetSpine extends FuckUi {
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
+    @property({ tooltip: '当显示全屏界面时，是否支持disable' })
+    canDisable: boolean = true;
 
     /**当帧率较低时禁止播放spine */
     public static disableSpineWhenLowFPS: boolean = false;
@@ -40,10 +42,7 @@ export class SetSpine extends FuckUi {
     private needRelease: boolean = false;
     curPath: string;
     private canSetSpine: boolean = true;
-
-    // onLoad() {
-    //     super.onLoad();
-    // }
+    private isSpineEnable: boolean = false;
 
     protected update(dt: number): void {
         if (!EDITOR) {
@@ -186,13 +185,16 @@ export class SetSpine extends FuckUi {
 
     //todo 对循环播放的动画考虑按需暂停
 
-    // public setSpineEnable(v: boolean) {
-    //     if (!this.canSetSpine) return;
-    //     if (v) {
-    //         this.getComponent(sp.Skeleton).enabled = this.isSpineEnable;
-    //     } else {
-    //         this.isSpineEnable = this.getComponent(sp.Skeleton).enabled;
-    //         this.getComponent(sp.Skeleton).enabled = false;
-    //     }
-    // }
+    public setSpineEnable(v: boolean) {
+        if (!this.canSetSpine) return;
+        if (!this.canDisable) return;
+        const spine = this.getComponent(sp.Skeleton);
+        if (!spine.node.activeInHierarchy) return;
+        if (v) {
+            spine.enabled = this.isSpineEnable;
+        } else {
+            this.isSpineEnable = spine.enabled;
+            spine.enabled = false;
+        }
+    }
 }

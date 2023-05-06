@@ -28,16 +28,17 @@ export class YJShowHideAllSubRenderNode extends Component {
     catchFullScreenPanelEvent: boolean = false;
 
     private isShow: boolean = true;
+    private _count: number = 0;
 
     protected onLoad(): void {
-        // if (this.enabled) {
-        //     no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
-        //     no.evn.on(this.hideSubRenderNodeEvent, this.onHide, this);
-        //     if (this.catchFullScreenPanelEvent) {
-        //         no.evn.on('_full_screen_panel_open', this.onHide, this);
-        //         no.evn.on('_full_screen_panel_close', this.onShow, this);
-        //     }
-        // }
+        if (this.enabled) {
+            no.evn.on(this.showSubRenderNodeEvent, this.onShow, this);
+            no.evn.on(this.hideSubRenderNodeEvent, this.onHide, this);
+            if (this.catchFullScreenPanelEvent) {
+                no.evn.on('_full_screen_panel_open', this.onHide, this);
+                no.evn.on('_full_screen_panel_close', this.onShow, this);
+            }
+        }
     }
 
     protected onDestroy(): void {
@@ -45,23 +46,25 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onShow(type: string) {
-        this.showSubRenderNode(true);
+        this._count--;
+        if (this._count == 0)
+            this.showSubRenderNode(true);
     }
 
     private onHide(type: string) {
+        this._count++;
         this.showSubRenderNode(false);
     }
 
     public showSubRenderNode(v: boolean) {
-        return;
         if (v == this.isShow) return;
         this.isShow = v;
         this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {
             c.setSpriteEnable(v);
         });
-        // this.getComponentsInChildren(SetSpine).forEach(c => {
-        //     c.setSpineEnable(v);
-        // });
+        this.getComponentsInChildren(SetSpine).forEach(c => {
+            c.setSpineEnable(v);
+        });
         // this.getComponentsInChildren(SetPlayParticle).forEach(c => {
         //     c.setParticleEnable(v);
         // });
