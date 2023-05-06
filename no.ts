@@ -24,7 +24,7 @@ export namespace no {
         _version = v;
     }
 
-    let _scheduler: Scheduler = null;
+    let _scheduler: Scheduler = director.getScheduler();
     /**
      * 定时器
      * @param cb 
@@ -36,20 +36,25 @@ export namespace no {
      */
     export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
+        let targetT = { uuid: target.uuid };
         let n: number = repeat;
         if (!endCb) {
             repeat--;
         }
-        if (!_scheduler) _scheduler = director.getScheduler();
 
-        const callback = (dt: number) => {
+        let callback = (dt: number) => {
             if (n > 0) {
                 if (!target)
                     cb?.(dt);
                 else if (checkValid(target)) {
                     cb?.call(target, dt);
-                } else unschedule(targetT, callback);
+                } else {
+                    unschedule(targetT, callback);
+                    targetT = null;
+                    callback = null;
+                    n = null;
+                    return;
+                }
             }
 
             if (endCb && n == 0) {
@@ -92,14 +97,18 @@ export namespace no {
             return;
         }
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
+        let targetT = { uuid: target.uuid };
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
-        if (!_scheduler) _scheduler = director.getScheduler();
-        const callback = (dt: number) => {
-            if (!checkValid(target)) unschedule(targetT, callback);
-            else if (check.call(target, dt)) {
+        let callback = (dt: number) => {
+            if (!checkValid(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else if (check.call(target, dt)) {
                 onChecked.call(target);
                 unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
             }
         };
         _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
@@ -117,10 +126,13 @@ export namespace no {
         if (until.call(target)) return;
         if (!_scheduler) _scheduler = director.getScheduler();
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
-        const callback = (dt: number) => {
-            if (!checkValid(target) || until.call(target)) unschedule(targetT, callback);
-            else {
+        let targetT = { uuid: target.uuid };
+        let callback = (dt: number) => {
+            if ((target && !checkValid(target)) || until.call(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else {
                 cb?.call(target, dt);
             }
         };
