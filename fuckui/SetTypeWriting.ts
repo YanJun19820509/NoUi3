@@ -91,6 +91,12 @@ export class SetTypeWritting extends FuckUi {
             } else
                 this.createRichTextNode(str);
 
+        } else if (data.content == '') {
+            this.node.removeAllChildren();
+            this._x = null;
+            this._maxY = 0;
+            this._label.string = '';
+            this._idx = -1;
         } else {
             this.node.removeAllChildren();
             this._x = null;

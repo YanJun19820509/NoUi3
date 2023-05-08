@@ -57,8 +57,8 @@ export class YJGuideManager extends Component {
         YJGuideManager._ins = null;
     }
 
-    public save(steps: string | string[]) {
-        this.saveSteps = [].concat(this.saveSteps, steps || []);
+    public save(steps: string) {
+        no.addToArray(this.saveSteps, steps);
     }
 
     public getGuideInfo(path: string): any {
