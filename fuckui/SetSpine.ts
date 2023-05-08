@@ -42,7 +42,7 @@ export class SetSpine extends FuckUi {
     private needRelease: boolean = false;
     curPath: string;
     private canSetSpine: boolean = true;
-    private isSpineEnable: boolean = false;
+    private isSpineEnable: boolean = null;
 
     protected update(dt: number): void {
         if (!EDITOR) {
@@ -191,6 +191,7 @@ export class SetSpine extends FuckUi {
         if (!this.canDisable) return;
         const spine = this.getComponent(sp.Skeleton);
         if (!spine.node.activeInHierarchy) return;
+        if (this.isSpineEnable == null) return;
         if (v) {
             spine.enabled = this.isSpineEnable;
         } else {
