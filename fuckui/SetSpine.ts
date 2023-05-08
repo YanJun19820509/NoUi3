@@ -104,6 +104,9 @@ export class SetSpine extends FuckUi {
             no.assetBundleManager.decRef(spine?.skeletonData);
         }
 
+        if (timeScale)
+            spine.timeScale = timeScale;
+
         if (path && this.curPath != path) {
             no.assetBundleManager.loadSpine(path, res => {
                 if (!spine?.isValid) {
@@ -116,13 +119,11 @@ export class SetSpine extends FuckUi {
                 spine.destroyRenderData();
                 spine.skeletonData = res;
 
-                spine.timeScale = timeScale || 1;
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (loop) this.a_playLoop(tempStr);
                 else this.a_playOnce(tempStr);
             });
         } else if (animation != null) {
-            spine.timeScale = timeScale || 1;
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (loop) this.a_playLoop(tempStr);
             else this.a_playOnce(tempStr);
