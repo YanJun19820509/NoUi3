@@ -61,16 +61,21 @@ export class YJDataWork extends Component {
         this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
-        this.unschedule(this._checkData);
-        if (!this.data)
-            this.schedule(this._checkData, 0.1, 180);
-        else this.afterDataInit();
+        const afterDataInit = this['afterDataInit'];
+        if (typeof afterDataInit == 'function') {
+            this.unschedule(this._checkData);
+            if (!this.data)
+                this.schedule(this._checkData, 0, 180);
+            else afterDataInit.call(this);
+        }
     }
 
     private _checkData() {
         if (!!this.data) {
             this.unschedule(this._checkData);
-            this.afterDataInit();
+            const afterDataInit = this['afterDataInit'];
+            if (typeof afterDataInit == 'function')
+                afterDataInit.call(this);
         }
     }
 
@@ -161,10 +166,10 @@ export class YJDataWork extends Component {
     protected afterInit() {
 
     }
-    /**此时data一定有值 */
-    protected afterDataInit() {
+    /**此时data一定有值，子类按需实现该方法 */
+    // protected afterDataInit() {
 
-    }
+    // }
 
 
 }

@@ -117,9 +117,10 @@ export class SetCreateNode extends FuckUi {
 
         let n = data.length;
         let l = this.container.children.length;
-        for (let i = l - 1; i >= 0; i--) {
-            this.container.children[i].active = !!data[i];
-        }
+        if (!this.onlyAdd)
+            for (let i = l - 1; i >= 0; i--) {
+                this.container.children[i].active = !!data[i];
+            }
 
         if (!data.length) return;
 
@@ -127,7 +128,7 @@ export class SetCreateNode extends FuckUi {
         if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
             let nn = !this.onlyAdd ? n - l : n;
             await YJJobManager.ins.execute((max: number) => {
-                if (!this?.node?.isValid) false;                
+                if (!this?.node?.isValid) false;
                 let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
                 if (cacheItem) {
                     if (this.dynamicAtlas) {
@@ -174,7 +175,6 @@ export class SetCreateNode extends FuckUi {
         //     item.parent = this.container;
         // }
         if (!this.onlyAdd && n - l >= 1 || (this.onlyAdd && n >= 1)) {
-            this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
@@ -187,7 +187,6 @@ export class SetCreateNode extends FuckUi {
                 if (this.container.children.length >= max) return false;
             }, this, !this.onlyAdd ? n : n + l);
             if (!this.container?.isValid) return;
-            this.container.active = true;
         }
 
         let start = !this.onlyAdd ? 0 : l;
