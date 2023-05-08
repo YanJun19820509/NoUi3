@@ -168,22 +168,21 @@ export class SetCreateNode extends FuckUi {
         //     item.active = false;
         //     item.parent = this.container;
         // }
-        if (!this.onlyAdd) {
-            this.container.active = false;
-            await YJJobManager.ins.execute((max: number) => {
-                if (!this?.node?.isValid) false;
-                let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                if (this.dynamicAtlas) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                }
-                item.active = false;
-                item.parent = this.container;
-                if (this.container.children.length >= max) return false;
-            }, this, !this.onlyAdd ? n : n + l);
-            if (!this.container?.isValid) return;
-            this.container.active = true;
-        }
+        this.container.active = false;
+        await YJJobManager.ins.execute((max: number) => {
+            if (!this?.node?.isValid) false;
+            let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
+            if (this.dynamicAtlas) {
+                YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
+                YJLoadAssets.setLoadAsset(item, this.loadAsset);
+            }
+            item.active = false;
+            item.parent = this.container;
+            if (this.container.children.length >= max) return false;
+        }, this, !this.onlyAdd ? n : n + l);
+        if (!this.container?.isValid) return;
+        this.container.active = true;
+
         let start = !this.onlyAdd ? 0 : l;
         for (let i = 0; i < n; i++) {
             this.setItem(data, start, i);
