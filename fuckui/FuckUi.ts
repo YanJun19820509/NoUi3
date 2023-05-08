@@ -64,8 +64,7 @@ export class FuckUi extends Component {
         }
 
         this.logValue(d);
-        if (this.enabled)
-            this.onDataChange(d);
+        this.onDataChange(d);
         if (this.once) this.destroy();
     }
 

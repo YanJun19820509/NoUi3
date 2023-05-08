@@ -34,7 +34,6 @@ export class YJDataWork extends Component {
     private changedDataKeys: string[] = [];
 
     private _loaded: boolean = false;
-    private _handler: number;
 
     protected onDestroy(): void {
         // this.clearUpdateHandlers();
