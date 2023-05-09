@@ -74,6 +74,10 @@ export class SetPlayParticle extends FuckUi {
         no.EventHandlerInfo.execute(this.endCalls);
     }
 
+    public a_play() {
+        this._play();
+    }
+
     //todo 对循环播放的考虑按需暂停
     // public setParticleEnable(v: boolean) {
     //     let p = this.getComponent(ParticleSystem2D) || this.getComponent(ParticleSystem);
