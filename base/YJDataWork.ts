@@ -113,10 +113,13 @@ export class YJDataWork extends Component {
         if (!this?.node?.isValid) return;
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-        this.changedDataKeys.forEach(k => {
+
+        let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
+        this.changedDataKeys.length = 0;
+        keys.forEach(k => {
             this.onValueChange(k);
         });
-        this.changedDataKeys.length = 0;
+        keys = null;
     }
 
     // private iterateChangedData() {

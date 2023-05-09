@@ -3,6 +3,7 @@ import { _decorator, sp } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { EDITOR } from 'cc/env';
+import { YJSpineManager } from '../base/YJSpineManager';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -87,11 +88,12 @@ export class SetSpine extends FuckUi {
     }
 
     onDestroy() {
-        const spine = this.getComponent(sp.Skeleton);
-        if (no.checkValid(spine) && !!spine.skeletonData) {
-            spine.clearTracks();
-            this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
-        }
+        // const spine = this.getComponent(sp.Skeleton);
+        // if (no.checkValid(spine) && !!spine.skeletonData) {
+        //     spine.clearTracks();
+        //     this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
+        // }
+        YJSpineManager.ins.set(this.curPath);
     }
 
     protected onDataChange(data: any) {
@@ -114,7 +116,7 @@ export class SetSpine extends FuckUi {
             spine.timeScale = timeScale;
 
         if (path && this.curPath != path) {
-            no.assetBundleManager.loadSpine(path, res => {
+            YJSpineManager.ins.get(path).then(res => {
                 if (!spine?.isValid) {
                     no.assetBundleManager.decRef(res);
                     return;
