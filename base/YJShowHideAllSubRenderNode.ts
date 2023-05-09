@@ -43,20 +43,22 @@ export class YJShowHideAllSubRenderNode extends Component {
 
     protected onDestroy(): void {
         no.evn.targetOff(this);
+        no.unschedule(this);
     }
 
     private onShow(type: string) {
         this._count--;
         if (this._count == 0)
-            this.showSubRenderNode(true);
+            this.showSubRenderNode();
     }
 
     private onHide(type: string) {
         this._count++;
-        this.showSubRenderNode(false);
+        no.scheduleOnce(this.showSubRenderNode, 1, this);
     }
 
-    public showSubRenderNode(v: boolean) {
+    public showSubRenderNode() {
+        let v: boolean = this._count == 0;
         if (v == this.isShow) return;
         this.isShow = v;
         this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {

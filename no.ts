@@ -63,6 +63,7 @@ export namespace no {
             --n;
         };
 
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
     }
     /**
@@ -111,6 +112,7 @@ export namespace no {
                 callback = null;
             }
         };
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
     }
 
@@ -136,6 +138,7 @@ export namespace no {
                 cb?.call(target, dt);
             }
         };
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
     }
     /**

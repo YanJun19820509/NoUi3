@@ -43,6 +43,7 @@ export class SetSpine extends FuckUi {
     curPath: string;
     private canSetSpine: boolean = true;
     private isSpineEnable: boolean = null;
+    private isFullScreenHide: boolean = false;
 
     onLoad(): void {
         super.onLoad();
@@ -196,10 +197,18 @@ export class SetSpine extends FuckUi {
         if (!this.canDisable) return;
         const spine = this.getComponent(sp.Skeleton);
         if (!spine.node.activeInHierarchy) return;
-        if (this.isSpineEnable == null) return;
+        if (v && !this.isFullScreenHide) {
+            return;
+        }
+        if (!v && !spine.enabled) {
+            this.isFullScreenHide = false;
+            return;
+        }
         if (v) {
-            spine.enabled = this.isSpineEnable;
+            spine.enabled = true;
+            this.isFullScreenHide = false;
         } else {
+            this.isFullScreenHide = true;
             spine.enabled = false;
         }
     }

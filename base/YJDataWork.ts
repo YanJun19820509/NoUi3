@@ -32,11 +32,11 @@ export class YJDataWork extends Component {
     protected _data: no.Data = new no.Data();
 
     private changedDataKeys: string[] = [];
+    private _dataChanged: boolean = false;
 
     private _loaded: boolean = false;
 
     protected onDestroy(): void {
-        // this.clearUpdateHandlers();
     }
 
     onLoad() {
@@ -46,7 +46,6 @@ export class YJDataWork extends Component {
         }
         this._loaded = true;
         this.init();
-        // this.schedule(this.setChangedDataToUi, .05, macro.REPEAT_FOREVER);
     }
 
     start() {
@@ -58,7 +57,6 @@ export class YJDataWork extends Component {
      * @returns
      */
     public init() {
-        this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
         const afterDataInit = this['afterDataInit'];
@@ -93,14 +91,18 @@ export class YJDataWork extends Component {
         return this._data.get(key);
     }
 
-    private _setting: boolean = false;
     public setValue(key: string, value: any) {
         this._data.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
-        if (this._setting) return;
-        this._setting = true;
-        this.scheduleOnce(this.setChangedDataToUi);
+        this._dataChanged = true;
+    }
+
+    protected lateUpdate(dt: number): void {
+        if (this._dataChanged) {
+            this.setChangedDataToUi();
+            this._dataChanged = false;
+        }
     }
 
     public clear(): void {
@@ -108,23 +110,20 @@ export class YJDataWork extends Component {
     }
 
     private setChangedDataToUi() {
-        this._setting = false;
         if (!this?.node?.isValid) return;
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-        let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
-        let k = keys.shift();
-        while (k) {
+        this.changedDataKeys.forEach(k => {
             this.onValueChange(k);
-            k = keys.shift();
-        }
+        });
+        this.changedDataKeys.length = 0;
     }
 
-    private iterateChangedData() {
-        let k = this.changedDataKeys.shift();
-        if (k == undefined) return false;
-        this.onValueChange(k);
-    }
+    // private iterateChangedData() {
+    //     let k = this.changedDataKeys.shift();
+    //     if (k == undefined) return false;
+    //     this.onValueChange(k);
+    // }
 
     private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];
