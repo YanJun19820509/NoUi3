@@ -44,6 +44,11 @@ export class SetSpine extends FuckUi {
     private canSetSpine: boolean = true;
     private isSpineEnable: boolean = null;
 
+    onLoad(): void {
+        super.onLoad();
+        this.isSpineEnable = this.getComponent(sp.Skeleton)?.enabled;
+    }
+
     protected update(dt: number): void {
         if (!EDITOR) {
             if (SetSpine.disableSpineWhenLowFPS) {
@@ -195,7 +200,6 @@ export class SetSpine extends FuckUi {
         if (v) {
             spine.enabled = this.isSpineEnable;
         } else {
-            this.isSpineEnable = spine.enabled;
             spine.enabled = false;
         }
     }

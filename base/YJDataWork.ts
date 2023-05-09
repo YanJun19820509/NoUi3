@@ -46,7 +46,7 @@ export class YJDataWork extends Component {
         }
         this._loaded = true;
         this.init();
-        this.schedule(this.setChangedDataToUi, .05, macro.REPEAT_FOREVER);
+        // this.schedule(this.setChangedDataToUi, .05, macro.REPEAT_FOREVER);
     }
 
     start() {
@@ -93,30 +93,31 @@ export class YJDataWork extends Component {
         return this._data.get(key);
     }
 
+    private _setting: boolean = false;
     public setValue(key: string, value: any) {
         this._data.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
+        if (this._setting) return;
+        this._setting = true;
+        this.scheduleOnce(this.setChangedDataToUi);
     }
 
     public clear(): void {
         this._data.clear();
     }
 
-    private _setting: boolean = false;
     private setChangedDataToUi() {
+        this._setting = false;
         if (!this?.node?.isValid) return;
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-        if (this._setting) return;
-        this._setting = true;
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
         let k = keys.shift();
         while (k) {
             this.onValueChange(k);
             k = keys.shift();
         }
-        this._setting = false;
     }
 
     private iterateChangedData() {

@@ -165,7 +165,7 @@ export class YJWindowManager extends Component {
         let content: Node = YJWindowManager._ins.getContent(nodeName);
         content.children.forEach(node => {
             let panel = node.getComponent(YJPanel);
-            if (panel) {
+            if (panel?.enabledInHierarchy) {
                 let name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;
                 panel.closePanel();
