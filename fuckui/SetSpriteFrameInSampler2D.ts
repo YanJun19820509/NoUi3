@@ -134,7 +134,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteEnable(v: boolean) {
-        if (!this.node.activeInHierarchy) return;
+        if (!this.enabled) return;
         this.getComponent(Sprite).enabled = v;
     }
 }
