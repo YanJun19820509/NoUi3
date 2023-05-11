@@ -1003,6 +1003,15 @@ export namespace no {
     }
 
     /**
+     * 将UTC时区时间戳转化为本地系统所在时区时间戳
+     */
+    export function localDateSeconds(utcSeconds: number): number {
+        const t = new Date(utcSeconds * 1000);
+        t.setMinutes(t.getMinutes() - t.getTimezoneOffset());
+        return Math.floor(t.getTime() * .001);
+    }
+
+    /**
      * 将秒数解析为日时分秒
      * @param v 总秒数
      */
