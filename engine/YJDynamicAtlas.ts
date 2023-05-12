@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton, director } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -177,9 +177,39 @@ export class YJDynamicAtlas extends Component {
                     // this.spriteFrameMap[uuid] = ff;
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
+                    // director.root.batcher2D['_releaseDescriptorSetCache'](comp['_texture'].getHash());
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
                     // this.spriteFrameMap[uuid] = frame;
+
+                    // let newSpriteFrame = new SpriteFrame();
+                    // newSpriteFrame._uuid = uuid;
+                    // newSpriteFrame['_original'] = {
+                    //     _texture: frame['_texture'],
+                    //     _x: frame.rect.x,
+                    //     _y: frame.rect.y,
+                    // };
+                    // newSpriteFrame.texture = packedFrame.texture;
+                    // newSpriteFrame.originalSize = math.size(frame.width, frame.height);
+                    // newSpriteFrame.rect = math.rect(packedFrame.x, packedFrame.y, frame.width, frame.height);
+                    // comp['_ttfSpriteFrame'] = newSpriteFrame;
+                    // comp['_texture'] = newSpriteFrame;
+                    const renderData = comp.renderData;
+                    const vData = renderData.chunk.vb;
+                    const uv = comp.ttfSpriteFrame.uv;
+                    vData[3] = uv[0];
+                    vData[4] = uv[1];
+                    vData[12] = uv[2];
+                    vData[13] = uv[3];
+                    vData[21] = uv[4];
+                    vData[22] = uv[5];
+                    vData[30] = uv[6];
+                    vData[31] = uv[7];
+                    renderData.textureDirty = true;
+                    comp.markForUpdateRenderData(false);
+                    renderData.updateRenderData(comp, comp.spriteFrame);
+                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
+
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
@@ -190,7 +220,7 @@ export class YJDynamicAtlas extends Component {
                 comp.spriteFrame = ff;
                 // if (!frame.original && frame.name.indexOf('default_') == -1)
                 //     no.assetBundleManager.release(frame);
-                
+
                 // this.spriteFrameMap[uuid] = ff;
                 no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }

@@ -23,7 +23,6 @@ export class YJJobManager extends Component {
     private jobKeys: string[] = [];
     private lastJobKeyIndex: number = 0;
     private needRemoveJobKeys: string[] = [];
-    private frameStartTime: number = 0;
 
     onLoad() {
         YJJobManager.ins = this;
@@ -47,14 +46,14 @@ export class YJJobManager extends Component {
         }, this);
     }
 
-    private executePerFrame(frameEndTime: number) {
+    private executePerFrame() {
+        const frameStartTime = sys.now();
         let aa = true;
         while (aa) {
-            // if (sys.now() >= frameEndTime) {
-            //     // console.log('executePerFrame end')
-            //     aa = false;
-            //     return;
-            // }
+            if (sys.now() - frameStartTime > 10) {
+                aa = false;
+                return;
+            }
             let n = this.jobKeys.length;
             if (n == 0) {
                 aa = false;
@@ -66,9 +65,7 @@ export class YJJobManager extends Component {
                 k = this.jobKeys[i];
                 job = this.jobs[k];
                 if (!job || !job.target.isValid || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
-                const a = sys.now() - frameEndTime;
-                if (a >= 0) {
-                    // console.log('executePerFrame end2', a)
+                if (sys.now() - frameStartTime > 10) {
                     this.lastJobKeyIndex = i;
                     aa = false;
                     return;
@@ -97,10 +94,6 @@ export class YJJobManager extends Component {
     }
 
     update() {
-        this.frameStartTime = sys.now();
-    }
-
-    lateUpdate() {
-        this.executePerFrame(this.frameStartTime + game.frameTime);
+        this.executePerFrame();
     }
 }
