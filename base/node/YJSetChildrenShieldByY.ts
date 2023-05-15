@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, isValid, Node } from 'cc';
 import { no } from '../../no';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -24,19 +25,22 @@ export class YJSetChildrenShieldByY extends Component {
     private _num = 0;
 
     private resort() {
+        if (!isValid(this?.node)) return false;
+        if (this._num == 0) {
+            this._num = this.frameNum;
+        } else {
+            this._num--;
+            return true;
+        }
         let children = this.node.children;
         no.sortArray(children, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
         this.node._updateSiblingIndex();
+        return true;
     }
 
-    update() {
-        if (this._num == 0) {
-            this.resort();
-            this._num = this.frameNum;
-        } else {
-            this._num--;
-        }
+    start() {
+        YJJobManager.ins.execute(this.resort, this);
     }
 }

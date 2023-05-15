@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, UITransform, math } from 'cc';
+import { _decorator, Component, Node, UITransform, math, isValid } from 'cc';
 import { no } from '../../no';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property } = _decorator;
 
 /**
@@ -24,8 +25,21 @@ export class YJSyncContentSizeToTarget extends Component {
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
-    update() {
-        if (!this.target) return;
+    private _checkNum = 10;
+    private _checkedNum = 0;
+
+    protected start(): void {
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (!this.target || !isValid(this?.node)) return false;
+        if (this._checkedNum == this._checkNum) {
+            this._checkedNum = 0;
+        } else {
+            this._checkedNum++;
+            return true;
+        }
         let tSize = this.target.getComponent(UITransform).contentSize.clone();
         let scale = this.target.scale.clone();
         tSize.width *= scale.x;
@@ -37,5 +51,6 @@ export class YJSyncContentSizeToTarget extends Component {
             this.node.getComponent(UITransform).setContentSize(tSize);
             no.EventHandlerInfo.execute(this.onChange);
         }
+        return true;
     }
 }

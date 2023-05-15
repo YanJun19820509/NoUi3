@@ -41,8 +41,6 @@ export class YJDynamicAtlas extends Component {
 
     private spriteFrameMap: any = {};
 
-    private waitToPackCompNum: number = 0;
-
     //控制合图是否旋转的总开关
     private canRotate = false;
 
@@ -149,7 +147,6 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            this.waitToPackCompNum++;
             const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
@@ -174,26 +171,10 @@ export class YJDynamicAtlas extends Component {
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
-                    // this.spriteFrameMap[uuid] = ff;
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
-                    // director.root.batcher2D['_releaseDescriptorSetCache'](comp['_texture'].getHash());
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    // this.spriteFrameMap[uuid] = frame;
-
-                    // let newSpriteFrame = new SpriteFrame();
-                    // newSpriteFrame._uuid = uuid;
-                    // newSpriteFrame['_original'] = {
-                    //     _texture: frame['_texture'],
-                    //     _x: frame.rect.x,
-                    //     _y: frame.rect.y,
-                    // };
-                    // newSpriteFrame.texture = packedFrame.texture;
-                    // newSpriteFrame.originalSize = math.size(frame.width, frame.height);
-                    // newSpriteFrame.rect = math.rect(packedFrame.x, packedFrame.y, frame.width, frame.height);
-                    // comp['_ttfSpriteFrame'] = newSpriteFrame;
-                    // comp['_texture'] = newSpriteFrame;
                     const renderData = comp.renderData;
                     const vData = renderData.chunk.vb;
                     const uv = comp.ttfSpriteFrame.uv;
@@ -218,10 +199,6 @@ export class YJDynamicAtlas extends Component {
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                // if (!frame.original && frame.name.indexOf('default_') == -1)
-                //     no.assetBundleManager.release(frame);
-
-                // this.spriteFrameMap[uuid] = ff;
                 no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }
         }
@@ -250,10 +227,6 @@ export class YJDynamicAtlas extends Component {
     public get isWork(): boolean {
         let a = !dynamicAtlasManager.enabled && this.enabled;
         return a;
-    }
-
-    public needWait(): boolean {
-        return this.waitToPackCompNum == 1000;
     }
 
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
@@ -303,7 +276,6 @@ export class YJDynamicAtlas extends Component {
     //////////////EDITOR/////////////
     update() {
         if (!EDITOR) {
-            this.waitToPackCompNum = 0;
             return;
         }
         if (!this.autoSetSubMaterial) return;

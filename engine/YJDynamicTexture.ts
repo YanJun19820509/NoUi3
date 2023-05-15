@@ -75,12 +75,6 @@ export class YJDynamicTexture extends Component {
         }
         frame = frame || sprite?.spriteFrame;
         if (!frame) return;
-        if (this.dynamicAtlas?.needWait()) {
-            this.scheduleOnce(() => {
-                this.packSpriteFrame(frame);
-            });
-            return;
-        }
         this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, this.canRotate, () => {
             sprite.spriteFrame = frame;
         });
@@ -99,16 +93,7 @@ export class YJDynamicTexture extends Component {
             label.string = text;
             return;
         }
-        if (this.dynamicAtlas?.needWait()) {
-            this.scheduleOnce(() => {
-                this.packLabelFrame(text);
-            });
-            return;
-        }
-
-        // if (this.needClear)
-        //     this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-        else if (label.ttfSpriteFrame) {
+        if (label.ttfSpriteFrame) {
             label.ttfSpriteFrame?._resetDynamicAtlasFrame();
             label.ttfSpriteFrame._uuid = '';
         }
@@ -133,8 +118,11 @@ export class YJDynamicTexture extends Component {
         frame.rotated = false;
 
         this.scheduleOnce(() => {
-            if (!isValid(this?.node)) return;
-            this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
+            YJJobManager.ins.execute(() => {
+                if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+                this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
+                return false;
+            }, this);
         }, 1);
     }
 

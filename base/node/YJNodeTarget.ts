@@ -3,6 +3,7 @@ import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, Eve
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
 
 /**
@@ -30,7 +31,6 @@ export class YJNodeTarget extends Component {
     autoSet: boolean = false;
 
     private pos: Vec3;
-    private registed: boolean = false;
     private lastTriggerTouchTime: number = 0;
 
     onLoad() {
@@ -46,8 +46,22 @@ export class YJNodeTarget extends Component {
         }
     }
 
+    protected start(): void {
+        if (EDITOR) return;
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (this.pos.equals(this.node.worldPosition)) {
+            no.nodeTargetManager.register(this.type, this);
+            return false;
+        } else {
+            this.pos = this.node.worldPosition;
+            return true;
+        }
+    }
+
     onEnable() {
-        this.registed = false;
         this.pos = this.node.worldPosition;
     }
 
@@ -56,21 +70,14 @@ export class YJNodeTarget extends Component {
     }
 
     update() {
-        if (!EDITOR) {
-            if (!this.registed) {
-                if (this.pos.equals(this.node.worldPosition)) {
-                    this.registed = true;
-                    no.nodeTargetManager.register(this.type, this);
-                } else this.pos = this.node.worldPosition;
-            }
-            return;
+        if (EDITOR) {
+            if (!this.autoSet) return;
+            this.autoSet = false;
+            if (this.type != '') return;
+            let name = [this.node.name];
+            if (this.node.parent) name.unshift(this.node.parent.name);
+            this.type = name.join('.');
         }
-        if (!this.autoSet) return;
-        this.autoSet = false;
-        if (this.type != '') return;
-        let name = [this.node.name];
-        if (this.node.parent) name.unshift(this.node.parent.name);
-        this.type = name.join('.');
     }
 
     public setType(type: string): void {

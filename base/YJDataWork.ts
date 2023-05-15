@@ -1,9 +1,10 @@
 
-import { _decorator, Component, Node, macro } from 'cc';
+import { _decorator, Component, Node, macro, isValid } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
+import { YJJobManager } from './YJJobManager';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -116,17 +117,19 @@ export class YJDataWork extends Component {
 
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
         this.changedDataKeys.length = 0;
-        keys.forEach(k => {
-            this.onValueChange(k);
-        });
-        keys = null;
+        // keys.forEach(k => {
+        //     this.onValueChange(k);
+        // });
+        // keys = null;
+        YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
 
-    // private iterateChangedData() {
-    //     let k = this.changedDataKeys.shift();
-    //     if (k == undefined) return false;
-    //     this.onValueChange(k);
-    // }
+    private iterateChangedData(keys: string[]) {
+        if (!isValid(this?.node) || !keys?.length) return false;
+        let k = keys.shift();
+        this.onValueChange(k);
+        return true;
+    }
 
     private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];

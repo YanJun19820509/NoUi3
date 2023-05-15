@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, isValid, Node } from 'cc';
 import { no } from '../../no';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -44,9 +45,16 @@ export class YJCheckLocalStorage extends Component {
 
     start() {
         if (this.key == '') return;
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (!isValid(this?.node)) return false;
         if (this.auto) {
             this.a_check();
+            return true;
         }
+        return false;
     }
 
     public a_check() {
@@ -59,10 +67,5 @@ export class YJCheckLocalStorage extends Component {
                 no.EventHandlerInfo.execute(info.handlers);
             }
         });
-    }
-
-    update() {
-        if (!this.auto) return;
-        this.a_check();
     }
 }
