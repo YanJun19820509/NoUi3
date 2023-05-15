@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, game } from 'cc';
+import { _decorator, Component, Node, game, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -59,11 +59,11 @@ export class SetTurntable extends FuckUi {
     private setTurnning(stopAngle: number) {
         this.slowdownCalled = false;
         this.turnningAngle = stopAngle - this.turntable.angle + Math.ceil(this.speed * this.duration) * 360;
+        this.requestAnimationFrameTurn();
     }
 
-    update(dt: number) {
-        if (EDITOR) return;
-        if (this.turnningAngle <= 0) return;
+    private turnByFrame(dt: number) {
+        if (!isValid(this?.node)) return;
         let a: number = 0;
         if (this.turnningAngle > this.slowAngle) {
             a = this.quickAnglePerSecond * dt;
@@ -77,5 +77,12 @@ export class SetTurntable extends FuckUi {
         this.turntable.angle = (this.turntable.angle + a) % 360;
         this.turnningAngle -= a;
         if (this.turnningAngle <= 0) no.EventHandlerInfo.execute(this.endCall);
+        else this.requestAnimationFrameTurn();
+    }
+
+    private requestAnimationFrameTurn() {
+        requestAnimationFrame(() => {
+            this.turnByFrame(game.frameTime * .001);
+        });
     }
 }

@@ -40,30 +40,12 @@ export class SetSpine extends FuckUi {
     /**当帧率较低时禁止播放spine */
     public static disableSpineWhenLowFPS: boolean = false;
 
-    private needRelease: boolean = false;
     curPath: string;
     private canSetSpine: boolean = true;
-    private isSpineEnable: boolean = null;
     private isFullScreenHide: boolean = false;
 
-    onLoad(): void {
-        super.onLoad();
-        this.isSpineEnable = this.getComponent(sp.Skeleton)?.enabled;
-    }
-
-    protected update(dt: number): void {
-        if (!EDITOR) {
-            if (SetSpine.disableSpineWhenLowFPS) {
-                const fps = 1 / dt;
-                if (fps < 45 && this.canSetSpine) {
-                    this.canSetSpine = false;
-                    this.getComponent(sp.Skeleton).enabled = false;
-                } else if (fps > 55 && !this.canSetSpine) {
-                    this.canSetSpine = true;
-                }
-            }
-            return;
-        }
+    protected update(): void {
+        if (!EDITOR) return;
         const spine = this.getComponent(sp.Skeleton);
         if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
             no.getAssetUrlInEditorMode(spine.skeletonData._uuid, url => {
@@ -71,6 +53,19 @@ export class SetSpine extends FuckUi {
                 this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
                 this.getComponent(sp.Skeleton).skeletonData = null;
             });
+        }
+    }
+
+    //性能判断
+    private checkFPS(dt: number) {
+        if (SetSpine.disableSpineWhenLowFPS) {
+            const fps = 1 / dt;
+            if (fps < 45 && this.canSetSpine) {
+                this.canSetSpine = false;
+                this.getComponent(sp.Skeleton).enabled = false;
+            } else if (fps > 55 && !this.canSetSpine) {
+                this.canSetSpine = true;
+            }
         }
     }
 
@@ -88,11 +83,6 @@ export class SetSpine extends FuckUi {
     }
 
     onDestroy() {
-        // const spine = this.getComponent(sp.Skeleton);
-        // if (no.checkValid(spine) && !!spine.skeletonData) {
-        //     spine.clearTracks();
-        //     this.needRelease && no.assetBundleManager.decRef(spine.skeletonData);
-        // }
         YJSpineManager.ins.set(this.curPath);
     }
 
@@ -121,7 +111,6 @@ export class SetSpine extends FuckUi {
                     no.assetBundleManager.decRef(res);
                     return;
                 }
-                this.needRelease = true;
                 this.curPath = path;
                 //在设置新SkeletonData 之前清理下RenderData
                 spine.destroyRenderData();
