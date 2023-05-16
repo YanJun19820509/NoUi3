@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, UITransform, math, isValid } from 'cc';
+import { _decorator, Component, Node, UITransform, math, isValid, macro } from 'cc';
 import { no } from '../../no';
-import { YJJobManager } from '../YJJobManager';
 const { ccclass, property } = _decorator;
 
 /**
@@ -22,35 +21,49 @@ export class YJSyncContentSizeToTarget extends Component {
     target: Node = null;
     @property
     offset: math.Size = math.size();
+    @property({ displayName: '检测自己', tooltip: '为勾选后将自己的size同步到target，否则将target的size同步到自己' })
+    checkSelf: boolean = false;
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
-    private _checkNum = 10;
-    private _checkedNum = 0;
+    private _selfSize: math.Size;
 
-    protected start(): void {
-        YJJobManager.ins.execute(this.check, this);
+    protected onEnable(): void {
+        this.schedule(this.check, .2, macro.REPEAT_FOREVER);
+    }
+
+    protected onDisable(): void {
+        this.unschedule(this.check);
     }
 
     private check() {
-        if (!this.target || !isValid(this?.node)) return false;
-        if (this._checkedNum == this._checkNum) {
-            this._checkedNum = 0;
-        } else {
-            this._checkedNum++;
-            return true;
+        if (!this.target || !isValid(this?.node)) {
+            this.unschedule(this.check);
+            return;
         }
-        let tSize = this.target.getComponent(UITransform).contentSize.clone();
-        let scale = this.target.scale.clone();
-        tSize.width *= scale.x;
-        tSize.height *= scale.y;
-        tSize.width += this.offset.width;
-        tSize.height += this.offset.height;
-        let size = this.node.getComponent(UITransform).contentSize;
-        if (size.width != tSize.width || size.height != tSize.height) {
-            this.node.getComponent(UITransform).setContentSize(tSize);
+        if (this.checkSelf) {
+            let size = no.size(this.node);
+            if (this._selfSize && this._selfSize.equals(size)) return;
+            this._selfSize = size.clone();
+            let scale = this.node.scale.clone();
+            size.width *= scale.x;
+            size.height *= scale.y;
+            size.width += this.offset.width;
+            size.height += this.offset.height;
+            this.target.getComponent(UITransform).setContentSize(size);
             no.EventHandlerInfo.execute(this.onChange);
+        } else {
+            let tSize = this.target.getComponent(UITransform).contentSize.clone();
+            let scale = this.target.scale.clone();
+            tSize.width *= scale.x;
+            tSize.height *= scale.y;
+            tSize.width += this.offset.width;
+            tSize.height += this.offset.height;
+            let size = this.node.getComponent(UITransform).contentSize;
+            if (!size.equals(tSize)) {
+                this.node.getComponent(UITransform).setContentSize(tSize);
+                no.EventHandlerInfo.execute(this.onChange);
+            }
         }
-        return true;
     }
 }

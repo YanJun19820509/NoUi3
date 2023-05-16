@@ -1746,6 +1746,19 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点size
+     * @param node 节点
+     * @param size 为空时则返回当前size；否则修改当前size
+     * @returns
+     */
+    export function size(node: Node, size?: Size): Size {
+        if (!node || !node.getComponent(UITransform)) return;
+        if (size != undefined)
+            node.getComponent(UITransform).contentSize = size;
+        return node.getComponent(UITransform).contentSize.clone();
+    }
+
+    /**
      * 获取或设置节点透明度
      * @param node 节点
      * @param opacity 为空时则返回当前opacity；否则修改当前opacity

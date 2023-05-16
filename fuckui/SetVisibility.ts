@@ -71,7 +71,6 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_changeVisible(): void {
-        this.setData(this.oldData == 'false' ? 'true' : 'false');
+        this.setData(this.node.active ? 'false' : 'true');
     }
-
 }
