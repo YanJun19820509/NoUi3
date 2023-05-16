@@ -3216,7 +3216,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${mutiply(this._coefficient, Math.pow(10, b + 2)) / 100}${u}`;
+            return `${floor(mutiply(this._coefficient, Math.pow(10, b + 2))) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
