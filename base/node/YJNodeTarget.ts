@@ -65,7 +65,7 @@ export class YJNodeTarget extends Component {
         this.pos = this.node.worldPosition;
     }
 
-    onDisable() {
+    onDestroy() {
         no.nodeTargetManager.remove(this.type, this);
     }
 
