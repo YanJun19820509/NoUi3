@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite } from 'cc';
+import { _decorator, Component, Layers, Node, Sprite } from 'cc';
 import { no } from '../no';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { SetSpine } from '../fuckui/SetSpine';
@@ -61,14 +61,22 @@ export class YJShowHideAllSubRenderNode extends Component {
         let v: boolean = this._count == 0;
         if (v == this.isShow) return;
         this.isShow = v;
-        this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {
-            c.setSpriteEnable(v);
-        });
-        this.getComponentsInChildren(SetSpine).forEach(c => {
-            c.setSpineEnable(v);
-        });
+        // this.getComponentsInChildren(SetSpriteFrameInSampler2D).forEach(c => {
+        //     c.setSpriteEnable(v);
+        // });
+        // this.getComponentsInChildren(SetSpine).forEach(c => {
+        //     c.setSpineEnable(v);
+        // });
         // this.getComponentsInChildren(SetPlayParticle).forEach(c => {
         //     c.setParticleEnable(v);
         // });
+        this.changeLayer(this.node, v);
+    }
+
+    private changeLayer(parent: Node, v: boolean) {
+        parent.layer = v ? Layers.Enum.UI_2D : Layers.Enum.NONE;
+        parent.children.forEach(child => {
+            this.changeLayer(child, v);
+        });
     }
 }
