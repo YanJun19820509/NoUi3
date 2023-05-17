@@ -141,6 +141,11 @@ export namespace no {
         if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
     }
+
+    export function isScheduled(cb: any, target: any): boolean {
+        return _scheduler.isScheduled(cb, target);
+    }
+
     /**
      * 取消target所有定时回调
      * @param target 
