@@ -29,11 +29,17 @@ export class YJSyncContentSizeToTarget extends Component {
     private _selfSize: math.Size;
 
     protected onEnable(): void {
-        this.schedule(this.check, .2, macro.REPEAT_FOREVER);
+        // this.schedule(this.check, .2, macro.REPEAT_FOREVER);
+        if (this.checkSelf)
+            this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
+        else this.target?.on(Node.EventType.SIZE_CHANGED, this.check, this);
     }
 
     protected onDisable(): void {
-        this.unschedule(this.check);
+        // this.unschedule(this.check);
+        if (this.checkSelf)
+            this.node.targetOff(this);
+        else this.target?.targetOff(this);
     }
 
     private check() {
