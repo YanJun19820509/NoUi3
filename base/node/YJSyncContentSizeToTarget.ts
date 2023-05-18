@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, math, isValid, macro } from 'cc';
+import { _decorator, Component, Node, math, isValid } from 'cc';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
