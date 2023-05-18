@@ -1803,6 +1803,19 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点scale
+     * @param node 节点
+     * @param scale 为空时则返回当前scale；否则修改当前scale
+     * @returns
+     */
+    export function scale(node: Node, scale?: Vec3): Vec3 {
+        if (!node) return;
+        if (scale != undefined)
+            node.scale = scale;
+        return node.scale.clone();
+    }
+
+    /**
      * 解析带function的json字符串
      * @param s 
      * @returns 

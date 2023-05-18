@@ -26,17 +26,13 @@ export class YJSyncContentSizeToTarget extends Component {
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
-    private _selfSize: math.Size;
-
     protected onEnable(): void {
-        // this.schedule(this.check, .2, macro.REPEAT_FOREVER);
         if (this.checkSelf)
             this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
         else this.target?.on(Node.EventType.SIZE_CHANGED, this.check, this);
     }
 
     protected onDisable(): void {
-        // this.unschedule(this.check);
         if (this.checkSelf)
             this.node.targetOff(this);
         else this.target?.targetOff(this);
@@ -44,32 +40,23 @@ export class YJSyncContentSizeToTarget extends Component {
 
     private check() {
         if (!this.target || !isValid(this?.node)) {
-            this.unschedule(this.check);
             return;
         }
         if (this.checkSelf) {
-            let size = no.size(this.node);
-            if (this._selfSize && this._selfSize.equals(size)) return;
-            this._selfSize = size.clone();
-            let scale = this.node.scale.clone();
-            size.width *= scale.x;
-            size.height *= scale.y;
-            size.width += this.offset.width;
-            size.height += this.offset.height;
-            this.target.getComponent(UITransform).setContentSize(size);
-            no.EventHandlerInfo.execute(this.onChange);
+            this.syncSize(this.node, this.target);
         } else {
-            let tSize = this.target.getComponent(UITransform).contentSize.clone();
-            let scale = this.target.scale.clone();
-            tSize.width *= scale.x;
-            tSize.height *= scale.y;
-            tSize.width += this.offset.width;
-            tSize.height += this.offset.height;
-            let size = this.node.getComponent(UITransform).contentSize;
-            if (!size.equals(tSize)) {
-                this.node.getComponent(UITransform).setContentSize(tSize);
-                no.EventHandlerInfo.execute(this.onChange);
-            }
+            this.syncSize(this.target, this.node);
         }
+    }
+
+    private syncSize(from: Node, to: Node) {
+        let size = no.size(from);
+        let scale = no.scale(from);
+        size.width *= scale.x;
+        size.height *= scale.y;
+        size.width += this.offset.width;
+        size.height += this.offset.height;
+        no.size(to, size);
+        no.EventHandlerInfo.execute(this.onChange);
     }
 }
