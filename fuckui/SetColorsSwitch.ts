@@ -1,5 +1,5 @@
 
-import { _decorator, Color, Renderable2D } from 'cc';
+import { _decorator, Color, UIRenderer } from 'cc';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -37,16 +37,16 @@ export class SetColorsSwitch extends FuckUi {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.condition === data) {
-                if (this.node.getComponent(Renderable2D)) {
-                    this.node.getComponent(Renderable2D).color = info.color;
+                if (this.node.getComponent(UIRenderer)) {
+                    this.node.getComponent(UIRenderer).color = info.color;
                 }
 
                 if (this.recursive) {
                     let children = this.node.children
                     for (let index = 0; index < children.length; index++) {
                         const element = children[index];
-                        if (element.getComponent(Renderable2D)) {
-                            element.getComponent(Renderable2D).color = info.color;
+                        if (element.getComponent(UIRenderer)) {
+                            element.getComponent(UIRenderer).color = info.color;
                         }
                     }
                 }

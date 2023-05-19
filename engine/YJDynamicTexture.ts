@@ -1,5 +1,5 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Component, SpriteFrame, LabelOutline, UITransform, isValid } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, UIRenderer, Component, SpriteFrame, LabelOutline, UITransform, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
@@ -127,7 +127,7 @@ export class YJDynamicTexture extends Component {
     }
 
     public createLabelFrameUuid(label: Label, str?: string): string {
-        let a = (str || label.string) + "_" + label.getComponent(RenderComponent).color + "_" + label.fontSize + "_" + (label.font?.name || label.fontFamily);
+        let a = (str || label.string) + "_" + label.getComponent(UIRenderer).color + "_" + label.fontSize + "_" + (label.font?.name || label.fontFamily);
         let ol = label.getComponent(LabelOutline);
         if (ol) {
             a += "_" + ol.color + '_' + ol.width;
@@ -137,7 +137,7 @@ export class YJDynamicTexture extends Component {
     }
 
     public setCommonMaterial(): void {
-        let renderComp = this.getComponent(RenderComponent);
+        let renderComp = this.getComponent(UIRenderer);
         if (!renderComp) return;
         if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
             renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;

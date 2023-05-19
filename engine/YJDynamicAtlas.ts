@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton, director } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, UIRenderer, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, math, Skeleton, director } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -135,7 +135,7 @@ export class YJDynamicAtlas extends Component {
      * @method packToDynamicAtlas
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
-    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
+    public packToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
         if (!this.isWork || (comp instanceof Label && !this.packLabel)) {
             onFail?.();
             return;
@@ -160,7 +160,7 @@ export class YJDynamicAtlas extends Component {
         frame._resetDynamicAtlasFrame();
     }
 
-    private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: PackedFrameData) {
+    private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData) {
         if (!this.spriteFrameMap) return;
         if (packedFrame) {
             const uuid = frame._uuid;
@@ -280,7 +280,7 @@ export class YJDynamicAtlas extends Component {
         }
         if (!this.autoSetSubMaterial) return;
         this.autoSetSubMaterial = false;
-        let renderComps = this.getComponentsInChildren(RenderComponent);
+        let renderComps = this.getComponentsInChildren(UIRenderer);
         renderComps.forEach(comp => {
             if (comp instanceof Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)
