@@ -36,13 +36,12 @@ export class SetTiledMap extends FuckUi {
         });
     }
 
-    private async initMap() {
+    private initMap() {
         this.delegate?.onInitMap(this.mapData);
-        let layers = this.mapData.layerTypes;
+        let layers = this.mapData.layerTypes || [];
         for (let i = 0, n = layers.length; i < n; i++) {
             this.delegate?.onInitObjects(layers[i], this.mapData.getLayerObjects(layers[i]));
         }
-        await no.sleep(0, this);
         if (!this?.node?.isValid) return;
         this.delegate?.onInitComplete();
     }

@@ -31,7 +31,7 @@ export namespace rsa {
 
     export function encode(d: string | object): string {
         let v = d;
-        if (typeof v != 'string') v = JSON.stringify(v);
+        if (typeof v != 'string') v = no.jsonStringify(v);
         return encrypt.encrypt(v);
     }
 

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform, math } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
@@ -82,10 +82,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(name: string) {
+        if (!this.enabled) return;
         if (!this.loadAsset) return;
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.err('setSpriteFrame not get', name);
+            this.resetSprite();
             return;
         }
         let sprite = this.getComponent(Sprite);
@@ -118,7 +120,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public resetSprite() {
-        if (!EDITOR) return;
         if (this.defaultSpriteFrameUuid)
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 this.getComponent(Sprite).spriteFrame = file;
@@ -126,8 +127,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public removeSprite() {
-        if (!EDITOR) return;
-        this.getComponent(Sprite).spriteFrame = null;
-        this.getComponent(Sprite).spriteAtlas = null;
+        if (EDITOR) {
+            this.getComponent(Sprite).spriteFrame = null;
+            this.getComponent(Sprite).spriteAtlas = null;
+        }
+    }
+
+    public setSpriteEnable(v: boolean) {
+        if (!this.enabled) return;
+        this.getComponent(Sprite).enabled = v;
     }
 }

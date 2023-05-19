@@ -150,6 +150,29 @@ export class YJAudioManager extends Component {
     }
 
     /**
+     * 暂停音效
+     */
+    public pauseEffect() {
+        this._isEffectOn = false;
+    }
+
+    /**
+     *设置音量
+     *
+     * @param {number} n
+     */
+    public setVolume(n: number) {
+        this.audioSource.volume = n;
+    }
+
+    /**
+     * 恢复音效
+     */
+    public resumeEffect() {
+        this._isEffectOn = localStorage.getItem(this.effectOn) == '1';
+    }
+
+    /**
      * 播放音频剪辑
      * @param clip 音频剪辑
      * @param loop 是否循环，默认true
@@ -181,7 +204,7 @@ export class YJAudioManager extends Component {
     private _playClip(clip: AudioClip, path?: string, loop = true): void {
         this.setClip(path, clip);
         if (loop) {
-            this.audioSource.stop()
+            this.audioSource.stop();
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
             this.audioSource.play();

@@ -63,10 +63,10 @@ export class YJProtobuf {
             let msg_type = this.getMessageType(msgName);
             let msg = msg_type.decode(buffer);
             let a = msg_type.toObject(msg);
-            no.log('YJProtobuf decode', msgName, a);
+            // no.log('YJProtobuf decode', msgName, a);
             return a;
         } catch (e) {
-            no.err('YJProtobuf decode', e);
+            no.err('YJProtobuf decode', e.stack);
             return null;
         }
     }

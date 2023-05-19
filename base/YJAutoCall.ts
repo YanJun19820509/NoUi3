@@ -50,4 +50,8 @@ export class YJAutoCall extends Component {
             no.EventHandlerInfo.execute(this.calls);
         }, this.delay / 1000);
     }
+
+    public a_stop() {
+        this.unscheduleAllCallbacks();
+    }
 }

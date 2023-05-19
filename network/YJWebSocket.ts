@@ -32,6 +32,10 @@ export class YJWebSocket implements YJSocketInterface {
         return a;
     }
 
+    constructor() {
+        this['uuid'] = no.uuid();
+    }
+
     protected initWebSocket() {
         if (JSB && jsb.fileUtils) {
             let AdapterWebSocket: any = WebSocket;
@@ -54,7 +58,7 @@ export class YJWebSocket implements YJSocketInterface {
             this.ws = new WebSocket(this.url);
         }
         // Android 必须加入CA证书才能使用wss
-        no.log('initWebSocket');
+        no.log('YJWebSocket initWebSocket');
         this.ws['_uuid'] = no.uuid();
 
         this.ws.onopen = (event) => {
@@ -62,11 +66,11 @@ export class YJWebSocket implements YJSocketInterface {
             this.isClosed = false;
         };
         this.ws.onmessage = (event) => {
-            no.log("response text msg: " + event.data);
+            // no.log("response text msg: " + event.data);
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.err('websocket error', event);
+            no.err(`websocket error:${this.url}`);
             this.isClosed = true;
             this.onClose();
         };
@@ -82,7 +86,7 @@ export class YJWebSocket implements YJSocketInterface {
         if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
                 this.receivedData[this.receivedData.length] = this.onMessage(v);
-            });
+            }).catch(e => { no.err('YJWebSocket _onMessage error'); });
         } else this.receivedData[this.receivedData.length] = this.onMessage(data);
     }
 
@@ -95,8 +99,8 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     public connect() {
-        this.clear();
-        this.initWebSocket();
+        if (this.ws?.readyState != WebSocket.OPEN)
+            this.initWebSocket();
     }
 
     private reInit() {
@@ -111,24 +115,26 @@ export class YJWebSocket implements YJSocketInterface {
         if (!this.isClosed) return true;
         return new Promise<boolean>(resolve => {
             let n = 0;
-            let a = setInterval(() => {
+            no.scheduleForever(() => {
                 if (!this.isClosed) {
-                    clearInterval(a);
+                    no.unschedule(this);
                     resolve(true);
                 } else {
                     n++;
                     if (n >= 20) {
-                        clearInterval(a);
+                        no.unschedule(this);
                         resolve(false);
                     }
                 }
-            }, 500);
+            }, .5, this);
         });
     }
 
     /**断开 */
     public close() {
         if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+            this.ws.onclose = () => { };
+            this.ws.onerror = () => { };
             this.ws.close();
             this.ws = null;
         }
@@ -143,7 +149,7 @@ export class YJWebSocket implements YJSocketInterface {
         if (await this.isOk()) {
             let v: string | ArrayBuffer = encode(data, encryptType);
             // no.log('sendDataToServer', this.ws['_uuid']);
-            this.ws.send(v);
+            this.ws?.send(v);
             return true;
         }
         return false;
@@ -154,7 +160,7 @@ export class YJWebSocket implements YJSocketInterface {
      * @param handler 
      */
     public findReceiveData(handler: (data: any) => boolean) {
-        if (this.isClosed) return;
+        if (this.isClosed || !this.receivedData?.length) return;
         for (let i = 0, n = this.receivedData.length; i < n; i++) {
             if (handler(this.receivedData[i])) {
                 this.receivedData.splice(i, 1);
@@ -163,7 +169,23 @@ export class YJWebSocket implements YJSocketInterface {
         }
     }
 
+    /**
+     * 外部处理已返回的数据，并从队列中移除
+     * @param handler 
+     */
+    public dealReceivedData(handler: (data: any) => void): void {
+        if (this.isClosed || !this.receivedData?.length) return;
+        for (let i = this.receivedData.length - 1; i >= 0; i--) {
+            handler(this.receivedData[i]);
+            this.receivedData.splice(i, 1);
+        }
+    }
+
     public clear(): void {
         this.receivedData.length = 0;
+    }
+
+    public isOpen(): boolean {
+        return this.ws?.readyState == WebSocket.OPEN;
     }
 }

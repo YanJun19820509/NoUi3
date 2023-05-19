@@ -1,6 +1,7 @@
 
 import { ProgressBar, _decorator } from 'cc';
 import { FuckUi } from './FuckUi';
+import { no } from '../no';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -41,19 +42,19 @@ export class SetProgress extends FuckUi {
         this.isFirst = true;
         if (this.targetValue >= 0) {
             this.progressBar.progress = this.targetValue;
-            this.targetValue = -1;
         }
     }
 
     protected onDataChange(data: any) {
         if (data > 0 && data < this.initValue)
             data = this.initValue;
+        this.targetValue = data;
         if (this.motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
             this.progressBar.progress = data;
             this.isFirst = false;
         } else {
-            this.targetValue = data;
             this.dir = data > this.progressBar.progress ? 1 : -1;
+            no.scheduleForever(this.setProgressByFrame, 0, this);
         }
         this.lastValue = data;
     }
@@ -63,13 +64,9 @@ export class SetProgress extends FuckUi {
             let p = this.progressBar.progress + this.speed * this.dir * dt;
             if (this.dir > 0 && p >= this.targetValue || this.dir < 0 && p <= this.targetValue) {
                 p = this.targetValue;
-                this.targetValue = -1;
+                no.unschedule(this, this.setProgressByFrame);
             }
             this.progressBar.progress = p;
         }
-    }
-
-    update(dt: number): void {
-        this.setProgressByFrame(dt);
     }
 }

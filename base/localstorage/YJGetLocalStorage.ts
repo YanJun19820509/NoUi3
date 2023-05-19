@@ -30,9 +30,9 @@ export class YJGetLocalStorage extends Component {
         let ks = this.keys.split(',');
         ks.forEach(key => {
             try {
-                v[key] = this.usePreKey ? no.dataCache.getLocal(key) : JSON.parse(localStorage.getItem(key));
+                v[key] = this.usePreKey ? no.dataCache.getLocal(key) : no.parse2Json(localStorage.getItem(key));
             } catch (e) {
-                no.err('JSON.parse', 'YJGetLocalStorage', key);
+                no.err('no.parse2Json', 'YJGetLocalStorage', key);
             }
         });
         if (ks.length == 0) v = v[ks[0]];

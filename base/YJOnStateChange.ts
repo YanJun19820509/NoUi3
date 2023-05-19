@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, CCString } from 'cc';
+import { _decorator, Component, Node, CCString, isValid, macro } from 'cc';
 import { no } from '../no';
+import { YJJobManager } from './YJJobManager';
 const { ccclass, property } = _decorator;
 
 /**
@@ -44,10 +45,22 @@ export class YJOnStateChange extends Component {
     @property({ type: StateInfo })
     states: StateInfo[] = [];
 
-    update() {
-        this.states.forEach(state => {
-            let a = no.state.check(state.key, this);
-            if (a.state) state.onStateChange(a.value == undefined ? '' : a.value);
-        });
+    private _idx: number = 0;
+
+    protected onEnable(): void {
+        this.schedule(this.check, .1, macro.REPEAT_FOREVER);
+    }
+
+    protected onDisable(): void {
+        this.unschedule(this.check);
+    }
+
+    private check() {
+        if (!isValid(this?.node)) return;
+        if (this._idx >= this.states.length) this._idx = 0;
+        const state = this.states[this._idx];
+        let a = no.state.check(state.key, this);
+        if (a.state) state.onStateChange(a.value == undefined ? '' : a.value);
+        this._idx++;
     }
 }

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, math } from 'cc';
+import { _decorator, Component, Node, math, isValid } from 'cc';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
@@ -21,21 +21,42 @@ export class YJSyncContentSizeToTarget extends Component {
     target: Node = null;
     @property
     offset: math.Size = math.size();
+    @property({ displayName: '检测自己', tooltip: '为勾选后将自己的size同步到target，否则将target的size同步到自己' })
+    checkSelf: boolean = false;
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
-    update() {
-        if (!this.target) return;
-        let tSize = this.target.getComponent(UITransform).contentSize.clone();
-        let scale = this.target.scale.clone();
-        tSize.width *= scale.x;
-        tSize.height *= scale.y;
-        tSize.width += this.offset.width;
-        tSize.height += this.offset.height;
-        let size = this.node.getComponent(UITransform).contentSize;
-        if (size.width != tSize.width || size.height != tSize.height) {
-            this.node.getComponent(UITransform).setContentSize(tSize);
-            no.EventHandlerInfo.execute(this.onChange);
+    protected onEnable(): void {
+        if (this.checkSelf)
+            this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
+        else this.target?.on(Node.EventType.SIZE_CHANGED, this.check, this);
+    }
+
+    protected onDisable(): void {
+        if (this.checkSelf)
+            this.node.targetOff(this);
+        else this.target?.targetOff(this);
+    }
+
+    private check() {
+        if (!this.target || !isValid(this?.node)) {
+            return;
         }
+        if (this.checkSelf) {
+            this.syncSize(this.node, this.target);
+        } else {
+            this.syncSize(this.target, this.node);
+        }
+    }
+
+    private syncSize(from: Node, to: Node) {
+        let size = no.size(from);
+        let scale = no.scale(from);
+        size.width *= scale.x;
+        size.height *= scale.y;
+        size.width += this.offset.width;
+        size.height += this.offset.height;
+        no.size(to, size);
+        no.EventHandlerInfo.execute(this.onChange);
     }
 }

@@ -40,7 +40,7 @@ export enum SimpleValueType {
     Object
 };
 
-export type CreateSpritemFrameSFData = { url: string, x: number, y: number, atlas?: string };
+export type CreateSpritemFrameSFData = { name: string, x: number, y: number };
 
 export type CreateSpritemFrameLabelData = {
     string: string,

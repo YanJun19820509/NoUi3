@@ -1,9 +1,10 @@
 
-import { _decorator, Component, SpriteFrame, Label, UIRenderer, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, math, Skeleton } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton, director } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
+import { no } from '../no';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -26,9 +27,9 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 @executeInEditMode()
 export class YJDynamicAtlas extends Component {
     @property({ min: 128, max: 2048, step: 1 })
-    width: number = 128;
+    width: number = 512;
     @property({ min: 128, max: 2048, step: 1 })
-    height: number = 128;
+    height: number = 512;
     @property(Material)
     commonMaterial: Material = null;
     @property({ visible() { return EDITOR; } })
@@ -40,16 +41,20 @@ export class YJDynamicAtlas extends Component {
 
     private spriteFrameMap: any = {};
 
-    private waitToPackCompNum: number = 0;
-
     //控制合图是否旋转的总开关
     private canRotate = false;
+
+    private thisNodeName: string;
+
+    onLoad() {
+        this.thisNodeName = this.node.name;
+    }
 
     onDestroy() {
         for (const uuid in this.spriteFrameMap) {
             (this.spriteFrameMap[uuid] as SpriteFrame).destroy();
         }
-        YJShowDynamicAtlasDebug.ins.remove(this.node.name);
+        YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
         this.atlas = null;
     }
@@ -62,7 +67,7 @@ export class YJDynamicAtlas extends Component {
     private initAtlas() {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.node.name);
+            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
         }
     }
 
@@ -130,7 +135,7 @@ export class YJDynamicAtlas extends Component {
      * @method packToDynamicAtlas
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
-    public packToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
+    public packToDynamicAtlas(comp: Renderable2D, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
         if (!this.isWork || (comp instanceof Label && !this.packLabel)) {
             onFail?.();
             return;
@@ -142,7 +147,6 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            this.waitToPackCompNum++;
             const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
@@ -156,8 +160,10 @@ export class YJDynamicAtlas extends Component {
         frame._resetDynamicAtlasFrame();
     }
 
-    private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData) {
+    private setPackedFrame(comp: Renderable2D, frame: SpriteFrame, packedFrame: PackedFrameData) {
+        if (!this.spriteFrameMap) return;
         if (packedFrame) {
+            const uuid = frame._uuid;
             if (comp instanceof Label) {
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
@@ -165,21 +171,35 @@ export class YJDynamicAtlas extends Component {
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
-                    this.spriteFrameMap[frame._uuid] = ff;
+                    no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    this.spriteFrameMap[frame._uuid] = frame;
+                    const renderData = comp.renderData;
+                    const vData = renderData.chunk.vb;
+                    const uv = comp.ttfSpriteFrame.uv;
+                    vData[3] = uv[0];
+                    vData[4] = uv[1];
+                    vData[12] = uv[2];
+                    vData[13] = uv[3];
+                    vData[21] = uv[4];
+                    vData[22] = uv[5];
+                    vData[30] = uv[6];
+                    vData[31] = uv[7];
+                    renderData.textureDirty = true;
+                    comp.markForUpdateRenderData(false);
+                    renderData.updateRenderData(comp, comp.spriteFrame);
+                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
+
+                    no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();
-                ff._uuid = frame._uuid;
+                ff._uuid = uuid;
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                // if (!frame.original && frame.name.indexOf('default_') == -1)
-                //     no.assetBundleManager.release(frame);
-                this.spriteFrameMap[frame._uuid] = ff;
+                no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }
         }
     }
@@ -196,7 +216,7 @@ export class YJDynamicAtlas extends Component {
         this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            console.log(`${this.node.name}动态图集无空间！`);
+            console.log(`${this.thisNodeName}动态图集无空间！`);
         });
         return frame;
     }
@@ -209,12 +229,8 @@ export class YJDynamicAtlas extends Component {
         return a;
     }
 
-    public needWait(): boolean {
-        return this.waitToPackCompNum == 1000;
-    }
-
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
-        let newSpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
+        let newSpriteFrame: SpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
         if (!newSpriteFrame) {
             newSpriteFrame = new SpriteFrame();
             newSpriteFrame.texture = this.texture;
@@ -225,6 +241,7 @@ export class YJDynamicAtlas extends Component {
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
             this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
+            newSpriteFrame['_rotated'] = spriteFrame._rotated;
         }
         sprite.spriteFrame = newSpriteFrame;
         sprite['_updateUVs']();
@@ -232,7 +249,6 @@ export class YJDynamicAtlas extends Component {
 
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
-        if (!node) return;
         let bs = [].concat(
             node.getComponentsInChildren('YJCreateNode'),
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
@@ -260,12 +276,11 @@ export class YJDynamicAtlas extends Component {
     //////////////EDITOR/////////////
     update() {
         if (!EDITOR) {
-            this.waitToPackCompNum = 0;
             return;
         }
         if (!this.autoSetSubMaterial) return;
         this.autoSetSubMaterial = false;
-        let renderComps = this.getComponentsInChildren(UIRenderer);
+        let renderComps = this.getComponentsInChildren(RenderComponent);
         renderComps.forEach(comp => {
             if (comp instanceof Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)

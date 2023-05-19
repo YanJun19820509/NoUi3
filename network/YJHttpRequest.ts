@@ -20,6 +20,7 @@ const { ccclass, property } = _decorator;
 @ccclass('YJHttpRequest')
 export class YJHttpRequest implements YJSocketInterface {
     private url: string;
+    private headers: { name: string, value: string }[] = [];
 
     constructor(url: string) {
         this.url = url;
@@ -34,10 +35,10 @@ export class YJHttpRequest implements YJSocketInterface {
             this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, contentType, v => {
                 let a = decode(v, encryptType);
                 try {
-                    resolve(JSON.parse(a));
+                    resolve(no.parse2Json(a));
                 } catch (e) {
                     resolve(a);
-                    no.err('JSON.parse', 'YJHttpRequest.getDataFromServer', a);
+                    no.err('no.parse2Json', 'YJHttpRequest.getDataFromServer', a);
                 }
             }, v => {
                 resolve(null);
@@ -52,9 +53,9 @@ export class YJHttpRequest implements YJSocketInterface {
                     resolve(v);
                 } else {
                     try {
-                        resolve(JSON.parse(v));
+                        resolve(no.parse2Json(v));
                     } catch (e) {
-                        no.err('JSON.parse', 'YJHttpRequest.getJsonFromServer', v);
+                        no.err('no.parse2Json', 'YJHttpRequest.getJsonFromServer', v);
                     }
                 }
             }, v => {
@@ -63,12 +64,46 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
+    static downloadFile(url: string, onProgress?: (loaded: number, total: number) => void, responseType?: XMLHttpRequestResponseType): Promise<Blob | string | null> {
+        return new Promise<any>(resolve => {
+            no.log('开始下载', url);
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.addEventListener('progress', ev => {
+                if (ev.lengthComputable) {
+                    onProgress?.(ev.loaded, ev.total);
+                }
+            });
+            xhr.responseType = responseType || 'arraybuffer';
+            xhr.onload = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    no.log('downloadFile complete')
+                    resolve(xhr.response);
+                } else {
+                    no.log('downloadFile fail')
+                    resolve(null);
+                }
+            };
+            xhr.send();
+        });
+    }
+
+    setHeader?(name: string, value: string): void {
+        this.headers.push({ name: name, value: value });
+    }
+
     private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
             xhr.setRequestHeader('Accept', contentType);
             xhr.setRequestHeader('Content-Type', contentType);
+        }
+
+        if (this.headers.length > 0) {
+            this.headers.forEach(header => {
+                xhr.setRequestHeader(header.name, header.value);
+            });
         }
 
         xhr.onreadystatechange = function () {

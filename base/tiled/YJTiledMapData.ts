@@ -25,13 +25,16 @@ export class YJTiledMapData {
     private layers: Map<string, any>;
     /**图集数据 */
     private tilesets: Map<number, any>;
+    private uv: Size;
+    private gridScale: number;
 
     public layerTypes: string[];
 
     constructor(mapJson: any) {
+        this.gridScale = mapJson.orientation == 'orthogonal' ? 1 : 0.5;
         this.tileSize = new Size(mapJson.tilewidth, mapJson.tileheight);
-        let size = new Size(mapJson.width, mapJson.height);
-        this.mapSize = new Size(size.width * this.tileSize.width, size.height * this.tileSize.height);
+        this.uv = new Size(mapJson.width, mapJson.height);
+        this.mapSize = new Size(this.uv.width * this.tileSize.width, this.uv.height * this.tileSize.height * this.gridScale);
         this.setAnchor(mapJson.renderorder);
         this.setTilesets(mapJson.tilesets);
         this.setLayers(mapJson.layers);
@@ -42,7 +45,7 @@ export class YJTiledMapData {
      * @param type
      * @returns
      */
-    public getLayerObjects(type: string): any {
+    public getLayerObjects(type: string): any[] {
         if (this.layers.has(type))
             return this.layers.get(type);
         return null;
@@ -53,9 +56,13 @@ export class YJTiledMapData {
         this.layerTypes = [];
         for (let i = 0, len = layers.length; i < len; i++) {
             let layer = layers[i];
+            if (!layer.visible) continue;
             let p = this.propertiesOf(layer);
             if (p == null) continue;
-            let objects = this.getObjects(layer.objects);
+            let objects: any;
+            if (layer.data) objects = this.getTiles(layer.data);
+            else objects = this.getObjects(layer.objects);
+
             if (!this.layers.has(p.type))
                 this.layers.set(p.type, { [layer.id]: objects });
             else {
@@ -72,17 +79,23 @@ export class YJTiledMapData {
         for (let i = 0, len = tilesets.length; i < len; i++) {
             let tileset = tilesets[i];
             let firstgid = tileset.firstgid;
+            const offset = tileset.tileoffset || { x: 0, y: 0 };
             for (let j = 0, len1 = tileset.tiles.length; j < len1; j++) {
                 let tile = tileset.tiles[j];
-                let a = {
-                    image: tile.image.replace(new RegExp('\\.\\./|\\.png', 'g'), ''),
+                const imgpath: string[] = tile.image.replace(new RegExp('\\.\\./|\\.png', 'g'), '').replace('\\', '/').split('/');
+                let a: any = {
+                    image: imgpath.pop(),
                     width: tile.imagewidth,
-                    height: tile.imageheight
+                    height: tile.imageheight,
+                    offset: offset
                 };
-                if (tile.properties != null)
+                if (tile.properties != null) {
+                    let prop: any = {};
                     tile.properties.forEach((p: any) => {
-                        a[p.name] = p.value;
+                        prop[p.name] = p.value;
                     });
+                    a.prop = prop;
+                }
                 this.tilesets.set(firstgid + tile.id, a);
             }
         }
@@ -99,12 +112,13 @@ export class YJTiledMapData {
     }
 
     private getObjects(objects: any[]): any[] {
+        if (!objects) return [];
         let arr: any[] = [];
         for (let i = 0, len = objects.length; i < len; i++) {
             let obj = objects[i];
             let a: any = {
-                x: (1 - this.anchor.x * 2) * obj.x + this.anchor.x * this.mapSize.width,
-                y: (1 - this.anchor.y * 2) * obj.y + this.anchor.y * this.mapSize.height,
+                x: obj.x,
+                y: this.mapSize.height - obj.y,
             };
             if (obj.properties != null)
                 obj.properties.forEach((p: any) => {
@@ -118,6 +132,28 @@ export class YJTiledMapData {
                 })
             }
             arr.push(a);
+        }
+        return arr;
+    }
+
+    private getTiles(data: number[]): any[] {
+        if (!data) return [];
+        let arr: any[] = [];
+        for (let i = 0; i < this.uv.height; i++) {
+            for (let j = 0; j < this.uv.width; j++) {
+                const id = data[i * this.uv.width + j];
+                if (id == 0) continue;
+                let tileInfo = this.tilesets.get(id);
+                if (!tileInfo) continue;
+                arr[arr.length] = {
+                    image: tileInfo.image,
+                    width: tileInfo.width,
+                    height: tileInfo.height,
+                    x: this.tileSize.width * (0.5 + j + (1 - this.gridScale) * (i % 2)) + tileInfo.offset.x,
+                    y: this.tileSize.height * (0.5 + i * this.gridScale) + tileInfo.offset.y,
+                    prop: tileInfo.prop
+                };
+            }
         }
         return arr;
     }

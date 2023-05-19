@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size } from 'cc';
+import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
@@ -112,12 +112,16 @@ export class SetList extends FuckUi {
         // }
         this._loaded = true;
 
-        this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
-            this.touched = true;
-        }, this);
+        // this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
+        //     this.touched = true;
+        // }, this);
 
-        this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
-            this.touched = false;
+        // this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
+        //     this.touched = false;
+        // }, this);
+
+        this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
+            this.updatePos();
         }, this);
     }
 
@@ -158,8 +162,9 @@ export class SetList extends FuckUi {
             this.waitTime = this.wait;
         }
         this.unscheduleAllCallbacks();
-        if (!this.node.isValid) return;
+        if (!this?.node?.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);
+        if (!this?.node?.isValid || !this?.content?.isValid) return;
         let listItems = this.content.children;
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
@@ -174,7 +179,7 @@ export class SetList extends FuckUi {
         this.allNum = a.length;
         if (listItems.length == 0 || this.listData?.length != this.allNum) {
             if (this.showMax >= this.allNum) this.showNum = this.allNum;
-            else this.showNum = this.showMax + 2;
+            else this.showNum = this.showMax;
             await this.initItems();
             if (!this?.node?.isValid) return;
         }
@@ -189,6 +194,7 @@ export class SetList extends FuckUi {
     private async initItems() {
         if (!this.node.isValid) return;
         await no.waitFor(() => { return this.template != null; }, this);
+        if (!this.itemSize) return;
         if (this.isVertical) {
             this.contentSize = this.allNum * this.itemSize.height;
             this.content.getComponent(UITransform).width = this.itemSize.width;
@@ -213,6 +219,7 @@ export class SetList extends FuckUi {
         if (!this.node.isValid) return;
         let listItems = this.content.children;
         await no.waitFor(() => { return listItems.length >= this.showNum; }, this);
+        if (!this.itemSize) return;
         if (start != this.lastIndex) {
             if (this.allNum - start < this.showMax) {
                 start = this.allNum - this.showMax;
@@ -238,12 +245,12 @@ export class SetList extends FuckUi {
 
     private setItem(start: number, i: number) {
         let item = this.content.children[i];
-        if (!item) return false;
+        if (!item) return;
         this.setItemPosition(item, start + i);
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
-            item.active = true;
-        } else item.active = false;
+        }
+        item.active = i < this.showNum;
     }
 
     private setItemData(item: Node, data = []) {
@@ -255,7 +262,7 @@ export class SetList extends FuckUi {
         else {
             let a = item.getComponent(SetCreateNode);
             if (a)
-                a.setData(JSON.stringify(data));
+                a.setData(no.jsonStringify(data));
         }
     }
 
@@ -281,7 +288,11 @@ export class SetList extends FuckUi {
             }
             return;
         }
-        if (!this.touched) return;
+    }
+
+    private updatePos() {
+        // if (!this.touched) return;
+        if (!isValid(this?.node)) return;
         let listItems = this.content.children;
         if (this.listData == null || listItems == null || listItems.length == 0) return;
         let curPos = 0;

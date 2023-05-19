@@ -1,6 +1,6 @@
 /*!
- * protobuf.js v7.1.2 (c) 2016, daniel wirtz
- * compiled mon, 26 sep 2022 08:55:29 utc
+ * protobuf.js v7.2.3 (c) 2016, daniel wirtz
+ * compiled mon, 27 mar 2023 18:08:22 utc
  * licensed under the bsd-3-clause license
  * see: https://github.com/dcodeio/protobuf.js for details
  */
@@ -4460,6 +4460,16 @@ function parse(source, root, options) {
             parseGroup(parent, rule);
             return;
         }
+        // Type names can consume multiple tokens, in multiple variants:
+        //    package.subpackage   field       tokens: "package.subpackage" [TYPE NAME ENDS HERE] "field"
+        //    package . subpackage field       tokens: "package" "." "subpackage" [TYPE NAME ENDS HERE] "field"
+        //    package.  subpackage field       tokens: "package." "subpackage" [TYPE NAME ENDS HERE] "field"
+        //    package  .subpackage field       tokens: "package" ".subpackage" [TYPE NAME ENDS HERE] "field"
+        // Keep reading tokens until we get a type name with no period at the end,
+        // and the next token does not start with a period.
+        while (type.endsWith(".") || peek().startsWith(".")) {
+            type += next();
+        }
 
         /* istanbul ignore if */
         if (!typeRefRe.test(type))
@@ -5572,6 +5582,7 @@ Root.prototype.load = function load(filename, options, callback) {
 
     // Fetches a single file
     function fetch(filename, weak) {
+        filename = getBundledFileName(filename) || filename;
 
         // Skip if already loaded / attempted
         if (self.files.indexOf(filename) > -1)
@@ -5700,6 +5711,10 @@ function tryHandleExtension(root, field) {
     var extendedType = field.parent.lookup(field.extend);
     if (extendedType) {
         var sisterField = new Field(field.fullName, field.id, field.type, field.rule, undefined, field.options);
+        //do not allow to extend same field twice to prevent the error
+        if (extendedType.get(sisterField.name)) {
+            return true;
+        }
         sisterField.declaringField = field;
         field.extensionField = sisterField;
         extendedType.add(sisterField);
@@ -8076,7 +8091,7 @@ function newError(name) {
             configurable: true,
         },
         name: {
-            get() { return name; },
+            get: function get() { return name; },
             set: undefined,
             enumerable: false,
             // configurable: false would accurately preserve the behavior of
@@ -8086,7 +8101,7 @@ function newError(name) {
             configurable: true,
         },
         toString: {
-            value() { return this.name + ": " + this.message; },
+            value: function value() { return this.name + ": " + this.message; },
             writable: true,
             enumerable: false,
             configurable: true,

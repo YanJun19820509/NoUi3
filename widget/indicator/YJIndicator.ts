@@ -27,7 +27,7 @@ export class YJIndicator extends YJDataWork {
     container: Node = null;
 
     //子类实现
-    protected afterInit() {
+    protected afterDataInit() {
         if (!this.template || !this.container) return;
         let { num, cur }: { num?: number, cur?: number } = this.data;
         if (num != undefined) this.createItem(num);

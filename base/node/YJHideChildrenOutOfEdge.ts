@@ -1,5 +1,6 @@
 
-import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderer, v3, Vec3, UIOpacity } from 'cc';
+import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderable, v3, Vec3, UIOpacity, isValid } from 'cc';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -23,12 +24,13 @@ export class YJHideChildrenOutOfEdge extends Component {
     private viewRect: Rect;
     private lastPos: Vec3;
 
-    update() {
-        this.checkChildrenVisible();
+    start() {
+        YJJobManager.ins.execute(this.checkChildrenVisible, this);
     }
 
     private checkChildrenVisible() {
-        if (this.viewNode == null) return;
+        if (!isValid(this?.node)) return false;
+        if (this.viewNode == null) return false;
         if (this.viewRect == null) {
             this.viewRect = rect();
             let transform = this.viewNode.getComponent(UITransform);
@@ -41,9 +43,9 @@ export class YJHideChildrenOutOfEdge extends Component {
         this.node.getPosition(pos);
         if (this.lastPos == null) {
             this.lastPos = pos;
-            return;
+            return true;
         }
-        if (pos.equals(this.lastPos)) return;
+        if (pos.equals(this.lastPos)) return true;
         let center = this.viewRect.center;
         this.viewRect.center = v2(center.x + this.lastPos.x - pos.x, center.y + this.lastPos.y - pos.y);
         this.lastPos = pos;
@@ -65,5 +67,6 @@ export class YJHideChildrenOutOfEdge extends Component {
             }
             opacity.opacity = 255;
         }
+        return true;
     }
 }

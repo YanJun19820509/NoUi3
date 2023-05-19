@@ -33,6 +33,8 @@ export class SetTypeWritting extends FuckUi {
     duration: number = .5;
     @property(no.EventHandlerInfo)
     onStop: no.EventHandlerInfo[] = [];
+    @property({ displayName: '直接输出' })
+    noType: boolean = false;
 
     private _paragraphs: string[];
     private _content: any[];
@@ -47,6 +49,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     onDisable() {
+        this.node.removeAllChildren();
         this._x = null;
         this._maxY = 0;
     }
@@ -64,7 +67,10 @@ export class SetTypeWritting extends FuckUi {
         if (data.content) {
             this._paragraphs = [].concat(data.content);
         }
+        this._label.enabled = true;
+
         if (data.stop) {
+            if (this.noType) return;
             this.unscheduleAllCallbacks();
             let str = this._paragraphs.join(this._br);
             if (!this._isRichText)
@@ -73,6 +79,7 @@ export class SetTypeWritting extends FuckUi {
                 this.createRichTextNode(str);
             no.EventHandlerInfo.execute(this.onStop);
         } else if (data.next) {
+            if (this.noType) return;
             this.unscheduleAllCallbacks();
             let str = '';
             for (let i = 0, n = Math.min(this._idx, this._paragraphs.length - 1); i <= n; i++) {
@@ -84,6 +91,12 @@ export class SetTypeWritting extends FuckUi {
             } else
                 this.createRichTextNode(str);
 
+        } else if (data.content == '') {
+            this.node.removeAllChildren();
+            this._x = null;
+            this._maxY = 0;
+            this._label.string = '';
+            this._idx = -1;
         } else {
             this.node.removeAllChildren();
             this._x = null;
@@ -102,7 +115,37 @@ export class SetTypeWritting extends FuckUi {
         }
         let s = String(this._paragraphs[this._idx]);
         this._content = this._isRichText ? this.splitHtmlString(s) : s.split('');
-        this.writing();
+
+        this.scheduleOnce(() => {
+            if (this.noType)
+                this.write();
+            else
+                this.writing();
+        }, this._idx > 0 ? this.duration : 0);
+    }
+
+    private write() {
+        // this.scheduleOnce(() => {
+        //     const n = this._content.length;
+        //     for (let i = 0; i < n; i++) {
+        //         this.setStr();
+        //     }
+        //     this.setWrap();
+        //     this.setParagraph();
+        // }, .1);
+        if (this._isRichText) {
+            const n = this._content.length;
+            no.schedule(() => {
+                this.setStr();
+            }, 0, n, 0, this, () => {
+                this.setWrap();
+                this.setParagraph();
+            });
+        } else {
+            this._label.string += this._content.join('');
+            this.setWrap();
+            this.setParagraph();
+        }
     }
 
     private writing() {
@@ -119,6 +162,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private setStr() {
+        if (this._content.length == 0) return;
         let a = this._content.shift();
         if (!this._isRichText)
             this._label.string += a;
@@ -128,6 +172,7 @@ export class SetTypeWritting extends FuckUi {
     }
 
     private setWrap() {
+        if (this._paragraphs.length == 1) return;
         this._label.string += this._br;
     }
 

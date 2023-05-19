@@ -1,6 +1,5 @@
 
 import { _decorator, Component, Node } from 'cc';
-import { DEBUG } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, menu } = _decorator;
 
@@ -21,15 +20,11 @@ const { ccclass, menu } = _decorator;
 export class YJShowForDebug extends Component {
     onLoad() {
         if (!this.enabled) return;
-        !DEBUG && this.node.destroy();
-
-        if (DEBUG) {
-            this.node.active = window['show_GM_btn'];
-            no.evn.on('show_GM_btn', () => {
-                if (this?.node?.isValid)
-                    this.node.active = window['show_GM_btn'];
-            }, this);
-        }
+        this.node.active = window['show_GM_btn'];
+        no.evn.on('show_GM_btn', () => {
+            if (this?.node?.isValid)
+                this.node.active = window['show_GM_btn'];
+        }, this);
     }
     onDestroy() {
         no.evn.targetOff(this);

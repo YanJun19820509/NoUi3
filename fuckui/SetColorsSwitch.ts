@@ -1,5 +1,5 @@
 
-import { _decorator, Color, UIRenderer } from 'cc';
+import { _decorator, Color, Renderable2D } from 'cc';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 
@@ -29,12 +29,27 @@ export class SetColorsSwitch extends FuckUi {
     @property({ type: ColorInfo, displayName: '状态信息' })
     infos: ColorInfo[] = [];
 
+    @property({ displayName: '影响子节点' })
+    recursive: boolean = false;
+
     protected onDataChange(data: any) {
         data = String(data);
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.condition === data) {
-                this.node.getComponent(UIRenderer).color = info.color;
+                if (this.node.getComponent(Renderable2D)) {
+                    this.node.getComponent(Renderable2D).color = info.color;
+                }
+
+                if (this.recursive) {
+                    let children = this.node.children
+                    for (let index = 0; index < children.length; index++) {
+                        const element = children[index];
+                        if (element.getComponent(Renderable2D)) {
+                            element.getComponent(Renderable2D).color = info.color;
+                        }
+                    }
+                }
                 break;
             }
         }

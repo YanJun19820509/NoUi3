@@ -10,17 +10,18 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 export default class YJLoadPrefab extends Component {
     @property({ type: Prefab, editorOnly: true })
     prefab: Prefab = null;
-    @property
-    prefabPath: string = '';
-
-    @property({ editorOnly: true })
-    doCheck: boolean = false;
+    @property({ readonly: true })
+    prefabUrl: string = '';
+    // @property({ readonly: true })
+    // prefabUuid: string = '';
 
     @property
     autoLoad: boolean = true;
 
+    private url: string;
     public loaded: boolean = false;
     public loadedNode: Node = null;
+    private prefUuid: string;
     private loadedPrefab: Prefab = null;
 
     onLoad() {
@@ -35,12 +36,13 @@ export default class YJLoadPrefab extends Component {
 
     public async loadPrefab(): Promise<Node> {
         if (this.loadedNode != null && this.loadedNode.isValid) return this.loadedNode;
-        const path = this.prefabPath.replace('db://assets/', '');
+        this.url = this.prefabUrl.replace('db://assets/', '').replace('.prefab', '');
         return new Promise<Node>(resolve => {
-            no.assetBundleManager.loadPrefab(path, (p) => {
+            no.assetBundleManager.loadPrefab(this.url, (p) => {
                 if (p == null) resolve(null);
                 else {
                     this.loadedPrefab = p;
+                    this.prefUuid = p._uuid;
                     this.loadedNode = instantiate(p);
                     this.loaded = true;
                     resolve(this.loadedNode);
@@ -62,23 +64,22 @@ export default class YJLoadPrefab extends Component {
         this.loadedNode?.destroy();
         this.loadedNode = null;
         this.loaded = false;
+        // no.assetBundleManager.release(this.prefUuid, false);
     }
 
     ////////////EDITOR MODE//////////////////////
     update() {
         if (EDITOR) {
-            if (this.doCheck) {
-                this.doCheck = false;
+            if (this.prefab != null) {
                 this.setPrefabUrl();
             }
         }
     }
 
     private setPrefabUrl() {
-        if (!this.prefab) return;
-        const name = this.prefab.name;
-        no.assetBundleManager.getAssetInfoWithNameInEditorMode(`${name}.prefab`, Prefab).then(info => {
-            this.prefabPath = info.path;
+        no.getAssetUrlInEditorMode(this.prefab._uuid, url => {
+            if (!url) return;
+            this.prefabUrl = url;
             this.prefab = null;
         });
     }

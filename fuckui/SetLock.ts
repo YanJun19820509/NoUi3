@@ -127,6 +127,6 @@ export class SetLock extends FuckUi {
 
     private setGray(v: boolean) {
         let a = this.target.getComponent(SetGray) || this.target.addComponent(SetGray);
-        a.setData(JSON.stringify(v));
+        a.setData(no.jsonStringify(v));
     }
 }

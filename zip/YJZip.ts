@@ -17,34 +17,83 @@ import { no } from '../../NoUi3/no';
 
 @ccclass('YJZip')
 export class YJZip {
+    /**
+     * 解压压缩文件
+     * @param url 远程或本地文件路径
+     * @param cb 
+     * @param onErr 
+     */
     public static unzip(url: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
-        assetManager.loadRemote(url, (err, file: BufferAsset) => {
-            if (err) {
-                no.log(err);
+        if (url.indexOf('http://') > -1 || url.indexOf('https://') > -1)
+            assetManager.loadRemote(url, (err, file: BufferAsset) => {
+                if (err) {
+                    no.log(err.message);
+                    onErr && onErr();
+                } else {
+                    this.unzipBuffer(file.buffer(), cb, onErr);
+                }
+            });
+        else this._unzipFile(url, cb, onErr);
+    }
+
+    /**
+     * 解压压缩文件
+     * @param buffer 压缩文件内容
+     * @param cb 
+     * @param onErr 
+     */
+    public static unzipBuffer(buffer: ArrayBuffer | Uint8Array | Blob, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
+        no.log('unzipBuffer');
+        let jszip = new window['JSZip']();
+        jszip.loadAsync(buffer)
+            .then(zip => {
+                this._unzip(zip, cb);
+            }, (e) => {
+                no.log(e.stack);
                 onErr && onErr();
-            } else {
-                let jszip = new window['JSZip']();
-                jszip.loadAsync(file.buffer())
-                    .then(function (zip) {
-                        let total = 0;
-                        zip.forEach((relativePath, data) => {
-                            if (!data.dir) total++;
-                            else cb && cb(relativePath, data.dir);
-                        });
-                        zip.forEach((relativePath, data) => {
-                            if (cb) {
-                                if (!data.dir) {
-                                    zip.file(data.name).async('uint8array').then(v => {
-                                        cb(relativePath, data.dir, total, v);
-                                    });
-                                }
-                            }
-                        });
-                    }, function (e) {
-                        no.log(e);
-                        onErr && onErr();
+            });
+    }
+
+    private static _unzipFile(path: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
+        no.log('_unzipFile');
+        let jszip = new window['JSZip']();
+        jszip.loadAsync(path)
+            .then(zip => {
+                this._unzip(zip, cb);
+            }, (e) => {
+                no.log(e.stack);
+                onErr && onErr();
+            });
+    }
+
+    private static _unzip(zip: any, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void) {
+        let total = 0;
+        zip.forEach((relativePath, data) => {
+            if (!data.dir) total++;
+            else cb && cb(relativePath, data.dir);
+        });
+        zip.forEach((relativePath, data) => {
+            if (cb) {
+                if (!data.dir) {
+                    zip.file(data.name).async('uint8array').then(v => {
+                        cb(relativePath, data.dir, total, v);
                     });
+                }
             }
         });
+    }
+
+    /**压缩数据 */
+    public static compress(data: string): Uint8Array {
+        const pako = window['pako'];
+        if (!pako) return no.string2Bytes(data);
+        return pako.gzip(data);
+    }
+
+    /**解压数据 */
+    public static decompress(buffer: Uint8Array): string {
+        const pako = window['pako'];
+        if (!pako) return no.bytes2String(buffer);
+        return pako.ungzip(buffer, { to: 'string' });
     }
 }

@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, EventHandler, Slider, EDITOR } from 'cc';
+import { _decorator, Component, Node, EventHandler, Slider } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { EDITOR } from 'cc/env';
 const { ccclass, property, menu } = _decorator;
 
 /**

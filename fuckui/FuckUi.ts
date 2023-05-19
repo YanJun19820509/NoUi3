@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, isValid, Node } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
@@ -42,10 +42,13 @@ export class FuckUi extends Component {
     onLoad() {
         if (EDITOR) {
             if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
+        } else {
+            this.update = function () { };
         }
     }
 
     public setData(d: string) {
+        if (!isValid(this?.node)) return;
         if (d == 'null') {
             this.a_setEmpty();
             this._oldData = null;
@@ -56,15 +59,14 @@ export class FuckUi extends Component {
 
         if (d != '') {
             try {
-                d = JSON.parse(d);
+                d = no.parse2Json(d);
             } catch (e) {
-                no.err('JSON.parse', 'FuckUi.setData', d);
+                no.err('no.parse2Json', 'FuckUi.setData', d);
             }
         }
 
         this.logValue(d);
-        if (this.enabled)
-            this.onDataChange(d);
+        this.onDataChange(d);
         if (this.once) this.destroy();
     }
 
@@ -91,7 +93,7 @@ export class FuckUi extends Component {
 
     public a_setData(e: any, v: any) {
         v = v || e;
-        this.setData(v);
+        this.setData(no.jsonStringify(v));
     }
 
     public a_clearData() {
@@ -103,9 +105,9 @@ export class FuckUi extends Component {
         let d = this._oldData;
         if (d != '') {
             try {
-                d = JSON.parse(d);
+                d = no.parse2Json(d);
             } catch (e) {
-                no.err('JSON.parse', 'FuckUi.resetData', d);
+                no.err('no.parse2Json', 'FuckUi.resetData', d);
             }
         }
         this.logValue(d);

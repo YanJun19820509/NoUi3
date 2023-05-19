@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, macro } from 'cc';
+import { _decorator, Component, Node, macro, isValid } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
@@ -33,9 +33,12 @@ export class YJDataWork extends Component {
     protected _data: no.Data = new no.Data();
 
     private changedDataKeys: string[] = [];
+    private _dataChanged: boolean = false;
 
     private _loaded: boolean = false;
-    private _handler: any;
+
+    protected onDestroy(): void {
+    }
 
     protected onLoad() {
         if (EDITOR) {
@@ -50,32 +53,28 @@ export class YJDataWork extends Component {
         this.register.init();
     }
 
-    protected onDestroy() {
-        if (this._handler)
-            clearInterval(this._handler);
-    }
-
-    protected lateUpdate() {
-        this.setChangedDataToUi();
-    }
-
     /**
      * 初始化，可手动执行，或在onLoad时自动执行，若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      * @returns
      */
     public init() {
-        this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
+        const afterDataInit = this['afterDataInit'];
+        if (typeof afterDataInit == 'function') {
+            this.unschedule(this._checkData);
+            if (!this.data)
+                this.schedule(this._checkData, 0, 180);
+            else afterDataInit.call(this);
+        }
+    }
 
-        if (!this._handler) {
-            this._handler = setInterval(() => {
-                if (!!this.data) {
-                    clearInterval(this._handler);
-                    this._handler = null;
-                    this.afterDataInit();
-                }
-            }, 100);
+    private _checkData() {
+        if (!!this.data) {
+            this.unschedule(this._checkData);
+            const afterDataInit = this['afterDataInit'];
+            if (typeof afterDataInit == 'function')
+                afterDataInit.call(this);
         }
     }
 
@@ -97,32 +96,39 @@ export class YJDataWork extends Component {
         this._data.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
+        this._dataChanged = true;
+    }
+
+    protected lateUpdate(dt: number): void {
+        if (this._dataChanged) {
+            this.setChangedDataToUi();
+            this._dataChanged = false;
+        }
     }
 
     public clear(): void {
         this._data.clear();
     }
 
-    private _setting: boolean = false;
-    private async setChangedDataToUi() {
-        if (!this.enabled || !this.node?.isValid) return;
-        if (this._setting) return;
+    private setChangedDataToUi() {
+        if (!this?.node?.isValid) return;
+        if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-        this._setting = true;
-        // await YJJobManager.ins.execute(this.iterateChangedData, this);
+
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
-        let k = keys.shift();
-        while (k) {
-            this.onValueChange(k);
-            k = keys.shift();
-        }
-        this._setting = false;
+        this.changedDataKeys.length = 0;
+        // keys.forEach(k => {
+        //     this.onValueChange(k);
+        // });
+        // keys = null;
+        YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
 
-    private iterateChangedData() {
-        let k = this.changedDataKeys.shift();
-        if (k == undefined) return false;
+    private iterateChangedData(keys: string[]) {
+        if (!isValid(this?.node) || !keys?.length) return false;
+        let k = keys.shift();
         this.onValueChange(k);
+        return true;
     }
 
     private onValueChange(key: string, value?: any) {
@@ -150,13 +156,13 @@ export class YJDataWork extends Component {
         uis.forEach(ui => {
             let keys = ui.bindKeys;
             if (keys.length == 1) {
-                ui.setData(JSON.stringify(data));
+                ui.setData(no.jsonStringify(data));
             } else {
                 let a = {};
                 keys.forEach(key => {
                     a[key] = this._data.get(key);
                 });
-                ui.setData(JSON.stringify(a));
+                ui.setData(no.jsonStringify(a));
             }
         });
     }
@@ -166,10 +172,10 @@ export class YJDataWork extends Component {
     protected afterInit() {
 
     }
-    /**此时data一定有值 */
-    protected afterDataInit() {
+    /**此时data一定有值，子类按需实现该方法 */
+    // protected afterDataInit() {
 
-    }
+    // }
 
 
 }

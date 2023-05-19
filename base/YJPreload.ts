@@ -75,6 +75,9 @@ export class YJPreload extends YJComponent {
     @property({ displayName: '加了prefab后check一下' })
     needCheck: boolean = false;
 
+    @property({ displayName: '加载进度占比', min: 0, max: 1 })
+    maxProgress: number = 1;
+
 
     @property({ displayName: '跳转的场景' })
     scene: string = '';
@@ -282,14 +285,15 @@ export class YJPreload extends YJComponent {
     }
 
     private checkState(): boolean {
+        const p = this.dataWork?.data.allProgress || 0;
         if (this.finished >= this.total) {
             // no.EventHandlerInfo.execute(this.progressingCall, this.total, this.finished, this.progress);
             if (this.dataWork) {
                 this.dataWork.data = {
                     total: this.total,
                     finished: this.finished,
-                    progress: this.progress,
-                    allProgress: this.progress + this.finished / this.total
+                    progress: this.progress * this.maxProgress,
+                    allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
             this.delegate?.onLoadComplete();
@@ -303,8 +307,8 @@ export class YJPreload extends YJComponent {
                 this.dataWork.data = {
                     total: this.total,
                     finished: this.finished,
-                    progress: this.progress,
-                    allProgress: this.progress + this.finished / this.total
+                    progress: this.progress * this.maxProgress,
+                    allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
             return true;

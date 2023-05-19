@@ -1,4 +1,4 @@
-import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component, Label } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component, Label, isValid } from "cc";
 import { EDITOR } from "cc/env";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
@@ -427,6 +427,7 @@ dynamicAtlasManager.enabled = false;
 js.mixin(dynamicAtlasManager, {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
+        if (!isValid(comp?.node)) return;
         if (frame?.original) return;
         if (!comp.node.parent) return;
         let a: any = comp.getComponent('YJDynamicTexture');

@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Asset, AudioClip } from 'cc';
+import { _decorator, Component, Node } from 'cc';
 import { EDITOR } from 'cc/env';
-import { AssetInfo } from '../../../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 import { no } from '../../no';
 import { YJAudioManager } from './YJAudioManager';
 const { ccclass, property, executeInEditMode } = _decorator;
@@ -109,39 +108,32 @@ export class YJSoundEffectManager extends Component {
     update() {
         if (!EDITOR) return;
         if (this.isParse) {
-            this.parse();
             this.isParse = false;
+            this.parse();
         }
     }
 
     private async parse() {
         if (!EDITOR || !this.folder) return;
         console.log(this.folder);
-        let info = await Editor.Message.request('asset-db', 'query-asset-info', this.folder);
-        console.log(info);
-        if (!info) {
-            return;
-        }
-        let fs = require('fs');
-        let path = info.file;
-        let files: string[] = fs.readdirSync(path);
-        files.forEach(file => {
-            if (file.indexOf('.meta') > -1) return;
-            let p = info.path + '/' + file;
-            no.assetBundleManager.loadFileInEditorMode(p, AudioClip, (file: any, fileInfo: AssetInfo) => {
-                const i = no.indexOfArray(this.soundEffects, fileInfo.uuid, 'assetUuid');
+        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.folder, 'cc.AudioClip', infos => {
+            console.log(infos);
+            if (!infos.length) {
+                return;
+            }
+            infos.forEach(info => {
+                let effectInfo = new SoundEffectInfo();
+                let name = info.name.split('.')[0];
+                effectInfo.alias = name;
+                effectInfo.assetUrl = info.url;
+                effectInfo.assetUuid = info.uuid;
+                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
                 if (i > -1) {
-                    this.soundEffects[i].assetUrl = fileInfo.url;
-                } else {
-                    let effectInfo = new SoundEffectInfo();
-                    let name = fileInfo.name.split('.')[0];
-                    effectInfo.alias = name;
-                    effectInfo.assetUrl = fileInfo.url;
-                    effectInfo.assetUuid = fileInfo.uuid;
-                    this.soundEffects[this.soundEffects.length] = effectInfo;
-                }
+                    effectInfo.alias = this.soundEffects[i].alias;
+                    this.soundEffects.splice(i, 1, effectInfo);
+                } else this.soundEffects[this.soundEffects.length] = effectInfo;
             });
+            console.log('YJSoundEffectManager解析完成，请刷新组件！')
         });
-        console.log('YJSoundEffectManager解析完成，请刷新组件！')
     }
 }

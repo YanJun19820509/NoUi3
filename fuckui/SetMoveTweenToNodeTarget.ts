@@ -21,8 +21,16 @@ const { ccclass, property, requireComponent } = _decorator;
 @ccclass('SetMoveTweenToNodeTarget')
 @requireComponent(SetNodeTweenAction)
 export class SetMoveTweenToNodeTarget extends FuckUi {
-    @property({ min: 1 })
+
+    @property({ displayName: '根据速度计算时间' })
+    fixSpeed: boolean = true;
+
+    @property({ min: 1, displayName: '移动速度', tooltip: '移动速度', visible() { return this.fixSpeed; } })
     speed: number = 10;
+
+    @property({ min: 0.01, displayName: '移动时间(s)', visible() { return !this.fixSpeed; } })
+    time: number = 1;
+
     @property
     offset: math.Vec2 = math.v2();
 
@@ -43,8 +51,8 @@ export class SetMoveTweenToNodeTarget extends FuckUi {
         this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
         let p = this.node.position;
         let dis = Vec3.distance(p, pos);
-        let duration = dis / this.speed;
-        this.getComponent(SetNodeTweenAction).setData(JSON.stringify({
+        let duration = this.fixSpeed ? dis / this.speed : this.time;
+        this.getComponent(SetNodeTweenAction).setData(no.jsonStringify({
             duration: duration,
             to: 1,
             props: {

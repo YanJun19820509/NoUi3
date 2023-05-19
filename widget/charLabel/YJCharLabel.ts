@@ -97,7 +97,7 @@ export class YJCharLabel extends Component {
                 shadowOffset: [this.shadowOffset.x, this.shadowOffset.y],
                 shadowBlur: this.shadowBlur
             };
-            console.log('YJCharLabelStyle--', { info: JSON.stringify(a) });
+            console.log('YJCharLabelStyle--', { info: no.jsonStringify(a) });
         }
         this.initMode();
         if (this.text != this._text)
@@ -152,7 +152,7 @@ export class YJCharLabel extends Component {
         }
     }
 
-    private async setChars(s: string) {
+    private setChars(s: string) {
         let a = s.split('');
         let labelNodes = this.node.children;
         if (EDITOR) {
@@ -303,11 +303,11 @@ export class YJCharLabel extends Component {
         this.scheduleOnce(() => {
             this._ing = false;
             this.setScale();
-        }, 0.1);
+        }, 0);
     }
 
     private getUuid(str: string): string {
-        let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth;
+        let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + this.maxWidth + '_' + (this.bold ? '1': '0') + '_' + (this.italic ? '1': '0');
         return a;
     }
 }

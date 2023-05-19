@@ -70,8 +70,8 @@ export class YJSetShaderProperties extends Component {
             properties: properties,
             defines: defines
         };
-        console.log(d);
-        ss.setData(JSON.stringify(d));
+        no.log(d);
+        ss.setData(no.jsonStringify(d));
     }
 
     ////////////EDITOR MODE//////////////////////
@@ -83,9 +83,11 @@ export class YJSetShaderProperties extends Component {
         }
     }
 
-    private async setUrl() {
-        let url = await no.getAssetUrlInEditorMode(this.effectAsset._uuid);
-        this.path = url.replace('db://assets/', '').replace('.effect', '');
-        this.effectAsset = null;
+    private setUrl() {
+        no.getAssetUrlInEditorMode(this.effectAsset._uuid, url => {
+            if (!url) return;
+            this.path = url.replace('db://assets/', '').replace('.effect', '');
+            this.effectAsset = null;
+        });
     }
 }

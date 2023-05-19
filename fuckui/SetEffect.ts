@@ -101,6 +101,7 @@ export class SetEffect extends FuckUi {
     private caculateFact() {
         //当多个组件使用同一个材质时，需要使用sharedMaterial
         let material = this.getComponent(YJVertexColorTransition) ? this._renderComp.sharedMaterial : this._renderComp.material;
+        if (!material || !material.effectAsset) return;
         let f = this._renderComp.renderData.frame;
         let texture = f._texture;
 

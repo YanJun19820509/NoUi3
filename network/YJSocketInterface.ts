@@ -18,9 +18,12 @@ export interface YJSocketInterface {
     sendDataToServer(encryptType: EncryptType, data: any): any;
     getDataFromServer?(encryptType: EncryptType, data: any): Promise<any>;
     findReceiveData?(handler: (data: any) => boolean): void;
+    dealReceivedData?(handler: (data: any) => void): void;
     onMessage?(v: any): any;
     onClose?(): void;
     clear?(): void;
     connect?(): void;
     close?(): void;
+    setHeader?(key: string, value: string): void;
+    isOpen?(): boolean;
 }

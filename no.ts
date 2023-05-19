@@ -1,11 +1,183 @@
 
-import { _decorator, Component, Node, EventHandler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset } from 'cc';
+import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
-import { AssetInfo } from '../cc_editor/@types/packages/asset-db/@types/public';
+import { AssetInfo } from './@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
 
 export namespace no {
+    let _debug: boolean = DEBUG;
+    let _version: string;
+
+    export function isDebug(): boolean {
+        return _debug;
+    }
+    export function setDebug(v: boolean) {
+        _debug = v;
+    }
+
+    export function gameVersion(): string {
+        return _version;
+    }
+
+    export function setGameVersion(v: string) {
+        _version = v;
+    }
+
+    let _scheduler: Scheduler = director.getScheduler();
+    /**
+     * 定时器
+     * @param cb 
+     * @param interval 秒
+     * @param repeat 
+     * @param delay 秒
+     * @param target 
+     * @param endCb 定时结束时回调
+     */
+    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        let targetT = { uuid: target.uuid };
+        let n: number = repeat;
+        if (!endCb) {
+            repeat--;
+        }
+
+        let callback = (dt: number) => {
+            if (n > 0) {
+                if (!target)
+                    cb?.(dt);
+                else if (checkValid(target)) {
+                    cb?.call(target, dt);
+                } else {
+                    unschedule(targetT, callback);
+                    targetT = null;
+                    callback = null;
+                    n = null;
+                    return;
+                }
+            }
+
+            if (endCb && n == 0) {
+                endCb.call(target);
+            }
+            --n;
+        };
+
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
+        _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
+    }
+    /**
+     * 定时执行一次
+     * @param cb 
+     * @param delay 秒
+     * @param target 
+     */
+    export function scheduleOnce(cb: (dt?: number) => void, delay: number, target: any = {}) {
+        schedule(cb, delay, 1, 0, target);
+    }
+    /**
+     * 定时执行无限次
+     * @param cb 
+     * @param interval 秒 
+     * @param target 
+     */
+    export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
+        schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
+    }
+    /**
+     * 每帧执行target的check方法，当返回true时执行onChecked并停止
+     * @param check 
+     * @param onChecked 
+     * @param target 
+     * @param maxTry 最大尝试次数
+     */
+    export function scheduleUpdateCheck(check: (dt?: number) => boolean, onChecked: () => void, target: any = {}, maxTry?: number) {
+        if (!check || !onChecked) return;
+        if (check.call(target, 0)) {
+            onChecked.call(target);
+            return;
+        }
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        let targetT = { uuid: target.uuid };
+        if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
+        let callback = (dt: number) => {
+            if (!checkValid(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else if (check.call(target, dt)) {
+                onChecked.call(target);
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            }
+        };
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
+        _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
+    }
+
+    /**
+     * 定时执行cb，直到until返回true结束
+     * @param cb 
+     * @param interval 
+     * @param until 
+     * @param delay 
+     * @param target 
+     */
+    export function scheduleUntil(cb: (dt?: number) => void, interval: number, until: () => boolean, delay?: number, target: any = {}) {
+        if (until.call(target)) return;
+        if (!_scheduler) _scheduler = director.getScheduler();
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        let targetT = { uuid: target.uuid };
+        let callback = (dt: number) => {
+            if ((target && !checkValid(target)) || until.call(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else {
+                cb?.call(target, dt);
+            }
+        };
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
+        _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
+    }
+
+    export function isScheduled(cb: any, target: any): boolean {
+        return _scheduler.isScheduled(cb, target);
+    }
+
+    /**
+     * 取消target所有定时回调
+     * @param target 
+     */
+    export function unschedule(target: any, cb?: any) {
+        if (!target || !target.uuid) return;
+        if (!cb)
+            _scheduler?.unscheduleAllForTarget(target);
+        else
+            _scheduler.unschedule(cb, target);
+    }
+    /**
+     * 每帧执行target的update方法
+     * @param target 
+     * @param priority  优先级的值越低，定时器被触发的越早
+     */
+    export function scheduleTargetUpdateFunction(target: any, priority: number) {
+        if (!target || !target['update'] || typeof target['update'] != 'function') return;
+        if (target.uuid == undefined) target.uuid = uuid();
+        if (!_scheduler) _scheduler = director.getScheduler();
+        _scheduler.scheduleUpdate(target, priority, false);
+    }
+
+    /**
+     * 取消每帧执行target的update方法
+     * @param target 
+     * @returns 
+     */
+    export function unscheduleTargetUpdateFunction(target: any) {
+        if (!target) return;
+        _scheduler?.unscheduleUpdate(target);
+    }
     class Event {
         private _map: any;
 
@@ -129,13 +301,15 @@ export namespace no {
             this._states[type] = { v: value, t: sys.now() };
         }
 
-        public on(type: string, target: Component) {
+        public on(type: string, target: any) {
+            if (!target.uuid) target.uuid = uuid();
             this._watchers[type] = this._watchers[type] || {};
             this._watchers[type][target.uuid] = sys.now();
         }
 
 
-        public off(type: string, target: Component) {
+        public off(type: string, target: any) {
+            if (!target.uuid) return;
             if (this._watchers[type])
                 delete this._watchers[type][target.uuid];
         }
@@ -150,10 +324,11 @@ export namespace no {
             this._watchers = {};
         }
 
-        public check(type: string, target: Component): { state: boolean, value?: any } {
+        public check(type: string, target: any): { state: boolean, value?: any } {
             let c = { state: false, value: null };
             let b: { v: any, t: number } = this._states[type];
             if (!b) return c;
+            if (!target.uuid) target.uuid = uuid();
             let a = this._watchers[type];
             if (!a) {
                 this._watchers[type] = {};
@@ -164,7 +339,7 @@ export namespace no {
             return c;
         }
 
-        public async checkTrue(type: string, target: Component): Promise<any> {
+        public async checkTrue(type: string, target: any): Promise<any> {
             if (!target?.isValid) return Promise.resolve(null);
             let a = this.check(type, target);
             if (a.state) return Promise.resolve(a.value);
@@ -198,10 +373,10 @@ export namespace no {
             this._time = t;
             this._targets = [];
             this._num = 1;
-            setInterval(() => {
+            scheduleForever(() => {
                 this._time++;
                 this.cb();
-            }, 1000);
+            }, 1, this);
 
         }
 
@@ -228,7 +403,7 @@ export namespace no {
                         if (a && a.doTickTock) a.doTickTock(this._time);
                     }
                 } catch (e) {
-                    console.log(e);
+                    log(e);
                 }
             } else {
                 for (let i = this._targets.length - 1; i >= 0; i--) {
@@ -272,16 +447,17 @@ export namespace no {
         }
 
         public execute(...args: any[]): void {
-            this.handler.emit(args);
+            if (isValid(this.handler?.target, true))
+                this.handler.emit(args);
         }
     }
 
     export function log(...Evns: any[]): void {
-        console.log.call(console, '#NoUi#Log', JSON.stringify(Evns));
+        console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
-        console.error.call(console, '#NoUi#Err', JSON.stringify(Evns));
+        console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
     }
 
     /**
@@ -326,8 +502,9 @@ export namespace no {
      */
     export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
         return new Promise<any>(resolve => {
-            evn.once(type, () => {
-                resolve(arg);
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') resolve(null);
+                else resolve(arg);
             }, target);
         });
     }
@@ -339,7 +516,7 @@ export namespace no {
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
         return new Promise<void>(resolve => {
-            callUntil(express, resolve);
+            scheduleUpdateCheck(express, resolve, comp);
         });
     }
 
@@ -350,8 +527,11 @@ export namespace no {
      * @returns 
      */
     export function waiForEventValue(type: string, target?: any): Promise<any> {
-        return new Promise<any>(resolve => {
-            evn.once(type, resolve, target);
+        return new Promise<any>((resolve, reject) => {
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') reject(null);
+                else resolve(v);
+            }, target);
         });
     }
 
@@ -364,24 +544,27 @@ export namespace no {
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         let e = evn;
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve, reject) => {
             e.on(type, (v: any) => {
-                log('waiForEventValueEqual', type, v);
-                if (v == equalValue) {
-                    e.offAfterTrigger(type, target);
-                    resolve();
+                if (v == '__clear_Wait_For_Event__') resolve();
+                else {
+                    log('waiForEventValueEqual', type, v);
+                    if (v == equalValue) {
+                        e.offAfterTrigger(type, target);
+                        resolve();
+                    }
                 }
             }, target);
         });
     }
 
-    export function callUntil(express: (dt?: number) => boolean, callback: () => void): void {
-        let a = setInterval(() => {
-            if (express()) {
-                clearInterval(a);
-                callback?.();
-            }
-        }, 20);
+    /**
+     * 取消
+     * @param type 
+     */
+    export function clearWaitForEvent(type: string) {
+        evn.emit(type, '__clear_Wait_For_Event__');
+        evn.typeOff(type);
     }
 
     /**
@@ -390,7 +573,7 @@ export namespace no {
      * @param data 需要替换的数据，如{'a':1,'b':2,'c':3}，返回1:2:3  [1,2,3] 1:2:3
      */
     export function formatString(formatter: string, data: any[] | object): string {
-        var s = formatter;
+        var s = String(formatter);
         let keys = Object.keys(data);
         keys.forEach(k => {
             s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), data[k]);
@@ -442,6 +625,7 @@ export namespace no {
      * @param n
      */
     export function num2str(n: number): string {
+        if (n == null) return '';
         if (n < 1000) return String(n);
         let unit = ['k', 'm', 'b'];
         var a = '';
@@ -599,6 +783,8 @@ export namespace no {
      * @param num 子数组最大长度
      */
     export function arrayToArrays(array: any[], num: number): any[] {
+        if (!array) return [];
+        if (!num) return array;
         var dd = [];
         let length = ceil(array.length / num);
         for (var ii = 0; ii < length; ii++) {
@@ -634,12 +820,16 @@ export namespace no {
         return array[i];
     }
 
-    export function addToArray(array: any[], value: any, key?: string): void {
+    export function addToArray(array: any[], value: any, key?: string): boolean {
+        if (!array) return false;
         if (key == null && array.indexOf(value) == -1) {
             array[array.length] = value;
+            return true;
         } else if (key != null && indexOfArray(array, value, key) == -1) {
             array[array.length] = value;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -648,6 +838,7 @@ export namespace no {
      * @param value
      */
     export function pushToArray(array: any[], value: any): void {
+        if (!array) return;
         if (value == null) return;
         array[array.length] = value;
     }
@@ -770,7 +961,7 @@ export namespace no {
     export function clone(d: any): any {
         if (d instanceof Array)
             try {
-                return JSON.parse(JSON.stringify(d));
+                return parse2Json(jsonStringify(d));
             } catch (e) {
                 no.err('JSON.parse', 'clone');
             }
@@ -790,7 +981,7 @@ export namespace no {
             if (component != null) {
                 component.scheduleOnce(resolve, duration);
             } else {
-                setTimeout(resolve, duration * 1000);
+                scheduleOnce(() => { resolve(); }, duration);
             }
         });
     }
@@ -807,11 +998,22 @@ export namespace no {
      * 取两值之间的随机值
      * @param min
      * @param max
+     * @param isInt 是否取整
      */
-    export function randomBetween(min: number, max: number): number {
+    export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        return floor(Math.random() * (max - min)) + min;
+        const a = Math.random() * (max - min);
+        return (isInt ? floor(a) : a) + min;
+    }
+
+    /**
+     * 将UTC时区时间戳转化为本地系统所在时区时间戳
+     */
+    export function localDateSeconds(utcSeconds: number): number {
+        const t = new Date(utcSeconds * 1000);
+        t.setMinutes(t.getMinutes() + t.getTimezoneOffset());
+        return Math.floor(t.getTime() * .001);
     }
 
     /**
@@ -1030,6 +1232,7 @@ export namespace no {
      * @param node
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
+        if (!checkValid(node)) return;
         out = out || v3();
         node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
         return out;
@@ -1173,6 +1376,7 @@ export namespace no {
      * @returns 权重索引
      */
     export function weightRandom(weight: number[], except?: number[]): number {
+        if (!weight) return 0;
         let sum = 0;
         except = except || [];
         weight.forEach((w, i) => {
@@ -1198,6 +1402,7 @@ export namespace no {
      * @returns 权重索引
      */
     export function weightRandomObject(weight: any[], key: string): number {
+        if (!weight) return 0;
         let a: number[] = [];
         weight.forEach(item => {
             a[a.length] = Number(item[key]);
@@ -1249,9 +1454,16 @@ export namespace no {
         return v;
     }
 
+    function eIndex(n: number): number {
+        let s = n.toString().toLowerCase();
+        let a = s.split('e');
+        if (!a[1]) return 0;
+        return Number(a[1]);
+    }
+
     function decimalDigits(n: number): number {
-        let a = n.toString().split('.');
-        return !!a[1] ? a[1].length : 0;
+        let a = n.toString().toLowerCase().split('e')[0].split('.');
+        return (!!a[1] ? a[1].length : 0) - eIndex(n);
     }
 
     /**加 */
@@ -1272,16 +1484,16 @@ export namespace no {
     /**乘 */
     export function mutiply(n1: number, n2: number): number {
         let m: number = decimalDigits(n1) + decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return Number(s1) * Number(s2) / Math.pow(10, m);
     }
     /**除 */
     export function divide(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return (Number(s1) / Number(s2)) * Math.pow(10, r2 - r1);
     }
 
@@ -1401,10 +1613,10 @@ export namespace no {
             if (tweenSet instanceof Array) {
                 tweenSet.forEach((t, i) => {
                     if (i == 0)
-                        t.start().then(endCall);
+                        t.start().then(endCall).catch(e => { err(e); });
                     else t.start();
                 });
-            } else tweenSet.start().then(endCall);
+            } else tweenSet.start().then(endCall).catch(e => { err(e); });
         }
     }
 
@@ -1519,7 +1731,7 @@ export namespace no {
      * @returns
      */
     export function width(node: Node, width?: number): number {
-        if (!node) return;
+        if (!node || !node.getComponent(UITransform)) return;
         if (width != undefined)
             node.getComponent(UITransform).width = width;
         return node.getComponent(UITransform).width;
@@ -1532,10 +1744,23 @@ export namespace no {
      * @returns
      */
     export function height(node: Node, height?: number): number {
-        if (!node) return;
+        if (!node || !node.getComponent(UITransform)) return;
         if (height != undefined)
             node.getComponent(UITransform).height = height;
         return node.getComponent(UITransform).height;
+    }
+
+    /**
+     * 获取或设置节点size
+     * @param node 节点
+     * @param size 为空时则返回当前size；否则修改当前size
+     * @returns
+     */
+    export function size(node: Node, size?: Size): Size {
+        if (!node || !node.getComponent(UITransform)) return;
+        if (size != undefined)
+            node.getComponent(UITransform).contentSize = size;
+        return node.getComponent(UITransform).contentSize.clone();
     }
 
     /**
@@ -1578,6 +1803,19 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点scale
+     * @param node 节点
+     * @param scale 为空时则返回当前scale；否则修改当前scale
+     * @returns
+     */
+    export function scale(node: Node, scale?: Vec3): Vec3 {
+        if (!node) return;
+        if (scale != undefined)
+            node.scale = scale;
+        return node.scale.clone();
+    }
+
+    /**
      * 解析带function的json字符串
      * @param s 
      * @returns 
@@ -1586,7 +1824,7 @@ export namespace no {
         try {
             return JSON.parse(s, function (k, v) {
                 if (!WECHAT)//微信小游戏平台不支持
-                    if (v.indexOf && v.indexOf('function') > -1) {
+                    if (v && v.indexOf && v.indexOf('function') > -1) {
                         // return eval("(function(){return " + v + " })()");
                         let FN = Function;
                         return new FN(`return ${v}`)();
@@ -1605,19 +1843,31 @@ export namespace no {
      * @returns 
      */
     export function jsonStringify(json: any): string {
+        let cache: any[] = [];
         return JSON.stringify(json, function (key, val) {
             if (!WECHAT)//微信小游戏平台不支持
                 if (typeof val === 'function') {
                     return val + '';
                 }
+            if (typeof val === 'object' && val !== null) {
+                if (cache.indexOf(val) !== -1) {
+                    // 移除
+                    return;
+                }
+                // 收集所有的值
+                cache.push(val);
+            }
             return val;
         });
+
     }
 
-    export async function getAssetUrlInEditorMode(uuid: string): Promise<string> {
-        if (!EDITOR) return null;
-        let info = await Editor.Message.request('asset-db', 'query-asset-info', uuid);
-        return info.url;
+    export function getAssetUrlInEditorMode(uuid: string, cb: (url: string) => void) {
+        if (!EDITOR) cb?.(null);
+        else
+            Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
+                cb?.(info?.url);
+            })
     }
 
     /**
@@ -1651,13 +1901,13 @@ export namespace no {
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let now = sysTime.now;
         try {
-            let lastResetTime = JSON.parse(dataCache.getLocal('reset_data_check_time') || '{}');
+            let lastResetTime = parse2Json(dataCache.getLocal('reset_data_check_time') || '{}');
             let lt = lastResetTime[dataKey];
 
             if (!lt || now >= lt) {
                 dataCache.setLocal(dataKey, value);
                 lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
-                dataCache.setLocal('reset_data_check_time', JSON.stringify(lastResetTime));
+                dataCache.setLocal('reset_data_check_time', jsonStringify(lastResetTime));
             }
         } catch (e) {
             no.err('JSON.parse', 'resetValueCheck');
@@ -1736,14 +1986,14 @@ export namespace no {
             if (this._data == null) this._data = {};
             let a = clone(this._data);
             a.__ut = sysTime.now;
-            return JSON.stringify(a);
+            return jsonStringify(a);
         }
 
         /**将json string转成data */
         public set json(v: string) {
             if (v != undefined) {
                 try {
-                    this._data = JSON.parse(v);
+                    this._data = parse2Json(v);
                     this.emit(Data.DataChangeEvent, this);
                 } catch (e) {
                     no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
@@ -1805,10 +2055,10 @@ export namespace no {
         private handleDataChange() {
             if (this.aa) return;
             this.aa = true;
-            setTimeout(() => {
+            scheduleOnce(dt => {
                 this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 100);
+            }, 0, this);
         }
 
         /**
@@ -1883,7 +2133,7 @@ export namespace no {
             let a = localStorage.getItem(key);
             if (a == null || a == undefined || a == 'undefined') return null;
             try {
-                return JSON.parse(a);
+                return parse2Json(a);
             } catch (e) {
                 no.err('JSON.parse', 'getLocal', key, a);
                 return null;
@@ -1899,7 +2149,7 @@ export namespace no {
             if (value === null || value === undefined || value === 'undefined')
                 localStorage.removeItem(key);
             else
-                localStorage.setItem(key, JSON.stringify(value));
+                localStorage.setItem(key, jsonStringify(value));
             this.emit(key, value);
         }
 
@@ -2234,6 +2484,13 @@ export namespace no {
             this.loadRemoteFile<TextAsset>(url, callback);
         }
 
+        public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
+            assetManager.loadBundle(url, opts, (e, bundle) => {
+                if (e) err(e.stack);
+                callback?.(bundle);
+            });
+        }
+
         /**
          * 获取bundle路径，文件名及文件类型
          * @param path
@@ -2345,7 +2602,7 @@ export namespace no {
             }
             assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
                 if (err) {
-                    console.log(url, err);
+                    log(url, err);
                     onErr?.();
                 }
                 else
@@ -2365,7 +2622,7 @@ export namespace no {
                 if (sub.type == 'cc.SpriteFrame') {
                     assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteFrame }, (err, item: SpriteFrame) => {
                         if (err) {
-                            console.log(url, err);
+                            log(url, err);
                             onErr?.();
                         }
                         else {
@@ -2377,7 +2634,7 @@ export namespace no {
             }
         }
 
-        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos: any[]) => void, onErr?: () => void) {
+        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos?: any[]) => void) {
             if (!EDITOR) return;
             let requests: any[] = [];
             let infos: any[] = [];
@@ -2385,30 +2642,54 @@ export namespace no {
             for (let i = 0, n = urls.length; i < n; i++) {
                 let info = await Editor.Message.request('asset-db', 'query-asset-info', urls[i]);
                 if (!info)
-                    console.log('query-asset-info url无效', urls[i]);
+                    log('query-asset-info url无效', urls[i]);
                 else {
-                    for (const key in info.subAssets) {
-                        let sub = info.subAssets[key];
-                        if (sub.type == 'cc.SpriteAtlas') {
-                            requests[requests.length] = { 'uuid': sub.uuid, 'type': SpriteAtlas };
-                            infos[infos.length] = info;
-                            break;
-                        }
-                    }
+                    requests[requests.length] = { 'uuid': info.uuid, 'type': SpriteAtlas };
+                    infos[infos.length] = info;
                 }
             }
             if (!requests.length) {
-                onErr?.();
+                callback?.([]);
                 return;
             }
             assetManager.loadAny(requests, (err: any, items: SpriteAtlas[]) => {
                 if (err) {
-                    onErr?.();
+                    callback?.([]);
                 }
                 else {
                     callback(items, infos);
                 }
             });
+        }
+
+        public async loadAssetsInEditorModeUnderFolder<T extends Asset>(url: string, ccType: string, callback: (assets: T | T[]) => void) {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: any[]) => {
+                let aa = [];
+                assets.forEach(a => {
+                    if (a['url'].indexOf(url) == 0) {
+                        aa[aa.length] = { uuid: a.uuid, type: a.type };
+                    }
+                });
+                if (!aa.length) {
+                    callback?.([]);
+                    return;
+                }
+                assetManager.loadAny(aa, (err, items: T | T[]) => {
+                    if (!err) {
+                        callback?.(items);
+                    } else callback?.([]);
+                });
+            }).catch(e => { err(e); });
+        }
+
+        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: AssetInfo[]) => void) {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((infos: any[]) => {
+                let a: AssetInfo[] = [];
+                infos.forEach(info => {
+                    if (info.url.indexOf(url) > -1) a[a.length] = info;
+                });
+                callback?.(a);
+            }).catch(e => { err(e); });
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
@@ -2447,7 +2728,9 @@ export namespace no {
         }
 
         public decRef(asset: Asset): void {
-            asset?.decRef();
+            scheduleOnce(() => {
+                asset?.decRef();
+            }, .02);
         }
 
         /**
@@ -2483,7 +2766,11 @@ export namespace no {
             }
             if (!asset) return;
             if (force) assetManager.releaseAsset(asset);
-            else asset.decRef();
+            else {
+                scheduleOnce(() => {
+                    (<Asset>asset).decRef();
+                }, .02);
+            }
         }
 
         public getAssetFromCache(uuid: string): Asset {
@@ -2539,6 +2826,9 @@ export namespace no {
             }).catch(e => { err(e.stack); return null; });
         }
 
+        public clear() {
+            assetManager.releaseAll();
+        }
     }
 
     /**全局资源管理器 */
@@ -2550,9 +2840,9 @@ export namespace no {
         private checkDuration = 60;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
-            setInterval(() => {
+            scheduleForever(() => {
                 this.checkClear();
-            }, this.checkDuration * 500);
+            }, this.checkDuration / 2, this);
         }
 
         /**
@@ -2582,7 +2872,7 @@ export namespace no {
                 object.parent = null;
                 object.active = false;
             }
-            let a = this.cacheMap.get(type);
+            let a = this.cacheMap.get(type) || [];
             let have = false;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
@@ -2632,7 +2922,7 @@ export namespace no {
             let t = timestamp();
             let types = MapKeys2Array(this.cacheMap);
             types.forEach(type => {
-                let arr = this.cacheMap.get(type);
+                let arr = this.cacheMap.get(type) || [];
                 for (let i = arr.length - 1; i >= 0; i--) {
                     let a = arr[i];
                     if (t - a.t >= this.checkDuration) {
@@ -2654,9 +2944,9 @@ export namespace no {
 
         constructor() {
             super();
-            setInterval(() => {
+            scheduleForever(() => {
                 this.checkHint();
-            }, 2000);
+            }, 2, this);
         }
 
         /**
@@ -2816,6 +3106,11 @@ export namespace no {
 
         public get value(): string {
             return `${this._coefficient}E${this.index}`;
+        }
+
+        public setValue(v: string | number): ScientificString {
+            this.value = v;
+            return this;
         }
 
         /**系数 */
@@ -2983,7 +3278,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${mutiply(this._coefficient, Math.pow(10, b + 2)) / 100}${u}`;
+            return `${floor(mutiply(this._coefficient, Math.pow(10, b + 2))) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
@@ -3038,6 +3333,11 @@ export namespace no {
             let a = this.clone;
             a._coefficient = Math.abs(a._coefficient);
             return a;
+        }
+
+        public static toUnitString(v: string | number): string {
+            const a = new ScientificString(v);
+            return a.unitValue;
         }
     }
 
@@ -3333,7 +3633,7 @@ export namespace no {
                 if (xhr.readyState == 4 && (xhr.status >= 200 && xhr.status < 400)) {
                     var response = xhr.responseText;
                     try {
-                        let a = JSON.parse(response);
+                        let a = parse2Json(response);
                         cb?.(a);
                     } catch (e) {
                         no.err('JSON.parse', 'httpRequest', response);
@@ -3350,7 +3650,7 @@ export namespace no {
             xhr.setRequestHeader('Authorization', this.Authorization);
             xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
             if (typeof data == 'object') {
-                data = JSON.stringify(data);
+                data = jsonStringify(data);
             }
             xhr.send(data);
         }
@@ -3603,10 +3903,10 @@ export namespace no {
     }
 
     export function string2Bytes(str: string): Uint8Array {
-        const buffer = new ArrayBuffer(str.length);
+        const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str.split('').forEach(function (str, i) {
+        str?.split('').forEach(function (str, i) {
             bytes[i] = str.charCodeAt(0);
         });
 
@@ -3615,17 +3915,17 @@ export namespace no {
 
     export function bytes2String(bytes: Uint8Array): string {
         let sArr: string[] = [];
-        bytes.forEach(c => {
+        bytes?.forEach(c => {
             sArr[sArr.length] = String.fromCharCode(c);
         });
         return sArr.join('');
     }
 
     export function string2ArrayBuffer(str: string): ArrayBuffer {
-        const buffer = new ArrayBuffer(str.length);
+        const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str.split('').forEach(function (str, i) {
+        str?.split('').forEach(function (str, i) {
             bytes[i] = str.charCodeAt(0);
         });
 
@@ -3726,6 +4026,7 @@ export namespace no {
      * @param exclusive 独占，默认true，即btn中只有当前添加的事件
      */
     export function addClickEventsToButton(btn: Button, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
+        if (!btn?.clickEvents) return;
         let a = createClickEvent(target, comp, handler);
         if (exclusive)
             btn.clickEvents = [a];
@@ -3743,6 +4044,7 @@ export namespace no {
     }
 
     export function SPEncrypt1_0_Encrypt1(b: any) {
+        if (b == null) return '';
         b = ToUTF8(b);
         for (var e = Math.floor(1e8 * 1), d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), c = [], a = 0; a < d; a++)
             (c[a] = b[4 * a] | (b[4 * a + 1] << 8) | (b[4 * a + 2] << 16) | (b[4 * a + 3] << 24)), (c[a] ^= e);
@@ -3754,6 +4056,7 @@ export namespace no {
     }
 
     export function ToUTF8(str: string) {
+        if (str == null) return [];
         var result = new Array();
         var k = 0;
         for (var i = 0; i < str.length; i++) {
@@ -3780,6 +4083,38 @@ export namespace no {
             result = (result + (result === "" ? "" : "/") + args[i]).replace(/(\/|\\\\)$/, "");
         }
         return result;
+    }
+
+    export class SingleObject {
+        private static _ins: any;
+
+        public static get ins(): any {
+            if (!this._ins) this._ins = new this();
+            return this._ins;
+        }
+    }
+
+    /**
+     * 判断目标是否可用
+     * @param target 
+     * @returns 
+     */
+    export function checkValid(target: any): boolean {
+        if (target instanceof Component || target instanceof Node) return isValid(target, true);
+        return typeof target !== 'undefined' && target !== null;
+    }
+
+    /**
+     * 安全赋值，会先判断target是否存在
+     * @param target 
+     * @param key 
+     * @param value 
+     */
+    export function setValueSafely(target: Component | any, data: { [k: string]: any }) {
+        if (!checkValid(target)) return;
+        for (const key in data) {
+            target[key] = data[key];
+        }
     }
 }
 

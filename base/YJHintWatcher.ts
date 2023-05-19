@@ -25,7 +25,7 @@ export class YJHintWatcher extends Component {
     @property({ displayName: '红点key', tooltip: '多个key用逗号分隔' })
     types: string = '';
 
-    private typeList: string[] = new Array();
+    private typeList: string[] = [];
 
     onEnable() {
         if (this.hint == null) return;
@@ -56,7 +56,7 @@ export class YJHintWatcher extends Component {
                 n += no.hintCenter.getHintValue(type);
             });
         } else if (v < 1) {
-            let len = this.typeList.length;
+            let len = this.typeList?.length || 0;
             for (let i = 0; i < len; i++) {
                 let type = this.typeList[i];
                 if (no.hintCenter.getHintValue(type) > 0) {

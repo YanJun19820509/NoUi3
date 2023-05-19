@@ -1,6 +1,7 @@
 
 import { _decorator, Component, Node } from 'cc';
 import { no } from '../no';
+import { FuckUi } from './FuckUi';
 const { ccclass, menu } = _decorator;
 
 /**
@@ -17,7 +18,7 @@ const { ccclass, menu } = _decorator;
 
 @ccclass('SetSize')
 @menu('NoUi/ui/SetSize(设置宽高:object)')
-export class SetSize extends Component {
+export class SetSize extends FuckUi {
 
     protected onDataChange(data: any) {
         let a = [];

@@ -80,7 +80,7 @@ export class YJWindowManager extends Component {
         a.initPanel().then(() => {
             content.addChild(node);
             afterInit?.(a as T);
-        });
+        }).catch(e => { no.err(e); });
     }
 
     /**
@@ -105,7 +105,7 @@ export class YJWindowManager extends Component {
                 a.initPanel().then(() => {
                     a.node.active = true;
                     afterInit?.(a as T);
-                });
+                }).catch(e => { no.err(e); });
                 a.node.setSiblingIndex(content.children.length - 1);
                 return;
             }
@@ -121,6 +121,9 @@ export class YJWindowManager extends Component {
             const url = comp.prototype[YJPanelPrefabMetaKey];
             no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
                 let node = instantiate(pf);
+                if (!content?.isValid) {
+                    return
+                }
                 this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             });
         }
@@ -162,7 +165,7 @@ export class YJWindowManager extends Component {
         let content: Node = YJWindowManager._ins.getContent(nodeName);
         content.children.forEach(node => {
             let panel = node.getComponent(YJPanel);
-            if (panel) {
+            if (panel?.enabledInHierarchy) {
                 let name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;
                 panel.closePanel();
@@ -211,5 +214,23 @@ export class YJWindowManager extends Component {
                 }
             });
         }
+    }
+
+    public clearAll() {
+        for (let i = 0, n = this.infos.length; i < n; i++) {
+            let content = this.getContent(this.infos[i].type);
+
+            for (let j = content.children.length - 1; j >= 0; j--) {
+                const child = content.children[j];
+                const panel = child.getComponent(YJPanel);
+                if (panel)
+                    panel.clear(true);
+                else child.destroy();
+            }
+        }
+    }
+
+    public static clearAll() {
+        YJWindowManager._ins.clearAll();
     }
 }

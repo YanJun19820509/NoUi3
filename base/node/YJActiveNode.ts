@@ -25,6 +25,7 @@ export class YJActiveNode extends Component {
     }
 
     private setActive(v: boolean) {
+        if (!this.enabled) return;
         this.node.active = v;
     }
 }

@@ -67,6 +67,8 @@ export class YJPanel extends Component {
     needCache: boolean = true;
     @property({ visible() { return this.needCache; } })
     needClear: boolean = true;
+    @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
+    isFullScreen: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -79,7 +81,7 @@ export class YJPanel extends Component {
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
-        no.log('panel onLoad', this.node.name);
+        no.log('panel load', this.node.name);
         this.onLoadPanel();
     }
 
@@ -90,25 +92,32 @@ export class YJPanel extends Component {
         if (this.getComponent(YJLoadAssets)) {
             return this.getComponent(YJLoadAssets).load().then(() => {
                 this.onInitPanel();
+                if (this.isFullScreen)
+                    no.evn.emit('_full_screen_panel_open', this.panelType);
                 return Promise.resolve();
-            });
+            }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
+        if (this.isFullScreen)
+            no.evn.emit('_full_screen_panel_open', this.panelType);
         return Promise.resolve();
     }
 
     public closePanel() {
+        no.log('panel close', this.node.name);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
+        if (this.isFullScreen)
+            no.evn.emit('_full_screen_panel_close', this.panelType);
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();
     }
 
-    public clear() {
-        if (YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+    public clear(force = false) {
+        if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         this['__proto__'][YJPanelCreated] = '0';
         this.node.destroy();
     }
