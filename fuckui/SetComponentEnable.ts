@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, Enum, CCClass, js } from 'cc';
 import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
+import { SetComponentPropertyValue } from './SetComponentPropertyValue';
 const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
@@ -15,55 +16,18 @@ const { ccclass, property, executeInEditMode } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-enum ComponentName {
-}
-
+//动态设置某组件的enabled状态
 @ccclass('SetComponentEnable')
 @executeInEditMode()
-export class SetComponentEnable extends FuckUi {
-    @property(Node)
-    target: Node = null;
-    @property({ type: Enum(ComponentName) })
-    component: number = 0;
-    @property({ visible() { return false } })
-    componentNames: string[] = [];
+export class SetComponentEnable extends SetComponentPropertyValue {
 
-    private _target: Node = null;
+    @property({ visible() { return false }, override: true })
+    property: number = 0;
+    @property({ visible() { return false }, override: true })
+    propertyNames: string[] = ['enabled'];
 
-    protected onDataChange(data: any) {
-        let name = this.componentNames[this.component];
-        if (!name) return;
-        if (this.getComponent(name))
-            this.getComponent(name).enabled = Boolean(data);
-    }
+    protected setPropertyEnum() {
 
-    update() {
-        if (!EDITOR) return;
-        if (this.target == this._target) return;
-        this._target = this.target;
-        this.setComonentEnum();
-    }
-
-    private setComonentEnum() {
-        if (!this._target) {
-            this.setEnum({});
-        } else {
-            let cs = this._target.components;
-            let a: any = {};
-            cs.forEach((c, i) => {
-                let name = js.getClassName(c);
-                if (name == 'SetComponentEnable') return;
-                a[name] = i;
-                this.componentNames[i] = name;
-            });
-            this.setEnum(a);
-        }
-    }
-
-    private setEnum(obj: any) {
-        let e = Enum(obj);
-        let list = Enum.getList(e);
-        CCClass.Attr.setClassAttr(SetComponentEnable, 'component', 'enumList', list);
     }
 
     public a_enable(): void {

@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, EventTarget } from 'cc';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
+import { native } from 'cc';
 const { ccclass, property } = _decorator;
 
 /**
@@ -80,7 +81,7 @@ export class NativeBridge extends EventTarget {
      * @param args 参数
      */
     private callNativeMethod(className: string, methodName: string, ...args: any) {
-        JSB && jsb.reflection.callStaticMethod(className, methodName, args);
+        JSB && native.reflection.callStaticMethod(className, methodName, args);
     }
 
     /**

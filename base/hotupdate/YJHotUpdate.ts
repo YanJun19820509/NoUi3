@@ -3,6 +3,7 @@ import { _decorator, Component, Node, game } from 'cc';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';
+import { native } from 'cc';
 const { ccclass, menu } = _decorator;
 
 /**
@@ -37,7 +38,7 @@ export class UpdateProgressInfo {
 @menu('NoUi/hotupdate/YJHotUpdate(热更组件)')
 export class YJHotUpdate extends Component {
     private static _instance: YJHotUpdate;
-    private _am: jsb.AssetsManager;
+    private _am: native.AssetsManager;
     private _storagePath: string;
     public checkState: number;
     public needUpdateFilesSize: number;
@@ -50,9 +51,9 @@ export class YJHotUpdate extends Component {
     onLoad() {
         if (!JSB) return;
         YJHotUpdate._instance = this;
-        this._storagePath = ((jsb.fileUtils ? jsb.fileUtils.getWritablePath() : '/') + 'yj-remote-asset');
+        this._storagePath = ((native.fileUtils ? native.fileUtils.getWritablePath() : '/') + 'yj-remote-asset');
         no.log(this._storagePath);
-        this._am = new jsb.AssetsManager('', this._storagePath, this.versionCompareHandle);
+        this._am = new native.AssetsManager('', this._storagePath, this.versionCompareHandle);
         this._am.setVerifyCallback(function (path, asset) {
             return true;
         });
@@ -67,7 +68,7 @@ export class YJHotUpdate extends Component {
 
     // public copyFiles() {
     //     if (localStorage.getItem('init_game') == null) {
-    //         let jf = jsb.fileUtils;
+    //         let jf = native.fileUtils;
     //         this.checkState = -100;//开始初始化
     //         if (jf.isDirectoryExist(this._storagePath)) {
     //             jf.createDirectory(this._storagePath);
@@ -109,7 +110,7 @@ export class YJHotUpdate extends Component {
     public checkUpdate(): boolean {
         this.checkState = 0;
         this.needUpdateFilesSize = 0;
-        if (this._am.getState() === jsb.AssetsManager.State.UNINITED) {
+        if (this._am.getState() === native.AssetsManager.State.UNINITED) {
             let localVersionManifest = this.getLocalManifest('version.manifest');
             this._am.loadLocalManifest(localVersionManifest, this._storagePath);
             // no.log('本地version.manifest：：', localVersionManifest);
@@ -131,27 +132,27 @@ export class YJHotUpdate extends Component {
             this.updateProgressInfo = new UpdateProgressInfo(this._am.getTotalBytes(), this._am.getTotalFiles());
             this._am.setEventCallback(this.updateFilesCallback.bind(this));
 
-            if (this._am.getState() === jsb.AssetsManager.State.UNINITED) {
+            if (this._am.getState() === native.AssetsManager.State.UNINITED) {
                 let localManifest = this.getLocalManifest('project.manifest');
                 this._am.loadLocalManifest(localManifest, this._storagePath);
             }
             let remoteManifest = this._am.getRemoteManifest();
             localStorage.setItem('version', remoteManifest.getVersion());
-            let downloader = new jsb.Downloader();
+            let downloader = new native.Downloader();
             downloader.createDownloadFileTask(remoteManifest.getVersionFileUrl(), this._storagePath + '/' + 'version.manifest');
             this._am.update();
         }
     }
 
-    private getLocalManifest(name: string): jsb.Manifest {
+    private getLocalManifest(name: string): native.Manifest {
         let path = this._storagePath + '/' + name;
-        if (!jsb.fileUtils.isFileExist(path)) {
+        if (!native.fileUtils.isFileExist(path)) {
             path = 'assets/' + name;
             no.log('getLocalManifest', path);
         } else {
             no.log('getLocalManifest', path);
         }
-        let a = new jsb.Manifest(path);
+        let a = new native.Manifest(path);
         no.log(`${name} version:${a.getVersion()}`);
         localStorage.setItem('version', a.getVersion());
         return a;
@@ -159,17 +160,17 @@ export class YJHotUpdate extends Component {
 
     private checkUpdateCallback(event) {
         switch (event.getEventCode()) {
-            case jsb.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
+            case native.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
                 no.log("No local manifest file found, hot update skipped.");
                 break;
-            case jsb.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
-            case jsb.EventAssetsManager.ERROR_PARSE_MANIFEST:
+            case native.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
+            case native.EventAssetsManager.ERROR_PARSE_MANIFEST:
                 no.log("Fail to download manifest file, hot update skipped.");
                 break;
-            case jsb.EventAssetsManager.ALREADY_UP_TO_DATE:
+            case native.EventAssetsManager.ALREADY_UP_TO_DATE:
                 no.log("Already up to date with the latest remote version.");
                 break;
-            case jsb.EventAssetsManager.NEW_VERSION_FOUND:
+            case native.EventAssetsManager.NEW_VERSION_FOUND:
                 no.log('New version found, please try to update. (' + this._am.getTotalBytes() + ')');
                 this.needUpdateFilesSize = this._am.getTotalBytes();
                 break;
@@ -182,38 +183,38 @@ export class YJHotUpdate extends Component {
 
     private updateFilesCallback(event) {
         switch (event.getEventCode()) {
-            case jsb.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
+            case native.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
                 no.log('No local manifest file found, hot update skipped.');
                 this.updateProgressInfo.state = 2;
                 break;
-            case jsb.EventAssetsManager.UPDATE_PROGRESSION:
+            case native.EventAssetsManager.UPDATE_PROGRESSION:
                 this.updateProgressInfo.downloadedBytes = event.getDownloadedBytes();
                 this.updateProgressInfo.downloadedFiles = event.getDownloadedFiles();
                 this.updateProgressInfo.bytesPer = event.getPercent();
                 this.updateProgressInfo.filesPer = event.getPercentByFile();
                 // no.log(no.jsonStringify(this.updateProgressInfo));
                 break;
-            case jsb.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
-            case jsb.EventAssetsManager.ERROR_PARSE_MANIFEST:
+            case native.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
+            case native.EventAssetsManager.ERROR_PARSE_MANIFEST:
                 no.log('Fail to download manifest file, hot update skipped.');
                 this.updateProgressInfo.state = 2;
                 break;
-            case jsb.EventAssetsManager.ALREADY_UP_TO_DATE:
+            case native.EventAssetsManager.ALREADY_UP_TO_DATE:
                 no.log('Already up to date with the latest remote version.');
                 this.updateProgressInfo.state = 2;
                 break;
-            case jsb.EventAssetsManager.UPDATE_FINISHED:
+            case native.EventAssetsManager.UPDATE_FINISHED:
                 no.log('Update finished. ' + event.getMessage());
                 this.updateProgressInfo.state = 1;
                 break;
-            case jsb.EventAssetsManager.UPDATE_FAILED:
+            case native.EventAssetsManager.UPDATE_FAILED:
                 no.log('Update failed. ' + event.getMessage());
                 this.updateProgressInfo.state = 2;
                 break;
-            case jsb.EventAssetsManager.ERROR_UPDATING:
+            case native.EventAssetsManager.ERROR_UPDATING:
                 no.log('Asset update error: ' + event.getAssetId() + ', ' + event.getMessage());
                 break;
-            case jsb.EventAssetsManager.ERROR_DECOMPRESS:
+            case native.EventAssetsManager.ERROR_DECOMPRESS:
                 no.log(event.getMessage());
                 break;
             default:
@@ -226,7 +227,7 @@ export class YJHotUpdate extends Component {
 
         if (this.updateProgressInfo.state == 1) {
             // Prepend the manifest's search path
-            var searchPaths = jsb.fileUtils.getSearchPaths();
+            var searchPaths = native.fileUtils.getSearchPaths();
             var newPaths = this._am.getLocalManifest().getSearchPaths();
             newPaths.forEach(path => {
                 if (searchPaths.indexOf(path) == -1) {
@@ -239,7 +240,7 @@ export class YJHotUpdate extends Component {
             // please refer to samples/js-tests/main.js for detailed usage.
             // !!! Re-add the search paths in main.js is very important, otherwise, new scripts won't take effect.
             localStorage.setItem('HotUpdateSearchPaths', a);
-            jsb.fileUtils.setSearchPaths(searchPaths);
+            native.fileUtils.setSearchPaths(searchPaths);
 
             YJAudioManager.ins?.stopBGM();
             this.scheduleOnce(() => {

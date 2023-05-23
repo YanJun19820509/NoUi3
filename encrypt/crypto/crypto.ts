@@ -1,8 +1,8 @@
 import { DEBUG } from "cc/env";
 import { no } from "../../no";
-
+import CryptoJS from "./crypto-js.min.js"
 export namespace YJCrypto {
-    let CryptoJS = window['CryptoJS'];
+    // let CryptoJS = window['CryptoJS'];
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&*=';
     const hexs = '0123456789abcdef';
     let AESKey: string;

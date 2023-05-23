@@ -4,6 +4,7 @@ import { JSB } from 'cc/env';
 import { encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
+import { native } from 'cc';
 const { ccclass } = _decorator;
 
 /**
@@ -37,10 +38,10 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     protected initWebSocket() {
-        if (JSB && jsb.fileUtils) {
+        if (JSB && native.fileUtils) {
             let AdapterWebSocket: any = WebSocket;
             let realPath = "cacert.pem";
-            let fileUtils = jsb.fileUtils;
+            let fileUtils = native.fileUtils;
             // 兼容3.5 和2.x引擎
             let ca_cache_path = fileUtils.getWritablePath() + "cacert.pem";
             if (!fileUtils.isFileExist(ca_cache_path)) {
