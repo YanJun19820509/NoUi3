@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, assetManager, BufferAsset } from 'cc';
 const { ccclass, property } = _decorator;
 import { no } from '../../NoUi3/no';
-import { pako } from './pako.min.js';
+import pako from './pako.min.js';
 
 /**
  * Predefined variables
