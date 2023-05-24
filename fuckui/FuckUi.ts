@@ -1,7 +1,6 @@
 
 import { _decorator, Component, isValid, Node } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
-import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
 const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -22,8 +21,8 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('FuckUi')
 @executeInEditMode()
 export class FuckUi extends Component {
-    @property({ type: YJFuckUiRegister })
-    register: YJFuckUiRegister = null;
+    @property(Node)
+    registerNode: Node = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
     bind_keys: string = '';
@@ -41,7 +40,7 @@ export class FuckUi extends Component {
 
     onLoad() {
         if (EDITOR) {
-            if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
+            if (!this.registerNode) this.registerNode = no.getComponentInParents(this.node, 'YJFuckUiRegister')?.node;
         } else {
             this.update = function () { };
         }

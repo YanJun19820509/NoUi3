@@ -1,6 +1,5 @@
 import { _decorator, ValueType, math } from 'cc';
 import { Texture2D } from 'cc';
-import { FuckUi } from './fuckui/FuckUi';
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
 const { ccclass, property } = _decorator;
@@ -68,7 +67,6 @@ export type CreateSpritemFrameData = {
 
 export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
-export type FuckUiComponent = FuckUi;
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
 export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], unbiasUV: number[], uvSliced: IUV[], capInsets: number[] };
 

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, macro, isValid } from 'cc';
+import { _decorator, Component, Node, isValid } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
