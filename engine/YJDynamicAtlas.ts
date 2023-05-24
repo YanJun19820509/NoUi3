@@ -1,10 +1,11 @@
 
-import { _decorator, Component, SpriteFrame, Label, UIRenderer, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, math, Skeleton, director } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, UIRenderer, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, math, Skeleton, director } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 import { no } from '../no';
+import { DynamicAtlasManager } from 'cc';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -26,10 +27,10 @@ const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 @disallowMultiple()
 @executeInEditMode()
 export class YJDynamicAtlas extends Component {
-    @property({ min: 128, max: 2048, step: 1 })
-    width: number = 512;
-    @property({ min: 128, max: 2048, step: 1 })
-    height: number = 512;
+    @property({ min: 1, max: 2048, step: 1 })
+    width: number = 64;
+    @property({ min: 1, max: 2048, step: 1 })
+    height: number = 64;
     @property(Material)
     commonMaterial: Material = null;
     @property({ visible() { return EDITOR; } })
@@ -225,7 +226,7 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
-        let a = !dynamicAtlasManager.enabled && this.enabled;
+        let a = !DynamicAtlasManager.instance.enabled && this.enabled;
         return a;
     }
 
@@ -236,12 +237,11 @@ export class YJDynamicAtlas extends Component {
             newSpriteFrame.texture = this.texture;
             newSpriteFrame.originalSize = math.size(spriteFrame.width, spriteFrame.height);
             newSpriteFrame.rect = math.rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
-            newSpriteFrame.unbiasUV = spriteFrame.unbiasUV;
             newSpriteFrame.uv = spriteFrame.uv;
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
             this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
-            newSpriteFrame['_rotated'] = spriteFrame._rotated;
+            newSpriteFrame['_rotated'] = spriteFrame.rotated;
         }
         sprite.spriteFrame = newSpriteFrame;
         sprite['_updateUVs']();

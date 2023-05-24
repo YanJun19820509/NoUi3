@@ -18,6 +18,7 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
  */
 
 export const YJPanelPrefabMetaKey = 'prefabPath';
+export const YJPanelPrefabUuidMetaKey = 'prefabUuid';
 export const YJAddPanelToMetaKey = 'addPanelToTargetName';
 export const YJAllowMultipleOpen = 'allowmultipleopen';
 export const YJPanelCreated = 'panelcreated';
@@ -28,6 +29,10 @@ export const YJPanelCreated = 'panelcreated';
  */
 export function panelPrefabPath(path: string) {
     return no.addMeta(YJPanelPrefabMetaKey, path.replace('db://assets/', '').replace('.prefab', ''));
+}
+
+export function panelPrefabUuid(uuid: string) {
+    return no.addMeta(YJPanelPrefabUuidMetaKey, uuid);
 }
 
 export function addPanelTo(targetName: string) {
@@ -81,14 +86,14 @@ export class YJPanel extends Component {
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
-        no.log('panel load', this.node.name);
+        no.log('panel load', this.panelType);
         this.onLoadPanel();
     }
 
     /**
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
-    public initPanel(): Promise<void> {
+    public async initPanel(): Promise<void> {
         if (this.getComponent(YJLoadAssets)) {
             return this.getComponent(YJLoadAssets).load().then(() => {
                 this.onInitPanel();

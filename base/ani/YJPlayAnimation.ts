@@ -112,11 +112,11 @@ export class YJPlayAnimation extends Component {
     private onFinished() {
         if (this.backOnEnd) this.backTo0();
         no.EventHandlerInfo.execute(this.afterEndHandlers);
-        no.log('Animation onFinished', this.getComponent(Animation).clips[0].name);
+        // no.log('Animation onFinished', this.getComponent(Animation).clips[0].name);
     }
 
     public onFrameEvent(v: any): void {
         no.EventHandlerInfo.execute(this.eventHandlers, v);
-        no.log('Animation onFrameEvent', this.getComponent(Animation).clips[0].name);
+        // no.log('Animation onFrameEvent', this.getComponent(Animation).clips[0].name);
     }
 }

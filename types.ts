@@ -68,7 +68,7 @@ export type CreateSpritemFrameData = {
 export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
-export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], unbiasUV: number[], uvSliced: IUV[], capInsets: number[] };
+export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], uvSliced: IUV[], capInsets: number[], rotated: boolean };
 
 @ccclass('Range')
 export class Range {
@@ -90,6 +90,16 @@ export class Range {
         return this.min == other.min && this.max == other.max;
     }
 
+    contains(v: number): boolean {
+        return v >= this.min && v <= this.max;
+    }
+
+    under(v: number): boolean {
+        return v < this.min;
+    }
+    above(v: number): boolean {
+        return v > this.max;
+    }
     set(other: Range): void;
     set(min?: number, max?: number): void;
     set(other: Range | number, max?: number) {
@@ -108,6 +118,10 @@ export class Range {
 
     get randomValue(): number {
         return no.randomBetween(this.min, this.max);
+    }
+
+    public static new(): Range {
+        return new Range();
     }
 }
 

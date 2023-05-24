@@ -2,7 +2,7 @@
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanel, YJPanelCreated, YJPanelPrefabMetaKey } from './YJPanel';
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanel, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from './YJPanel';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 const { ccclass, property, menu } = _decorator;
 
@@ -119,13 +119,24 @@ export class YJWindowManager extends Component {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
             const url = comp.prototype[YJPanelPrefabMetaKey];
-            no.assetBundleManager.loadPrefab(url, (pf: Prefab) => {
-                let node = instantiate(pf);
-                if (!content?.isValid) {
-                    return
-                }
-                this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-            });
+            if (url)
+                no.assetBundleManager.loadAny(url, Prefab, (pf: Prefab) => {
+                    let node = instantiate(pf);
+                    if (!content?.isValid) {
+                        return
+                    }
+                    this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+                });
+            else {
+                const uuid = comp.prototype[YJPanelPrefabUuidMetaKey];
+                no.assetBundleManager.loadByUuid(uuid, Prefab, (pf: Prefab) => {
+                    let node = instantiate(pf);
+                    if (!content?.isValid) {
+                        return
+                    }
+                    this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+                });
+            }
         }
     }
 
