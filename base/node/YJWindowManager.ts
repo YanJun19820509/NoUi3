@@ -33,6 +33,8 @@ export class LayerInfo {
 export class YJWindowManager extends Component {
     @property(LayerInfo)
     infos: LayerInfo[] = [];
+    // @property({displayName:'路径根目录',tooltip:'有些bundle在该目录下，需要从路径中移除'})
+    // pathPres:string[] = [];
     @property({ displayName: '自动清理缓存的panel' })
     autoClear: boolean = false;
     @property({ displayName: '清理间隔时长(s)', min: 3, step: 1, visible() { return this.autoClear; } })
@@ -118,25 +120,14 @@ export class YJWindowManager extends Component {
         if (node) {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
-            const url = comp.prototype[YJPanelPrefabMetaKey];
-            if (url)
-                no.assetBundleManager.loadAny(url, Prefab, (pf: Prefab) => {
-                    let node = instantiate(pf);
-                    if (!content?.isValid) {
-                        return
-                    }
-                    this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-                });
-            else {
-                const uuid = comp.prototype[YJPanelPrefabUuidMetaKey];
-                no.assetBundleManager.loadByUuid(uuid, Prefab, (pf: Prefab) => {
-                    let node = instantiate(pf);
-                    if (!content?.isValid) {
-                        return
-                    }
-                    this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-                });
-            }
+            const request = { type: Prefab, path: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
+            no.assetBundleManager.loadAny<Prefab>(request, pf => {
+                let node = instantiate(pf);
+                if (!content?.isValid) {
+                    return
+                }
+                this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+            });
         }
     }
 

@@ -2361,7 +2361,7 @@ export namespace no {
                         } else {
                             this.addRef(item);//增加引用计数
                             callback && callback(item);
-                            this.loadDepends(item['_uuid']);
+                            this.loadDepends(item.uuid);
                         }
                     });
                 } else {
@@ -2447,7 +2447,7 @@ export namespace no {
                 } else {
                     items.forEach(item => {
                         this.addRef(item);//增加引用计数
-                        this.loadDepends(item['_uuid']);
+                        this.loadDepends(item.uuid);
                     });
                     onComplete && onComplete(items);
                 }
@@ -2499,10 +2499,17 @@ export namespace no {
         public assetPath(path: string): AssetPath {
             path = path.replace('db://assets/', '');
             let p = path.split('/');
+            let bundle: string;
+            for (let i = 0, n = p.length; i < n; i++) {
+                const b = p.shift();
+                if (assetManager['_projectBundles'].includes(b)) {
+                    bundle = b;
+                    break;
+                }
+            }
             let file = p.pop().split('.');
             let fileType = file.pop(),
                 fileName = file.join('.') || fileType;
-            let bundle = p.shift();
             let a: AssetPath = { bundle: bundle, file: fileName };
             p[p.length] = fileName;
             a.path = p.join('/');
@@ -2702,25 +2709,18 @@ export namespace no {
             });
         }
 
-        public loadByPath<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void) {
-            assetManager.loadAny({ 'path': path, 'type': type }, (e: Error, f: T) => {
-                if (e != null) {
-                    err(uuid, e.stack);
-                }
-                this.addRef(f);//增加引用计数
-                callback?.(f);
-            });
-        }
-
-        public loadByUrl<T extends Asset>(url: string, callback?: (file: T) => void) {
-            const p = this.assetPath(url);
-            assetManager.loadAny({ 'path': p.path, 'type': p.type, bundle: p.bundle }, (e: Error, f: T) => {
-                if (e != null) {
-                    err(uuid, e.stack);
-                }
-                this.addRef(f);//增加引用计数
-                callback?.(f);
-            });
+        public loadAny<T extends Asset>(request: { path?: string, uuid?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
+            if (request.path) {
+                const p = this.assetPath(request.path);
+                this.load(p.bundle, p.path, p.type, callback);
+            } else
+                assetManager.loadAny(request, (e: Error, f: T) => {
+                    if (e != null) {
+                        err(request.uuid, e.stack);
+                    }
+                    this.addRef(f);//增加引用计数
+                    callback?.(f);
+                });
         }
 
         public addRef(asset: Asset): void {
@@ -2758,7 +2758,7 @@ export namespace no {
         public release(asset: Asset | string, force = false): void {
             if (!asset) return;
             if (asset instanceof SpriteFrame) {
-                asset = asset._uuid;
+                asset = asset.uuid;
             }
             if (typeof asset == 'string') {
                 asset = asset.split('@')[0];
@@ -2793,16 +2793,6 @@ export namespace no {
                     });
                     onComplete?.(items);
                 }
-            });
-        }
-
-        public loadAny<T extends Asset>(path: string, type: typeof Asset, callback?: (file: T) => void): void {
-            assetManager.loadAny({ path: path, type: type }, (e: Error, f: T) => {
-                if (e != null) {
-                    err(path, e.stack);
-                }
-                this.addRef(f);//增加引用计数
-                callback?.(f);
             });
         }
 

@@ -28,7 +28,7 @@ export const YJPanelCreated = 'panelcreated';
  * @returns
  */
 export function panelPrefabPath(path: string) {
-    return no.addMeta(YJPanelPrefabMetaKey, path.replace('db://assets/', '').replace('.prefab', ''));
+    return no.addMeta(YJPanelPrefabMetaKey, path);
 }
 
 export function panelPrefabUuid(uuid: string) {
