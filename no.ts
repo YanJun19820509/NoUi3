@@ -2,6 +2,7 @@
 import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from './@types/packages/asset-db/@types/public';
+import { ImageAsset } from 'cc';
 
 const { ccclass, property } = _decorator;
 
@@ -2265,7 +2266,7 @@ export namespace no {
             let n = paths.length;
             this.loadBundle(p, () => {
                 i++;
-                callback && callback(i / n);
+                callback?.(i / n);
                 i < n && this._loadB(paths, i, callback);
             });
         }
@@ -2330,14 +2331,14 @@ export namespace no {
         public loadBundle(name: string, callback: () => void): void {
             let bundle = this.getBundle(name);
             if (bundle != null) {
-                callback && callback();
+                callback?.();
                 return;
             }
             assetManager.loadBundle(name, (err, b) => {
                 if (err != null) {
                     log('loadBundle', name, err);
                 } else {
-                    callback && callback();
+                    callback?.();
                 }
             });
         }
@@ -2376,7 +2377,7 @@ export namespace no {
                         log('load', fileName, err.message);
                     } else {
                         this.addRef(item);//增加引用计数
-                        callback && callback(item);
+                        callback?.(item);
                     }
                 });
             }
@@ -2388,7 +2389,7 @@ export namespace no {
                             log('load', fileName, err.message);
                         } else {
                             this.addRef(item);//增加引用计数
-                            callback && callback(item);
+                            callback?.(item);
                             this.loadDepends(item.uuid);
                         }
                     });
@@ -2500,16 +2501,32 @@ export namespace no {
             assetManager.loadRemote<T>(url, (err, file) => {
                 if (file == null) {
                     log('loadRemoteFile', url, err.message);
-                    callback && callback(null);
+                    callback?.(null);
                 } else {
                     this.addRef(file);//增加引用计数
-                    callback && callback(file);
+                    callback?.(file);
                 }
             });
         }
 
         public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
             this.loadRemoteFile<TextAsset>(url, callback);
+        }
+
+        public loadRemoteImage(url: string, ext: '.png' | '.jpg', callback: (sf: SpriteFrame) => void) {
+            assetManager.loadRemote<ImageAsset>(url, { ext: ext }, (err, file) => {
+                if (file == null) {
+                    log('loadRemoteFile', url, err.message);
+                    callback?.(null);
+                } else {
+                    this.addRef(file);//增加引用计数
+                    const spriteFrame = new SpriteFrame();
+                    const texture = new Texture2D();
+                    texture.image = file;
+                    spriteFrame.texture = texture;
+                    callback?.(spriteFrame);
+                }
+            });
         }
 
         public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {

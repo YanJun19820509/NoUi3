@@ -37,6 +37,7 @@ export class YJSprite extends Sprite {
     }
 
     onLoad() {
+        if (EDITOR) return;
         this.setSpriteFrameInSampler2D = this.getComponent(SetSpriteFrameInSampler2D);
     }
 }
