@@ -1725,6 +1725,34 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点position
+     * @param node 节点
+     * @param pos 为空时则返回当前pos；否则修改当前pos
+     * @returns
+     */
+    export function position(node: Node, pos?: Vec3): Vec3 {
+        if (!node) return;
+        if (pos != undefined) {
+            node.setPosition(pos);
+        }
+        return node.getPosition();
+    }
+
+    /**
+     * 获取或设置节点rotation
+     * @param node 节点
+     * @param z 为空时则返回当前rotation；否则修改当前rotation
+     * @returns
+     */
+    export function rotation(node: Node, r?: Vec3): Vec3 {
+        if (!node) return;
+        if (r != undefined) {
+            node.setRotationFromEuler(r);
+        }
+        return node.eulerAngles.clone();
+    }
+
+    /**
      * 获取或设置节点宽
      * @param node 节点
      * @param width 为空时则返回当前宽；否则修改当前宽

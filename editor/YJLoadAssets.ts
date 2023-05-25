@@ -116,6 +116,8 @@ export class PrefabInfo extends LoadAssetsInfo {
 export class YJLoadAssets extends Component {
     @property
     autoLoad: boolean = false;
+    @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
+    onLoaded: no.EventHandlerInfo[] = [];
     @property(MaterialInfo)
     materialInfos: MaterialInfo[] = [];
     @property(JsonInfo)
@@ -137,7 +139,10 @@ export class YJLoadAssets extends Component {
     onLoad() {
         if (!EDITOR) {
             this.checkInfos = () => { };
-            this.autoLoad && this.load();
+            this.autoLoad &&
+                this.load().then(() => {
+                    no.EventHandlerInfo.execute(this.onLoaded);
+                });
         }
     }
 
