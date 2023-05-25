@@ -4103,10 +4103,11 @@ export namespace no {
         return result;
     }
 
+    @ccclass('SingleObject')
     export class SingleObject {
         private static _ins: any;
 
-        public static get ins(): any {
+        protected static instance(): any {
             if (!this._ins) this._ins = new this();
             return this._ins;
         }

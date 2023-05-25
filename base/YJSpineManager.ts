@@ -1,7 +1,6 @@
 
 import { _decorator, Component, Node, sp } from 'cc';
 import { no } from '../no';
-import { resolve } from 'path';
 const { ccclass, property } = _decorator;
 
 /**
@@ -19,7 +18,7 @@ const { ccclass, property } = _decorator;
 @ccclass('YJSpineManager')
 export class YJSpineManager extends no.SingleObject {
     public static get ins(): YJSpineManager {
-        return super.ins;
+        return this.instance();
     }
 
     private _map: { [path: string]: { data: sp.SkeletonData, t: number } } = {};
