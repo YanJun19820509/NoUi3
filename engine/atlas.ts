@@ -1,8 +1,9 @@
-import { SpriteFrame, Texture2D, ImageAsset, math, __private, dynamicAtlasManager, js, Component, Label, isValid } from "cc";
+import { SpriteFrame, Texture2D, ImageAsset, math, __private, DynamicAtlasManager, js, Component, Label, isValid } from "cc";
 import { EDITOR } from "cc/env";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
+import { gfx } from "cc";
 
 export class Atlas {
     public _texture: DynamicAtlasTexture;
@@ -276,7 +277,7 @@ export class DynamicAtlasTexture extends Texture2D {
             return;
         }
 
-        const region = new BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy();
         region.texOffset.x = x;
         region.texOffset.y = y;
         region.texExtent.width = image.width;
@@ -300,7 +301,7 @@ export class DynamicAtlasTexture extends Texture2D {
             return;
         }
 
-        const region = new BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy();
         region.texOffset.x = x;
         region.texOffset.y = y;
         region.texExtent.width = image.width;
@@ -320,7 +321,7 @@ export class DynamicAtlasTexture extends Texture2D {
             return;
         }
 
-        const region = new BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy();
         region.texOffset.x = x;
         region.texOffset.y = y;
         region.texExtent.width = width;
@@ -340,7 +341,7 @@ export class DynamicAtlasTexture extends Texture2D {
         }
         let buffer = new Uint8Array(rect.width * rect.height * 4);
         const bufferViews: ArrayBufferView[] = [buffer];
-        const region = new BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy();
         region.texOffset.x = rect.x;
         region.texOffset.y = rect.y;
         region.texExtent.width = rect.width;
@@ -350,26 +351,26 @@ export class DynamicAtlasTexture extends Texture2D {
     }
 }
 
-export class BufferTextureCopy {
-    declare private _token: never; // to make sure all usages must be an instance of this exact class, not assembled from plain object
+// export class BufferTextureCopy {
+//     declare private _token: never; // to make sure all usages must be an instance of this exact class, not assembled from plain object
 
-    constructor(
-        public buffStride: number = 0,
-        public buffTexHeight: number = 0,
-        public texOffset: Offset = new Offset(),
-        public texExtent: Extent = new Extent(),
-        public texSubres: TextureSubresLayers = new TextureSubresLayers(),
-    ) { }
+//     constructor(
+//         public buffStride: number = 0,
+//         public buffTexHeight: number = 0,
+//         public texOffset: Offset = new Offset(),
+//         public texExtent: Extent = new Extent(),
+//         public texSubres: TextureSubresLayers = new TextureSubresLayers(),
+//     ) { }
 
-    public copy(info: Readonly<BufferTextureCopy>) {
-        this.buffStride = info.buffStride;
-        this.buffTexHeight = info.buffTexHeight;
-        this.texOffset.copy(info.texOffset);
-        this.texExtent.copy(info.texExtent);
-        this.texSubres.copy(info.texSubres);
-        return this;
-    }
-}
+//     public copy(info: Readonly<BufferTextureCopy>) {
+//         this.buffStride = info.buffStride;
+//         this.buffTexHeight = info.buffTexHeight;
+//         this.texOffset.copy(info.texOffset);
+//         this.texExtent.copy(info.texExtent);
+//         this.texSubres.copy(info.texSubres);
+//         return this;
+//     }
+// }
 
 export class Offset {
     declare private _token: never; // to make sure all usages must be an instance of this exact class, not assembled from plain object
@@ -423,8 +424,8 @@ export class TextureSubresLayers {
 }
 
 //关闭自动合图
-dynamicAtlasManager.enabled = false;
-js.mixin(dynamicAtlasManager, {
+DynamicAtlasManager.instance.enabled = false;
+js.mixin(DynamicAtlasManager.prototype, {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;

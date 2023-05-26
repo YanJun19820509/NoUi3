@@ -57,7 +57,6 @@ export class SetSpriteFrame extends FuckUi {
             let uuid = no.assetBundleManager.getUuidFromPath(path);
             if (this.sprite.spriteFrame?._uuid == uuid) return;
 
-            this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
                     if (this.sprite?.isValid) {
@@ -66,7 +65,6 @@ export class SetSpriteFrame extends FuckUi {
                     }
                 });
         } else {
-            this?.getComponent(YJDynamicTexture)?.removeFrameFromDynamicAtlas(this.sprite.spriteFrame);
             if (data.atlas) {
                 no.assetBundleManager.loadAtlas(data.atlas, item => {
                     this.sprite.spriteAtlas = item;

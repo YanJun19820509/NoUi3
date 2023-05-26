@@ -2239,6 +2239,7 @@ export namespace no {
     class AssetBundleManager {
 
         private needReleaseAssets: Asset[] = [];
+        private remoteAssetsCache: any = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -2498,15 +2499,17 @@ export namespace no {
          * @param callback
          */
         public loadRemoteFile<T extends Asset>(url: string, callback: (file: T) => void) {
-            assetManager.loadRemote<T>(url, (err, file) => {
-                if (file == null) {
-                    log('loadRemoteFile', url, err.message);
-                    callback?.(null);
-                } else {
-                    this.addRef(file);//增加引用计数
-                    callback?.(file);
-                }
-            });
+            if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
+            else
+                assetManager.loadRemote<T>(url, (err, file) => {
+                    if (file == null) {
+                        log('loadRemoteFile', url, err.message);
+                        callback?.(null);
+                    } else {
+                        this.remoteAssetsCache[url] = file;
+                        callback?.(file);
+                    }
+                });
         }
 
         public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
@@ -2514,19 +2517,21 @@ export namespace no {
         }
 
         public loadRemoteImage(url: string, ext: '.png' | '.jpg', callback: (sf: SpriteFrame) => void) {
-            assetManager.loadRemote<ImageAsset>(url, { ext: ext }, (err, file) => {
-                if (file == null) {
-                    log('loadRemoteFile', url, err.message);
-                    callback?.(null);
-                } else {
-                    this.addRef(file);//增加引用计数
-                    const spriteFrame = new SpriteFrame();
-                    const texture = new Texture2D();
-                    texture.image = file;
-                    spriteFrame.texture = texture;
-                    callback?.(spriteFrame);
-                }
-            });
+            if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
+            else
+                assetManager.loadRemote<ImageAsset>(url, { ext: ext }, (err, file) => {
+                    if (file == null) {
+                        log('loadRemoteFile', url, err.message);
+                        callback?.(null);
+                    } else {
+                        const spriteFrame = new SpriteFrame();
+                        const texture = new Texture2D();
+                        texture.image = file;
+                        spriteFrame.texture = texture;
+                        this.remoteAssetsCache[url] = spriteFrame;
+                        callback?.(spriteFrame);
+                    }
+                });
         }
 
         public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {

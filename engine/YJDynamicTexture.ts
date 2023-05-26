@@ -80,12 +80,6 @@ export class YJDynamicTexture extends Component {
         });
     }
 
-    public removeFrameFromDynamicAtlas(frame?: SpriteFrame): void {
-        if (!frame) return;
-        if (this.needClear)
-            this.dynamicAtlas.removeFromDynamicAtlas(frame);
-    }
-
     public packLabelFrame(text: string) {
         let label = this.getComponent(Label);
         if (!label) return;
