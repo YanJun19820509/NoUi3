@@ -3,6 +3,7 @@ import { _decorator, Component } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
+import { YJPanelCreated } from '../../types';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -17,34 +18,8 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
  *
  */
 
-export const YJPanelPrefabMetaKey = 'prefabPath';
-export const YJPanelPrefabUuidMetaKey = 'prefabUuid';
-export const YJAddPanelToMetaKey = 'addPanelToTargetName';
-export const YJAllowMultipleOpen = 'allowmultipleopen';
-export const YJPanelCreated = 'panelcreated';
-/**
- * 注解，向YJPanel添加prefab path 元数据
- * @param path
- * @returns
- */
-export function panelPrefabPath(path: string) {
-    return no.addMeta(YJPanelPrefabMetaKey, path);
-}
-
-export function panelPrefabUuid(uuid: string) {
-    return no.addMeta(YJPanelPrefabUuidMetaKey, uuid);
-}
-
-export function addPanelTo(targetName: string) {
-    return no.addMeta(YJAddPanelToMetaKey, targetName);
-}
-
-export function AllowMultipleOpen() {
-    return no.addMeta(YJAllowMultipleOpen, '1');
-}
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
-@panelPrefabPath('')
 @executeInEditMode()
 export class YJPanel extends Component {
 
@@ -109,7 +84,7 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
-        no.log('panel close', this.node.name);
+        no.log('panel close', this.panelType);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);

@@ -2,8 +2,9 @@
 import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanel, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from './YJPanel';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
+import { YJPanel } from './YJPanel';
 const { ccclass, property, menu } = _decorator;
 
 /**
@@ -71,11 +72,7 @@ export class YJWindowManager extends Component {
     private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         let dynamicAtlas = content.getComponent(YJDynamicAtlas);
         if (dynamicAtlas) {
-            let la = node.getComponent('YJLoadAssets');
-            if (la && la['dynamicAtlas'] == null) {
-                la['dynamicAtlas'] = dynamicAtlas;
-                YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
-            }
+            YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
         }
         let a = node.getComponent(comp);
         beforeInit?.(a as T);

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, CCString, SpriteAtlas, Asset, SpriteFrame, Material, Prefab, macro, JsonAsset } from 'cc';
+import { _decorator, Component, Node, Asset, SpriteFrame, Material, Prefab, JsonAsset } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { SpriteFrameDataType } from '../types';

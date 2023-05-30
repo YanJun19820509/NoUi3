@@ -161,3 +161,41 @@ export class UV {
         return `u=${this.u},max=${this.v}`;
     }
 }
+
+export const YJPanelPrefabMetaKey = 'prefabPath';
+export const YJPanelPrefabUuidMetaKey = 'prefabUuid';
+export const YJAddPanelToMetaKey = 'addPanelToTargetName';
+export const YJAllowMultipleOpen = 'allowmultipleopen';
+export const YJPanelCreated = 'panelcreated';
+export const YJPanelNeedLoadBundleName = 'needloadbundlename';
+/**
+ * 注解，向YJPanel添加prefab path 元数据
+ * @param path
+ * @returns
+ */
+export function panelPrefabPath(path: string) {
+    return no.addMeta(YJPanelPrefabMetaKey, path);
+}
+/**
+ * 向YJPanel添加prefab uuid 元数据
+ * @param uuid 
+ * @returns 
+ */
+export function panelPrefabUuid(uuid: string) {
+    return no.addMeta(YJPanelPrefabUuidMetaKey, uuid);
+}
+/**
+ * 向YJPanel添加所属层级别名 元数据
+ * @param targetName 
+ * @returns 
+ */
+export function addPanelTo(targetName: string) {
+    return no.addMeta(YJAddPanelToMetaKey, targetName);
+}
+/**
+ * 向YJPanel添加允许创建多个 元数据
+ * @returns 
+ */
+export function AllowMultipleOpen() {
+    return no.addMeta(YJAllowMultipleOpen, '1');
+}

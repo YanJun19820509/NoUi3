@@ -4,6 +4,7 @@ import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 import { YJJobManager } from '../base/YJJobManager';
+import { sys } from 'cc';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -111,6 +112,7 @@ export class YJDynamicTexture extends Component {
         frame._uuid = this.createLabelFrameUuid(label);
         frame.rotated = false;
 
+        // if (sys.platform != sys.Platform.WECHAT_GAME)
         this.scheduleOnce(() => {
             YJJobManager.ins.execute(() => {
                 if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;

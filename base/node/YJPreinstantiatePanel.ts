@@ -1,7 +1,8 @@
 
 import { _decorator, Component, Node, CCString, js, Prefab, instantiate } from 'cc';
 import { no } from '../../no';
-import { YJPanel, YJPanelPrefabMetaKey } from './YJPanel';
+import { YJPanel } from './YJPanel';
+import { YJPanelPrefabMetaKey } from '../../types';
 const { ccclass, property } = _decorator;
 
 /**

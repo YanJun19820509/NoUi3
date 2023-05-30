@@ -2762,6 +2762,7 @@ export namespace no {
         public loadAny<T extends Asset>(request: { path?: string, uuid?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
             if (request.path) {
                 const p = this.assetPath(request.path);
+                log('loadAny', this.getBundle(p.bundle));
                 this.load(p.bundle, p.path, p.type, callback);
             } else
                 assetManager.loadAny(request, (e: Error, f: T) => {

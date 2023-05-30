@@ -1,11 +1,12 @@
 
 import { _decorator, Node } from 'cc';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
-import { panelPrefabPath, YJPanel } from '../../base/node/YJPanel';
+import { YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJGuideManager } from './YJGuideManager';
+import { panelPrefabPath } from '../../types';
 const { ccclass, property } = _decorator;
 
 /**
