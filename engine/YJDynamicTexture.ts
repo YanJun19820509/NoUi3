@@ -67,6 +67,9 @@ export class YJDynamicTexture extends Component {
     public packSpriteFrame(frame?: SpriteFrame) {
         let sprite = this.getComponent(Sprite);
         if (!sprite) return;
+
+        if (sys.platform == sys.Platform.WECHAT_GAME) return;
+
         if (!this.enabled || !this.dynamicAtlas?.isWork) {
             if (frame) {
                 console.error('dynamicAtlas 为null，未做合图', frame);
@@ -112,7 +115,6 @@ export class YJDynamicTexture extends Component {
         frame._uuid = this.createLabelFrameUuid(label);
         frame.rotated = false;
 
-        // if (sys.platform != sys.Platform.WECHAT_GAME)
         this.scheduleOnce(() => {
             YJJobManager.ins.execute(() => {
                 if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;

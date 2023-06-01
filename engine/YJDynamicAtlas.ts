@@ -137,19 +137,16 @@ export class YJDynamicAtlas extends Component {
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
     public packToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
-        no.log('packToDynamicAtlas1')
         if (!this.isWork || (comp instanceof Label && !this.packLabel)) {
             onFail?.();
             return;
         }
 
-        no.log('packToDynamicAtlas2')
         if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
             onFail?.();
             return;
         }
 
-        no.log('packToDynamicAtlas3')
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
             const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
@@ -165,14 +162,10 @@ export class YJDynamicAtlas extends Component {
     }
 
     private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData) {
-        no.log('setPackedFrame1')
         if (!this.spriteFrameMap) return;
-        no.log('setPackedFrame2')
         if (packedFrame) {
-            no.log('setPackedFrame3')
             const uuid = frame._uuid;
             if (comp instanceof Label) {
-                no.log('setPackedFrame4')
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
                     ff.rotated = packedFrame.rotate;
@@ -181,7 +174,6 @@ export class YJDynamicAtlas extends Component {
                     comp['_texture'] = ff;
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
-                    no.log('setPackedFrame5')
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
                     const renderData = comp.renderData;
@@ -201,8 +193,6 @@ export class YJDynamicAtlas extends Component {
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
 
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
-
-                    no.log('setPackedFrame6')
                 }
             } else if (comp instanceof Sprite) {
                 let ff = frame.clone();

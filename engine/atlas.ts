@@ -4,6 +4,7 @@ import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
 import { gfx } from "cc";
+import { sys } from "cc";
 
 export class Atlas {
     public _texture: DynamicAtlasTexture;
@@ -56,8 +57,9 @@ export class Atlas {
         if (packedFrame) return packedFrame;
         const rect = spriteFrame.rect;
 
-        let needRotated = canRotate && rect.width > rect.height;
+        const plat_not_mini_game = sys.platform == sys.Platform.ANDROID || sys.platform == sys.Platform.IOS;
 
+        let needRotated = plat_not_mini_game && canRotate && rect.width > rect.height;
         let width = needRotated ? rect.height : rect.width,
             height = needRotated ? rect.width : rect.height;
 
@@ -69,7 +71,10 @@ export class Atlas {
 
         let x = p.x, y = p.y;
         this.setSpriteFrameTextureRect(_uuid, x, y, width, height, needRotated);
-        this.drawImageAt(spriteFrame, x, y, needRotated);
+        if (plat_not_mini_game)
+            this.drawImageAt(spriteFrame, x, y, needRotated);
+        else
+            this.drawTextureAt(spriteFrame, x, y);
         return {
             x: x,
             y: y,
@@ -137,7 +142,7 @@ export class Atlas {
     }
 
     private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number, needRotate: boolean) {
-        let texture = spriteFrame.texture;
+        let texture = spriteFrame.texture as Texture2D;
         let r = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
         let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
@@ -153,6 +158,18 @@ export class Atlas {
         }
         let img = this._createImage(buffer, rect);
         this._setSubImage(img, x, y);
+    }
+
+    private drawTextureAt(spriteFrame: SpriteFrame, x: number, y: number) {
+        let texture = spriteFrame.texture as Texture2D;
+        const w = texture.width, h = texture.height;
+        if (w <= 8 || h <= 8) {
+            this._texture.drawTextureAt(texture.image, x - 1, y - 1, w, h);
+            this._texture.drawTextureAt(texture.image, x - 1, y + 1, w, h);
+            this._texture.drawTextureAt(texture.image, x + 1, y - 1, w, h);
+            this._texture.drawTextureAt(texture.image, x + 1, y + 1, w, h);
+        }
+        this._texture.drawTextureAt(texture.image, x, y, w, h);
     }
 
     private _createEmptyImage(rect: math.Rect): HTMLCanvasElement {
@@ -265,7 +282,7 @@ export class DynamicAtlasTexture extends Texture2D {
      * @param {Number} x
      * @param {Number} y
      */
-    public drawTextureAt(image: ImageAsset, x: number, y: number) {
+    public drawTextureAt(image: ImageAsset, x: number, y: number, w?: number, h?: number) {
         const gfxTexture = this.getGFXTexture();
         if (!image || !gfxTexture) {
             return;
@@ -277,12 +294,18 @@ export class DynamicAtlasTexture extends Texture2D {
             return;
         }
 
-        const region = new gfx.BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy(), imageData = image.data;
         region.texOffset.x = x;
         region.texOffset.y = y;
-        region.texExtent.width = image.width;
-        region.texExtent.height = image.height;
-        gfxDevice.copyTexImagesToTexture([image.data as HTMLCanvasElement], gfxTexture, [region]);
+        region.texExtent.width = w || image.width;
+        region.texExtent.height = h || image.height;
+        // gfxDevice.copyTexImagesToTexture([image.data as HTMLCanvasElement], gfxTexture, [region]);
+        if (ArrayBuffer.isView(imageData)) {
+            gfxDevice.copyBuffersToTexture([imageData], gfxTexture, [region]);
+        }
+        else {
+            gfxDevice.copyTexImagesToTexture([imageData as TexImageSource], gfxTexture, [region]);
+        }
     }
 
     public drawImageAt(image: ImageAsset | HTMLCanvasElement, x: number, y: number) {
@@ -301,12 +324,18 @@ export class DynamicAtlasTexture extends Texture2D {
             return;
         }
 
-        const region = new gfx.BufferTextureCopy();
+        const region = new gfx.BufferTextureCopy(), imageData = image['data'] || image;
         region.texOffset.x = x;
         region.texOffset.y = y;
         region.texExtent.width = image.width;
         region.texExtent.height = image.height;
-        gfxDevice.copyTexImagesToTexture([image], gfxTexture, [region]);
+        // gfxDevice.copyTexImagesToTexture([image], gfxTexture, [region]);
+        if (ArrayBuffer.isView(imageData)) {
+            gfxDevice.copyBuffersToTexture([imageData], gfxTexture, [region]);
+        }
+        else {
+            gfxDevice.copyTexImagesToTexture([imageData as TexImageSource], gfxTexture, [region]);
+        }
     }
 
     public drawTextureBufferAt(buffer: ArrayBufferView, x: number, y: number, width: number, height: number) {
