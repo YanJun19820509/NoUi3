@@ -32,7 +32,6 @@ export class YJi18n extends no.Data {
     /**
      * 加载本地化配置json文件
      * @param fileUrl json文件url
-     * @param language 语言标识
      */
     public loadProperties(fileUrl: string, cb?: () => void) {
         no.assetBundleManager.loadJSON(fileUrl, item => {

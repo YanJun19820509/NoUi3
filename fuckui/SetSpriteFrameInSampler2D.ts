@@ -6,6 +6,7 @@ import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { Material } from 'cc';
 const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 
 /**
@@ -136,5 +137,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setSpriteEnable(v: boolean) {
         if (!this.enabled) return;
         this.getComponent(Sprite).enabled = v;
+    }
+
+    public setSpriteMaterial(material: Material) {
+        this.getComponent(Sprite).customMaterial = material;
     }
 }

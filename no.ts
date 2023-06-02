@@ -2370,7 +2370,7 @@ export namespace no {
          * @param type
          * @param callback
          */
-        private load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
+        public load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
             // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
@@ -2378,8 +2378,8 @@ export namespace no {
                         log('load', fileName, err.message);
                     } else {
                         this.addRef(item);//增加引用计数
-                        callback?.(item);
                     }
+                    callback?.(item);
                 });
             }
             else {
@@ -2390,9 +2390,9 @@ export namespace no {
                             log('load', fileName, err.message);
                         } else {
                             this.addRef(item);//增加引用计数
-                            callback?.(item);
                             this.loadDepends(item.uuid);
                         }
+                        callback?.(item);
                     });
                 } else {
                     this.loadBundle(bundleName, () => {
@@ -2472,7 +2472,7 @@ export namespace no {
                 onProgress && onProgress(finished / total);
             }, (err, items) => {
                 if (items == null || items.length == 0) {
-                    onProgress && onProgress(0);
+                    onComplete && onComplete(null);
                     // log('loadFiles', filePaths, err.message);
                 } else {
                     items.forEach(item => {

@@ -176,9 +176,9 @@ export class YJDynamicAtlas extends Component {
                 } else {
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    const renderData = comp.renderData;
+                    const renderData = comp['_renderData'];
                     const vData = renderData.chunk.vb;
-                    const uv = comp.ttfSpriteFrame.uv;
+                    const uv = comp['_ttfSpriteFrame'].uv;
                     vData[3] = uv[0];
                     vData[4] = uv[1];
                     vData[12] = uv[2];
@@ -189,7 +189,7 @@ export class YJDynamicAtlas extends Component {
                     vData[31] = uv[7];
                     renderData.textureDirty = true;
                     comp.markForUpdateRenderData(false);
-                    renderData.updateRenderData(comp, comp.spriteFrame);
+                    renderData.updateRenderData(comp, comp['_ttfSpriteFrame']);
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
 
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });

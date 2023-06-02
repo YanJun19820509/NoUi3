@@ -3,6 +3,10 @@ import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from '
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { SpriteFrame } from 'cc';
+import { Texture2D } from 'cc';
+import { Sprite } from 'cc';
+import { Label } from 'cc';
 const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
@@ -102,8 +106,14 @@ export class SetEffect extends FuckUi {
         //当多个组件使用同一个材质时，需要使用sharedMaterial
         let material = this.getComponent(YJVertexColorTransition) ? this._renderComp.sharedMaterial : this._renderComp.material;
         if (!material || !material.effectAsset) return;
-        let f = this._renderComp.renderData.frame;
-        let texture = f._texture;
+        let f: SpriteFrame, texture: Texture2D;
+        if (this._renderComp instanceof Sprite) {
+            f = this._renderComp.spriteFrame;
+            texture = f.texture as Texture2D;
+        } else if (this._renderComp instanceof Label) {
+            f = this._renderComp['_ttfSpriteFrame'];
+            texture = f.texture as Texture2D;
+        }
 
         let fr = `factRect${this.idx}`;
         if (this.hasProperty(material, fr))
@@ -132,7 +142,7 @@ export class SetEffect extends FuckUi {
             this._renderComp = this.getComponent(UIRenderer);
             if (!this._renderComp) return;
         }
-        if (!this._renderComp.renderData?.frame) {
+        if (!this._renderComp['spriteFrame'] && !this._renderComp['_ttfSpriteFrame']) {
             this.scheduleOnce(() => {
                 this.work();
             }, 0);

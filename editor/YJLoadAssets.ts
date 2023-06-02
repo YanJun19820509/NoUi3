@@ -3,6 +3,10 @@ import { _decorator, Component, Node, Asset, SpriteFrame, Material, Prefab, Json
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { SpriteFrameDataType } from '../types';
+import { Texture2D } from 'cc';
+import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
+import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
+import { YJi18n } from '../base/YJi18n';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -57,9 +61,24 @@ export class JsonInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.json) {
-                this.assetUuid = this.json._uuid;
+                this.assetUuid = this.json.uuid;
                 this.assetName = this.json.name;
                 this.json = null;
+            }
+        }
+    }
+}
+@ccclass('TextureInfo')
+export class TextureInfo extends LoadAssetsInfo {
+    @property({ type: Texture2D, editorOnly: true })
+    texture: Texture2D = null;
+
+    public check() {
+        if (EDITOR) {
+            if (this.texture) {
+                this.assetUuid = this.texture.uuid;
+                this.assetName = this.texture.name;
+                this.texture = null;
             }
         }
     }
@@ -72,7 +91,7 @@ export class MaterialInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.material) {
-                this.assetUuid = this.material._uuid;
+                this.assetUuid = this.material.uuid;
                 this.assetName = this.material.name;
                 this.material = null;
             }
@@ -87,7 +106,7 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.spriteFrame) {
-                this.assetUuid = this.spriteFrame._uuid;
+                this.assetUuid = this.spriteFrame.uuid;
                 this.assetName = this.spriteFrame.name;
                 this.spriteFrame = null;
             }
@@ -102,7 +121,7 @@ export class PrefabInfo extends LoadAssetsInfo {
     public check() {
         if (EDITOR) {
             if (this.prefab) {
-                this.assetUuid = this.prefab._uuid;
+                this.assetUuid = this.prefab.uuid;
                 this.assetName = this.prefab.name;
                 this.prefab = null;
             }
@@ -116,12 +135,16 @@ export class PrefabInfo extends LoadAssetsInfo {
 export class YJLoadAssets extends Component {
     @property
     autoLoad: boolean = false;
+    @property({ displayName: '加载语言包', tooltip: '语言包需要以YJi18n中的语言标志命名' })
+    loadLanguageBundle: boolean = false;
     @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
     onLoaded: no.EventHandlerInfo[] = [];
     @property(MaterialInfo)
     materialInfos: MaterialInfo[] = [];
     @property(JsonInfo)
     jsonInfos: JsonInfo[] = [];
+    @property(TextureInfo)
+    textureInfos: TextureInfo[] = [];
     @property(SpriteFrameInfo)
     spriteFrameInfos: SpriteFrameInfo[] = [];
     @property(PrefabInfo)
@@ -134,7 +157,6 @@ export class YJLoadAssets extends Component {
     autoSetSubLoadAsset: boolean = false;
 
     private atlases: any[] = [];
-    private _loaded: boolean = false;
 
     onLoad() {
         if (!EDITOR) {
@@ -178,21 +200,59 @@ export class YJLoadAssets extends Component {
             atlasUuids[atlasUuids.length] = this.jsonInfos[i].assetUuid;
             requests[requests.length] = { uuid: this.jsonInfos[i].assetUuid, type: JsonAsset };
         }
+        let textureUuids: string[] = [];
+        for (let i = 0, n = this.textureInfos.length; i < n; i++) {
+            textureUuids[textureUuids.length] = this.textureInfos[i].assetUuid;
+            requests[requests.length] = { uuid: this.textureInfos[i].assetUuid, type: Texture2D };
+        }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
             requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
         if (requests.length == 0) return;
+
+        const ssm = this.getComponent(YJSetSample2DMaterial);
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
                 if (!this?.isValid) {
                     return;
                 }
-                atlasUuids.forEach((uuid, i) => {
-                    let item: JsonAsset = no.itemOfArray(items, uuid, '_uuid');
-                    this.atlases[i] = item.json;
+                let textures: Texture2D[] = [];
+                items.forEach(item => {
+                    const uuid = item.uuid;
+                    let i = atlasUuids.indexOf(uuid);
+                    if (i > -1)
+                        this.atlases[i] = (item as JsonAsset).json;
+                    else {
+                        i = textureUuids.indexOf(uuid);
+                        if (i > -1)
+                            textures[i] = item as Texture2D;
+                    }
                 });
-                this._loaded = true;
-                resolve();
+
+
+                if (this.loadLanguageBundle) {
+                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.defaultLanguage, null, items => {
+                        if (items) {
+                            items.forEach(item => {
+                                if (item instanceof JsonAsset) {
+                                    this.atlases[this.atlases.length] = item.json;
+                                } else if (item instanceof Texture2D) {
+                                    textures[textures.length] = item;
+                                }
+                            });
+                        }
+
+                        if (textures.length > 0) {
+                            ssm?.createMaterial();
+                            ssm?.setAtlases(textures);
+                            ssm?.syncMaterialToSample2DRenderComponent();
+                            if (ssm?.material)
+                                this.getComponent(YJDynamicAtlas).commonMaterial = ssm.material;
+                        }
+                        resolve();
+                    });
+                } else
+                    resolve();
                 this.backgroundLoadInfos.forEach(info => {
                     info.load();
                 });
