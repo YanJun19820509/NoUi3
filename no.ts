@@ -2866,6 +2866,14 @@ export namespace no {
             }).catch(e => { err(e.stack); return null; });
         }
 
+        public getAssetInfoWithUuidInEditorMode(uuid: string, cb: (info: AssetInfo) => void) {
+            if (!EDITOR) cb?.(null);
+            else
+                Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
+                    cb?.(info);
+                });
+        }
+
         public getBundleVersion(bundleName: string): string {
             return assetManager.downloader.bundleVers[bundleName];
         }

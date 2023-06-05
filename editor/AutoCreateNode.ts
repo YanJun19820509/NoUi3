@@ -499,7 +499,7 @@ export class AutoCreateNode extends Component {
         widget.left = 0;
         widget.bottom = 0;
         widget.right = 0;
-        view.addComponent(Mask).type = Mask.Type.RECT;
+        view.addComponent(Mask).type = Mask.Type.GRAPHICS_RECT;
         let content = new Node('content');
         content.parent = view;
         content.addComponent(UITransform).setContentSize(node.getComponent(UITransform).contentSize);

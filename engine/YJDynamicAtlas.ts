@@ -190,6 +190,7 @@ export class YJDynamicAtlas extends Component {
                     renderData.textureDirty = true;
                     comp.markForUpdateRenderData(false);
                     renderData.updateRenderData(comp, comp['_ttfSpriteFrame']);
+                    comp.customMaterial = this.commonMaterial;
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
 
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
@@ -265,10 +266,11 @@ export class YJDynamicAtlas extends Component {
             b.dynamicAtlas = dynamicAtlas;
         });
 
-        let r = [].concat(node.getComponentsInChildren(Sprite), node.getComponentsInChildren(Label));
+        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
         r.forEach(rr => {
-            if (dynamicAtlas.commonMaterial != rr.customMaterial)
+            if (dynamicAtlas.commonMaterial != rr.customMaterial) {
                 rr.customMaterial = dynamicAtlas.commonMaterial;
+            }
         });
     }
 

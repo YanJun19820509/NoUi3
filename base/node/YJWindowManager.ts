@@ -70,13 +70,13 @@ export class YJWindowManager extends Component {
     }
 
     private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
-        let dynamicAtlas = content.getComponent(YJDynamicAtlas);
-        if (dynamicAtlas) {
-            YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
-        }
         let a = node.getComponent(comp);
         beforeInit?.(a as T);
         a.initPanel().then(() => {
+            let dynamicAtlas = content.getComponent(YJDynamicAtlas);
+            if (dynamicAtlas) {
+                YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
+            }
             content.addChild(node);
             afterInit?.(a as T);
         }).catch(e => { no.err(e); });

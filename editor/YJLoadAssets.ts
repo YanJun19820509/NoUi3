@@ -72,12 +72,25 @@ export class JsonInfo extends LoadAssetsInfo {
 export class TextureInfo extends LoadAssetsInfo {
     @property({ type: Texture2D, editorOnly: true })
     texture: Texture2D = null;
+    @property({ readonly: true })
+    atlasJsonUuid: string = '';
+    @property({ readonly: true })
+    atlasJsonName: string = '';
 
     public check() {
         if (EDITOR) {
             if (this.texture) {
                 this.assetUuid = this.texture.uuid;
-                this.assetName = this.texture.name;
+                no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+                    this.assetName = info?.displayName;
+                    let path = info?.path.replace('/texture', '_atlas.json');
+                    if (path) {
+                        no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
+                            this.atlasJsonName = info.name;
+                            this.atlasJsonUuid = info.uuid;
+                        });
+                    }
+                });
                 this.texture = null;
             }
         }
@@ -139,10 +152,10 @@ export class YJLoadAssets extends Component {
     loadLanguageBundle: boolean = false;
     @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
     onLoaded: no.EventHandlerInfo[] = [];
-    @property(MaterialInfo)
-    materialInfos: MaterialInfo[] = [];
-    @property(JsonInfo)
-    jsonInfos: JsonInfo[] = [];
+    // @property(MaterialInfo)
+    // materialInfos: MaterialInfo[] = [];
+    // @property(JsonInfo)
+    // jsonInfos: JsonInfo[] = [];
     @property(TextureInfo)
     textureInfos: TextureInfo[] = [];
     @property(SpriteFrameInfo)
@@ -172,12 +185,12 @@ export class YJLoadAssets extends Component {
         this.release();
     }
 
-    public addAtlasUuid(uuid: string) {
-        if (EDITOR) {
-            let a = new LoadAssetsInfo(uuid);
-            no.addToArray(this.jsonInfos, a, 'assetUuid');
-        }
-    }
+    // public addAtlasUuid(uuid: string) {
+    //     if (EDITOR) {
+    //         let a = new LoadAssetsInfo(uuid);
+    //         no.addToArray(this.jsonInfos, a, 'assetUuid');
+    //     }
+    // }
 
     public addSpriteFrameUuid(uuid: string) {
         if (EDITOR) {
@@ -196,21 +209,22 @@ export class YJLoadAssets extends Component {
             requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
         }
         let atlasUuids: string[] = [];
-        for (let i = 0, n = this.jsonInfos.length; i < n; i++) {
-            atlasUuids[atlasUuids.length] = this.jsonInfos[i].assetUuid;
-            requests[requests.length] = { uuid: this.jsonInfos[i].assetUuid, type: JsonAsset };
-        }
+        // for (let i = 0, n = this.jsonInfos.length; i < n; i++) {
+        //     atlasUuids[atlasUuids.length] = this.jsonInfos[i].assetUuid;
+        //     requests[requests.length] = { uuid: this.jsonInfos[i].assetUuid, type: JsonAsset };
+        // }
         let textureUuids: string[] = [];
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
+            atlasUuids[atlasUuids.length] = this.textureInfos[i].atlasJsonUuid;
             textureUuids[textureUuids.length] = this.textureInfos[i].assetUuid;
             requests[requests.length] = { uuid: this.textureInfos[i].assetUuid, type: Texture2D };
+            requests[requests.length] = { uuid: this.textureInfos[i].atlasJsonUuid, type: JsonAsset };
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
             requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
         if (requests.length == 0) return;
 
-        const ssm = this.getComponent(YJSetSample2DMaterial);
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
                 if (!this?.isValid) {
@@ -241,23 +255,24 @@ export class YJLoadAssets extends Component {
                                 }
                             });
                         }
-
-                        if (textures.length > 0) {
-                            ssm?.createMaterial();
-                            ssm?.setAtlases(textures);
-                            ssm?.syncMaterialToSample2DRenderComponent();
-                            if (ssm?.material)
-                                this.getComponent(YJDynamicAtlas).commonMaterial = ssm.material;
-                        }
-                        resolve();
+                        this.createMaterial(textures).then(resolve);
                     });
-                } else
-                    resolve();
+                } else {
+                    this.createMaterial(textures).then(resolve);
+                }
                 this.backgroundLoadInfos.forEach(info => {
                     info.load();
                 });
             });
         });
+    }
+
+    private async createMaterial(textures: Texture2D[]) {
+        const ssm = this.getComponent(YJSetSample2DMaterial);
+        if (!ssm || textures.length == 0) return;
+        ssm.createMaterial();
+        await ssm.setAtlases(textures);
+        this.getComponent(YJDynamicAtlas).commonMaterial = ssm.material;
     }
 
     /**
@@ -293,16 +308,19 @@ export class YJLoadAssets extends Component {
         if (!EDITOR) return;
         if (!this.doCheck) return;
         this.doCheck = false;
-        this.jsonInfos.forEach(info => {
-            info.check();
-        });
-        this.materialInfos.forEach(info => {
-            info.check();
-        });
+        // this.jsonInfos.forEach(info => {
+        //     info.check();
+        // });
+        // this.materialInfos.forEach(info => {
+        //     info.check();
+        // });
         this.spriteFrameInfos.forEach(info => {
             info.check();
         });
         this.prefabInfos.forEach(info => {
+            info.check();
+        });
+        this.textureInfos.forEach(info => {
             info.check();
         });
     }
