@@ -4072,6 +4072,45 @@ export namespace no {
             target[key] = data[key];
         }
     }
+
+    /**网速计算类 */
+    export class NetworkSpeed {
+        private _lastLoaded: number[];
+        constructor() {
+            this._lastLoaded = [0];
+        }
+        
+        public calculateNetworkSpeedAndRemainSeconds(loaded: number, total: number): number[] {
+            const now = sys.now();
+            if (this._lastLoaded[0] == 0) {
+                this._lastLoaded[0] = loaded;
+                this._lastLoaded[1] = now;
+                return null;
+            }
+            const t = (now - this._lastLoaded[1]) / 1000;
+            if (t < 1) return null;
+            let a: number[] = [];
+            const sub = (loaded - this._lastLoaded[0]) / t;
+            a[0] = sub;
+            a[1] = Math.ceil((total - loaded) / sub);
+            this._lastLoaded[0] = loaded;
+            this._lastLoaded[1] = now;
+            return a;
+        }
+
+        public static formatNetworkSpeed(v: number, unit = ['B', 'KB', 'MB']): string {
+            let i = 0, s: string = '';
+            while (1) {
+                if (v < 1024 || i == (unit.length - 1)) {
+                    s = Math.floor(v * 100) / 100 + unit[i];
+                    break;
+                }
+                v /= 1024;
+                i++;
+            }
+            return s;
+        }
+    }
 }
 
 if (DEBUG) {
