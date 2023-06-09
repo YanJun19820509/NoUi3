@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
+import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid, random } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from './@types/packages/asset-db/@types/public';
 
@@ -466,7 +466,7 @@ export namespace no {
      */
     export function uuid(): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = floor(Math.random() * 16),
+            var r = floor(random() * 16),
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
@@ -654,7 +654,7 @@ export namespace no {
         for (var i = 0; i < n; i++) {
             let al = a.length;
             if (al == 0) break;
-            let b = floor(Math.random() * al);
+            let b = floor(random() * al);
             if (!repeatable)
                 c = [].concat(c, a.splice(b, 1));
             else
@@ -1003,7 +1003,7 @@ export namespace no {
     export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        const a = Math.random() * (max - min);
+        const a = random() * (max - min + 1);
         return (isInt ? floor(a) : a) + min;
     }
 
@@ -1383,7 +1383,7 @@ export namespace no {
             if (except.indexOf(i) == -1)
                 sum += Number(w);
         });
-        let r = Math.random() * sum;
+        let r = random() * sum;
         let n = weight.length;
         let a = 0;
         for (let i = 0; i < n; i++) {
@@ -4041,6 +4041,10 @@ export namespace no {
         return result;
     }
 
+    export function getFileName(path: string): string {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
     export class SingleObject {
         private static _ins: any;
 
@@ -4079,7 +4083,7 @@ export namespace no {
         constructor() {
             this._lastLoaded = [0];
         }
-        
+
         public calculateNetworkSpeedAndRemainSeconds(loaded: number, total: number): number[] {
             const now = sys.now();
             if (this._lastLoaded[0] == 0) {

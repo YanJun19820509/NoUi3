@@ -1,8 +1,9 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, assetManager, Component, Node } from 'cc';
 import { decode, encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
+import { JSB } from 'cc/env';
 const { ccclass, property } = _decorator;
 
 /**
@@ -64,28 +65,58 @@ export class YJHttpRequest implements YJSocketInterface {
         });
     }
 
-    static downloadFile(url: string, onProgress?: (loaded: number, total: number) => void, responseType?: XMLHttpRequestResponseType): Promise<Blob | string | null> {
-        return new Promise<any>(resolve => {
-            no.log('开始下载', url);
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.addEventListener('progress', ev => {
-                if (ev.lengthComputable) {
-                    onProgress?.(ev.loaded, ev.total);
+    static downloadFile(url: string, onProgress: (loaded: number, total: number) => void, onComplete: (storageFilePath?: string, fileData?: any) => void, responseType?: XMLHttpRequestResponseType) {
+        no.log('开始下载 downloader', url);
+        if (JSB) {
+            const fileUtils = jsb.fileUtils, fileName = no.getFileName(url);
+            const storagePath = no.pathjoin(fileUtils.getWritablePath(), 'yj_download', fileName);
+            no.log('downloadFile storagepath', storagePath);
+            const downloader = new jsb.Downloader();
+            downloader.setOnTaskProgress((task, received, totalReceived, totalExpected) => {
+                // no.log('downloadFile received', `${received}`, `${totalReceived}`, `${totalExpected}`, task.identifier);
+                if (task.identifier == fileName) {
+                    onProgress(Number(totalReceived), Number(totalExpected));
                 }
             });
+            downloader.setOnFileTaskSuccess(task => {
+                if (task.identifier == fileName) {
+
+                    onComplete(storagePath, fileUtils['getDataFromFile'](storagePath));
+                    window['_downloader'] = null;
+                }
+            });
+            downloader.setOnTaskError((task, errCode, errCodeInterval, errStr) => {
+                if (task.identifier == fileName) {
+                    // no.log('downloadFile error', errStr, errCode, errCodeInterval);
+                    // onComplete();
+                    downloader.createDownloadFileTask(url, storagePath, fileName);
+                }
+            });
+            downloader.createDownloadFileTask(url, storagePath, fileName);
+            window['_downloader'] = downloader;
+        } else {
+            // assetManager.downloader.downloadFile(url, { xhrResponseType: responseType || 'arraybuffer' }, onProgress, onComplete);
+            let xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
             xhr.responseType = responseType || 'arraybuffer';
-            xhr.onload = function () {
+            //在原生层onprogress并未实现
+            xhr.onprogress = function (ev) {
+                no.log('downloadFile', ev.lengthComputable);
+                if (ev.lengthComputable) {
+                    onProgress(Number(ev.loaded), Number(ev.total));
+                }
+            };
+            xhr.onload = function (ev) {
                 if (this.readyState == 4 && this.status == 200) {
                     no.log('downloadFile complete')
-                    resolve(xhr.response);
+                    onComplete(null, this.response);
                 } else {
                     no.log('downloadFile fail')
-                    resolve(null);
+                    onComplete();
                 }
             };
             xhr.send();
-        });
+        }
     }
 
     setHeader?(name: string, value: string): void {

@@ -36,11 +36,11 @@ export class YJSyncCodeFromRemote extends Component {
             return;
         }
 
-        YJHttpRequest.downloadFile(no.pathjoin(url, `${no.gameVersion()}.txt`), null, 'text').then((text: string) => {
+        YJHttpRequest.downloadFile(no.pathjoin(url, `${no.gameVersion()}.txt`), (loaded: number, total: number) => { }, (path: string, text: string) => {
             no.log('text', text);
             if (text) {
                 eval(text);
             }
-        });
+        }, 'text');
     }
 }
