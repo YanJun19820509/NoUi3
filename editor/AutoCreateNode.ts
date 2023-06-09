@@ -16,6 +16,10 @@ import { SetSliderProgress } from '../fuckui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
 import { SoundEffectType, YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
+import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameDataInAtlas';
+import { YJSetMaterial } from '../effect/YJSetMaterial';
+import { YJDataWork } from '../base/YJDataWork';
+import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
@@ -51,10 +55,7 @@ export class AutoCreateNode extends Component {
     }
 
     private async loadConfigFile() {
-        if (!this.getComponent(YJLoadAssets)) this.addComponent(YJLoadAssets);
-        if (this.getComponent(YJPlaySoundEffect)) {
-            this.addComponent(YJPlaySoundEffect).effectType = SoundEffectType.ClickButton;
-        }
+        this.addComponents();
         try {
             this.nameMap = {};
             let name = this.node.name;
@@ -67,23 +68,22 @@ export class AutoCreateNode extends Component {
                 let path = a.filePaths[0];
                 console.log(path);
                 path = path.replace(/\\/g, '/');
-                // console.log(path);
                 let root = Editor.Project.path.replace(/\\/g, '/');
-                // console.log(root);
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
-                // console.log(dest);
-                let url: string = `db://assets/resources/sample/atlas.plist`;
+                await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
+                let url: string = `${dest}/${name}.plist`;
                 no.assetBundleManager.loadSpriteAtlasInEditorMode(url, (fs, infos) => {
                     this.atlases = this.atlases.concat(fs);
+                    this.loadJson(dest, name);
                     // console.log(1);
                     // console.log(this.atlases);
-                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
-                        this.atlases = this.atlases.concat(assets);
-                        // console.log(2);
-                        // console.log(this.atlases);
-                        this.loadJson(dest, name);
-                    });
+                    // no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
+                    //     this.atlases = this.atlases.concat(assets);
+                    //     // console.log(2);
+                    //     // console.log(this.atlases);
+                    //     this.loadJson(dest, name);
+                    // });
 
                     // no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
                     //     this.atlases = this.atlases.concat()
@@ -98,6 +98,13 @@ export class AutoCreateNode extends Component {
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private addComponents() {
+        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJSetMaterial, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
+        comps.forEach(comp => {
+            if (!this.getComponent(comp)) this.addComponent(comp);
+        })
     }
 
     private getSpriteFrame(name: string): SpriteFrame {
@@ -443,31 +450,30 @@ export class AutoCreateNode extends Component {
         if (!widget.enabled) return;
         let size = node.parent.getComponent(UITransform).contentSize;
         let rect = node.getComponent(UITransform).getBoundingBox();
-        if (rect.center.x < 0) {
+        if (rect.center.x <= -100) {
             widget.isAlignLeft = true;
             widget.left = size.width / 2 + rect.x;
-        } else if (rect.center.x == 0) {
-            widget.isAlignHorizontalCenter = true
-            widget.horizontalCenter = 0;
-        } else if (rect.center.x > 0) {
+        } else if (rect.center.x >= 100) {
             widget.isAlignRight = true;
             widget.right = size.width / 2 - rect.x - rect.width;
+        } else if (rect.center.x > -100 && rect.center.x < 100) {
+            widget.isAlignHorizontalCenter = true
+            widget.horizontalCenter = rect.center.x;
         }
-        if (rect.center.y < 0) {
+        if (rect.center.y <= -100) {
             widget.isAlignBottom = true;
             widget.bottom = size.height / 2 + rect.y;
-        } else if (rect.center.y == 0) {
-            widget.isAlignVerticalCenter = true
-            widget.verticalCenter = 0;
-        } else if (rect.center.y > 0) {
+        } else if (rect.center.y >= 100) {
             widget.isAlignTop = true;
             widget.top = size.height / 2 - rect.y - rect.height;
+        } else if (rect.center.y > -100 && rect.center.y < 100) {
+            widget.isAlignVerticalCenter = true
+            widget.verticalCenter = rect.center.y;
         }
     }
 
     private async deleteConfigFile(path: string) {
         await Editor.Message.request('asset-db', 'delete-asset', path);
-        // console.log('deleteConfigFile', d);
         this.enabled = false;
     }
 

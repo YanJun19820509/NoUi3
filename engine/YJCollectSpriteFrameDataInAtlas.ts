@@ -27,40 +27,16 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         if (EDITOR) {
             if (this.run) {
                 this.run = false;
-                this.queryAllPlist();
+                YJCollectSpriteFrameDataInAtlas.queryAllPlist();
             }
         }
     }
 
-    private queryAllPlist() {
-        Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
-            let aa = [];
-            let path = {};
-            assets.forEach(a => {
-                aa[aa.length] = { uuid: a.uuid, type: SpriteAtlas };
-                const name = a.name.replace('.plist', '');
-                path[name] = a.path;
-            });
-            console.log(path);
-            let infos: { [k: string]: { [t: string]: SpriteFrameDataType } } = {};
-            assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas[]) => {
-                if (!err) {
-                    console.log(atlases.length);
-                    atlases.forEach(atlas => {
-                        infos[atlas.name] = this.getSpriteFramesInfo(atlas);
-                    });
-                    for (const name in infos) {
-                        const file = `${path[name]}_atlas.json`;
-                        console.log(`save ${file}`);
-                        Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
-                    }
-                } else
-                    console.log(err);
-            });
-        });
+    private static queryAllPlist() {
+        this.createAtlasConfig();
     }
 
-    private getSpriteFramesInfo(atlas: SpriteAtlas): { [k: string]: SpriteFrameDataType } {
+    private static getSpriteFramesInfo(atlas: SpriteAtlas): { [k: string]: SpriteFrameDataType } {
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
         atlas.getSpriteFrames().forEach(sf => {
             infoMap[sf.name] = {
@@ -76,5 +52,36 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
             };
         });
         return infoMap;
+    }
+
+    public static async createAtlasConfig(dir?: string) {
+        return new Promise<void>(resolve => {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
+                let aa = [];
+                let path = {};
+                assets.forEach(a => {
+                    if (dir && a.path.indexOf(dir) == -1) return;
+                    aa[aa.length] = { uuid: a.uuid, type: SpriteAtlas };
+                    const name = a.name.replace('.plist', '');
+                    path[name] = a.path;
+                });
+                let infos: { [k: string]: { [t: string]: SpriteFrameDataType } } = {};
+                assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas[]) => {
+                    if (!err) {
+                        console.log(atlases.length);
+                        atlases.forEach(atlas => {
+                            infos[atlas.name] = this.getSpriteFramesInfo(atlas);
+                        });
+                        for (const name in infos) {
+                            const file = `${path[name]}_atlas.json`;
+                            console.log(`save ${file}`);
+                            Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                        }
+                    } else
+                        console.log(err);
+                    resolve();
+                });
+            });
+        });
     }
 }
