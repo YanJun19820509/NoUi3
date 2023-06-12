@@ -127,22 +127,25 @@ export class SetCreateNode extends FuckUi {
         const prefabUrl = this.loadPrefab?.prefabUrl;
         if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
             let nn = !this.onlyAdd ? n - l : n;
-            await YJJobManager.ins.execute((max: number) => {
-                if (!this?.node?.isValid) false;
-                let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
-                if (cacheItem) {
-                    if (this.dynamicAtlas) {
-                        YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
-                        YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
-                    }
-                    cacheItem.active = false;
-                    cacheItem.parent = this.container;
-                } else return false;
-                if (this.container.children.length >= max) return false;
-            }, this, nn);
+            if (nn > 0) {
+                await YJJobManager.ins.execute((max: number) => {
+                    if (!this?.node?.isValid) false;
+                    let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
+                    if (cacheItem) {
+                        if (this.dynamicAtlas) {
+                            YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
+                            YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
+                        }
+                        cacheItem.active = false;
+                        cacheItem.parent = this.container;
+                    } else return false;
+                    if (this.container.children.length >= max) return false;
+                    return true;
+                }, this, n);
 
-            l = this.container.children.length;
-            YJPreCreateNode.ins.fillNode(prefabUrl);
+                l = this.container.children.length;
+                YJPreCreateNode.ins.fillNode(prefabUrl);
+            }
         } else {
             if (!this.template) {
                 this.template = await this.loadPrefab.loadPrefab();
