@@ -244,12 +244,20 @@ export namespace no {
             args[args.length] = type;
             if (DEBUG) {
                 a.forEach(b => {
+                    if (!checkValid(b.t)) {
+                        b.o = true;
+                        return;
+                    }
                     try {
                         b.h.apply(b.t, args);
                     } catch (e) { console.error(e); }
                 });
             } else
                 a.forEach(b => {
+                    if (!checkValid(b.t)) {
+                        b.o = true;
+                        return;
+                    }
                     b.h.apply(b.t, args);
                 });
             for (let i = a.length - 1; i >= 0; i--) {
