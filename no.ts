@@ -1,6 +1,6 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
-    Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
+    Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData
 } from "./yj";
 
@@ -2456,10 +2456,6 @@ export namespace no {
             this.loadFile(path, AnimationClip, callback);
         }
 
-        public loadTiledMap(path: string, callback: (item: TiledMapAsset) => void): void {
-            this.loadFile(path, TiledMapAsset, callback);
-        }
-
         public loadMaterial(path: string, callback: (item: Material) => void): void {
             this.loadFile(path, Material, callback);
         }
@@ -2599,9 +2595,6 @@ export namespace no {
                         break;
                     case 'atlas':
                         s = SpriteAtlas;
-                        break;
-                    case 'tmx':
-                        s = TiledMapAsset;
                         break;
                 }
                 a.type = s;
