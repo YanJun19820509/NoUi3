@@ -24,6 +24,16 @@ export namespace no {
         _version = v;
     }
 
+    /**
+     * 是否支持多点触摸
+     * @param v 非空时修改当前全局多点触摸状态，否则仅返回当前全局多点触摸状态
+     * @returns 
+     */
+    export function multiTouch(v?: boolean): boolean {
+        if (v !== undefined) macro.ENABLE_MULTI_TOUCH = v;
+        return macro.ENABLE_MULTI_TOUCH;
+    }
+
     let _scheduler: Scheduler = director.getScheduler();
     /**
      * 定时器
@@ -458,6 +468,14 @@ export namespace no {
 
     export function err(...Evns: any[]): void {
         console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
+    }
+
+    export function logTimeStart(type?: string) {
+        console.time(`#NoUi#time-${type ? type : ''}`);
+    }
+
+    export function logTimeEnd(type?: string) {
+        console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
     /**

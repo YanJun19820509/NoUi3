@@ -69,6 +69,10 @@ export class YJPanel extends Component {
     needClear: boolean = true;
     @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
     isFullScreen: boolean = false;
+    @property({ displayName: '多点触摸' })
+    multiTouch: boolean = false;
+
+    private _lastMultiTouchState: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -94,12 +98,16 @@ export class YJPanel extends Component {
                 this.onInitPanel();
                 if (this.isFullScreen)
                     no.evn.emit('_full_screen_panel_open', this.panelType);
+                this._lastMultiTouchState = no.multiTouch();
+                no.multiTouch(this.multiTouch);
                 return Promise.resolve();
             }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
+        this._lastMultiTouchState = no.multiTouch();
+        no.multiTouch(this.multiTouch);
         return Promise.resolve();
     }
 
@@ -114,6 +122,7 @@ export class YJPanel extends Component {
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();
+        no.multiTouch(this._lastMultiTouchState);
     }
 
     public clear(force = false) {
