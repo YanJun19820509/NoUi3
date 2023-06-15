@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, math, isValid } from 'cc';
+import { _decorator, Component, Node, math, isValid } from './yj';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
 

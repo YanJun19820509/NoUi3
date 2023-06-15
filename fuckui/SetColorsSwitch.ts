@@ -1,5 +1,5 @@
 
-import { _decorator, Color, UIRenderer } from 'cc';
+import { _decorator, Color, UIRenderer } from './yj';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 

@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, js, UITransform } from 'cc';
+import { ccclass, property, executeInEditMode, Component, Node, js } from '../yj';
 import { EDITOR } from 'cc/env';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

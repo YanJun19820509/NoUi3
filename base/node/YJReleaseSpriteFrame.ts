@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame } from './yj';
 import { no } from '../../no';
 const { ccclass, property, requireComponent } = _decorator;
 

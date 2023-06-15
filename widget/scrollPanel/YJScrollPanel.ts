@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from 'cc';
+import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';

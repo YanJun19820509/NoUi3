@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, instantiate, Prefab } from 'cc';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, instantiate, Prefab } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')

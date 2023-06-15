@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, SpriteAtlas, assetManager } from 'cc';
+import { _decorator, Component, Node, SpriteAtlas, assetManager } from './yj';
 import { EDITOR } from 'cc/env';
 import { SpriteFrameDataType } from '../types';
 import { no } from '../no';

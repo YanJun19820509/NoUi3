@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite } from 'cc';
+import { _decorator, Component, Node, Sprite } from './yj';
 import { SetEffect } from '../../fuckui/SetEffect';
 import { no } from '../../no';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;

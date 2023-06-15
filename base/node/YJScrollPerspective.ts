@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ScrollView, UITransform, EventHandler, math } from 'cc';
+import { _decorator, Component, Node, ScrollView, UITransform, EventHandler, math } from './yj';
 const { ccclass, property, requireComponent } = _decorator;
 
 /**

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Widget, Enum, view } from 'cc';
+import { _decorator, Component, Widget, Enum, view } from './yj';
 import { EDITOR } from 'cc/env';
 import { AlignType } from '../types';
 const { ccclass, property, executeInEditMode } = _decorator;

@@ -1,9 +1,9 @@
 
-import { _decorator, Component, Node, game } from 'cc';
+import { _decorator, Component, Node, game } from './yj';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';
-import { native } from 'cc';
+import { native } from './yj';
 const { ccclass, menu } = _decorator;
 
 /**

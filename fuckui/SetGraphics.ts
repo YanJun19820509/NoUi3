@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Graphics } from 'cc';
+import { _decorator, Component, Node, Graphics } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, requireComponent } = _decorator;

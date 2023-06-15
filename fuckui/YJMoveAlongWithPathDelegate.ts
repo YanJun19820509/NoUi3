@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator, Component, Node, Vec3 } from './yj';
 import { _SetMoveAlongWithPath } from '../types';
 const { ccclass, } = _decorator;
 

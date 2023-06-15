@@ -1,13 +1,13 @@
 
-import { _decorator, Component, Node, Asset, SpriteFrame, Material, Prefab, JsonAsset } from 'cc';
-import { EDITOR } from 'cc/env';
+import {
+    ccclass, property, menu, executeInEditMode, Component, Node,
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, EDITOR, Texture2D
+} from '../yj';
 import { no } from '../no';
 import { SpriteFrameDataType } from '../types';
-import { Texture2D } from 'cc';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { no } from '../../no';
 import { JSB } from 'cc/env';
 const { ccclass, property, disallowMultiple } = _decorator;

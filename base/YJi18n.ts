@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { no } from '../no';
 const { ccclass } = _decorator;
 

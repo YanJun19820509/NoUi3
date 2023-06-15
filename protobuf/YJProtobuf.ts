@@ -1,4 +1,4 @@
-import { TextAsset, _decorator } from 'cc';
+import { TextAsset, _decorator } from './yj';
 import { no } from '../no';
 import protobuf from './protobuf.js'
 const { ccclass } = _decorator;

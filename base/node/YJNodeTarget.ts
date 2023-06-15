@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, view, ResolutionPolicy } from 'cc';
+import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, view, ResolutionPolicy } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';

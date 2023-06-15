@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame, math, Texture2D, Enum, Size, v2, Vec2, Canvas } from 'cc';
+import { _decorator, Component, Node, Sprite, SpriteFrame, math, Texture2D, Enum, Size, v2, Vec2, Canvas } from './yj';
 import { AlignType } from '../types';
 import { DynamicAtlasTexture } from './atlas';
 const { ccclass, property, requireComponent } = _decorator;

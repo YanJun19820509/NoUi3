@@ -1,6 +1,6 @@
 
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, requireComponent } = _decorator;

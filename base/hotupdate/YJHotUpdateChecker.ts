@@ -1,5 +1,5 @@
 
-import { _decorator, sys, game } from 'cc';
+import { _decorator, sys, game } from './yj';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';

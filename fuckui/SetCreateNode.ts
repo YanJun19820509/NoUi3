@@ -1,5 +1,5 @@
 
-import { _decorator, Node, instantiate, sys, Layout } from 'cc';
+import { _decorator, Node, instantiate, sys, Layout } from './yj';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';

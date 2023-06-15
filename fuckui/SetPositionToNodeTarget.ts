@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, math } from 'cc';
+import { _decorator, Component, Node, UITransform, math } from './yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetPosition } from './SetPosition';

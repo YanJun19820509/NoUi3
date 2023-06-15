@@ -1,5 +1,5 @@
 
-import { _decorator, Component, AudioSource, AudioClip } from 'cc';
+import { _decorator, Component, AudioSource, AudioClip } from './yj';
 import { no } from '../../no';
 const { ccclass, property, menu, requireComponent } = _decorator;
 

@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
 import { no } from '../../no';
 const { ccclass, menu } = _decorator;

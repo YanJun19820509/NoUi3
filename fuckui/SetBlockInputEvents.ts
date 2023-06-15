@@ -1,5 +1,5 @@
 
-import { _decorator, BlockInputEvents } from 'cc';
+import { _decorator, BlockInputEvents } from './yj';
 import { FuckUi } from './FuckUi';
 const { ccclass, menu, property } = _decorator;
 

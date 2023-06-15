@@ -1,5 +1,5 @@
 
-import { _decorator, Component } from 'cc';
+import { _decorator, Component } from './yj';
 import { YJHttpRequest } from "../../network/YJHttpRequest";
 import { no } from '../../no';
 import { js } from "cc";

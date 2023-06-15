@@ -1,9 +1,5 @@
-import { Material } from 'cc';
-import { _decorator, Component, Node } from 'cc';
-import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
-import { Texture2D } from 'cc';
+import { ccclass, Material, Component, Node, Texture2D } from '../yj';
 import { no } from '../no';
-const { ccclass, property } = _decorator;
 
 @ccclass('YJSetSample2DMaterial')
 export class YJSetSample2DMaterial extends Component {

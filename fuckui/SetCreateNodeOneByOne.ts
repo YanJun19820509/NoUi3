@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
+import { _decorator, Component, Node, instantiate } from './yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';

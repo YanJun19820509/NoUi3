@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, math } from 'cc';
+import { _decorator, Component, Node, math } from './yj';
 import { no } from '../no';
 import { YJScrollPanel } from '../widget/scrollPanel/YJScrollPanel';
 import { FuckUi } from './FuckUi';

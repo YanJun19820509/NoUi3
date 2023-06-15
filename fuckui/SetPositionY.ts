@@ -1,4 +1,4 @@
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 const { ccclass, menu } = _decorator;

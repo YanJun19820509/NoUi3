@@ -1,12 +1,12 @@
 
-import { _decorator, Component, SpriteFrame, Label, UIRenderer, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, math, sp, director } from 'cc';
-import { EDITOR } from 'cc/env';
+import {
+    EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Component, SpriteFrame, Label, UIRenderer, Texture2D,
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton
+} from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 import { no } from '../no';
-import { DynamicAtlasManager } from 'cc';
-const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -227,7 +227,7 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
-        let a = !DynamicAtlasManager.instance.enabled && this.enabled;
+        let a = !dynamicAtlasManager.enabled && this.enabled;
         return a;
     }
 
@@ -236,8 +236,8 @@ export class YJDynamicAtlas extends Component {
         if (!newSpriteFrame) {
             newSpriteFrame = new SpriteFrame();
             newSpriteFrame.texture = this.texture;
-            newSpriteFrame.originalSize = math.size(spriteFrame.width, spriteFrame.height);
-            newSpriteFrame.rect = math.rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
+            newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
+            newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
             newSpriteFrame.uv = spriteFrame.uv;
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
@@ -284,7 +284,7 @@ export class YJDynamicAtlas extends Component {
         this.autoSetSubMaterial = false;
         let renderComps = this.getComponentsInChildren(UIRenderer);
         renderComps.forEach(comp => {
-            if (comp instanceof sp.Skeleton) return;
+            if (comp instanceof Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)
                 comp.customMaterial = this.commonMaterial;
         });

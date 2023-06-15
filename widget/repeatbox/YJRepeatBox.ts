@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, Sprite } from 'cc';
+import { _decorator, Component, Node, instantiate, Sprite } from './yj';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;

@@ -1,4 +1,4 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;
 

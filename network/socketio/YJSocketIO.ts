@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 // import * as socket from './socket.io.msgpack.min.js';
 // import * as socket from './socket.io.min.js';
 import { no } from '../../no';

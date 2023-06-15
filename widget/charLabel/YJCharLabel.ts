@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate, isValid } from 'cc';
+import { _decorator, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate, isValid } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';

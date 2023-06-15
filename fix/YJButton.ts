@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Button, EventHandler, EventTouch } from 'cc';
+import { _decorator, Component, Node, Button, EventHandler, EventTouch } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 const { ccclass, property, menu, requireComponent } = _decorator;

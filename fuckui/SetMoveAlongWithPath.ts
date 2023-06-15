@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, v3, Vec2, Vec3, math, game } from 'cc';
+import { _decorator, Component, Node, v3, Vec2, Vec3, math, game } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJMoveAlongWithPathDelegate } from './YJMoveAlongWithPathDelegate';

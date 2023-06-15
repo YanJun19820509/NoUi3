@@ -1,5 +1,5 @@
 
-import { _decorator, Component, isValid, Node, Sprite } from 'cc';
+import { _decorator, Component, isValid, Node, Sprite } from './yj';
 import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, requireComponent } = _decorator;
 

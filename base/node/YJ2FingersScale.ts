@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventTouch, math, Touch } from 'cc';
+import { _decorator, Component, Node, EventTouch, math, Touch } from './yj';
 import { YJFitScreen } from '../YJFitScreen';
 const { ccclass, property } = _decorator;
 

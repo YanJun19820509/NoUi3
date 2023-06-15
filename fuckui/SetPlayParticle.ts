@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, ParticleSystem, ParticleSystem2D } from 'cc';
+import { _decorator, Component, Node, ParticleSystem, ParticleSystem2D } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { EDITOR } from 'cc/env';

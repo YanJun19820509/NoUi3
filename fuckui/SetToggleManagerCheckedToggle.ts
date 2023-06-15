@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, requireComponent } = _decorator;

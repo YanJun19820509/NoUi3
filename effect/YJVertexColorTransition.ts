@@ -1,5 +1,5 @@
 
-import { _decorator, Component, UIRenderer, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from 'cc';
+import { _decorator, Component, UIRenderer, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from './yj';
 import { no } from '../no';
 const { ccclass, property, disallowMultiple } = _decorator;
 

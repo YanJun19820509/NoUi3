@@ -1,5 +1,5 @@
 
-import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from 'cc';
+import { _decorator, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from './yj';
 import { no } from '../no';
 import { Atlas } from './atlas';
 const { ccclass, property } = _decorator;

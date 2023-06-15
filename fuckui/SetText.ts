@@ -1,5 +1,5 @@
 
-import { _decorator, Label, RichText, UITransform, view, BitmapFont } from 'cc';
+import { _decorator, Label, RichText, UITransform, view, BitmapFont } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJBitmapFont } from '../engine/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';

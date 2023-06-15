@@ -1,5 +1,5 @@
 
-import { UITransform, v2, _decorator } from 'cc';
+import { UITransform, v2, _decorator } from './yj';
 import { SetScrollToPercent } from './SetScrollToPercent';
 const { ccclass, menu } = _decorator;
 

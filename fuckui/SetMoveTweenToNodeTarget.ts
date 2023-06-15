@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, v3, Vec3, math } from 'cc';
+import { _decorator, Component, Node, UITransform, v3, Vec3, math } from './yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';

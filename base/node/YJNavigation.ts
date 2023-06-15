@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { YJPanel } from './YJPanel';
 const { ccclass, property, menu } = _decorator;
 

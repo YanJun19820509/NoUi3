@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, VideoPlayer, EventHandler, js } from 'cc';
+import { _decorator, Component, Node, VideoPlayer, EventHandler, js } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, requireComponent, executeInEditMode } = _decorator;

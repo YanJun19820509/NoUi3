@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Animation, AnimationState, AnimationClip } from 'cc';
+import { Component, Animation, AnimationClip, ccclass, property, requireComponent, WrapMode } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -46,7 +45,7 @@ export class YJPlayAnimation extends Component {
         }
     }
 
-    public play(wrapMode?: AnimationClip.WrapMode) {
+    public play(wrapMode?: WrapMode) {
         let ani = this.getComponent(Animation);
         if (ani.clips.length == 0) return;
         ani.on(Animation.EventType.PLAY, this.onPlay, this);

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, AudioClip } from 'cc';
+import { _decorator, Component, AudioClip } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, executeInEditMode } = _decorator;

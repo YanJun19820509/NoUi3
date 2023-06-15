@@ -1,10 +1,10 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { JSB } from 'cc/env';
 import { encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
-import { native } from 'cc';
+import { native } from './yj';
 const { ccclass } = _decorator;
 
 /**

@@ -1,5 +1,5 @@
 
-import { math, UITransform, v2, _decorator, game } from 'cc';
+import { math, UITransform, v2, _decorator, game } from './yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';

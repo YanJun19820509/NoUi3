@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderer, v3, Vec3, UIOpacity, isValid } from 'cc';
+import { _decorator, Component, Node, Rect, rect, v2, UITransform, UIRenderer, v3, Vec3, UIOpacity, isValid } from './yj';
 import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, menu } = _decorator;
 

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, SpriteAtlas, SpriteFrame } from 'cc';
+import { _decorator, Component, Node, SpriteAtlas, SpriteFrame } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJCreateSpriteFrame } from '../engine/YJCreateSpriteFrame';
 import { no } from '../no';

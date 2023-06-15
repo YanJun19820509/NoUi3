@@ -1,5 +1,5 @@
 
-import { ProgressBar, _decorator } from 'cc';
+import { ProgressBar, _decorator } from './yj';
 import { FuckUi } from './FuckUi';
 import { no } from '../no';
 const { ccclass, property, menu } = _decorator;

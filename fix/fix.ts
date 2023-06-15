@@ -1,5 +1,5 @@
 
-import { _decorator, Component, js, Material, Node, StencilManager } from 'cc';
+import { _decorator, Component, js, Material, Node, StencilManager } from './yj';
 const { ccclass, property } = _decorator;
 
 /**

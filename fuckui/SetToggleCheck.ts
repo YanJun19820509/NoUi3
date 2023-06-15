@@ -1,5 +1,5 @@
 
-import { _decorator, Toggle } from 'cc';
+import { _decorator, Toggle } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';

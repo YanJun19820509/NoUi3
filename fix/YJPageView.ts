@@ -1,5 +1,5 @@
 
-import { _decorator, PageView, Vec2, EventTouch, UITransform } from 'cc';
+import { _decorator, PageView, Vec2, EventTouch, UITransform } from './yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';

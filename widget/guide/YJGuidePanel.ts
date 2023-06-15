@@ -1,5 +1,5 @@
 
-import { _decorator, Node } from 'cc';
+import { _decorator, Node } from './yj';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
 import { YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';

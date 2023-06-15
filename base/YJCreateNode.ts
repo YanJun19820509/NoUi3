@@ -1,13 +1,11 @@
 
-import { _decorator, Component, Node, instantiate } from 'cc';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, executeInEditMode, Component, Node, instantiate, EDITOR } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import YJLoadPrefab from './node/YJLoadPrefab';
 import { YJCacheObject } from './YJCacheObject';
 import { YJDataWork } from './YJDataWork';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -25,14 +23,14 @@ const { ccclass, property, menu, executeInEditMode } = _decorator;
 @menu('NoUi/base/YJCreateNode(创建节点)')
 @executeInEditMode()
 export class YJCreateNode extends Component {
-    @property(YJLoadPrefab)
+    @property({ type: YJLoadPrefab })
     loadPrefab: YJLoadPrefab = null;
-    @property(Node)
+    @property({ type: Node })
     tempNode: Node = null;
 
-    @property(Node)
+    @property({ type: Node })
     target: Node = null;
-    @property(YJDynamicAtlas)
+    @property({ type: YJDynamicAtlas })
     dynamicAtlas: YJDynamicAtlas = null;
 
     @property

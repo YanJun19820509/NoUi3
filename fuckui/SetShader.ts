@@ -1,4 +1,4 @@
-// import { _decorator, Label, Material, UIRenderer, Sprite, Vec4 } from 'cc';
+// import { _decorator, Label, Material, UIRenderer, Sprite, Vec4 } from './yj';
 // import { no } from '../no';
 // import { FuckUi } from './FuckUi';
 // const { ccclass, menu } = _decorator;

@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite, UIRenderer } from 'cc';
+import { _decorator, Sprite, UIRenderer } from './yj';
 import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';

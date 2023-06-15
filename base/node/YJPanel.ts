@@ -1,10 +1,8 @@
 
-import { _decorator, Component } from 'cc';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated } from '../../types';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

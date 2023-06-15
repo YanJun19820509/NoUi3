@@ -1,5 +1,5 @@
 
-import { _decorator, tween, Vec2, v2, Vec3, v3 } from 'cc';
+import { _decorator, tween, Vec2, v2, Vec3, v3 } from './yj';
 import { no } from '../../no';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
 const { ccclass, menu } = _decorator;

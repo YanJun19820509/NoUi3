@@ -1,11 +1,9 @@
 
-import { _decorator, Component, Node, isValid } from 'cc';
-import { DEBUG, EDITOR } from 'cc/env';
+import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid } from '../yj';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
 import { YJJobManager } from './YJJobManager';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

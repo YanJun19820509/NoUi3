@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Enum } from 'cc';
+import { _decorator, Component, Node, Enum } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { SimpleValueType } from '../types';

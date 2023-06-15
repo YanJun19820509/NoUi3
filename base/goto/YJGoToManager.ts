@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { YJPanel } from '../node/YJPanel';
 import { YJWindowManager } from '../node/YJWindowManager';
 import { YJGoToConfigDelegate, YJGoToInfo } from './YJGoToConfigDelegate';

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Enum, CCClass, js } from 'cc';
+import { _decorator, Component, Node, Enum, CCClass, js } from './yj';
 import { EDITOR } from 'cc/env';
 import { FuckUi } from './FuckUi';
 import { SetComponentPropertyValue } from './SetComponentPropertyValue';

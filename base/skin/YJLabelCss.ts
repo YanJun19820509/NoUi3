@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Color, color, Label, LabelOutline, LabelShadow, v2 } from 'cc';
+import { _decorator, Component, Color, color, Label, LabelOutline, LabelShadow, v2 } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../../no';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;

@@ -1,5 +1,5 @@
 
-import { _decorator, UITransform } from 'cc';
+import { _decorator, UITransform } from './yj';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 

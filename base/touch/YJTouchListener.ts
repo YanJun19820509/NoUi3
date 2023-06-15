@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventTouch, Rect } from 'cc';
+import { _decorator, Component, Node, EventTouch, Rect } from './yj';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJTouchDispatcher } from './YJTouchDispatcher';

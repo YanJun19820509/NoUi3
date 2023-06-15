@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, CCString, JsonAsset, Prefab, instantiate } from 'cc';
+import { _decorator, Component, Node, CCString, JsonAsset, Prefab, instantiate } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';

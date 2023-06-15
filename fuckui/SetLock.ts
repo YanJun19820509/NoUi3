@@ -1,5 +1,5 @@
 
-import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate, UIOpacity } from 'cc';
+import { _decorator, Node, UITransform, Button, EventHandler, BlockInputEvents, Layers, Enum, Size, instantiate, UIOpacity } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';

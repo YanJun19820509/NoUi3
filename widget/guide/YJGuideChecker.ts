@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, CCString } from 'cc';
+import { _decorator, Component, Node, CCString } from './yj';
 import { YJGuideManager } from './YJGuideManager';
 const { ccclass, property } = _decorator;
 

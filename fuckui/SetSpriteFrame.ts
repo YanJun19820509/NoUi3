@@ -1,5 +1,5 @@
 
-import { _decorator, Sprite, SpriteFrame, UITransform, view, isValid } from 'cc';
+import { _decorator, Sprite, SpriteFrame, UITransform, view, isValid } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';

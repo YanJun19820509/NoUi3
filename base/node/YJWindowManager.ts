@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, Prefab, js } from 'cc';
+import { _decorator, Component, Node, instantiate, Prefab, js } from './yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';

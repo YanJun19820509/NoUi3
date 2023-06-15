@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Enum, Button } from 'cc';
+import { _decorator, Component, Node, Enum, Button } from './yj';
 import { no } from '../../no';
 import { YJPanel } from '../node/YJPanel';
 import { YJSoundEffectManager } from './YJSoundEffectManager';

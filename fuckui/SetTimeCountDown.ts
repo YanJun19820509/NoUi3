@@ -1,5 +1,5 @@
 
-import { _decorator, Label } from 'cc';
+import { _decorator, Label } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';

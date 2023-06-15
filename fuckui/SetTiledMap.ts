@@ -1,5 +1,5 @@
 
-import { JsonAsset, _decorator } from 'cc';
+import { JsonAsset, _decorator } from './yj';
 import { YJTiledMapData } from '../base/tiled/YJTiledMapData';
 import { YJTiledMapDelegate } from '../base/tiled/YJTiledMapDelegate';
 import { no } from '../no';

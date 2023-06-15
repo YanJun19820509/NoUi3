@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { no } from '../no';
 import { SetHeight } from './SetHeight';
 const { ccclass, menu } = _decorator;

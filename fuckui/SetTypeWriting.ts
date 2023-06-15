@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack, LabelOutline, Layers, UITransform, math, UIOpacity } from 'cc';
+import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack, LabelOutline, Layers, UITransform, math, UIOpacity } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';

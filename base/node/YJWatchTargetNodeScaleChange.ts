@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, math, v3, isValid } from 'cc';
+import { _decorator, Component, Node, math, v3, isValid } from './yj';
 import { no } from '../../no';
 import { YJNodeTarget } from './YJNodeTarget';
 import { YJJobManager } from '../YJJobManager';

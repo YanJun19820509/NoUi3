@@ -1,5 +1,5 @@
 
-import { _decorator, Component, game, sys, Game } from 'cc';
+import { _decorator, Component, game, sys, Game } from './yj';
 import { JSB } from 'cc/env';
 import { no } from '../no';
 const { ccclass, property, menu } = _decorator;

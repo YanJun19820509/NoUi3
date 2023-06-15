@@ -1,5 +1,5 @@
 
-import { _decorator, instantiate, PageView } from 'cc';
+import { _decorator, instantiate, PageView } from './yj';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';

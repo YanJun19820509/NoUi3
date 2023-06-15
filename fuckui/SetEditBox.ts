@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EditBox } from 'cc';
+import { _decorator, Component, Node, EditBox } from './yj';
 import { EDITOR } from 'cc/env';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';

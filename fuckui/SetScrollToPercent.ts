@@ -1,5 +1,5 @@
 
-import { _decorator, ScrollView, v2, Vec2, UITransform } from 'cc';
+import { _decorator, ScrollView, v2, Vec2, UITransform } from './yj';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 

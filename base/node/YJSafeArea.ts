@@ -1,5 +1,5 @@
 
-import { _decorator, sys, Widget, SafeArea, UITransform, view, widgetManager } from 'cc';
+import { _decorator, sys, Widget, SafeArea, UITransform, view, widgetManager } from './yj';
 import { EDITOR } from 'cc/env';
 const { ccclass, requireComponent, property } = _decorator;
 

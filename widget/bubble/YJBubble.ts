@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, v3, Vec3, UITransform } from 'cc';
+import { _decorator, Component, Node, v3, Vec3, UITransform } from './yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';

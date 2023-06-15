@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Graphics, Material } from 'cc';
+import { _decorator, Component, Node, Graphics, Material } from './yj';
 import { no } from '../no';
 import { SetEffect } from './SetEffect';
 const { ccclass, property, requireComponent } = _decorator;

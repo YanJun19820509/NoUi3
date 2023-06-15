@@ -1,8 +1,8 @@
 
-import { _decorator, Component, Node, EventTarget } from 'cc';
+import { _decorator, Component, Node, EventTarget } from './yj';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
-import { native } from 'cc';
+import { native } from './yj';
 const { ccclass, property } = _decorator;
 
 /**

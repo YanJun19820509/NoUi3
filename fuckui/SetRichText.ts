@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, Color } from 'cc';
+import { _decorator, Component, Node, Color } from './yj';
 import { no } from '../no';
 import { SetText } from './SetText';
 const { ccclass, property } = _decorator;

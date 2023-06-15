@@ -1,5 +1,5 @@
 
-import { _decorator, Button, Toggle } from 'cc';
+import { _decorator, Button, Toggle } from './yj';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;
 

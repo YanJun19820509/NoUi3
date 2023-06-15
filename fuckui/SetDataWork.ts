@@ -1,5 +1,5 @@
 
-import { _decorator } from 'cc';
+import { _decorator } from './yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { FuckUi } from './FuckUi';
 const { ccclass, property, menu } = _decorator;

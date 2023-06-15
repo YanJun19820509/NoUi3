@@ -1,5 +1,5 @@
 
-import { _decorator, sp } from 'cc';
+import { _decorator, sp } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { EDITOR } from 'cc/env';

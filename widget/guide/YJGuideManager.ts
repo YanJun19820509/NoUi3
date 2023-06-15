@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node } from './yj';
 import { DEBUG } from 'cc/env';
 import { YJWindowManager } from '../../base/node/YJWindowManager';
 import { no } from '../../no';

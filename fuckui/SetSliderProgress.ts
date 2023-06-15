@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, Slider } from 'cc';
+import { _decorator, Component, Node, EventHandler, Slider } from './yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { EDITOR } from 'cc/env';

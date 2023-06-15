@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EffectAsset } from 'cc';
+import { _decorator, Component, Node, EffectAsset } from './yj';
 import { EDITOR } from 'cc/env';
 import { SetEffect } from '../../fuckui/SetEffect';
 import { no } from '../../no';

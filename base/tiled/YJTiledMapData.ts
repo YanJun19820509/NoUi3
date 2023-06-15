@@ -1,5 +1,5 @@
 
-import { Size, v2, Vec2 } from 'cc';
+import { Size, v2, Vec2 } from './yj';
 import { no } from '../../no';
 
 /**

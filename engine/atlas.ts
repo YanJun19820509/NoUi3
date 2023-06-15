@@ -1,10 +1,7 @@
-import { SpriteFrame, Texture2D, ImageAsset, math, __private, DynamicAtlasManager, js, Component, Label, isValid } from "cc";
-import { EDITOR } from "cc/env";
+import { EDITOR, SpriteFrame, Texture2D, ImageAsset, __private, dynamicAtlasManager, js, Component, isValid, sys, gfx, Rect, rect } from "../yj";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
-import { gfx } from "cc";
-import { sys } from "cc";
 
 export class Atlas {
     public _texture: DynamicAtlasTexture;
@@ -123,7 +120,7 @@ export class Atlas {
         let rect = this._dynamicTextureRect[uuid];
         if (!rect) return;
         this._maxRect.reuseRect(rect.x, rect.y, rect.w, rect.h);
-        let img = this._createEmptyImage(math.rect(rect.x, rect.y, rect.w, rect.h));
+        let img = this._createEmptyImage(rect(rect.x, rect.y, rect.w, rect.h));
         this._setSubImage(img, rect.x, rect.y);
         delete this._dynamicTextureRect[uuid];
     }
@@ -145,18 +142,18 @@ export class Atlas {
         let texture = spriteFrame.texture as Texture2D;
         let r = spriteFrame.rect;
         let isRotated = spriteFrame.rotated;
-        let rect = math.rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
-        let buffer = this._texture.getTextureBuffer(texture as Texture2D, rect);
+        let _rect = rect(r.x, r.y, isRotated ? r.height : r.width, isRotated ? r.width : r.height);
+        let buffer = this._texture.getTextureBuffer(texture as Texture2D, _rect);
         if (isRotated && !needRotate) {
-            this._rotateImageBuffer(buffer, rect.width, rect.height, false);
-            rect.width = r.width;
-            rect.height = r.height;
+            this._rotateImageBuffer(buffer, _rect.width, _rect.height, false);
+            _rect.width = r.width;
+            _rect.height = r.height;
         } else if (needRotate && !isRotated) {
-            this._rotateImageBuffer(buffer, rect.width, rect.height);
-            rect.width = r.height;
-            rect.height = r.width;
+            this._rotateImageBuffer(buffer, _rect.width, _rect.height);
+            _rect.width = r.height;
+            _rect.height = r.width;
         }
-        let img = this._createImage(buffer, rect);
+        let img = this._createImage(buffer, _rect);
         this._setSubImage(img, x, y);
     }
 
@@ -172,7 +169,7 @@ export class Atlas {
         this._texture.drawTextureAt(texture.image, x, y, w, h);
     }
 
-    private _createEmptyImage(rect: math.Rect): HTMLCanvasElement {
+    private _createEmptyImage(rect: Rect): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
         canvas.width = rect.width;
         canvas.height = rect.height;
@@ -191,7 +188,7 @@ export class Atlas {
         return canvas;
     }
 
-    private _createImage(pixels: ArrayBufferView, rect: math.Rect): HTMLCanvasElement {
+    private _createImage(pixels: ArrayBufferView, rect: Rect): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
         canvas.width = rect.width;
         canvas.height = rect.height;
@@ -358,7 +355,7 @@ export class DynamicAtlasTexture extends Texture2D {
         gfxDevice.copyBuffersToTexture([buffer], gfxTexture, [region]);
     }
 
-    public getTextureBuffer(texture: Texture2D, rect: math.Rect): Uint8Array {
+    public getTextureBuffer(texture: Texture2D, rect: Rect): Uint8Array {
         const gfxTexture = texture.getGFXTexture();
         if (!gfxTexture) {
             return;
@@ -453,8 +450,8 @@ export class TextureSubresLayers {
 }
 
 //关闭自动合图
-DynamicAtlasManager.instance.enabled = false;
-js.mixin(DynamicAtlasManager.prototype, {
+dynamicAtlasManager.enabled = false;
+js.mixin(dynamicAtlasManager['__proto__'], {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;

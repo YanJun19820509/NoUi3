@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, math, UITransform, instantiate } from 'cc';
+import { _decorator, Component, Node, math, UITransform, instantiate } from './yj';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, game, isValid } from 'cc';
+import { _decorator, Component, Node, game, isValid } from './yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';

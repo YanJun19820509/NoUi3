@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite, SpriteAtlas } from 'cc';
+import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite, SpriteAtlas } from './yj';
 import { DynamicAtlasTexture } from '../engine/atlas';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';

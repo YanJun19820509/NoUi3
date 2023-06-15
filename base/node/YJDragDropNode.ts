@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventTouch, math, UITransform } from 'cc';
+import { _decorator, Component, Node, EventTouch, math, UITransform } from './yj';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 import { YJTouchListener } from '../touch/YJTouchListener';
