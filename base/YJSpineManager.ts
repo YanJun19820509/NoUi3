@@ -32,15 +32,15 @@ export class YJSpineManager extends no.SingleObject {
     }
 
     public async get(path: string): Promise<sp.SkeletonData> {
-        if (this._map[path]) return this._map[path].data;
-        else {
-            return new Promise<sp.SkeletonData>(resolve => {
-                no.assetBundleManager.loadSpine(path, res => {
-                    resolve(res);
-                    this._map[path] = { data: res, t: no.sysTime.now + 86400 };
-                });
+        // if (this._map[path]) return this._map[path].data;
+        // else {
+        return new Promise<sp.SkeletonData>(resolve => {
+            no.assetBundleManager.loadSpine(path, res => {
+                resolve(res);
+                this._map[path] = { data: res, t: no.sysTime.now + 86400 };
             });
-        }
+        });
+        // }
     }
 
     public release(duration: number) {

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
+import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid, random } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
 import { AssetInfo } from './@types/packages/asset-db/@types/public';
 import { ImageAsset } from 'cc';
@@ -23,6 +23,16 @@ export namespace no {
 
     export function setGameVersion(v: string) {
         _version = v;
+    }
+
+    /**
+     * 是否支持多点触摸
+     * @param v 非空时修改当前全局多点触摸状态，否则仅返回当前全局多点触摸状态
+     * @returns 
+     */
+    export function multiTouch(v?: boolean): boolean {
+        if (v !== undefined) macro.ENABLE_MULTI_TOUCH = v;
+        return macro.ENABLE_MULTI_TOUCH;
     }
 
     let _scheduler: Scheduler = director.getScheduler();
@@ -461,13 +471,21 @@ export namespace no {
         console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
     }
 
+    export function logTimeStart(type?: string) {
+        console.time(`#NoUi#time-${type ? type : ''}`);
+    }
+
+    export function logTimeEnd(type?: string) {
+        console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+    }
+
     /**
      * 创建唯一标识
      * @returns 
      */
     export function uuid(): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = floor(Math.random() * 16),
+            var r = floor(random() * 16),
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
@@ -655,7 +673,7 @@ export namespace no {
         for (var i = 0; i < n; i++) {
             let al = a.length;
             if (al == 0) break;
-            let b = floor(Math.random() * al);
+            let b = floor(random() * al);
             if (!repeatable)
                 c = [].concat(c, a.splice(b, 1));
             else
@@ -1004,7 +1022,7 @@ export namespace no {
     export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        const a = Math.random() * (max - min);
+        const a = random() * (max - min + 1);
         return (isInt ? floor(a) : a) + min;
     }
 
@@ -1384,7 +1402,7 @@ export namespace no {
             if (except.indexOf(i) == -1)
                 sum += Number(w);
         });
-        let r = Math.random() * sum;
+        let r = random() * sum;
         let n = weight.length;
         let a = 0;
         for (let i = 0; i < n; i++) {
@@ -4137,6 +4155,10 @@ export namespace no {
         return result;
     }
 
+    export function getFileName(path: string): string {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
     @ccclass('SingleObject')
     export class SingleObject {
         private static _ins: any;
@@ -4167,6 +4189,45 @@ export namespace no {
         if (!checkValid(target)) return;
         for (const key in data) {
             target[key] = data[key];
+        }
+    }
+
+    /**网速计算类 */
+    export class NetworkSpeed {
+        private _lastLoaded: number[];
+        constructor() {
+            this._lastLoaded = [0];
+        }
+
+        public calculateNetworkSpeedAndRemainSeconds(loaded: number, total: number): number[] {
+            const now = sys.now();
+            if (this._lastLoaded[0] == 0) {
+                this._lastLoaded[0] = loaded;
+                this._lastLoaded[1] = now;
+                return null;
+            }
+            const t = (now - this._lastLoaded[1]) / 1000;
+            if (t < 1) return null;
+            let a: number[] = [];
+            const sub = (loaded - this._lastLoaded[0]) / t;
+            a[0] = sub;
+            a[1] = Math.ceil((total - loaded) / sub);
+            this._lastLoaded[0] = loaded;
+            this._lastLoaded[1] = now;
+            return a;
+        }
+
+        public static formatNetworkSpeed(v: number, unit = ['B', 'KB', 'MB']): string {
+            let i = 0, s: string = '';
+            while (1) {
+                if (v < 1024 || i == (unit.length - 1)) {
+                    s = Math.floor(v * 100) / 100 + unit[i];
+                    break;
+                }
+                v /= 1024;
+                i++;
+            }
+            return s;
         }
     }
 }

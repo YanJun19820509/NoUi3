@@ -94,6 +94,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
     }
 
     private scrollByFrame(dt: number) {
+        if (!no.checkValid(this.node)) return;
         let curOffset = this.scrollView.getScrollOffset();
         let offset = this.getOffset(this._target);
         offset.x += curOffset.x;
