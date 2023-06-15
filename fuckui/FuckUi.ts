@@ -1,8 +1,7 @@
-
-import { _decorator, Component, isValid, Node } from 'cc';
-import { DEBUG, EDITOR } from 'cc/env';
+import { Component, DEBUG, EDITOR, ccclass, executeInEditMode, isValid, property, Node } from '../yj';
 import { no } from '../no';
-const { ccclass, property, executeInEditMode } = _decorator;
+
+// export const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

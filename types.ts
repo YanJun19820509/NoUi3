@@ -1,8 +1,7 @@
-import { _decorator, ValueType, math } from 'cc';
-import { Texture2D } from 'cc';
+
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-const { ccclass, property } = _decorator;
+import { Texture2D, ccclass, property } from './yj';
 
 /**
  * Predefined variables
@@ -162,6 +161,18 @@ export class UV {
     }
 }
 
+/**
+ * 注解 用于向类中添加元数据.
+ * @param key 元数据key
+ * @param value 元数据值
+ * @returns
+ */
+export function addMeta(key: string, value: string) {
+    return function (target: Function) {
+        target.prototype[key] = value;
+    };
+}
+
 export const YJPanelPrefabMetaKey = 'prefabPath';
 export const YJPanelPrefabUuidMetaKey = 'prefabUuid';
 export const YJAddPanelToMetaKey = 'addPanelToTargetName';
@@ -174,7 +185,7 @@ export const YJPanelNeedLoadBundleName = 'needloadbundlename';
  * @returns
  */
 export function panelPrefabPath(path: string) {
-    return no.addMeta(YJPanelPrefabMetaKey, path);
+    return addMeta(YJPanelPrefabMetaKey, path);
 }
 /**
  * 向YJPanel添加prefab uuid 元数据
@@ -182,7 +193,7 @@ export function panelPrefabPath(path: string) {
  * @returns 
  */
 export function panelPrefabUuid(uuid: string) {
-    return no.addMeta(YJPanelPrefabUuidMetaKey, uuid);
+    return addMeta(YJPanelPrefabUuidMetaKey, uuid);
 }
 /**
  * 向YJPanel添加所属层级别名 元数据
@@ -190,12 +201,12 @@ export function panelPrefabUuid(uuid: string) {
  * @returns 
  */
 export function addPanelTo(targetName: string) {
-    return no.addMeta(YJAddPanelToMetaKey, targetName);
+    return addMeta(YJAddPanelToMetaKey, targetName);
 }
 /**
  * 向YJPanel添加允许创建多个 元数据
  * @returns 
  */
 export function AllowMultipleOpen() {
-    return no.addMeta(YJAllowMultipleOpen, '1');
+    return addMeta(YJAllowMultipleOpen, '1');
 }

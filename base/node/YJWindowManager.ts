@@ -119,6 +119,7 @@ export class YJWindowManager extends Component {
         } else {
             const request = { type: Prefab, path: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
             no.assetBundleManager.loadAny<Prefab>(request, pf => {
+                if (!pf) return;
                 let node = instantiate(pf);
                 if (!content?.isValid) {
                     return

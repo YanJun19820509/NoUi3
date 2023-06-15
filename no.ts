@@ -1,10 +1,9 @@
+import {
+    AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
+    Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData
+} from "./yj";
 
-import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid, random } from 'cc';
-import { DEBUG, EDITOR, WECHAT } from 'cc/env';
-import { AssetInfo } from './@types/packages/asset-db/@types/public';
-import { ImageAsset } from 'cc';
-
-const { ccclass, property } = _decorator;
 
 export namespace no {
     let _debug: boolean = DEBUG;
@@ -964,7 +963,7 @@ export namespace no {
      * @param handler
      * @param arg
      */
-    export function createEventHandler(target: Node, comp: string | typeof Component, handler: string, arg = ''): EventHandler {
+    export function createEventHandler(target: Node, comp: string | Component, handler: string, arg = ''): EventHandler {
         let a = new EventHandler();
         a.target = target;
         if (typeof comp == 'string')
@@ -1535,7 +1534,7 @@ export namespace no {
         public start(): Promise<void> {
             return new Promise<void>(resolve => {
                 for (const key in this.map) {
-                    let t: Tween<unknown> = this.map[key];
+                    let t: Tween = this.map[key];
                     if (key == TweenSetType.Node) {
                         t.call(resolve).start();
                     } else
@@ -1546,7 +1545,7 @@ export namespace no {
 
         public stop() {
             for (const key in this.map) {
-                let t: Tween<unknown> = this.map[key];
+                let t: Tween = this.map[key];
                 t?.stop();
             }
         }
@@ -1700,18 +1699,6 @@ export namespace no {
     }
 
     /**
-     * 注解 用于向类中添加元数据.
-     * @param key 元数据key
-     * @param value 元数据值
-     * @returns
-     */
-    export function addMeta(key: string, value: string) {
-        return function (target: Function) {
-            target.prototype[key] = value;
-        };
-    }
-
-    /**
      * 获取或设置节点x坐标
      * @param node 节点
      * @param x x坐标，为空时则返回当前x；否则修改当前x
@@ -1847,6 +1834,19 @@ export namespace no {
         let t = node.getComponent(UITransform);
         if (y != undefined) t.anchorY = y;
         return t.anchorY;
+    }
+
+    /**
+     * 获取或设置节点anchorPoint
+     * @param node 节点
+     * @param 
+     * @returns
+     */
+    export function anchor(node: Node, ...args: number[]): Vec2 {
+        if (!node) return;
+        let t = node.getComponent(UITransform);
+        if (args != undefined && args.length > 0) t.setAnchorPoint(args[0], args[1] || args[0]);
+        return t.anchorPoint.clone();
     }
 
     /**
@@ -2365,7 +2365,7 @@ export namespace no {
          * 获取已加载的bundle
          * @param name
          */
-        public getBundle(name: string): AssetManager.Bundle {
+        public getBundle(name: string): Bundle {
             return assetManager.getBundle(name);
         }
 
@@ -2403,9 +2403,9 @@ export namespace no {
             else {
                 let bundle = this.getBundle(bundleName);
                 if (bundle != null) {
-                    bundle.load(fileName, type, (err, item) => {
+                    bundle.load(fileName, type, (error, item) => {
                         if (item == null) {
-                            log('load', fileName, err.message);
+                            err('load', fileName, error.message);
                         } else {
                             this.addRef(item);//增加引用计数
                             this.loadDepends(item.uuid);
@@ -2432,8 +2432,8 @@ export namespace no {
             this.loadFile(path, SpriteFrame, callback);
         }
 
-        public loadSpine(path: string, callback: (item: sp.SkeletonData) => void): void {
-            this.loadFile(path, sp.SkeletonData, callback);
+        public loadSpine(path: string, callback: (item: SkeletonData) => void): void {
+            this.loadFile(path, SkeletonData, callback);
         }
 
         public loadAtlas(path: string, callback: (item: SpriteAtlas) => void): void {
@@ -2552,7 +2552,7 @@ export namespace no {
                 });
         }
 
-        public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
+        public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: Bundle) => void) {
             assetManager.loadBundle(url, opts, (e, bundle) => {
                 if (e) err(e.stack);
                 callback?.(bundle);
@@ -2668,7 +2668,7 @@ export namespace no {
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
-        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: AssetInfo) => void, onErr?: () => void) {
+        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: _AssetInfo) => void, onErr?: () => void) {
             if (!EDITOR) return;
             let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
             if (!info) {
@@ -2757,9 +2757,9 @@ export namespace no {
             }).catch(e => { err(e); });
         }
 
-        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: AssetInfo[]) => void) {
+        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: _AssetInfo[]) => void) {
             Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((infos: any[]) => {
-                let a: AssetInfo[] = [];
+                let a: _AssetInfo[] = [];
                 infos.forEach(info => {
                     if (info.url.indexOf(url) > -1) a[a.length] = info;
                 });
@@ -2869,10 +2869,10 @@ export namespace no {
             return this.getBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
         }
 
-        public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<AssetInfo | null> {
+        public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<_AssetInfo | null> {
             let ccType: string = `cc.${type.name}`;
-            return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: AssetInfo[]) => {
-                let info: AssetInfo;
+            return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: _AssetInfo[]) => {
+                let info: _AssetInfo;
                 for (let i = 0, n = assets.length; i < n; i++) {
                     const asset = assets[i];
                     if (asset.name == name) {
@@ -2884,7 +2884,7 @@ export namespace no {
             }).catch(e => { err(e.stack); return null; });
         }
 
-        public getAssetInfoWithUuidInEditorMode(uuid: string, cb: (info: AssetInfo) => void) {
+        public getAssetInfoWithUuidInEditorMode(uuid: string, cb: (info: _AssetInfo) => void) {
             if (!EDITOR) cb?.(null);
             else
                 Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {

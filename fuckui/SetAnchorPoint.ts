@@ -1,7 +1,6 @@
-
-import { _decorator, Component, Node, UITransform } from 'cc';
 import { FuckUi } from './FuckUi';
-const { ccclass, property } = _decorator;
+import { no } from '../no';
+import { ccclass } from '../yj';
 
 /**
  * Predefined variables
@@ -20,6 +19,6 @@ export class SetAnchorPoint extends FuckUi {
     protected onDataChange(data: any) {
         if (typeof data == 'number') data = [data];
         else if (typeof data == 'string') data = [Number(data)];
-        this.node.getComponent(UITransform)?.setAnchorPoint(data[0], data[1] || data[0]);
+        no.anchor(this.node, data);
     }
 }
