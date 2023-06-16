@@ -1,5 +1,5 @@
 
-import { js, StencilManager } from '../yj';
+import { js, StencilManager, Node, Layers, director } from '../yj';
 
 /**
  * Predefined variables
@@ -19,6 +19,20 @@ js.mixin(StencilManager.prototype, {
         return _getStencilStage.call(this, stage, mat);
     }
 });
+
+const _a = setInterval(function () {
+    const batcher2D = director.root.batcher2D;
+    if (batcher2D) {
+        clearInterval(_a);
+        const _walk = batcher2D['__proto__'].walk;
+        js.mixin(director.root.batcher2D['__proto__'], {
+            walk(node: Node, level = 0) {
+                if (node.layer != Layers.Enum.NONE)
+                    _walk.call(this, node, level);
+            }
+        });
+    }
+}, 100);
 
 
 // const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];
