@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, EventHandler, Slider } from './yj';
+import { EDITOR, ccclass, property, menu, Node, EventHandler, Slider } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { EDITOR } from 'cc/env';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

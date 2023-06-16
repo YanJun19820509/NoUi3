@@ -1,10 +1,6 @@
-import { _decorator, Component, Node } from './yj';
+import { ccclass, property, Enum, Node, EDITOR, js, CCClass } from '../yj';
 import { FuckUi } from './FuckUi';
-import { Enum } from './yj';
-import { EDITOR } from 'cc/env';
-import { js } from './yj';
-import { CCClass } from './yj';
-const { ccclass, property } = _decorator;
+
 //动态设置组件属性值
 enum ComponentName { }
 enum PropertyName { }

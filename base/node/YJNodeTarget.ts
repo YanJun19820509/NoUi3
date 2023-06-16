@@ -1,10 +1,8 @@
 
-import { _decorator, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, view, ResolutionPolicy } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, disallowMultiple, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys } from '../../yj';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJJobManager } from '../YJJobManager';
-const { ccclass, property, menu, executeInEditMode, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables

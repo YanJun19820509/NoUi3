@@ -1,12 +1,10 @@
 
-import { _decorator, sys, game } from './yj';
-import { JSB } from 'cc/env';
+import { JSB, ccclass, property, menu, game } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';
 import { YJComponent } from '../YJComponent';
 import { YJDataWork } from '../YJDataWork';
 import { YJHotUpdate } from './YJHotUpdate';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, instantiate, LabelShadow, Layers, UITransform, math, assetManager } from './yj';
-import { DEBUG, EDITOR } from 'cc/env';
+import { DEBUG, EDITOR, ccclass, property, executeInEditMode, Component, Node, SpriteFrame, Label, Color, Font, v2, Vec2, LabelOutline, LabelShadow, Layers, UITransform, math, assetManager } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -92,7 +90,7 @@ export class YJCharLabelCenter extends Component {
                             }
                         });
                     }
-                } catch (e) {console.error(e); }
+                } catch (e) { console.error(e); }
             }
         }
     }

@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, VideoPlayer, EventHandler, js } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, requireComponent, executeInEditMode, Component, Node, VideoPlayer, EventHandler, js } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

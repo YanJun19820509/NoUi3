@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, BitmapFont, Label, SpriteFrame } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, executeInEditMode, requireComponent, Component, Node, BitmapFont, Label } from '../yj';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
-const { ccclass, property, executeInEditMode, requireComponent } = _decorator;
 
 /**
  * Predefined variables

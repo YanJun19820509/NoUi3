@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, ToggleContainer, Toggle, EventHandler, EventTouch, js } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu,  executeInEditMode , Component, Node, ToggleContainer, Toggle,  EventTouch} from '../../yj';
+import {  } from 'cc/env';
 import { no } from '../../no';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

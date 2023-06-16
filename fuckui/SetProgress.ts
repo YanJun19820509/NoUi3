@@ -1,8 +1,7 @@
 
-import { ProgressBar, _decorator } from './yj';
+import { ProgressBar, ccclass, property, menu } from '../yj';
 import { FuckUi } from './FuckUi';
 import { no } from '../no';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

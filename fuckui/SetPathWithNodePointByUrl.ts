@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, instantiate, Vec3 } from './yj';
+import { ccclass, property, menu, instantiate, Vec3 } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

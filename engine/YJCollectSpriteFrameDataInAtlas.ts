@@ -1,9 +1,6 @@
 
-import { _decorator, Component, Node, SpriteAtlas, assetManager } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager } from '../yj';
 import { SpriteFrameDataType } from '../types';
-import { no } from '../no';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

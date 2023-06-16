@@ -1,10 +1,8 @@
 
-import { _decorator, Toggle } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, menu, property, executeInEditMode, requireComponent, Toggle } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu, property, executeInEditMode, requireComponent } = _decorator;
 
 /**
  * Predefined variables

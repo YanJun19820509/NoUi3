@@ -1,12 +1,10 @@
 
-import { _decorator, Label } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Label } from '../yj';
 import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

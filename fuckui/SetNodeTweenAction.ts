@@ -1,8 +1,7 @@
 
-import { _decorator, Node, Tween } from './yj';
+import { ccclass, property, menu } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

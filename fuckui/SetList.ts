@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size, isValid } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, ScrollView, Size, UITransform, Layout, size, isValid } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -9,7 +8,6 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

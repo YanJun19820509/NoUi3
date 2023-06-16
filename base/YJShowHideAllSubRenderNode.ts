@@ -1,10 +1,9 @@
 
-import { _decorator, Component, Layers, Node, Sprite } from './yj';
+import { ccclass, property, Component, Layers, Node, Sprite } from '../yj';
 import { no } from '../no';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { SetSpine } from '../fuckui/SetSpine';
 import { SetPlayParticle } from '../fuckui/SetPlayParticle';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

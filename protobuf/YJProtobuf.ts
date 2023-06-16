@@ -1,7 +1,6 @@
-import { TextAsset, _decorator } from './yj';
+import { TextAsset, ccclass } from '../yj';
 import { no } from '../no';
 import protobuf from './protobuf.js'
-const { ccclass } = _decorator;
 
 @ccclass('YJProtobuf')
 export class YJProtobuf {

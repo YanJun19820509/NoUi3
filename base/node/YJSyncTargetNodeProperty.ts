@@ -1,6 +1,5 @@
-import { _decorator, Component, Node } from './yj';
+import { ccclass, property, Component, Node } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 @ccclass('YJSyncTargetNodeProperty')
 export class YJSyncTargetNodeProperty extends Component {

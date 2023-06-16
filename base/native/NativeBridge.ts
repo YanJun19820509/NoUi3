@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, EventTarget } from './yj';
+import { ccclass, native, EventTarget } from '../../yj';
 import { JSB } from 'cc/env';
 import { no } from '../../no';
-import { native } from './yj';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -16,9 +14,9 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
- /**
- * 原生调用桥接类
- */
+/**
+* 原生调用桥接类
+*/
 @ccclass('NativeBridge')
 export class NativeBridge extends EventTarget {
     private className: string = "ClientBridge";

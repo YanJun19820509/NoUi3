@@ -963,7 +963,7 @@ export namespace no {
      * @param handler
      * @param arg
      */
-    export function createEventHandler(target: Node, comp: string | Component, handler: string, arg = ''): EventHandler {
+    export function createEventHandler(target: Node, comp: string | typeof Component, handler: string, arg = ''): EventHandler {
         let a = new EventHandler();
         a.target = target;
         if (typeof comp == 'string')

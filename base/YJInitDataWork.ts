@@ -1,10 +1,8 @@
 
-import { _decorator, Component, Node, Enum } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR,ccclass, property, requireComponent, executeInEditMode, Component, Node, Enum } from '../yj';
 import { no } from '../no';
 import { SimpleValueType } from '../types';
 import { YJDataWork } from './YJDataWork';
-const { ccclass, property, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

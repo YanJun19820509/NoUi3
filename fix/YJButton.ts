@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, Button, EventHandler, EventTouch } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, requireComponent, Component, Node, Button, EventHandler, EventTouch } from '../yj';
 import { no } from '../no';
-const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
  * Predefined variables

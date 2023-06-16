@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node } from './yj';
+import { ccclass, menu, Component } from '../../yj';
 import { YJPanel } from './YJPanel';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

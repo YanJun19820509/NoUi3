@@ -1,10 +1,9 @@
 
-import { _decorator, Component, Node, EventTouch, math, UITransform } from './yj';
+import { ccclass, property, Component, Node, EventTouch, math, UITransform, Rect, Vec3, Vec2 } from '../../yj';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 import { YJTouchListener } from '../touch/YJTouchListener';
 import { YJNodeTarget } from './YJNodeTarget';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -31,8 +30,8 @@ export class YJDragDropNode extends YJTouchListener {
     @property({ type: no.EventHandlerInfo, displayName: '放入目标时' })
     onAchieveTarget: no.EventHandlerInfo[] = [];
 
-    private _originalPos: math.Vec3;
-    private _targetRect: math.Rect;
+    private _originalPos: Vec3;
+    private _targetRect: Rect;
     private _isApproached: boolean = false;
 
     start() {
@@ -99,7 +98,7 @@ export class YJDragDropNode extends YJTouchListener {
         }));
     }
 
-    private setPosition(deltaPos: math.Vec2) {
+    private setPosition(deltaPos: Vec2) {
         let pos = this.node.position.clone();
         pos.add3f(deltaPos.x, deltaPos.y, 0);
         this.node.setPosition(pos);

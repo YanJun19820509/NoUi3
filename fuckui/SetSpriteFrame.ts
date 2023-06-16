@@ -1,12 +1,10 @@
 
-import { _decorator, Sprite, SpriteFrame, UITransform, view, isValid } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR } from '../yj';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

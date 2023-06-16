@@ -1,8 +1,7 @@
 
-import { _decorator } from './yj';
+import { ccclass, menu } from '../../yj';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
 import { no } from '../../no';
-const { ccclass, menu } = _decorator;
 
 /**
  * Predefined variables

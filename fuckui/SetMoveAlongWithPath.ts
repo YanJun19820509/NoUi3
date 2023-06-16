@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, v3, Vec2, Vec3, math, game } from './yj';
+import { ccclass, property, menu, v3, Vec2, Vec3, game } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJMoveAlongWithPathDelegate } from './YJMoveAlongWithPathDelegate';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

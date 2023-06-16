@@ -1,13 +1,11 @@
 
-import { _decorator, Label, RichText, UITransform, view, BitmapFont } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, executeInEditMode, Label, RichText, EDITOR, BitmapFont } from '../yj';
 import { YJBitmapFont } from '../engine/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

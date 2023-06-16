@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, v3, Vec3, UITransform } from './yj';
+import { ccclass, property, v3, Vec3, UITransform } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

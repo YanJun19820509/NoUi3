@@ -1,10 +1,8 @@
 
-import { _decorator, Sprite, UIRenderer } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, UIRenderer } from '../yj';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
 import { no } from '../no';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

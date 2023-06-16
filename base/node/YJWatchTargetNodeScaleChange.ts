@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, math, v3, isValid } from './yj';
+import { ccclass, property, Component, Node, math, v3, isValid, Vec3 } from '../../yj';
 import { no } from '../../no';
 import { YJNodeTarget } from './YJNodeTarget';
 import { YJJobManager } from '../YJJobManager';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -24,7 +23,7 @@ export class YJWatchTargetNodeScaleChange extends Component {
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
-    private _targetScale: math.Vec3;
+    private _targetScale: Vec3;
 
     private _checkNum = 10;
     private _checkedNum = 0;

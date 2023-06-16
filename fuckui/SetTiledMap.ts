@@ -1,10 +1,9 @@
 
-import { JsonAsset, _decorator } from './yj';
+import { JsonAsset, ccclass, property, menu } from '../yj';
 import { YJTiledMapData } from '../base/tiled/YJTiledMapData';
 import { YJTiledMapDelegate } from '../base/tiled/YJTiledMapDelegate';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

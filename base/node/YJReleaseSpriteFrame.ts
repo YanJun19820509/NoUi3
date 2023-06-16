@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame } from './yj';
+import { ccclass, property, requireComponent, Component, Node, Sprite, SpriteFrame } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, requireComponent } = _decorator;
 
 /**
  * Predefined variables

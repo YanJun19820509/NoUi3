@@ -1,6 +1,5 @@
 
-import { _decorator, Component, js, Material, Node, StencilManager } from './yj';
-const { ccclass, property } = _decorator;
+import { js, StencilManager } from '../yj';
 
 /**
  * Predefined variables

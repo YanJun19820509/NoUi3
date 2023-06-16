@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, Vec3 } from './yj';
+import { ccclass, Component, Vec3 } from '../yj';
 import { _SetMoveAlongWithPath } from '../types';
-const { ccclass, } = _decorator;
 
 /**
  * Predefined variables

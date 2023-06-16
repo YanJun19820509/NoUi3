@@ -1,13 +1,11 @@
 
-import { _decorator, Component, Node, math, UITransform, instantiate } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -24,7 +22,7 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('PositionInfo')
 export class PositionInfo {
     @property
-    positions: math.Vec3[] = [];
+    positions: Vec3[] = [];
 }
 
 @ccclass('SetCreateNodeWithPosition')
@@ -60,7 +58,7 @@ export class SetCreateNodeWithPosition extends FuckUi {
         if (EDITOR) {
             if (this.saveCurrentPositions) {
                 this.saveCurrentPositions = false;
-                let pos: math.Vec3[] = [];
+                let pos: Vec3[] = [];
                 this.node.children.forEach(child => {
                     pos[pos.length] = child.position.clone();
                 });
@@ -164,7 +162,7 @@ export class SetCreateNodeWithPosition extends FuckUi {
         this._isSettingData = false;
     }
 
-    private setItem(data: any[], start: number, i: number, pos: math.Vec3) {
+    private setItem(data: any[], start: number, i: number, pos: Vec3) {
         if (data[i] == null) {
             return;
         }

@@ -1,7 +1,6 @@
 
-import { _decorator, BlockInputEvents } from './yj';
+import { ccclass, menu, property, BlockInputEvents } from '../yj';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu, property } = _decorator;
 
 /**
  * Predefined variables

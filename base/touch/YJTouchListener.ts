@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, EventTouch, Rect } from './yj';
+import { ccclass, property, menu, Component, Node, EventTouch, Rect } from '../../yj';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJTouchDispatcher } from './YJTouchDispatcher';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

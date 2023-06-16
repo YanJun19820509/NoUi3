@@ -1,7 +1,6 @@
 
-import { _decorator, Component, UIRenderer, Vec4, Sprite, Label, math, BitmapFont, UIOpacity } from './yj';
+import { ccclass, disallowMultiple, Component, UIRenderer, Vec4, Sprite, math, UIOpacity, Color } from '../yj';
 import { no } from '../no';
-const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables
@@ -28,7 +27,7 @@ export class YJVertexColorTransition extends Component {
     */
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
-    private _originColor: math.Color;
+    private _originColor: Color;
     private _defineIds: number[][] = [[], []];
 
     onLoad() {

@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, instantiate, Prefab } from './yj';
+import { ccclass, property, executeInEditMode, Component, Node, instantiate, Prefab } from '../yj';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

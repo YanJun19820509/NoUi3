@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, Camera, math } from './yj';
-const { ccclass, property, requireComponent } = _decorator;
+import { ccclass, property, requireComponent, Component, Node, Camera, Rect } from '../yj';
 
 /**
  * Predefined variables
@@ -41,7 +40,7 @@ export class YJCameraManager {
         return this._map[name];;
     }
 
-    public static setCameraRect(name: string, rect: math.Rect) {
+    public static setCameraRect(name: string, rect: Rect) {
         let camera: Camera = this._map[name];
         if (camera) {
             camera.rect = rect;

@@ -1,9 +1,7 @@
 
-import { _decorator } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

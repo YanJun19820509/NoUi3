@@ -1,12 +1,11 @@
 
-import { _decorator, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite, SpriteAtlas } from './yj';
+import { ccclass, property, requireComponent, Component, Node, SpriteFrame, math, Texture2D, Label, LabelOutline, LabelShadow, Layers, UITransform, Sprite, SpriteAtlas, Rect } from '../yj';
 import { DynamicAtlasTexture } from '../engine/atlas';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { CreateSpritemFrameData, CreateSpritemFrameLabelData, CreateSpritemFrameSFData } from '../types';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
-const { ccclass, property, requireComponent } = _decorator;
 
 /**
  * Predefined variables
@@ -174,7 +173,7 @@ export class SetCreateSpriteFrame extends FuckUi {
         });
     }
 
-    private _createImage(pixels: ArrayBufferView, rect: math.Rect): HTMLCanvasElement {
+    private _createImage(pixels: ArrayBufferView, rect: Rect): HTMLCanvasElement {
         let canvas = document.createElement('canvas');
         canvas.width = rect.width;
         canvas.height = rect.height;

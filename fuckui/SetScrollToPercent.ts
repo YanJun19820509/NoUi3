@@ -1,7 +1,6 @@
 
-import { _decorator, ScrollView, v2, Vec2, UITransform } from './yj';
+import { ccclass, property, menu, ScrollView, v2, Vec2, UITransform } from '../yj';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

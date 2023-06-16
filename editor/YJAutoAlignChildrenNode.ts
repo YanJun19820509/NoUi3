@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Widget, Enum, view } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Widget, Enum, view } from '../yj';
 import { AlignType } from '../types';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

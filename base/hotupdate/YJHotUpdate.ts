@@ -1,10 +1,7 @@
 
-import { _decorator, Component, Node, game } from './yj';
-import { JSB } from 'cc/env';
+import { JSB, ccclass, menu, Component, Node, game, AssetsManager, native, Manifest } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from '../audio/YJAudioManager';
-import { native } from './yj';
-const { ccclass, menu } = _decorator;
 
 /**
  * Predefined variables
@@ -38,7 +35,7 @@ export class UpdateProgressInfo {
 @menu('NoUi/hotupdate/YJHotUpdate(热更组件)')
 export class YJHotUpdate extends Component {
     private static _instance: YJHotUpdate;
-    private _am: native.AssetsManager;
+    private _am: AssetsManager;
     private _storagePath: string;
     public checkState: number;
     public needUpdateFilesSize: number;
@@ -144,7 +141,7 @@ export class YJHotUpdate extends Component {
         }
     }
 
-    private getLocalManifest(name: string): native.Manifest {
+    private getLocalManifest(name: string): Manifest {
         let path = this._storagePath + '/' + name;
         if (!native.fileUtils.isFileExist(path)) {
             path = 'assets/' + name;
@@ -152,7 +149,7 @@ export class YJHotUpdate extends Component {
         } else {
             no.log('getLocalManifest', path);
         }
-        let a = new native.Manifest(path);
+        let a = new Manifest(path);
         no.log(`${name} version:${a.getVersion()}`);
         localStorage.setItem('version', a.getVersion());
         return a;

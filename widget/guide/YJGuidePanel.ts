@@ -1,5 +1,5 @@
 
-import { _decorator, Node } from './yj';
+import { ccclass, property, Node } from '../../yj';
 import YJLoadPrefab from '../../base/node/YJLoadPrefab';
 import { YJPanel } from '../../base/node/YJPanel';
 import { YJDataWork } from '../../base/YJDataWork';
@@ -7,7 +7,6 @@ import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJGuideManager } from './YJGuideManager';
 import { panelPrefabPath } from '../../types';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

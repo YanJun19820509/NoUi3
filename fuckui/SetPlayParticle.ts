@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, ParticleSystem, ParticleSystem2D } from './yj';
+import { ccclass, property, menu, ParticleSystem, ParticleSystem2D } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { EDITOR } from 'cc/env';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

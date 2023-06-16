@@ -1,13 +1,8 @@
 
-import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, _decorator } from './yj';
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, requireComponent, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { SpriteFrame } from './yj';
-import { Texture2D } from './yj';
-import { Sprite } from './yj';
-import { Label } from './yj';
-const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
  * Predefined variables

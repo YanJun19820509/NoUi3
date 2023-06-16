@@ -1,11 +1,8 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, UIRenderer, Component, SpriteFrame, LabelOutline, UITransform, isValid } from './yj';
-import { EDITOR } from 'cc/env';
+import {EDITOR, ccclass, property, disallowMultiple, executeInEditMode , Label, CacheMode, Sprite, RichText, BitmapFont, UIRenderer, Component, SpriteFrame, LabelOutline, UITransform, isValid,sys } from '../yj';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 import { YJJobManager } from '../base/YJJobManager';
-import { sys } from './yj';
-const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

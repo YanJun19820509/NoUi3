@@ -1,8 +1,7 @@
 
-import { _decorator, Component, isValid, math, Node, Sprite, UITransform } from './yj';
+import { ccclass, property, Component, isValid, Node, Size } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -27,7 +26,7 @@ export class YJFold extends Component {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
 
-    private targetSize: math.Size;
+    private targetSize: Size;
 
     public a_foldOrUnfold() {
         if (!isValid(this?.content)) return;

@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, EffectAsset } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, Node, EffectAsset } from '../../yj';
 import { SetEffect } from '../../fuckui/SetEffect';
 import { no } from '../../no';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node } from './yj';
+import { JSB, ccclass, property, disallowMultiple, Component, Node } from '../../yj';
 import { no } from '../../no';
-import { JSB } from 'cc/env';
-const { ccclass, property, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables

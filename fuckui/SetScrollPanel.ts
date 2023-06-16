@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, math } from './yj';
+import { ccclass, property, requireComponent, math } from '../yj';
 import { no } from '../no';
 import { YJScrollPanel } from '../widget/scrollPanel/YJScrollPanel';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, requireComponent } = _decorator;
 
 /**
  * Predefined variables

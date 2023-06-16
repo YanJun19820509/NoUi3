@@ -1,13 +1,10 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame, UITransform } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { Material } from './yj';
-const { ccclass, property, requireComponent, disallowMultiple } = _decorator;
 
 /**
  * Predefined variables

@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, BufferAsset } from './yj';
+import { ccclass, BufferAsset } from '../../yj';
 import { no } from '../../no';
 import { YJProtobuf } from '../YJProtobuf';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

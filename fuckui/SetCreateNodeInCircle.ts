@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, math, UITransform, instantiate } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJPreCreateNode } from '../base/YJPreCreateNode';
@@ -8,7 +7,6 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -24,7 +22,7 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('CirclePositionInfo')
 export class CirclePositionInfo {
     @property
-    pos: math.Vec3 = math.v3();
+    pos: Vec3 = math.v3();
     @property
     rotation: number = 0;
 }

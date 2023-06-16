@@ -1,11 +1,9 @@
 
-import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3 } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -42,7 +40,7 @@ export class YJScrollPanel extends Component {
     @property({ min: .1, visible() { return this.support2FingerScale; } })
     maxScale: number = 1.5;
     @property({ displayName: '滚动偏移', tooltip: '滚动到某点时需要的偏移' })
-    offset: math.Vec2 = math.v2();
+    offset: Vec2 = math.v2();
     @property({ displayName: '动画时长(s)', min: 0 })
     duration: number = .5;
     @property({ type: no.EventHandlerInfo })
@@ -50,7 +48,7 @@ export class YJScrollPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onMoveStop: no.EventHandlerInfo[] = [];
 
-    private startTouchPos: math.Vec2;
+    private startTouchPos: Vec2;
     private startDis: number;
     private startScale: number;
     private doubleClickStartTime: number = 0;
@@ -102,7 +100,7 @@ export class YJScrollPanel extends Component {
      * 
      * @param pos scrollPanel内的坐标系上的点
      */
-    public scrollTo(pos: math.Vec3, offset?: math.Vec2, duration?: number): void {
+    public scrollTo(pos: Vec3, offset?: Vec2, duration?: number): void {
         if (duration == null) duration = this.duration;
         if (offset == null) offset = this.offset;
         this.doubleClicking = false;
@@ -124,7 +122,7 @@ export class YJScrollPanel extends Component {
      * @param pos scrollPanel内的坐标系上的点
      * @param scale 
      */
-    public scrollToAndScale(pos: math.Vec3, scale: number, offset?: math.Vec2, duration?: number): void {
+    public scrollToAndScale(pos: Vec3, scale: number, offset?: Vec2, duration?: number): void {
         if (duration == null) duration = this.duration;
         if (offset == null) offset = this.offset;
         this.doubleClicking = false;
@@ -143,7 +141,7 @@ export class YJScrollPanel extends Component {
         }
     }
 
-    public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
+    public scrollToTarget(targetType: string, offset?: Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         const f = () => {
             let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
             if (!target) {
@@ -157,7 +155,7 @@ export class YJScrollPanel extends Component {
         this.schedule(f, .1, 100);
     }
 
-    public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
+    public scrollToTargetAndScale(targetType: string, scale: number, offset?: Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         const f = () => {
             let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
             if (!target) {
@@ -342,7 +340,7 @@ export class YJScrollPanel extends Component {
         return math.Vec2.distance(touches[0].getLocation(), touches[1].getLocation());
     }
 
-    private touchUILocationAR(e: EventTouch): math.Vec2 {
+    private touchUILocationAR(e: EventTouch): Vec2 {
         let p = e.getUILocation();
         let pos = math.v3(p.x, p.y);
         let ut = this.node.getComponent(UITransform);
@@ -369,7 +367,7 @@ export class YJScrollPanel extends Component {
         };
     }
 
-    private fitPos(pos: math.Vec3 | math.Vec2, scale: number) {
+    private fitPos(pos: Vec3 | Vec2, scale: number) {
         let { minX, minY, maxX, maxY } = this.xyXY(scale);
 
         if (pos.x < minX) pos.x = minX;
@@ -378,7 +376,7 @@ export class YJScrollPanel extends Component {
         else if (pos.y > maxY) pos.y = maxY;
     }
 
-    private fitTargetToCenter(target: YJNodeTarget, scale = 1): math.Vec3 {
+    private fitTargetToCenter(target: YJNodeTarget, scale = 1): Vec3 {
         let pos = math.v3();
         this.node.getComponent(UITransform).convertToNodeSpaceAR(target.nodeWorldPosition, pos);
         let p = this.content.getPosition();

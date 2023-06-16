@@ -1,9 +1,7 @@
 
-import { _decorator, Component } from './yj';
+import { ccclass, property, Component } from '../../yj';
 import { YJHttpRequest } from "../../network/YJHttpRequest";
 import { no } from '../../no';
-import { js } from "cc";
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

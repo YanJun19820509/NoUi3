@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, CCString, js, Prefab, instantiate } from './yj';
+import { ccclass, property, Component, Node, CCString, js, Prefab, instantiate } from '../../yj';
 import { no } from '../../no';
 import { YJPanel } from './YJPanel';
 import { YJPanelPrefabMetaKey } from '../../types';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -28,7 +27,8 @@ export class YJPreinstantiatePanel extends Component {
 
     public static ins: YJPreinstantiatePanel;
 
-    onLoad() {return;
+    onLoad() {
+        return;
         YJPreinstantiatePanel.ins = this;
         this.panelNodes = {};
         this.panelComponentNames.forEach(name => {

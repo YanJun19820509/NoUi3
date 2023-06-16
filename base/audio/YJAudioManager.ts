@@ -1,7 +1,6 @@
 
-import { _decorator, Component, AudioSource, AudioClip } from './yj';
+import {  ccclass,  menu, requireComponent, Component, AudioSource, AudioClip } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, menu, requireComponent } = _decorator;
 
 /**
  * Predefined variables

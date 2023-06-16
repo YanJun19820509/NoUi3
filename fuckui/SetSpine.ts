@@ -1,10 +1,8 @@
 
-import { _decorator, sp } from './yj';
+import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, Skeleton } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { EDITOR } from 'cc/env';
 import { YJSpineManager } from '../base/YJSpineManager';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -21,7 +19,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
 @executeInEditMode()
-@requireComponent(sp.Skeleton)
+@requireComponent(Skeleton)
 export class SetSpine extends FuckUi {
 
     @property
@@ -46,7 +44,7 @@ export class SetSpine extends FuckUi {
 
     protected update(): void {
         if (!EDITOR) return;
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
         if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
             no.getAssetUrlInEditorMode(spine.skeletonData._uuid, url => {
                 if (!url) return;
@@ -63,7 +61,7 @@ export class SetSpine extends FuckUi {
             const fps = 1 / dt;
             if (fps < 45 && this.canSetSpine) {
                 this.canSetSpine = false;
-                this.getComponent(sp.Skeleton).enabled = false;
+                this.getComponent(Skeleton).enabled = false;
             } else if (fps > 55 && !this.canSetSpine) {
                 this.canSetSpine = true;
             }
@@ -72,14 +70,14 @@ export class SetSpine extends FuckUi {
 
     onEnable() {
         if (this.autoPlayOnEnable) {
-            let spine = this.getComponent(sp.Skeleton);
+            let spine = this.getComponent(Skeleton);
             this.onDataChange({ animation: this.animationName, loop: spine.loop });
         }
     }
 
     onDisable() {
         this.a_clearData();
-        let spine = this.getComponent(sp.Skeleton);
+        let spine = this.getComponent(Skeleton);
         spine?.clearTracks();
     }
 
@@ -90,7 +88,7 @@ export class SetSpine extends FuckUi {
     protected onDataChange(data: any) {
         if (!this.canSetSpine) return;
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
 
         if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
             path = this.spineUrl;
@@ -139,7 +137,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
         if (spine.enabled)
             this.needClearTracks && spine.clearTracks();
         else spine.enabled = true;
@@ -155,7 +153,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
         if (spine.enabled)
             this.needClearTracks && spine.clearTracks();
         else spine.enabled = true;
@@ -165,7 +163,7 @@ export class SetSpine extends FuckUi {
     }
 
     public a_stop(): void {
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
         spine.clearTrack(0);
         spine.enabled = false;
     }
@@ -175,7 +173,7 @@ export class SetSpine extends FuckUi {
         this.a_stop();
     }
 
-    private bindEndCall(spine: sp.Skeleton) {
+    private bindEndCall(spine: Skeleton) {
         spine?.setCompleteListener(() => {
             this?.endCall?.execute();
             spine?.setCompleteListener(() => { });
@@ -187,7 +185,7 @@ export class SetSpine extends FuckUi {
     public setSpineEnable(v: boolean) {
         if (!this.canSetSpine) return;
         if (!this.canDisable) return;
-        const spine = this.getComponent(sp.Skeleton);
+        const spine = this.getComponent(Skeleton);
         if (!spine.node.activeInHierarchy) return;
         if (v && !this.isFullScreenHide) {
             return;

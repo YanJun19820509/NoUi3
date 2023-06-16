@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node, game, isValid } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, executeInEditMode, EDITOR, Node, game, isValid } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

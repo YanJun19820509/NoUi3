@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node } from './yj';
+import { ccclass, menu } from '../yj';
 import { YJAudioManager } from '../base/audio/YJAudioManager';
 import { FuckUi } from './FuckUi';
-const { ccclass, menu } = _decorator;
 
 /**
  * Predefined variables

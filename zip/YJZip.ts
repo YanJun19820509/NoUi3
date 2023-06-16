@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, assetManager, BufferAsset } from './yj';
-const { ccclass, property } = _decorator;
+import { ccclass, assetManager, BufferAsset } from '../yj';
 import { no } from '../../NoUi3/no';
 import pako from './pako.min.js';
 

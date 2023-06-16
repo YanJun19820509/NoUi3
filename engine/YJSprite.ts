@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, Sprite, SpriteFrame } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, EDITOR, executeInEditMode, type, Component, Node, Sprite, SpriteFrame } from '../yj';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
-const { ccclass, property, executeInEditMode, type } = _decorator;
 
 /**
  * Predefined variables

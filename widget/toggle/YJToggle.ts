@@ -1,6 +1,5 @@
 
-import { _decorator, Component, Node, Toggle, Sprite } from './yj';
-const { ccclass, property } = _decorator;
+import { ccclass, property, Toggle, Sprite } from '../../yj';
 
 /**
  * Predefined variables

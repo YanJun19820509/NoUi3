@@ -1,10 +1,8 @@
 
-import { _decorator, Component, Node, EditBox } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, requireComponent, menu, property, executeInEditMode, EDITOR, Node, EditBox } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, requireComponent, menu, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -41,8 +39,8 @@ export class SetEditBox extends FuckUi {
         if (EDITOR) {
             if (this.bindEditiongDidEnded) {
                 this.bindEditiongDidEnded = false;
-                this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, SetEditBox, 'onEditEnd')];
-                this.getComponent(EditBox).editingReturn = [no.createEventHandler(this.node, SetEditBox, 'onEditEnd')];
+                this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
+                this.getComponent(EditBox).editingReturn = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
             }
         }
     }

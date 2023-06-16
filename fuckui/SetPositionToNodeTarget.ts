@@ -1,9 +1,8 @@
 
-import { _decorator, Component, Node, UITransform, math } from './yj';
+import { ccclass, property, Component, Node, UITransform, math, Vec2 } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetPosition } from './SetPosition';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -20,7 +19,7 @@ const { ccclass, property } = _decorator;
 @ccclass('SetPositionToNodeTarget')
 export class SetPositionToNodeTarget extends SetPosition {
     @property
-    offset: math.Vec2 = math.v2();
+    offset: Vec2 = math.v2();
 
     protected onDataChange(data: any) {
         this.setPosition(data);

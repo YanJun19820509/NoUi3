@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Node, CCString, isValid, macro } from './yj';
+import { ccclass, property, Component, isValid, macro } from '../yj';
 import { no } from '../no';
-import { YJJobManager } from './YJJobManager';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

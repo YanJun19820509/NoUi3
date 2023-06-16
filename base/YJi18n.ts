@@ -1,7 +1,6 @@
 
-import { _decorator } from './yj';
+import { ccclass } from '../yj';
 import { no } from '../no';
-const { ccclass } = _decorator;
 
 /**
  * Predefined variables

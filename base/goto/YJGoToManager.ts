@@ -1,10 +1,8 @@
 
-import { _decorator, Component, Node } from './yj';
-import { YJPanel } from '../node/YJPanel';
+import { ccclass, property, Component, Node } from '../../yj';
 import { YJWindowManager } from '../node/YJWindowManager';
 import { YJGoToConfigDelegate, YJGoToInfo } from './YJGoToConfigDelegate';
 import { YJGoToTarget } from './YJGoToTarget';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

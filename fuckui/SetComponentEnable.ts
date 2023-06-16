@@ -1,9 +1,6 @@
 
-import { _decorator, Component, Node, Enum, CCClass, js } from './yj';
-import { EDITOR } from 'cc/env';
-import { FuckUi } from './FuckUi';
+import { ccclass, property, executeInEditMode } from '../yj';
 import { SetComponentPropertyValue } from './SetComponentPropertyValue';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

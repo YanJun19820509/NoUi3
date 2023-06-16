@@ -1,8 +1,5 @@
 
-import { _decorator, Component, Node, Material, UIRenderer, Skeleton } from './yj';
-import { EDITOR } from 'cc/env';
-const { ccclass, property, executeInEditMode } = _decorator;
-
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node, Material, UIRenderer, Skeleton } from '../yj';
 /**
  * Predefined variables
  * Name = YJSetMaterial

@@ -1,8 +1,6 @@
 
-import { _decorator, Component, game, sys, Game } from './yj';
-import { JSB } from 'cc/env';
+import { JSB, ccclass, property, menu, Component, game, sys, Game } from '../yj';
 import { no } from '../no';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

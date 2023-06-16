@@ -1,8 +1,6 @@
 
-import { _decorator, Component, Color, color, Label, LabelOutline, LabelShadow, v2 } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, Color, color, Label, LabelOutline, LabelShadow, v2 } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

@@ -1,6 +1,5 @@
 
-import { _decorator, Node, instantiate, sys, Layout } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -9,7 +8,6 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

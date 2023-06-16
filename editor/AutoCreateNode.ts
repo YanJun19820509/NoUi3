@@ -1,6 +1,9 @@
 
-import { _decorator, Component, Node, JsonAsset, UITransform, Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar, Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame } from './yj';
-import { EDITOR } from 'cc/env';
+import {
+    EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
+    Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
+    Layout, __private, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode
+} from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -20,7 +23,6 @@ import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameD
 import { YJSetMaterial } from '../effect/YJSetMaterial';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -477,7 +479,7 @@ export class AutoCreateNode extends Component {
         this.enabled = false;
     }
 
-    private setLayout(node: Node, type: __private._cocos_ui_layout__Type, mode: __private._cocos_ui_layout__ResizeMode) {
+    private setLayout(node: Node, type: LayoutType, mode: LayoutResizeMode) {
         let ll = node.addComponent(Layout);
         ll.type = type;
         ll.resizeMode = mode;

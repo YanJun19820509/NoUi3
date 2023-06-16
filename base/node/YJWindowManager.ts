@@ -1,11 +1,10 @@
 
-import { _decorator, Component, Node, instantiate, Prefab, js } from './yj';
+import { ccclass, property, menu, Component, Node, instantiate, Prefab, js } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

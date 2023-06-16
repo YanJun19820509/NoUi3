@@ -1,11 +1,10 @@
 
-import { _decorator } from './yj';
+import { ccclass } from '../../yj';
 // import * as socket from './socket.io.msgpack.min.js';
 // import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
-import { decode, encode, EncryptType } from '../../encrypt/encrypt';
-const { ccclass } = _decorator;
+import { encode, EncryptType } from '../../encrypt/encrypt';
 
 /**
  * Predefined variables

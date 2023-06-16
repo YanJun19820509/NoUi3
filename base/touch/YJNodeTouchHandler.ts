@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, EventTouch } from './yj';
+import { ccclass, property, menu, Component, Node, EventTouch } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property, menu } = _decorator;
 
 /**
  * Predefined variables

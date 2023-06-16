@@ -1,7 +1,5 @@
 
-import { _decorator, Component, Node } from './yj';
-import { EDITOR } from 'cc/env';
-const { ccclass, property, executeInEditMode } = _decorator;
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node } from '../yj';
 
 /**
  * Predefined variables

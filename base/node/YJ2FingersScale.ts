@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, EventTouch, math, Touch } from './yj';
+import { ccclass, property, Component, Node, EventTouch, Touch, Vec2, math } from '../../yj';
 import { YJFitScreen } from '../YJFitScreen';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -73,6 +72,6 @@ export class YJ2FingersScale extends Component {
     }
 
     private touchesDistance(touches: Touch[]): number {
-        return math.Vec2.distance(YJFitScreen.fitTouchPoint(touches[0]), YJFitScreen.fitTouchPoint(touches[1]));
+        return Vec2.distance(YJFitScreen.fitTouchPoint(touches[0]), YJFitScreen.fitTouchPoint(touches[1]));
     }
 }

@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, sp } from './yj';
+import { ccclass, Component, Node, SkeletonData } from '../yj';
 import { no } from '../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -21,9 +20,9 @@ export class YJSpineManager extends no.SingleObject {
         return this.instance();
     }
 
-    private _map: { [path: string]: { data: sp.SkeletonData, t: number } } = {};
+    private _map: { [path: string]: { data: SkeletonData, t: number } } = {};
 
-    public set(path: string, data?: sp.SkeletonData) {
+    public set(path: string, data?: SkeletonData) {
         if (this._map[path]) {
             this._map[path].t = no.sysTime.now;
         } else if (!!data) {
@@ -31,10 +30,10 @@ export class YJSpineManager extends no.SingleObject {
         }
     }
 
-    public async get(path: string): Promise<sp.SkeletonData> {
+    public async get(path: string): Promise<SkeletonData> {
         // if (this._map[path]) return this._map[path].data;
         // else {
-        return new Promise<sp.SkeletonData>(resolve => {
+        return new Promise<SkeletonData>(resolve => {
             no.assetBundleManager.loadSpine(path, res => {
                 resolve(res);
                 this._map[path] = { data: res, t: no.sysTime.now + 86400 };

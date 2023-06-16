@@ -1,11 +1,9 @@
 
-import { _decorator, Component, Node, CCString, JsonAsset, Prefab, instantiate } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate } from '../yj';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
 import { YJPreloadDelegate } from './YJPreloadDelegate';
-const { ccclass, property, menu, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

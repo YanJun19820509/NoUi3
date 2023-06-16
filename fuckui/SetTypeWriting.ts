@@ -1,10 +1,11 @@
 
-import { _decorator, Component, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack, LabelOutline, Layers, UITransform, math, UIOpacity } from './yj';
-import { EDITOR } from 'cc/env';
+import {
+    ccclass, property, executeInEditMode, EDITOR, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack,
+    LabelOutline, Layers, UITransform, math, UIOpacity, Vec2
+} from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -312,7 +313,7 @@ export class SetTypeWritting extends FuckUi {
     private _x: number;
     private _y: number;
     private _maxY: number;
-    private _anc: math.Vec2;
+    private _anc: Vec2;
     private _width: number;
     private setPos(node: Node) {
         if (this._x == null) {

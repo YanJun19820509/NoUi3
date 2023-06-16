@@ -1,9 +1,8 @@
 
-import { _decorator } from './yj';
+import { ccclass, requireComponent, menu } from '../yj';
 import { YJi18n } from '../base/YJi18n';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { SetText } from './SetText';
-const { ccclass, requireComponent, menu } = _decorator;
 
 /**
  * Predefined variables

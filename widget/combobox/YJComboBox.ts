@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, Size, size, ScrollView, UITransform, find } from './yj';
+import { ccclass, property, Size, size, ScrollView, UITransform } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

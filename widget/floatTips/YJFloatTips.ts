@@ -1,8 +1,7 @@
 
-import { _decorator, Component, Node, easing } from './yj';
+import { ccclass, property, easing } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

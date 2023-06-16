@@ -1,9 +1,7 @@
 
-import { _decorator, Component, Node } from './yj';
-import { EDITOR } from 'cc/env';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from './YJAudioManager';
-const { ccclass, property, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

@@ -1,7 +1,6 @@
 
-import { _decorator, Component, Node, math, isValid } from './yj';
+import { ccclass, property, Component, Node, math, isValid, Size } from '../../yj';
 import { no } from '../../no';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -20,7 +19,7 @@ export class YJSyncContentSizeToTarget extends Component {
     @property(Node)
     target: Node = null;
     @property
-    offset: math.Size = math.size();
+    offset: Size = math.size();
     @property({ displayName: '检测自己', tooltip: '为勾选后将自己的size同步到target，否则将target的size同步到自己' })
     checkSelf: boolean = false;
     @property(no.EventHandlerInfo)

@@ -1,10 +1,8 @@
 
-import { _decorator, Component, Node, SpriteAtlas, SpriteFrame } from './yj';
-import { EDITOR } from 'cc/env';
+import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, SpriteAtlas, SpriteFrame } from '../yj';
 import { YJCreateSpriteFrame } from '../engine/YJCreateSpriteFrame';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables

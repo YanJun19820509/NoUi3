@@ -1,11 +1,10 @@
 
-import { _decorator, Component, Node, instantiate } from './yj';
+import { ccclass, property, Component, Node, instantiate } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { SetCreateNode } from './SetCreateNode';
 import { SetCreateNodeOneByOneDelegate } from './SetCreateNodeOneByOneDelegate';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

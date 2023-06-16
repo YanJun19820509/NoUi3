@@ -1,11 +1,8 @@
 
-import { _decorator, assetManager, Component, Node } from './yj';
+import { ccclass, native, JSB } from '../yj';
 import { decode, encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
-import { JSB } from 'cc/env';
-import { native } from './yj';
-const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables

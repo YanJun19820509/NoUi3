@@ -1,7 +1,5 @@
 
-import { _decorator, Component, Node } from './yj';
-import { JSB } from 'cc/env';
-const { ccclass, property } = _decorator;
+import { JSB, ccclass, Component, Node } from '../../yj';
 
 /**
  * Predefined variables
@@ -14,7 +12,7 @@ const { ccclass, property } = _decorator;
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
- 
+
 @ccclass('YJShowForWeb')
 export class YJShowForWeb extends Component {
     onLoad() {

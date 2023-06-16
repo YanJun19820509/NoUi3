@@ -1,9 +1,8 @@
 
-import { math, UITransform, v2, _decorator, game } from './yj';
+import { UITransform, v2, ccclass, menu, property, game, Vec2 } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';
-const { ccclass, menu, property } = _decorator;
 
 /**
  * Predefined variables
@@ -72,7 +71,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
         this.requestAnimationFrameScroll();
     }
 
-    private getOffset(target: YJNodeTarget): math.Vec2 {
+    private getOffset(target: YJNodeTarget): Vec2 {
         let pos = target.nodeWorldPosition;
         let ut = this.scrollView.content.getComponent(UITransform);
         let anchor = ut.anchorPoint;
