@@ -35,6 +35,7 @@ export class YJShowHideAllSubRenderNode extends Component {
                 no.evn.on('_full_screen_panel_open', this.onHide, this);
                 no.evn.on('_full_screen_panel_close', this.onShow, this);
             }
+            no.evn.on('game_state_event_restart', this.show, this);
         }
     }
 
@@ -68,5 +69,10 @@ export class YJShowHideAllSubRenderNode extends Component {
 
     private changeLayer(node: Node, v: boolean) {
         no.visible(node, v);
+    }
+
+    private show() {
+        this._count = 0;
+        this.showSubRenderNode();
     }
 }
