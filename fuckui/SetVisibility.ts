@@ -19,14 +19,18 @@ import { FuckUi } from './FuckUi';
 @menu('NoUi/ui/SetVisibility(设置显隐:bool)')
 export class SetVisibility extends FuckUi {
 
-    @property({ displayName: '设置Opacity' })
-    isOpacity: boolean = false;
-
     @property({ displayName: '取反' })
     reverse: boolean = false;
 
     @property({ displayName: '默认激活' })
     default: boolean = true;
+
+    onLoad(): void {
+        super.onLoad();
+        if (!EDITOR) {
+            this.show(this.reverse ? !this.default : this.default);
+        }
+    }
 
     update() {
         if (EDITOR)
@@ -53,11 +57,7 @@ export class SetVisibility extends FuckUi {
     private show(v: boolean) {
         if (!this.enabled) return;
         this.reverse && (v = !v);
-        if (this.isOpacity) {
-            no.opacity(this.node, v ? 255 : 0);
-        } else {
-            this.node.active = v;
-        }
+        no.visible(this.node, v);
     }
 
     public a_show(): void {
@@ -69,6 +69,6 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_changeVisible(): void {
-        this.setData(this.node.active ? 'false' : 'true');
+        this.setData(no.visible(this.node) ? 'false' : 'true');
     }
 }

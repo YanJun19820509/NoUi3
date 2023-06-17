@@ -43,14 +43,15 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onShow(type: string) {
-        this._count--;
-        if (this._count == 0)
+        this._count = Math.max(this._count - 1, 0);
+        if (this._count == 0) {
             this.showSubRenderNode();
+        }
     }
 
     private onHide(type: string) {
         this._count++;
-        no.scheduleOnce(this.showSubRenderNode, 1, this);
+        this.showSubRenderNode();
     }
 
     public showSubRenderNode() {
@@ -60,7 +61,7 @@ export class YJShowHideAllSubRenderNode extends Component {
         this.changeLayer(this.node, v);
     }
 
-    private changeLayer(parent: Node, v: boolean) {
-        parent.layer = v ? Layers.Enum.UI_2D : Layers.Enum.NONE;
+    private changeLayer(node: Node, v: boolean) {
+        no.visible(node, v);
     }
 }

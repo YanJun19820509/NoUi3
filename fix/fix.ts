@@ -1,5 +1,6 @@
 
-import { js, StencilManager, Node, Layers, director } from '../yj';
+import { no } from '../no';
+import { js, StencilManager, Node, director, BaseNode } from '../yj';
 
 /**
  * Predefined variables
@@ -27,12 +28,20 @@ const _a = setInterval(function () {
         const _walk = batcher2D['__proto__'].walk;
         js.mixin(director.root.batcher2D['__proto__'], {
             walk(node: Node, level = 0) {
-                if (node.layer != Layers.Enum.NONE)
+                if (no.visible(node))
                     _walk.call(this, node, level);
             }
         });
     }
 }, 100);
+
+const _dispatchEvent = BaseNode.prototype.dispatchEvent;
+js.mixin(BaseNode.prototype, {
+    dispatchEvent(event: Event) {
+        if (no.visible(this))
+            _dispatchEvent.call(this, event);
+    }
+});
 
 
 // const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];

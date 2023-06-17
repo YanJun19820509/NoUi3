@@ -26,6 +26,8 @@ export const Color = _cc.Color;
 export type Color = _cc.Color;
 
 
+export const BaseNode = _cc.BaseNode;
+export type BaseNode = _cc.BaseNode;
 export const Node = _cc.Node;
 export type Node = _cc.Node;
 export const Asset = _cc.Asset;
