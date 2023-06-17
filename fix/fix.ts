@@ -1,5 +1,5 @@
 
-import { _decorator, Component, director, js, Layers, Material, Node, StencilManager } from 'cc';
+import { _decorator, BaseNode, Component, director, js, Layers, Material, Node, StencilManager } from 'cc';
 import { no } from '../no';
 const { ccclass, property } = _decorator;
 
@@ -35,6 +35,14 @@ const _a = setInterval(function () {
         });
     }
 }, 100);
+
+const _dispatchEvent = BaseNode.prototype.dispatchEvent;
+js.mixin(BaseNode.prototype, {
+    dispatchEvent(event: Event) {
+        if (no.visible(this))
+            _dispatchEvent.call(this, event);
+    }
+});
 
 
 // const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];
