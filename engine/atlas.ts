@@ -1,4 +1,4 @@
-import { EDITOR, SpriteFrame, Texture2D, ImageAsset, __private, dynamicAtlasManager, js, Component, isValid, sys, gfx, Rect, rect } from "../yj";
+import { EDITOR, SpriteFrame, Texture2D, ImageAsset, dynamicAtlasManager, js, Component, isValid, sys, gfx, Rect, rect } from "../yj";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";

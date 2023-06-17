@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, requireComponent, Component, Node, Button, EventHandler, EventTouch } from '../yj';
+import { EDITOR, ccclass, property, menu, requireComponent, Component, Node, Button, EventHandler, EventTouch, disallowMultiple } from '../yj';
 import { no } from '../no';
 
 /**
@@ -17,6 +17,7 @@ import { no } from '../no';
 @ccclass('YJButton')
 @menu('NoUi/fix/YJButton(防连点及trigger)')
 @requireComponent(Button)
+@disallowMultiple()
 export class YJButton extends Component {
     @property({ displayName: '防连点间隔时长(s)' })
     delay: number = 1;

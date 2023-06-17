@@ -122,6 +122,14 @@ export class Range {
     public static new(): Range {
         return new Range();
     }
+
+    public static toArray(v: Range): number[] {
+        return [v.min, v.max];
+    }
+
+    public static fromArray(v: number[]): Range {
+        return new Range(v[0], v[1]);
+    }
 }
 
 @ccclass('UV')
@@ -158,6 +166,14 @@ export class UV {
     }
     toString(): string {
         return `u=${this.u},max=${this.v}`;
+    }
+
+    public static toArray(v: UV): number[] {
+        return [v.u, v.v];
+    }
+
+    public static fromArray(v: number[]): UV {
+        return new UV(v[0], v[1]);
     }
 }
 

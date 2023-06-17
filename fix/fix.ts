@@ -1,6 +1,6 @@
 
 import { no } from '../no';
-import { js, StencilManager, Node, director, BaseNode } from '../yj';
+import { js, StencilManager, Node, director } from '../yj';
 
 /**
  * Predefined variables
@@ -35,8 +35,8 @@ const _a = setInterval(function () {
     }
 }, 100);
 
-const _dispatchEvent = BaseNode.prototype.dispatchEvent;
-js.mixin(BaseNode.prototype, {
+const _dispatchEvent = Node.prototype.dispatchEvent;
+js.mixin(Node.prototype, {
     dispatchEvent(event: Event) {
         if (no.visible(this))
             _dispatchEvent.call(this, event);

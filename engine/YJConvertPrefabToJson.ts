@@ -1,5 +1,6 @@
-import { Component, EDITOR, Prefab, assetManager, ccclass, instantiate, property, Node, Vec2, Vec3, Vec4, Quat, executeInEditMode, js, Color, Size, SpriteFrame, EventHandler, VideoClip } from "../yj";
-
+import { no } from "../no";
+import { Component, EDITOR, Prefab, assetManager, ccclass, instantiate, property, Node, Vec2, Vec3, Vec4, Quat, executeInEditMode, js, Color, Size, SpriteFrame, EventHandler, VideoClip, TTFFont, Font, Asset, Camera, RenderTexture, v3, v4, size, quat, color, v2 } from "../yj";
+import { Range, UV } from "../types";
 
 const ComponentProperties: { [k: string]: string[] } = {
     'cc.Node': ['position', 'rotation', 'scale', 'mobility', 'layer', 'active', 'name'],
@@ -14,7 +15,7 @@ const ComponentProperties: { [k: string]: string[] } = {
     'cc.Layout': ['alignHorizontal', 'alignVertical', 'type', 'resizeMode', 'cellSize', 'startAxis', 'paddingLeft',
         'paddingRight', 'paddingTop', 'paddingBottom', 'spacingX', 'spacingY', 'verticalDirection', 'horizontalDirection',
         'padding', 'constraint', 'constraintNum', 'affectedByScale'],
-    'cc.Sprite': ['spriteFrame', 'type', 'fillType', 'fillCenter', 'fillStart', 'fillRange', 'trim', 'grayscale', 'sizeMode', ''],
+    'cc.Sprite': ['spriteFrame', 'type', 'fillType', 'fillCenter', 'fillStart', 'fillRange', 'trim', 'grayscale', 'sizeMode'],
     'cc.Button': ['target', 'interactable', 'transition', 'normalColor', 'pressedColor', 'hoverColor', 'disabledColor', 'duration',
         'zoomScale', 'normalSprite', 'pressedSprite', 'hoverSprite', 'disabledSprite', 'clickEvents'],
     'cc.ClickEvent': ['target', 'component', '_componentId', 'handler', 'customEventData'],
@@ -29,7 +30,12 @@ const ComponentProperties: { [k: string]: string[] } = {
     'cc.BlockInputEvents': [],
     'cc.VideoPlayer': ['resourceType', 'remoteURL', 'clip', 'playOnAwake', 'playbackRate', 'volume', 'mute', 'loop', 'keepAspectRatio', 'fullScreenOnAwake', 'stayOnBottom', 'videoPlayerEvent'],
     'cc.WebView': ['url', 'webviewEvents'],
-
+    'cc.Graphics': ['lineWidth', 'lineJoin', 'lineCap', 'strokeColor', 'fillColor', 'miterLimit', 'color'],
+    'cc.Mask': ['type', 'inverted', 'segments', 'spriteFrame', 'alphaThreshold'],
+    'cc.RichText': ['string', 'horizontalAlign', 'verticalAlign', 'fontSize', 'fontFamily', 'font', 'useSystemFont', 'cacheMode', 'maxWidth', 'lineHeight', 'imageAtlas', 'handleTouchEvent'],
+    'cc.Canvas': ['renderMode', 'cameraComponent', 'alignCanvasWithScreen'],
+    'cc.Camera': ['priority', 'visibility', 'clearFlags', 'clearColor', 'clearDepth', 'clearStencil', 'projection', 'fovAxis', 'fov', 'orthoHeight', 'near', 'far', 'aperture', 'shutter', 'iso', 'rect', 'targetTexture'],
+    'cc.Animation': ['clips', 'defaultClip', 'playOnLoad']
 };
 
 class YJCollectPrefabInfo {
@@ -38,66 +44,90 @@ class YJCollectPrefabInfo {
 
     private toNormalValue(val: any): any {
         if (val instanceof Array) {
-            let a: any[] = [];
+            let a: any[] = ['__type__'];
             val.forEach(b => {
-                a[a.length] = this.toNormalValue(b);
+                const c = this.toNormalValue(b);
+                if (a.length == 1) a[1] = c[1];
+                a[2] = a[2] || [];
+                a[2].push(c[2]);
             });
             return a;
         }
         let out: any[] = [];
         if (val instanceof Vec2) {
-            return Vec2.toArray(out, val);
+            return ['__type__', 'Vec2', Vec2.toArray(out, val)];
         }
         if (val instanceof Vec3) {
-            return Vec3.toArray(out, val);
+            return ['__type__', 'Vec3', Vec3.toArray(out, val)];
         }
         if (val instanceof Vec4) {
-            return Vec4.toArray(out, val);
+            return ['__type__', 'Vec4', Vec4.toArray(out, val)];
         }
         if (val instanceof Quat) {
-            return Quat.toArray(out, val);
+            return ['__type__', 'Quat', Quat.toArray(out, val)];
         }
         if (val instanceof Node) {
-            return this._objs.indexOf(val);
+            return ['__type__', 'Node', this._objs.indexOf(val)];
         }
         if (val instanceof Color) {
-            return Color.toArray(out, val);
+            return ['__type__', 'Color', Color.toArray(out, val)];
         }
         if (val instanceof Size) {
-            return [val.width, val.height];
+            return ['__type__', 'Size', [val.width, val.height]];
         }
-        if (val instanceof SpriteFrame) {
-            console.log('SpriteFrame')
-            console.log(val.nativeUrl)
-            return val.nativeUrl;
+        if (val instanceof Range) {
+            return ['__type__', 'Range', Range.toArray(val)];
+        }
+        if (val instanceof UV) {
+            return ['__type__', 'UV', UV.toArray(val)];
         }
         if (val instanceof EventHandler) {
-            return this.getComponentInfo(val);
+            return ['__type__', 'EventHandler', this.getComponentInfo(val)];
         }
-        if (val instanceof VideoClip) {
-            return val.nativeUrl;
+        // if (val instanceof Camera) {
+        //     return this.getComponentInfo(val);
+        // }
+        // if (val instanceof RenderTexture) {
+        //     return this.getComponentInfo(val);
+        // }
+        if (val instanceof Asset) {
+            return ['__type__', 'Asset', val.uuid];
         }
+        if (val instanceof no.EventHandlerInfo) return ['__type__', 'no.EventHandlerInfo', this.getComponentInfo(val)];
+        if (val instanceof Component) return ['__type__', 'Component', this.getBindComponent(val)];
         return val;
+    }
+
+    private getBindComponent(comp: Component) {
+        return [this._objs.indexOf(comp.node), js.getClassName(comp)];
     }
 
     private getComponentInfo(comp: any) {
         let info: { [k: string]: any } = {};
         const name = js.getClassName(comp);
-        info['__type__'] = name;
+        info['class_type'] = name;
         if (comp.active != undefined) info['active'] = comp.active;
-        else info['enabled'] = comp.enabled;
-        if (ComponentProperties[name])
+        else if (comp.enabled != undefined) info['enabled'] = comp.enabled;
+        if (ComponentProperties[name]) {
+            info['node'] = this.toNormalValue(comp['node']);
             ComponentProperties[name].forEach(p => {
                 info[p] = this.toNormalValue(comp[p]);
             });
-        else console.error(name);
+        }
+        else {
+            const props: string[] = js.getClassByName(name)['__props__'];
+            props.forEach(p => {
+                if (['_name', '_objFlags', '__editorExtras__', '__scriptAsset', '_enabled', '__prefab'].includes(p)) return;
+                info[p] = this.toNormalValue(comp[p]);
+            });
+        }
         return info;
     }
 
     private getNodes(node: Node) {
         let info = this.getComponentInfo(node);
         if (node.parent)
-            info['parent'] = this._objs.indexOf(node.parent);
+            info['parent'] = this.toNormalValue(node.parent);
         this._objs[this._objs.length] = node;
         this._objInfos[this._objInfos.length] = info;
         node.children.forEach(child => {
@@ -110,7 +140,6 @@ class YJCollectPrefabInfo {
         for (let i = 0, n = node.components.length; i < n; i++) {
             const comp = node.components[i];
             let info = this.getComponentInfo(comp);
-            info['node'] = idx;
             this._objInfos[this._objInfos.length] = info;
         }
     }
@@ -146,7 +175,7 @@ export class YJConvertPrefabToJson extends Component {
     }
 
     private static queryAllPrefab() {
-        this.createPrefabConfig('db://assets/sub/common/Tooltip/Tooltip');
+        this.createPrefabConfig('db://assets/sub/common/popu/popu_panel');
     }
 
     private static getPrefabInfo(prefab: Prefab) {
@@ -175,10 +204,10 @@ export class YJConvertPrefabToJson extends Component {
                         });
                         for (const name in infos) {
                             // console.log(infos[name]);
-                            console.log(JSON.stringify(infos[name]));
-                            // const file = `${path[name]}_prefab.json`;
-                            // console.log(`save ${file}`);
-                            // Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                            // console.log(JSON.stringify(infos[name]));
+                            const file = `${path[name]}_prefab.json`;
+                            console.log(`save ${file}`);
+                            Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
                         }
                     } else
                         console.log(err);
@@ -189,3 +218,234 @@ export class YJConvertPrefabToJson extends Component {
     }
 }
 
+export class YJCreateNodeByPrefabJson extends no.SingleObject {
+    public static get ins(): YJCreateNodeByPrefabJson {
+        return this.instance();
+    }
+
+    private _nodes: Node[] = [];
+
+    public create(path: string): Promise<Node | null> {
+        this._nodes.length = 0;
+        return new Promise<Node>(resolve => {
+            no.assetBundleManager.loadJSON(path, item => {
+                if (item) {
+                    this.parse(item.json);
+                    resolve(this._nodes[0]);
+                } else resolve(null);
+            });
+        });
+    }
+
+    private parse(arr: any) {
+        for (let i = 0, n = arr.length; i < n; i++) {
+            const d = arr[i];
+            if (d["class_type"] == 'cc.Node') this.createNode(d);
+            else this.createComponent(d);
+        }
+    }
+
+    private createNode(d: any) {
+        const node = new Node(d.name);
+        for (const key in d) {
+            if (key == "class_type") continue;
+            this.toTargetVal(d[key], v => {
+                node[key] = v;
+            });
+        }
+
+        // node.setPosition(d.position[0], d.position[1], d.position[2]);
+        // node.setScale(d.scale[0], d.scale[1], d.scale[2]);
+        // node.setRotation(d.rotation[0], d.rotation[1], d.rotation[2], d.rotation[3]);
+        // node.active = d.active;
+        // node.mobility = d.mobility;
+        // node.layer = d.layer;
+        // if (d.parent != undefined)
+        //     node.parent = this._nodes[d.parent];
+        this._nodes[this._nodes.length] = node;
+    }
+
+    private createComponent(d: any) {
+        this.toTargetVal(d['node'], (v: Node) => {
+            const comp = v.addComponent(d["class_type"]);
+            for (const key in d) {
+                if (key == "class_type" || key == 'node') continue;
+                this.toTargetVal(d[key], v => {
+                    if (v != undefined)
+                        comp[key] = v;
+                });
+            }
+        });
+    }
+
+    private toTargetVal(val: any, cb: (v: any) => void) {
+        let out: any;
+        if (val instanceof Array && val[0] == '__type__') {
+            const type: string = val[1];
+            val = val[2];
+            switch (type) {
+                case 'Vec2':
+                    out = v2();
+                    Vec2.fromArray(out, val);
+                    break;
+                case 'Vec3':
+                    out = v3();
+                    Vec3.fromArray(out, val);
+                    break;
+                case 'Quat':
+                    out = quat();
+                    Quat.fromArray(out, val);
+                    break;
+                case 'Size':
+                    out = size(val[0], val[1]);
+                    break;
+                case 'Color':
+                    out = color();
+                    Color.fromArray(val, out);
+                    break;
+                case 'Range':
+                    Range.fromArray(val);
+                    break;
+                case 'UV':
+                    UV.fromArray(val);
+                    break;
+                case 'Asset':
+                    if (val) {
+                        if (typeof val == 'string') {
+                            no.assetBundleManager.loadAny({ uuid: val }, asset => {
+                                cb(asset);
+                            })
+                        } else if (val instanceof Array) {
+                            let r = [];
+                            val.forEach(v => {
+                                r[r.length] = { uuid: v };
+                            });
+                            no.assetBundleManager.loadAnyFiles(r, null, assets => {
+                                cb(assets);
+                            });
+                        }
+                        return;
+                    }
+                    break;
+                case 'Node':
+                    out = this._nodes[val];
+                    break;
+                case 'EventHandler':
+                    if (val instanceof Array) {
+                        out = [];
+                        val.forEach(v => {
+                            let a = new EventHandler();
+                            a.target = this._nodes[v.target];
+                            a._componentId = v._componentId;
+                            a.component = v.component;
+                            a.handler = v.handler;
+                            a.customEventData = v.customEventData;
+                            out.push(a);
+                        });
+                    } else {
+                        out = new EventHandler();
+                        out.target = this._nodes[val.target];
+                        out._componentId = val._componentId;
+                        out.component = val.component;
+                        out.handler = val.handler;
+                        out.customEventData = val.customEventData;
+                    }
+                    break;
+                case 'Component':
+                    const node = this._nodes[val[0]];
+                    const _a = setInterval(() => {
+                        const comp = node.getComponent(val[1]);
+                        if (comp) {
+                            cb(comp);
+                            clearInterval(_a);
+                        }
+                    }, 1);
+                    return;
+                case "no.EventHandlerInfo":
+                    out = new no.EventHandlerInfo();
+                    this.toTargetVal(val, v => {
+                        out.handler = v;
+                    });
+                    break;
+                default: out = val;
+            }
+            cb(out);
+        } else
+            cb(val);
+    }
+
+    private getValType(key: string, val: any) {
+        if (val == null || val.length == 0) {
+            switch (key) {
+                case 'parent':
+                case 'node':
+                case 'target':
+                    return Node;
+                case 'spriteFrame':
+                case 'normalSprite':
+                case 'pressedSprite':
+                case 'hoverSprite':
+                case 'disabledSprite':
+                case 'backgroundImage':
+                case 'barSprite':
+                case 'font':
+                case 'clips':
+                case 'defaultClip':
+                    return Asset;
+                case 'clickEvents':
+                case 'editingDidBegan':
+                case 'textChanged':
+                case 'editingDidEnded':
+                case 'editingReturn':
+                case 'slideEvents':
+                case 'checkEvents':
+                case 'scrollEvents':
+                case 'videoPlayerEvent':
+                case 'webviewEvents':
+                    return EventHandler;
+            }
+            console.error(key, val);
+            return;
+        }
+        if (val instanceof Vec2) {
+            return Vec2;
+        }
+        if (val instanceof Vec3) {
+            return Vec3;
+        }
+        if (val instanceof Vec4) {
+            return Vec4;
+        }
+        if (val instanceof Quat) {
+            return Quat;
+        }
+        if (val instanceof Node) {
+            return Node;
+        }
+        if (val instanceof Color) {
+            return Color;
+        }
+        if (val instanceof Size) {
+            return Size;
+        }
+        if (val instanceof Range) {
+            return Range;
+        }
+        if (val instanceof UV) {
+            return UV;
+        }
+        if (val instanceof EventHandler) {
+            return EventHandler;
+        }
+        if (val instanceof Camera) {
+            return Camera;
+        }
+        if (val instanceof RenderTexture) {
+            return RenderTexture;
+        }
+        if (val instanceof Asset) {
+            return Asset;
+        }
+        return Object;
+    }
+}
