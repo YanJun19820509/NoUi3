@@ -1,5 +1,6 @@
 
-import { _decorator, Component, js, Material, Node, StencilManager } from 'cc';
+import { _decorator, Component, director, js, Layers, Material, Node, StencilManager } from 'cc';
+import { no } from '../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -20,6 +21,20 @@ js.mixin(StencilManager.prototype, {
         return _getStencilStage.call(this, stage, mat);
     }
 });
+
+const _a = setInterval(function () {
+    const batcher2D = director.root.batcher2D;
+    if (batcher2D) {
+        clearInterval(_a);
+        const _walk = batcher2D['__proto__'].walk;
+        js.mixin(director.root.batcher2D['__proto__'], {
+            walk(node: Node, level = 0) {
+                if (no.visible(node))
+                    _walk.call(this, node, level);
+            }
+        });
+    }
+}, 100);
 
 
 // const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];

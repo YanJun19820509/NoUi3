@@ -4133,6 +4133,17 @@ export namespace no {
             return s;
         }
     }
+
+    /**
+     * 设置节点可渲染标志
+     * @param node 
+     * @param v 
+     * @returns 
+     */
+    export function visible(node: Node, v?: boolean): boolean {
+        if (v != undefined) node['__need_render__'] = v;
+        return node['__need_render__'] !== false;
+    }
 }
 
 if (DEBUG) {
