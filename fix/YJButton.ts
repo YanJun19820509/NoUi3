@@ -27,8 +27,8 @@ export class YJButton extends Component {
     private _clickEvents: EventHandler[] = [];
     private needWait: boolean = false;
 
-    onLoad() {
-        if (EDITOR || !this.enabled) return;
+    onEnable() {
+        this.needWait = false;
         let btn = this.getComponent(Button);
         btn.clickEvents.forEach(e => {
             this._clickEvents[this._clickEvents.length] = e;
@@ -37,10 +37,6 @@ export class YJButton extends Component {
         this.scheduleOnce(() => {
             btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
         }, this.wait);
-    }
-
-    onEnable() {
-        this.needWait = false;
     }
 
     public addClickHandler(handler: EventHandler) {

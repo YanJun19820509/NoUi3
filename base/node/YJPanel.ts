@@ -51,6 +51,8 @@ export class YJPanel extends Component {
     multiTouch: boolean = false;
 
     private _lastMultiTouchState: boolean = false;
+    private _originX: number;
+    private _loaded: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -71,16 +73,20 @@ export class YJPanel extends Component {
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
     public async initPanel(): Promise<void> {
-        if (this.getComponent(YJLoadAssets)) {
-            return this.getComponent(YJLoadAssets).load().then(() => {
-                this.onInitPanel();
-                if (this.isFullScreen)
-                    no.evn.emit('_full_screen_panel_open', this.panelType);
-                this._lastMultiTouchState = no.multiTouch();
-                no.multiTouch(this.multiTouch);
-                return Promise.resolve();
-            }).catch(e => { no.err(e); });
-        }
+        if (!this._loaded) {
+            this._loaded = true;
+            this._originX = no.x(this.node);
+            if (this.getComponent(YJLoadAssets)) {
+                return this.getComponent(YJLoadAssets).load().then(() => {
+                    this.onInitPanel();
+                    if (this.isFullScreen)
+                        no.evn.emit('_full_screen_panel_open', this.panelType);
+                    this._lastMultiTouchState = no.multiTouch();
+                    no.multiTouch(this.multiTouch);
+                    return Promise.resolve();
+                }).catch(e => { no.err(e); });
+            }
+        } else no.x(this.node, this._originX);
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
@@ -97,9 +103,11 @@ export class YJPanel extends Component {
         this.onClosePanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
-        if (YJPanel.cacheOpened && this.needCache) {
-            this.node.active = false;
-        } else this.clear();
+        // if (YJPanel.cacheOpened && this.needCache) {
+        //     this.node.active = false;
+        // } else this.clear();
+        no.x(this.node, 10000);
+        no.visible(this.node, false);
         no.multiTouch(this._lastMultiTouchState);
     }
 

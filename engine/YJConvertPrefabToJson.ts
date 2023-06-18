@@ -144,7 +144,7 @@ class YJCollectPrefabInfo {
         }
     }
 
-    private getPrefabInfo(prefab: Prefab) {
+    private _getPrefabInfo(prefab: Prefab) {
         let node = instantiate(prefab);
         this.getNodes(node);
         for (let i = 0, n = this._objs.length; i < n; i++) {
@@ -155,7 +155,7 @@ class YJCollectPrefabInfo {
 
     public static getPrefabInfo(prefab: Prefab) {
         const a = new YJCollectPrefabInfo();
-        return a.getPrefabInfo(prefab);
+        return a._getPrefabInfo(prefab);
     }
 }
 
@@ -169,20 +169,16 @@ export class YJConvertPrefabToJson extends Component {
         if (EDITOR) {
             if (this.preRun) {
                 this.preRun = false;
-                YJConvertPrefabToJson.queryAllPrefab();
+                this.queryAllPrefab();
             }
         }
     }
 
-    private static queryAllPrefab() {
-        this.createPrefabConfig('db://assets/sub/common/popu/popu_panel');
+    private queryAllPrefab() {
+        this.createPrefabConfig('db://assets/DataDisplayPlatform/Node');
     }
 
-    private static getPrefabInfo(prefab: Prefab) {
-        return YJCollectPrefabInfo.getPrefabInfo(prefab);
-    }
-
-    public static async createPrefabConfig(dir?: string) {
+    public async createPrefabConfig(dir?: string) {
         return new Promise<void>(resolve => {
             Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.Prefab' }).then(assets => {
                 let aa = [];
@@ -200,7 +196,7 @@ export class YJConvertPrefabToJson extends Component {
                     if (!err) {
                         // console.log(prefabs.length);
                         prefabs.forEach(prefab => {
-                            infos[prefab.name] = this.getPrefabInfo(prefab);
+                            infos[prefab.name] = YJCollectPrefabInfo.getPrefabInfo(prefab);
                         });
                         for (const name in infos) {
                             // console.log(infos[name]);
@@ -335,7 +331,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                         out = [];
                         val.forEach(v => {
                             let a = new EventHandler();
-                            a.target = this._nodes[v.target];
+                            this.toTargetVal(v.target, v => {
+                                a.target = v;
+                            });;
                             a._componentId = v._componentId;
                             a.component = v.component;
                             a.handler = v.handler;
@@ -344,7 +342,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                         });
                     } else {
                         out = new EventHandler();
-                        out.target = this._nodes[val.target];
+                        this.toTargetVal(val.target, v => {
+                            out.target = v;
+                        });
                         out._componentId = val._componentId;
                         out.component = val.component;
                         out.handler = val.handler;
@@ -362,9 +362,13 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                     }, 1);
                     return;
                 case "no.EventHandlerInfo":
-                    out = new no.EventHandlerInfo();
-                    this.toTargetVal(val, v => {
-                        out.handler = v;
+                    out = [];
+                    val.forEach(v => {
+                        const a = new no.EventHandlerInfo();
+                        this.toTargetVal(v.handler, vv => {
+                            a.handler = vv;
+                        });
+                        out.push(a);
                     });
                     break;
                 default: out = val;

@@ -152,7 +152,7 @@ export const CCString = _cc.CCString;
 export const Layers = _cc.Layers;
 
 export class EventTarget extends _cc.EventTarget { };
-export class Button extends _cc.Button { };
+export const Button = _cc.Button;
 export class Tween extends _cc.Tween<unknown> { };
 export class Bundle extends _cc.AssetManager.Bundle { };
 export class AssetManager extends _cc.AssetManager { };

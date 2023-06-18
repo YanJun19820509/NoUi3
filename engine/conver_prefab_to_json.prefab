@@ -46,7 +46,7 @@
       "z": 1
     },
     "_mobility": 0,
-    "_layer": 1073741824,
+    "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
       "x": 0,
@@ -56,7 +56,7 @@
     "_id": ""
   },
   {
-    "__type__": "84e8dRan09EFIZ7pyYDbFr7",
+    "__type__": "2074231IN5JrL21feGWRvQK",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -71,7 +71,7 @@
   },
   {
     "__type__": "cc.CompPrefabInfo",
-    "fileId": "cdnQtaLzZGXrD1n9Zt0jLz"
+    "fileId": "c8OJwEVX9CQomncOxRJ6YH"
   },
   {
     "__type__": "cc.PrefabInfo",

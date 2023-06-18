@@ -101,7 +101,8 @@ export class YJWindowManager extends Component {
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
-                    a.node.active = true;
+                    no.visible(a.node, true);
+                    a.onEnable();
                     afterInit?.(a as T);
                 }).catch(e => { no.err(e); });
                 a.node.setSiblingIndex(content.children.length - 1);
@@ -208,7 +209,7 @@ export class YJWindowManager extends Component {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
             content?.children.forEach(node => {
                 let panel = node.getComponent(YJPanel);
-                if (panel && !panel.node.active && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                if (panel && !no.visible(panel.node) && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
                     panel.clear();
                 }
             });
