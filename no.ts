@@ -977,13 +977,13 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array)
-            try {
-                return parse2Json(jsonStringify(d));
-            } catch (e) {
-                no.err('JSON.parse', 'clone');
-            }
-        else if (d instanceof Object) return instantiate(d);
+        if (d instanceof Array) {
+            let a: any[] = [];
+            d.forEach(b => {
+                a.push(clone(b));
+            });
+            return a;
+        } else if (d instanceof Object) return instantiate(d);
         return d;
     }
 
