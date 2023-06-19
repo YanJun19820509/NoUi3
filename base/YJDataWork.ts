@@ -1,5 +1,5 @@
 
-import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid } from '../yj';
+import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple } from '../yj';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
@@ -21,6 +21,7 @@ import { YJJobManager } from './YJJobManager';
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @requireComponent(YJFuckUiRegister)
 @executeInEditMode()
+@disallowMultiple()
 export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;

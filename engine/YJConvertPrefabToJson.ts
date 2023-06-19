@@ -1,6 +1,7 @@
 import { no } from "../no";
 import { Component, EDITOR, Prefab, assetManager, ccclass, instantiate, property, Node, Vec2, Vec3, Vec4, Quat, executeInEditMode, js, Color, Size, SpriteFrame, EventHandler, VideoClip, TTFFont, Font, Asset, Camera, RenderTexture, v3, v4, size, quat, color, v2 } from "../yj";
 import { Range, UV } from "../types";
+import { CCClass } from "cc";
 
 const ComponentProperties: { [k: string]: string[] } = {
     'cc.Node': ['position', 'rotation', 'scale', 'mobility', 'layer', 'active', 'name'],
@@ -15,7 +16,7 @@ const ComponentProperties: { [k: string]: string[] } = {
     'cc.Layout': ['alignHorizontal', 'alignVertical', 'type', 'resizeMode', 'cellSize', 'startAxis', 'paddingLeft',
         'paddingRight', 'paddingTop', 'paddingBottom', 'spacingX', 'spacingY', 'verticalDirection', 'horizontalDirection',
         'padding', 'constraint', 'constraintNum', 'affectedByScale'],
-    'cc.Sprite': ['spriteFrame', 'type', 'fillType', 'fillCenter', 'fillStart', 'fillRange', 'trim', 'grayscale', 'sizeMode'],
+    'cc.Sprite': ['type', 'fillType', 'fillCenter', 'fillStart', 'fillRange', 'trim', 'grayscale', 'sizeMode', 'spriteFrame'],
     'cc.Button': ['target', 'interactable', 'transition', 'normalColor', 'pressedColor', 'hoverColor', 'disabledColor', 'duration',
         'zoomScale', 'normalSprite', 'pressedSprite', 'hoverSprite', 'disabledSprite', 'clickEvents'],
     'cc.ClickEvent': ['target', 'component', '_componentId', 'handler', 'customEventData'],
@@ -41,9 +42,11 @@ const ComponentProperties: { [k: string]: string[] } = {
 class YJCollectPrefabInfo {
     private _objInfos: any[] = [];
     private _objs: Node[] = [];
+    private _assets: string[] = [];
 
     private toNormalValue(val: any): any {
         if (val instanceof Array) {
+            if (val.length == 0) return null;
             let a: any[] = ['__type__'];
             val.forEach(b => {
                 const c = this.toNormalValue(b);
@@ -91,10 +94,12 @@ class YJCollectPrefabInfo {
         //     return this.getComponentInfo(val);
         // }
         if (val instanceof Asset) {
+            no.addToArray(this._assets, val.uuid);
             return ['__type__', 'Asset', val.uuid];
         }
         if (val instanceof no.EventHandlerInfo) return ['__type__', 'no.EventHandlerInfo', this.getComponentInfo(val)];
         if (val instanceof Component) return ['__type__', 'Component', this.getBindComponent(val)];
+        if (val instanceof Object) return ['__type__', 'CCClass', this.getComponentInfo(val)];
         return val;
     }
 
@@ -150,6 +155,7 @@ class YJCollectPrefabInfo {
         for (let i = 0, n = this._objs.length; i < n; i++) {
             this.getComponents(i);
         }
+        this._objInfos.push({ asset: this._assets });
         return this._objInfos;
     }
 
@@ -175,7 +181,7 @@ export class YJConvertPrefabToJson extends Component {
     }
 
     private queryAllPrefab() {
-        this.createPrefabConfig('db://assets/DataDisplayPlatform/Node');
+        this.createPrefabConfig('db://assets/sub/common');
     }
 
     public async createPrefabConfig(dir?: string) {
@@ -220,25 +226,36 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
     }
 
     private _nodes: Node[] = [];
+    private _assets: Asset[] = [];
 
     public create(path: string): Promise<Node | null> {
         this._nodes.length = 0;
         return new Promise<Node>(resolve => {
             no.assetBundleManager.loadJSON(path, item => {
                 if (item) {
-                    this.parse(item.json);
-                    resolve(this._nodes[0]);
+                    resolve(this.parse(item.json));
                 } else resolve(null);
             });
         });
     }
 
-    private parse(arr: any) {
-        for (let i = 0, n = arr.length; i < n; i++) {
-            const d = arr[i];
-            if (d["class_type"] == 'cc.Node') this.createNode(d);
-            else this.createComponent(d);
-        }
+    private parse(arr: any): Promise<Node> {
+        return new Promise<Node>(resolve => {
+            const uuids: string[] = arr[arr.length - 1].asset;
+            let re: any[] = []
+            uuids.forEach(uuid => {
+                re.push({ uuid: uuid });
+            });
+            no.assetBundleManager.loadAnyFiles(re, null, items => {
+                this._assets = items;
+                for (let i = 0, n = arr.length - 1; i < n; i++) {
+                    const d = arr[i];
+                    if (d["class_type"] == 'cc.Node') this.createNode(d);
+                    else this.createComponent(d);
+                }
+                resolve(this._nodes[0]);
+            });
+        });
     }
 
     private createNode(d: any) {
@@ -307,24 +324,17 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                     break;
                 case 'Asset':
                     if (val) {
-                        if (typeof val == 'string') {
-                            no.assetBundleManager.loadAny({ uuid: val }, asset => {
-                                cb(asset);
-                            })
-                        } else if (val instanceof Array) {
-                            let r = [];
-                            val.forEach(v => {
-                                r[r.length] = { uuid: v };
-                            });
-                            no.assetBundleManager.loadAnyFiles(r, null, assets => {
-                                cb(assets);
-                            });
-                        }
-                        return;
+                        out = this.getAssetByUuid(val);
                     }
                     break;
                 case 'Node':
-                    out = this._nodes[val];
+                    if (val instanceof Array) {
+                        out = [];
+                        val.forEach(v => {
+                            out.push(this._nodes[val]);
+                        });
+                    } else
+                        out = this._nodes[val];
                     break;
                 case 'EventHandler':
                     if (val instanceof Array) {
@@ -352,15 +362,60 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                     }
                     break;
                 case 'Component':
-                    const node = this._nodes[val[0]];
-                    const _a = setInterval(() => {
-                        const comp = node.getComponent(val[1]);
-                        if (comp) {
-                            cb(comp);
-                            clearInterval(_a);
-                        }
-                    }, 1);
+                    if (val[0] instanceof Array) {
+                        out = [];
+                        const _a = setInterval(() => {
+                            out.length = 0;
+                            for (let i = 0, n = val.length; i < n; i++) {
+                                const v = val[i];
+                                const node = this._nodes[v[0]];
+                                const comp = node.getComponent(v[1]);
+                                if (comp)
+                                    out.push(comp);
+                                else break;
+                            }
+                            if (out.length == val.length) {
+                                cb(out);
+                                clearInterval(_a);
+                            }
+                        }, 1);
+                    } else {
+                        const node = this._nodes[val[0]];
+                        const _a = setInterval(() => {
+                            const comp = node.getComponent(val[1]);
+                            if (comp) {
+                                cb(comp);
+                                clearInterval(_a);
+                            }
+                        }, 1);
+                    }
                     return;
+                case 'CCClass':
+                    if (val instanceof Array) {
+                        out = [];
+                        for (let i = 0, n = val.length; i < n; i++) {
+                            const v = val[i];
+                            const clazz = js.getClassByName(v.class_type);
+                            const obj = new clazz();
+                            for (const key in v) {
+                                if (key == 'class_type') continue;
+                                this.toTargetVal(v[key], vv => {
+                                    obj[key] = vv;
+                                });
+                            }
+                            out.push(obj);
+                        }
+                    } else {
+                        const clazz = js.getClassByName(val.class_type);
+                        out = new clazz();
+                        for (const key in val) {
+                            if (key == 'class_type') continue;
+                            this.toTargetVal(val[key], vv => {
+                                out[key] = vv;
+                            });
+                        }
+                    }
+                    break;
                 case "no.EventHandlerInfo":
                     out = [];
                     val.forEach(v => {
@@ -376,6 +431,15 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
             cb(out);
         } else
             cb(val);
+    }
+
+    private getAssetByUuid(uuids: string | string[]): Asset | Asset[] {
+        let ids = [].concat(uuids);
+        let a: Asset[] = [];
+        ids.forEach(id => {
+            a.push(no.itemOfArray(this._assets, id, 'uuid'));
+        })
+        return (typeof uuids == 'string') ? a[0] : a;
     }
 
     private getValType(key: string, val: any) {

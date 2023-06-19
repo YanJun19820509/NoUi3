@@ -60,7 +60,7 @@ export class YJGuideManager extends Component {
     }
 
     public getGuideInfo(path: string): any {
-        return no.getValue(this._config, path);
+        return no.clone(no.getValue(this._config, path));
     }
 
     public check(step: string): boolean {

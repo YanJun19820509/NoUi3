@@ -977,13 +977,13 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array)
-            try {
-                return parse2Json(jsonStringify(d));
-            } catch (e) {
-                no.err('JSON.parse', 'clone');
-            }
-        else if (d instanceof Object) return instantiate(d);
+        if (d instanceof Array) {
+            let a: any[] = [];
+            d.forEach(b => {
+                a.push(clone(b));
+            });
+            return a;
+        } else if (d instanceof Object) return instantiate(d);
         return d;
     }
 
@@ -2054,10 +2054,10 @@ export namespace no {
          */
         public get(paths?: string | string[]): any {
             if (this._data == null) return null;
-            if (paths == null || paths == '*') return this._data;
+            if (paths == null || paths == '*') return clone(this._data);
             paths = [].concat(paths);
             if (paths.length == 1) {
-                return getValue(this._data, paths[0]);
+                return clone(getValue(this._data, paths[0]));
             } else {
                 let p = paths.join('.');
                 let a = getValue(this._data, p);
@@ -2891,6 +2891,20 @@ export namespace no {
 
         public clear() {
             assetManager.releaseAll();
+        }
+
+        public has(path: string): Promise<boolean> {
+            return new Promise<boolean>(resolve => {
+                const p = this.assetPath(path);
+                let bundle = this.getBundle(p.bundle);
+                if (bundle != null) {
+                    resolve(bundle['_config'].paths.has(p.path));
+                } else {
+                    this.loadBundle(p.bundle, () => {
+                        return this.has(path);
+                    });
+                }
+            });
         }
     }
 

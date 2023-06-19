@@ -153,6 +153,7 @@ export const Layers = _cc.Layers;
 
 export class EventTarget extends _cc.EventTarget { };
 export const Button = _cc.Button;
+export type Button = _cc.Button;
 export class Tween extends _cc.Tween<unknown> { };
 export class Bundle extends _cc.AssetManager.Bundle { };
 export class AssetManager extends _cc.AssetManager { };
