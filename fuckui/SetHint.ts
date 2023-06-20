@@ -2,6 +2,7 @@
 import { ccclass, property, menu, Component, Node, Label } from '../yj';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
+import { no } from '../no';
 
 /**
  * Predefined variables
@@ -37,7 +38,8 @@ export class SetHint extends FuckUi {
 
     protected onDataChange(data: any) {
         let v = Number(data);
-        this.targetNode.active = v > 0;
+        // this.targetNode.active = v > 0;
+        no.visible(this.targetNode, v > 0);
         if (this.isNumber) {
             if (this.label != null)
                 this.label.string = data;

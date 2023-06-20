@@ -208,6 +208,27 @@ export class YJWindowManager extends Component {
         return a as T;
     }
 
+    public static opennedPanelByType<T extends YJPanel>(panelType: string, to?: string): T | null {
+        if (!panelType) return null;
+        let self = YJWindowManager._ins;
+        if (to) {
+            const content: Node = YJWindowManager._ins.getContent(to);
+            if (content) {
+                const panels = content.getComponentsInChildren(YJPanel);
+                for (let i = 0, n = panels.length; i < n; i++) {
+                    if (panels[i].panelType == panelType) return panels[i] as T;
+                }
+            }
+        }
+        for (let i = 0, n = self.infos.length; i < n; i++) {
+            const content = YJWindowManager._ins.getContent(self.infos[i].type);
+            const panels = content.getComponentsInChildren(YJPanel);
+            for (let i = 0, n = panels.length; i < n; i++) {
+                if (panels[i].panelType == panelType) return panels[i] as T;
+            }
+        }
+        return null;
+    }
 
     public clearClosedPanel() {
         let t = no.sysTime.now;

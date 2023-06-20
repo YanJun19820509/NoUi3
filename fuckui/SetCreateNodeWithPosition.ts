@@ -136,23 +136,26 @@ export class SetCreateNodeWithPosition extends FuckUi {
         let n = data.length;
         let l = this.container.children.length;
         for (let i = 0; i < l; i++) {
-            this.container.children[i].active = !!data[i];
+            // this.container.children[i].active = !!data[i];
+            no.visible(this.container.children[i], !!data[i]);
         }
 
         if (n > l) {
-            this.container.active = false;
+            // this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) return false;
                 let item = instantiate(this.template);
-                item.active = false;
+                item.active = true;
+                no.visible(item, false);
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
             }, this, n);
             if (!this.container?.isValid) return;
-            this.container.active = true;
+            // this.container.active = true;
         } else if (n - l == 1) {
             let item = instantiate(this.template);
-            item.active = false;
+            item.active = true;
+            no.visible(item, false);
             item.parent = this.container;
         }
         let positionInfo = this.getPositions(n);
@@ -173,7 +176,8 @@ export class SetCreateNodeWithPosition extends FuckUi {
             a.init();
         }
         item.setPosition(pos);
-        item.active = true;
+        // item.active = true;
+        no.visible(item, true);
     }
 
     private getPositions(len: number): PositionInfo {

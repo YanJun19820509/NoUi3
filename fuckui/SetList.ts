@@ -167,7 +167,8 @@ export class SetList extends FuckUi {
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
                 let item = listItems[i];
-                item.active = false;
+                // item.active = false;
+                no.visible(item, false);
             }
         }
         let a = [].concat(data);
@@ -205,6 +206,7 @@ export class SetList extends FuckUi {
         let listItems = this.content.children;
         for (let i = listItems.length; i < this.showNum; i++) {
             let item = instantiate(this.template);
+            item.active = true;
             item.parent = this.content;
             if (this.dynamicAtlas) {
                 YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
@@ -248,7 +250,8 @@ export class SetList extends FuckUi {
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
         }
-        item.active = i < this.showNum;
+        // item.active = i < this.showNum;
+        no.visible(item, i < this.showNum);
     }
 
     private setItemData(item: Node, data = []) {

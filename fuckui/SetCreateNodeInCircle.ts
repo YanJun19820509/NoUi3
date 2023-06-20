@@ -120,7 +120,8 @@ export class SetCreateNodeInCircle extends FuckUi {
                             YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
                             YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
                         }
-                        cacheItem.active = false;
+                        // cacheItem.active = false;
+                        no.visible(cacheItem, false);
                         this.setPos(cacheItem, i);
                         cacheItem.parent = this.container;
                     } else break;
@@ -129,11 +130,12 @@ export class SetCreateNodeInCircle extends FuckUi {
             } else {
                 for (let i = 0; i < this.num; i++) {
                     let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
+                    item.active = true;
+                    no.visible(item, false);
                     if (this.dynamicAtlas) {
                         YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                         YJLoadAssets.setLoadAsset(item, this.loadAsset);
                     }
-                    item.active = false;
                     this.setPos(item, i);
                     item.parent = this.container;
                 }
@@ -144,14 +146,16 @@ export class SetCreateNodeInCircle extends FuckUi {
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) {
-                item.active = false;
+                // item.active = false;
+                no.visible(item, false);
             } else {
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
                     a.data = data[i];
                     a.init();
                 }
-                item.active = true;
+                // item.active = true;
+                no.visible(item, true);
             }
         }
     }

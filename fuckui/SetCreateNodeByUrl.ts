@@ -103,9 +103,11 @@ export class SetCreateNodeByUrl extends FuckUi {
         }
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
-            if (data[i] == null) item.active = false;
+            if (data[i] == null) //item.active = false;
+                no.visible(item, false);
             else {
-                item.active = true;
+                no.visible(item, true);
+                // item.active = true;
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 if (a) {
                     a.data = data[i];
@@ -139,7 +141,8 @@ export class SetCreateNodeByUrl extends FuckUi {
             this.needDestroyChildrenUuid.length = 0;
         this.container?.children.forEach(child => {
             this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
-            child.active = false;
+            // child.active = false;
+            no.visible(child, false);
         });
     }
 

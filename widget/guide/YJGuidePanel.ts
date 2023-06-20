@@ -105,7 +105,8 @@ export class YJGuidePanel extends YJPanel {
     protected showGuideNode(type: string) {
         for (let k in this.guideNodeMap) {
             if (this.onShowGuideNode(k))
-                this.guideNodeMap[k].active = k == type;
+                // this.guideNodeMap[k].active = k == type;
+                no.visible(this.guideNodeMap[k], k == type);
         }
     }
 
@@ -138,7 +139,8 @@ export class YJGuidePanel extends YJPanel {
      */
     public hideAllGuideNodes() {
         for (let k in this.guideNodeMap) {
-            this.guideNodeMap[k].active = false;
+            // this.guideNodeMap[k].active = false;
+            no.visible(this.guideNodeMap[k], false);
         }
     }
 }

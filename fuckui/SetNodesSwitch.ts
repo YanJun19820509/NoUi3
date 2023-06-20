@@ -1,4 +1,5 @@
 
+import { no } from '../no';
 import { ccclass, property, menu, Node } from '../yj';
 import { FuckUi } from './FuckUi';
 
@@ -27,7 +28,7 @@ export class SwitchInfo {
         if (!this.conditions) this.conditions = this.condition.split(',');
         let a = this.conditions.indexOf(v) != -1;
         this.nodes.forEach(node => {
-            node.active = a;
+            no.visible(node, a);
         });
     }
 }

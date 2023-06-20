@@ -1,6 +1,6 @@
 
 import { no } from '../no';
-import { js, StencilManager, Node, director } from '../yj';
+import { js, StencilManager, Node, director, Layout } from '../yj';
 
 /**
  * Predefined variables
@@ -40,6 +40,20 @@ js.mixin(Node.prototype, {
     dispatchEvent(event: Event) {
         if (no.visible(this))
             _dispatchEvent.call(this, event);
+    }
+});
+
+js.mixin(Layout.prototype, {
+    _checkUsefulObj() {
+        this._usefulLayoutObj.length = 0;
+        const children = this.node.children;
+        for (let i = 0; i < children.length; ++i) {
+            const child = children[i];
+            const uiTrans = child._uiProps.uiTransformComp;
+            if (child.activeInHierarchy && uiTrans && no.visible(child)) {
+                this._usefulLayoutObj.push(uiTrans);
+            }
+        }
     }
 });
 

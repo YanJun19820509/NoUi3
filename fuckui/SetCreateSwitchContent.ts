@@ -39,7 +39,8 @@ class ContentInfo {
     }
 
     public show(v: boolean): void {
-        if (this.loadedNode) this.loadedNode.active = v;
+        if (this.loadedNode) //this.loadedNode.active = v;
+            no.visible(this.loadedNode, v);
     }
 
     public get isLoaded(): boolean {

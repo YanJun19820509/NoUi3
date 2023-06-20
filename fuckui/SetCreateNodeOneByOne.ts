@@ -43,14 +43,16 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
 
         let l = this.container.children.length;
         for (let i = 0; i < l; i++) {
-            this.container.children[i].active = false;
+            // this.container.children[i].active = false;
+            no.visible(this.container.children[i], false);
         }
 
         let n = data.length
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.template);
-                item.active = false;
+                item.active = true;
+                no.visible(item, false);
                 item.parent = this.container;
             }
         }
@@ -67,7 +69,8 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
             await this.delegate?.beforeCreateOneNode(idx, data[idx]);
             if (!this?.node?.isValid) return;
             let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-            item.active = !!data[idx];
+            // item.active = !!data[idx];
+            no.visible(item, !!data[idx]);
             if (a && data[idx]) {
                 a.data = data[idx];
                 a.init();

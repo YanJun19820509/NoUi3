@@ -75,7 +75,8 @@ export class SetLock extends FuckUi {
             this.createLockNode();
             this.setGray(this.lockType == LockType.Gray);
         } else if (this.lockType == LockType.Hide) {
-            this.target.active = false;
+            // this.target.active = false;
+            no.visible(this.target, false);
         } else if (this.lockType == LockType.Opacity) {
             (this.target.getComponent(UIOpacity) || this.target.addComponent(UIOpacity)).opacity = 0;
         }
@@ -87,7 +88,8 @@ export class SetLock extends FuckUi {
             if (this.lockType == LockType.Gray)
                 this.setGray(false);
         } else if (this.lockType == LockType.Hide) {
-            this.target.active = true;
+            // this.target.active = true;
+            no.visible(this.target, true);
         } else if (this.lockType == LockType.Opacity && this.target.getComponent(UIOpacity)) {
             this.target.getComponent(UIOpacity).opacity = 255;
         }
@@ -100,7 +102,8 @@ export class SetLock extends FuckUi {
         if (this.lockNode) {
             lock = instantiate(this.lockNode);
             lock.name = '_lock_';
-            lock.active = true;
+            // lock.active = true;
+            no.visible(lock, true);
         } else {
             let nodeUt = target.getComponent(UITransform);
             lock = new Node('_lock_');

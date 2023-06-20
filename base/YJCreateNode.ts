@@ -68,6 +68,7 @@ export class YJCreateNode extends Component {
         }
         a.parent = this.target;
         a.active = true;
+        no.visible(a, true);
         return a;
     }
 

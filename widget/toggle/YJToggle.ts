@@ -1,4 +1,5 @@
 
+import { no } from '../../no';
 import { ccclass, property, Toggle, Sprite } from '../../yj';
 
 /**
@@ -21,6 +22,7 @@ export class YJToggle extends Toggle {
     public playEffect() {
         super.playEffect();
         if (this.uncheckMark)
-            this.uncheckMark.node.active = !this.isChecked;
+            // this.uncheckMark.node.active = !this.isChecked;
+            no.visible(this.uncheckMark.node, !this.isChecked);
     }
 }

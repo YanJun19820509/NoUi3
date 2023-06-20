@@ -1,4 +1,5 @@
 
+import { no } from '../no';
 import { ccclass, property, menu, Node } from '../yj';
 import { FuckUi } from './FuckUi';
 
@@ -30,7 +31,8 @@ export class SetUiGroupSwitch extends FuckUi {
     protected onDataChange(data: any) {
         this.infos.forEach(info => {
             if (info.uiNode) {
-                info.uiNode.active = info.condition === String(data);
+                // info.uiNode.active = info.condition === String(data);
+                no.visible(info.uiNode, info.condition === String(data));
             }
         });
     }

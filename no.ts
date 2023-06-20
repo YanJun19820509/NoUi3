@@ -1,7 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType
 } from "./yj";
 
 
@@ -2958,7 +2958,8 @@ export namespace no {
             if (!this.cacheMap.has(type)) this.cacheMap.set(type, []);
             if (object instanceof Node) {
                 object.parent = null;
-                object.active = false;
+                // object.active = false;
+                visible(object, false);
             }
             let a = this.cacheMap.get(type) || [];
             let have = false;
@@ -4256,7 +4257,10 @@ export namespace no {
      * @returns 
      */
     export function visible(node: Node, v?: boolean): boolean {
-        if (v != undefined) node['__need_render__'] = v;
+        if (v != undefined) {
+            node['__need_render__'] = v;
+            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+        }
         return node['__need_render__'] !== false;
     }
 }

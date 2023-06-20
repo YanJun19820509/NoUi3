@@ -70,6 +70,7 @@ export class SetCreateCacheNode extends FuckUi {
         let item = no.cachePool.reuse<Node>(this.recycleType), needWait = false;
         if (!item) {
             item = instantiate(this.template);
+            item.active = true;
             needWait = true;
         }
         if (this.dynamicAtlas) {
@@ -82,7 +83,7 @@ export class SetCreateCacheNode extends FuckUi {
             a.data = data[i];
             a.init();
         }
-        item.active = true;
+        no.visible(item, true);
         if (needWait) this.scheduleOnce(() => {
             this.setItem(data, ++i);
         });

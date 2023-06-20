@@ -117,7 +117,8 @@ export class SetCreateNode extends FuckUi {
         let l = this.container.children.length;
         if (!this.onlyAdd)
             for (let i = l - 1; i >= 0; i--) {
-                this.container.children[i].active = !!data[i];
+                // this.container.children[i].active = !!data[i];
+                no.visible(this.container.children[i], !!data[i]);
             }
 
         if (!data.length) return;
@@ -134,7 +135,8 @@ export class SetCreateNode extends FuckUi {
                             YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
                             YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
                         }
-                        cacheItem.active = false;
+                        // cacheItem.active = false;
+                        no.visible(cacheItem, false);
                         cacheItem.parent = this.container;
                     } else return false;
                     if (this.container.children.length >= max) return false;
@@ -179,11 +181,12 @@ export class SetCreateNode extends FuckUi {
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
+                item.active = true;
                 if (this.dynamicAtlas) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                item.active = false;
+                no.visible(item, false);
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
             }, this, !this.onlyAdd ? n : n + l);
@@ -208,7 +211,8 @@ export class SetCreateNode extends FuckUi {
             a.data = data[i];
             a.init();
         }
-        item.active = true;
+        no.visible(item, true);
+        // item.active = true;
     }
 
     protected async setDynamicAtlasNode(data: any) {
