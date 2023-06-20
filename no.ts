@@ -2258,6 +2258,7 @@ export namespace no {
 
         private needReleaseAssets: Asset[] = [];
         private remoteAssetsCache: any = {};
+        private _cacheNode: { [k: string]: Node } = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -2265,6 +2266,16 @@ export namespace no {
             //用于设置每帧发起的最大请求数，从而均摊发起请求的 CPU 开销，避免单帧过于卡顿
             assetManager.downloader.maxRequestsPerFrame = 10;
             assetManager.downloader.maxRetryCount = 2;
+        }
+
+        public getPrefabNode(k: string): Node {
+            const n = this._cacheNode[k];
+            if (n) return instantiate(n);
+            return null;
+        }
+
+        public setPrefabNode(k: string, node: Node) {
+            this._cacheNode[k] = node;
         }
 
         /**

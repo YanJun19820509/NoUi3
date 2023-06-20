@@ -117,15 +117,21 @@ export class YJWindowManager extends Component {
         if (node) {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
-            const request = { type: Prefab, path: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
-            no.assetBundleManager.loadAny<Prefab>(request, pf => {
-                if (!pf) return;
-                let node = instantiate(pf);
-                if (!content?.isValid) {
-                    return
-                }
-                this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-            });
+            const k = comp.prototype[YJPanelPrefabMetaKey] || comp.prototype[YJPanelPrefabUuidMetaKey];
+            const node = no.assetBundleManager.getPrefabNode(k);
+            if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+            else {
+                const request = { type: Prefab, path: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
+                no.assetBundleManager.loadAny<Prefab>(request, pf => {
+                    if (!pf) return;
+                    const node = instantiate(pf);
+                    no.assetBundleManager.setPrefabNode(k, node);
+                    if (!content?.isValid) {
+                        return
+                    }
+                    this.initNode(no.assetBundleManager.getPrefabNode(k), comp as (typeof YJPanel), content, beforeInit, afterInit);
+                });
+            }
         }
     }
 

@@ -224,16 +224,20 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
     public static get ins(): YJCreateNodeByPrefabJson {
         return this.instance();
     }
-
+    private _cache: { [path: string]: Node } = {};
     private _nodes: Node[] = [];
     private _assets: Asset[] = [];
 
-    public create(path: string): Promise<Node | null> {
+    public async create(path: string): Promise<Node | null> {
+        if (this._cache[path]) return instantiate(this._cache[path]);
         this._nodes.length = 0;
         return new Promise<Node>(resolve => {
             no.assetBundleManager.loadJSON(path, item => {
                 if (item) {
-                    resolve(this.parse(item.json));
+                    this.parse(item.json).then(node => {
+                        this._cache[path] = node;
+                        resolve(instantiate(node));
+                    })
                 } else resolve(null);
             });
         });
@@ -266,15 +270,6 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                 node[key] = v;
             });
         }
-
-        // node.setPosition(d.position[0], d.position[1], d.position[2]);
-        // node.setScale(d.scale[0], d.scale[1], d.scale[2]);
-        // node.setRotation(d.rotation[0], d.rotation[1], d.rotation[2], d.rotation[3]);
-        // node.active = d.active;
-        // node.mobility = d.mobility;
-        // node.layer = d.layer;
-        // if (d.parent != undefined)
-        //     node.parent = this._nodes[d.parent];
         this._nodes[this._nodes.length] = node;
     }
 
@@ -440,80 +435,5 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
             a.push(no.itemOfArray(this._assets, id, 'uuid'));
         })
         return (typeof uuids == 'string') ? a[0] : a;
-    }
-
-    private getValType(key: string, val: any) {
-        if (val == null || val.length == 0) {
-            switch (key) {
-                case 'parent':
-                case 'node':
-                case 'target':
-                    return Node;
-                case 'spriteFrame':
-                case 'normalSprite':
-                case 'pressedSprite':
-                case 'hoverSprite':
-                case 'disabledSprite':
-                case 'backgroundImage':
-                case 'barSprite':
-                case 'font':
-                case 'clips':
-                case 'defaultClip':
-                    return Asset;
-                case 'clickEvents':
-                case 'editingDidBegan':
-                case 'textChanged':
-                case 'editingDidEnded':
-                case 'editingReturn':
-                case 'slideEvents':
-                case 'checkEvents':
-                case 'scrollEvents':
-                case 'videoPlayerEvent':
-                case 'webviewEvents':
-                    return EventHandler;
-            }
-            console.error(key, val);
-            return;
-        }
-        if (val instanceof Vec2) {
-            return Vec2;
-        }
-        if (val instanceof Vec3) {
-            return Vec3;
-        }
-        if (val instanceof Vec4) {
-            return Vec4;
-        }
-        if (val instanceof Quat) {
-            return Quat;
-        }
-        if (val instanceof Node) {
-            return Node;
-        }
-        if (val instanceof Color) {
-            return Color;
-        }
-        if (val instanceof Size) {
-            return Size;
-        }
-        if (val instanceof Range) {
-            return Range;
-        }
-        if (val instanceof UV) {
-            return UV;
-        }
-        if (val instanceof EventHandler) {
-            return EventHandler;
-        }
-        if (val instanceof Camera) {
-            return Camera;
-        }
-        if (val instanceof RenderTexture) {
-            return RenderTexture;
-        }
-        if (val instanceof Asset) {
-            return Asset;
-        }
-        return Object;
     }
 }
