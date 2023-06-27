@@ -378,6 +378,11 @@ export namespace no {
             this._time = v;
         }
 
+        /**返回当时区时间戳ms */
+        public get locationNow(): number {
+            return Date.now();
+        }
+
         constructor() {
             let t = floor(sys.now() / 1000);
             this._time = t;

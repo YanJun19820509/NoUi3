@@ -45,7 +45,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onShow(type: string) {
-        no.log('showSubRenderNode onShow', this._count);
+        // no.log('showSubRenderNode onShow', this._count);
         this._count = Math.max(this._count - 1, 0);
         if (this._count == 0) {
             this.showSubRenderNode();
@@ -54,13 +54,13 @@ export class YJShowHideAllSubRenderNode extends Component {
 
     private onHide(type: string) {
         this._count++;
-        no.log('showSubRenderNode onHide', this._count);
+        // no.log('showSubRenderNode onHide', this._count);
         this.showSubRenderNode();
         // no.scheduleOnce(this.showSubRenderNode, 1, this);
     }
 
     public showSubRenderNode() {
-        no.log('showSubRenderNode', this._count);
+        // no.log('showSubRenderNode', this._count);
         let v: boolean = this._count == 0;
         if (v == this.isShow) return;
         this.isShow = v;

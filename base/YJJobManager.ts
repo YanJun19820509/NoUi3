@@ -47,15 +47,15 @@ export class YJJobManager extends Component {
         }, this);
     }
 
-    private nowMs(): number {
-        return new Date().getTime();
+    private get nowMs(): number {
+        return no.sysTime.locationNow;
     }
 
     private executePerFrame() {
-        const frameStartTime = this.nowMs();
+        const frameStartTime = this.nowMs;
         let aa = true;
         while (aa) {
-            if (this.nowMs() - frameStartTime > 5) {
+            if (this.nowMs - frameStartTime > 5) {
                 aa = false;
             } else {
                 let n = this.jobKeys.length;
@@ -68,7 +68,7 @@ export class YJJobManager extends Component {
                         k = this.jobKeys[i];
                         job = this.jobs[k];
                         if (!job || !no.checkValid(job.target) || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
-                        if (this.nowMs() - frameStartTime > 5) {
+                        if (this.nowMs - frameStartTime > 5) {
                             this.lastJobKeyIndex = i;
                             aa = false;
                             break;
