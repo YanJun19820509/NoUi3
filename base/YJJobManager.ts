@@ -47,7 +47,7 @@ export class YJJobManager extends Component {
     }
 
     private nowMs(): number {
-        return new Date().getTime();
+        return no.sysTime.locationNow;
     }
 
     private executePerFrame() {
