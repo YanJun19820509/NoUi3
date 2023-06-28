@@ -72,7 +72,7 @@ export class YJPanel extends Component {
     @property({ displayName: '多点触摸' })
     multiTouch: boolean = false;
 
-    private _lastMultiTouchState: boolean = false;
+    // private _lastMultiTouchState: boolean = false;
 
     onLoad() {
         if (EDITOR) {
@@ -98,7 +98,7 @@ export class YJPanel extends Component {
                 this.onInitPanel();
                 if (this.isFullScreen)
                     no.evn.emit('_full_screen_panel_open', this.panelType);
-                this._lastMultiTouchState = no.multiTouch();
+                // this._lastMultiTouchState = no.multiTouch();
                 no.multiTouch(this.multiTouch);
                 return Promise.resolve();
             }).catch(e => { no.err(e); });
@@ -106,7 +106,7 @@ export class YJPanel extends Component {
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
-        this._lastMultiTouchState = no.multiTouch();
+        // this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
         return Promise.resolve();
     }
@@ -122,7 +122,7 @@ export class YJPanel extends Component {
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();
-        no.multiTouch(this._lastMultiTouchState);
+        no.multiTouch(!this.multiTouch);
     }
 
     public clear(force = false) {
