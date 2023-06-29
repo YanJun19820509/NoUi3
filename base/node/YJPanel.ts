@@ -82,6 +82,7 @@ export class YJPanel extends Component {
 
     onEnable() {
         if (EDITOR) return;
+        no.setMultiTouch(this.multiTouch);
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
         no.EventHandlerInfo.execute(this.onOpen);
@@ -98,16 +99,12 @@ export class YJPanel extends Component {
                 this.onInitPanel();
                 if (this.isFullScreen)
                     no.evn.emit('_full_screen_panel_open', this.panelType);
-                // this._lastMultiTouchState = no.multiTouch();
-                no.multiTouch(this.multiTouch);
                 return Promise.resolve();
             }).catch(e => { no.err(e); });
         }
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
-        // this._lastMultiTouchState = no.multiTouch();
-        no.multiTouch(this.multiTouch);
         return Promise.resolve();
     }
 
@@ -122,7 +119,6 @@ export class YJPanel extends Component {
         if (YJPanel.cacheOpened && this.needCache) {
             this.node.active = false;
         } else this.clear();
-        no.multiTouch(!this.multiTouch);
     }
 
     public clear(force = false) {

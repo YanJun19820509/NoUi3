@@ -24,21 +24,13 @@ export namespace no {
         _version = v;
     }
 
-    let _multiTouchFalseNum: number = 0;
     /**
      * 是否支持多点触摸
-     * @param v 非空时修改当前全局多点触摸状态，否则仅返回当前全局多点触摸状态
+     * @param v 
      * @returns 
      */
-    export function multiTouch(v?: boolean): boolean {
-        if (v === false) _multiTouchFalseNum++;
-        else if (v === true) _multiTouchFalseNum--;
-        if (v != null) {
-            _multiTouchFalseNum = Math.max(_multiTouchFalseNum, 0);
-            macro.ENABLE_MULTI_TOUCH = _multiTouchFalseNum == 0;
-            // log('multiTouch', macro.ENABLE_MULTI_TOUCH, _multiTouchFalseNum);
-        }
-        return macro.ENABLE_MULTI_TOUCH;
+    export function setMultiTouch(v?: boolean) {
+        macro.ENABLE_MULTI_TOUCH = v;
     }
 
     let _scheduler: Scheduler = director.getScheduler();

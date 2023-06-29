@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from 'cc';
+import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';
@@ -201,6 +201,7 @@ export class YJScrollPanel extends Component {
             e.preventSwallow = true;
             return;
         }
+        no.setMultiTouch(true);
         this.startTouchPos = this.touchUILocationAR(e);
         let touches = e.getAllTouches();
         this.startDis = null;
