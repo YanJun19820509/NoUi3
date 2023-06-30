@@ -74,6 +74,10 @@ export class YJGuideManager extends Component {
         return true;
     }
 
+    public get isFirst(): boolean {
+        if (!this.isWork) return false;
+        return this.saveSteps.length == 0;
+    }
 }
 
 if (DEBUG) {
