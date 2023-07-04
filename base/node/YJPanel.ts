@@ -73,6 +73,7 @@ export class YJPanel extends Component {
      * 可在prefab实例化时调用，进行界面内容的初始化
      */
     public async initPanel(): Promise<void> {
+        //todo 先调数据接口同时加载资源
         if (!this._loaded) {
             this._loaded = true;
             this._originX = no.x(this.node);
@@ -87,6 +88,7 @@ export class YJPanel extends Component {
                 }).catch(e => { no.err(e); });
             }
         } else no.x(this.node, this._originX);
+        //todo 等待数据返回
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);

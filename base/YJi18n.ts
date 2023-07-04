@@ -51,7 +51,7 @@ export class YJi18n extends no.Data {
     }
 
     /**
-     * 设置默认语言
+     * 默认语言
      */
     public set defaultLanguage(v: string) {
         this._defLan = v;
