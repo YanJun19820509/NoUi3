@@ -1153,8 +1153,8 @@ export namespace no {
         s = seconds % 60;
         let a = '';
         if (h > 0) a = `${h}`;
-        if (m > 0) a = `${a}`;
-        if (s > 0) a = `${a}`;
+        if (m > 0) a = `${m}`;
+        if (s > 0) a = `${s}`;
         return a;
     }
 
