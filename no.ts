@@ -2181,11 +2181,12 @@ export namespace no {
         /**
          * 获取本地数据
          * @param key
+         * @param defaultVal 默认值
          */
-        public getLocal(key: string): any {
+        public getLocal(key: string, defaultVal?: any): any {
             key = `${this._localPreKey}_${key}`;
             let a = localStorage.getItem(key);
-            if (a == null || a == undefined || a == 'undefined') return null;
+            if (a == null || a == undefined || a == 'undefined') return defaultVal;
             try {
                 return parse2Json(a);
             } catch (e) {
