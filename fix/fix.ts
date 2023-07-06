@@ -1,6 +1,6 @@
 
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform } from '../yj';
 
 /**
  * Predefined variables
@@ -21,6 +21,7 @@ js.mixin(StencilManager.prototype, {
     }
 });
 
+//渲染
 const _a = setInterval(function () {
     const batcher2D = director.root.batcher2D;
     if (batcher2D) {
@@ -35,14 +36,15 @@ const _a = setInterval(function () {
     }
 }, 100);
 
-const _dispatchEvent = Node.prototype.dispatchEvent;
-js.mixin(Node.prototype, {
-    dispatchEvent(event: Event) {
-        if (no.visible(this))
-            _dispatchEvent.call(this, event);
+//点击判断
+const _hitTest = UITransform.prototype.hitTest;
+js.mixin(UITransform.prototype, {
+    hitTest(screenPoint, windowId) {
+        if (!no.visible(this.node)) return false;
+        return _hitTest.call(this, screenPoint, windowId);
     }
 });
-
+//layout
 js.mixin(Layout.prototype, {
     _checkUsefulObj() {
         this._usefulLayoutObj.length = 0;
