@@ -1,5 +1,5 @@
 
-import { ProgressBar, ccclass, property, menu } from '../yj';
+import { ProgressBar, ccclass, property, menu, Label } from '../yj';
 import { FuckUi } from './FuckUi';
 import { no } from '../no';
 
@@ -14,7 +14,7 @@ import { no } from '../no';
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
-
+//data number|[cur, max]
 @ccclass('SetProgress')
 @menu('NoUi/ui/SetProgress(设置进度条:number)')
 export class SetProgress extends FuckUi {
@@ -25,6 +25,8 @@ export class SetProgress extends FuckUi {
     motionSpeed: number = 500;
     @property({ displayName: '小最进度', min: 0, max: 1, step: 0.1 })
     initValue: number = 0;
+    @property({ type: Label })
+    label: Label = null;
 
     private speed: number;
     private dir: number;
@@ -45,6 +47,8 @@ export class SetProgress extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        this.setLabel(data);
+        if (data instanceof Array) data = data[0] / data[1];
         if (data > 0 && data < this.initValue)
             data = this.initValue;
         this.targetValue = data;
@@ -67,5 +71,16 @@ export class SetProgress extends FuckUi {
             }
             this.progressBar.progress = p;
         }
+    }
+
+    private setLabel(data: any) {
+        if (!this.label) return;
+        let s: string
+        if (typeof data == 'number') {
+            s = Math.floor(data * 1000) / 10 + '%';
+        } else if (data instanceof Array) {
+            s = `${data[0]}/${data[1]}`;
+        }
+        this.label.string = s;
     }
 }
