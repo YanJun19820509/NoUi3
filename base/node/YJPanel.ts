@@ -99,6 +99,8 @@ export class YJPanel extends Component {
 
     public closePanel() {
         no.log('panel close', this.panelType);
+        no.visible(this.node, false);
+        this.node.setSiblingIndex(0);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
@@ -109,7 +111,6 @@ export class YJPanel extends Component {
         //     this.node.active = false;
         // } else this.clear();
         no.x(this.node, 10000);
-        no.visible(this.node, false);
         no.multiTouch(this._lastMultiTouchState);
     }
 
