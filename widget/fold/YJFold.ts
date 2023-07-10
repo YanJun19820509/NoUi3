@@ -24,6 +24,8 @@ export class YJFold extends Component {
     content: Node = null;
     @property({ tooltip: '当content宽或高大于maxSize时显示折叠按钮和底图' })
     maxSize: number = 100;
+    @property({ tooltip: '折叠后展示的最小content宽或高' })
+    minSize: number = 0;
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
 
@@ -39,8 +41,8 @@ export class YJFold extends Component {
     public a_unfold() {
         if (!this.enabled) return;
         let size = no.size(this.content);
-        if (this.isHorizontal && size.width == 0) this.foldOrUnfoldHorizontal();
-        else if (size.height == 0) this.foldOrUnfoldVertical();
+        if (this.isHorizontal && size.width == this.minSize) this.foldOrUnfoldHorizontal();
+        else if (size.height == this.minSize) this.foldOrUnfoldVertical();
     }
 
     public a_setTargetSize() {
@@ -61,7 +63,7 @@ export class YJFold extends Component {
                 duration: 0.2,
                 to: 1,
                 props: {
-                    size: [size.width, size.height == 0 ? this.targetSize.height : 0]
+                    size: [size.width, size.height == this.minSize ? this.targetSize.height : this.minSize]
                 }
             }
         };
@@ -74,7 +76,7 @@ export class YJFold extends Component {
                 duration: 0.2,
                 to: 1,
                 props: {
-                    size: [size.width == 0 ? this.targetSize.width : 0, size.height]
+                    size: [size.width == this.minSize ? this.targetSize.width : this.minSize, size.height]
                 }
             }
         };
