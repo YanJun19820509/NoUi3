@@ -30,18 +30,21 @@ export class YJFold extends Component {
     private targetSize: math.Size;
 
     public a_foldOrUnfold() {
+        if (!this.enabled) return;
         if (!isValid(this?.content)) return;
         if (this.isHorizontal) this.foldOrUnfoldHorizontal();
         else this.foldOrUnfoldVertical();
     }
 
     public a_unfold() {
+        if (!this.enabled) return;
         let size = no.size(this.content);
         if (this.isHorizontal && size.width == 0) this.foldOrUnfoldHorizontal();
         else if (size.height == 0) this.foldOrUnfoldVertical();
     }
 
     public a_setTargetSize() {
+        if (!this.enabled) return;
         this.targetSize = no.size(this.content);
         let show = false;
         if (this.isHorizontal && this.targetSize.width >= this.maxSize) show = true;
