@@ -1,7 +1,8 @@
 
-import { ccclass, property, Component, isValid, Node, Size } from '../../yj';
+import { _decorator, Component, isValid, math, Node, Sprite, UITransform } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
+const { ccclass, property } = _decorator;
 
 /**
  * Predefined variables
@@ -23,24 +24,29 @@ export class YJFold extends Component {
     content: Node = null;
     @property({ tooltip: '当content宽或高大于maxSize时显示折叠按钮和底图' })
     maxSize: number = 100;
+    @property({ tooltip: '折叠后展示的最小content宽或高' })
+    minSize: number = 0;
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
 
-    private targetSize: Size;
+    private targetSize: math.Size;
 
     public a_foldOrUnfold() {
+        if (!this.enabled) return;
         if (!isValid(this?.content)) return;
         if (this.isHorizontal) this.foldOrUnfoldHorizontal();
         else this.foldOrUnfoldVertical();
     }
 
     public a_unfold() {
+        if (!this.enabled) return;
         let size = no.size(this.content);
-        if (this.isHorizontal && size.width == 0) this.foldOrUnfoldHorizontal();
-        else if (size.height == 0) this.foldOrUnfoldVertical();
+        if (this.isHorizontal && size.width == this.minSize) this.foldOrUnfoldHorizontal();
+        else if (size.height == this.minSize) this.foldOrUnfoldVertical();
     }
 
     public a_setTargetSize() {
+        if (!this.enabled) return;
         this.targetSize = no.size(this.content);
         let show = false;
         if (this.isHorizontal && this.targetSize.width >= this.maxSize) show = true;
@@ -57,7 +63,7 @@ export class YJFold extends Component {
                 duration: 0.2,
                 to: 1,
                 props: {
-                    size: [size.width, size.height == 0 ? this.targetSize.height : 0]
+                    size: [size.width, size.height == this.minSize ? this.targetSize.height : this.minSize]
                 }
             }
         };
@@ -70,7 +76,7 @@ export class YJFold extends Component {
                 duration: 0.2,
                 to: 1,
                 props: {
-                    size: [size.width == 0 ? this.targetSize.width : 0, size.height]
+                    size: [size.width == this.minSize ? this.targetSize.width : this.minSize, size.height]
                 }
             }
         };
