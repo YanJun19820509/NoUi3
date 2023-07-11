@@ -143,6 +143,8 @@ export class SetCreateNode extends FuckUi {
                     return true;
                 }, this, n);
 
+                if (!this.container?.isValid) return;
+
                 l = this.container.children.length;
                 YJPreCreateNode.ins.fillNode(prefabUrl);
             }
