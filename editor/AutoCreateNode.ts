@@ -18,7 +18,7 @@ import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
-import { SoundEffectType, YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
+import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameDataInAtlas';
 import { YJSetMaterial } from '../effect/YJSetMaterial';
 import { YJDataWork } from '../base/YJDataWork';
@@ -135,8 +135,8 @@ export class AutoCreateNode extends Component {
             // console.log('createNodes', config);
             let size = new Size(config.width, config.height);
             let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
-            da.width = 512;
-            da.height = 512;
+            da.width = 64;
+            da.height = 64;
             this.node.getComponent(UITransform).setContentSize(size);
             if (!this.node.getComponent(YJReleasePrefab))
                 this.node.addComponent(YJReleasePrefab);
@@ -419,21 +419,21 @@ export class AutoCreateNode extends Component {
     }
 
     private getNode(cname: string, type: typeof Component, x: number, y: number, w: number, h: number, parent: Node, addDynamicTexture = true): Node {
-        let idx = this.nameMap[cname] || 0;
-        this.nameMap[cname] = idx + 1;
-        let name = `${cname}_${idx}`;
-        let list = this.parent.getComponentsInChildren(type);
-        let n: Node;
-        for (let i = 0, l = list.length; i < l; i++) {
-            let a = list[i].node;
-            if (a.name == name) {
-                n = a;
-                break;
-            }
-        }
+        // let idx = this.nameMap[cname] || 0;
+        // this.nameMap[cname] = idx + 1;
+        // let name = `${cname}_${idx}`;
+        // let list = this.parent.getComponentsInChildren(type);
+        let n: Node = no.getChildByNameRecursion(this.parent, cname);
+        // for (let i = 0, l = list.length; i < l; i++) {
+        //     let a = list[i].node;
+        //     if (a.name == name) {
+        //         n = a;
+        //         break;
+        //     }
+        // }
         console.log(cname);
         if (!n) {
-            n = new Node(name);
+            n = new Node(cname);
             n.layer = Layers.Enum.UI_2D;
             n.addComponent(UITransform);
         }

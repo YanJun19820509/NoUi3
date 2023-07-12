@@ -2003,21 +2003,35 @@ export namespace no {
     }
 
     /**
-     * 从父节点获取某个组件实例
+     * 从父节点获取某个子节点
      * @param self 
-     * @param comp 
+     * @param nodeName 节点名
      * @returns 
      */
     export function getNodeInParents(self: Node, nodeName: string): Node | null {
-        let c = self.getChildByName(nodeName);
-        if (c) return c;
-
         if (self.parent) {
-            c = self.parent.getChildByName(nodeName);
+            let c = self.parent.getChildByName(nodeName);
             if (!c) return getNodeInParents(self.parent, nodeName);
             else return c;
         }
         return null;
+    }
+
+    /**
+     * 递归查找某个子节点
+     * @param self 
+     * @param comp 
+     * @returns 
+     */
+    export function getChildByNameRecursion(self: Node, nodeName: string): Node | null {
+        let c = self.getChildByName(nodeName);
+        if (!c) {
+            for (let i = 0, n = self.children.length; i < n; i++) {
+                c = getChildByNameRecursion(self.children[i], nodeName);
+                if (c) break;
+            }
+        }
+        return c;
     }
 
     /**基础数据类 */
