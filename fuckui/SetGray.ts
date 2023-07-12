@@ -24,6 +24,8 @@ export class SetGray extends FuckUi {
 
     @property({ displayName: '默认置灰' })
     autoGray: boolean = false;
+    @property({ displayName: '遮罩效果' })
+    isMask: boolean = false;
     @property({ displayName: '取反' })
     reverse: boolean = false;
     @property({ displayName: '影响子节点' })
@@ -49,9 +51,8 @@ export class SetGray extends FuckUi {
             let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
             setEffect.setData(no.jsonStringify(
                 {
-                    path: 'NoUi3/effect/gray',
                     defines: {
-                        IS_GRAY: v
+                        [this.isMask ? '0-5' : '0-2']: v
                     }
                 }
             ));
@@ -71,7 +72,8 @@ export class SetGray extends FuckUi {
 
         if (this.recursive) {
             this.getComponentsInChildren(UIRenderer).forEach(child => {
-                (child.getComponent(SetGray) || child.addComponent(SetGray));
+                const a = (child.getComponent(SetGray) || child.addComponent(SetGray));
+                a.isMask = this.isMask;
             });
         }
     }

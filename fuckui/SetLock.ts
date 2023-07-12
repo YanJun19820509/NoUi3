@@ -18,9 +18,7 @@ import { SetGray } from './SetGray';
 
 enum LockType {
     Gray = 0,
-    Hide,
-    Sprite,
-    Opacity
+    Hide
 }
 
 @ccclass('SetLock')
@@ -32,11 +30,13 @@ export class SetLock extends FuckUi {
     @property({ type: Enum(LockType) })
     lockType: LockType = LockType.Hide;
 
-    @property({ type: Node, visible() { return this.lockType != LockType.Hide && this.lockType != LockType.Opacity; } })
+    @property({ type: Node, visible() { return this.lockType != LockType.Hide; } })
     lockNode: Node = null;
 
     @property
     locked: boolean = true;
+    @property({ displayName: '取反' })
+    reverse: boolean = false;
 
     @property(no.EventHandlerInfo)
     onLocked: no.EventHandlerInfo[] = [];
@@ -60,6 +60,7 @@ export class SetLock extends FuckUi {
     onDataChange(d: any) {
         if (!this.target) this.target = this.node;
         this.locked = Boolean(d);
+        if (this.reverse) this.locked = !this.locked;
         if (this.locked) this.setLock();
         else this.setUnlock();
     }
@@ -71,62 +72,23 @@ export class SetLock extends FuckUi {
     }
 
     private setLock() {
-        if (this.lockType != LockType.Hide && this.lockType != LockType.Opacity) {
-            this.createLockNode();
-            this.setGray(this.lockType == LockType.Gray);
+        if (this.lockType == LockType.Gray) {
+            this.setGray(true);
         } else if (this.lockType == LockType.Hide) {
-            // this.target.active = false;
             no.visible(this.target, false);
-        } else if (this.lockType == LockType.Opacity) {
-            (this.target.getComponent(UIOpacity) || this.target.addComponent(UIOpacity)).opacity = 0;
         }
     }
 
     private setUnlock() {
-        if (this.lockType != LockType.Hide && this.lockType != LockType.Opacity) {
-            this.target.getChildByName('_lock_')?.destroy();
-            if (this.lockType == LockType.Gray)
-                this.setGray(false);
+        if (this.lockType == LockType.Gray) {
+            this.setGray(false);
         } else if (this.lockType == LockType.Hide) {
-            // this.target.active = true;
             no.visible(this.target, true);
-        } else if (this.lockType == LockType.Opacity && this.target.getComponent(UIOpacity)) {
-            this.target.getComponent(UIOpacity).opacity = 255;
         }
-    }
-
-    private createLockNode() {
-        let target = this.target;
-        if (target.getChildByName('_lock_')) return;
-        let lock: Node;
-        if (this.lockNode) {
-            lock = instantiate(this.lockNode);
-            lock.name = '_lock_';
-            // lock.active = true;
-            no.visible(lock, true);
-        } else {
-            let nodeUt = target.getComponent(UITransform);
-            lock = new Node('_lock_');
-            lock.layer = Layers.Enum.UI_2D;
-            let ut = lock.addComponent(UITransform);
-            ut.setContentSize(nodeUt.getBoundingBox().size);
-            ut.setAnchorPoint(nodeUt.anchorPoint);
-        }
-        lock.setPosition(0, 0);
-        // let a = new EventHandler();
-        // a.target = target;
-        // a.component = 'SetLock';
-        // // a._componentName = 'SetLock';
-        // // a._componentId = js._getClassId(SetLock);
-        // a.handler = 'a_check';
-        // let btn = lock.addComponent(Button);
-        // btn.clickEvents = [a];
-        no.addClickEventsToButton(lock.addComponent(Button), target, 'SetLock', 'a_check');
-        lock.addComponent(BlockInputEvents);
-        lock.parent = target;
     }
 
     private setGray(v: boolean) {
+        no.visible(this.lockNode, v);
         let a = this.target.getComponent(SetGray) || this.target.addComponent(SetGray);
         a.setData(no.jsonStringify(v));
     }

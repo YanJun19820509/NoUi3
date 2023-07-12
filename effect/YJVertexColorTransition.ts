@@ -84,7 +84,6 @@ export class YJVertexColorTransition extends Component {
     private _setDefines(defines: any) {
         for (let key in defines) {
             let v = defines[key];
-            if (key == 'IS_GRAY') key = '0-2';
             let keys = key.split('-');
             let offset = Number(keys[0]);
             let id = Number(keys[1]);

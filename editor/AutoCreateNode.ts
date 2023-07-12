@@ -20,9 +20,9 @@ import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
 import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameDataInAtlas';
-import { YJSetMaterial } from '../effect/YJSetMaterial';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
+import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 
 /**
  * Predefined variables
@@ -103,7 +103,7 @@ export class AutoCreateNode extends Component {
     }
 
     private addComponents() {
-        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJSetMaterial, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
+        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJSetSample2DMaterial, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
         comps.forEach(comp => {
             if (!this.getComponent(comp)) this.addComponent(comp);
         })
