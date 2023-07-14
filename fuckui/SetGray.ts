@@ -53,7 +53,7 @@ export class SetGray extends FuckUi {
                 {
                     path: 'NoUi3/effect/gray',
                     defines: {
-                        IS_GRAY: v
+                        '0-2': v
                     }
                 }
             ));
