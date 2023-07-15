@@ -51,8 +51,8 @@ export class YJSliderButton extends Component {
     }
 
     private moveSlider() {
-        let x = no.x(this.slider);
-        x *= -1;
+        let x = Math.abs(no.x(this.slider));
+        x *= this.checked ? 1 : -1;
         this.playAni(x);
     }
 
@@ -81,5 +81,10 @@ export class YJSliderButton extends Component {
                 this.moveSlider();
             }
         }
+    }
+
+    public set isChecked(v: boolean) {
+        this.checked = v;
+        this.moveSlider();
     }
 }

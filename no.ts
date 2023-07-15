@@ -43,7 +43,7 @@ export namespace no {
      * @param target 
      * @param endCb 定时结束时回调
      */
-    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
+    export function schedule(cb: (dt?: number, n?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
         let targetT = { uuid: target.uuid };
         let n: number = repeat;
@@ -54,9 +54,9 @@ export namespace no {
         let callback = (dt: number) => {
             if (n > 0) {
                 if (!target)
-                    cb?.(dt);
+                    cb?.(dt, n);
                 else if (checkValid(target)) {
-                    cb?.call(target, dt);
+                    cb?.call(target, dt, n);
                 } else {
                     unschedule(targetT, callback);
                     targetT = null;
