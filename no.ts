@@ -826,7 +826,7 @@ export namespace no {
      * @param key
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
-        if (array == null) return -1;
+        if (array == null || item == null) return -1;
         let len = array.length;
         for (let i = 0; i < len; i++) {
             if (array[i][key] == item || (array[i][key] == item[key] && item[key] != undefined)) {
@@ -837,6 +837,7 @@ export namespace no {
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
+        if (value == null) return null;
         let i = indexOfArray(array, value, key);
         if (i == -1) return null;
         return array[i];

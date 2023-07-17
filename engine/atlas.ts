@@ -429,21 +429,21 @@ js.mixin(dynamicAtlasManager, {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;
         if (frame?.original) return;
-        if (!comp.node.parent) return;
+        if (!comp.node.parent || !!comp.node.parent?.getComponent('cc.RichText')) return;
         let a: any = comp.getComponent('YJDynamicTexture');
         // no.log('packToDynamicAtlas', comp['string'])
-        if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
-            a = comp.addComponent('YJDynamicTexture');
-            let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
-            (a as any).dynamicAtlas = b.dynamicAtlas;
-            (a as any).canRotate = b.canRotate;
-            (a as any).needClear = true;
-            a.setCommonMaterial();
-            // setTimeout(() => {
-            //     a?.pack();
-            // }, 17);
-        } else if (a) {
-            a.pack();
-        }
+        // if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
+        //     a = comp.addComponent('YJDynamicTexture');
+        //     let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
+        //     (a as any).dynamicAtlas = b.dynamicAtlas;
+        //     (a as any).canRotate = b.canRotate;
+        //     (a as any).needClear = true;
+        //     a.setCommonMaterial();
+        //     // setTimeout(() => {
+        //     //     a?.pack();
+        //     // }, 17);
+        // } else if (a) {
+        a?.pack();
+        // }
     }
 });
