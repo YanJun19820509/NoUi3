@@ -36,7 +36,7 @@ export class YJPlaySoundEffect extends Component {
         if (this.effectType == SoundEffectType.ClickButton) {
             let btns = this.getComponentsInChildren(Button);
             btns.forEach(btn => {
-                if (!btn.getComponent(YJPlaySoundEffect))
+                if (!btn.getComponent(YJPlaySoundEffect) || btn.node == this.node)
                     btn.node.on(Node.EventType.TOUCH_START, this.a_play, this);
             });
         } else if (this.effectType != SoundEffectType.Other) {
