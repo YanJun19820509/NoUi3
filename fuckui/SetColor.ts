@@ -1,5 +1,5 @@
 
-import { ccclass, menu, Color, UIRenderer } from '../yj';
+import { ccclass, menu, Color, UIRenderer, property, LabelOutline } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -18,6 +18,9 @@ import { FuckUi } from './FuckUi';
 @ccclass('SetColor')
 @menu('NoUi/ui/SetColor(设置颜色:string|cc.Color)')
 export class SetColor extends FuckUi {
+    @property({ displayName: '设置文本描边' })
+    isOutline: boolean = false;
+
     protected onDataChange(data: any) {
         let color: Color;
         if (typeof data == 'string') {
@@ -25,9 +28,13 @@ export class SetColor extends FuckUi {
         } else if (data instanceof Color) {
             color = data;
         }
-        let renders = this.node.getComponentsInChildren(UIRenderer);
-        renders.forEach(render => {
-            render.color = color;
-        });
+        if (this.isOutline) {
+            this.getComponent(LabelOutline).color = color;
+        } else {
+            let renders = this.node.getComponentsInChildren(UIRenderer);
+            renders.forEach(render => {
+                render.color = color;
+            });
+        }
     }
 }
