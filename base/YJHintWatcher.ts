@@ -66,4 +66,12 @@ export class YJHintWatcher extends Component {
         } else n = 1;
         this.hint.setData(String(n));
     }
+
+    /**
+     * 设置红点key
+     * @param types 多个key用逗号分隔
+     */
+    public setHintTypes(types: string) {
+        this.types = types;
+    }
 }

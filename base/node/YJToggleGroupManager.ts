@@ -1,6 +1,6 @@
 
-import { EDITOR, ccclass, property, menu,  executeInEditMode , Component, Node, ToggleContainer, Toggle,  EventTouch} from '../../yj';
-import {  } from 'cc/env';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, ToggleContainer, Toggle, EventTouch } from '../../yj';
+import { } from 'cc/env';
 import { no } from '../../no';
 
 /**
@@ -19,6 +19,8 @@ import { no } from '../../no';
 @menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
 @executeInEditMode()
 export class YJToggleGroupManager extends Component {
+    @property({ displayName: '默认选中项', min: 0, step: 1 })
+    defaultCheckedIdx: number = 0;
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
     @property(no.EventHandlerInfo)
@@ -39,7 +41,6 @@ export class YJToggleGroupManager extends Component {
     defaultCheckedIndexOnSwitchOff: number = 0;
 
     private checkedToggleUuid: string = null;
-    private defaultCheckedIdx: number;
     private needWait: boolean = false;
     private isInit: boolean = true;
 
@@ -54,24 +55,18 @@ export class YJToggleGroupManager extends Component {
     onEnable() {
         if (EDITOR) return;
         this.isInit = true;
-        let items = this.getComponentsInChildren(Toggle);
-        for (let i = 0, n = items.length; i < n; i++) {
-            let toggle = items[i];
+        // let items = this.getComponentsInChildren(Toggle);
+        // for (let i = 0, n = items.length; i < n; i++) {
+        //     let toggle = items[i];
 
-            if (this.defaultCheckedIdx != null && this.reset) {
-                toggle.isChecked = this.defaultCheckedIdx == i;
-                toggle.interactable = !toggle.isChecked;
-            }
+        //     if (toggle.isChecked) {
 
-            if (toggle.isChecked) {
-                if (this.defaultCheckedIdx == null) this.defaultCheckedIdx = i;
-
-                if (this.checkOnEnabel) {
-                    toggle.isChecked = false;
-                    this.a_onCheck(toggle);
-                }
-            }
-        }
+        //         if (this.checkOnEnabel) {
+        //             toggle.isChecked = false;
+        //             this.a_onCheck(toggle);
+        //         }
+        //     }
+        // }
     }
 
     onDisable() {
@@ -83,15 +78,10 @@ export class YJToggleGroupManager extends Component {
         let items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
             let toggle = items[i];
-            // let a = new EventHandler();
-            // a.target = this.node;
-            // a._componentId = js._getClassId(YJToggleGroupManager);
-            // a.handler = 'a_onCheck';
-            // toggle.clickEvents = [a];
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'p_onClick', false);
+            if (this.defaultCheckedIdx == i) toggle.isChecked = true;
         }
-        this.onEnable();
     }
 
 
