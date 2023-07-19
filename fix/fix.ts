@@ -1,5 +1,5 @@
 
-import { _decorator, BaseNode, Component, director, js, Layers, Material, Node, StencilManager } from 'cc';
+import { _decorator, assetManager, BaseNode, Component, director, js, Layers, Material, Node, StencilManager } from 'cc';
 import { no } from '../no';
 const { ccclass, property } = _decorator;
 
@@ -52,3 +52,11 @@ js.mixin(BaseNode.prototype, {
 //         return _commitIA.call(this, renderComp, ia, tex, mat, transform);
 //     }
 // });
+
+// assetManager.pipeline.insert(function (task, done) {
+//     task.output = task.input;
+//     for (let i = 0; i < task.input.length; i++) {
+//         console.log(task.input[i].content);
+//     }
+//     done();
+// }, 1);
