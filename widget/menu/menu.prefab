@@ -33,11 +33,14 @@
         "__id__": 32
       },
       {
-        "__id__": 34
+        "__id__": 36
+      },
+      {
+        "__id__": 38
       }
     ],
     "_prefab": {
-      "__id__": 36
+      "__id__": 40
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -734,7 +737,11 @@
       "__id__": 33
     },
     "defaultCheckedIdx": 0,
-    "onToggleChecked": [],
+    "onToggleChecked": [
+      {
+        "__id__": 34
+      }
+    ],
     "onClick": [],
     "reset": true,
     "checkOnEnabel": true,
@@ -748,6 +755,22 @@
     "fileId": "32O3X7M59MO4feyrFB05S8"
   },
   {
+    "__type__": "EventHandlerInfo",
+    "handler": {
+      "__id__": 35
+    }
+  },
+  {
+    "__type__": "cc.ClickEvent",
+    "target": {
+      "__id__": 1
+    },
+    "component": "",
+    "_componentId": "48663Y86epDmpfyltQh02Eu",
+    "handler": "a_showByIndex",
+    "customEventData": ""
+  },
+  {
     "__type__": "6ff0bjW7DtLFYjj3/O1blLB",
     "_name": "",
     "_objFlags": 0,
@@ -756,7 +779,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 35
+      "__id__": 37
     },
     "menuItems": [],
     "itemTemp": {
@@ -771,6 +794,33 @@
   {
     "__type__": "cc.CompPrefabInfo",
     "fileId": "10Amxg2OxN9pu61uOTvguf"
+  },
+  {
+    "__type__": "48663Y86epDmpfyltQh02Eu",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 39
+    },
+    "registerNode": null,
+    "bind_keys": "",
+    "once": false,
+    "saveIgnore": true,
+    "showValueLog": false,
+    "contents": [],
+    "container": null,
+    "noCache": false,
+    "dynamicAtlas": null,
+    "loadAsset": null,
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "85eEg84thNZI47M4JNOIIp"
   },
   {
     "__type__": "cc.PrefabInfo",

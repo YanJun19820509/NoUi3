@@ -20,7 +20,9 @@ export class YJDataMapInfo {
         if (keys.length == 1) return dataSource.get(keys[0]);
         let a: any = {};
         keys.forEach(k => {
-            a[k] = dataSource.get(k);
+            let v = dataSource[k];
+            if (v == null) v = dataSource.get(k);
+            a[k] = v;
         });
         return a;
     }
