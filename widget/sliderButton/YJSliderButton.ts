@@ -19,19 +19,28 @@ const { ccclass, property, executeInEditMode } = _decorator;
 @ccclass('YJSliderButton')
 @executeInEditMode()
 export class YJSliderButton extends Component {
+    @property
+    interactable: boolean = true;
     @property({ type: Node })
     slider: Node = null;
     @property
     checked: boolean = false;
+    @property({ displayName: '防连点间隔时长(s)' })
+    delay: number = 1;
     @property({ type: no.EventHandlerInfo })
     onChange: no.EventHandlerInfo[] = [];
 
     private _checked: boolean = false;
     private _done: boolean = true;
+    private needWait: boolean = false;
 
     protected onLoad(): void {
         if (EDITOR) return;
         this.node.on(Node.EventType.TOUCH_END, this.onClick, this);
+    }
+
+    onEnable() {
+        this.needWait = false;
     }
 
     protected onDestroy(): void {
@@ -39,7 +48,10 @@ export class YJSliderButton extends Component {
     }
 
     private onClick() {
+        if (!this.interactable || !this.enabled) return;
         if (!this._done) return;
+        if (this.needWait) return;
+        this.needWait = true;
         this._done = false;
         this.checked = !this.checked;
         if (this.slider) {
@@ -48,6 +60,10 @@ export class YJSliderButton extends Component {
             no.EventHandlerInfo.execute(this.onChange, this.checked);
             this._done = true;
         }
+
+        this.scheduleOnce(() => {
+            this.needWait = false;
+        }, this.delay);
     }
 
     private moveSlider() {
