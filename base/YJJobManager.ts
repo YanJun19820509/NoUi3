@@ -80,7 +80,7 @@ export class YJJobManager extends Component {
         }
 
         requestAnimationFrame(function () {
-            YJJobManager.ins.executePerFrame();
+            YJJobManager.ins?.executePerFrame();
         });
     }
 

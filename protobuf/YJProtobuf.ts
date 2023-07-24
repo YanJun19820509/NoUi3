@@ -5,7 +5,6 @@ import protobuf from './protobuf.js'
 @ccclass('YJProtobuf')
 export class YJProtobuf {
     private _root: any;
-    private _pkgName: string;
 
     public static new(): YJProtobuf;
     public static new(pkgName: string, protoDefine: string): YJProtobuf;
@@ -32,22 +31,28 @@ export class YJProtobuf {
             pbd = msgName;
         }
         this._root = protobuf.parse(pbd, { keepCase: true }).root;
-        this._pkgName = pkgName;
     }
 
-    public async loadProto(file: string) {
+    public async loadProto(bundleName: string, files: string | string[]) {
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadFile(file, TextAsset, (asset: TextAsset) => {
-                let a = protobuf.parse(asset.text, { keepCase: true });
-                this._root = a.root;
-                this._pkgName = a.package;
+            files = [].concat(files);
+            no.assetBundleManager.loadFiles<TextAsset>(bundleName, files, null, (assets: TextAsset[]) => {
+                assets.forEach(asset => {
+                    const a = protobuf.parse(asset.text, { keepCase: true });
+                    if (!this._root) this._root = a.root;
+                    else {
+                        for (const ns in a.root.nested) {
+                            this._root.nested[ns] = a.root.nested[ns];
+                        }
+                    }
+                });
                 resolve();
             });
         });
     }
 
-    public encode(msgName: string, data: any): Uint8Array {
-        let msg_type = this.getMessageType(msgName);
+    public encode(msgName: string, data: any, pkgName: string): Uint8Array {
+        let msg_type = this.getMessageType(msgName, pkgName);
         let err = msg_type.verify(data);
         if (err) {
             console.error(err);
@@ -57,9 +62,9 @@ export class YJProtobuf {
         return msg_type.encode(msg).finish();
     }
 
-    public decode(msgName: string, buffer: Uint8Array): any {
+    public decode(msgName: string, buffer: Uint8Array, pkgName: string): any {
         try {
-            let msg_type = this.getMessageType(msgName);
+            let msg_type = this.getMessageType(msgName, pkgName);
             let msg = msg_type.decode(buffer);
             let a = msg_type.toObject(msg);
             // no.log('YJProtobuf decode', msgName, a);
@@ -70,8 +75,8 @@ export class YJProtobuf {
         }
     }
 
-    public messagesToString(): string {
-        let ns = this._root.lookup(this._pkgName);
+    public messagesToString(pkgName: string): string {
+        let ns = this._root.lookup(pkgName);
         let arr = ns.nestedArray;
         let s: string[] = [];
         let t = 'export type {name} = { {props} };';
@@ -105,8 +110,8 @@ export class YJProtobuf {
     }
 
 
-    private getMessageType(msgName: string): any {
-        return this._root.lookupType(`${this._pkgName}.${msgName}`);
+    private getMessageType(msgName: string, pkgName: string): any {
+        return this._root.lookupType(`${pkgName}.${msgName}`);
     }
 
     public static createProtoDefine(jsonObject: any, msgName: string, pkgName: string): string {

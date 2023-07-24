@@ -4,7 +4,7 @@ import {
     Asset, SpriteFrame, Material, Prefab, JsonAsset, EDITOR, Texture2D
 } from '../yj';
 import { no } from '../no';
-import { SpriteFrameDataType } from '../types';
+import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
@@ -21,38 +21,6 @@ import { YJi18n } from '../base/YJi18n';
  *
  */
 
-@ccclass("LoadAssetsInfo")
-export class LoadAssetsInfo {
-    @property
-    assetUuid: string = '';
-    @property({ readonly: true })
-    assetName: string = '';
-
-    constructor(uuid: string) {
-        this.assetUuid = uuid;
-    }
-
-    public async load(): Promise<Asset> {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
-        if (file) {
-            file.addRef();
-            return file;
-        } else
-            return new Promise<Asset>(resolve => {
-                no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
-                    resolve(file);
-                });
-            });
-    }
-
-    public release(cb?: (asset: Asset) => void): void {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
-        if (file) {
-            cb?.(file);
-            no.assetBundleManager.release(file);
-        }
-    }
-}
 @ccclass('JsonInfo')
 export class JsonInfo extends LoadAssetsInfo {
     @property({ type: JsonAsset, editorOnly: true })

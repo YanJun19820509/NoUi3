@@ -2515,21 +2515,27 @@ export namespace no {
 
         public loadFiles<T extends Asset>(bundleName: string, filePaths: string[], onProgress: (progress: number) => void, onComplete: (items: T[]) => void): void {
             let bundle = this.getBundle(bundleName);
-            bundle.load<T>(filePaths, (finished, total, requestItem) => {
-                onProgress && onProgress(finished / total);
-            }, (err, items) => {
-                if (items == null || items.length == 0) {
-                    onComplete && onComplete(null);
-                    // log('loadFiles', filePaths, err.message);
-                } else {
-                    items.forEach(item => {
-                        this.addRef(item);//增加引用计数
-                        this.loadDepends(item.uuid);
-                    });
-                    onComplete && onComplete(items);
-                }
-                // log('loadFiles', items);
-            });
+            if (bundle != null) {
+                bundle.load<T>(filePaths, (finished, total, requestItem) => {
+                    onProgress && onProgress(finished / total);
+                }, (err, items) => {
+                    if (items == null || items.length == 0) {
+                        onComplete && onComplete(null);
+                        // log('loadFiles', filePaths, err.message);
+                    } else {
+                        items.forEach(item => {
+                            this.addRef(item);//增加引用计数
+                            this.loadDepends(item.uuid);
+                        });
+                        onComplete && onComplete(items);
+                    }
+                });
+            } else {
+                this.loadBundle(bundleName, () => {
+                    this.loadFiles(bundleName, filePaths, onProgress, onComplete);
+                });
+            }
+
         }
         /**
          * 加载场景

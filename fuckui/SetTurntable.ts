@@ -80,7 +80,7 @@ export class SetTurntable extends FuckUi {
 
     private requestAnimationFrameTurn() {
         requestAnimationFrame(() => {
-            this.turnByFrame(game.frameTime * .001);
+            this?.turnByFrame(game.frameTime * .001);
         });
     }
 }

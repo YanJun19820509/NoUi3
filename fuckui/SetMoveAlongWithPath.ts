@@ -155,7 +155,7 @@ export class SetMoveAlongWithPath extends FuckUi {
 
     private requestAnimationFrameMove() {
         requestAnimationFrame(() => {
-            this.moveByFrame(game.frameTime * .001);
+            this?.moveByFrame(game.frameTime * .001);
         });
     }
 }

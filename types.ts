@@ -1,7 +1,7 @@
 
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-import { Texture2D, ccclass, property } from './yj';
+import { Asset, Texture2D, ccclass, property } from './yj';
 
 /**
  * Predefined variables
@@ -225,4 +225,38 @@ export function addPanelTo(targetName: string) {
  */
 export function AllowMultipleOpen() {
     return addMeta(YJAllowMultipleOpen, '1');
+}
+
+
+@ccclass("LoadAssetsInfo")
+export class LoadAssetsInfo {
+    @property
+    assetUuid: string = '';
+    @property({ readonly: true })
+    assetName: string = '';
+
+    constructor(uuid: string) {
+        this.assetUuid = uuid;
+    }
+
+    public async load(): Promise<Asset> {
+        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        if (file) {
+            file.addRef();
+            return file;
+        } else
+            return new Promise<Asset>(resolve => {
+                no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                    resolve(file);
+                });
+            });
+    }
+
+    public release(cb?: (asset: Asset) => void): void {
+        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
+        if (file) {
+            cb?.(file);
+            no.assetBundleManager.release(file);
+        }
+    }
 }

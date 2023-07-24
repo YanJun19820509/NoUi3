@@ -21,7 +21,7 @@ export class YJWebSocket implements YJSocketInterface {
     protected ws: WebSocket;
     private url: string;
     private reIniting: boolean = false;
-    protected receivedData: any[] = [];
+    // protected receivedData: any[] = [];
     private isClosed: boolean = true;
 
     public static new(url: string): YJWebSocket {
@@ -83,13 +83,13 @@ export class YJWebSocket implements YJSocketInterface {
         if (data == null || data == '') return;
         if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
-                this.receivedData[this.receivedData.length] = this.onMessage(v);
+                this.onMessage(v);
             }).catch(e => { no.err('YJWebSocket _onMessage error'); });
-        } else this.receivedData[this.receivedData.length] = this.onMessage(data);
+        } else this.onMessage(data);
     }
 
-    public onMessage(v: any): any {
-        return v;
+    public onMessage(v: any) {
+
     }
 
     public onClose() {
@@ -153,35 +153,35 @@ export class YJWebSocket implements YJSocketInterface {
         return false;
     }
 
-    /**
-     * 从服务器返回的数据中查找
-     * @param handler 
-     */
-    public findReceiveData(handler: (data: any) => boolean) {
-        if (this.isClosed || !this.receivedData?.length) return;
-        for (let i = 0, n = this.receivedData.length; i < n; i++) {
-            if (handler(this.receivedData[i])) {
-                this.receivedData.splice(i, 1);
-                break;
-            }
-        }
-    }
+    // /**
+    //  * 从服务器返回的数据中查找
+    //  * @param handler 
+    //  */
+    // public findReceiveData(handler: (data: any) => boolean) {
+    //     if (this.isClosed || !this.receivedData?.length) return;
+    //     for (let i = 0, n = this.receivedData.length; i < n; i++) {
+    //         if (handler(this.receivedData[i])) {
+    //             this.receivedData.splice(i, 1);
+    //             break;
+    //         }
+    //     }
+    // }
 
-    /**
-     * 外部处理已返回的数据，并从队列中移除
-     * @param handler 
-     */
-    public dealReceivedData(handler: (data: any) => void): void {
-        if (this.isClosed || !this.receivedData?.length) return;
-        for (let i = this.receivedData.length - 1; i >= 0; i--) {
-            handler(this.receivedData[i]);
-            this.receivedData.splice(i, 1);
-        }
-    }
+    // /**
+    //  * 外部处理已返回的数据，并从队列中移除
+    //  * @param handler 
+    //  */
+    // public dealReceivedData(handler: (data: any) => void): void {
+    //     if (this.isClosed || !this.receivedData?.length) return;
+    //     for (let i = this.receivedData.length - 1; i >= 0; i--) {
+    //         handler(this.receivedData[i]);
+    //         this.receivedData.splice(i, 1);
+    //     }
+    // }
 
-    public clear(): void {
-        this.receivedData.length = 0;
-    }
+    // public clear(): void {
+    //     this.receivedData.length = 0;
+    // }
 
     public isOpen(): boolean {
         return this.ws?.readyState == WebSocket.OPEN;

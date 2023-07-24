@@ -108,7 +108,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
 
     private requestAnimationFrameScroll() {
         requestAnimationFrame(() => {
-            this.scrollByFrame(game.frameTime * .001);
+            this?.scrollByFrame(game.frameTime * .001);
         })
     }
 }
