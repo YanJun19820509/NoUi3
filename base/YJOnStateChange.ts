@@ -59,11 +59,11 @@ export class YJOnStateChange extends Component {
 
     private _idx: number = 0;
 
-    protected onEnable(): void {
+    protected onLoad(): void {
         this.schedule(this.check, .1, macro.REPEAT_FOREVER);
     }
 
-    protected onDisable(): void {
+    protected onDestroy(): void {
         this.unschedule(this.check);
     }
 
