@@ -72,8 +72,7 @@ export class YJDataWork extends Component {
         if (!!this.data) {
             this.unschedule(this._checkData);
             const afterDataInit = this['afterDataInit'];
-            if (typeof afterDataInit == 'function')
-                afterDataInit.call(this);
+            afterDataInit.call(this);
         }
     }
 
