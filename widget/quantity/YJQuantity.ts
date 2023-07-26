@@ -34,6 +34,7 @@ export class YJQuantity extends YJDataWork {
             customNum: this._customNum,
             num: 1,
             min: 1,
+            max: 999999999,
             showMaxMin: this.amax,
             show1: this.a1,
             show10: this.a10
