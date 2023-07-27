@@ -189,6 +189,7 @@ export class YJCharLabel extends Component {
                 } else labelNode.active = true;
                 this.setSpriteFrame(labelNode, a[i]);
             }
+            if (!isValid(this.node)) return;
             for (let i = a.length, n = labelNodes.length; i < n; i++) {
                 labelNodes[i].active = false;
             }
@@ -307,7 +308,7 @@ export class YJCharLabel extends Component {
     }
 
     private getUuid(str: string): string {
-        let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + this.maxWidth + '_' + (this.bold ? '1': '0') + '_' + (this.italic ? '1': '0');
+        let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + this.maxWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
         return a;
     }
 }
