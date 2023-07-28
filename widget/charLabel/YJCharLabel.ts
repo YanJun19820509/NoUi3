@@ -1,8 +1,9 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate, isValid } from '../../yj';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, Layers, LabelOutline, Font, Layout, Color, Label, Vec2, v2, LabelShadow, Sprite, UIOpacity, Enum, SpriteFrame, instantiate, isValid, Texture2D, RenderTexture, Canvas } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJCharLabelCenter } from './YJCharLabelCenter';
+import { DynamicAtlasTexture } from '../../engine/atlas';
 
 /**
  * Predefined variables
@@ -70,6 +71,8 @@ export class YJCharLabel extends Component {
         if (this.maxWidth != 0) {
             this.node.on(Node.EventType.SIZE_CHANGED, this.onNodeSizeChange, this);
         }
+
+        this.setLabel(this.text);
     }
 
     onDestroy() {
@@ -104,11 +107,11 @@ export class YJCharLabel extends Component {
 
     private initMode() {
         if (this.mode == YJCharLabelMode.String) {
-            if (!this.getComponent(Layout)) {
-                let layout = this.addComponent(Layout);
-                layout.type = Layout.Type.HORIZONTAL;
-                layout.resizeMode = Layout.ResizeMode.CONTAINER;
-            }
+            // if (!this.getComponent(Layout)) {
+            //     let layout = this.addComponent(Layout);
+            //     layout.type = Layout.Type.HORIZONTAL;
+            //     layout.resizeMode = Layout.ResizeMode.CONTAINER;
+            // }
             if (!this.getComponent(Sprite)) {
                 this.addComponent(Sprite);
                 this._text = null;
@@ -206,9 +209,6 @@ export class YJCharLabel extends Component {
             return;
         }
         await this.setSpriteFrame(this.node, s);
-        // this.scheduleOnce(() => {
-        //     this.setScale();
-        // });
     }
 
     private async getSpriteFrame(v: string): Promise<SpriteFrame> {
@@ -225,10 +225,13 @@ export class YJCharLabel extends Component {
     }
 
     private async setSpriteFrame(node: Node, v: string) {
-        let spriteFrame = await this.getSpriteFrame(v);
-        if (!this?.node?.isValid) return;
-        if (node.isValid)
-            (node.getComponent(Sprite) || node.addComponent(Sprite)).spriteFrame = spriteFrame;
+        // let spriteFrame = await this.getSpriteFrame(v);
+        // if (!this?.node?.isValid) return;
+        // if (node.isValid)
+        //     (node.getComponent(Sprite) || node.addComponent(Sprite)).spriteFrame = spriteFrame;
+        let spriteFrame = new SpriteFrame();
+        spriteFrame.texture = this.drawString(v);
+        (node.getComponent(Sprite) || node.addComponent(Sprite)).spriteFrame = spriteFrame;
     }
 
     private _tempCharNode: Node;
@@ -307,5 +310,67 @@ export class YJCharLabel extends Component {
     private getUuid(str: string): string {
         let a = str + "_" + this.color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + this.maxWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
         return a;
+    }
+
+    private _canvas: HTMLCanvasElement;
+    private shareCanvas() {
+        if (!this._canvas) {
+            this._canvas = document.createElement('canvas');
+        }
+        return this._canvas;
+    }
+
+    private drawString(v: string) {
+        let ctx = this.shareCanvas().getContext("2d");
+        const maxWidth = this.maxWidth;
+        if (maxWidth == 0) {
+            const mt = ctx.measureText(v),
+                w = mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft;
+            this.drawText(v, w, this.lineHeight);
+        } else {
+            let oneLine = '', width = 0, height = this.lineHeight;
+            for (let i = 0, n = v.length; i < n; i++) {
+                const c = v[i],
+                    mt = ctx.measureText(c),
+                    w = mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft;
+                if (width + w <= maxWidth) {
+                    oneLine += c;
+                    width += w;
+                } else {
+                    this.drawText(oneLine, maxWidth, height);
+                    oneLine = '';
+                    width = 0;
+                    height += this.lineHeight;
+                }
+            }
+            if (oneLine != '') this.drawText(oneLine, maxWidth, height);
+        }
+        return this.createTexture();
+    }
+
+    private drawText(v: string, width: number, height: number) {
+        const canvas = this.shareCanvas(),
+            ctx = canvas.getContext("2d");
+        canvas.width = width;
+        canvas.height = height;
+        ctx.textBaseline = 'alphabetic';
+        ctx.font = `${this.italic ? 'italic' : 'normal'} ${this.fontSize}px ${this.bold ? 'bold' : ''} ${this.font?.name || this.fontFamily}`;
+
+        ctx.fillStyle = '#' + this.color.toHEX('#rrggbb');
+        if (this.outlineWidth > 0) {
+            ctx.lineWidth = this.outlineWidth;
+            ctx.strokeStyle = '#' + this.outlineColor.toHEX('#rrggbb');
+        }
+        ctx.fillText(v, 0, this.fontSize);
+        if (this.outlineWidth > 0)
+            ctx.strokeText(v, 0, this.fontSize);
+    }
+
+    private createTexture() {
+        const texture = new DynamicAtlasTexture(),
+            canvas = this.shareCanvas();
+        texture.initWithSize(canvas.width, canvas.height);
+        texture.drawImageAt(canvas, 0, 0);
+        return texture;
     }
 }
