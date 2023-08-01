@@ -616,7 +616,7 @@ export class YJCharLabel extends Sprite {
             }
             if (oneLine != '') lines[lines.length] = oneLine;
             height += lineHeight * lines.length;
-            this.drawLines(lines, maxWidth, height);
+            this.drawLines(lines, lines.length == 1 ? width : maxWidth, height);
         } else {
             let mt = ctx.measureText(v),
                 w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width),
