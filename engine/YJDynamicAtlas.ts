@@ -155,6 +155,13 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
+    public packCanvasToDynamicAtlas(canvas: HTMLCanvasElement, uuid: string) {
+        if (!this.isWork) return;
+        this.initAtlas();
+        const p = this.atlas.drawCanvas(canvas, uuid);
+        return p;
+    }
+
     public removeFromDynamicAtlas(frame: SpriteFrame): void {
         if (!this.isWork || !this.atlas || !frame) return;
         this.atlas.clearTexture(frame);
@@ -227,7 +234,7 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
-        let a = !dynamicAtlasManager.enabled && this.enabled;
+        let a = !dynamicAtlasManager.enabled && this.enabled && !EDITOR;
         return a;
     }
 

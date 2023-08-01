@@ -105,6 +105,28 @@ export class Atlas {
         };
     }
 
+    public drawCanvas(canvas: HTMLCanvasElement, uuid: string): PackedFrameData {
+        let info = this._dynamicTextureRect[uuid];
+        if (info) {
+            return null;
+        }
+        let rotate = false;
+        let width = rotate ? canvas.height : canvas.width;
+        let height = rotate ? canvas.width : canvas.height;
+        let p = this._maxRect.find(width, height);
+        if (!p) return null;
+        this.setSpriteFrameTextureRect(uuid, p.x, p.y, width, height, false);
+        this._setSubImage(canvas, p.x, p.y);
+        return {
+            x: p.x,
+            y: p.y,
+            w: width,
+            h: height,
+            rotate: false,
+            texture: this._texture
+        };
+    }
+
     public setSpriteFrameTextureRect(uuid: string, x: number, y: number, w: number, h: number, rotate: boolean) {
         this._dynamicTextureRect[uuid] = {
             x: x,
