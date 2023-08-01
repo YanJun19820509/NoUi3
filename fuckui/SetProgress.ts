@@ -2,6 +2,7 @@
 import { ProgressBar, ccclass, property, menu, Label } from '../yj';
 import { FuckUi } from './FuckUi';
 import { no } from '../no';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 
 /**
  * Predefined variables
@@ -27,6 +28,8 @@ export class SetProgress extends FuckUi {
     initValue: number = 0;
     @property({ type: Label })
     label: Label = null;
+    @property({ type: YJCharLabel })
+    charLabel: YJCharLabel = null;
 
     private speed: number;
     private dir: number;
@@ -74,13 +77,16 @@ export class SetProgress extends FuckUi {
     }
 
     private setLabel(data: any) {
-        if (!this.label) return;
+        if (!this.label && !this.charLabel) return;
         let s: string
         if (typeof data == 'number') {
             s = Math.floor(data * 1000) / 10 + '%';
         } else if (data instanceof Array) {
             s = `${data[0]}/${data[1]}`;
         }
-        this.label.string = s;
+        if (this.label)
+            this.label.string = s;
+        else if (this.charLabel)
+            this.charLabel.string = s;
     }
 }

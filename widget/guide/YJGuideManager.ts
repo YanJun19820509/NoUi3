@@ -1,7 +1,6 @@
-
-import { ccclass, property, Component, DEBUG } from '../../yj';
 import { YJWindowManager } from '../../base/node/YJWindowManager';
 import { no } from '../../no';
+import { Component, DEBUG, ccclass, property } from '../../yj';
 
 /**
  * Predefined variables
@@ -60,7 +59,7 @@ export class YJGuideManager extends Component {
     }
 
     public getGuideInfo(path: string): any {
-        return no.clone(no.getValue(this._config, path));
+        return no.getValue(this._config, path);
     }
 
     public check(step: string): boolean {
@@ -72,6 +71,10 @@ export class YJGuideManager extends Component {
         return true;
     }
 
+    public get isFirst(): boolean {
+        if (!this.isWork) return false;
+        return this.saveSteps.length == 0;
+    }
 }
 
 if (DEBUG) {

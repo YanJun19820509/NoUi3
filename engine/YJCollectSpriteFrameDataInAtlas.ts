@@ -63,9 +63,9 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                     path[name] = a.path;
                 });
                 let infos: { [k: string]: { [t: string]: SpriteFrameDataType } } = {};
-                assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas[]) => {
+                assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas | SpriteAtlas[]) => {
+                    atlases = [].concat(atlases);
                     if (!err) {
-                        console.log(atlases.length);
                         atlases.forEach(atlas => {
                             infos[atlas.name] = this.getSpriteFramesInfo(atlas);
                         });

@@ -325,15 +325,9 @@ export class AutoCreateNode extends Component {
         this.parseChildren(c, n);
         n.children[0].active = false;
         if (!n.getComponent(YJCharLabel)) {
-            let layout = new Node('Layout');
-            layout.parent = n;
-            layout.layer = Layers.Enum.UI_2D;
-            layout.addComponent(UITransform);
-            this.setLayout(layout, Layout.Type.HORIZONTAL, Layout.ResizeMode.CONTAINER);
             let cl = n.addComponent(YJCharLabel);
             cl.dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
-            cl.text = n.children[0].getComponent(Label).string;
-            this.setLayout(n, Layout.Type.HORIZONTAL, Layout.ResizeMode.CONTAINER);
+            cl.string = c.text;
             n.addComponent(SetText);
         }
         return n;
