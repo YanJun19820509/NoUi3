@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 
@@ -380,7 +380,10 @@ export class YJCharLabel extends Sprite {
                 // this.setChars(s);
                 break;
             case YJCharLabelMode.String:
-                this.drawString(this._string);
+                if (this.richText)
+                    this.drawRichString(this._string)
+                else
+                    this.drawString(this._string);
                 break;
         }
         this.updateTexture();
@@ -554,28 +557,36 @@ export class YJCharLabel extends Sprite {
         return this._canvas;
     }
 
-    private setFontStyle(ctx: CanvasRenderingContext2D) {
+    private setFontStyle(ctx: CanvasRenderingContext2D, color?: string, fontSize?: number, bold?: boolean, italic?: boolean) {
+        if (color == null) color = '#' + this.color.toHEX('#rrggbb');
+        if (fontSize == null) fontSize = this.fontSize;
+        if (bold == null) bold = this.bold;
+        if (italic == null) italic = this.italic;
         ctx.textBaseline = 'alphabetic';
         ctx.imageSmoothingQuality = 'high';
-        ctx.font = `${this.italic ? 'italic' : 'normal'} ${this.bold ? 'bold' : ''} ${this.fontSize}px ${this.font?.['_fontFamily'] || this.fontFamily}`;
-        ctx.fillStyle = '#' + this.color.toHEX('#rrggbb');
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.font?.['_fontFamily'] || this.fontFamily}`;
+        ctx.fillStyle = color;
     }
 
-    private setStrokeStyle(ctx: CanvasRenderingContext2D) {
-        ctx.font = `${this.italic ? 'italic' : 'normal'} ${this.bold ? 'bold' : ''} ${this.fontSize}px ${this.font?.['_fontFamily'] || this.fontFamily}`;
-        ctx.lineWidth = this.outlineWidth * 2;
-        ctx.strokeStyle = '#' + this.outlineColor.toHEX('#rrggbb');
+    private setStrokeStyle(ctx: CanvasRenderingContext2D, color?: string, lineWidth?: number) {
+        if (color == null) color = '#' + this.outlineColor.toHEX('#rrggbb');
+        if (lineWidth == null) lineWidth = this.outlineWidth * 2;
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
     }
 
-    private setShadowStyle(ctx: CanvasRenderingContext2D) {
-        ctx.shadowBlur = this.shadowBlur;
-        ctx.shadowColor = '#' + this.shadowColor.toHEX('#rrggbb');
-        ctx.shadowOffsetX = this.shadowOffset.x;
-        ctx.shadowOffsetY = this.shadowOffset.y;
+    private setShadowStyle(ctx: CanvasRenderingContext2D, color?: string, blur?: number, offset?: Vec2) {
+        if (color == null) color = '#' + this.shadowColor.toHEX('#rrggbb');
+        if (blur == null) blur = this.shadowBlur;
+        if (offset == null) offset = this.shadowOffset;
+        ctx.shadowBlur = blur;
+        ctx.shadowColor = color;
+        ctx.shadowOffsetX = offset.x;
+        ctx.shadowOffsetY = offset.y;
     }
 
     private drawString(v: string) {
-        let ctx = this.shareCanvas().getContext("2d");
+        const ctx = this.shareCanvas().getContext("2d");
         this.setFontStyle(ctx);
         if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
@@ -642,12 +653,12 @@ export class YJCharLabel extends Sprite {
         height += this.extHeight();
         canvas.width = width;
         canvas.height = height;
+        this.setFontStyle(ctx);
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         if (this.outlineWidth > 0) {
             this.setStrokeStyle(ctx);
             ctx.strokeText(v, x, y);
         }
-        this.setFontStyle(ctx);
         ctx.fillText(v, x, y);
 
         if (this.underline)
@@ -724,6 +735,191 @@ export class YJCharLabel extends Sprite {
     }
 
     private drawRichString(v: string) {
+        if (this.overflow != Label.Overflow.RESIZE_HEIGHT) this.drawRichStringNotResizeHeight(v);
+        else this.drawRichStringWithResizeHeight(v);
+    }
 
+    private drawRichStringNotResizeHeight(v: string) {
+        const maxWidth = this.maxWidth;
+        const ctx = this.shareCanvas().getContext("2d");
+        let a = new HtmlTextParser().parse(v),
+            ww = 0,
+            lineHeight = this.lineHeight,
+            maxSize = this.fontSize;
+        for (let i = 0, n = a.length; i < n; i++) {
+            const aa = a[i], style = aa.style, text = aa.text;
+            this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+            if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+            maxSize = Math.max(maxSize, style?.size || 0);
+            let mt = ctx.measureText(text),
+                w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+            lineHeight = Math.max(mt.fontBoundingBoxAscent + mt.fontBoundingBoxDescent, lineHeight);
+            ww += w;
+        }
+        if (this.overflow == Label.Overflow.CLAMP) {
+            ww = Math.min(ww, maxWidth);
+        }
+        this.drawHtmlTexts(a, ww, lineHeight, maxSize);
+    }
+
+    private drawRichStringWithResizeHeight(v: string) {
+        const maxWidth = this.maxWidth;
+        const ctx = this.shareCanvas().getContext("2d");
+        const extWidth = this.extWidth();
+        let blankWork = '', blankWidth = 0;
+        if (this.blankBreakWord) {
+            blankWork = ' ';
+            const mt = ctx.measureText(blankWork);
+            blankWidth = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+        }
+
+        let a = new HtmlTextParser().parse(v),
+            maxSize = this.fontSize,
+            lines: any[] = [],
+            oneLine: any = { htmls: [], width: 0 },
+            width = extWidth,
+            height = this.extHeight(),
+            lineHeight = this.lineHeight;
+
+        for (let i = 0, n = a.length; i < n; i++) {
+            const aa = a[i], style = aa.style, text = aa.text;
+
+            if (style?.isNewLine) {
+                oneLine.width = width;
+                lines[lines.length] = no.clone(oneLine);
+                oneLine.htmls.length = 0;
+                width = extWidth;
+                continue;
+            }
+
+            this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+            if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+            maxSize = Math.max(maxSize, style?.size || 0);
+
+            let words: string | string[];
+            if (this.blankBreakWord)
+                words = text.split(blankWork);
+            else words = text;
+
+            let html: IHtmlTextParserResultObj = { style: style, text: '' };
+            for (let i = 0, n = words.length; i < n; i++) {
+                const c = words[i],
+                    mt = ctx.measureText(c),
+                    w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+                lineHeight = Math.max(mt.fontBoundingBoxAscent + mt.fontBoundingBoxDescent, lineHeight);
+                if (width + w <= maxWidth) {
+                    html.text += c + (i < n - 1 ? blankWork : '');
+                    width += w + blankWidth;
+                } else {
+                    oneLine.htmls[oneLine.htmls.length] = html;
+                    oneLine.width = width;
+                    lines[lines.length] = no.clone(oneLine);
+                    html.text = c + (i < n - 1 ? blankWork : '');
+                    width = extWidth + w + blankWidth;
+                    oneLine.htmls.length = 0;
+                }
+            }
+            if (html.text != '') {
+                oneLine.htmls[oneLine.htmls.length] = html;
+            }
+        }
+        if (oneLine.htmls.length > 0) {
+            oneLine.width = width;
+            lines[lines.length] = oneLine;
+        }
+        height += lineHeight * lines.length;
+        this.drawHtmlLines(lines, lines.length == 1 ? width : maxWidth, height, maxSize);
+    }
+
+    private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
+        const canvas = this.shareCanvas(),
+            ctx = canvas.getContext("2d"),
+            y = fontSize - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+        let x = this.outlineWidth - (this.shadowOffset.x < 0 ? this.shadowOffset.x - this.shadowBlur : -2),
+            x1 = x;
+        width += this.extWidth();
+        height += this.extHeight();
+        canvas.width = width;
+        canvas.height = height;
+        let len = 0;
+        for (let i = 0, n = htmls.length; i < n; i++) {
+            const html = htmls[i], style = html.style, text = html.text;
+            this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+            if (style?.outline || this.outlineWidth > 0) {
+                this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+                ctx.strokeText(text, x, y);
+            }
+            ctx.fillText(text, x, y);
+            let mt = ctx.measureText(text);
+            x += Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+            len += text.length;
+        }
+
+        if (this.underline) {
+            this.setFontStyle(ctx);
+            ctx.fillText('_'.repeat(len), x1, y + 6, width);
+        }
+
+        let scale = 1;
+        if (this.overflow == Label.Overflow.SHRINK) {
+            const maxWidth = this.maxWidth;
+            if (width > maxWidth) {
+                scale = maxWidth / width;
+                width = maxWidth;
+                height *= scale;
+                ctx.scale(scale, scale);
+            }
+        }
+        no.size(this.node, math.size(width, height));
+    }
+
+    private drawHtmlLines(lines: any[], width: number, height: number, fontSize: number) {
+        const canvas = this.shareCanvas(),
+            ctx = canvas.getContext("2d"),
+            extWidth = this.extWidth();
+        canvas.width = width;
+        canvas.height = height;
+        this.setFontStyle(ctx);
+        if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
+        if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+
+        lines.forEach((line, i) => {
+            let x = 0, y = fontSize + this.lineHeight * i - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+            if (this.horizentalAlign == YJCharLabelHorizentalAlign.Left) {
+                x = this.outlineWidth - (this.shadowOffset.x < 0 ? this.shadowOffset.x - this.shadowBlur : -2);
+            } else {
+                let w = line.width + extWidth;
+                if (this.horizentalAlign == YJCharLabelHorizentalAlign.Center) {
+                    x = (width - w) / 2;
+                } else {
+                    x = width - w;
+                }
+            }
+
+            let len = 0, x1 = x;
+            for (let i = 0, n = line.htmls.length; i < n; i++) {
+                const html = line.htmls[i], style = html.style, text = html.text;
+                this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+                if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+                if (style?.outline || this.outlineWidth > 0) {
+                    this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+                    ctx.strokeText(text, x1, y);
+                }
+                ctx.fillText(text, x1, y);
+                let mt = ctx.measureText(text);
+                x1 += Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+                len += text.length;
+            }
+
+            if (this.underline) {
+                this.setFontStyle(ctx);
+                ctx.fillText('_'.repeat(len), x, y + 6, width);
+            }
+        });
+
+        no.size(this.node, math.size(width, height));
     }
 }
