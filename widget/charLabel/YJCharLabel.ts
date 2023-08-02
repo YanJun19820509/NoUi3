@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 
@@ -18,11 +18,6 @@ import { no } from '../../no';
 enum YJCharLabelMode {
     Char = 0,
     String
-}
-enum YJCharLabelHorizentalAlign {
-    Left = 0,
-    Center,
-    Right
 }
 
 @ccclass('YJCharLabel')
@@ -77,7 +72,7 @@ export class YJCharLabel extends Sprite {
 
 
     @property({ type: Enum(YJCharLabelMode) })
-    mode: YJCharLabelMode = YJCharLabelMode.Char;
+    mode: YJCharLabelMode = YJCharLabelMode.String;
     //文本内容
     @property({ type: CCString })
     set string(v: string) {
@@ -143,14 +138,14 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
     //水平对齐
-    @property({ type: Enum(YJCharLabelHorizentalAlign) })
-    public get horizentalAlign(): number {
-        return this._horizentalAlign;
+    @property({ type: Enum(HorizontalTextAlignment) })
+    public get horizontalAlign(): number {
+        return this._horizontalAlign;
     }
 
-    public set horizentalAlign(v: number) {
-        if (v == this._horizentalAlign) return;
-        this._horizentalAlign = v;
+    public set horizontalAlign(v: number) {
+        if (v == this._horizontalAlign) return;
+        this._horizontalAlign = v;
         this.setLabel();
     }
     //文字排版
@@ -316,7 +311,7 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _lineHeight: number = 22;
     @property({ serializable: true })
-    protected _horizentalAlign: number = 0;
+    protected _horizontalAlign: number = 0;
     @property({ serializable: true })
     protected _overflow: number = 0;
     @property({ serializable: true })
@@ -343,6 +338,8 @@ export class YJCharLabel extends Sprite {
     protected _blankBreakWord: boolean = false;
     @property({ serializable: true })
     protected _richText: boolean = false;
+
+    public verticalAlign: number;
 
     onLoad() {
         this.spriteFrame = new SpriteFrame();
@@ -714,10 +711,10 @@ export class YJCharLabel extends Sprite {
             let x = 0, y = this.fontSize + this.lineHeight * i - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
             const mt = ctx.measureText(v),
                 w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width) + extWidth;
-            if (this.horizentalAlign == YJCharLabelHorizentalAlign.Left) {
+            if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
                 x = this.outlineWidth - (this.shadowOffset.x < 0 ? this.shadowOffset.x - this.shadowBlur : -2);
             } else {
-                if (this.horizentalAlign == YJCharLabelHorizentalAlign.Center) {
+                if (this.horizontalAlign == HorizontalTextAlignment.CENTER) {
                     x = (width - w) / 2;
                 } else {
                     x = width - w;
@@ -943,11 +940,11 @@ export class YJCharLabel extends Sprite {
 
         lines.forEach((line, i) => {
             let x = 0, y = fontSize + this.lineHeight * i - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
-            if (this.horizentalAlign == YJCharLabelHorizentalAlign.Left) {
+            if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
                 x = this.outlineWidth - (this.shadowOffset.x < 0 ? this.shadowOffset.x - this.shadowBlur : -2);
             } else {
                 let w = line.width + extWidth;
-                if (this.horizentalAlign == YJCharLabelHorizentalAlign.Center) {
+                if (this.horizontalAlign == HorizontalTextAlignment.CENTER) {
                     x = (width - w) / 2;
                 } else {
                     x = width - w;

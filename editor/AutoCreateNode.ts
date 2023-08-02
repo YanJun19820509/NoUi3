@@ -234,7 +234,7 @@ export class AutoCreateNode extends Component {
     }
 
     private createLabelNode(c: any, parent: Node): Node {
-        let n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
+        let n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
         if (!n.getComponent('fixedLab')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {
@@ -246,13 +246,13 @@ export class AutoCreateNode extends Component {
             }
         }
         if (n.getComponent('fixedLab')) {
-            let l = n.getComponent(Label) || n.addComponent(Label);
+            let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             l.string = c.text;
             l.fontSize = Number(c.size);
             l.lineHeight = l.fontSize;
             l.color = no.str2Color(c.textColor);
-            l.isBold = c.bold;
-            l.isItalic = c.italic;
+            l.bold = c.bold;
+            l.italic = c.italic;
             l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
             if (c.direction == 'vertical') {
                 l.overflow = Overflow.RESIZE_HEIGHT;
