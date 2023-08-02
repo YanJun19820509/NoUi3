@@ -99,7 +99,6 @@ export class YJWindowManager extends Component {
         if (!allowMultipleOpen) {
             let a = content.getComponentInChildren(comp);
             if (a != null) {
-                no.evn.emit('__will_show_panel');
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
                     no.visible(a.node, true);
