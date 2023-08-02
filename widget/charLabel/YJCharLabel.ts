@@ -793,6 +793,26 @@ export class YJCharLabel extends Sprite {
                 continue;
             }
 
+            let html: IHtmlTextParserResultObj = { style: style, text: '' };
+
+            if (this.blankBreakWord && text == blankWork) {
+                if (width + blankWidth <= maxWidth) {
+                    html.text += blankWork;
+                    width += blankWidth;
+                    oneLine.htmls[oneLine.htmls.length] = html;
+                    oneLine.width = width;
+                } else {
+                    lines[lines.length] = no.clone(oneLine);
+                    // html.text = blankWork;
+                    // width = extWidth + blankWidth;
+                    oneLine.htmls.length = 0;
+                    // oneLine.htmls[oneLine.htmls.length] = html;
+                    // oneLine.width = width;
+                    width = extWidth;
+                }
+                continue;
+            }
+
             this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
             if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
@@ -803,7 +823,6 @@ export class YJCharLabel extends Sprite {
                 words = text.split(blankWork);
             else words = text;
 
-            let html: IHtmlTextParserResultObj = { style: style, text: '' };
             for (let i = 0, n = words.length; i < n; i++) {
                 const c = words[i],
                     mt = ctx.measureText(c),
@@ -811,13 +830,15 @@ export class YJCharLabel extends Sprite {
                 lineHeight = Math.max(mt.fontBoundingBoxAscent + mt.fontBoundingBoxDescent, lineHeight);
                 if (width + w <= maxWidth) {
                     html.text += c + (i < n - 1 ? blankWork : '');
-                    width += w + blankWidth;
+                    width += w + (i < n - 1 ? blankWidth : 0);
                 } else {
-                    oneLine.htmls[oneLine.htmls.length] = html;
+                    if (html.text != '') {
+                        oneLine.htmls[oneLine.htmls.length] = html;
+                    }
                     oneLine.width = width;
                     lines[lines.length] = no.clone(oneLine);
                     html.text = c + (i < n - 1 ? blankWork : '');
-                    width = extWidth + w + blankWidth;
+                    width = extWidth + w + (i < n - 1 ? blankWidth : 0);
                     oneLine.htmls.length = 0;
                 }
             }
