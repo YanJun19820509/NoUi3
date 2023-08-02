@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 
@@ -213,6 +213,17 @@ export class YJCharLabel extends Sprite {
         this._underline = v;
         this.setLabel();
     }
+    //下划线宽
+    @property({ visible() { return this._underline; } })
+    public get underlineWidth(): number {
+        return this._underlineWidth;
+    }
+
+    public set underlineWidth(v: number) {
+        if (v == this._underlineWidth) return;
+        this._underlineWidth = v;
+        this.setLabel();
+    }
     //描边颜色
     @property
     public get outlineColor(): Color {
@@ -317,6 +328,8 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _underline: boolean = false;
     @property({ serializable: true })
+    protected _underlineWidth: number = 2;
+    @property({ serializable: true })
     protected _outlineWidth: number = 0;
     @property({ serializable: true })
     protected _outlineColor: Color = Color.BLACK.clone();
@@ -375,12 +388,15 @@ export class YJCharLabel extends Sprite {
     // }
 
     private setLabel(): void {
+        if (!isValid(this.node) || !this.node.activeInHierarchy) return;
         switch (this.mode) {
             case YJCharLabelMode.Char:
                 // this.setChars(s);
                 break;
             case YJCharLabelMode.String:
-                if (this.richText)
+                if (this._string == '')
+                    this.clearString();
+                else if (this.richText)
                     this.drawRichString(this._string)
                 else
                     this.drawString(this._string);
@@ -585,6 +601,13 @@ export class YJCharLabel extends Sprite {
         ctx.shadowOffsetY = offset.y;
     }
 
+    private clearString() {
+        const canvas = this.shareCanvas();
+        canvas.width = 0;
+        canvas.height = this.lineHeight;
+        no.size(this.node, math.size(0, this.lineHeight));
+    }
+
     private drawString(v: string) {
         const ctx = this.shareCanvas().getContext("2d");
         this.setFontStyle(ctx);
@@ -613,7 +636,9 @@ export class YJCharLabel extends Sprite {
                     width = extWidth;
                     continue;
                 }
-                const mt = ctx.measureText(c),
+                const mt = ctx.measureText(c);
+                let w = mt.width;
+                if (this._italic && i == n - 1)
                     w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
                 lineHeight = Math.max(mt.fontBoundingBoxAscent + mt.fontBoundingBoxDescent, lineHeight);
                 if (width + w <= maxWidth) {
@@ -661,8 +686,7 @@ export class YJCharLabel extends Sprite {
         }
         ctx.fillText(v, x, y);
 
-        if (this.underline)
-            ctx.fillText('_'.repeat(v.length), x, y + 6, width);
+        this.drawUnderline(ctx, width, x, y);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -683,16 +707,16 @@ export class YJCharLabel extends Sprite {
             extWidth = this.extWidth();
         canvas.width = width;
         canvas.height = height;
-        this.setFontStyle(ctx);
-        if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
-        if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         lines.forEach((v, i) => {
+            this.setFontStyle(ctx);
+            if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
+            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
             let x = 0, y = this.fontSize + this.lineHeight * i - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+            const mt = ctx.measureText(v),
+                w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width) + extWidth;
             if (this.horizentalAlign == YJCharLabelHorizentalAlign.Left) {
                 x = this.outlineWidth - (this.shadowOffset.x < 0 ? this.shadowOffset.x - this.shadowBlur : -2);
             } else {
-                const mt = ctx.measureText(v),
-                    w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width) + extWidth;
                 if (this.horizentalAlign == YJCharLabelHorizentalAlign.Center) {
                     x = (width - w) / 2;
                 } else {
@@ -704,8 +728,7 @@ export class YJCharLabel extends Sprite {
             }
             ctx.fillText(v, x, y);
 
-            if (this.underline)
-                ctx.fillText('_'.repeat(v.length), x, y + 6, width);
+            this.drawUnderline(ctx, w, x, y);
         });
 
         no.size(this.node, math.size(width, height));
@@ -716,7 +739,18 @@ export class YJCharLabel extends Sprite {
     }
 
     private extHeight(): number {
-        return this.outlineWidth * 2 + this.shadowBlur + Math.abs(this.shadowOffset.y) + (this.underline ? 4 : 0);
+        return this.outlineWidth * 2 + this.shadowBlur + Math.abs(this.shadowOffset.y) + (this.underline ? this._underlineWidth : 0);
+    }
+
+    private drawUnderline(ctx: CanvasRenderingContext2D, width: number, x: number, y: number) {
+        if (!this.underline || width == 0) return;
+        y += this._underlineWidth / 2 + 8;
+        ctx.beginPath();
+        ctx.strokeStyle = '#' + this.color.toHEX('#rrggbb');
+        ctx.lineWidth = this._underlineWidth;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + width, y);
+        ctx.stroke();
     }
 
     private updateTexture() {
@@ -825,7 +859,9 @@ export class YJCharLabel extends Sprite {
 
             for (let i = 0, n = words.length; i < n; i++) {
                 const c = words[i],
-                    mt = ctx.measureText(c),
+                    mt = ctx.measureText(c);
+                let w = mt.width;
+                if (this._italic && i == n - 1)
                     w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
                 lineHeight = Math.max(mt.fontBoundingBoxAscent + mt.fontBoundingBoxDescent, lineHeight);
                 if (width + w <= maxWidth) {
@@ -874,15 +910,13 @@ export class YJCharLabel extends Sprite {
                 ctx.strokeText(text, x, y);
             }
             ctx.fillText(text, x, y);
-            let mt = ctx.measureText(text);
-            x += Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
-            len += text.length;
+            const mt = ctx.measureText(text),
+                w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+            x += w;
+            len += w;
         }
 
-        if (this.underline) {
-            this.setFontStyle(ctx);
-            ctx.fillText('_'.repeat(len), x1, y + 6, width);
-        }
+        this.drawUnderline(ctx, len, x1, y);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -930,15 +964,13 @@ export class YJCharLabel extends Sprite {
                     ctx.strokeText(text, x1, y);
                 }
                 ctx.fillText(text, x1, y);
-                let mt = ctx.measureText(text);
-                x1 += Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
-                len += text.length;
+                const mt = ctx.measureText(text),
+                    w = Math.max(mt.actualBoundingBoxRight - mt.actualBoundingBoxLeft, mt.width);
+                x1 += w;
+                len += w;
             }
 
-            if (this.underline) {
-                this.setFontStyle(ctx);
-                ctx.fillText('_'.repeat(len), x, y + 6, width);
-            }
+            this.drawUnderline(ctx, len, x, y);
         });
 
         no.size(this.node, math.size(width, height));

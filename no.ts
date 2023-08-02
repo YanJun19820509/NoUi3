@@ -1748,7 +1748,7 @@ export namespace no {
         if (pos != undefined) {
             node.setPosition(pos);
         }
-        return node.getPosition();
+        return node.getPosition().clone();
     }
 
     /**
