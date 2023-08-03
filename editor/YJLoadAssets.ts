@@ -117,7 +117,7 @@ export class YJLoadAssets extends Component {
     @property
     autoLoad: boolean = false;
     @property({ displayName: '加载语言包', tooltip: '语言包需要以YJi18n中的语言标志命名' })
-    loadLanguageBundle: boolean = false;
+    loadLanguageBundle: boolean = true;
     @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
     onLoaded: no.EventHandlerInfo[] = [];
     // @property(MaterialInfo)
@@ -213,7 +213,7 @@ export class YJLoadAssets extends Component {
 
 
                 if (this.loadLanguageBundle) {
-                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.defaultLanguage, null, items => {
+                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, null, items => {
                         if (items) {
                             items.forEach(item => {
                                 if (item instanceof JsonAsset) {
