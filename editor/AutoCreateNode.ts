@@ -259,16 +259,14 @@ export class AutoCreateNode extends Component {
             }
             if (c.outline != '') {
                 let info = c.outline.split('|');
-                let ol = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
-                ol.color = no.str2Color(info[0]);
-                ol.width = Number(info[1]);
+                l.outlineColor = no.str2Color(info[0]);
+                l.outlineWidth = Number(info[1]);
             }
             if (c.shadow != '') {
                 let info = c.shadow.split('|');
-                let ls = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
-                ls.color = no.str2Color(info[0]);
-                ls.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
-                ls.blur = Number(info[3]);
+                l.shadowColor = no.str2Color(info[0]);
+                l.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+                l.shadowBlur = Number(info[3]);
             }
         } else {
             let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
