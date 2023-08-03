@@ -161,6 +161,7 @@ export class YJCharLabel extends Sprite {
         if (v == Label.Overflow.NONE) {
             this.sizeMode = Sprite.SizeMode.RAW;
         } else if (v == Label.Overflow.CLAMP || v == Label.Overflow.SHRINK || v == Label.Overflow.RESIZE_HEIGHT) {
+            this.maxWidth = no.width(this.node);
             this.sizeMode = Sprite.SizeMode.CUSTOM;
         }
         this.setLabel();

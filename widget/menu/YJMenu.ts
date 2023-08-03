@@ -3,6 +3,7 @@ import { YJToggleGroupManager } from "../../base/node/YJToggleGroupManager";
 import { FuckUi } from "../../fuckui/FuckUi";
 import { no } from "../../no";
 import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle } from "../../yj";
+import { YJCharLabel } from "../charLabel/YJCharLabel";
 
 //菜单构建器
 
@@ -23,6 +24,8 @@ export class YJMenu extends Component {
     itemTemp: Node = null;
     @property({ type: Node })
     container: Node = null;
+    @property({ step: 1, min: 0 })
+    defaultChecked: number = 0;
     @property
     autoCreate: boolean = true;
 
@@ -31,11 +34,17 @@ export class YJMenu extends Component {
     }
 
     public createMenu() {
-        this.menuItems.forEach(info => {
+        this.menuItems.forEach((info, i) => {
             const item = instantiate(this.itemTemp);
-            item.getComponent(Toggle).isChecked = false;
-            if (info.title)
-                item.getComponentInChildren(Label)?.node.getComponent(FuckUi)?.setData(no.jsonStringify(info.title));
+            item.getComponent(Toggle).isChecked = this.defaultChecked == i;
+            if (info.title) {
+                let list: any[] = item.getComponentsInChildren(Label);
+                if (list.length == 0)
+                    list = item.getComponentsInChildren(YJCharLabel);
+                list.forEach(a => {
+                    a.getComponent(FuckUi)?.setData(no.jsonStringify(info.title));
+                });
+            }
             if (info.redHintKeys)
                 item.getComponentInChildren(YJHintWatcher)?.setHintTypes(info.redHintKeys);
             item.active = true;
