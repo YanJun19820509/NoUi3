@@ -1,4 +1,4 @@
-import { TextAsset, ccclass } from '../yj';
+import { JsonAsset, TextAsset, ccclass } from '../yj';
 import { no } from '../no';
 import protobuf from './protobuf.js'
 
@@ -31,6 +31,24 @@ export class YJProtobuf {
             pbd = msgName;
         }
         this._root = protobuf.parse(pbd, { keepCase: true }).root;
+    }
+
+    public async loadProtoJson(bundleName: string, files: string | string[]) {
+        return new Promise<void>(resolve => {
+            files = [].concat(files);
+            no.assetBundleManager.loadFiles<JsonAsset>(bundleName, files, null, (assets: JsonAsset[]) => {
+                assets.forEach(asset => {
+                    const a = protobuf.Root.fromJSON(asset.json);
+                    if (!this._root) this._root = a.root;
+                    else {
+                        for (const ns in a.root.nested) {
+                            this._root.nested[ns] = a.root.nested[ns];
+                        }
+                    }
+                });
+                resolve();
+            });
+        });
     }
 
     public async loadProto(bundleName: string, files: string | string[]) {

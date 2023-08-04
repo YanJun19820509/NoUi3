@@ -3,7 +3,10 @@ import { no } from "../no";
 import { ccclass, Component, EDITOR, executeInEditMode, property, TextAsset } from "../yj";
 import { YJProtobuf } from "./YJProtobuf";
 
-/**proto管理器 */
+/**proto管理器 
+ * 通过pbjs 将多个.proto文件合成一个.json文件
+ * proto管理器将加载该.json文件
+*/
 @ccclass('YJProtobufManager')
 @executeInEditMode()
 export class YJProtobufManager extends Component {
@@ -38,15 +41,16 @@ export class YJProtobufManager extends Component {
 
     private loadAllProtoFiles() {
         YJProtobufManager._protobuf = new YJProtobuf();
-        YJProtobufManager._protobuf.loadProto(this.bundleName, this.protoFiles);
+        YJProtobufManager._protobuf.loadProtoJson(this.bundleName, this.protoFiles);
     }
 
     private loadFiles() {
         this.protoFiles.length = 0;
-        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.root, 'cc.TextAsset', infos => {
+        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.root, 'cc.JsonAsset', infos => {
+            console.log(infos);
             infos.forEach(info => {
-                if (info.url.includes('.proto'))
-                    this.protoFiles[this.protoFiles.length] = info.url.replace(this.root + '/', '').replace('.proto', '');
+                if (info.url.includes('.json'))
+                    this.protoFiles[this.protoFiles.length] = info.url.replace(this.root + '/', '').replace('.json', '');
             });
         });
         this.bundleName = this.root.replace('db://assets/', '');

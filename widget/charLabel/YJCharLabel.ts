@@ -334,7 +334,7 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
     @property({ serializable: true })
-    protected _lineHeight: number = 22;
+    protected _lineHeight: number = 28;
     @property({ serializable: true })
     protected _horizontalAlign: number = 0;
     @property({ serializable: true })

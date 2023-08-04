@@ -234,7 +234,7 @@ export class AutoCreateNode extends Component {
     }
 
     private createLabelNode(c: any, parent: Node): Node {
-        let n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent);
+        let n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         if (!n.getComponent('fixedLab')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {

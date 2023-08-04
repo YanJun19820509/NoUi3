@@ -25,6 +25,17 @@ export class YJSyncContentSizeToTarget extends Component {
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
 
+    @property({ displayName: '测试' })
+    public get test(): boolean {
+        return false;
+    }
+
+    public set test(v: boolean) {
+        if (v) {
+            this.check()
+        }
+    }
+
     protected onEnable(): void {
         if (this.checkSelf)
             this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
@@ -38,6 +49,7 @@ export class YJSyncContentSizeToTarget extends Component {
     }
 
     private check() {
+
         if (!this.target || !isValid(this?.node)) {
             return;
         }
@@ -56,6 +68,8 @@ export class YJSyncContentSizeToTarget extends Component {
         size.width += this.offset.width;
         size.height += this.offset.height;
         no.size(to, size);
+        console.log('1111111', size)
+
         no.EventHandlerInfo.execute(this.onChange);
     }
 }
