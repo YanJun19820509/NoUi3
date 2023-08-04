@@ -2,7 +2,7 @@ import { YJHintWatcher } from "../../base/YJHintWatcher";
 import { YJToggleGroupManager } from "../../base/node/YJToggleGroupManager";
 import { FuckUi } from "../../fuckui/FuckUi";
 import { no } from "../../no";
-import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle } from "../../yj";
+import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle, DEBUG } from "../../yj";
 import { YJCharLabel } from "../charLabel/YJCharLabel";
 
 //菜单构建器
@@ -13,6 +13,8 @@ export class YJMenuItemInfo {
     title: string = '';
     @property({ displayName: '红点key', tooltip: '多个key用逗号分隔' })
     redHintKeys: string = '';
+    @property
+    DEBUG: boolean = false;
 }
 
 @ccclass('YJMenu')
@@ -35,6 +37,7 @@ export class YJMenu extends Component {
 
     public createMenu() {
         this.menuItems.forEach((info, i) => {
+            if (!DEBUG && info.DEBUG) return;
             const item = instantiate(this.itemTemp);
             item.getComponent(Toggle).isChecked = this.defaultChecked == i;
             if (info.title) {
