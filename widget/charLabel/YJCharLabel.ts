@@ -322,7 +322,19 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
 
-    @property(YJDynamicAtlas)
+    @property
+    public get packToAtlas(): boolean {
+        return this._packToAtlas;
+    }
+
+    public set packToAtlas(v: boolean) {
+        if (v == this._packToAtlas) return;
+        this._packToAtlas = v;
+        if (v && !this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        else if (!v) this.dynamicAtlas = null;
+    }
+
+    @property({ type: YJDynamicAtlas, readonly: true, visible() { return this._packToAtlas; } })
     dynamicAtlas: YJDynamicAtlas = null;
 
     @property({ serializable: true })
@@ -365,6 +377,8 @@ export class YJCharLabel extends Sprite {
     protected _richText: boolean = false;
     @property({ serializable: true })
     protected _hdp: boolean = false;
+    @property({ serializable: true })
+    protected _packToAtlas: boolean = true;
 
     //高清模式系数
     private _hdpScale = 4;
@@ -375,8 +389,10 @@ export class YJCharLabel extends Sprite {
 
     onLoad() {
         this.spriteFrame = new SpriteFrame();
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
+        if (this.packToAtlas) {
+            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
+        }
         this.setLabel();
     }
 
