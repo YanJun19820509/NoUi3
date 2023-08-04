@@ -101,7 +101,7 @@ export class YJCharLabel extends Sprite {
 
     public set fontSize(v: number) {
         if (v == this._fontSize) return;
-        this.lineHeight = v - this._fontSize + 8;
+        this.lineHeight += v - this._fontSize;
         this._fontSize = v;
         this.setLabel();
     }
@@ -316,6 +316,9 @@ export class YJCharLabel extends Sprite {
     public set HDP(v: boolean) {
         if (v == this._hdp) return;
         this._hdp = v;
+        if (v) {
+            this._hdpScale = Math.ceil(40 / this._fontSize);
+        }
         this.setLabel();
     }
 
