@@ -376,6 +376,7 @@ export class YJCharLabel extends Sprite {
     onLoad() {
         this.spriteFrame = new SpriteFrame();
         if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
         this.setLabel();
     }
 
