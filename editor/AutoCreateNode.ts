@@ -143,17 +143,17 @@ export class AutoCreateNode extends Component {
             if (!this.node.getComponent(YJShowSpriteFrameInSample2D))
                 this.node.addComponent(YJShowSpriteFrameInSample2D);
             this.parent = this.node.getChildByName('Canvas') || this.node;
-            if (!this.node.getComponent(Widget)) {
-                let widget = this.node.addComponent(Widget);
-                widget.isAlignTop = true;
-                widget.isAlignBottom = true;
-                widget.isAlignLeft = true;
-                widget.isAlignRight = true;
-                widget.top = 0;
-                widget.bottom = 0;
-                widget.left = 0;
-                widget.right = 0;
-            }
+            // if (!this.node.getComponent(Widget)) {
+            //     let widget = this.node.addComponent(Widget);
+            //     widget.isAlignTop = true;
+            //     widget.isAlignBottom = true;
+            //     widget.isAlignLeft = true;
+            //     widget.isAlignRight = true;
+            //     widget.top = 0;
+            //     widget.bottom = 0;
+            //     widget.left = 0;
+            //     widget.right = 0;
+            // }
             config.nodes.forEach((n: any) => {
                 n.x = n.x - size.width / 2;
                 n.y = size.height / 2 - n.y;
@@ -411,19 +411,19 @@ export class AutoCreateNode extends Component {
     }
 
     private getNode(cname: string, type: typeof Component, x: number, y: number, w: number, h: number, parent: Node, addDynamicTexture = true): Node {
-        // let idx = this.nameMap[cname] || 0;
-        // this.nameMap[cname] = idx + 1;
-        // let name = `${cname}_${idx}`;
-        // let list = this.parent.getComponentsInChildren(type);
-        let n: Node = no.getChildByNameRecursion(this.parent, cname);
-        // for (let i = 0, l = list.length; i < l; i++) {
-        //     let a = list[i].node;
-        //     if (a.name == name) {
-        //         n = a;
-        //         break;
-        //     }
-        // }
-        console.log(cname);
+        let idx = this.nameMap[cname] || 0;
+        this.nameMap[cname] = idx + 1;
+        let name = `${cname}_${idx}`;
+        let list = this.parent.getComponentsInChildren(type);
+        let n: Node;// = no.getChildByNameRecursion(this.parent, name);
+        for (let i = 0, l = list.length; i < l; i++) {
+            let a = list[i].node;
+            if (a.name == name) {
+                n = a;
+                break;
+            }
+        }
+        // console.log(cname);
         if (!n) {
             n = new Node(cname);
             n.layer = Layers.Enum.UI_2D;
@@ -464,6 +464,7 @@ export class AutoCreateNode extends Component {
             widget.isAlignVerticalCenter = true
             widget.verticalCenter = rect.center.y;
         }
+        widget.enabled = false;
     }
 
     private async deleteConfigFile(path: string) {

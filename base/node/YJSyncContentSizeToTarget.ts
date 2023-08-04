@@ -68,8 +68,6 @@ export class YJSyncContentSizeToTarget extends Component {
         size.width += this.offset.width;
         size.height += this.offset.height;
         no.size(to, size);
-        console.log('1111111', size)
-
         no.EventHandlerInfo.execute(this.onChange);
     }
 }
