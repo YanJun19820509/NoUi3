@@ -1,5 +1,6 @@
 
-import { ccclass, property, menu, Component, Node, EventTouch } from '../../yj';
+import { ccclass, property, menu, Component, Node, EventTouch, js } from '../../yj';
+import { YJPanel } from './YJPanel';
 import { YJWindowManager } from './YJWindowManager';
 
 /**
@@ -22,7 +23,10 @@ export class OpenWindowInfo {
     to: string = '';
 
     public open() {
-        YJWindowManager.createPanel(this.windowName, this.to);
+        const clazz = js.getClassByName(this.windowName);
+        if (typeof clazz['show'] == 'function') clazz['show']();
+        else if (clazz['$super'] == YJPanel)
+            YJWindowManager.createPanel(this.windowName, this.to);
     }
 }
 
