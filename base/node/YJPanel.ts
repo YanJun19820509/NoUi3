@@ -85,7 +85,7 @@ export class YJPanel extends Component {
                     this._lastMultiTouchState = no.multiTouch();
                     no.multiTouch(this.multiTouch);
                     return Promise.resolve();
-                }).catch(e => { no.err(e); });
+                }).catch(e => { no.err('yjpanel', this.node.name, e); });
             }
         } else no.x(this.node, this._originX);
         //todo 等待数据返回
