@@ -388,7 +388,8 @@ export class YJCharLabel extends Sprite {
     public verticalAlign: number;
 
     onLoad() {
-        this.spriteFrame = new SpriteFrame();
+        if (EDITOR)
+            this.spriteFrame = new SpriteFrame();
         if (this.packToAtlas) {
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
             if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
@@ -442,10 +443,14 @@ export class YJCharLabel extends Sprite {
             case YJCharLabelMode.String:
                 if (this._string == '')
                     this.clearString();
-                else if (this.richText)
-                    this.drawRichString(this._string)
-                else
-                    this.drawString(this._string);
+                else {
+                    if (!this.setPackedTexture()) {
+                        if (this.richText)
+                            this.drawRichString(this._string)
+                        else
+                            this.drawString(this._string);
+                    }
+                }
                 break;
         }
         this.updateTexture();
@@ -837,20 +842,38 @@ export class YJCharLabel extends Sprite {
         ctx.stroke();
     }
 
+    private setPackedTexture() {
+        if (EDITOR) return false;
+        const p = this.dynamicAtlas?.getPackedFrame(this.getUuid());
+        if (p) {
+            let spriteFrame = new SpriteFrame();
+            spriteFrame.texture = p.texture;
+            spriteFrame.originalSize = size(100, 100);
+            spriteFrame.rotated = p.rotate;
+            spriteFrame.rect = rect(p.x, p.y, p.w, p.h);
+            this.spriteFrame = spriteFrame;
+            this['_updateUVs']();
+            return true;
+        }
+        return false;
+    }
+
     private updateTexture() {
         const canvas = this.shareCanvas();
         const p = this.dynamicAtlas?.packCanvasToDynamicAtlas(canvas, this.getUuid());
+        let spriteFrame = new SpriteFrame();
         if (EDITOR || !p) {
             const image = new ImageAsset(canvas);
             const texture = new Texture2D();
             texture.image = image;
-            this.spriteFrame.texture = texture;
+            spriteFrame.texture = texture;
         } else {
-            this.spriteFrame.originalSize = size(100, 100);
-            this.spriteFrame.texture = p.texture;
-            this.spriteFrame.rotated = p.rotate;
-            this.spriteFrame.rect = rect(p.x, p.y, p.w, p.h);
+            spriteFrame.texture = p.texture;
+            spriteFrame.originalSize = size(100, 100);
+            spriteFrame.rotated = p.rotate;
+            spriteFrame.rect = rect(p.x, p.y, p.w, p.h);
         }
+        this.spriteFrame = spriteFrame;
     }
 
     private drawRichString(v: string) {
