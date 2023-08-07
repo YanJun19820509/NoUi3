@@ -2,7 +2,7 @@
 import {
     EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
-    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode
+    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font
 } from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -42,6 +42,7 @@ import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 export class AutoCreateNode extends Component {
 
     private atlases: SpriteAtlas[] = [];
+    private fonts: Font[] = [];
     private nameMap: any;
     private parent: Node;
     private rootPath: string;
@@ -77,24 +78,13 @@ export class AutoCreateNode extends Component {
                 let url: string = `${dest}/${name}.plist`;
                 no.assetBundleManager.loadSpriteAtlasInEditorMode(url, (fs, infos) => {
                     this.atlases = this.atlases.concat(fs);
-                    this.loadJson(dest, name);
-                    // console.log(1);
-                    // console.log(this.atlases);
-                    // no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
-                    //     this.atlases = this.atlases.concat(assets);
-                    //     // console.log(2);
-                    //     // console.log(this.atlases);
-                    //     this.loadJson(dest, name);
-                    // });
-
-                    // no.assetBundleManager.loadFileInEditorMode<SpriteAtlas>(dest + `/${name}.plist`, SpriteAtlas, (s, info) => {
-                    //     this.atlases = this.atlases.concat()
-                    //     // atlasManager?.addAtlasUuid(info.uuid);
-                    //     // console.log(s);
-                    //     this.loadJson(dest, name);
-                    // }, () => {
-                    //     this.loadJson(dest, name);
-                    // });
+                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/sub/atlas', 'cc.SpriteAtlas', assets => {
+                        this.atlases = this.atlases.concat(assets);
+                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<Font>('assets/sub/common/font', '', assets => {
+                            this.fonts = this.fonts.concat(assets);
+                            this.loadJson(dest, name);
+                        });
+                    });
                 });
             }
         } catch (e) {
@@ -166,7 +156,8 @@ export class AutoCreateNode extends Component {
 
     private parseType(n: any, parent: Node) {
         switch (n.type) {
-            case 'char':
+            case 'ttf':
+            case 'bmf':
             case 'label':
                 this.createLabelNode(n, parent);
                 break;
@@ -234,7 +225,11 @@ export class AutoCreateNode extends Component {
     }
 
     private createLabelNode(c: any, parent: Node): Node {
-        let n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+        let n: Node;
+        if (c.type == 'label' || c.type == 'ttf')
+            n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+        else
+            n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         if (!n.getComponent('fixedLab')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {
@@ -249,6 +244,7 @@ export class AutoCreateNode extends Component {
             let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             l.string = c.text;
             l.fontSize = Number(c.size);
+            l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
             l.lineHeight = l.fontSize;
             l.color = no.str2Color(c.textColor);
             l.bold = c.bold;
@@ -268,9 +264,36 @@ export class AutoCreateNode extends Component {
                 l.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
                 l.shadowBlur = Number(info[3]);
             }
+        } else if (c.type == 'bmf') {
+            let l = n.getComponent(Label) || n.addComponent(Label);
+            l.string = c.text;
+            l.fontSize = Number(c.size);
+            l.font = this.getFont(c.name);
+            l.lineHeight = l.fontSize;
+            l.color = no.str2Color(c.textColor);
+            l.isBold = c.bold;
+            l.isItalic = c.italic;
+            l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
+            if (c.direction == 'vertical') {
+                l.overflow = Overflow.RESIZE_HEIGHT;
+            }
+            if (c.outline != '') {
+                const outline = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
+                let info = c.outline.split('|');
+                outline.color = no.str2Color(info[0]);
+                outline.width = Number(info[1]);
+            }
+            if (c.shadow != '') {
+                const shadow = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
+                let info = c.shadow.split('|');
+                shadow.color = no.str2Color(info[0]);
+                shadow.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+                shadow.blur = Number(info[3]);
+            }
         } else {
             let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             char.string = c.text;
+            char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
             char.fontSize = Number(c.size);
             char.lineHeight = char.fontSize;
             char.color = no.str2Color(c.textColor);
@@ -525,5 +548,12 @@ export class AutoCreateNode extends Component {
         lonlat[1] = distance * Math.sin(radian)
 
         return new Vec2(lonlat[0], lonlat[1])
+    }
+
+    private getFont(name: string): Font {
+        for (let i = 0, n = this.fonts.length; i < n; i++) {
+            if (this.fonts[i].name == name) return this.fonts[i];
+        }
+        return null;
     }
 }
