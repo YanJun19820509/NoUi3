@@ -22,14 +22,14 @@ enum YJCharLabelMode {
 
 @ccclass('YJCharLabel')
 export class YJCharLabel extends Sprite {
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set spriteAtlas(v: SpriteAtlas) {
         super.spriteAtlas = v;
     }
     get spriteAtlas(): SpriteAtlas {
         return super.spriteAtlas;
     }
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set spriteFrame(v: SpriteFrame) {
         super.spriteFrame = v;
     }
@@ -37,7 +37,7 @@ export class YJCharLabel extends Sprite {
         return super.spriteFrame;
     }
 
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set sizeMode(v: number) {
         super.sizeMode = v;
     }
@@ -45,7 +45,7 @@ export class YJCharLabel extends Sprite {
         return super.sizeMode;
     }
 
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set type(v: number) {
         super.type = v;
     }
@@ -53,7 +53,7 @@ export class YJCharLabel extends Sprite {
         return super.type;
     }
 
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set grayscale(v: boolean) {
 
     }
@@ -61,7 +61,7 @@ export class YJCharLabel extends Sprite {
         return false;
     }
 
-    @property({ visible() { return false; } })
+    @property({ visible() { return false; }, override: true })
     set trim(v: boolean) {
 
     }
@@ -84,7 +84,7 @@ export class YJCharLabel extends Sprite {
         return this._string;
     }
     //文本颜色
-    @property(Color)
+    @property({ type: Color, override: true })
     public get color(): Color {
         return this._color;
     }

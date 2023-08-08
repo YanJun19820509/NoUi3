@@ -17,7 +17,12 @@ export class YJDataMapInfo {
 
     public getData(dataSource: YJGameData): any {
         const keys = this.dataKeys.split(',');
-        if (keys.length == 1) return dataSource.get(keys[0]);
+        if (keys.length == 1) {
+            const k = keys[0];
+            let v = dataSource[k];
+            if (v == null) v = dataSource.get(k);
+            return v;
+        }
         let a: any = {};
         keys.forEach(k => {
             let v = dataSource[k];

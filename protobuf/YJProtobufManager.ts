@@ -10,13 +10,13 @@ import { YJProtobuf } from "./YJProtobuf";
 @ccclass('YJProtobufManager')
 @executeInEditMode()
 export class YJProtobufManager extends Component {
-    @property({ type: CCString })
+    @property
     root: string = '';
     @property
     check: boolean = false;
-    @property({ type: CCString, readonly: true })
+    @property({ readonly: true })
     protoFiles: string[] = [];
-    @property({ type: CCString, readonly: true })
+    @property({ readonly: true })
     bundleName: string = '';
 
     private static _protobuf: YJProtobuf;
