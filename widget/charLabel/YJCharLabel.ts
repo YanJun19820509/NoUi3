@@ -846,6 +846,7 @@ export class YJCharLabel extends Sprite {
         if (EDITOR) return false;
         const p = this.dynamicAtlas?.getPackedFrame(this.getUuid());
         if (p) {
+            no.size(this.node, math.size(p.w, p.h));
             let spriteFrame = new SpriteFrame();
             spriteFrame.texture = p.texture;
             spriteFrame.originalSize = size(100, 100);

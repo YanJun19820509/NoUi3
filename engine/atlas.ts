@@ -108,7 +108,14 @@ export class Atlas {
     public drawCanvas(canvas: HTMLCanvasElement, uuid: string): PackedFrameData {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
-            return null;
+            return {
+                x: info.x,
+                y: info.y,
+                w: info.w,
+                h: info.h,
+                rotate: info.rotate,
+                texture: this._texture
+            };
         }
         let rotate = false;
         let width = rotate ? canvas.height : canvas.width;
