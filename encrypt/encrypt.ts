@@ -35,8 +35,11 @@ export function decode(d: string | ArrayBufferLike, encryptType: EncryptType): a
             return YJCrypto.aesDecode(d);
         case 'rsa':
             return rsa.decode(d);
-        default:
+        default: {
+            if (d instanceof ArrayBuffer)
+                return new Uint8Array(d, 0, d.byteLength);
             return d;
+        }
     }
 }
 
