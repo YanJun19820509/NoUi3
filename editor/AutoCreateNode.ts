@@ -8,7 +8,6 @@ import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
-import { YJReleasePrefab } from '../base/node/YJReleasePrefab';
 import { YJButton } from '../fix/YJButton';
 import { SetProgress } from '../fuckui/SetProgress';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
@@ -128,8 +127,8 @@ export class AutoCreateNode extends Component {
             da.width = 64;
             da.height = 64;
             this.node.getComponent(UITransform).setContentSize(size);
-            if (!this.node.getComponent(YJReleasePrefab))
-                this.node.addComponent(YJReleasePrefab);
+            // if (!this.node.getComponent(YJReleasePrefab))
+            //     this.node.addComponent(YJReleasePrefab);
             if (!this.node.getComponent(YJShowSpriteFrameInSample2D))
                 this.node.addComponent(YJShowSpriteFrameInSample2D);
             this.parent = this.node.getChildByName('Canvas') || this.node;

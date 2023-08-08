@@ -42,9 +42,9 @@ export class YJPanel extends Component {
 
     /**是否缓存，默认缓存，特殊情况下不需要缓存的则手动设置为false */
     @property
-    needCache: boolean = true;
+    needCache: boolean = false;
     @property({ visible() { return this.needCache; } })
-    needClear: boolean = true;
+    needClear: boolean = false;
     @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
     isFullScreen: boolean = false;
     @property({ displayName: '多点触摸' })
@@ -87,7 +87,12 @@ export class YJPanel extends Component {
                     return Promise.resolve();
                 }).catch(e => { no.err('yjpanel', this.node.name, e); });
             }
-        } else no.x(this.node, this._originX);
+        } else {
+            this.getComponentsInChildren(Component).forEach(c => {
+                if (c.enabledInHierarchy) c['onEnable']?.();
+            });
+            no.x(this.node, this._originX);
+        }
         //todo 等待数据返回
         this.onInitPanel();
         if (this.isFullScreen)
@@ -99,19 +104,21 @@ export class YJPanel extends Component {
 
     public closePanel() {
         no.log('panel close', this.panelType);
-        no.visible(this.node, false);
-        this.node.setSiblingIndex(0);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
         this.onClosePanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
-        // if (YJPanel.cacheOpened && this.needCache) {
-        //     this.node.active = false;
-        // } else this.clear();
-        no.x(this.node, 10000);
         no.multiTouch(this._lastMultiTouchState);
+        if (YJPanel.cacheOpened && this.needCache) {
+            no.visible(this.node, false);
+            this.node.setSiblingIndex(0);
+            no.x(this.node, 10000);
+            this.getComponentsInChildren(Component).forEach(c => {
+                if (c.enabledInHierarchy) c['onDisable']?.();
+            });
+        } else this.clear();
     }
 
     public clear(force = false) {

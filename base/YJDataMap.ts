@@ -1,4 +1,5 @@
 import { YJDataWork } from '../../NoUi3/base/YJDataWork';
+import { no } from '../no';
 import { ccclass, js, property } from '../yj';
 import { YJGameData } from './YJGameData';
 
@@ -19,9 +20,13 @@ export class YJDataMapInfo {
         const keys = this.dataKeys.split(',');
         if (keys.length == 1) {
             const k = keys[0];
-            let v = dataSource[k];
-            if (v == null) v = dataSource.get(k);
-            return v;
+            if (typeof dataSource[k] == 'function') {
+                return dataSource[k]();
+            } else {
+                let v = dataSource[k];
+                if (v == null) v = dataSource.get(k);
+                return v;
+            }
         }
         let a: any = {};
         keys.forEach(k => {
@@ -46,10 +51,9 @@ export class YJDataMap extends YJDataWork {
             const c = js.getClassByName(this.dataSourceClassName) as (typeof YJGameData);
             this._dataSource = c.instance();
             if (this._dataSource) {
-                this.update = (dt: number) => {
-                    super.update?.(dt);
-                    if (this._dataSource.checkStateChange(this)) this.syncWithDataSource();
-                };
+                no.scheduleForever(() => {
+                    this._dataSource.checkStateChange(this) && this.syncWithDataSource();
+                }, .1, this);
             }
         }
         this.syncWithDataSource();
