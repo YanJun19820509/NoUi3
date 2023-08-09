@@ -1,5 +1,5 @@
 
-import { ccclass, requireComponent, menu, property, executeInEditMode, EDITOR, Node, EditBox } from '../yj';
+import { ccclass, requireComponent, menu, property, EDITOR, Node, EditBox } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -17,14 +17,21 @@ import { FuckUi } from './FuckUi';
  */
 
 @ccclass('SetEditBox')
-@executeInEditMode()
 @requireComponent(EditBox)
 @menu('NoUi/ui/SetEditBox(设置输入框内容:string)')
 export class SetEditBox extends FuckUi {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
     @property
-    bindEditiongDidEnded: boolean = false;
+    public get bindEditiongDidEnded(): boolean {
+        return false;
+    }
+
+    public set bindEditiongDidEnded(v: boolean) {
+        // this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
+        // this.getComponent(EditBox).editingReturn = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
+        this.getComponent(EditBox).textChanged = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
+    }
 
     onLoad() {
         super.onLoad();
@@ -33,16 +40,6 @@ export class SetEditBox extends FuckUi {
             return;
         }
 
-    }
-
-    update() {
-        if (EDITOR) {
-            if (this.bindEditiongDidEnded) {
-                this.bindEditiongDidEnded = false;
-                this.getComponent(EditBox).editingDidEnded = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
-                this.getComponent(EditBox).editingReturn = [no.createEventHandler(this.node, 'SetEditBox', 'onEditEnd')];
-            }
-        }
     }
 
     protected onDataChange(data: any) {
