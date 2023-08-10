@@ -2,6 +2,7 @@
 import { ccclass, menu, Color, UIRenderer, property, LabelOutline } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 
 /**
  * Predefined variables
@@ -29,7 +30,10 @@ export class SetColor extends FuckUi {
             color = data;
         }
         if (this.isOutline) {
-            this.getComponent(LabelOutline).color = color;
+            if (this.getComponent(YJCharLabel)) {
+                this.getComponent(YJCharLabel).outlineColor = color;
+            } else if (this.getComponent(LabelOutline))
+                this.getComponent(LabelOutline).color = color;
         } else {
             let renders = this.node.getComponentsInChildren(UIRenderer);
             renders.forEach(render => {
