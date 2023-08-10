@@ -68,6 +68,13 @@ export class YJCharLabel extends Sprite {
     get trim(): boolean {
         return true;
     }
+    @property({ type: Color, visible() { return false; }, override: true })
+    public get color(): Color {
+        return Color.WHITE.clone();
+    }
+    public set color(v: Color) {
+
+    }
 
 
 
@@ -85,10 +92,10 @@ export class YJCharLabel extends Sprite {
     }
     //文本颜色
     @property({ type: Color, override: true })
-    public get color(): Color {
-        return Color.WHITE.clone();
+    public get fontColor(): Color {
+        return this._color;
     }
-    public set color(v: Color) {
+    public set fontColor(v: Color) {
         if (v.equals(this._color)) return;
         this._color = v;
         this.setLabel();
@@ -877,7 +884,7 @@ export class YJCharLabel extends Sprite {
     private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
         const canvas = this.shareCanvas(),
             ctx = canvas.getContext("2d");
-            
+
         let x = 2,
             y = 0;
         width += this.extWidth();
