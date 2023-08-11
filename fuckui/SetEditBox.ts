@@ -51,8 +51,7 @@ export class SetEditBox extends FuckUi {
         this.getComponent(EditBox).string = String(data);
     }
 
-    private onEditEnd(editor: EditBox) {
-        const v = editor.string;
+    private onEditEnd(v: string) {
         if (v == this.oldData) return;
         this.dataWork?.setValue(this.bind_keys, v);
     }
