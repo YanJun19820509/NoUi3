@@ -124,7 +124,7 @@ export class SetCreateNode extends FuckUi {
         if (!data.length) return;
 
         const prefabUrl = this.loadPrefab?.prefabUrl;
-        if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
+        if (prefabUrl && YJPreCreateNode.ins?.has(prefabUrl)) {
             let nn = !this.onlyAdd ? n - l : n;
             if (nn > 0) {
                 await YJJobManager.ins.execute((max: number) => {

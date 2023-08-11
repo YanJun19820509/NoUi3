@@ -78,7 +78,7 @@ export class YJWindowManager extends Component {
             }
             content.addChild(node);
             afterInit?.(a as T);
-        }).catch(e => { no.err('windowmanager', e); });
+        }).catch(e => { no.err('windowmanager', e.message); });
     }
 
     /**
@@ -104,7 +104,7 @@ export class YJWindowManager extends Component {
                     no.visible(a.node, true);
                     a.onEnable();
                     afterInit?.(a as T);
-                }).catch(e => { no.err('windowmanager', e); });
+                }).catch(e => { no.err('windowmanager', e.message); });
                 a.node.setSiblingIndex(content.children.length - 1);
                 return;
             }
