@@ -4285,6 +4285,7 @@ export namespace no {
      * @returns 
      */
     export function visible(node: Node, v?: boolean): boolean {
+        if (!checkValid(node)) return false;
         if (v != undefined) {
             node['__need_render__'] = v;
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
