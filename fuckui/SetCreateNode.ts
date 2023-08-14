@@ -131,7 +131,7 @@ export class SetCreateNode extends FuckUi {
                     if (!this?.node?.isValid) false;
                     let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
                     if (cacheItem) {
-                        if (this.dynamicAtlas) {
+                        if (this.dynamicAtlas && !cacheItem.getComponent(YJDynamicAtlas)) {
                             YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
                             YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
                         }
@@ -182,7 +182,7 @@ export class SetCreateNode extends FuckUi {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 item.active = true;
-                if (this.dynamicAtlas) {
+                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }

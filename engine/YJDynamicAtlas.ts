@@ -270,12 +270,13 @@ export class YJDynamicAtlas extends Component {
             node.getComponentsInChildren('YJBitmapFont')
         );
         bs.forEach(b => {
-            b.dynamicAtlas = dynamicAtlas;
+            if (!b.dynamicAtlas)
+                b.dynamicAtlas = dynamicAtlas;
         });
 
         let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
         r.forEach(rr => {
-            if (dynamicAtlas.commonMaterial != rr.customMaterial) {
+            if (dynamicAtlas.commonMaterial != rr.customMaterial && !rr.customMaterial) {
                 rr.customMaterial = dynamicAtlas.commonMaterial;
             }
         });

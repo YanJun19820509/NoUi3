@@ -58,7 +58,7 @@ export class YJCreateNode extends Component {
             if (!this?.node?.isValid) return;
             if (node == null) return null;
             a = instantiate(node);
-            if (this.dynamicAtlas) {
+            if (this.dynamicAtlas && !a.getComponent(YJDynamicAtlas)) {
                 YJDynamicAtlas.setDynamicAtlas(a, this.dynamicAtlas);
             }
             await a.getComponent(YJLoadAssets)?.load();

@@ -116,7 +116,7 @@ export class SetCreateNodeInCircle extends FuckUi {
                 for (let i = 0; i < this.num; i++) {
                     let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
                     if (cacheItem) {
-                        if (this.dynamicAtlas) {
+                        if (this.dynamicAtlas && !cacheItem.getComponent(YJDynamicAtlas)) {
                             YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
                             YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
                         }
@@ -132,7 +132,7 @@ export class SetCreateNodeInCircle extends FuckUi {
                     let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                     item.active = true;
                     no.visible(item, false);
-                    if (this.dynamicAtlas) {
+                    if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                         YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                         YJLoadAssets.setLoadAsset(item, this.loadAsset);
                     }

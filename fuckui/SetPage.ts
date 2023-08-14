@@ -48,7 +48,7 @@ export class SetPage extends FuckUi {
             if (!this?.node?.isValid) return;
         }
         let node = instantiate(this.page.loadedNode);
-        if (this.dynamicAtlas) {
+        if (this.dynamicAtlas && !node.getComponent(YJDynamicAtlas)) {
             YJDynamicAtlas.setDynamicAtlas(node, this.dynamicAtlas);
         }
         await node.getComponent(YJLoadAssets)?.load();

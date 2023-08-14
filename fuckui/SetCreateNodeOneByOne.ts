@@ -32,7 +32,8 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         }
         if (this.dynamicAtlas && this.needSetDynamicAtlas) {
             this.needSetDynamicAtlas = false;
-            YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
+            if (!this.template.getComponent(YJDynamicAtlas))
+                YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
         if (!this.container) this.container = this.node;
 

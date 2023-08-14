@@ -73,7 +73,7 @@ export class SetCreateCacheNode extends FuckUi {
             item.active = true;
             needWait = true;
         }
-        if (this.dynamicAtlas) {
+        if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
             YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
             YJLoadAssets.setLoadAsset(item, this.loadAsset);
         }

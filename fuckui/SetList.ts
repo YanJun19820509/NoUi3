@@ -208,7 +208,7 @@ export class SetList extends FuckUi {
             let item = instantiate(this.template);
             item.active = true;
             item.parent = this.content;
-            if (this.dynamicAtlas) {
+            if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                 YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 YJLoadAssets.setLoadAsset(item, this.loadAsset);
             }
