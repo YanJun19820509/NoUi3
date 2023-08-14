@@ -192,3 +192,4 @@ export const CCClass = _cc.CCClass;
 export const easing = _cc.easing;
 export type WrapMode = _cc.__private._cocos_animation_types__WrapMode;
 export const NodeEventType = _cc.NodeEventType;
+export const isBrowser = sys.isBrowser;
