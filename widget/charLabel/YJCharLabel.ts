@@ -194,6 +194,18 @@ export class YJCharLabel extends Sprite {
         this._maxWidth = v;
         this.setLabel();
     }
+    //固定宽
+    @property({ visible() { return this.overflow != Label.Overflow.NONE; } })
+    public get fixWidth(): boolean {
+        if (this.overflow == Label.Overflow.NONE) return false;
+        return this._fixWidth;
+    }
+
+    public set fixWidth(v: boolean) {
+        if (v == this._fixWidth) return;
+        this._fixWidth = v;
+        this.setLabel();
+    }
     //斜体
     @property
     public get italic(): boolean {
@@ -367,6 +379,8 @@ export class YJCharLabel extends Sprite {
     protected _overflow: number = 0;
     @property({ serializable: true })
     protected _maxWidth: number = 50;
+    @property({ serializable: true })
+    protected _fixWidth: boolean = false;
     @property({ serializable: true })
     protected _italic: boolean = false;
     @property({ serializable: true })
@@ -566,7 +580,7 @@ export class YJCharLabel extends Sprite {
                 }
             }
             if (oneLine != '') lines[lines.length] = oneLine;
-            this.drawLines(lines, lines.length == 1 ? width : maxWidth, lineHeight);
+            this.drawLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
         } else {
             const mw = this.getMeasureWidth(ctx, v);
             let w = mw.width,
@@ -579,7 +593,7 @@ export class YJCharLabel extends Sprite {
             } else {
                 ww = w;
             }
-            this.drawLine(v, ww, lineHeight);
+            this.drawLine(v, !this.fixWidth ? ww : maxWidth, lineHeight);
         }
     }
 
@@ -794,7 +808,7 @@ export class YJCharLabel extends Sprite {
         if (this.overflow == Label.Overflow.CLAMP) {
             ww = Math.min(ww, maxWidth);
         }
-        this.drawHtmlTexts(a, ww, lineHeight, maxSize);
+        this.drawHtmlTexts(a, !this.fixWidth ? ww : maxWidth, lineHeight, maxSize);
     }
 
     private drawRichStringWithResizeHeight(v: string) {
@@ -817,7 +831,7 @@ export class YJCharLabel extends Sprite {
         for (let i = 0, n = a.length; i < n; i++) {
             const aa = a[i], style = aa.style, text = aa.text;
 
-            if (style?.isNewLine) {
+            if (style?.isNewLine && text == '') {
                 oneLine.width = width;
                 lines[lines.length] = no.clone(oneLine);
                 oneLine.htmls.length = 0;
@@ -878,7 +892,7 @@ export class YJCharLabel extends Sprite {
             oneLine.width = width;
             lines[lines.length] = oneLine;
         }
-        this.drawHtmlLines(lines, lines.length == 1 ? width : maxWidth, lineHeight);
+        this.drawHtmlLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
     }
 
     private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
