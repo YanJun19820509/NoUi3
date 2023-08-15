@@ -1,6 +1,6 @@
 
 import { ccclass, property, menu, executeInEditMode, Label, RichText, EDITOR, BitmapFont } from '../yj';
-import { YJBitmapFont } from '../engine/YJBitmapFont';
+import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';

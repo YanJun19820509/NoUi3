@@ -83,7 +83,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public setSpriteFrame(name: string) {
         if (!this.enabled) return;
-        if (!this.loadAsset) return;
+        if (!this.loadAsset) {
+            this.resetSprite();
+            return;
+        }
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.err('setSpriteFrame not get', name);
@@ -94,6 +97,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (sprite.type == Sprite.Type.FILLED) {
             // sprite.spriteFrame = spriteFrame;
             return;
+        }
+        if (!this.getComponent(Sprite).customMaterial) {
+            this.getComponent(Sprite).customMaterial = this.dynamicAtlas?.commonMaterial;
         }
         let t = `${this.defineIndex}-${i + 1}00`;
         const defines: any = {};
@@ -127,10 +133,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public removeSprite() {
-        if (EDITOR) {
-            this.getComponent(Sprite).spriteFrame = null;
-            this.getComponent(Sprite).spriteAtlas = null;
-        }
+        this.getComponent(Sprite).spriteFrame = null;
+        this.getComponent(Sprite).spriteAtlas = null;
     }
 
     public setSpriteEnable(v: boolean) {

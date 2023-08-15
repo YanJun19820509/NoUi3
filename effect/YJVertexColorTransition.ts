@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, UIRenderer, Vec4, Sprite, math, UIOpacity, Color } from '../yj';
+import { ccclass, disallowMultiple, Component, UIRenderer, Vec4, Sprite, math, UIOpacity, Color, Label } from '../yj';
 import { no } from '../no';
 
 /**
@@ -134,8 +134,8 @@ export class YJVertexColorTransition extends Component {
                     }
                     break;
             }
-        } else {
-            this._updateSimpleVB();
+        } else if (this.renderComp instanceof Label) {
+            this._updateBMFontUVs();
         }
     }
 
@@ -241,6 +241,26 @@ export class YJVertexColorTransition extends Component {
             vData[colorOffset + 2] = colorB;
             vData[colorOffset + 3] = colorA;
 
+            colorOffset += stride;
+        }
+    }
+
+    private _updateBMFontUVs() {
+        const renderData = this.renderComp.renderData!;
+        const vData = renderData.chunk.vb;
+        const vertexCount = renderData.vertexCount;
+        const stride = renderData.floatStride;
+        let colorOffset = 5;
+        const color = this._data;
+        const colorR = color.x;
+        const colorG = color.y;
+        const colorB = color.z;
+        const colorA = this.renderComp.node._uiProps.opacity;
+        for (let i = 0; i < vertexCount; i++) {
+            vData[colorOffset] = colorR;
+            vData[colorOffset + 1] = colorG;
+            vData[colorOffset + 2] = colorB;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }

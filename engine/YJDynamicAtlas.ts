@@ -173,12 +173,14 @@ export class YJDynamicAtlas extends Component {
         if (packedFrame) {
             const uuid = frame._uuid;
             if (comp instanceof Label) {
+                comp.customMaterial = this.commonMaterial;
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
                     ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
+                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, ff, comp);
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
                     frame.rotated = packedFrame.rotate;
@@ -197,9 +199,8 @@ export class YJDynamicAtlas extends Component {
                     renderData.textureDirty = true;
                     comp.markForUpdateRenderData(false);
                     renderData.updateRenderData(comp, comp['_ttfSpriteFrame']);
-                    comp.customMaterial = this.commonMaterial;
-                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
 
+                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
@@ -239,6 +240,11 @@ export class YJDynamicAtlas extends Component {
     }
 
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
+        sprite.spriteFrame = this.getSpriteFrameInSample2D(spriteFrame);
+        sprite['_updateUVs']();
+    }
+
+    public getSpriteFrameInSample2D(spriteFrame: SpriteFrameDataType): SpriteFrame {
         let newSpriteFrame: SpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
         if (!newSpriteFrame) {
             newSpriteFrame = new SpriteFrame();
@@ -251,10 +257,8 @@ export class YJDynamicAtlas extends Component {
             this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
             newSpriteFrame['_rotated'] = spriteFrame.rotated;
         }
-        sprite.spriteFrame = newSpriteFrame;
-        sprite['_updateUVs']();
+        return newSpriteFrame;
     }
-
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
         let bs = [].concat(

@@ -1,7 +1,7 @@
 
 import {
     ccclass, property, menu, executeInEditMode, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, EDITOR, Texture2D
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D
 } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
@@ -23,89 +23,84 @@ import { YJi18n } from '../base/YJi18n';
 
 @ccclass('JsonInfo')
 export class JsonInfo extends LoadAssetsInfo {
-    @property({ type: JsonAsset, editorOnly: true })
-    json: JsonAsset = null;
+    @property({ type: JsonAsset })
+    public get json(): JsonAsset {
+        return null;
+    }
 
-    public check() {
-        if (EDITOR) {
-            if (this.json) {
-                this.assetUuid = this.json.uuid;
-                this.assetName = this.json.name;
-                this.json = null;
-            }
+    public set json(v: JsonAsset) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
         }
     }
 }
 @ccclass('TextureInfo')
 export class TextureInfo extends LoadAssetsInfo {
-    @property({ type: Texture2D, editorOnly: true })
-    texture: Texture2D = null;
+    @property({ type: Texture2D })
+    public get texture(): Texture2D {
+        return null;
+    }
+
+    public set texture(v: Texture2D) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+                this.assetName = info?.displayName;
+                let path = info?.path.replace('/texture', '_atlas.json');
+                if (path) {
+                    no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
+                        this.atlasJsonName = info.name;
+                        this.atlasJsonUuid = info.uuid;
+                    });
+                }
+            });
+        }
+    }
     @property({ readonly: true })
     atlasJsonUuid: string = '';
     @property({ readonly: true })
     atlasJsonName: string = '';
-
-    public check() {
-        if (EDITOR) {
-            if (this.texture) {
-                this.assetUuid = this.texture.uuid;
-                no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
-                    this.assetName = info?.displayName;
-                    let path = info?.path.replace('/texture', '_atlas.json');
-                    if (path) {
-                        no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
-                            this.atlasJsonName = info.name;
-                            this.atlasJsonUuid = info.uuid;
-                        });
-                    }
-                });
-                this.texture = null;
-            }
-        }
-    }
 }
 @ccclass('MaterialInfo')
 export class MaterialInfo extends LoadAssetsInfo {
-    @property({ type: Material, editorOnly: true })
-    material: Material = null;
+    @property({ type: Material })
+    public get material(): Material {
+        return null;
+    }
 
-    public check() {
-        if (EDITOR) {
-            if (this.material) {
-                this.assetUuid = this.material.uuid;
-                this.assetName = this.material.name;
-                this.material = null;
-            }
+    public set material(v: Material) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
         }
     }
 }
 @ccclass('SpriteFrameInfo')
 export class SpriteFrameInfo extends LoadAssetsInfo {
-    @property({ type: SpriteFrame, editorOnly: true })
-    spriteFrame: SpriteFrame = null;
+    @property({ type: SpriteFrame })
+    public get spriteFrame(): SpriteFrame {
+        return null;
+    }
 
-    public check() {
-        if (EDITOR) {
-            if (this.spriteFrame) {
-                this.assetUuid = this.spriteFrame.uuid;
-                this.assetName = this.spriteFrame.name;
-                this.spriteFrame = null;
-            }
+    public set spriteFrame(v: SpriteFrame) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
         }
     }
 }
 @ccclass('PrefabInfo')
 export class PrefabInfo extends LoadAssetsInfo {
-    @property({ type: Prefab, editorOnly: true })
-    prefab: Prefab = null;
+    @property({ type: Prefab })
+    public get prefab(): Prefab {
+        return null;
+    }
 
-    public check() {
-        if (EDITOR) {
-            if (this.prefab) {
-                this.assetUuid = this.prefab.uuid;
-                this.assetName = this.prefab.name;
-                this.prefab = null;
-            }
+    public set prefab(v: Prefab) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
         }
     }
 }
@@ -132,21 +127,22 @@ export class YJLoadAssets extends Component {
     prefabInfos: PrefabInfo[] = [];
     @property({ type: LoadAssetsInfo, tooltip: '可在panel创建完成后加载的资源' })
     backgroundLoadInfos: LoadAssetsInfo[] = [];
-    @property({ editorOnly: true })
-    doCheck: boolean = false;
     @property
-    autoSetSubLoadAsset: boolean = false;
+    public get autoSetSubLoadAsset(): boolean {
+        return false;
+    }
+
+    public set autoSetSubLoadAsset(v: boolean) {
+        if (v) YJLoadAssets.setLoadAsset(this.node, this);
+    }
 
     private atlases: any[] = [];
 
     onLoad() {
-        if (!EDITOR) {
-            this.checkInfos = () => { };
-            this.autoLoad &&
-                this.load().then(() => {
-                    no.EventHandlerInfo.execute(this.onLoaded);
-                });
-        }
+        this.autoLoad &&
+            this.load().then(() => {
+                no.EventHandlerInfo.execute(this.onLoaded);
+            });
     }
 
     onDestroy() {
@@ -160,18 +156,17 @@ export class YJLoadAssets extends Component {
     //     }
     // }
 
-    public addSpriteFrameUuid(uuid: string) {
-        if (EDITOR) {
-            let a = new LoadAssetsInfo(uuid);
-            no.addToArray(this.spriteFrameInfos, a, 'assetUuid');
-        }
-    }
+    // public addSpriteFrameUuid(uuid: string) {
+    //     if (EDITOR) {
+    //         let a = new LoadAssetsInfo(uuid);
+    //         no.addToArray(this.spriteFrameInfos, a, 'assetUuid');
+    //     }
+    // }
 
     /**
      * 加载图集
      */
     public async load() {
-        if (EDITOR) return;
         let requests: { uuid: string, type: typeof Asset }[] = [];
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
@@ -247,7 +242,6 @@ export class YJLoadAssets extends Component {
      * 释放图集
      */
     public release() {
-        if (EDITOR) return;
         this.spriteFrameInfos.forEach(info => {
             info.release && info.release(null);
         });
@@ -270,38 +264,6 @@ export class YJLoadAssets extends Component {
             }
         }
         return [idx, info];
-    }
-
-    private checkInfos() {
-        if (!EDITOR) return;
-        if (!this.doCheck) return;
-        this.doCheck = false;
-        // this.jsonInfos.forEach(info => {
-        //     info.check();
-        // });
-        // this.materialInfos.forEach(info => {
-        //     info.check();
-        // });
-        this.spriteFrameInfos.forEach(info => {
-            info.check();
-        });
-        this.prefabInfos.forEach(info => {
-            info.check();
-        });
-        this.textureInfos.forEach(info => {
-            info.check();
-        });
-    }
-
-
-    update() {
-        this.checkInfos();
-        if (EDITOR) {
-            if (this.autoSetSubLoadAsset) {
-                this.autoSetSubLoadAsset = false;
-                YJLoadAssets.setLoadAsset(this.node, this);
-            }
-        }
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {

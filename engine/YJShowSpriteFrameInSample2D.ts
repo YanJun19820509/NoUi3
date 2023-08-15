@@ -14,25 +14,22 @@ import { EDITOR, ccclass, property, executeInEditMode, Component, Node } from '.
  */
 //用来控制使用SetSpriteFrameInSample2D的Sprite显示/隐藏默认spriteFrame
 @ccclass('YJShowSpriteFrameInSample2D')
-@executeInEditMode()
 export class YJShowSpriteFrameInSample2D extends Component {
     @property
-    showSpriteFrame: boolean = false;
-    @property
-    hideSpriteFrame: boolean = false;
+    public get showSpriteFrame(): boolean {
+        return false;
+    }
 
-    update() {
-        if (!EDITOR) return;
-        if (this.showSpriteFrame) {
-            this.showSpriteFrame = false;
-            this.showSubSpriteFrame(true);
-            return;
-        }
-        if (this.hideSpriteFrame) {
-            this.hideSpriteFrame = false;
-            this.showSubSpriteFrame(false);
-            return;
-        }
+    public set showSpriteFrame(v: boolean) {
+        this.showSubSpriteFrame(true);
+    }
+    @property
+    public get hideSpriteFrame(): boolean {
+        return false;
+    }
+
+    public set hideSpriteFrame(v: boolean) {
+        this.showSubSpriteFrame(false);
     }
 
     private showSubSpriteFrame(v: boolean) {
@@ -40,6 +37,11 @@ export class YJShowSpriteFrameInSample2D extends Component {
         list.forEach(a => {
             if (v) a.resetSprite();
             else a.removeSprite();
+        });
+        list = this.getComponentsInChildren('YJBitmapFont');
+        list.forEach(a => {
+            if (v) a.resetFont();
+            else a.removeFont();
         });
     }
 }
