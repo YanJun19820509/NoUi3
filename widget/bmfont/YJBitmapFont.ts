@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, requireComponent, Component, Node, BitmapFont, Label, Texture2D, SpriteFrame, director, isValid } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, Component, Node, BitmapFont, Label, isValid } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJJobManager } from '../../base/YJJobManager';
@@ -18,7 +18,6 @@ import { YJJobManager } from '../../base/YJJobManager';
 
 @ccclass('YJBitmapFont')
 @requireComponent([Label])
-@executeInEditMode()
 export class YJBitmapFont extends Component {
     @property(BitmapFont)
     public get font(): BitmapFont {
@@ -41,7 +40,7 @@ export class YJBitmapFont extends Component {
     fontName: string = '';
     @property({ readonly: true })
     fontUuid: string = '';
-    @property({ type: YJDynamicAtlas, readonly: true })
+    @property({ type: YJDynamicAtlas })
     dynamicAtlas: YJDynamicAtlas = null;
 
     private _font: BitmapFont = null;
@@ -58,20 +57,21 @@ export class YJBitmapFont extends Component {
         const label = this.getComponent(Label);
         label.font = this._font;
         label.materials.length = 0;
+        // label['updateMaterial']();
         if (!EDITOR && this.dynamicAtlas) {
+            if (!label.customMaterial)
+                label.customMaterial = this.dynamicAtlas.commonMaterial;
 
-            label.customMaterial = this.dynamicAtlas.commonMaterial;
-
-            this.scheduleOnce(() => {
-                YJJobManager.ins.execute(() => {
-                    if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
-                    const label: any = this.getComponent(Label);
-                    this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
-                        label.updateRenderData(true);
-                    });
-                    return false;
-                }, this);
-            }, 1);
+            // this.scheduleOnce(() => {
+            YJJobManager.ins.execute(() => {
+                if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+                const label: any = this.getComponent(Label);
+                this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
+                    label.updateRenderData(true);
+                });
+                return false;
+            }, this);
+            // }, 1);
         }
     }
 
@@ -85,7 +85,6 @@ export class YJBitmapFont extends Component {
     }
 
     start() {
-        if (EDITOR) return;
         this.resetFont();
     }
 }
