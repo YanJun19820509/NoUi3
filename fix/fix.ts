@@ -40,7 +40,10 @@ const _a = setInterval(function () {
 const _hitTest = UITransform.prototype.hitTest;
 js.mixin(UITransform.prototype, {
     hitTest(screenPoint, windowId) {
-        if (!no.visible(this.node)) return false;
+        if (!no.visible(this.node)) {
+            // no.log('hitTest false', this.node.name)
+            return false;
+        }
         return _hitTest.call(this, screenPoint, windowId);
     }
 });
