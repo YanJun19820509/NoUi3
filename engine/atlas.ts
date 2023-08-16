@@ -484,9 +484,10 @@ js.mixin(dynamicAtlasManager['__proto__'], {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;
+        let a: any = comp.getComponent('YJDynamicTexture');
+        if (!a) return;
         if (frame?.original) return;
         if (!comp.node.parent) return;
-        let a: any = comp.getComponent('YJDynamicTexture');
         // no.log('packToDynamicAtlas', comp['string'])
         if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
             a = comp.addComponent('YJDynamicTexture');

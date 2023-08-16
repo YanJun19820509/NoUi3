@@ -56,24 +56,23 @@ export class YJBitmapFont extends Component {
             return;
         }
         const label = this.getComponent(Label);
+        label.font = this._font;
+        label.materials.length = 0;
         if (!EDITOR && this.dynamicAtlas) {
 
-            // let sf = this._font.spriteFrame.clone();
-            // sf._uuid = this._font.spriteFrame.uuid;
-            // let packedFrame = this.dynamicAtlas.insertSpriteFrame(sf);
-            // sf._setDynamicAtlasFrame(packedFrame);
-            // this._font.spriteFrame = sf;
-            // director.root.batcher2D.forceMergeBatches(label.customMaterial, sf, label);
+            label.customMaterial = this.dynamicAtlas.commonMaterial;
 
-            // this.scheduleOnce(() => {
-            //     YJJobManager.ins.execute(() => {
-            //         if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
-            //         this.dynamicAtlas?.packToDynamicAtlas(label, this._font.spriteFrame, true);
-            //         return false;
-            //     }, this);
-            // }, 1);
+            this.scheduleOnce(() => {
+                YJJobManager.ins.execute(() => {
+                    if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+                    const label: any = this.getComponent(Label);
+                    this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
+                        label.updateRenderData(true);
+                    });
+                    return false;
+                }, this);
+            }, 1);
         }
-        label.font = this._font;
     }
 
     removeFont() {
@@ -82,7 +81,7 @@ export class YJBitmapFont extends Component {
 
     ///////////////////////////EDITOR///////////////
     onLoad() {
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        // if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 
     start() {

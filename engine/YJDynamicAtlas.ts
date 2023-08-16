@@ -32,7 +32,14 @@ export class YJDynamicAtlas extends Component {
     @property({ min: 1, max: 2048, step: 1 })
     height: number = 64;
     @property(Material)
-    commonMaterial: Material = null;
+    public get commonMaterial(): Material {
+        return this._commonMaterial;
+    }
+
+    public set commonMaterial(v: Material) {
+        this._commonMaterial = v;
+        YJDynamicAtlas.setDynamicAtlas(this.node, this);
+    }
     @property({ visible() { return EDITOR; } })
     autoSetSubMaterial: boolean = false;
     @property({ tooltip: '文本是否合图' })
@@ -46,6 +53,8 @@ export class YJDynamicAtlas extends Component {
     private canRotate = false;
 
     private thisNodeName: string;
+
+    private _commonMaterial: Material;
 
     onLoad() {
         this.thisNodeName = this.node.name;
@@ -173,13 +182,19 @@ export class YJDynamicAtlas extends Component {
         if (packedFrame) {
             const uuid = frame._uuid;
             if (comp instanceof Label) {
-                comp.customMaterial = this.commonMaterial;
+                if (!comp.customMaterial)
+                    comp.customMaterial = this.commonMaterial;
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
                     ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
+                    comp['_ttfSpriteFrame'] = null;
+                    const renderData = comp['_renderData'];
+                    renderData.textureDirty = true;
+                    comp.markForUpdateRenderData(true);
+                    renderData.updateRenderData(comp, ff);
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, ff, comp);
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
@@ -278,9 +293,9 @@ export class YJDynamicAtlas extends Component {
                 b.dynamicAtlas = dynamicAtlas;
         });
 
-        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
+        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(UIRenderer));
         r.forEach(rr => {
-            if (dynamicAtlas.commonMaterial != rr.customMaterial && !rr.customMaterial) {
+            if (!rr.customMaterial) {
                 rr.customMaterial = dynamicAtlas.commonMaterial;
             }
         });
