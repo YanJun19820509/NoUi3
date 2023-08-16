@@ -39,8 +39,13 @@ class ContentInfo {
     }
 
     public show(v: boolean): void {
-        if (this.loadedNode) //this.loadedNode.active = v;
+        if (this.loadedNode) { //this.loadedNode.active = v;
+            if (this.loadedNode['__origin_x__'] == null) {
+                this.loadedNode['__origin_x__'] = no.x(this.loadedNode);
+            }
             no.visible(this.loadedNode, v);
+            no.x(this.loadedNode, v ? this.loadedNode['__origin_x__'] : 20000);
+        }
     }
 
     public get isLoaded(): boolean {

@@ -31,8 +31,12 @@ export class SetUiGroupSwitch extends FuckUi {
     protected onDataChange(data: any) {
         this.infos.forEach(info => {
             if (info.uiNode) {
-                // info.uiNode.active = info.condition === String(data);
-                no.visible(info.uiNode, info.condition === String(data));
+                if (info.uiNode['__origin_x__'] == null) {
+                    info.uiNode['__origin_x__'] = no.x(info.uiNode);
+                }
+                const v = info.condition === String(data);
+                no.visible(info.uiNode, v);
+                no.x(info.uiNode, v ? info.uiNode['__origin_x__'] : 20000);
             }
         });
     }

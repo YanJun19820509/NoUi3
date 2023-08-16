@@ -28,7 +28,11 @@ export class SwitchInfo {
         if (!this.conditions) this.conditions = this.condition.split(',');
         let a = this.conditions.indexOf(v) != -1;
         this.nodes.forEach(node => {
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
             no.visible(node, a);
+            no.x(node, !a ? 20000 : node['__origin_x__']);
         });
     }
 }
