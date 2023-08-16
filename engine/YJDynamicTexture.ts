@@ -1,5 +1,5 @@
 
-import {EDITOR, ccclass, property, disallowMultiple, executeInEditMode , Label, CacheMode, Sprite, RichText, BitmapFont, UIRenderer, Component, SpriteFrame, LabelOutline, UITransform, isValid,sys } from '../yj';
+import { EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Label, CacheMode, Sprite, RichText, BitmapFont, UIRenderer, Component, SpriteFrame, LabelOutline, UITransform, isValid, sys } from '../yj';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 import { YJJobManager } from '../base/YJJobManager';

@@ -245,7 +245,7 @@ export class AutoCreateNode extends Component {
             l.fontSize = Number(c.size);
             l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
             l.lineHeight = l.fontSize;
-            l.color = no.str2Color(c.textColor);
+            l.fontColor = no.str2Color(c.textColor);
             l.bold = c.bold;
             l.italic = c.italic;
             l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
@@ -447,7 +447,7 @@ export class AutoCreateNode extends Component {
         }
         // console.log(cname);
         if (!n) {
-            n = new Node(cname);
+            n = new Node(name);
             n.layer = Layers.Enum.UI_2D;
             n.addComponent(UITransform);
         }

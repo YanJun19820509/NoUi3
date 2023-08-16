@@ -1,5 +1,6 @@
 
-import { ccclass, property, menu, Color, UIRenderer } from '../yj';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
+import { ccclass, property, menu, Color, UIRenderer, Component, LabelOutline } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -19,6 +20,21 @@ export class ColorInfo {
     condition: string = '';
     @property
     color: Color = Color.WHITE.clone();
+    @property
+    isLabel: boolean = false;
+    @property({ visible() { return this.isLabel; } })
+    outlineColor: Color = Color.WHITE.clone();
+
+    public setColor(comp: UIRenderer) {
+        if (comp instanceof YJCharLabel) {
+            comp.fontColor = this.color;
+            if (this.isLabel) comp.outlineColor = this.outlineColor;
+        } else {
+            comp.color = this.color;
+            if (this.isLabel && comp.getComponent(LabelOutline))
+                comp.getComponent(LabelOutline).color = this.outlineColor;
+        }
+    }
 }
 
 @ccclass('SetColorsSwitch')
@@ -36,21 +52,21 @@ export class SetColorsSwitch extends FuckUi {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.condition === data) {
-                if (this.node.getComponent(UIRenderer)) {
-                    this.node.getComponent(UIRenderer).color = info.color;
-                }
+                this.setColor(info, this.node.getComponent(UIRenderer))
 
                 if (this.recursive) {
                     let children = this.node.children
                     for (let index = 0; index < children.length; index++) {
                         const element = children[index];
-                        if (element.getComponent(UIRenderer)) {
-                            element.getComponent(UIRenderer).color = info.color;
-                        }
+                        this.setColor(info, element.getComponent(UIRenderer))
                     }
                 }
                 break;
             }
         }
+    }
+
+    private setColor(info: ColorInfo, comp: UIRenderer) {
+        info.setColor(comp);
     }
 }
