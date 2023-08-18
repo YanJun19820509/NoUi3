@@ -1,5 +1,8 @@
 
-import { ccclass, property, Component, Node } from '../../yj';
+import { PopuPanelContent } from '../../../ui-temp/popup_panel/PopuPanelContent';
+import { no } from '../../no';
+import { ccclass, property, Component, Node, js } from '../../yj';
+import { YJPanel } from '../node/YJPanel';
 import { YJWindowManager } from '../node/YJWindowManager';
 import { YJGoToConfigDelegate, YJGoToInfo } from './YJGoToConfigDelegate';
 import { YJGoToTarget } from './YJGoToTarget';
@@ -45,20 +48,32 @@ export class YJGoToManager extends Component {
 
     private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
-        let panel = YJWindowManager.opennedPanel(info.target);
-        if (panel && panel.node.activeInHierarchy) this._ins.trigger(panel, args, cb);
-        else if (!info.isSub)
-            YJWindowManager.createPanel(info.target, null, null, panel => {
+        const clazz = js.getClassByName(info.target);
+        if (typeof clazz['show'] == 'function') {
+            no.evn.once('PopuPanelContent_create', (panel) => {
                 this._ins.trigger(panel, args, cb);
-            });
-        else {
-            this._ins.scheduleOnce(() => {
-                this.show(info, args, cb);
-            });
+            }, this);
+            clazz['show']();
+        } else if (clazz['$super'] == YJPanel) {
+            let panel = YJWindowManager.opennedPanel(info.target);
+            if (panel && panel.node.activeInHierarchy) this._ins.trigger(panel, args, cb);
+            else if (!info.isSub)
+                YJWindowManager.createPanel(info.target, null, null, panel => {
+                    this._ins.trigger(panel, args, cb);
+                });
+            else {
+                this._ins.scheduleOnce(() => {
+                    this.show(info, args, cb);
+                });
+            }
         }
     }
 
     private trigger(panel: Component, args: any, cb: () => void) {
+        if (args == null) {
+            cb?.();
+            return;
+        }
         if (!panel.node.activeInHierarchy) {
             this.scheduleOnce(() => {
                 this.trigger(panel, args, cb);

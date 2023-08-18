@@ -55,28 +55,32 @@ export class YJBitmapFont extends Component {
             return;
         }
         const label = this.getComponent(Label);
-        label.font = this._font;
-        label.materials.length = 0;
-        // label['updateMaterial']();
         if (!EDITOR && this.dynamicAtlas) {
             if (!label.customMaterial)
                 label.customMaterial = this.dynamicAtlas.commonMaterial;
+            // this._font.spriteFrame = this.dynamicAtlas.packSpriteFrame(this._font.spriteFrame);
 
+            
             // this.scheduleOnce(() => {
-            YJJobManager.ins.execute(() => {
-                if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
-                const label: any = this.getComponent(Label);
-                this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
-                    label.updateRenderData(true);
-                });
-                return false;
-            }, this);
+            // YJJobManager.ins.execute(() => {
+            //     if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+            //     const label: any = this.getComponent(Label);
+            //     this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
+            //         label.updateRenderData(true);
+            //     });
+            //     return false;
+            // }, this);
             // }, 1);
         }
+        label.font = this._font;
+        label.materials.length = 0;
+        label.enabled = true;
     }
 
     removeFont() {
-        this.getComponent(Label).font = null;
+        const label = this.getComponent(Label);
+        label.font = null;
+        label.enabled = false;
     }
 
     ///////////////////////////EDITOR///////////////

@@ -2,7 +2,7 @@
 import {
     EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
-    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font
+    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont
 } from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -68,18 +68,16 @@ export class AutoCreateNode extends Component {
             });
             if (!a.canceled) {
                 let path = a.filePaths[0];
-                console.log(path);
                 path = path.replace(/\\/g, '/');
                 let root = Editor.Project.path.replace(/\\/g, '/');
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-                let url: string = `${dest}/${name}.plist`;
-                no.assetBundleManager.loadSpriteAtlasInEditorMode(url, (fs, infos) => {
-                    this.atlases = this.atlases.concat(fs);
+                no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
+                    this.atlases = this.atlases.concat(assets);
                     no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/sub/atlas', 'cc.SpriteAtlas', assets => {
                         this.atlases = this.atlases.concat(assets);
-                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<Font>('assets/sub/common/font', '', assets => {
+                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/sub/common/font', 'cc.TTFFont', assets => {
                             this.fonts = this.fonts.concat(assets);
                             this.loadJson(dest, name);
                         });
@@ -205,21 +203,26 @@ export class AutoCreateNode extends Component {
     private createSpriteNode(c: any, parent: Node): Node {
         let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
-        if (c['9']) {
+        let sf = this.getSpriteFrame(c.name);
+        let is9 = false;
+        if (sf?.insetTop != 0 || sf?.insetBottom != 0 || sf?.insetRight != 0 || sf?.insetLeft != 0) {
+            is9 = true;
+        }
+        if (c['9'] || is9) {
             s.sizeMode = Sprite.SizeMode.CUSTOM;
             s.type = Sprite.Type.SLICED;
         } else {
             s.sizeMode = Sprite.SizeMode.RAW;
             s.type = Sprite.Type.SIMPLE;
         }
-        s.spriteFrame = this.getSpriteFrame(c.name);
+
+        s.spriteFrame = sf;
         if (!s.spriteFrame) {
             no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
                 s.spriteFrame = f;
             }, () => { });
-        } else {
-            if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
         }
+        if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
         return n;
     }
 

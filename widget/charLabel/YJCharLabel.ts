@@ -522,7 +522,7 @@ export class YJCharLabel extends Sprite {
         this.spriteFrame = null;
     }
 
-    private getMeasureWidth(ctx: CanvasRenderingContext2D, str: any, fontSize?: number): { width: number, height: number } {
+    private getMeasureWidth(ctx: CanvasRenderingContext2D, str: any, fontSize?: number): { width: number, height: number, y: number } {
         if (fontSize == null) fontSize = this.fontSize;
         else fontSize *= this._hdp ? this._hdpScale : 1;
         const k = str + '::' + fontSize;
@@ -532,7 +532,7 @@ export class YJCharLabel extends Sprite {
                 isNumber = !isNaN(str),
                 ww = mt.actualBoundingBoxRight + mt.actualBoundingBoxLeft * (!isNumber ? -1 : 1),
                 width = mt.width;
-            w = { width: Math.max(ww, width), height: mt.fontBoundingBoxAscent };
+            w = { width: Math.max(ww, width), height: mt.actualBoundingBoxAscent + mt.actualBoundingBoxDescent, y: mt.actualBoundingBoxDescent };
             this._measuredWidth[k] = w;
         }
         return w;
@@ -608,15 +608,16 @@ export class YJCharLabel extends Sprite {
         canvas.height = height;
 
         if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-            y = height / 2;
+            y = height / 2 - (this.underline ? this.underlineWidth : 0);
             if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
         } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - 2;
+            y = height - 2 - (this.underline ? this.underlineWidth + 1 : 0);
             if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
             if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
         } else {
             if (this.outlineWidth > 0) y += this.outlineWidth;
             if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+            if (this.underline && this.underlineWidth > 0) y += this.underlineWidth;
         }
 
         if (this.outlineWidth > 0) {
@@ -634,7 +635,7 @@ export class YJCharLabel extends Sprite {
         }
         ctx.fillText(v, x, y);
 
-        this.drawUnderline(ctx, width, x, y);
+        this.drawUnderline(ctx, width, x, y + this.getMeasureWidth(ctx, v).y);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -665,19 +666,20 @@ export class YJCharLabel extends Sprite {
             let y = height * i;
 
             if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-                y += hh / 2;
+                y += hh / 2 - (this.underline ? this.underlineWidth : 0);
                 if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
             } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - 2;
+                y += hh - 2 - (this.underline ? this.underlineWidth + 1 : 0);
                 if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
                 if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
             } else {
                 if (this.outlineWidth > 0) y += this.outlineWidth;
                 if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+                if (this.underline && this.underlineWidth > 0) y += this.underlineWidth * i;
             }
 
             const mw = this.getMeasureWidth(ctx, v),
-                w = mw.width;
+                w = mw.width, oy = y + mw.y;
 
             let x = 2;
             if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
@@ -698,8 +700,7 @@ export class YJCharLabel extends Sprite {
                 ctx.strokeText(v, x, y);
             }
             ctx.fillText(v, x, y);
-
-            this.drawUnderline(ctx, w, x, y);
+            this.drawUnderline(ctx, w, x, oy);
         });
         this.fixHDP(ctx, width, canvas.height);
     }
@@ -715,6 +716,7 @@ export class YJCharLabel extends Sprite {
         let a = 2;
         if (this.outlineWidth > 0) a += this.outlineWidth + 2;
         if (this.shadowBlur > 0) a += this.shadowBlur * 2 + Math.abs(this.shadowOffset.y);
+        if (this.underline) a += this.underlineWidth + this.hdpScale;
         return a;
     }
 
@@ -730,7 +732,7 @@ export class YJCharLabel extends Sprite {
 
     private drawUnderline(ctx: CanvasRenderingContext2D, width: number, x: number, y: number) {
         if (!this.underline || width == 0) return;
-        y += this.underlineWidth / 2 + 8 * this.hdpScale;
+        y += this.underlineWidth / 2 + this.hdpScale;
         ctx.beginPath();
         ctx.strokeStyle = '#' + this._color.toHEX('#rrggbb');
         ctx.lineWidth = this.underlineWidth;
@@ -907,15 +909,16 @@ export class YJCharLabel extends Sprite {
         canvas.height = height;
 
         if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-            y = height / 2;
+            y = height / 2 - (this.underline ? this.underlineWidth : 0);
             if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
         } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - 2;
+            y = height - 2 - (this.underline ? this.underlineWidth + 1 : 0);
             if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
             if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
         } else {
             if (this.outlineWidth > 0) y += this.outlineWidth;
             if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+            if (this.underline && this.underlineWidth > 0) y += this.underlineWidth;
         }
 
         if (this.outlineWidth > 0) {
@@ -925,7 +928,7 @@ export class YJCharLabel extends Sprite {
             x += this.shadowBlur + (this.shadowOffset.x < 0 ? -this.shadowOffset.x : 0);
         }
 
-        let len = 0, x1 = x;
+        let len = 0, x1 = x, maxY = 0;
         for (let i = 0, n = htmls.length; i < n; i++) {
             const html = htmls[i], style = html.style, text = html.text;
             this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
@@ -937,11 +940,12 @@ export class YJCharLabel extends Sprite {
             ctx.fillText(text, x, y);
             const mw = this.getMeasureWidth(ctx, text, style?.size),
                 w = mw.width;
+            maxY = Math.max(mw.y, maxY);
             x += w;
             len += w;
         }
 
-        this.drawUnderline(ctx, len, x1, y);
+        this.drawUnderline(ctx, len, x1, y + maxY);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -968,15 +972,16 @@ export class YJCharLabel extends Sprite {
             let y = height * i;
 
             if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-                y += hh / 2;
+                y += hh / 2 - (this.underline ? this.underlineWidth : 0);
                 if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
             } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - 2;
+                y += hh - 2 - (this.underline ? this.underlineWidth + 1 : 0);
                 if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
                 if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
             } else {
                 if (this.outlineWidth > 0) y += this.outlineWidth;
                 if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
+                if (this.underline && this.underlineWidth > 0) y += this.underlineWidth * i;
             }
 
             let x = 2;
@@ -996,7 +1001,7 @@ export class YJCharLabel extends Sprite {
                 }
             }
 
-            let len = 0, x1 = x;
+            let len = 0, x1 = x, maxY = 0;
             for (let i = 0, n = line.htmls.length; i < n; i++) {
                 const html = line.htmls[i], style = html.style, text = html.text;
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
@@ -1008,11 +1013,12 @@ export class YJCharLabel extends Sprite {
                 ctx.fillText(text, x1, y);
                 const mw = this.getMeasureWidth(ctx, text, style?.size),
                     w = mw.width;
+                maxY = Math.max(mw.y, maxY);
                 x1 += w;
                 len += w;
             }
 
-            this.drawUnderline(ctx, len, x, y);
+            this.drawUnderline(ctx, len, x, y + maxY);
         });
 
         this.fixHDP(ctx, width, canvas.height);

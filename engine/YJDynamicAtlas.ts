@@ -102,8 +102,8 @@ export class YJDynamicAtlas extends Component {
     }
 
     public packSpriteFrame(spriteFrame: SpriteFrame, canRotate = true): SpriteFrame {
-        if (!this.isWork) return null;
-        let uuid = spriteFrame._uuid;
+        if (!this.isWork || !spriteFrame) return null;
+        let uuid = spriteFrame.uuid;
         let p = this.insertSpriteFrame(spriteFrame, this.canRotate && canRotate);
         if (!p) return null;
         return this.createSpriteFrame(uuid, p);
@@ -189,12 +189,13 @@ export class YJDynamicAtlas extends Component {
                     ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
-                    comp['_texture'] = ff;
-                    comp['_ttfSpriteFrame'] = null;
-                    const renderData = comp['_renderData'];
-                    renderData.textureDirty = true;
+                    // comp['_texture'] = ff;
+                    // comp['_ttfSpriteFrame'] = null;
+                    // const renderData = comp['_renderData'];
+                    // renderData.textureDirty = true;
                     comp.markForUpdateRenderData(true);
-                    renderData.updateRenderData(comp, ff);
+                    comp['_assembler'].updateRenderData(comp);
+                    // renderData.updateRenderData(comp, ff);
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, ff, comp);
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
@@ -293,7 +294,7 @@ export class YJDynamicAtlas extends Component {
                 b.dynamicAtlas = dynamicAtlas;
         });
 
-        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite), node.getComponentsInChildren(Label));
+        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
         r.forEach(rr => {
             if (!rr.customMaterial) {
                 rr.customMaterial = dynamicAtlas.commonMaterial;

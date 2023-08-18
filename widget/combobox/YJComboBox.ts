@@ -92,10 +92,7 @@ export class YJComboBox extends YJDataWork {
         list?.forEach((a: any) => {
             a.checked = a.id == id;
             if (a.checked) {
-                this.data = {
-                    title: a.title,
-                    icon: a.icon
-                };
+                this.data = a;
             }
         });
         this.data = { list: list };

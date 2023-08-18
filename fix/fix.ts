@@ -1,4 +1,5 @@
 
+import { Toggle } from 'cc';
 import { no } from '../no';
 import { js, StencilManager, Node, director, Layout, UITransform } from '../yj';
 
@@ -58,6 +59,14 @@ js.mixin(Layout.prototype, {
             if (child.activeInHierarchy && uiTrans && no.visible(child)) {
                 this._usefulLayoutObj.push(uiTrans);
             }
+        }
+    }
+});
+
+js.mixin(Toggle.prototype, {
+    playEffect() {
+        if (this._checkMark) {
+            no.visible(this._checkMark.node, this._isChecked)
         }
     }
 });

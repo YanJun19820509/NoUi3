@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager } from '../yj';
+import { ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager } from '../yj';
 import { SpriteFrameDataType } from '../types';
 
 /**
@@ -15,18 +15,14 @@ import { SpriteFrameDataType } from '../types';
  */
 //查找所有图集的plist，获取spriteFrame的相关数据并生成json文件
 @ccclass('YJCollectSpriteFrameDataInAtlas')
-@executeInEditMode()
 export class YJCollectSpriteFrameDataInAtlas extends Component {
     @property({ displayName: '查找plist文件并生成json' })
-    run: boolean = false;
+    public get run(): boolean {
+        return false;
+    }
 
-    update() {
-        if (EDITOR) {
-            if (this.run) {
-                this.run = false;
-                YJCollectSpriteFrameDataInAtlas.queryAllPlist();
-            }
-        }
+    public set run(v: boolean) {
+        YJCollectSpriteFrameDataInAtlas.queryAllPlist();
     }
 
     private static queryAllPlist() {

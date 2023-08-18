@@ -2773,7 +2773,7 @@ export namespace no {
             Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: any[]) => {
                 let aa = [];
                 assets.forEach(a => {
-                    if (a['url'].indexOf(url) == 0) {
+                    if (a['url'].indexOf(url) > -1) {
                         aa[aa.length] = { uuid: a.uuid, type: a.type };
                     }
                 });

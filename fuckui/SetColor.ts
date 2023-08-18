@@ -35,10 +35,10 @@ export class SetColor extends FuckUi {
             } else if (this.getComponent(LabelOutline))
                 this.getComponent(LabelOutline).color = color;
         } else {
-            let renders = this.node.getComponentsInChildren(UIRenderer);
-            renders.forEach(render => {
-                render.color = color;
-            });
+            if (this.getComponent(YJCharLabel)) {
+                this.getComponent(YJCharLabel).fontColor = color;
+            } else if (this.getComponent(UIRenderer))
+                this.getComponent(UIRenderer).color = color;
         }
     }
 }

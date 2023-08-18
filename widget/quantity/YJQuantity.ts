@@ -30,11 +30,12 @@ export class YJQuantity extends YJDataWork {
 
     protected afterInit() {
         this._customNum = this.isCustom ? this.customNum : 10;
+        const data = this.data || { num: 1, min: 1, max: 999999999 }
         this.data = {
             customNum: this._customNum,
-            num: 1,
-            min: 1,
-            max: 999999999,
+            num: data.num,
+            min: data.min,
+            max: data.max,
             showMaxMin: this.amax,
             show1: this.a1,
             show10: this.a10
