@@ -130,6 +130,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 this.getComponent(Sprite).spriteFrame = file;
             });
+        else this.getComponent(Sprite).spriteFrame = null;
     }
 
     public removeSprite() {

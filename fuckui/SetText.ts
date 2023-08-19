@@ -21,11 +21,28 @@ import { SetEffect } from './SetEffect';
 
 @ccclass('SetText')
 @menu('NoUi/ui/SetText(设置文本内容:string)')
-@executeInEditMode()
 export class SetText extends FuckUi {
 
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
+    @property
+    public get packToAtlas(): boolean {
+        return this._packToAtlas;
+    }
+
+    public set packToAtlas(v: boolean) {
+        if (v == this._packToAtlas) return;
+        this._packToAtlas = v;
+        if (v) {
+            let label = (this.node.getComponent(Label) && !this.node.getComponent(YJBitmapFont)) || this.node.getComponent(RichText);
+            if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
+        } else {
+            this.getComponent(YJDynamicTexture)?.destroy();
+        }
+    }
+
+    @property({ serializable: true })
+    _packToAtlas: boolean = true;
 
     protected label: Label | RichText | YJCharLabel;
     private newData: any;
@@ -91,15 +108,6 @@ export class SetText extends FuckUi {
             this.label = this.node.getComponent(Label) || this.node.getComponent(RichText) || this.node.getComponent(YJCharLabel);
         }
         this.setLabel(data);
-    }
-
-
-    /////////////EDITOR////////////
-    update() {
-        if (!EDITOR) return;
-        let label = (this.node.getComponent(Label) && !this.node.getComponent(YJBitmapFont)) || this.node.getComponent(RichText);
-        if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
-        else if (!label && this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).destroy();
     }
 
     public a_setEmpty(): void {

@@ -250,7 +250,6 @@ export class SetList extends FuckUi {
         if (this.listData[start + i]) {
             this.setItemData(item, this.listData[start + i]);
         }
-        // item.active = i < this.showNum;
         no.visible(item, i < this.showNum);
     }
 

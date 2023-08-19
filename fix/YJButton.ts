@@ -24,6 +24,8 @@ export class YJButton extends Component {
     @property({ displayName: '延时生效(s)', min: 0 })
     wait: number = 0;
 
+    private canClick = true;
+
     private _clickEvents: EventHandler[] = [];
     private needWait: boolean = false;
 
@@ -44,6 +46,7 @@ export class YJButton extends Component {
     }
 
     public a_trigger(event: EventTouch) {
+        if (!this.canClick) return;
         if (event && event.touch?.getID() != 0) return;
         if (this.needWait) return;
         this.needWait = true;

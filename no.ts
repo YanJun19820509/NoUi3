@@ -4289,6 +4289,10 @@ export namespace no {
         if (v != undefined) {
             node['__need_render__'] = v;
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+            const btns = node.getComponentsInChildren('YJButton');
+            for (let i = 0, n = btns.length; i < n; i++) {
+                btns[i]['canClick'] = v;
+            }
         }
         return node['__need_render__'] !== false;
     }
