@@ -45,10 +45,30 @@ export class YJBitmapFont extends Component {
     fontName: string = '';
     @property({ readonly: true })
     fontUuid: string = '';
-    @property({ type: YJDynamicAtlas })
+
+    @property
+    public get packToAtlas(): boolean {
+        return this._packToAtlas;
+    }
+
+    public set packToAtlas(v: boolean) {
+        if (v == this._packToAtlas) return;
+        this._packToAtlas = v;
+        if (v && !this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        else if (!v) this.dynamicAtlas = null;
+    }
+
+    @property({ type: YJDynamicAtlas, readonly: true, visible() { return this._packToAtlas; } })
     dynamicAtlas: YJDynamicAtlas = null;
 
+    @property({ serializable: true })
+    protected _packToAtlas: boolean = true;
+
     private _font: BitmapFont = null;
+
+    start() {
+        this.resetFont();
+    }
 
     public resetFont() {
         this.setBitmapFont(this.fontUuid);
@@ -64,24 +84,11 @@ export class YJBitmapFont extends Component {
     private setFont(font: BitmapFont) {
         const label = this.getComponent(Label);
         if (!EDITOR && this.dynamicAtlas) {
-            if (!label.customMaterial)
-                label.customMaterial = this.dynamicAtlas.commonMaterial;
-            // this._font.spriteFrame = this.dynamicAtlas.packSpriteFrame(this._font.spriteFrame);
-
-
-            // this.scheduleOnce(() => {
-            // YJJobManager.ins.execute(() => {
-            //     if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
-            //     const label: any = this.getComponent(Label);
-            //     this.dynamicAtlas?.packToDynamicAtlas(label, label['_texture'], true, () => {
-            //         label.updateRenderData(true);
-            //     });
-            //     return false;
-            // }, this);
-            // }, 1);
+            this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, font.spriteFrame);
         }
-        label.font = this._font;
-        label.materials.length = 0;
+        label.font = font;
+        if (!label.customMaterial)
+            label.customMaterial = this.dynamicAtlas?.commonMaterial;
         label.enabled = true;
     }
 
@@ -89,14 +96,5 @@ export class YJBitmapFont extends Component {
         const label = this.getComponent(Label);
         label.font = null;
         label.enabled = false;
-    }
-
-    ///////////////////////////EDITOR///////////////
-    onLoad() {
-        // if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-    }
-
-    start() {
-        this.resetFont();
     }
 }

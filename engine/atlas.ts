@@ -52,13 +52,13 @@ export class Atlas {
         let _uuid = spriteFrame._uuid;
         let packedFrame = this.getPackedFrame(_uuid);
         if (packedFrame) return packedFrame;
-        const rect = spriteFrame.rect;
+        const originalSize = spriteFrame.originalSize;
 
         const plat_not_mini_game = sys.platform == sys.Platform.ANDROID || sys.platform == sys.Platform.IOS;
 
-        let needRotated = plat_not_mini_game && canRotate && rect.width > rect.height;
-        let width = needRotated ? rect.height : rect.width,
-            height = needRotated ? rect.width : rect.height;
+        let needRotated = plat_not_mini_game && canRotate && originalSize.width > originalSize.height;
+        let width = needRotated ? originalSize.height : originalSize.width,
+            height = needRotated ? originalSize.width : originalSize.height;
 
         let p = this._maxRect.find(width, height);
         if (!p) {

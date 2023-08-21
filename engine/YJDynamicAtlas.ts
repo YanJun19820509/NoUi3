@@ -104,9 +104,8 @@ export class YJDynamicAtlas extends Component {
     public packSpriteFrame(spriteFrame: SpriteFrame, canRotate = true): SpriteFrame {
         if (!this.isWork || !spriteFrame) return null;
         let uuid = spriteFrame.uuid;
-        let p = this.insertSpriteFrame(spriteFrame, this.canRotate && canRotate);
-        if (!p) return null;
-        return this.createSpriteFrame(uuid, p);
+        if (!this.insertSpriteFrame(spriteFrame, this.canRotate && canRotate)) return null;
+        return this.getSpriteFrameInstance(uuid);
     }
 
     public getPackedFrame(uuid: string): PackedFrameData | null {
@@ -173,6 +172,26 @@ export class YJDynamicAtlas extends Component {
         const p = this.atlas.drawCanvas(canvas, frame.uuid);
         if (p) {
             this.setPackedFrame(comp, frame, p);
+        } else onFail?.();
+    }
+
+    public packBitmapFontSpriteFrameToDynamicAtlas(font: BitmapFont, frame: SpriteFrame, canRotate?: boolean, onFail?: () => void) {
+        if (!this.isWork) {
+            onFail?.();
+            return;
+        }
+        if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
+            onFail?.();
+            return;
+        }
+        const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
+        if (packedFrame) {
+            let ff = frame.clone();
+            ff._uuid = frame.uuid;
+            ff.rotated = packedFrame.rotate;
+            ff._setDynamicAtlasFrame(packedFrame);
+            font.spriteFrame = ff;
+            no.setValueSafely(this.spriteFrameMap, { [frame.uuid]: ff });
         } else onFail?.();
     }
 
