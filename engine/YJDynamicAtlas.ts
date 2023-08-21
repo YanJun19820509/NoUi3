@@ -164,11 +164,16 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    public packCanvasToDynamicAtlas(canvas: HTMLCanvasElement, uuid: string) {
-        if (!this.isWork) return;
+    public packCanvasToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canvas: HTMLCanvasElement, onFail?: () => void) {
+        if (!this.isWork) {
+            onFail?.();
+            return;
+        }
         this.initAtlas();
-        const p = this.atlas.drawCanvas(canvas, uuid);
-        return p;
+        const p = this.atlas.drawCanvas(canvas, frame.uuid);
+        if (p) {
+            this.setPackedFrame(comp, frame, p);
+        } else onFail?.();
     }
 
     public removeFromDynamicAtlas(frame: SpriteFrame): void {

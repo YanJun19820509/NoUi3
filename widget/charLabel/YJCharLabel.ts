@@ -435,9 +435,10 @@ export class YJCharLabel extends Sprite {
                 // this.setChars(s);
                 break;
             case YJCharLabelMode.String:
-                if (this._string == '')
+                if (this._string == '') {
                     this.clearString();
-                else {
+                    return;
+                } else {
                     if (!this.setPackedTexture()) {
                         if (this.richText)
                             this.drawRichString(this._string)
@@ -767,20 +768,16 @@ export class YJCharLabel extends Sprite {
 
     private updateTexture() {
         const canvas = this.shareCanvas();
-        const p = this.dynamicAtlas?.packCanvasToDynamicAtlas(canvas, this.getUuid());
-        let spriteFrame = new SpriteFrame();
-        if (EDITOR || !p) {
+        if (!this.spriteFrame)
+            this.spriteFrame = new SpriteFrame();
+        this.spriteFrame['_uuid'] = this.getUuid();
+        this.spriteFrame.rect = rect(0, 0, canvas.width, canvas.height);
+        this.dynamicAtlas?.packCanvasToDynamicAtlas(this, this.spriteFrame, canvas, () => {
             const image = new ImageAsset(canvas);
             const texture = new Texture2D();
             texture.image = image;
-            spriteFrame.texture = texture;
-        } else {
-            spriteFrame.texture = p.texture;
-            spriteFrame.originalSize = size(100, 100);
-            spriteFrame.rotated = p.rotate;
-            spriteFrame.rect = rect(p.x, p.y, p.w, p.h);
-        }
-        this.spriteFrame = spriteFrame;
+            this.spriteFrame.texture = texture;
+        });
     }
 
     private drawRichString(v: string) {
