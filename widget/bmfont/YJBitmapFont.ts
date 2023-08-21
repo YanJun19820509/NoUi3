@@ -27,14 +27,19 @@ export class YJBitmapFont extends Component {
     public set font(v: BitmapFont) {
         if (v == this._font) return;
         this._font = v;
-        if (!v) {
-            this.fontName = '';
-            this.fontUuid = '';
-        } else {
-            this.fontName = v.name;
-            this.fontUuid = v.uuid;
-            this.resetFont();
-        }
+        this.fontName = v.name;
+        this.fontUuid = v.uuid;
+        this.resetFont();
+    }
+    @property
+    public get clearFont(): boolean {
+        return false;
+    }
+
+    public set clearFont(v: boolean) {
+        this.fontName = '';
+        this.fontUuid = '';
+        this.removeFont();
     }
     @property({ readonly: true })
     fontName: string = '';

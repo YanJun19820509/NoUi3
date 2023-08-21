@@ -25,8 +25,12 @@ export class YJGameData extends no.Data {
         return this._state.check('data_change', target).state;
     }
 
+    public updateStateChange() {
+        this._state.set('data_change');
+    }
+
     public set(path: string, value: any, recursive = true) {
         super.set(path, value, recursive);
-        this._state.set('data_change');
+        this.updateStateChange();
     }
 }
