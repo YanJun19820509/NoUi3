@@ -46,21 +46,24 @@ export class YJBitmapFont extends Component {
     private _font: BitmapFont = null;
 
     public resetFont() {
-        if (!this._font) {
-            no.assetBundleManager.loadByUuid<BitmapFont>(this.fontUuid, BitmapFont, bf => {
-                if (!bf) return;
-                this._font = bf;
-                this.resetFont();
-            });
-            return;
-        }
+        this.setBitmapFont(this.fontUuid);
+    }
+
+    public setBitmapFont(fontUuid: string) {
+        no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
+            if (!bf) return;
+            this.setFont(bf);
+        });
+    }
+
+    private setFont(font: BitmapFont) {
         const label = this.getComponent(Label);
         if (!EDITOR && this.dynamicAtlas) {
             if (!label.customMaterial)
                 label.customMaterial = this.dynamicAtlas.commonMaterial;
             // this._font.spriteFrame = this.dynamicAtlas.packSpriteFrame(this._font.spriteFrame);
 
-            
+
             // this.scheduleOnce(() => {
             // YJJobManager.ins.execute(() => {
             //     if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;

@@ -1,7 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit
 } from "./yj";
 
 
@@ -4278,6 +4278,8 @@ export namespace no {
         }
     }
 
+    let _pos = v3();
+
     /**
      * 设置节点可渲染标志
      * @param node 
@@ -4286,13 +4288,15 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (v != undefined) {
+        if (v != undefined && node['__need_render__'] != v) {
             node['__need_render__'] = v;
-            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
-            const btns = node.getComponentsInChildren('YJButton');
-            for (let i = 0, n = btns.length; i < n; i++) {
-                btns[i]['canClick'] = v;
+            if (v) {
+                node.getWorldPosition(_pos);
+                node.setWorldPosition(_pos);
             }
+            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+            const btn = node.getComponent('YJButton');
+            if (btn) btn['canClick'] = v;
         }
         return node['__need_render__'] !== false;
     }
