@@ -41,6 +41,8 @@ export class SetList extends FuckUi {
 
     @property(ScrollView)
     scrollView: ScrollView = null;
+    @property(Node)
+    content: Node = null;
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
     @property(YJLoadAssets)
@@ -65,7 +67,6 @@ export class SetList extends FuckUi {
     private listData: any[];
     // private listItems: Node[] = [];
     private isVertical: boolean;
-    private content: Node;
     /**
      * 横向时指宽，纵向时指高
      */
@@ -81,6 +82,7 @@ export class SetList extends FuckUi {
     private isFirst: boolean = true;
     private waitTime: number;
     private _isSettingData: boolean = false;
+    private scrollViewContent: Node;
 
     async onLoad() {
         super.onLoad();
@@ -100,7 +102,9 @@ export class SetList extends FuckUi {
         // this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
         // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
-        this.content = this.scrollView.content;
+        if (!this.content)
+            this.content = this.scrollView.content;
+        this.scrollViewContent = this.scrollView.content;
         // this.listItems = this.content.children;
 
         // if (this.isVertical) {
@@ -225,14 +229,14 @@ export class SetList extends FuckUi {
                 start = this.allNum - this.showMax;
             }
             if (start < 0) start = 0;
-            let p = this.content.getPosition();
+            let p = this.scrollViewContent.getPosition();
             if (this.isVertical) {
                 p.y = start * this.itemSize.height;
             } else {
                 p.x = start * this.itemSize.width;
 
             }
-            this.content.setPosition(p);
+            this.scrollViewContent.setPosition(p);
             this.lastIndex = start;
         }
         let i = 0, n = listItems.length;
@@ -298,10 +302,10 @@ export class SetList extends FuckUi {
         let curPos = 0;
         let startIndex = 0;
         if (this.isVertical) {
-            curPos = no.y(this.content);
+            curPos = no.y(this.scrollViewContent);
             startIndex = no.floor(curPos / this.itemSize.height);
         } else {
-            curPos = no.x(this.content);
+            curPos = no.x(this.scrollViewContent);
             startIndex = no.floor(-curPos / this.itemSize.width);
         }
         //到左或到顶
