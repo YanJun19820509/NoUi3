@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 
@@ -14,11 +14,6 @@ import { no } from '../../no';
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-
-enum YJCharLabelMode {
-    Char = 0,
-    String
-}
 
 @ccclass('YJCharLabel')
 export class YJCharLabel extends Sprite {
@@ -77,9 +72,6 @@ export class YJCharLabel extends Sprite {
     }
 
 
-
-    @property({ type: Enum(YJCharLabelMode) })
-    mode: YJCharLabelMode = YJCharLabelMode.String;
     //文本内容
     @property({ type: CCString, multiline: true })
     set string(v: string) {
@@ -341,7 +333,7 @@ export class YJCharLabel extends Sprite {
         if (v == this._hdp) return;
         this._hdp = v;
         if (v) {
-            this._hdpScale = Math.ceil(40 / this._fontSize);
+            this._hdpScale = Math.max(1, 1 / view.getScaleX());
         }
         this.setLabel();
     }
@@ -408,18 +400,19 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _packToAtlas: boolean = true;
 
+    @property({ serializable: true })
+    private _needSetLabel: boolean = false;
     //高清模式系数
     private _hdpScale = 2;
     //已测量文字最大最小宽
     private _measuredWidth: { [k: string]: { width: number, height: number } } = {};
 
     onLoad() {
-        if (EDITOR)
-            this.spriteFrame = new SpriteFrame();
-        if (this.packToAtlas) {
-            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-            if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
-        }
+        if (EDITOR) return;
+        // if (this.packToAtlas) {
+        //     if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        //     if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.commonMaterial;
+        // }
         this.setLabel();
     }
 
@@ -429,24 +422,18 @@ export class YJCharLabel extends Sprite {
     }
 
     private setLabel(): void {
+        if (EDITOR && !this._needSetLabel) return;
         if (!isValid(this.node) || !this.node.activeInHierarchy) return;
-        switch (this.mode) {
-            case YJCharLabelMode.Char:
-                // this.setChars(s);
-                break;
-            case YJCharLabelMode.String:
-                if (this._string == '') {
-                    this.clearString();
-                    return;
-                } else {
-                    if (!this.setPackedTexture()) {
-                        if (this.richText)
-                            this.drawRichString(this._string)
-                        else
-                            this.drawString(this._string);
-                    }
-                }
-                break;
+        if (this._string == '') {
+            this.clearString();
+            return;
+        } else {
+            if (!this.setPackedTexture()) {
+                if (this.richText)
+                    this.drawRichString(this._string)
+                else
+                    this.drawString(this._string);
+            }
         }
         this.updateTexture();
     }
@@ -1019,5 +1006,15 @@ export class YJCharLabel extends Sprite {
         });
 
         this.fixHDP(ctx, width, canvas.height);
+    }
+
+    public removeLabel() {
+        this.spriteFrame = null;
+        this._needSetLabel = false;
+    }
+
+    public resetLabel() {
+        this._needSetLabel = true;
+        this.setLabel();
     }
 }

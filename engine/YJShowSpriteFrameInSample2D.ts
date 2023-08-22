@@ -43,5 +43,10 @@ export class YJShowSpriteFrameInSample2D extends Component {
             if (v) a.resetFont();
             else a.removeFont();
         });
+        list = this.getComponentsInChildren('YJCharLabel');
+        list.forEach(a => {
+            if (v) a.resetLabel();
+            else a.removeLabel();
+        });
     }
 }
