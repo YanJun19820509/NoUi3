@@ -428,14 +428,13 @@ export class YJCharLabel extends Sprite {
             this.clearString();
             return;
         } else {
-            if (!this.setPackedTexture()) {
-                if (this.richText)
-                    this.drawRichString(this._string)
-                else
-                    this.drawString(this._string);
-            }
+            if (this.setPackedTexture()) return;
+            if (this.richText)
+                this.drawRichString(this._string)
+            else
+                this.drawString(this._string);
+            this.updateTexture();
         }
-        this.updateTexture();
     }
 
     private get hdpScale(): number {
@@ -731,23 +730,17 @@ export class YJCharLabel extends Sprite {
 
     private setPackedTexture() {
         if (EDITOR) return false;
-        const p = this.dynamicAtlas?.getPackedFrame(this.getUuid());
+        const p = this.dynamicAtlas?.getSpriteFrameInstance(this.getUuid());
         if (p) {
-            let width = p.w,
-                height = p.h;
+            let width = p.rect.width,
+                height = p.rect.height;
             if (this._hdp) {
                 let scale = 1 / this._hdpScale;
                 width *= scale;
                 height *= scale;
             }
             no.size(this.node, math.size(width, height));
-            let spriteFrame = new SpriteFrame();
-            spriteFrame.texture = p.texture;
-            spriteFrame.originalSize = size(100, 100);
-            spriteFrame.rotated = p.rotate;
-            spriteFrame.rect = rect(p.x, p.y, p.w, p.h);
-            this.spriteFrame = spriteFrame;
-            this['_updateUVs']();
+            this.spriteFrame = p;
             return true;
         }
         return false;
@@ -755,15 +748,14 @@ export class YJCharLabel extends Sprite {
 
     private updateTexture() {
         const canvas = this.shareCanvas();
-        if (!this.spriteFrame)
-            this.spriteFrame = new SpriteFrame();
-        this.spriteFrame['_uuid'] = this.getUuid();
-        this.spriteFrame.rect = rect(0, 0, canvas.width, canvas.height);
-        this.dynamicAtlas?.packCanvasToDynamicAtlas(this, this.spriteFrame, canvas, () => {
+        if (!canvas.width || !canvas.height) return;
+        this.dynamicAtlas?.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
             const image = new ImageAsset(canvas);
             const texture = new Texture2D();
             texture.image = image;
-            this.spriteFrame.texture = texture;
+            let spriteFrame = new SpriteFrame();
+            spriteFrame.texture = texture;
+            this.spriteFrame = spriteFrame;
         });
     }
 

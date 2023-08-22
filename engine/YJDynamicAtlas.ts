@@ -163,15 +163,15 @@ export class YJDynamicAtlas extends Component {
         }
     }
 
-    public packCanvasToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canvas: HTMLCanvasElement, onFail?: () => void) {
+    public packCanvasToDynamicAtlas(comp: UIRenderer, uuid: string, canvas: HTMLCanvasElement, onFail?: () => void) {
         if (!this.isWork) {
             onFail?.();
             return;
         }
         this.initAtlas();
-        const p = this.atlas.drawCanvas(canvas, frame.uuid);
+        const p = this.atlas.drawCanvas(canvas, uuid);
         if (p) {
-            this.setPackedFrame(comp, frame, p);
+            this.setPackedFrame(comp, null, p, uuid);
         } else onFail?.();
     }
 
@@ -201,10 +201,10 @@ export class YJDynamicAtlas extends Component {
         frame._resetDynamicAtlasFrame();
     }
 
-    private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData) {
+    private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData, _uuid?: string) {
         if (!this.spriteFrameMap) return;
         if (packedFrame) {
-            const uuid = frame._uuid;
+            const uuid = _uuid || frame._uuid;
             if (comp instanceof Label) {
                 if (!comp.customMaterial)
                     comp.customMaterial = this.commonMaterial;
@@ -244,9 +244,12 @@ export class YJDynamicAtlas extends Component {
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
-                let ff = frame.clone();
+                let ff = frame?.clone() || new SpriteFrame();
                 ff._uuid = uuid;
                 ff.rotated = packedFrame.rotate;
+                if (!ff.rect.width || !ff.rect.height) {
+                    ff.rect = rect(0, 0, packedFrame.w, packedFrame.h);
+                }
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
                 no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
