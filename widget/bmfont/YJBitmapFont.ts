@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, requireComponent, Component, Node, BitmapFont, Label, isValid } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, Component, Node, BitmapFont, Label, isValid, instantiate } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { YJJobManager } from '../../base/YJJobManager';
@@ -71,21 +71,28 @@ export class YJBitmapFont extends Component {
     }
 
     public resetFont() {
+        if (this.fontUuid == '') return;
         this.setBitmapFont(this.fontUuid);
     }
 
     public setBitmapFont(fontUuid: string) {
         no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
             if (!bf) return;
-            this.setFont(bf);
+
+            if (!EDITOR && this.dynamicAtlas) {
+                let font = new BitmapFont();
+                font.name = bf.name;
+                font.fntConfig = bf.fntConfig;
+                font.fontDefDictionary = bf.fontDefDictionary;
+                font.fontSize = bf.fontSize;
+                this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, bf.spriteFrame);
+                this.setFont(font);
+            } else this.setFont(bf);
         });
     }
 
     private setFont(font: BitmapFont) {
         const label = this.getComponent(Label);
-        if (!EDITOR && this.dynamicAtlas) {
-            this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, font.spriteFrame);
-        }
         label.font = font;
         if (!label.customMaterial)
             label.customMaterial = this.dynamicAtlas?.commonMaterial;
