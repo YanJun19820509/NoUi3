@@ -20,13 +20,19 @@ export class OpenWindowInfo {
     @property
     windowName: string = '';
     @property
+    prefabPathOrUuid: string = '';
+    @property
     to: string = '';
 
     public open() {
-        const clazz = js.getClassByName(this.windowName);
-        if (typeof clazz['show'] == 'function') clazz['show']();
-        else if (clazz['$super'] == YJPanel)
-            YJWindowManager.createPanel(this.windowName, this.to);
+        if (this.windowName != '') {
+            const clazz = js.getClassByName(this.windowName);
+            if (typeof clazz['show'] == 'function') clazz['show']();
+            else if (clazz['$super'] == YJPanel)
+                YJWindowManager.createPanel(this.windowName, this.to);
+        } else if (this.prefabPathOrUuid != '') {
+            YJWindowManager.createPanelByPrefab(this.prefabPathOrUuid, this.to);
+        }
     }
 }
 

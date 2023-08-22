@@ -135,6 +135,32 @@ export class YJWindowManager extends Component {
         }
     }
 
+    /**
+     * 通过prefab的path或uuid创建，通常用于无逻辑面板加载
+     * @param prefabPathOrUuid 
+     * @param to 
+     * @param beforeInit 
+     * @param afterInit 
+     */
+    public static createPanelByPrefab(prefabPathOrUuid: string, to?: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
+        const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
+        const self = YJWindowManager._ins;
+        let content: Node = self.getContent(to);
+        if (node) this.initNode(node, YJPanel, content, beforeInit, afterInit);
+        else {
+            const request = { type: Prefab, path: prefabPathOrUuid, uuid: prefabPathOrUuid };
+            no.assetBundleManager.loadAny<Prefab>(request, pf => {
+                if (!pf) return;
+                const node = instantiate(pf);
+                no.assetBundleManager.setPrefabNode(prefabPathOrUuid, node);
+                if (!content?.isValid) {
+                    return
+                }
+                this.initNode(no.assetBundleManager.getPrefabNode(prefabPathOrUuid), YJPanel, content, beforeInit, afterInit);
+            });
+        }
+    }
+
     public static OpenPanelAndCloseOther(name: string, to: string) {
         this.createPanel(name, to, null, () => {
             this.closePanelIn(to, [name]);
