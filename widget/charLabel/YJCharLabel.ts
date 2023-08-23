@@ -757,14 +757,23 @@ export class YJCharLabel extends Sprite {
     private updateTexture() {
         const canvas = this.shareCanvas();
         if (!canvas.width || !canvas.height) return;
-        this.dynamicAtlas?.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
+        if (this.dynamicAtlas) {
+            this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
+                const image = new ImageAsset(canvas);
+                const texture = new Texture2D();
+                texture.image = image;
+                let spriteFrame = new SpriteFrame();
+                spriteFrame.texture = texture;
+                this.spriteFrame = spriteFrame;
+            });
+        } else {
             const image = new ImageAsset(canvas);
             const texture = new Texture2D();
             texture.image = image;
             let spriteFrame = new SpriteFrame();
             spriteFrame.texture = texture;
             this.spriteFrame = spriteFrame;
-        });
+        }
     }
 
     private drawRichString(v: string) {
