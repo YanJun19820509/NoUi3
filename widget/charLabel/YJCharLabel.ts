@@ -734,6 +734,14 @@ export class YJCharLabel extends Sprite {
         if (p) {
             let width = p.rect.width,
                 height = p.rect.height;
+            if (this.overflow == Label.Overflow.SHRINK) {
+                const maxWidth = this.maxWidth;
+                if (width > maxWidth) {
+                    let scale = maxWidth / width;
+                    width = maxWidth;
+                    height *= scale;
+                }
+            }
             if (this._hdp) {
                 let scale = 1 / this._hdpScale;
                 width *= scale;

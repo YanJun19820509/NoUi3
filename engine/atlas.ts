@@ -1,4 +1,4 @@
-import { EDITOR, SpriteFrame, Texture2D, ImageAsset, dynamicAtlasManager, js, Component, isValid, sys, gfx, Rect, rect } from "../yj";
+import { EDITOR, SpriteFrame, Texture2D, ImageAsset, dynamicAtlasManager, js, Component, isValid, sys, gfx, Rect, rect, size } from "../yj";
 import { no } from "../no";
 import { PackedFrameData } from "../types";
 import { MaxRects } from "./MaxRects";
@@ -52,13 +52,16 @@ export class Atlas {
         let _uuid = spriteFrame._uuid;
         let packedFrame = this.getPackedFrame(_uuid);
         if (packedFrame) return packedFrame;
-        const originalSize = spriteFrame.originalSize;
+        const originalSize = spriteFrame.originalSize,
+            rectSize = spriteFrame.rect.size,
+            frameSize = size(Math.max(originalSize.width, rectSize.width), Math.max(originalSize.height, rectSize.height));
+
 
         const plat_not_mini_game = sys.platform == sys.Platform.ANDROID || sys.platform == sys.Platform.IOS;
 
-        let needRotated = plat_not_mini_game && canRotate && originalSize.width > originalSize.height;
-        let width = needRotated ? originalSize.height : originalSize.width,
-            height = needRotated ? originalSize.width : originalSize.height;
+        let needRotated = plat_not_mini_game && canRotate && frameSize.width > frameSize.height;
+        let width = needRotated ? frameSize.height : frameSize.width,
+            height = needRotated ? frameSize.width : frameSize.height;
 
         let p = this._maxRect.find(width, height);
         if (!p) {

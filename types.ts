@@ -235,10 +235,6 @@ export class LoadAssetsInfo {
     @property({ readonly: true })
     assetName: string = '';
 
-    constructor(uuid: string) {
-        this.assetUuid = uuid;
-    }
-
     public async load(): Promise<Asset> {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
