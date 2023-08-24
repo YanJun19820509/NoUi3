@@ -1,8 +1,9 @@
 
 
-import { ccclass, requireComponent } from '../yj';
+import { ccclass, property, requireComponent } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { FuckUi } from './FuckUi';
+import { no } from '../no';
 
 /**
  * Predefined variables
@@ -19,7 +20,20 @@ import { FuckUi } from './FuckUi';
 @ccclass('SetNodeTarget')
 @requireComponent(YJNodeTarget)
 export class SetNodeTarget extends FuckUi {
+
+    @property({ displayName: '格式化模板' })
+    formatter: string = '{0}';
+
     protected onDataChange(data: any) {
-        this.getComponent(YJNodeTarget).setType(String(data));
+        let s = '';
+        if (typeof data == 'string') {
+            if (data != '')
+                s = no.formatString(this.formatter, data.split('|'));
+        } else if (typeof data == 'number') {
+            s = no.formatString(this.formatter, { '0': data });
+        } else {
+            s = no.formatString(this.formatter, data);
+        }
+        this.getComponent(YJNodeTarget).setType(s);
     }
 }
