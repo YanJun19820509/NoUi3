@@ -32,11 +32,12 @@ export class YJMenu extends Component {
     autoCreate: boolean = true;
 
     onLoad() {
-        this.autoCreate && this.createMenu();
+        this.autoCreate && this.createMenu(this.menuItems);
     }
 
-    public createMenu() {
-        this.menuItems.forEach((info, i) => {
+    public createMenu(menuItems: YJMenuItemInfo[]) {
+        if (!menuItems || menuItems.length == 0) return;
+        menuItems.forEach((info, i) => {
             if (!DEBUG && info.DEBUG) return;
             const item = instantiate(this.itemTemp);
             item.getComponent(Toggle).isChecked = this.defaultChecked == i;
