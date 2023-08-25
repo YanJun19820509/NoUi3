@@ -66,6 +66,7 @@ export class YJWideArea extends Component {
     private onTouchStart(e: EventTouch) {
         e.preventSwallow = true;
         this.startTouchPos = this.touchUILocationAR(e);
+        this.delegate?.onStart(this._curPos.clone());
     }
 
     private onTouchMove(e: EventTouch) {
@@ -87,11 +88,12 @@ export class YJWideArea extends Component {
         e.preventSwallow = true;
         this._isMoving = false;
         this._speedMultipel = 1;
+        this.delegate?.onEnd(this._curPos.clone());
     }
 
 
     private createBlocks() {
-        if (!this.blockTemp || !this.blockLayer) return;
+        if (!this.useBlock || !this.blockTemp || !this.blockLayer) return;
         const viewSize = YJFitScreen.getVisibleSize();
         //根据屏幕宽高计算视图块行数和列数
         let x = Math.ceil(viewSize.width / this.blocksSize) + 1,
@@ -133,7 +135,7 @@ export class YJWideArea extends Component {
                 angle: Math.floor(this._dir.angle)
             };
         }
-        this.delegate?.onMove(this._curPos, this.xy2uv(this._curPos));
+        this.delegate?.onMove(this._curPos.clone());
         this.moveBlocks(x, y);
     }
 
@@ -164,7 +166,7 @@ export class YJWideArea extends Component {
         }
         no.position(block, pos);
         let pos2 = v2(pos.x, pos.y)
-        this.delegate?.onBlockSwitch(block, pos2, this.xy2uv(pos2));
+        this.delegate?.onBlockSwitch(block, pos2);
     }
 
     private xy2uv(xy: Vec2): Vec2 {
