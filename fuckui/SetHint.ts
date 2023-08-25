@@ -30,15 +30,29 @@ export class SetHint extends FuckUi {
 
     @property({ type: YJCharLabel, displayName: '显示红点数量', visible() { return this.isNumber; } })
     charLabel: YJCharLabel = null;
+    @property({ displayName: '默认显示' })
+    public get defaultShow(): boolean {
+        return this._defaultShow;
+    }
+
+    public set defaultShow(v: boolean) {
+        if (v == this._defaultShow) return;
+        this._defaultShow = v;
+        no.visible(this.targetNode, v);
+    }
+    @property({ serializable: true })
+    _defaultShow: boolean = true;
 
     onLoad() {
         super.onLoad();
         this.targetNode = this.targetNode || this.node;
+        if (!this.dataSetted) {
+            no.visible(this.targetNode, this._defaultShow);
+        }
     }
 
     protected onDataChange(data: any) {
         let v = Number(data);
-        // this.targetNode.active = v > 0;
         no.visible(this.targetNode, v > 0);
         if (this.isNumber) {
             if (this.label != null)
