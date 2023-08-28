@@ -101,7 +101,6 @@ export class YJWindowManager extends Component {
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
-                    no.visible(a.node, true);
                     a.onEnable();
                     afterInit?.(a as T);
                 }).catch(e => { no.err('windowmanager', e.message); });
