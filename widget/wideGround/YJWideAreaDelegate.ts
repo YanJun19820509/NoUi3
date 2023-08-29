@@ -15,7 +15,7 @@ import { Component, Size, Vec2, ccclass, Node, Vec3, v3 } from "../../yj";
  * direction：所处方位'top' | 'bottom' | 'left' | 'right'
  */
 
-export type WideAreaObject = { node: Node, pos: Vec3, dis: number, xy: Vec2, active: boolean };
+export type WideAreaObject = { node: Node, pos: Vec3, xy: Vec2, active: boolean, height: number };
 
 @ccclass('YJWideAreaDelegate')
 export class YJWideAreaDelegate extends Component {
@@ -31,29 +31,30 @@ export class YJWideAreaDelegate extends Component {
      */
     public onBlockSwitch(block: Node, xy: Vec2) { }
 
-    public setWideAreaObject(obj: WideAreaObject) {
-        const s = 100 / obj.dis;
-        no.scale(obj.node, v3(s, s));
-        no.position(obj.node, obj.pos);
-    }
-
     public wideAreaObjectMove(obj: WideAreaObject, xy: Vec2) {
-        const dis = Vec2.distance(xy, obj.xy),
-            viewSize = YJFitScreen.getVisibleSize();
-        let oy = Math.abs(no.y(obj.node));
-        if ((dis > obj.dis || oy > viewSize.height / 2) && obj.active) {
-            obj.active = false;
-            no.visible(obj.node, false);
-        } else if (dis < obj.dis && oy < viewSize.height / 2) {
-            if (!obj.active) {
-                obj.active = true;
-                no.visible(obj.node, true);
-            }
-            const s = 100 / dis;
-            no.scale(obj.node, v3(s, s));
-            // let pos = obj.pos.clone();
-
-            // no.position(obj.node, pos);
+        const dis = obj.xy.y - xy.y,
+            viewSize = YJFitScreen.getVisibleSize(),
+            absDis = Math.abs(dis);
+        let s = 1, x = obj.pos.x, y = obj.pos.y;
+        if (absDis <= Math.abs(obj.pos.y)) {
+            s = (1 - absDis / viewSize.height * 2) * .2 + .8;
+            y = dis;
+            x = obj.xy.x - xy.x;
+        } else {
+            s = Math.max(obj.height / absDis, .1) / 2 + .4;
+            x += (obj.pos.y / dis) * (obj.xy.x - xy.x);
         }
+        if (Math.abs(x) < viewSize.width / 2 || Math.abs(y) < viewSize.height / 2) {
+            if (obj.active) {
+                no.visible(obj.node, false);
+                obj.active = false;
+            }
+            return;
+        } else if (!obj.active) {
+            no.visible(obj.node, true);
+            obj.active = true;
+        }
+        no.scale(obj.node, v3(s, s));
+        no.position(obj.node, v3(x, y));
     }
 }
