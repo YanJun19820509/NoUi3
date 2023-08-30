@@ -29,6 +29,8 @@ export class YJDragDropNode extends YJTouchListener {
     onAwayFromTarget: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '放入目标时' })
     onAchieveTarget: no.EventHandlerInfo[] = [];
+    @property({ type: no.EventHandlerInfo, displayName: '点击时' })
+    onClick: no.EventHandlerInfo[] = [];
 
     private _originalPos: Vec3;
     private _targetRect: Rect;
@@ -48,7 +50,7 @@ export class YJDragDropNode extends YJTouchListener {
 
     public onMove(event: EventTouch) {
         if (!this.isTouchIn) return;
-        this.setPosition(event.getUIDelta());
+        this.setPosition(event.getDelta());
         if (this.checkIsApproached()) {
             if (!this._isApproached) {
                 this._isApproached = true;
@@ -66,6 +68,9 @@ export class YJDragDropNode extends YJTouchListener {
         if (this._isApproached) no.EventHandlerInfo.execute(this.onAchieveTarget);
         else this.moveBack();
         super.onEnd(event);
+        if (Vec2.distance(event.getStartLocation(), event.getLocation()) < 10) {
+            no.EventHandlerInfo.execute(this.onClick);
+        }
     }
 
     public onCancel(event: EventTouch) {
@@ -87,7 +92,10 @@ export class YJDragDropNode extends YJTouchListener {
     }
 
     private moveBack() {
-        if (!this.canBack) return;
+        if (!this.canBack) {
+            this.rect = null;
+            return;
+        }
         this.getComponent(SetNodeTweenAction).setData(no.jsonStringify({
             duration: 0.2,
             to: 1,
