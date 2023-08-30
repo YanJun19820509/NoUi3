@@ -41,19 +41,19 @@ export class YJTouchDispatcher extends Component {
 
     public onStart(event: EventTouch) {
         for (let i = 0, n = this.listeners.length; i < n; i++) {
-            this.listeners[i].onStart(event);
+            if (this.listeners[i].onStart(event) && !event.preventSwallow) break;
         }
     }
 
     public onMove(event: EventTouch) {
         for (let i = 0, n = this.listeners.length; i < n; i++) {
-            this.listeners[i].onMove(event);
+            if (this.listeners[i].onMove(event) && !event.preventSwallow) break;
         }
     }
 
     public onEnd(event: EventTouch) {
         for (let i = 0, n = this.listeners.length; i < n; i++) {
-            this.listeners[i].onEnd(event);
+            if (this.listeners[i].onEnd(event) && !event.preventSwallow) break;
         }
     }
 
