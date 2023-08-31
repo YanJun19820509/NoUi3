@@ -80,7 +80,9 @@ export class YJToggleGroupManager extends Component {
             let toggle = items[i];
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'p_onClick', false);
-            if (this.defaultCheckedIdx == i) toggle.isChecked = true;
+            if (this.checkOnEnabel && this.defaultCheckedIdx == i) {
+                this.a_onCheck(toggle);
+            }
         }
     }
 
