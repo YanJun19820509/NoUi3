@@ -1,7 +1,7 @@
 
 import {
     ccclass, property, menu, executeInEditMode, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, ImageAsset, SpriteAtlas
 } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
@@ -208,13 +208,17 @@ export class YJLoadAssets extends Component {
 
 
                 if (this.loadLanguageBundle) {
-                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, null, items => {
+                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, SpriteAtlas, null, items => {
                         if (items) {
                             items.forEach(item => {
                                 if (item instanceof JsonAsset) {
                                     this.atlases[this.atlases.length] = item.json;
                                 } else if (item instanceof Texture2D) {
                                     textures[textures.length] = item;
+                                } else if (item instanceof ImageAsset) {
+                                    const texture = new Texture2D();
+                                    texture.image = item;
+                                    textures[textures.length] = texture;
                                 }
                             });
                         }

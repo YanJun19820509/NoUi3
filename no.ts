@@ -2641,14 +2641,20 @@ export namespace no {
             return a;
         }
 
-        public loadAllFilesInBundle(bundleName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
+        public loadAllFilesInBundle(bundleName: string, exceptAssetType: typeof Asset, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let bundle = this.getBundle(bundleName);
             if (bundle != null) {
-                let paths = Object.keys(bundle['_config'].paths._map);
-                this.loadFiles(bundleName, paths, onProgress, onComplete);
+                const assetInfos = bundle['_config'].assetInfos._map;
+                let requests: any[] = [];
+                for (const uuid in assetInfos) {
+                    if (uuid.includes('@')) continue;
+                    if (exceptAssetType && assetInfos[uuid].ctor == exceptAssetType) continue;
+                    requests[requests.length] = { uuid: uuid };
+                }
+                this.loadAnyFiles(requests, onProgress, onComplete);
             } else {
                 this.loadBundle(bundleName, () => {
-                    this.loadAllFilesInBundle(bundleName, onProgress, onComplete);
+                    this.loadAllFilesInBundle(bundleName, exceptAssetType, onProgress, onComplete);
                 });
             }
         }
@@ -2656,7 +2662,12 @@ export namespace no {
         public preloadAllFilesInBundle(bundleName: string, onProgress: (progress: number) => void) {
             let bundle = this.getBundle(bundleName);
             if (bundle != null) {
-                let paths = Object.keys(bundle['_config'].paths._map);
+                const assetInfos = bundle['_config'].assetInfos._map;
+                let paths: string[] = [];
+                for (const uuid in assetInfos) {
+                    if (uuid.includes('@')) continue;
+                    paths[paths.length] = assetInfos[uuid].path;
+                }
                 this.preloadFiles(bundleName, paths, onProgress);
             } else {
                 this.loadBundle(bundleName, () => {
@@ -2673,14 +2684,15 @@ export namespace no {
             }
             p.path += '/';
             let bundle = this.getBundle(p.bundle);
-            let keys = Object.keys(bundle['_config'].paths._map);
-            let paths: string[] = [];
-            keys.forEach(key => {
-                if (key.indexOf(p.path) == 0) {
-                    paths.push(key);
+            const assetInfos = bundle['_config'].assetInfos._map;
+            let requests: any[] = [];
+            for (const uuid in assetInfos) {
+                if (uuid.includes('@')) continue;
+                if (assetInfos[uuid].path?.indexOf(p.path) == 0) {
+                    requests[requests.length] = { uuid: uuid };
                 }
-            });
-            this.loadFiles(p.bundle, paths, onProgress, onComplete);
+            }
+            this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
         public preloadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
