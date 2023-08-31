@@ -46,18 +46,21 @@ export class YJTouchListener extends Component {
     public onStart(event: EventTouch): boolean {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
         this.isTouchIn = this.rect.contains(YJFitScreen.fitTouchPoint(event.touch));
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.startHandlers, event);
         return true;
     }
 
     public onMove(event: EventTouch): boolean {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.moveHandlers, event);
         return true;
     }
 
     public onEnd(event: EventTouch): boolean {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.endHandlers, event);
@@ -65,6 +68,7 @@ export class YJTouchListener extends Component {
     }
 
     public onCancel(event: EventTouch) {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.cancelHandlers, event);

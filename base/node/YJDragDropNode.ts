@@ -49,16 +49,12 @@ export class YJDragDropNode extends YJTouchListener {
         if (!this.canBack)
             this.rect = null;
         const a = super.onStart(event);
-        if (a) {
-            event.preventSwallow = false;
-        }
         return a;
     }
 
     public onMove(event: EventTouch): boolean {
         const a = super.onMove(event);
         if (a) {
-            event.preventSwallow = false;
             this.setPosition(event.getUIDelta());
             if (this.checkIsApproached()) {
                 if (!this._isApproached) {
@@ -76,7 +72,6 @@ export class YJDragDropNode extends YJTouchListener {
     public onEnd(event: EventTouch): boolean {
         const a = super.onEnd(event);
         if (a) {
-            event.preventSwallow = false;
             if (this._isApproached) no.EventHandlerInfo.execute(this.onAchieveTarget);
             else this.moveBack();
             if (Vec2.distance(event.getStartLocation(), event.getLocation()) < 10) {
