@@ -1479,6 +1479,18 @@ export namespace no {
         return v;
     }
 
+    /**
+     * 当v<min,返回min；当v>max，返回max；否则返回v
+     * @param v 
+     * @param min 
+     * @param max 
+     */
+    export function clamp(v: number, min: number, max: number): number {
+        if (v < min) return min;
+        if (v > max) return max;
+        return v;
+    }
+
     function eIndex(n: number): number {
         let s = n.toString().toLowerCase();
         let a = s.split('e');

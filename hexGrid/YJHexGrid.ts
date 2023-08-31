@@ -6,6 +6,7 @@
  *
  */
 
+import { AStar } from "../a_star/AStar";
 import { Hex } from "./HexGrid";
 
 export class YJHexGrid {
@@ -66,5 +67,26 @@ export class YJHexGrid {
         return arr;
     }
 
-    
+    /**
+     * 寻路
+     * @param startHex 起点hex
+     * @param endHex 终点hex
+     * @param unobstructedHexs 非障碍物hexs
+     */
+    public static findPath(startHex: Hex, endHex: Hex, unobstructedHexs: Hex[]): Hex[] {
+        const task = new AStar.Task();
+        task.setStart(startHex.toNumbers());
+        task.setEnd(endHex.toNumbers());
+        let arr: number[][] = [], path: Hex[] = [];
+        unobstructedHexs.forEach(bh => {
+            arr[arr.length] = bh.toNumbers();
+        });
+        task.setEmptyGroundFromArray(arr);
+        task.findPath().forEach(p => {
+            path[path.length] = Hex.new(p.x, p.y);
+        });
+        return path;
+    }
+
+
 }

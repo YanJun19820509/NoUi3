@@ -19,6 +19,8 @@ import { YJNodeTarget } from './YJNodeTarget';
 
 @ccclass('YJDragDropNode')
 export class YJDragDropNode extends YJTouchListener {
+    @property({ type: Node, tooltip: '实际移动的节点，默认为当前节点' })
+    moveTarget: Node = null;
     @property({ type: YJNodeTarget })
     dropTo: YJNodeTarget = null;
     @property({ displayName: '是否返回原点', tooltip: '选中后，当释放时，未到达拖放目标位置或未设置拖放目标时返回初始位置' })
@@ -43,34 +45,45 @@ export class YJDragDropNode extends YJTouchListener {
         }
     }
 
-    public onStart(event: EventTouch) {
-        super.onStart(event);
-        if (!this.isTouchIn) return;
+    public onStart(event: EventTouch): boolean {
+        if (!this.canBack)
+            this.rect = null;
+        const a = super.onStart(event);
+        if (a) {
+            event.preventSwallow = false;
+        }
+        return a;
     }
 
-    public onMove(event: EventTouch) {
-        if (!this.isTouchIn) return;
-        this.setPosition(event.getDelta());
-        if (this.checkIsApproached()) {
-            if (!this._isApproached) {
-                this._isApproached = true;
-                no.EventHandlerInfo.execute(this.onApproachTarget);
+    public onMove(event: EventTouch): boolean {
+        const a = super.onMove(event);
+        if (a) {
+            event.preventSwallow = false;
+            this.setPosition(event.getUIDelta());
+            if (this.checkIsApproached()) {
+                if (!this._isApproached) {
+                    this._isApproached = true;
+                    no.EventHandlerInfo.execute(this.onApproachTarget);
+                }
+            } else if (this._isApproached) {
+                this._isApproached = false;
+                no.EventHandlerInfo.execute(this.onAwayFromTarget);
             }
-        } else if (this._isApproached) {
-            this._isApproached = false;
-            no.EventHandlerInfo.execute(this.onAwayFromTarget);
         }
-        super.onMove(event);
+        return a;
     }
 
-    public onEnd(event: EventTouch) {
-        if (!this.isTouchIn) return;
-        if (this._isApproached) no.EventHandlerInfo.execute(this.onAchieveTarget);
-        else this.moveBack();
-        super.onEnd(event);
-        if (Vec2.distance(event.getStartLocation(), event.getLocation()) < 10) {
-            no.EventHandlerInfo.execute(this.onClick);
+    public onEnd(event: EventTouch): boolean {
+        const a = super.onEnd(event);
+        if (a) {
+            event.preventSwallow = false;
+            if (this._isApproached) no.EventHandlerInfo.execute(this.onAchieveTarget);
+            else this.moveBack();
+            if (Vec2.distance(event.getStartLocation(), event.getLocation()) < 10) {
+                no.EventHandlerInfo.execute(this.onClick);
+            }
         }
+        return a;
     }
 
     public onCancel(event: EventTouch) {
@@ -92,10 +105,7 @@ export class YJDragDropNode extends YJTouchListener {
     }
 
     private moveBack() {
-        if (!this.canBack) {
-            this.rect = null;
-            return;
-        }
+        if (!this.canBack) return;
         this.getComponent(SetNodeTweenAction).setData(no.jsonStringify({
             duration: 0.2,
             to: 1,
@@ -107,9 +117,10 @@ export class YJDragDropNode extends YJTouchListener {
     }
 
     private setPosition(deltaPos: Vec2) {
-        let pos = this.node.position.clone();
+        const node = this.moveTarget || this.node;
+        let pos = no.position(node);
         pos.add3f(deltaPos.x, deltaPos.y, 0);
-        this.node.setPosition(pos);
+        no.position(node, pos);
     }
 
     // private getTouchLocation(event: EventTouch): math.Vec2 {

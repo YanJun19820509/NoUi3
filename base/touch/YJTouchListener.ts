@@ -43,22 +43,25 @@ export class YJTouchListener extends Component {
         YJTouchDispatcher.ins?.removeListener(this);
     }
 
-    public onStart(event: EventTouch) {
+    public onStart(event: EventTouch): boolean {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
         this.isTouchIn = this.rect.contains(YJFitScreen.fitTouchPoint(event.touch));
-        if (!this.isTouchIn) return;
+        if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.startHandlers, event);
+        return true;
     }
 
-    public onMove(event: EventTouch) {
-        if (!this.isTouchIn) return;
+    public onMove(event: EventTouch): boolean {
+        if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.moveHandlers, event);
+        return true;
     }
 
-    public onEnd(event: EventTouch) {
-        if (!this.isTouchIn) return;
+    public onEnd(event: EventTouch): boolean {
+        if (!this.isTouchIn) return false;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.endHandlers, event);
+        return true;
     }
 
     public onCancel(event: EventTouch) {
