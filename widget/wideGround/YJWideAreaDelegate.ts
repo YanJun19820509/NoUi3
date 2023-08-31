@@ -15,7 +15,7 @@ import { Component, Size, Vec2, ccclass, Node, Vec3, v3 } from "../../yj";
  * direction：所处方位'top' | 'bottom' | 'left' | 'right'
  */
 
-export type WideAreaObject = { node: Node, pos: Vec3, xy: Vec2, active: boolean, height: number };
+export type WideAreaObject = { node: Node, pos: Vec3, xy: Vec2, size: Size, active: boolean };
 
 @ccclass('YJWideAreaDelegate')
 export class YJWideAreaDelegate extends Component {
@@ -31,20 +31,45 @@ export class YJWideAreaDelegate extends Component {
      */
     public onBlockSwitch(block: Node, xy: Vec2) { }
 
-    public wideAreaObjectMove(obj: WideAreaObject, xy: Vec2) {
+    public setWideAreaObject(obj: WideAreaObject, xy: Vec2): Vec3 {
         const dis = obj.xy.y - xy.y,
             viewSize = YJFitScreen.getVisibleSize(),
-            absDis = Math.abs(dis);
-        let s = 1, x = obj.pos.x, y = obj.pos.y;
-        if (absDis <= Math.abs(obj.pos.y)) {
-            s = (1 - absDis / viewSize.height * 2) * .2 + .8;
+            absDis = Math.abs(dis),
+            max = (viewSize.height + obj.size.height) / 2;
+        let s = 1, x = 0, y = obj.pos.y;
+        s = (1 - absDis / max) * .3 + .7;
+        if (absDis <= max) {
             y = dis;
             x = obj.xy.x - xy.x;
         } else {
-            s = Math.max(obj.height / absDis, .1) / 2 + .4;
-            x += (obj.pos.y / dis) * (obj.xy.x - xy.x);
+            s = no.clamp(s, .1, 1);
+            x = (max / dis) * (obj.xy.x - xy.x);
         }
-        if (Math.abs(x) < viewSize.width / 2 || Math.abs(y) < viewSize.height / 2) {
+        no.scale(obj.node, v3(s, s));
+        const p = v3(x, y);
+        no.position(obj.node, p);
+        // no.log('set', x, y);
+        return p;
+    }
+
+    public wideAreaObjectMove(obj: WideAreaObject, xy: Vec2) {
+        const dis = obj.xy.y - xy.y,
+            viewSize = YJFitScreen.getVisibleSize(),
+            absDis = Math.abs(dis),
+            max = (viewSize.height + obj.size.height) / 2;
+        let x = 0, y = 0;
+        y = dis;
+        if (absDis <= max) {
+            x = obj.xy.x - xy.x;
+        } 
+        // else {
+        //     if (dis < 0)
+        //         y = -absy;
+        //     else y = absy;
+        //     s = no.clamp(s, .1, 1);
+        //     x = (absy / absDis) * (obj.xy.x - xy.x);
+        // }
+        if (Math.abs(x) > (viewSize.width + obj.size.width) / 2 || Math.abs(y) > max) {
             if (obj.active) {
                 no.visible(obj.node, false);
                 obj.active = false;
@@ -54,7 +79,9 @@ export class YJWideAreaDelegate extends Component {
             no.visible(obj.node, true);
             obj.active = true;
         }
+        let s = (1 - absDis / max) * .3 + .7;
         no.scale(obj.node, v3(s, s));
         no.position(obj.node, v3(x, y));
+        // no.log('move', x, y);
     }
 }

@@ -64,13 +64,11 @@ export class YJWideArea extends Component {
     }
 
     private onTouchStart(e: EventTouch) {
-        e.preventSwallow = true;
         this.startTouchPos = this.touchUILocationAR(e);
         this.delegate?.onStart(this._curPos.clone());
     }
 
     private onTouchMove(e: EventTouch) {
-        e.preventSwallow = true;
         const pos = this.touchUILocationAR(e),
             // step = e.getDelta(),//步进值
             dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
@@ -85,7 +83,6 @@ export class YJWideArea extends Component {
 
 
     private onTouchEnd(e: EventTouch) {
-        e.preventSwallow = true;
         this._isMoving = false;
         this._speedMultipel = 1;
         this.delegate?.onEnd(this._curPos.clone());

@@ -58,7 +58,6 @@ export class YJTouchController extends Component {
     }
 
     protected onStart(event: EventTouch) {
-        event.preventSwallow = true;
         if (!this.checkTouched(event)) return;
         this.currentTouch = event.touch;
         this._touched = true;
@@ -67,16 +66,13 @@ export class YJTouchController extends Component {
     }
 
     protected onMove(event: EventTouch) {
-        event.preventSwallow = true;
         if (this.selected && !this._touched) return;
         if (this.dispatcher)
             this.dispatcher.onMove(event)
     }
 
     protected onEnd(event: EventTouch) {
-        event.preventSwallow = true;
         if (this.selected && !this._touched) return;
-        // if (!this.checkTouched(event)) return;
         this._touched = false;
         this.currentTouch = null;
         if (this.dispatcher)
@@ -84,7 +80,6 @@ export class YJTouchController extends Component {
     }
 
     protected onCancel(event: EventTouch) {
-        event.preventSwallow = true;
         if (this.selected && !this._touched || !this.needCancel) return;
         this._touched = false;
         this.currentTouch = null;
