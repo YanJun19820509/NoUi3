@@ -1037,7 +1037,7 @@ export namespace no {
      */
     export function localDateSeconds(utcSeconds: number): number {
         const t = new Date(utcSeconds * 1000);
-        t.setMinutes(t.getMinutes() + t.getTimezoneOffset());
+        t.setMinutes(t.getMinutes() - t.getTimezoneOffset());
         return Math.floor(t.getTime() * .001);
     }
 
