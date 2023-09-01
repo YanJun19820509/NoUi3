@@ -36,40 +36,33 @@ export class YJWideAreaDelegate extends Component {
             viewSize = YJFitScreen.getVisibleSize(),
             absDis = Math.abs(dis),
             max = (viewSize.height + obj.size.height) / 2;
-        let s = 1, x = 0, y = obj.pos.y;
-        s = (1 - absDis / max) * .3 + .7;
+        let x = 0, y = obj.pos.y;
         if (absDis <= max) {
             y = dis;
             x = obj.xy.x - xy.x;
         } else {
-            s = no.clamp(s, .1, 1);
             x = (max / dis) * (obj.xy.x - xy.x);
         }
+        const s = no.clamp(1 - y / viewSize.height * 2, .1, 2);
         no.scale(obj.node, v3(s, s));
         const p = v3(x, y);
         no.position(obj.node, p);
-        // no.log('set', x, y);
         return p;
     }
 
     public wideAreaObjectMove(obj: WideAreaObject, xy: Vec2) {
         const dis = obj.xy.y - xy.y,
             viewSize = YJFitScreen.getVisibleSize(),
-            absDis = Math.abs(dis),
-            max = (viewSize.height + obj.size.height) / 2;
+            absDis = Math.abs(dis);
         let x = 0, y = 0;
         y = dis;
-        if (absDis <= max) {
+        if (absDis <= (viewSize.height + obj.size.height) / 2) {
             x = obj.xy.x - xy.x;
-        } 
-        // else {
-        //     if (dis < 0)
-        //         y = -absy;
-        //     else y = absy;
-        //     s = no.clamp(s, .1, 1);
-        //     x = (absy / absDis) * (obj.xy.x - xy.x);
-        // }
-        if (Math.abs(x) > (viewSize.width + obj.size.width) / 2 || Math.abs(y) > max) {
+        }
+
+        const s = no.clamp(1 - y / viewSize.height * 2, .1, 2);
+
+        if (Math.abs(x) > (viewSize.width + obj.size.width * s) / 2 || Math.abs(y) > (viewSize.height + obj.size.height * s) / 2) {
             if (obj.active) {
                 no.visible(obj.node, false);
                 obj.active = false;
@@ -79,7 +72,6 @@ export class YJWideAreaDelegate extends Component {
             no.visible(obj.node, true);
             obj.active = true;
         }
-        let s = (1 - absDis / max) * .3 + .7;
         no.scale(obj.node, v3(s, s));
         no.position(obj.node, v3(x, y));
         // no.log('move', x, y);
