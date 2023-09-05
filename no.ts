@@ -1270,8 +1270,8 @@ export namespace no {
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        let p = nodeWorldPosition(node, out);
-        otherNode.getComponent(UITransform).convertToNodeSpaceAR(p, out);
+        nodeWorldPosition(node, out);
+        otherNode.getComponent(UITransform).convertToNodeSpaceAR(out, out);
         return out;
     }
 

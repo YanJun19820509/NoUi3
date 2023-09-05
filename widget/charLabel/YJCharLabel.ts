@@ -428,7 +428,7 @@ export class YJCharLabel extends Sprite {
             this.clearString();
             return;
         } else {
-            if (this.setPackedTexture()) return;
+            if (this.packToAtlas && this.setPackedTexture()) return;
             if (this.richText)
                 this.drawRichString(this._string)
             else
@@ -757,7 +757,7 @@ export class YJCharLabel extends Sprite {
     private updateTexture() {
         const canvas = this.shareCanvas();
         if (!canvas.width || !canvas.height) return;
-        if (this.dynamicAtlas) {
+        if (this.packToAtlas && this.dynamicAtlas) {
             this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
                 const image = new ImageAsset(canvas);
                 const texture = new Texture2D();
