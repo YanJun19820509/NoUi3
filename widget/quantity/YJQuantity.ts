@@ -45,6 +45,8 @@ export class YJQuantity extends YJDataWork {
     protected afterDataInit() {
         if (this.isShowMax) {
             this.setValue('maxNum', '/' + this.data.max);
+        } else {
+            this.setValue('maxNum', '');
         }
     }
 
