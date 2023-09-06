@@ -369,7 +369,7 @@ export namespace no {
         private _num: number;
         private _IdKey = '__tickTockId';
 
-        /**当前时间s */
+        /**当前系统时间s */
         public get now(): number {
             return this._time;
         }
@@ -379,10 +379,17 @@ export namespace no {
         }
 
         /**
-         * 当前时区时间戳ms
+         * 当前设备时间戳ms
          */
         public get locationNow(): number {
             return Date.now();
+        }
+
+        /**
+         * 当前时区时间戳s
+         */
+        public get locationTimeZoneNow(): number {
+            return no.localDateSeconds(this._time);
         }
 
         constructor() {
