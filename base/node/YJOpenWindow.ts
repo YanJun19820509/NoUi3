@@ -1,4 +1,5 @@
 
+import { no } from '../../no';
 import { ccclass, property, menu, Component, Node, EventTouch, js } from '../../yj';
 import { YJPanel } from './YJPanel';
 import { YJWindowManager } from './YJWindowManager';
@@ -58,6 +59,11 @@ export class YJOpenWindow extends Component {
 
     public a_openAt(event: EventTouch, idx: string): void {
         this.openAt(Number(idx || event));
+    }
+
+    public a_openName(event: EventTouch, name: string): void {
+        const idx = no.indexOfArray(this.infos, name || event, 'windowName');
+        this.openAt(idx);
     }
 
     private openAt(i: number) {

@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu } from '../yj';
+import { ccclass, property, menu, Button } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -22,6 +22,14 @@ export class SetClickEvent extends FuckUi {
     type: string = '';
     @property(no.EventHandlerInfo)
     onClick: no.EventHandlerInfo[] = [];
+    @property
+    public get bind(): boolean {
+        return false;
+    }
+
+    public set bind(v: boolean) {
+        this.getComponent(Button)?.clickEvents.push(no.createClickEvent(this.node, SetClickEvent, 'a_onClick'));
+    }
 
     private _v: any;
 
