@@ -1271,6 +1271,17 @@ export namespace no {
     }
 
     /**
+     * 世界坐标转节点内坐标
+     * @param node
+     */
+    export function worldPositionInNode(pos: Vec3, node: Node, out?: Vec3): Vec3 {
+        if (!checkValid(node)) return;
+        out = out || v3();
+        node.getComponent(UITransform).convertToNodeSpaceAR(pos, out);
+        return out;
+    }
+
+    /**
      * 某节点坐标转换到另一个节点内
      * @param node
      * @param otherNode
@@ -1886,6 +1897,14 @@ export namespace no {
         if (scale != undefined)
             node.scale = scale;
         return node.scale.clone();
+    }
+
+    /**
+     * 获取节点在世界坐标系中的包围盒rect,包含自身和已激活的子节点的世界边框
+     * @param node 
+     */
+    export function boundingBox(node: Node): Rect {
+        return node.getComponent(UITransform).getBoundingBoxToWorld();
     }
 
     /**
@@ -4246,7 +4265,9 @@ export namespace no {
         return path.substring(path.lastIndexOf('/') + 1);
     }
 
-    @ccclass('SingleObject')
+    /**
+     * 单例类
+     */
     export class SingleObject {
         private static _ins: any;
 
