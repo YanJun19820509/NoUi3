@@ -4345,6 +4345,106 @@ export namespace no {
         }
         return node['__need_render__'] !== false;
     }
+
+    /**
+     * 节点包围盒类
+     * 获取节点包围盒通常用UITransform.getBoundingBoxToWorld()，
+     * 如果计算不准确，可用本类
+     */
+    export class NodeBoundingBox {
+        private _targetNode: Node;
+        private _rect: Rect;
+        constructor(targetNode: Node) {
+            this._targetNode = targetNode;
+            this._rect = targetNode.getComponent(UITransform).getBoundingBox();
+            this._rect.center = v2();
+        }
+
+        public static new(targetNode: Node): NodeBoundingBox {
+            return new NodeBoundingBox(targetNode);
+        }
+
+        public onAddChild(child: Node) {
+            this.updateRect(no.size(child), no.position(child));
+        }
+
+        /**
+         * 父坐标系下的包围盒
+         * @returns 
+         */
+        public getRect(): Rect {
+            let r = this._rect.clone();
+            r.x += no.x(this._targetNode);
+            r.y += no.y(this._targetNode);
+            return r;
+        }
+
+        /**
+         * 世界坐标系下的包围盒
+         * @param targetNode 
+         * @returns 
+         */
+        public getRectToWorld(): Rect {
+            let r = this._rect.clone();
+            const pos = no.nodeWorldPosition(this._targetNode);
+            r.x += pos.x;
+            r.y += pos.y;
+            return r;
+        }
+
+        private updateRect(size: Size, pos: Vec3) {
+            const xMin = pos.x - size.width / 2,
+                xMax = xMin + size.width,
+                yMin = pos.y - size.height / 2,
+                yMax = yMin + size.height;
+            if (this._rect.xMin > xMin)
+                this._rect.xMin = Math.min(this._rect.xMin, xMin);
+            this._rect.xMax = Math.max(this._rect.xMax, xMax);
+            this._rect.yMin = Math.min(this._rect.yMin, yMin);
+            this._rect.yMax = Math.max(this._rect.yMax, yMax);
+        }
+
+        /**
+         * 父坐标系下的包围盒, 需要频繁获取请使用实例方法
+         * @param targetNode 
+         * @returns 
+         */
+        public static getRect(targetNode: Node): Rect {
+            const children = targetNode.children;
+            let rect = targetNode.getComponent(UITransform).getBoundingBox(),
+                targetNodePos = no.position(targetNode);
+            rect.center = v2();
+            children.forEach(child => {
+                const size = no.size(child), pos = no.position(child);
+                const xMin = pos.x - size.width / 2,
+                    xMax = xMin + size.width,
+                    yMin = pos.y - size.height / 2,
+                    yMax = yMin + size.height;
+                if (rect.xMin > xMin)
+                    rect.xMin = Math.min(rect.xMin, xMin);
+                rect.xMax = Math.max(rect.xMax, xMax);
+                rect.yMin = Math.min(rect.yMin, yMin);
+                rect.yMax = Math.max(rect.yMax, yMax);
+            });
+            rect.x += targetNodePos.x;
+            rect.y += targetNodePos.y;
+            return rect;
+        }
+
+        /**
+         * 世界坐标系下的包围盒, 需要频繁获取请使用实例方法
+         * @param targetNode 
+         * @returns 
+         */
+        public static getRectToWorld(targetNode: Node): Rect {
+            let rect = this.getRect(targetNode),
+                pos = v3(rect.center.x, rect.center.y);
+            targetNode.parent.getComponent(UITransform).convertToWorldSpaceAR(pos, pos);
+            rect.center.x = pos.x;
+            rect.center.y = pos.y;
+            return rect;
+        }
+    }
 }
 
 if (DEBUG) {
