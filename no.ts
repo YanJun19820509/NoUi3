@@ -369,7 +369,7 @@ export namespace no {
         private _num: number;
         private _IdKey = '__tickTockId';
 
-        /**当前时间s */
+        /**当前系统时间s */
         public get now(): number {
             return this._time;
         }
@@ -379,10 +379,17 @@ export namespace no {
         }
 
         /**
-         * 当前时区时间戳ms
+         * 当前设备时间戳ms
          */
         public get locationNow(): number {
             return Date.now();
+        }
+
+        /**
+         * 当前时区时间戳s
+         */
+        public get locationTimeZoneNow(): number {
+            return no.localDateSeconds(this._time);
         }
 
         constructor() {
@@ -1037,7 +1044,7 @@ export namespace no {
      */
     export function localDateSeconds(utcSeconds: number): number {
         const t = new Date(utcSeconds * 1000);
-        t.setMinutes(t.getMinutes() + t.getTimezoneOffset());
+        t.setMinutes(t.getMinutes() - t.getTimezoneOffset());
         return Math.floor(t.getTime() * .001);
     }
 
@@ -1281,8 +1288,8 @@ export namespace no {
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        let p = nodeWorldPosition(node, out);
-        otherNode.getComponent(UITransform).convertToNodeSpaceAR(p, out);
+        nodeWorldPosition(node, out);
+        otherNode.getComponent(UITransform).convertToNodeSpaceAR(out, out);
         return out;
     }
 
@@ -2251,6 +2258,15 @@ export namespace no {
             else
                 localStorage.setItem(key, jsonStringify(value));
             this.emit(key, value);
+        }
+        /**删除本地数据 */
+        public deleteLocal(key: string) {
+            key = `${this._localPreKey}_${key}`;
+            localStorage.removeItem(key);
+        }
+        /**消除全部本地数据 */
+        public clearLocal() {
+            localStorage.clear();
         }
 
         /**

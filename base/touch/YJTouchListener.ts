@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Component, Node, EventTouch, Rect } from '../../yj';
+import { ccclass, property, menu, Component, Node, EventTouch, Rect, EDITOR } from '../../yj';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJTouchDispatcher } from './YJTouchDispatcher';
@@ -21,6 +21,9 @@ import { YJTouchDispatcher } from './YJTouchDispatcher';
 @ccclass('YJTouchListener')
 @menu('NoUi/touch/YJTouchListener(监听器)')
 export class YJTouchListener extends Component {
+    @property(YJTouchDispatcher)
+    dispatcher: YJTouchDispatcher = null;
+
     @property({ type: no.EventHandlerInfo, displayName: '按下事件' })
     startHandlers: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '移动事件' })
@@ -34,30 +37,38 @@ export class YJTouchListener extends Component {
     protected isTouchIn: boolean = false;
     protected rect: Rect;
 
+    onLoad() {
+        if (EDITOR) {
+            if (!this.dispatcher) this.dispatcher = no.getComponentInParents(this.node, YJTouchDispatcher);
+        }
+    }
+
     async onEnable() {
-        await no.waitFor(() => { return YJTouchDispatcher.ins != null; }, this)
-        YJTouchDispatcher.ins?.addListener(this);
+        this.dispatcher?.addListener(this);
     }
 
     onDisable() {
-        YJTouchDispatcher.ins?.removeListener(this);
+        this.dispatcher?.removeListener(this);
     }
 
     public onStart(event: EventTouch): boolean {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
         this.isTouchIn = this.rect.contains(YJFitScreen.fitTouchPoint(event.touch));
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.startHandlers, event);
         return true;
     }
 
     public onMove(event: EventTouch): boolean {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.moveHandlers, event);
         return true;
     }
 
     public onEnd(event: EventTouch): boolean {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return false;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.endHandlers, event);
@@ -65,6 +76,7 @@ export class YJTouchListener extends Component {
     }
 
     public onCancel(event: EventTouch) {
+        event.preventSwallow = !this.isTouchIn;
         if (!this.isTouchIn) return;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.cancelHandlers, event);

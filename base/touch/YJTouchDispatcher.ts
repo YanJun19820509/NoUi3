@@ -22,22 +22,22 @@ import { YJTouchListener } from './YJTouchListener';
 export class YJTouchDispatcher extends Component {
     private listeners: YJTouchListener[] = [];
 
-    private static _ins: YJTouchDispatcher;
+    // private static _ins: YJTouchDispatcher;
 
-    /**
-     * 单例
-     */
-    public static get ins(): YJTouchDispatcher {
-        return this._ins;
-    }
+    // /**
+    //  * 单例
+    //  */
+    // public static get ins(): YJTouchDispatcher {
+    //     return this._ins;
+    // }
 
-    onLoad() {
-        YJTouchDispatcher._ins = this;
-    }
+    // onLoad() {
+    //     YJTouchDispatcher._ins = this;
+    // }
 
-    onDestroy() {
-        YJTouchDispatcher._ins = null;
-    }
+    // onDestroy() {
+    //     YJTouchDispatcher._ins = null;
+    // }
 
     public onStart(event: EventTouch) {
         for (let i = 0, n = this.listeners.length; i < n; i++) {

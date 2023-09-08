@@ -24,7 +24,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     catchFullScreenPanelEvent: boolean = false;
 
     private isShow: boolean = true;
-    private _count: number = 0;
+    private _fullPanels: string[] = [];
 
     protected onLoad(): void {
         if (this.enabled) {
@@ -43,19 +43,19 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onShow(type: string) {
-        this._count = Math.max(this._count - 1, 0);
-        if (this._count == 0) {
+        no.removeFromArray(this._fullPanels, type);
+        if (!this._fullPanels.length) {
             this.showSubRenderNode();
         }
     }
 
     private onHide(type: string) {
-        this._count++;
+        no.addToArray(this._fullPanels, type);
         this.showSubRenderNode();
     }
 
     public showSubRenderNode() {
-        let v: boolean = this._count == 0;
+        let v: boolean = !this._fullPanels.length;
         if (v == this.isShow) return;
         this.isShow = v;
         this.changeLayer(this.node, v);
