@@ -2240,6 +2240,15 @@ export namespace no {
                 localStorage.setItem(key, jsonStringify(value));
             this.emit(key, value);
         }
+        /**删除本地数据 */
+        public deleteLocal(key: string) {
+            key = `${this._localPreKey}_${key}`;
+            localStorage.removeItem(key);
+        }
+        /**消除全部本地数据 */
+        public clearLocal() {
+            localStorage.clear();
+        }
 
         /**
          * 获取配置数据

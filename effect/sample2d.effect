@@ -25,6 +25,8 @@ CCEffect %{
         atlas3: {value: black}
         atlas4: {value: black}
         atlas5: {value: black}
+        atlas6: {value: black}
+        atlas7: {value: black}
         # 合图中的比率
         # ratio: { value: 1.0, editor: {visible: false}}
         # startColor_0: { value: [1.0, 1.0, 1.0, 1.0], editor: {type: color} }
@@ -50,6 +52,8 @@ CCProgram unlit-fs %{
   uniform sampler2D atlas3;
   uniform sampler2D atlas4;
   uniform sampler2D atlas5;
+  uniform sampler2D atlas6;
+  uniform sampler2D atlas7;
 
     uniform Constant{
       vec4 factRect1;
@@ -84,6 +88,16 @@ CCProgram unlit-fs %{
     //贴图纹理取值5
     else if (type == 6.){ 
       _color *= normalTexture(atlas5, uv);
+    }
+
+    //贴图纹理取值6
+    else if (type == 7.){ 
+      _color *= normalTexture(atlas6, uv);
+    }
+
+    //贴图纹理取值7
+    else if (type == 8.){ 
+      _color *= normalTexture(atlas7, uv);
     }else {
       #if USE_TEXTURE
         _color *= normalTexture(cc_spriteTexture, uv);
