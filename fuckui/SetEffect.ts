@@ -107,6 +107,7 @@ export class SetEffect extends FuckUi {
             texture = f.texture as Texture2D;
         } else if (this._renderComp instanceof Label) {
             f = this._renderComp['_ttfSpriteFrame'];
+            if (!f) return;
             texture = f.texture as Texture2D;
         }
 
