@@ -1,5 +1,5 @@
 import { no } from "../../no";
-import { Component, EDITOR, ccclass, executeInEditMode, property, Node } from "../../yj";
+import { Component, EDITOR, ccclass, property, Node } from "../../yj";
 
 /**
  * Predefined variables
@@ -14,25 +14,37 @@ import { Component, EDITOR, ccclass, executeInEditMode, property, Node } from ".
  */
 
 @ccclass('YJSliderButton')
-@executeInEditMode()
 export class YJSliderButton extends Component {
     @property
     interactable: boolean = true;
     @property({ type: Node })
     slider: Node = null;
+    @property({ type: Node })
+    checkedShowNodes: Node[] = [];
+    @property({ type: Node })
+    checkedHideNodes: Node[] = [];
     @property
-    checked: boolean = false;
+    public get checked(): boolean {
+        return this._checked;
+    }
+
+    public set checked(v: boolean) {
+        if (this._checked == v) return;
+        this._checked = v;
+        this.moveSlider();
+    }
     @property({ displayName: '防连点间隔时长(s)' })
     delay: number = 1;
     @property({ type: no.EventHandlerInfo })
     onChange: no.EventHandlerInfo[] = [];
 
+    @property({ serializable: true })
     private _checked: boolean = false;
     private _done: boolean = true;
     private needWait: boolean = false;
 
     protected onLoad(): void {
-        if (EDITOR) return;
+        this.setCheckedNodesVisible();
         this.node.on(Node.EventType.TOUCH_END, this.onClick, this);
     }
 
@@ -54,6 +66,7 @@ export class YJSliderButton extends Component {
         if (this.slider) {
             this.moveSlider();
         } else {
+            this.setCheckedNodesVisible();
             no.EventHandlerInfo.execute(this.onChange, this.checked);
             this._done = true;
         }
@@ -72,6 +85,7 @@ export class YJSliderButton extends Component {
     private playAni(x: number) {
         if (EDITOR) {
             no.x(this.slider, x);
+            this.setCheckedNodesVisible();
             return;
         }
         const action = no.parseTweenData({
@@ -82,18 +96,19 @@ export class YJSliderButton extends Component {
             }
         }, this.slider);
         no.TweenSet.play(action, () => {
+            this.setCheckedNodesVisible();
             no.EventHandlerInfo.execute(this.onChange, this.checked);
             this._done = true;
         });
     }
 
-    protected update(dt: number): void {
-        if (EDITOR) {
-            if (this.checked != this._checked) {
-                this._checked = this.checked;
-                this.moveSlider();
-            }
-        }
+    private setCheckedNodesVisible() {
+        this.checkedShowNodes.forEach(n => {
+            no.visible(n, this._checked);
+        });
+        this.checkedHideNodes.forEach(n => {
+            no.visible(n, !this._checked);
+        });
     }
 
     public set isChecked(v: boolean) {

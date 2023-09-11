@@ -81,7 +81,10 @@ export class YJToggleGroupManager extends Component {
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'p_onClick', false);
             if (this.checkOnEnabel && this.defaultCheckedIdx == i) {
-                this.a_onCheck(toggle);
+                if (toggle.isChecked)
+                    (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
+                else
+                    this.a_onCheck(toggle);
             }
         }
     }
