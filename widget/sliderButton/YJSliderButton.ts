@@ -31,7 +31,9 @@ export class YJSliderButton extends Component {
     public set checked(v: boolean) {
         if (this._checked == v) return;
         this._checked = v;
-        this.moveSlider();
+        if (this.slider) {
+            this.moveSlider();
+        }
     }
     @property({ displayName: '防连点间隔时长(s)' })
     delay: number = 1;
@@ -62,12 +64,12 @@ export class YJSliderButton extends Component {
         if (this.needWait) return;
         this.needWait = true;
         this._done = false;
-        this.checked = !this.checked;
+        this._checked = !this._checked;
         if (this.slider) {
             this.moveSlider();
         } else {
             this.setCheckedNodesVisible();
-            no.EventHandlerInfo.execute(this.onChange, this.checked);
+            no.EventHandlerInfo.execute(this.onChange, this._checked);
             this._done = true;
         }
 
@@ -76,13 +78,13 @@ export class YJSliderButton extends Component {
         }, this.delay);
     }
 
-    private moveSlider() {
+    private moveSlider(noChange = false) {
         let x = Math.abs(no.x(this.slider));
-        x *= this.checked ? 1 : -1;
-        this.playAni(x);
+        x *= this._checked ? 1 : -1;
+        this.playAni(x, noChange);
     }
 
-    private playAni(x: number) {
+    private playAni(x: number, noChange: boolean) {
         if (EDITOR) {
             no.x(this.slider, x);
             this.setCheckedNodesVisible();
@@ -97,7 +99,8 @@ export class YJSliderButton extends Component {
         }, this.slider);
         no.TweenSet.play(action, () => {
             this.setCheckedNodesVisible();
-            no.EventHandlerInfo.execute(this.onChange, this.checked);
+            if (!noChange)
+                no.EventHandlerInfo.execute(this.onChange, this._checked);
             this._done = true;
         });
     }
@@ -111,8 +114,15 @@ export class YJSliderButton extends Component {
         });
     }
 
+    /**
+     * 设置开关状态,会触发状态改变回调
+     */
     public set isChecked(v: boolean) {
         this.checked = v;
-        this.moveSlider();
+    }
+
+    public set isCheckedNoChange(v: boolean) {
+        this._checked = v;
+        this.moveSlider(true);
     }
 }

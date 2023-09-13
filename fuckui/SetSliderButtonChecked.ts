@@ -1,5 +1,5 @@
 import { YJSliderButton } from "../widget/sliderButton/YJSliderButton";
-import { ccclass, requireComponent } from "../yj";
+import { ccclass, property, requireComponent } from "../yj";
 import { FuckUi } from "./FuckUi";
 /**
  * Predefined variables
@@ -16,7 +16,12 @@ import { FuckUi } from "./FuckUi";
 @ccclass('SetSliderButtonChecked')
 @requireComponent(YJSliderButton)
 export class SetSliderButtonChecked extends FuckUi {
+    @property
+    noChangeEvent: boolean = false;
     protected onDataChange(data: any): void {
-        this.getComponent(YJSliderButton).isChecked = Boolean(data);
+        if (this.noChangeEvent)
+            this.getComponent(YJSliderButton).isCheckedNoChange = Boolean(data);
+        else
+            this.getComponent(YJSliderButton).isChecked = Boolean(data);
     }
 }
