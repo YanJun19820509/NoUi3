@@ -96,7 +96,7 @@ export class SetTimeCountDown extends FuckUi {
                 this.setLabel(no.sec2time(a, this.formatter, this.show0));
         }
         this.setPercent(a);
-        if (a <= 0) {
+        if (a <= 1) {
             no.sysTime.offTickTock(this);
             this.scheduleOnce(() => {
                 no.EventHandlerInfo.execute(this.endCalls);
