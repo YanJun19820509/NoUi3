@@ -18,7 +18,12 @@ export class YJGameData extends no.Data {
             this._ins = new this();
             this._ins._state = new no.State();
         }
+        this._ins.onInit();
         return this._ins;
+    }
+
+    protected onInit() {
+
     }
 
     public checkStateChange(target: any): boolean {
