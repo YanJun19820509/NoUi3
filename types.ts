@@ -130,6 +130,16 @@ export class Range {
     public static fromArray(v: number[]): Range {
         return new Range(v[0], v[1]);
     }
+
+    /**
+     * 当v<min,返回min；当v>max，返回max；否则返回v
+     * @param v 
+     */
+    public clamp(v: number): number {
+        if (v < this.min) return this.min;
+        if (v > this.max) return this.max;
+        return v;
+    }
 }
 
 @ccclass('UV')

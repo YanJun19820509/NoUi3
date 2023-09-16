@@ -9,6 +9,11 @@
 import { AStar } from "../a_star/AStar";
 import { Hex } from "./HexGrid";
 
+
+export enum OrientationType {
+    Flat = 0,
+    Pointy
+};
 export class YJHexGrid {
     /**
      * 以(0,0)为初始hex，通过directions生成相邻的一组hexs
@@ -88,5 +93,38 @@ export class YJHexGrid {
         return path;
     }
 
+    /**
+     * 将角度转换成方位
+     * @param angle 角度
+     * @param orientation hex的朝向，flat平顶，pointy尖顶
+     * @returns 
+     */
+    public static angleToDirection(angle: number, orientation: OrientationType): number {
+        if (orientation == OrientationType.Flat) {
+            if (angle < 60) return 5;
+            if (angle < 120) return 4;
+            if (angle < 180) return 3;
+            if (angle < 240) return 2;
+            if (angle < 300) return 1;
+            if (angle < 360) return 0;
+        } else {
+            if (angle < 30) return 0;
+            if (angle < 90) return 5;
+            if (angle < 150) return 4;
+            if (angle < 210) return 3;
+            if (angle < 270) return 2;
+            if (angle < 330) return 1;
+            if (angle < 360) return 0;
+        }
+    }
 
+    /**
+     * 方位对面的方位
+     * @param dirention 
+     * @returns 
+     */
+    public static oppositeDirection(dirention: number): number {
+        if (dirention < 3) return dirention + 3;
+        return dirention - 3;
+    }
 }

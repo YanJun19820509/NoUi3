@@ -28,6 +28,10 @@ export class Hex {
         if (Math.round(q + r + s) !== 0) throw "q + r + s must be 0";
     }
 
+    public clone(): Hex {
+        return new Hex(this.q, this.r, this.s);
+    }
+
     public add(b: Hex): Hex {
         return new Hex(this.q + b.q, this.r + b.r, this.s + b.s);
     }
@@ -67,6 +71,22 @@ export class Hex {
 
     public diagonalNeighbor(direction: number): Hex {
         return this.add(Hex.diagonals[direction]);
+    }
+
+    public directionTo(b: Hex): number {
+        const a = b.subtract(this).simple();
+        for (let i = 0; i < 6; i++) {
+            if (a.equal(Hex.directions[i])) return i;
+        }
+        return -1;
+    }
+
+    public simple(): Hex {
+        let b = this.clone();
+        b.q /= Math.abs(b.q || 1);
+        b.r /= Math.abs(b.r || 1);
+        b.s /= Math.abs(b.s || 1);
+        return b;
     }
 
 
@@ -124,6 +144,13 @@ export class Hex {
 
     public toNumbers(): number[] {
         return [this.q, this.r];
+    }
+
+    public equal(b: Hex): boolean {
+        if (this.q === b.q && this.s === b.s && this.r === b.r) {
+            return true;
+        }
+        return false;
     }
 }
 
