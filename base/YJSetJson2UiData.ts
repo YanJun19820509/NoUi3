@@ -39,8 +39,8 @@ export class YJSetJson2UiData extends Component {
         }
     }
 
-    public a_set(idx: string | number) {
-        let info = this.infos[Number(idx)];
+    public a_set(event: any, idx?: string | number) {
+        let info = this.infos[Number(idx || event)];
         if (!info || info.json == '' || !info.ui) return;
         info.ui.setData(info.json.replace(/\n/g, '').replace(/\'/g, '\"'));
     }
