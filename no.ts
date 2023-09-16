@@ -4384,14 +4384,19 @@ export namespace no {
             this.updateRect(no.size(child), no.position(child));
         }
 
+        public getOriginRect(): Rect {
+            return this._rect.clone();
+        }
+
         /**
          * 父坐标系下的包围盒
          * @returns 
          */
         public getRect(): Rect {
-            let r = this._rect.clone();
-            r.x += no.x(this._targetNode);
-            r.y += no.y(this._targetNode);
+            let r = this._rect.clone(),
+                pos = no.position(this._targetNode);
+            r.x += pos.x;
+            r.y += pos.y;
             return r;
         }
 
@@ -4413,8 +4418,7 @@ export namespace no {
                 xMax = xMin + size.width,
                 yMin = pos.y - size.height / 2,
                 yMax = yMin + size.height;
-            if (this._rect.xMin > xMin)
-                this._rect.xMin = Math.min(this._rect.xMin, xMin);
+            this._rect.xMin = Math.min(this._rect.xMin, xMin);
             this._rect.xMax = Math.max(this._rect.xMax, xMax);
             this._rect.yMin = Math.min(this._rect.yMin, yMin);
             this._rect.yMax = Math.max(this._rect.yMax, yMax);
@@ -4436,8 +4440,7 @@ export namespace no {
                     xMax = xMin + size.width,
                     yMin = pos.y - size.height / 2,
                     yMax = yMin + size.height;
-                if (rect.xMin > xMin)
-                    rect.xMin = Math.min(rect.xMin, xMin);
+                rect.xMin = Math.min(rect.xMin, xMin);
                 rect.xMax = Math.max(rect.xMax, xMax);
                 rect.yMin = Math.min(rect.yMin, yMin);
                 rect.yMax = Math.max(rect.yMax, yMax);
