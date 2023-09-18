@@ -1,7 +1,8 @@
-import { ccclass, property, Component, Node } from '../../yj';
+import { ccclass, property, Component, Node, executeInEditMode } from '../../yj';
 import { no } from '../../no';
 
 @ccclass('YJSyncTargetNodeProperty')
+@executeInEditMode()
 export class YJSyncTargetNodeProperty extends Component {
     @property(Node)
     target: Node = null;

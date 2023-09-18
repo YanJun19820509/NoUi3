@@ -28,6 +28,8 @@ export class SetSpine extends FuckUi {
     spineUrl: string = '';
     @property({ visible() { return this.autoPlayOnEnable; } })
     animationName: string = '';
+    @property({ type: no.EventHandlerInfo, displayName: '动画播放开始回调' })
+    startCall: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
@@ -127,8 +129,10 @@ export class SetSpine extends FuckUi {
             spine.clearTracks();
             spine.enabled = false;
         }
-        if (loop === false)
+        if (loop === false) {
+            this.bindStartCall(spine);
             this.bindEndCall(spine);
+        }
     }
 
     public a_playOnce(e: any, animation?: string) {
@@ -144,6 +148,7 @@ export class SetSpine extends FuckUi {
         spine.loop = false;
         !!skin && spine.setSkin(skin);
         spine?.setAnimation(0, name, false);
+        this.bindStartCall(spine);
         this.bindEndCall(spine);
     }
 
@@ -173,9 +178,17 @@ export class SetSpine extends FuckUi {
         this.a_stop();
     }
 
+    private bindStartCall(spine: Skeleton) {
+        spine?.setStartListener(() => {
+            this?.startCall.execute();
+            spine?.setStartListener(() => { });
+        });
+    }
+
+
     private bindEndCall(spine: Skeleton) {
         spine?.setCompleteListener(() => {
-            this?.endCall?.execute();
+            this?.endCall.execute();
             spine?.setCompleteListener(() => { });
         });
     }
