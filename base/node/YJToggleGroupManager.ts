@@ -116,10 +116,6 @@ export class YJToggleGroupManager extends Component {
 
 
     private p_onClick(): void {
-        if (this.isInit) {
-            this.isInit = false;
-            return;
-        }
         no.EventHandlerInfo.execute(this.onClick);
     }
 
