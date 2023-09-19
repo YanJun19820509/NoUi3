@@ -73,8 +73,8 @@ export class YJWindowManager extends Component {
      * @param type 
      * @returns 
      */
-    public contentChildren(type: string): Node[] {
-        return this.getContent(type)?.children || [];
+    public static contentChildren(type: string): Node[] {
+        return this._ins.getContent(type)?.children || [];
     }
 
     private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
