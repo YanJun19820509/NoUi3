@@ -26,6 +26,15 @@ export class YJWideAreaDelegate extends Component {
      */
     public onMove(xy: Vec2): void { }
     public onEnd(xy: Vec2): void { }
+
+    /**
+     * 初始化视图块时
+     */
+    public onBlocksInit(blocks: Node[]) { }
+    /**
+     * 视图块移动时
+     */
+    public onBlockMove(block: Node, xy: Vec2) { }
     /**
      * 视图块切换回调
      */

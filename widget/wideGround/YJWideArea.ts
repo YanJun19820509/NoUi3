@@ -1,14 +1,15 @@
 import { YJDataWork } from "../../base/YJDataWork";
 import { YJFitScreen } from "../../base/YJFitScreen";
+import { YJTouchListener } from "../../base/touch/YJTouchListener";
 import { no } from "../../no";
-import { EventTouch, Vec2, ccclass, property, Node, instantiate, UITransform, v2, Component, Vec4, v4 } from "../../yj";
+import { EventTouch, Vec2, ccclass, property, Node, instantiate, UITransform, v2, Vec4, v4 } from "../../yj";
 import { YJWideAreaDelegate } from "./YJWideAreaDelegate";
 
 /**
  * 广域
  */
 @ccclass('YJWideArea')
-export class YJWideArea extends Component {
+export class YJWideArea extends YJTouchListener {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
     @property({ displayName: '网格大小', tooltip: '整个地面将按该大小分为无数个网格，每个网格有其对应的网格坐标UV，原点处网格坐标为(0,0)', step: 1, min: 1, max: 2048 })
@@ -23,6 +24,8 @@ export class YJWideArea extends Component {
     blockLayer: Node = null;
     @property({ tooltip: '每秒移动距离' })
     speed: number = 10;
+    @property({ displayName: '自动移动', tooltip: '滑动屏幕会改变移动方向，手指抬起后点自动按该方向移动' })
+    autoMove: boolean = true;
     @property({ displayName: '开启阶梯增速', tooltip: '根据触摸滑动的距离长短增减speed' })
     stepSpeed: boolean = true;
     @property({ displayName: '阶梯增速的阶段长度', tooltip: '每当增加或减少该长度，speed相应增减0.5倍', visible() { return this.stepSpeed; } })
@@ -47,10 +50,7 @@ export class YJWideArea extends Component {
 
     private _blockGroupSize: Vec2;
 
-    onLoad() {
-        this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this, true);
-        this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this, true);
-        this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);
+    start() {
         this.createBlocks();
         //每次加载广阔相对于无限空间的当前坐标都为(0,0)
         this._curPos = v2();
@@ -63,29 +63,43 @@ export class YJWideArea extends Component {
         this.move(dt);
     }
 
-    private onTouchStart(e: EventTouch) {
-        this.startTouchPos = this.touchUILocationAR(e);
-        this.delegate?.onStart(this._curPos.clone());
-    }
-
-    private onTouchMove(e: EventTouch) {
-        const pos = this.touchUILocationAR(e),
-            // step = e.getDelta(),//步进值
-            dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
-        //计算阶梯增速
-        if (this.stepSpeed) {
-            this._speedMultipel = Math.floor(dis / this.stepSpeedLen) * 0.5 + 1;
+    public onStart(e: EventTouch) {
+        const a = super.onStart(e);
+        if (a) {
+            this.startTouchPos = this.touchUILocationAR(e);
+            this.delegate?.onStart(this._curPos.clone());
         }
-        //与第一次点击坐标的夹角
-        this._dir = no.angleTo(this.startTouchPos, pos);
-        this._isMoving = true;
+        return a;
+    }
+
+    public onMove(e: EventTouch) {
+        const a = super.onMove(e);
+        if (a) {
+            const pos = this.touchUILocationAR(e),
+                // step = e.getDelta(),//步进值
+                dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
+            //计算阶梯增速
+            if (this.stepSpeed) {
+                this._speedMultipel = Math.floor(dis / this.stepSpeedLen) * 0.5 + 1;
+            }
+            //与第一次点击坐标的夹角
+            this._dir = no.angleTo(this.startTouchPos, pos);
+            this._isMoving = true;
+        }
+        return a;
     }
 
 
-    private onTouchEnd(e: EventTouch) {
-        this._isMoving = false;
-        this._speedMultipel = 1;
-        this.delegate?.onEnd(this._curPos.clone());
+    public onEnd(e: EventTouch) {
+        const a = super.onEnd(e);
+        if (a) {
+            if (!this.autoMove) {
+                this._isMoving = false;
+                this._speedMultipel = 1;
+            }
+            this.delegate?.onEnd(this._curPos.clone());
+        }
+        return a;
     }
 
 
@@ -110,6 +124,7 @@ export class YJWideArea extends Component {
                 this.createBlock(j, i, w, h);
             }
         }
+        this.delegate?.onBlocksInit(this.blockLayer.children);
     }
 
     private createBlock(x: number, y: number, width: number, height: number) {
@@ -147,23 +162,25 @@ export class YJWideArea extends Component {
         let pos = no.position(block), isSwitch = false;
         pos.x -= x;
         pos.y -= y;
-        if (pos.x < this._range.x) {
+        if (pos.x < this._range.x && x > 0) {
             pos.x += this._blockGroupSize.x * this.blocksSize;
             isSwitch = true;
-        } else if (pos.x > this._range.z) {
+        } else if (pos.x > this._range.z && x < 0) {
             pos.x -= this._blockGroupSize.x * this.blocksSize;
             isSwitch = true;
         }
-        if (pos.y < this._range.y) {
+        if (pos.y < this._range.y && y > 0) {
             pos.y += this._blockGroupSize.y * this.blocksSize;
             isSwitch = true;
-        } else if (pos.y > this._range.w) {
+        } else if (pos.y > this._range.w && y < 0) {
             pos.y -= this._blockGroupSize.y * this.blocksSize;
             isSwitch = true;
         }
         no.position(block, pos);
-        let pos2 = v2(pos.x, pos.y)
-        this.delegate?.onBlockSwitch(block, pos2);
+        let pos2 = v2(pos.x, pos.y);
+        if (isSwitch)
+            this.delegate?.onBlockSwitch(block, pos2);
+        this.delegate?.onBlockMove(block, pos2);
     }
 
     private xy2uv(xy: Vec2): Vec2 {
