@@ -12,7 +12,7 @@ import { no } from '../../no';
  * FileBasenameNoExtension = YJCharLabel
  * URL = db://assets/NoUi3/widget/charLabel/YJCharLabel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
- *
+ * 自定义文本组件,使用时替换掉Label组件
  */
 
 @ccclass('YJCharLabel')
@@ -528,43 +528,46 @@ export class YJCharLabel extends Sprite {
     private drawString(v: string) {
         const ctx = this.shareCanvas().getContext("2d");
         this.setFontStyle(ctx);
-        // if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         const maxWidth = this.maxWidth;
         if (this.overflow == Label.Overflow.RESIZE_HEIGHT) {
             const extWidth = this.extWidth();
-            let words: string | string[], blankWork = '', blankWidth = 0;
-            if (this.blankBreakWord) {
-                blankWork = ' ';
-                words = v.split(blankWork);
-                const mw = this.getMeasureWidth(ctx, blankWork);
-                blankWidth = mw.width;
-            } else words = v;
+            const wordsArr: string[] = v.split('\\n');
+
             let lines: string[] = [],
                 oneLine = '',
-                width = extWidth,
+                width: number,
                 lineHeight = this.lineHeight;
-            for (let i = 0, n = words.length; i < n; i++) {
-                const c = words[i];
-                if (c == '\n') {
-                    lines[lines.length] = oneLine;
-                    oneLine = '';
-                    width = extWidth;
-                    continue;
+            for (let jj = 0, nn = wordsArr.length; jj < nn; jj++) {
+                let words: string | string[], blankWork = '', blankWidth = 0;
+                if (this.blankBreakWord) {
+                    blankWork = ' ';
+                    words = wordsArr[jj].split(blankWork);
+                    const mw = this.getMeasureWidth(ctx, blankWork);
+                    blankWidth = mw.width;
+                } else words = wordsArr[jj];
+
+                width = extWidth;
+
+                for (let i = 0, n = words.length; i < n; i++) {
+                    const c = words[i];
+                    let w = 0;
+                    const mw = this.getMeasureWidth(ctx, c);
+                    w = mw.width;
+                    lineHeight = Math.max(mw.height, lineHeight);
+                    if (width + w <= maxWidth - 4 * this.hdpScale) {
+                        oneLine += c + blankWork;
+                        width += w + blankWidth;
+                        if (i == n - 1) width += 4 * this.hdpScale;
+                    } else {
+                        lines[lines.length] = oneLine;
+                        oneLine = c + blankWork;
+                        width = extWidth + w + blankWidth;
+                    }
                 }
-                let w = 0;
-                const mw = this.getMeasureWidth(ctx, c);
-                w = mw.width;
-                lineHeight = Math.max(mw.height, lineHeight);
-                if (width + w <= maxWidth - 4 * this.hdpScale) {
-                    oneLine += c + blankWork;
-                    width += w + blankWidth;
-                    if (i == n - 1) width += 4 * this.hdpScale;
-                } else {
-                    lines[lines.length] = oneLine;
-                    oneLine = c + blankWork;
-                    width = extWidth + w + blankWidth;
-                }
+
+                lines[lines.length] = oneLine;
+                oneLine = '';
             }
             if (oneLine != '') lines[lines.length] = oneLine;
             this.drawLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
