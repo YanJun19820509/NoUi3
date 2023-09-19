@@ -18,7 +18,8 @@ import { SetGray } from './SetGray';
 
 enum LockType {
     Gray = 0,
-    Hide
+    Hide,
+    None
 }
 
 @ccclass('SetLock')
@@ -54,7 +55,20 @@ export class SetLock extends FuckUi {
         if (this._lockType == this.lockType) return;
         this._lockType = this.lockType;
         if (this.lockType == LockType.Gray && !this.getComponent(SetGray)) this.addComponent(SetGray);
-        else if (this.lockType != LockType.Gray) this.getComponent(SetGray)?.destroy();
+        else if (this.lockType != LockType.Gray) {
+            const a = this.getComponent(SetGray);
+            if (a) {
+                if (a.recursive) {
+                    a.getComponentsInChildren(SetGray).forEach(aa => {
+                        const bb = aa.getComponent('SetEffect');
+                        aa?.destroy();
+                        bb?.destroy();
+                    });
+                }
+                a?.destroy();
+            }
+            this.getComponent('SetEffect')?.destroy();
+        }
     }
 
     onDataChange(d: any) {
@@ -72,20 +86,24 @@ export class SetLock extends FuckUi {
     }
 
     private setLock() {
-        if (this.lockType == LockType.Gray) {
-            this.createLockNode();
-            this.setGray(true);
-        } else if (this.lockType == LockType.Hide) {
+        if (this.lockType == LockType.Hide) {
             no.visible(this.target, false);
+        } else {
+            this.createLockNode();
+            if (this.lockType == LockType.Gray) {
+                this.setGray(true);
+            }
         }
     }
 
     private setUnlock() {
-        if (this.lockType == LockType.Gray) {
-            this.target.getChildByName('_lock_')?.destroy();
-            this.setGray(false);
-        } else if (this.lockType == LockType.Hide) {
+        if (this.lockType == LockType.Hide) {
             no.visible(this.target, true);
+        } else {
+            this.target.getChildByName('_lock_')?.destroy();
+            if (this.lockType == LockType.Gray) {
+                this.setGray(false);
+            }
         }
     }
 

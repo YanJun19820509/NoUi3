@@ -68,6 +68,15 @@ export class YJWindowManager extends Component {
         return content;
     }
 
+    /**
+     * 某容器内所有子节点
+     * @param type 
+     * @returns 
+     */
+    public contentChildren(type: string): Node[] {
+        return this.getContent(type)?.children || [];
+    }
+
     private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         let a = node.getComponent(comp);
         beforeInit?.(a as T);
