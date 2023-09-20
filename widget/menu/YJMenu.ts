@@ -26,7 +26,7 @@ export class YJMenu extends Component {
     itemTemp: Node = null;
     @property({ type: Node })
     container: Node = null;
-    @property({ step: 1, min: 0 })
+    @property({ step: 1, min: -1 })
     defaultChecked: number = 0;
     @property
     autoCreate: boolean = true;
