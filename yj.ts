@@ -194,3 +194,4 @@ export type WrapMode = _cc.__private._cocos_animation_types__WrapMode;
 export const NodeEventType = _cc.NodeEventType;
 export const isBrowser = sys.isBrowser;
 export const TransformBit = _cc.TransformBit;
+export const path = _cc.path;
