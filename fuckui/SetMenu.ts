@@ -13,18 +13,7 @@ import { FuckUi } from './FuckUi';
 @requireComponent(YJMenu)
 export class SetMenu extends FuckUi {
 
-    /**如果没需求可以不实现 */
-    // onLoad() {
-    //     super.onLoad();
-    //     // todo 自己的逻辑
-    // }
-
     protected onDataChange(data: any) {
         this.getComponent(YJMenu).createMenu(data);
     }
-
-    /**如果没需求可以不实现 */
-    // public a_setEmpty(): void {
-
-    // }
 }
