@@ -109,7 +109,8 @@ export class SetCreateNode extends FuckUi {
     protected async setItems(data: any[]) {
         if (!this.container) this.container = this.node;
         if (this.onlyOne) {
-            this.setDynamicAtlasNode(data[0]);
+            await this.setDynamicAtlasNode(data[0]);
+            no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
 
