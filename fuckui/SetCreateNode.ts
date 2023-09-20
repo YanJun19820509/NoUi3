@@ -150,7 +150,7 @@ export class SetCreateNode extends FuckUi {
                 if (!this?.node?.isValid) return;
             }
         }
-        
+
         if (!this.onlyAdd && n - l >= 1 || (this.onlyAdd && n >= 1)) {
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) false;
@@ -192,6 +192,10 @@ export class SetCreateNode extends FuckUi {
         if (data == null) return;
         let item = this.container.children[0];
         if (!item) {
+            if (!this.template) {
+                this.template = await this.loadPrefab.loadPrefab();
+                if (!this?.node?.isValid) return;
+            }
             item = instantiate(this.template);
             await item.getComponent(YJLoadAssets)?.load();
             if (!this?.node?.isValid) return;
