@@ -91,7 +91,7 @@ export class YJDataWork extends Component {
     }
 
     public setValue(key: string, value: any) {
-        this._data.set(key, value, this.onlyDiff);
+        this._data?.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
         this._dataChanged = true;
