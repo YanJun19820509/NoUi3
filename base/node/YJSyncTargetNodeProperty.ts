@@ -1,4 +1,4 @@
-import { ccclass, property, Component, Node, executeInEditMode } from '../../yj';
+import { ccclass, property, Component, Node, executeInEditMode, EDITOR } from '../../yj';
 import { no } from '../../no';
 
 @ccclass('YJSyncTargetNodeProperty')
@@ -8,12 +8,15 @@ export class YJSyncTargetNodeProperty extends Component {
     target: Node = null;
     @property({ displayName: '同步到target', tooltip: '从本节点同步到target或从target同步到本节点' })
     syncTo: boolean = false;
+    @property
+    syncOnEditor: boolean = false;
 
     protected onLoad(): void {
         if (!this.target) this.update = () => { };
     }
 
     protected update(dt: number): void {
+        if (EDITOR && !this.syncOnEditor) return;
         let from: Node, to: Node;
         this.syncTo ? (from = this.node, to = this.target) : (from = this.target, to = this.node);
         no.position(to, no.position(from));
