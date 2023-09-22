@@ -60,6 +60,8 @@ export class YJWideArea extends YJTouchListener {
 
     private _initRowInfo: { y: number, scale: number }[];
 
+    private _bottomY: number;
+
     start() {
         //每次加载广阔相对于无限空间的当前坐标都为(0,0)
         this._curPos = v2();
@@ -128,20 +130,17 @@ export class YJWideArea extends YJTouchListener {
                 scale1 = this.perspectiveScale,
                 scale2 = 1 - scale1;
             //向下多算一个
-            let scale = (.5 - (-halfHeight - this.blocksSize) / height);
-            this._initRowInfo[this._initRowInfo.length] = { y: -halfHeight - halfBlockSize * (1 + scale), scale: scale };
+            let scale = 1;
+            this._initRowInfo[this._initRowInfo.length] = { y: -halfHeight - this.blocksSize, scale: scale };
             //可见区域最底部的一个
             this._initRowInfo[this._initRowInfo.length] = { y: -halfHeight, scale: 1 };
             let y = -halfHeight + halfBlockSize;
             scale = 1;
-            while (y < halfHeight) {
+            while (y < halfHeight + this.blocksSize) {
                 scale = (.5 - ((y + halfBlockSize * scale) / height)) * scale2 + scale1;
                 y += this.blocksSize * scale;
                 this._initRowInfo[this._initRowInfo.length] = { y: y - halfBlockSize * scale, scale: scale };
             }
-            //向上多算一个
-            scale = (.5 - (y + halfBlockSize * scale) / height) * scale2 + scale1;
-            this._initRowInfo[this._initRowInfo.length] = { y: y + halfBlockSize * scale, scale: scale };
             return this._initRowInfo.length;
         }
     }
@@ -170,9 +169,9 @@ export class YJWideArea extends YJTouchListener {
             h1 = -(viewSize.height + this.blocksSize) / 2,
             h2 = -h1;;
         if (this.perspectiveEffectEnable) {
-            w1 = (viewSize.width + this.blocksSize * (1 + this.perspectiveScale)) / 2;
-            h1 = this._initRowInfo[0].y - 1;
-            h2 = this._initRowInfo[y - 1].y + 1;
+            w1 = this.blocksSize * x / 2;
+            h1 = this._initRowInfo[0].y - this.blocksSize / 2;
+            h2 = this._initRowInfo[y - 1].y + this.blocksSize / 4;
         }
         this._range = v4(-w1, h1, w1, h2);
         this._blockGroupSize = v2(x, y);
@@ -236,12 +235,22 @@ export class YJWideArea extends YJTouchListener {
             pos.x -= this._blockGroupSize.x * this.blocksSize;
             isSwitch = true;
         }
-        if (pos.y < this._range.y && y > 0) {
-            pos.y += this._blockGroupSize.y * this.blocksSize;
-            isSwitch = true;
-        } else if (pos.y > this._range.w && y < 0) {
-            pos.y -= this._blockGroupSize.y * this.blocksSize;
-            isSwitch = true;
+        if (!this.perspectiveEffectEnable) {
+            if (pos.y < this._range.y && y > 0) {
+                pos.y += this._blockGroupSize.y * this.blocksSize;
+                isSwitch = true;
+            } else if (pos.y > this._range.w && y < 0) {
+                pos.y -= this._blockGroupSize.y * this.blocksSize;
+                isSwitch = true;
+            }
+        } else {
+            if (pos.y < this._range.y && y > 0) {
+                pos.y = this._initRowInfo[this._initRowInfo.length - 1].y;
+                isSwitch = true;
+            } else if (pos.y > this._range.w && y < 0) {
+                pos.y = this._bottomY - this.blocksSize;
+                isSwitch = true;
+            }
         }
         this.setSameRow(block, pos);
         if (isSwitch)
@@ -277,28 +286,35 @@ export class YJWideArea extends YJTouchListener {
         }
         const keys = Object.keys(this._sameRowInfo),
             height = this._blockLayerSize.height,
+            halfHeight = height / 2,
+            halfBlockSize = this.blocksSize / 2,
             scale1 = this.perspectiveScale,
             scale2 = 1 - scale1;
         keys.sort((a, b) => {
             return Number(a) - Number(b);
         });
-        let y: number;
+        let y: number, scale: number;
         for (let i = 0, n = keys.length; i < n; i++) {
             const k = keys[i],
                 ky = Number(k),
-                nodes: Node[] = this._sameRowInfo[k],
-                ys = (.5 - ky / height) * scale2 + scale1,
-                xs = (.5 - ky / height) * scale2 + scale1;
+                nodes: Node[] = this._sameRowInfo[k];
             if (y == null) {
                 y = ky;
+                scale = 1;
+                this._bottomY = y;
             } else {
-                y += this.blocksSize * ys / 2;
+                if (y < -halfHeight - halfBlockSize) scale = 1;
+                else
+                    scale = (.5 - ((y + halfBlockSize * scale) / height)) * scale2 + scale1;
+                y += halfBlockSize * scale;
             }
             nodes.forEach(node => {
-                no.scale(node, v3(xs, ys));
-                no.position(node, v3(node['_origin_pos_'].x * xs, y));
+                let origin_pos = node['_origin_pos_'];
+                no.scale(node, v3(scale, scale));
+                no.position(node, v3(origin_pos.x * scale, y));
+                origin_pos.y = y;
             });
-            y += this.blocksSize * ys / 2;
+            y += halfBlockSize * scale;
         }
     }
 
