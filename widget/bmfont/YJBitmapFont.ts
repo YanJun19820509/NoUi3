@@ -32,6 +32,16 @@ export class YJBitmapFont extends Component {
         this.resetFont();
     }
     @property
+    public get spacingX(): number {
+        return this._spacingX;
+    }
+
+    public set spacingX(v: number) {
+        if (this._spacingX == v) return;
+        this._spacingX = v;
+        this.getComponent(Label).spacingX = v;
+    }
+    @property
     public get clearFont(): boolean {
         return false;
     }
@@ -63,10 +73,14 @@ export class YJBitmapFont extends Component {
 
     @property({ serializable: true })
     protected _packToAtlas: boolean = true;
+    @property({ serializable: true })
+    protected _spacingX: number = 0;
 
     private _font: BitmapFont = null;
 
     start() {
+        if (this._spacingX != 0)
+            this.getComponent(Label).spacingX = this._spacingX;
         this.resetFont();
     }
 
