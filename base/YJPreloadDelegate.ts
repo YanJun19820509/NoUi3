@@ -1,5 +1,6 @@
 
 import { ccclass, Component, Node, JsonAsset } from '../yj';
+import { YJPreload } from './YJPreload';
 
 /**
  * Predefined variables
@@ -15,6 +16,7 @@ import { ccclass, Component, Node, JsonAsset } from '../yj';
 
 @ccclass('YJPreloadDelegate')
 export class YJPreloadDelegate extends Component {
+    beforeStartLoad(preload: YJPreload) { }
     async onJsonLoaded(assets: JsonAsset[]): Promise<void> { }
     onLoadComplete(): void { }
 }

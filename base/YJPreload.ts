@@ -112,6 +112,7 @@ export class YJPreload extends YJComponent {
     }
 
     public a_startLoad(): void {
+        this.delegate?.beforeStartLoad(this);
         no.EventHandlerInfo.execute(this.beforeCall);
         this.addUpdateHandlerByFrame(this.checkState, 1);
         this.init();
