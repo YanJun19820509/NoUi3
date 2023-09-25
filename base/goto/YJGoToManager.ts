@@ -1,5 +1,4 @@
 
-import { PopuPanelContent } from '../../../ui-temp/popup_panel/PopuPanelContent';
 import { no } from '../../no';
 import { ccclass, property, Component, Node, js } from '../../yj';
 import { YJPanel } from '../node/YJPanel';
