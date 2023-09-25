@@ -1,5 +1,4 @@
 import { YJDataWork } from "../../base/YJDataWork";
-import { YJFitScreen } from "../../base/YJFitScreen";
 import { YJTouchListener } from "../../base/touch/YJTouchListener";
 import { no } from "../../no";
 import { EventTouch, Vec2, ccclass, property, Node, instantiate, UITransform, v2, Vec4, v4, Vec3, Size, v3 } from "../../yj";
