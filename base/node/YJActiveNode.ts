@@ -1,5 +1,3 @@
-
-import { no } from '../../no';
 import { ccclass, Component, Node } from '../../yj';
 
 /**
@@ -26,7 +24,6 @@ export class YJActiveNode extends Component {
 
     private setActive(v: boolean) {
         if (!this.enabled) return;
-        // this.node.active = v;
-        no.visible(this.node, v);
+        this.node.active = v;
     }
 }

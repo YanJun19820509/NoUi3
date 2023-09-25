@@ -50,7 +50,7 @@ export class YJQuantity extends YJDataWork {
         }
     }
 
-    public a_add(type: string) {
+    public a_add(e: any, type: string) {
         let v = 1;
         switch (type) {
             case '2'://加10
@@ -63,7 +63,7 @@ export class YJQuantity extends YJDataWork {
         this.setNum(v);
     }
 
-    public a_minus(type: string) {
+    public a_minus(e: any, type: string) {
         let v = -1;
         switch (type) {
             case '2'://减10
