@@ -17,7 +17,7 @@ export class YJDataMapInfo {
     uiKey: string = '';
 
     public getData(dataSource: YJGameData): any {
-        const keys = this.dataKeys.split(',');
+        const keys = this.dataKeys?.split(',') || [];
         if (keys.length == 1) {
             const k = keys[0];
             if (typeof dataSource[k] == 'function') {
