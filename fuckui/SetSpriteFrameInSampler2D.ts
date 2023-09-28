@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -55,7 +55,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (this.getComponent(Sprite).spriteAtlas)
                 this.getComponent(Sprite).spriteAtlas = null;
         } else if (!this.getComponent(Sprite).customMaterial) {
-            this.getComponent(Sprite).customMaterial = this.dynamicAtlas?.commonMaterial;
+            this.getComponent(Sprite).customMaterial = this.dynamicAtlas?.customMaterial;
         }
     }
 
@@ -98,8 +98,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             // sprite.spriteFrame = spriteFrame;
             return;
         }
-        if (!this.getComponent(Sprite).customMaterial) {
-            this.getComponent(Sprite).customMaterial = this.dynamicAtlas?.commonMaterial;
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
         let t = `${this.defineIndex}-${i + 1}00`;
         const defines: any = {};
@@ -108,7 +108,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             defines[this.lastDefine] = false;
         }
         this.lastDefine = t;
-        // this.resize(spriteFrame.width, spriteFrame.height);
         this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }

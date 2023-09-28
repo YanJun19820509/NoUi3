@@ -260,7 +260,7 @@ export class SetTypeWritting extends FuckUi {
         let dynamicTexture = this.getComponent(YJDynamicTexture);
         if (dynamicTexture && dynamicTexture.enabled) {
             labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
-            label.customMaterial = dynamicTexture.dynamicAtlas.commonMaterial;
+            label.customMaterial = dynamicTexture.dynamicAtlas.customMaterial;
         }
         label.string = a.text;
         labelNode.parent = this.node;

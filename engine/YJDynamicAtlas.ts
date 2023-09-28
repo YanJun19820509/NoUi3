@@ -26,20 +26,11 @@ import { no } from '../no';
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
 @executeInEditMode()
-export class YJDynamicAtlas extends Component {
+export class YJDynamicAtlas extends UIRenderer {
     @property({ min: 1, max: 2048, step: 1 })
     width: number = 64;
     @property({ min: 1, max: 2048, step: 1 })
     height: number = 64;
-    @property(Material)
-    public get commonMaterial(): Material {
-        return this._commonMaterial;
-    }
-
-    public set commonMaterial(v: Material) {
-        this._commonMaterial = v;
-        YJDynamicAtlas.setDynamicAtlas(this.node, this);
-    }
     @property({ visible() { return EDITOR; } })
     autoSetSubMaterial: boolean = false;
     @property({ tooltip: '文本是否合图' })
@@ -53,8 +44,6 @@ export class YJDynamicAtlas extends Component {
     private canRotate = false;
 
     private thisNodeName: string;
-
-    private _commonMaterial: Material;
 
     onLoad() {
         this.thisNodeName = this.node.name;
@@ -207,7 +196,7 @@ export class YJDynamicAtlas extends Component {
             const uuid = _uuid || frame._uuid;
             if (comp instanceof Label) {
                 if (!comp.customMaterial)
-                    comp.customMaterial = this.commonMaterial;
+                    comp.customMaterial = this.customMaterial;
                 if (comp.font instanceof BitmapFont) {
                     let ff = frame.clone();
                     ff.rotated = packedFrame.rotate;
@@ -324,7 +313,7 @@ export class YJDynamicAtlas extends Component {
         let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
         r.forEach(rr => {
             if (!rr.customMaterial) {
-                rr.customMaterial = dynamicAtlas.commonMaterial;
+                rr.customMaterial = dynamicAtlas.customMaterial;
             }
         });
     }
@@ -340,8 +329,8 @@ export class YJDynamicAtlas extends Component {
         let renderComps = this.getComponentsInChildren(UIRenderer);
         renderComps.forEach(comp => {
             if (comp instanceof Skeleton) return;
-            if (this.commonMaterial != comp.customMaterial)
-                comp.customMaterial = this.commonMaterial;
+            if (this.customMaterial != comp.customMaterial)
+                comp.customMaterial = this.customMaterial;
         });
     }
 }

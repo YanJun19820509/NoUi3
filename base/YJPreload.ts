@@ -138,7 +138,7 @@ export class YJPreload extends YJComponent {
             if (!this.fileInfo.has(b)) {
                 this.fileInfo.set(b, []);
             }
-            let f = p.file;
+            let f = p.path;
             let i = this.fileInfo.get(b);
             if (i.indexOf(f) == -1) {
                 i.push(f);
@@ -325,7 +325,7 @@ export class YJPreload extends YJComponent {
             this.loadFilesInFileInfo(index + 1);
             return;
         }
-        no.assetBundleManager.preloadFiles(b, files, (p) => {
+        no.assetBundleManager.loadFiles(b, files, (p) => {
             if (p == 1) {
                 this.progress = 0;
                 this.finished++;
@@ -333,7 +333,7 @@ export class YJPreload extends YJComponent {
             } else {
                 this.progress = p / this.total;
             }
-        });
+        }, null);
     }
 
     private loadFilesInBundle(index: number) {

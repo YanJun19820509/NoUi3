@@ -1,7 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit, JSB
 } from "./yj";
 
 
@@ -496,7 +496,8 @@ export namespace no {
      * 创建唯一标识
      * @returns 
      */
-    export function uuid(): string {
+    export function uuid(obj?: any): string {
+        if (obj && obj['_uuid']) return obj['_uuid'];
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = floor(random() * 16),
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -2694,7 +2695,7 @@ export namespace no {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let requests: any[] = [];
                 for (const uuid in assetInfos) {
-                    if (uuid.includes('@')) continue;
+                    if (uuid.includes('@') || !assetInfos[uuid].ctor) continue;
                     if (exceptAssetType && assetInfos[uuid].ctor == exceptAssetType) continue;
                     requests[requests.length] = { uuid: uuid };
                 }
@@ -2938,7 +2939,6 @@ export namespace no {
 
 
         public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'type'?: typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
-            // log('loadAnyFiles', requests);
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
             }, (e, items) => {
@@ -4349,6 +4349,12 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
+        if (JSB) {
+            if (v != undefined) {
+                node.active = v;
+            }
+            return node.active;
+        }
         if (v != undefined && node['__need_render__'] != v) {
             node['__need_render__'] = v;
             if (v) {

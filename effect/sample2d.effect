@@ -17,8 +17,6 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        # 合图中的区域
-        factRect1: { value: [0.0,0.0,1.0,1.0], editor: {visible: false}}
         atlas0: {value: black}
         atlas1: {value: black}
         atlas2: {value: black}
@@ -27,11 +25,6 @@ CCEffect %{
         atlas5: {value: black}
         atlas6: {value: black}
         atlas7: {value: black}
-        # 合图中的比率
-        # ratio: { value: 1.0, editor: {visible: false}}
-        # startColor_0: { value: [1.0, 1.0, 1.0, 1.0], editor: {type: color} }
-        # endColor_0: { value: [1.0, 1.0, 1.0, 1.0], editor: {type: color} }
-      #   alphaThreshold: { value: 0.5 }
 }%
 
 CCProgram vs %{
@@ -55,24 +48,20 @@ CCProgram unlit-fs %{
   uniform sampler2D atlas6;
   uniform sampler2D atlas7;
 
-    uniform Constant{
-      vec4 factRect1;
-    };
-
   vec4 setTexture(float type, vec2 uv, vec4 _color){
     //贴图纹理取值0
     if (type == 1.){ 
-      _color *= texture(atlas0, uv);
+      _color *= normalTexture(atlas0, uv);
     }
 
     //贴图纹理取值1
     else if (type == 2.){ 
-      _color *= texture(atlas1, uv);
+      _color *= normalTexture(atlas1, uv);
     }
 
     //贴图纹理取值2
     else if (type == 3.){ 
-      _color *= texture(atlas2, uv);
+      _color *= normalTexture(atlas2, uv);
     }
 
     //贴图纹理取值3
@@ -162,8 +151,6 @@ CCProgram unlit-fs %{
     
     if (def < 0.0){
       float defs = abs(def);
-      //合图中的uv转换
-      // vec2 uv10 = (uv0 - factRect.xy) / factRect.zw;
       float t1 = floor((defs+1.)/100.);//有些手机整除后floor后会-1，所以不能整除
       float t2 = (defs - t1 * 100.);
       o = setTexture(t1, uv0, o);

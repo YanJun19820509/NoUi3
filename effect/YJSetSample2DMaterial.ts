@@ -5,30 +5,34 @@ import { no } from '../no';
 export class YJSetSample2DMaterial extends Component {
     private _material: Material;
     public get material() {
+        if (!this._material) {
+            this._material = new Material();
+            this._material.initialize({
+                effectName: '../NoUi3/effect/sample2d',
+                defines: { 'USE_TEXTURE': true, 'USE_ALPHA_TEST': true }
+            });
+        }
         return this._material;
     }
-    public createMaterial() {
-        this._material = new Material();
-        no.assetBundleManager.loadEffect('db://assets/NoUi3/effect/sample2d.effect', ea => {
-            if (ea)
-                this._material.initialize({
-                    effectAsset: ea,
-                    defines: { 'USE_TEXTURE': true, 'USE_ALPHA_TEST': true }
-                });
-        });
-    }
 
-    public async setAtlases(textures: Texture2D[]) {
-        await no.waitFor(() => {
-            return !!this._material.effectAsset;
-        }, this);
-        const properties = this._material.effectAsset.techniques[0].passes[0].properties || {};
+    public setAtlases(textures: Texture2D[]) {
+        let material = this.material;
         for (let i = 0, n = textures.length; i < n; i++) {
-            const k = `atlas${i}`;
-            if (properties[k]) {
-                this._material.setProperty(k, textures[i]);
+            const key = `atlas${i}`;
+            if (this.hasProperty(material, key)) {
+                material.setProperty(key, textures[i], 0);
             }
         }
+    }
+
+    protected hasProperty(material: Material, key: string): boolean {
+        for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
+            for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
+                let properties = material.effectAsset.techniques[i].passes[j].properties || {};
+                if (properties[key] !== undefined) return true;
+            }
+        }
+        return false;
     }
 }
 

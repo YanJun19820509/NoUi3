@@ -140,8 +140,6 @@ export class YJVertexColorTransition extends Component {
     }
 
     lateUpdate() {
-        if (!this._needUpdate) return;
-        this._needUpdate = false;
         this._updateVB();
     }
 

@@ -1,7 +1,7 @@
 
 import { Toggle } from 'cc';
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, UIRenderer } from '../yj';
 
 /**
  * Predefined variables
@@ -24,11 +24,11 @@ js.mixin(StencilManager.prototype, {
 
 //渲染
 const _a = setInterval(function () {
-    const batcher2D = director.root.batcher2D;
+    const batcher2D = director.root['_batcher'];
     if (batcher2D) {
         clearInterval(_a);
-        const _walk = batcher2D['__proto__'].walk;
-        js.mixin(director.root.batcher2D['__proto__'], {
+        const _walk = batcher2D.walk;
+        js.mixin(batcher2D, {
             walk(node: Node, level = 0) {
                 if (no.visible(node))
                     _walk.call(this, node, level);

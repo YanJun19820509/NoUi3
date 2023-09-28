@@ -109,7 +109,7 @@ export class YJBitmapFont extends Component {
         const label = this.getComponent(Label);
         label.font = font;
         if (!label.customMaterial)
-            label.customMaterial = this.dynamicAtlas?.commonMaterial;
+            label.customMaterial = this.dynamicAtlas?.customMaterial;
         label.enabled = true;
     }
 

@@ -195,7 +195,7 @@ export class YJLoadAssets extends Component {
                 }
                 let textures: Texture2D[] = [];
                 items.forEach(item => {
-                    const uuid = item.uuid;
+                    const uuid = item._uuid;
                     let i = atlasUuids.indexOf(uuid);
                     if (i > -1)
                         this.atlases[i] = (item as JsonAsset).json;
@@ -222,10 +222,12 @@ export class YJLoadAssets extends Component {
                                 }
                             });
                         }
-                        this.createMaterial(textures).then(resolve);
+                        this.createMaterial(textures);
+                        resolve();
                     });
                 } else {
-                    this.createMaterial(textures).then(resolve);
+                    this.createMaterial(textures);
+                    resolve();
                 }
                 this.backgroundLoadInfos.forEach(info => {
                     info.load();
@@ -234,12 +236,12 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private async createMaterial(textures: Texture2D[]) {
+    private createMaterial(textures: Texture2D[]) {
         const ssm = this.getComponent(YJSetSample2DMaterial);
-        if (!ssm || textures.length == 0) return;
-        ssm.createMaterial();
-        await ssm.setAtlases(textures);
-        this.getComponent(YJDynamicAtlas).commonMaterial = ssm.material;
+        if (ssm && textures.length) {
+            ssm.setAtlases(textures);
+            this.getComponent(YJDynamicAtlas).customMaterial = ssm.material;
+        }
     }
 
     /**

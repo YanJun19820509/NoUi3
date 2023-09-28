@@ -134,8 +134,8 @@ export class YJDynamicTexture extends Component {
     public setCommonMaterial(): void {
         let renderComp = this.getComponent(UIRenderer);
         if (!renderComp) return;
-        if (this.dynamicAtlas?.commonMaterial && this.dynamicAtlas?.commonMaterial != renderComp.customMaterial)
-            renderComp.customMaterial = this.dynamicAtlas?.commonMaterial;
+        if (this.dynamicAtlas?.customMaterial && this.dynamicAtlas?.customMaterial != renderComp.customMaterial)
+            renderComp.customMaterial = this.dynamicAtlas?.customMaterial;
     }
 
     public setSpriteFrameWithUuid(uuid: string, comp: Sprite | Label): boolean {
