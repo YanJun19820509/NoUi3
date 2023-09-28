@@ -70,4 +70,9 @@ export class YJSyncContentSizeToTarget extends Component {
         no.size(to, size);
         no.EventHandlerInfo.execute(this.onChange);
     }
+
+    public setSize(size: Size) {
+        no.size(this.node, size);
+        this.check();
+    }
 }
