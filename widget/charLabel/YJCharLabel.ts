@@ -85,11 +85,11 @@ export class YJCharLabel extends Sprite {
     //文本颜色
     @property({ type: Color, override: true })
     public get fontColor(): Color {
-        return this._color;
+        return this._fontColor;
     }
     public set fontColor(v: Color) {
-        if (v.equals(this._color)) return;
-        this._color = v;
+        if (v.equals(this._fontColor)) return;
+        this._fontColor = v;
         this.setLabel();
     }
     //文本尺寸
@@ -147,10 +147,11 @@ export class YJCharLabel extends Sprite {
         this._horizontalAlign = v;
         this.setLabel();
     }
-    //水平对齐
-    @property({ type: Enum(VerticalTextAlignment) })
+    //垂直对齐
+    @property({ type: Enum(VerticalTextAlignment), visible() { return false; } })
     public get verticalAlign(): number {
-        return this._verticalAlign;
+        // return this._verticalAlign;
+        return 1;
     }
 
     public set verticalAlign(v: number) {
@@ -356,6 +357,8 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _string: string = '';
     @property({ serializable: true })
+    protected _fontColor: Color = Color.WHITE.clone();
+    @property({ serializable: true })
     protected _fontSize: number = 22;
     @property({ serializable: true })
     protected _font: Font = null;
@@ -366,7 +369,7 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _horizontalAlign: number = 0;
     @property({ serializable: true })
-    protected _verticalAlign: number = 0;
+    protected _verticalAlign: number = 1;
     @property({ serializable: true })
     protected _overflow: number = 0;
     @property({ serializable: true })
@@ -443,7 +446,7 @@ export class YJCharLabel extends Sprite {
     }
 
     private getUuid(): string {
-        let a = this.string + "_" + this._color + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
+        let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
         return a;
     }
 
@@ -456,7 +459,7 @@ export class YJCharLabel extends Sprite {
     }
 
     private setFontStyle(ctx: CanvasRenderingContext2D, color?: string, fontSize?: number, bold?: boolean, italic?: boolean) {
-        if (color == null) color = '#' + this._color.toHEX('#rrggbb');
+        if (color == null) color = '#' + this._fontColor.toHEX('#rrggbb');
         if (fontSize == null) fontSize = this.fontSize;
         else fontSize *= this._hdp ? this._hdpScale : 1;
         if (bold == null) bold = this.bold;
@@ -593,8 +596,8 @@ export class YJCharLabel extends Sprite {
             y = height / 2 - (this.underline ? this.underlineWidth : 0);
             if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
         } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - 2 - (this.underline ? this.underlineWidth + 1 : 0);
-            if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
+            y = height - (this.underline ? this.underlineWidth : 0);
+            if (this.outlineWidth > 0) y -= this.outlineWidth;
             if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
         } else {
             if (this.outlineWidth > 0) y += this.outlineWidth;
@@ -615,6 +618,7 @@ export class YJCharLabel extends Sprite {
             this.setStrokeStyle(ctx);
             ctx.strokeText(v, x, y);
         }
+        // this.setFontStyle(ctx);
         ctx.fillText(v, x, y);
 
         this.drawUnderline(ctx, width, x, y);
@@ -651,8 +655,8 @@ export class YJCharLabel extends Sprite {
                 y += hh / 2 - (this.underline ? this.underlineWidth : 0);
                 if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
             } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - 2 - (this.underline ? this.underlineWidth + 1 : 0);
-                if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
+                y += hh - (this.underline ? this.underlineWidth : 0);
+                if (this.outlineWidth > 0) y -= this.outlineWidth;
                 if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
             } else {
                 if (this.outlineWidth > 0) y += this.outlineWidth;
@@ -715,7 +719,7 @@ export class YJCharLabel extends Sprite {
         if (!this.underline || width == 0) return;
         y += this.underlineWidth / 2 + this.hdpScale;
         ctx.beginPath();
-        ctx.strokeStyle = '#' + this._color.toHEX('#rrggbb');
+        ctx.strokeStyle = '#' + this._fontColor.toHEX('#rrggbb');
         ctx.lineWidth = this.underlineWidth;
         ctx.moveTo(x, y);
         ctx.lineTo(x + width - 4 * this.hdpScale, y);
@@ -894,8 +898,8 @@ export class YJCharLabel extends Sprite {
             y = height / 2 - (this.underline ? this.underlineWidth : 0);
             if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
         } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - 2 - (this.underline ? this.underlineWidth + 1 : 0);
-            if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
+            y = height - (this.underline ? this.underlineWidth : 0);
+            if (this.outlineWidth > 0) y -= this.outlineWidth;
             if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
         } else {
             if (this.outlineWidth > 0) y += this.outlineWidth;
@@ -955,8 +959,8 @@ export class YJCharLabel extends Sprite {
                 y += hh / 2 - (this.underline ? this.underlineWidth : 0);
                 if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
             } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - 2 - (this.underline ? this.underlineWidth + 1 : 0);
-                if (this.outlineWidth > 0) y -= this.outlineWidth + 1;
+                y += hh - (this.underline ? this.underlineWidth : 0);
+                if (this.outlineWidth > 0) y -= this.outlineWidth;
                 if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
             } else {
                 if (this.outlineWidth > 0) y += this.outlineWidth;
