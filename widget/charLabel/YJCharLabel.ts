@@ -626,7 +626,7 @@ export class YJCharLabel extends Sprite {
         // this.setFontStyle(ctx);
         ctx.fillText(v, x, y);
 
-        this.drawUnderline(ctx, width, x, y);
+        this.drawUnderline(ctx, width, x, height);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -646,7 +646,7 @@ export class YJCharLabel extends Sprite {
             hh = height + this.extHeight();
 
         canvas.width = width;
-        canvas.height = (height) * lines.length + this.extHeight();
+        canvas.height = hh * lines.length;
         const ctx = canvas.getContext("2d");
 
         lines.forEach((v, i) => {
@@ -654,7 +654,7 @@ export class YJCharLabel extends Sprite {
             if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
-            let y = height * i;
+            let y = hh * i;
 
             if (this.verticalAlign == VerticalTextAlignment.CENTER) {
                 y += hh / 2 - (this.underline ? this.underlineWidth : 0);
@@ -669,7 +669,7 @@ export class YJCharLabel extends Sprite {
                 if (this.underline && this.underlineWidth > 0) y += this.underlineWidth * i;
             }
 
-            const w = this.getMeasureWidth(ctx, v), oy = y;
+            const w = this.getMeasureWidth(ctx, v), oy = hh * (i + 1);
 
             let x = 2;
             if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
@@ -722,7 +722,7 @@ export class YJCharLabel extends Sprite {
 
     private drawUnderline(ctx: CanvasRenderingContext2D, width: number, x: number, y: number) {
         if (!this.underline || width == 0) return;
-        y += this.underlineWidth / 2 + this.hdpScale;
+        y -= this.underlineWidth + this.hdpScale;
         ctx.beginPath();
         ctx.strokeStyle = '#' + this._fontColor.toHEX('#rrggbb');
         ctx.lineWidth = this.underlineWidth;
@@ -934,7 +934,7 @@ export class YJCharLabel extends Sprite {
             len += w;
         }
 
-        this.drawUnderline(ctx, len, x1, y + this.lineHeight);
+        this.drawUnderline(ctx, len, x1, height);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -954,11 +954,11 @@ export class YJCharLabel extends Sprite {
             hh = height + this.extHeight();
 
         canvas.width = width;
-        canvas.height = (height) * lines.length + this.extHeight();
+        canvas.height = hh * lines.length;
         const ctx = canvas.getContext("2d");
 
         lines.forEach((line, i) => {
-            let y = height * i;
+            let y = hh * i;
 
             if (this.verticalAlign == VerticalTextAlignment.CENTER) {
                 y += hh / 2 - (this.underline ? this.underlineWidth : 0);
@@ -991,8 +991,8 @@ export class YJCharLabel extends Sprite {
             }
 
             let len = 0, x1 = x;
-            for (let i = 0, n = line.htmls.length; i < n; i++) {
-                const html = line.htmls[i], style = html.style, text = html.text;
+            for (let j = 0, n = line.htmls.length; j < n; j++) {
+                const html = line.htmls[j], style = html.style, text = html.text;
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
                 if (this.shadowBlur > 0) this.setShadowStyle(ctx);
                 if (style?.outline || this.outlineWidth > 0) {
@@ -1005,7 +1005,7 @@ export class YJCharLabel extends Sprite {
                 len += w;
             }
 
-            this.drawUnderline(ctx, len, x, y + this.lineHeight);
+            this.drawUnderline(ctx, len, x, hh * (i + 1));
         });
 
         this.fixHDP(ctx, width, canvas.height);
