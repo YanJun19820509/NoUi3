@@ -25,16 +25,15 @@ export class SetVisibility extends FuckUi {
     @property({ displayName: '默认激活' })
     default: boolean = true;
 
-    onLoad(): void {
-        super.onLoad();
+    start() {
         if (!EDITOR) {
-            this.show(this.reverse ? !this.default : this.default);
+            this.show(this.default);
         }
     }
 
     update() {
         if (EDITOR)
-            this.show(this.reverse ? !this.default : this.default);
+            this.show(this.default);
     }
 
     protected onDataChange(data: any) {
