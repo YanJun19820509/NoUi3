@@ -31,6 +31,8 @@ export class YJComboBox extends YJDataWork {
     @property({ displayName: '默认显示列表' })
     autoShow: boolean = false;
 
+    @property({ displayName: '事件类型' })
+    type: string = '';
     @property(no.EventHandlerInfo)
     onShow: no.EventHandlerInfo[] = [];
     @property(no.EventHandlerInfo)
@@ -44,6 +46,12 @@ export class YJComboBox extends YJDataWork {
         super.onLoad();
         let sv = this.getComponentInChildren(ScrollView);
         sv.node.getComponent(UITransform).setContentSize(this.size);
+        if (this.type)
+            no.evn.on(this.type, this.a_onSelect, this);
+    }
+
+    onDestroy() {
+        no.evn.targetOff(this);
     }
 
     protected afterDataInit() {
