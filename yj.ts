@@ -195,3 +195,10 @@ export const NodeEventType = _cc.NodeEventType;
 export const isBrowser = sys.isBrowser;
 export const TransformBit = _cc.TransformBit;
 export const path = _cc.path;
+export function setDisplayStats(v: boolean) {
+    if (v) _cc.profiler.showStats();
+    else _cc.profiler.hideStats();
+}
+export function isDisplayStats() {
+    return _cc.profiler.isShowingStats();
+}
