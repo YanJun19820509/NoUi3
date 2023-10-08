@@ -428,6 +428,7 @@ export class YJCharLabel extends Sprite {
     private setLabel(): void {
         if (EDITOR && !this._needSetLabel) return;
         if (!isValid(this.node) || !this.node.activeInHierarchy) return;
+        this.clearCanvas();
         if (this._string == '') {
             this.clearString();
             return;
@@ -456,6 +457,10 @@ export class YJCharLabel extends Sprite {
             this._canvas = document.createElement('canvas');
         }
         return this._canvas;
+    }
+
+    private clearCanvas() {
+        this._canvas = null;
     }
 
     private setFontStyle(ctx: CanvasRenderingContext2D, color?: string, fontSize?: number, bold?: boolean, italic?: boolean) {
