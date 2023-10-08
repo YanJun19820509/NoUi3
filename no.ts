@@ -1011,11 +1011,11 @@ export namespace no {
     export function sleep(duration: number, component?: Component): Promise<void> {
         if (duration <= 0) duration = game.deltaTime;
         return new Promise<void>(resolve => {
-            if (component != null) {
-                component.scheduleOnce(resolve, duration);
-            } else {
-                scheduleOnce(() => { resolve(); }, duration);
-            }
+            // if (checkValid(component)) {
+            //     component.scheduleOnce(resolve, duration);
+            // } else {
+            scheduleOnce(() => { resolve(); }, duration);
+            // }
         });
     }
 
