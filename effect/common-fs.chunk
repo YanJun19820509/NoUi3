@@ -1,5 +1,5 @@
 in vec4 color;
-in vec3 ext;
+in vec2 ext;
 in float def;
 in vec2 uv0;  
 

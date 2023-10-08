@@ -11,7 +11,7 @@ in vec2 a_texCoord;
 in vec4 a_color;
 
 out vec4 color;
-out vec3 ext;
+out vec2 ext;
 out vec2 uv0;
 out float def;
 
@@ -39,10 +39,10 @@ vec4 vert() {
   if (def < 0.0){
     color = vec4(1, 1, 1, a_color.a);
     //设置扩展参数
-    ext = a_color.gba;
+    ext = a_color.gb;
   }else{
     //正常
-    ext = vec3(0,0,0);
+    ext = vec2(0,0);
     color = a_color;
   }
   return pos;
