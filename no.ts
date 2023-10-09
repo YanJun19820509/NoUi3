@@ -4349,7 +4349,7 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (JSB) {
+        if (!EDITOR) {
             if (v != undefined) {
                 node.active = v;
             }

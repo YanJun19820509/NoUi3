@@ -27,13 +27,14 @@ export class SetVisibility extends FuckUi {
 
     start() {
         if (!EDITOR) {
-            this.show(this.default);
+            this.setDefault();
         }
     }
 
     update() {
-        if (EDITOR)
-            this.show(this.default);
+        if (EDITOR) {
+            this.setDefault();
+        }
     }
 
     protected onDataChange(data: any) {
@@ -51,6 +52,11 @@ export class SetVisibility extends FuckUi {
         } else {
             this.show(Boolean(data));
         }
+    }
+
+    private setDefault() {
+        if (this.default) no.visible(this.node, true);
+        else no.visible(this.node, false);
     }
 
     private show(v: boolean) {
