@@ -44,6 +44,7 @@ export class YJSliderButton extends Component {
     private _checked: boolean = false;
     private _done: boolean = true;
     private needWait: boolean = false;
+    private _first: boolean = true;
 
     protected onLoad(): void {
         this.setCheckedNodesVisible();
@@ -85,7 +86,8 @@ export class YJSliderButton extends Component {
     }
 
     private playAni(x: number, noChange: boolean) {
-        if (EDITOR) {
+        if (EDITOR || this._first) {
+            this._first = false;
             no.x(this.slider, x);
             this.setCheckedNodesVisible();
             return;

@@ -427,7 +427,10 @@ export class YJCharLabel extends Sprite {
 
     private setLabel(): void {
         if (EDITOR && !this._needSetLabel) return;
-        if (!isValid(this.node) || !this.node.activeInHierarchy) return;
+        if (!isValid(this.node) || !this.node.activeInHierarchy) {
+            this.scheduleOnce(this.setLabel);
+            return;
+        }
         this.clearCanvas();
         if (this._string == '') {
             this.clearString();
