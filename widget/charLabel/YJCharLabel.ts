@@ -425,10 +425,14 @@ export class YJCharLabel extends Sprite {
         this.node.targetOff(this);
     }
 
+    onEnable() {
+        super.onEnable();
+        this.setLabel();
+    }
+
     private setLabel(): void {
         if (EDITOR && !this._needSetLabel) return;
         if (!isValid(this.node) || !this.node.activeInHierarchy) {
-            this.scheduleOnce(this.setLabel);
             return;
         }
         this.clearCanvas();

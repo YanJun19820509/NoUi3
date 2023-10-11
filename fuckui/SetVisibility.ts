@@ -55,6 +55,7 @@ export class SetVisibility extends FuckUi {
     }
 
     private setDefault() {
+        if (this.dataSetted) return;
         if (this.default) no.visible(this.node, true);
         else no.visible(this.node, false);
     }
