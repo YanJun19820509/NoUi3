@@ -1,5 +1,4 @@
 import { ccclass, Material, Component, Node, Texture2D } from '../yj';
-import { no } from '../no';
 
 @ccclass('YJSetSample2DMaterial')
 export class YJSetSample2DMaterial extends Component {
