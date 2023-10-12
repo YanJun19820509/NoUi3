@@ -25,7 +25,8 @@ export class SetVisibility extends FuckUi {
     @property({ displayName: '默认激活' })
     default: boolean = true;
 
-    start() {
+    onLoad() {
+        super.onLoad();
         if (!EDITOR) {
             this.setDefault();
         }

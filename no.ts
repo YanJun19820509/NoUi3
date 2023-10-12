@@ -7,7 +7,7 @@ import {
 
 export namespace no {
     let _debug: boolean = DEBUG;
-    let _version: string;
+    let _version: string = '';
 
     export function isDebug(): boolean {
         return _debug;
@@ -4355,8 +4355,8 @@ export namespace no {
             }
             return node.active;
         }
-        if (v != undefined && node['__need_render__'] != v) {
-            node['__need_render__'] = v;
+        if (v != undefined && node['yj_need_render'] != v) {
+            node['yj_need_render'] = v;
             if (v) {
                 node.getWorldPosition(_pos);
                 node.setWorldPosition(_pos);
@@ -4365,7 +4365,7 @@ export namespace no {
             const btn = node.getComponent('YJButton');
             if (btn) btn['canClick'] = v;
         }
-        return node['__need_render__'] !== false;
+        return node['yj_need_render'] !== false;
     }
 
     /**
