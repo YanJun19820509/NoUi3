@@ -4470,8 +4470,12 @@ export namespace no {
             return rect;
         }
     }
+
+    export function addToWindowForDebug(key: string, obj: any) {
+        if (DEBUG) {
+            window[key] = obj;
+        }
+    }
 }
 
-if (DEBUG) {
-    window['no'] = no;
-}
+no.addToWindowForDebug('no', no);
