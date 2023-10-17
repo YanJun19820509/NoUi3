@@ -4362,8 +4362,9 @@ export namespace no {
                 node.setWorldPosition(_pos);
             }
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
-            const btn = node.getComponent('YJButton');
-            if (btn) btn['canClick'] = v;
+            //如果哪天原生支持yj_need_render，则开启
+            // const btn = node.getComponent('YJButton');
+            // if (btn) btn['canClick'] = v;
         }
         return node['yj_need_render'] !== false;
     }
