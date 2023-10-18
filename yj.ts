@@ -147,6 +147,8 @@ export type IHtmlTextParserStack = _cc.IHtmlTextParserStack;
 export type IHtmlTextParserResultObj = _cc.IHtmlTextParserResultObj;
 export const HtmlTextParser = _cc.HtmlTextParser;
 export type HtmlTextParser = _cc.HtmlTextParser;
+export const MeshRender = _cc.MeshRenderer;
+export type MeshRender = _cc.MeshRenderer;
 
 export const Game = _cc.Game;
 export const Enum = _cc.Enum;

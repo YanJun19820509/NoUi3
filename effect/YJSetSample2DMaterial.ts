@@ -1,4 +1,4 @@
-import { ccclass, Material, Component, Node, Texture2D } from '../yj';
+import { ccclass, Material, Component, Texture2D } from '../yj';
 import { no } from '../no';
 
 @ccclass('YJSetSample2DMaterial')
@@ -19,20 +19,10 @@ export class YJSetSample2DMaterial extends Component {
         let material = this.material;
         for (let i = 0, n = textures.length; i < n; i++) {
             const key = `atlas${i}`;
-            if (this.hasProperty(material, key)) {
+            if (no.materialHasProperty(material, key)) {
                 material.setProperty(key, textures[i], 0);
             }
         }
-    }
-
-    protected hasProperty(material: Material, key: string): boolean {
-        for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
-            for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
-                let properties = material.effectAsset.techniques[i].passes[j].properties || {};
-                if (properties[key] !== undefined) return true;
-            }
-        }
-        return false;
     }
 }
 

@@ -4470,6 +4470,16 @@ export namespace no {
             return rect;
         }
     }
+
+    export function materialHasProperty(material: Material, key: string): boolean {
+        for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
+            for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
+                let properties = material.effectAsset.techniques[i].passes[j].properties || {};
+                if (properties[key] !== undefined) return true;
+            }
+        }
+        return false;
+    }
 }
 
 if (DEBUG) {
