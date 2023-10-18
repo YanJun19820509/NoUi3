@@ -25,6 +25,19 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         YJCollectSpriteFrameDataInAtlas.queryAllPlist();
     }
 
+    @property({ type: SpriteAtlas, displayName: '单个图集' })
+    public get oneAtlas(): SpriteAtlas {
+        return null;
+    }
+
+    public set oneAtlas(v: SpriteAtlas) {
+        Editor.Message.request('asset-db', 'query-asset-info', v.uuid).then(info => {
+            const con = YJCollectSpriteFrameDataInAtlas.getSpriteFramesInfo(v),
+                path = info.path;
+            YJCollectSpriteFrameDataInAtlas.save(path, con);
+        });
+    }
+
     private static queryAllPlist() {
         this.createAtlasConfig();
     }
@@ -47,6 +60,12 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         return infoMap;
     }
 
+    private static save(path: string, info: any) {
+        const file = `${path}_atlas.json`;
+        console.log(`save ${file}`);
+        Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(info), { overwrite: true });
+    }
+
     public static async createAtlasConfig(dir?: string) {
         return new Promise<void>(resolve => {
             Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
@@ -66,9 +85,10 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                             infos[atlas.name] = this.getSpriteFramesInfo(atlas);
                         });
                         for (const name in infos) {
-                            const file = `${path[name]}_atlas.json`;
-                            console.log(`save ${file}`);
-                            Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
+                            this.save(path[name], infos[name]);
+                            // const file = `${path[name]}_atlas.json`;
+                            // console.log(`save ${file}`);
+                            // Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
                         }
                     } else
                         console.log(err);

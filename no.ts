@@ -7,7 +7,7 @@ import {
 
 export namespace no {
     let _debug: boolean = DEBUG;
-    let _version: string;
+    let _version: string = '';
 
     export function isDebug(): boolean {
         return _debug;
@@ -4355,17 +4355,18 @@ export namespace no {
             }
             return node.active;
         }
-        if (v != undefined && node['__need_render__'] != v) {
-            node['__need_render__'] = v;
+        if (v != undefined && node['yj_need_render'] != v) {
+            node['yj_need_render'] = v;
             if (v) {
                 node.getWorldPosition(_pos);
                 node.setWorldPosition(_pos);
             }
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
-            const btn = node.getComponent('YJButton');
-            if (btn) btn['canClick'] = v;
+            //如果哪天原生支持yj_need_render，则开启
+            // const btn = node.getComponent('YJButton');
+            // if (btn) btn['canClick'] = v;
         }
-        return node['__need_render__'] !== false;
+        return node['yj_need_render'] !== false;
     }
 
     /**
@@ -4480,8 +4481,12 @@ export namespace no {
         }
         return false;
     }
+
+    export function addToWindowForDebug(key: string, obj: any) {
+        if (DEBUG) {
+            window[key] = obj;
+        }
+    }
 }
 
-if (DEBUG) {
-    window['no'] = no;
-}
+no.addToWindowForDebug('no', no);

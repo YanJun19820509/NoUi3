@@ -84,6 +84,10 @@ export class YJNodeTarget extends Component {
         no.nodeTargetManager.register(this.type, this);
     }
 
+    public get nodePosition(): Vec3 {
+        return no.position(this.node);
+    }
+
 
     /**
      * 目标节点的世界坐标

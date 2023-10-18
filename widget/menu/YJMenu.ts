@@ -2,7 +2,7 @@ import { YJHintWatcher } from "../../base/YJHintWatcher";
 import { YJToggleGroupManager } from "../../base/node/YJToggleGroupManager";
 import { FuckUi } from "../../fuckui/FuckUi";
 import { no } from "../../no";
-import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle, DEBUG } from "../../yj";
+import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle } from "../../yj";
 import { YJCharLabel } from "../charLabel/YJCharLabel";
 
 //菜单构建器
@@ -38,7 +38,7 @@ export class YJMenu extends Component {
     public createMenu(menuItems: YJMenuItemInfo[]) {
         if (!menuItems || menuItems.length == 0) return;
         menuItems.forEach((info, i) => {
-            if (!DEBUG && info.DEBUG) return;
+            if (!no.isDebug() && info.DEBUG) return;
             const item = instantiate(this.itemTemp);
             item.getComponent(Toggle).isChecked = this.defaultChecked == i;
             if (info.title) {
