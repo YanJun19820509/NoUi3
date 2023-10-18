@@ -1769,6 +1769,22 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点z坐标
+     * @param node 节点
+     * @param z z坐标，为空时则返回当前z；否则修改当前z
+     * @returns
+     */
+    export function z(node: Node, z?: number): number {
+        if (!node) return;
+        let p = node.getPosition();
+        if (z != undefined) {
+            p.z = z;
+            node.setPosition(p);
+        }
+        return p.z;
+    }
+
+    /**
      * 获取或设置节点position
      * @param node 节点
      * @param pos 为空时则返回当前pos；否则修改当前pos
