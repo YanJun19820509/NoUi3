@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, Skeleton } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, Node, Layers, requireComponent, AnimationCacheMode } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -13,11 +13,12 @@ import { YJSpineManager } from '../base/YJSpineManager';
  * FileBasenameNoExtension = SetSpine
  * URL = db://assets/Script/NoUi3/fuckui/SetSpine.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
- *
+ * data:{path, skin, animation, loop, timeScale}|[{path, skin, animation, loop, timeScale},...]
+ * 支持动画链
  */
 
 @ccclass('SetSpine')
-@menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
+@menu('NoUi/ui/SetSpine(设置spine动画)')
 @executeInEditMode()
 @requireComponent(Skeleton)
 export class SetSpine extends FuckUi {
@@ -43,6 +44,8 @@ export class SetSpine extends FuckUi {
     curPath: string;
     private canSetSpine: boolean = true;
     private isFullScreenHide: boolean = false;
+    private spineQueue: any[];
+    private spine: Skeleton;
 
     protected update(): void {
         if (!EDITOR) return;
@@ -89,6 +92,13 @@ export class SetSpine extends FuckUi {
 
     protected onDataChange(data: any) {
         if (!this.canSetSpine) return;
+        this.spineQueue = [].concat(data);
+        this.setSpineData();
+    }
+
+    private setSpineData() {
+        const data = this.spineQueue.shift();
+        if (!data) return;
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
         const spine = this.getComponent(Skeleton);
 
@@ -100,7 +110,7 @@ export class SetSpine extends FuckUi {
          * 如果传入路径和之前的资源路径不一致   释放之前的
          */
         if (path && this.curPath && this.curPath != path) {
-            no.assetBundleManager.decRef(spine?.skeletonData);
+            YJSpineManager.ins.set(this.curPath);
         }
 
         if (timeScale)
@@ -128,10 +138,6 @@ export class SetSpine extends FuckUi {
         } else {
             spine.clearTracks();
             spine.enabled = false;
-        }
-        if (loop === false) {
-            this.bindStartCall(spine);
-            this.bindEndCall(spine);
         }
     }
 
@@ -190,6 +196,7 @@ export class SetSpine extends FuckUi {
         spine?.setCompleteListener(() => {
             this?.endCall.execute();
             spine?.setCompleteListener(() => { });
+            this.setSpineData();
         });
     }
 
