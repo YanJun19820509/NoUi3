@@ -204,3 +204,11 @@ export function setDisplayStats(v: boolean) {
 export function isDisplayStats() {
     return _cc.profiler.isShowingStats();
 }
+
+
+//3d
+export const Ray = _cc.geometry.Ray;
+export type Ray = _cc.geometry.Ray;
+export const Input = _cc.Input;
+export const input = _cc.input;
+export const PhysicsSystem = _cc.PhysicsSystem;

@@ -1,5 +1,6 @@
 import { no } from "../../no";
-import { EventTouch, Vec2, ccclass, property, Node, instantiate, v2, Vec4, v4, Vec3, v3, Component } from "../../yj";
+import { EventTouch, Vec2, ccclass, property, Node, instantiate, v2, Vec4, v4, Vec3, v3 } from "../../yj";
+import { YJTouchListener3D } from "../base/touch/YJTouchListener3D";
 import { YJWideAreaDelegate3D } from "./YJWideAreaDelegate3D";
 
 
@@ -7,7 +8,7 @@ import { YJWideAreaDelegate3D } from "./YJWideAreaDelegate3D";
  * 广域
  */
 @ccclass('YJWideArea3D')
-export class YJWideArea3D extends Component {
+export class YJWideArea3D extends YJTouchListener3D {
     @property({ displayName: '网格大小', tooltip: '整个地面将按该大小分为无数个网格，每个网格有其对应的网格坐标UV，原点处网格坐标为(0,0)', min: 0, max: 1 })
     meshSize: number = 0.03125;
     @property({ displayName: '使用视图块' })
@@ -60,44 +61,35 @@ export class YJWideArea3D extends Component {
         this.move(dt);
     }
 
-    // public onStart(e: EventTouch) {
-    //     const a = super.onStart(e);
-    //     if (a) {
-    //         this.startTouchPos = this.touchUILocationAR(e);
-    //         this.delegate?.onStart(this._curPos.clone());
-    //     }
-    //     return a;
-    // }
+    public onStart(e: EventTouch) {
+        super.onStart(e);
+        this.startTouchPos = this.touchUILocationAR(e);
+        this.delegate?.onStart(this._curPos.clone());
+    }
 
-    // public onMove(e: EventTouch) {
-    //     const a = super.onMove(e);
-    //     if (a) {
-    //         const pos = this.touchUILocationAR(e),
-    //             // step = e.getDelta(),//步进值
-    //             dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
-    //         //计算阶梯增速
-    //         if (this.stepSpeed) {
-    //             this._speedMultipel = Math.floor(dis / this.stepSpeedLen) * 0.5 + 1;
-    //         }
-    //         //与第一次点击坐标的夹角
-    //         this._dir = no.angleTo(this.startTouchPos, pos);
-    //         this._isMoving = true;
-    //     }
-    //     return a;
-    // }
+    public onMove(e: EventTouch) {
+        super.onMove(e);
+        const pos = this.touchUILocationAR(e),
+            // step = e.getDelta(),//步进值
+            dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
+        //计算阶梯增速
+        if (this.stepSpeed) {
+            this._speedMultipel = Math.floor(dis / this.stepSpeedLen) * 0.5 + 1;
+        }
+        //与第一次点击坐标的夹角
+        this._dir = no.angleTo(this.startTouchPos, pos);
+        this._isMoving = true;
+    }
 
 
-    // public onEnd(e: EventTouch) {
-    //     const a = super.onEnd(e);
-    //     if (a) {
-    //         if (!this.autoMove) {
-    //             this._isMoving = false;
-    //             this._speedMultipel = 1;
-    //         }
-    //         this.delegate?.onEnd(this._curPos.clone());
-    //     }
-    //     return a;
-    // }
+    public onEnd(e: EventTouch) {
+        super.onEnd(e);
+        if (!this.autoMove) {
+            this._isMoving = false;
+            this._speedMultipel = 1;
+        }
+        this.delegate?.onEnd(this._curPos.clone());
+    }
 
     /**行数 */
     private getRowNumber(): number {
@@ -145,8 +137,8 @@ export class YJWideArea3D extends Component {
 
     private move(dt: number) {
         const len = this.speed * this._speedMultipel * dt,
-            x = len * Math.cos(this._dir.radian),
-            y = len * Math.sin(this._dir.radian);
+            x = len * Math.cos(this._dir.radian) / 1000,
+            y = len * Math.sin(this._dir.radian) / 1000;
         this._curPos.add2f(x, y);
         this.delegate?.onMove(this._curPos.clone(), this._dir.angle);
         this.moveBlocks(x, y);
