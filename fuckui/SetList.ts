@@ -78,7 +78,6 @@ export class SetList extends FuckUi {
      */
     private lastIndex: number = 0;
     private _loaded: boolean = false;
-    private touched: boolean = false;
     private isFirst: boolean = true;
     private waitTime: number;
     private _isSettingData: boolean = false;
@@ -99,29 +98,11 @@ export class SetList extends FuckUi {
         }
         if (this.showMax == 0)
             this.preInitItems();
-        // this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
-        // this.viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         this.isVertical = this.scrollView.vertical;
         if (!this.content)
             this.content = this.scrollView.content;
         this.scrollViewContent = this.scrollView.content;
-        // this.listItems = this.content.children;
-
-        // if (this.isVertical) {
-        //     this.showMax = Math.ceil(this.viewSize.height / this.itemSize.height);
-        // } else {
-        //     this.showMax = Math.ceil(this.viewSize.width / this.itemSize.width);
-        // }
         this._loaded = true;
-
-        // this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
-        //     this.touched = true;
-        // }, this);
-
-        // this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
-        //     this.touched = false;
-        // }, this);
-
         this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
             this.updatePos();
         }, this);
@@ -143,7 +124,6 @@ export class SetList extends FuckUi {
             this.content?.children.forEach(item => {
                 item.destroy();
             });
-            // this.listItems = [];
         }
     }
 
@@ -171,7 +151,6 @@ export class SetList extends FuckUi {
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
                 let item = listItems[i];
-                // item.active = false;
                 no.visible(item, false);
             }
         }
@@ -180,16 +159,19 @@ export class SetList extends FuckUi {
             a = no.arrayToArrays(a, this.columnNumber);
         }
         this.allNum = a.length;
-        if (listItems.length == 0 || this.listData?.length != this.allNum) {
-            if (this.showMax >= this.allNum) this.showNum = this.allNum;
-            else this.showNum = this.showMax;
+        if (listItems.length == 0) {
+            this.showNum = this.showMax;
             await this.initItems();
             if (!this?.node?.isValid) return;
+        } else if (this.autoScrollBack) {
+            this.lastIndex = 0;
+            for (let i = 0, n = listItems.length; i < n; i++) {
+                let item = listItems[i];
+                this.setItemPosition(item, i);
+            }
         }
         this.listData = a;
-        let i = this.lastIndex;
-        if (!this.listData[this.lastIndex]) i = 0;
-        await this.setList(this.autoScrollBack ? 0 : i);
+        await this.setList();
         if (!this?.node?.isValid) return;
         this._isSettingData = false;
     }
@@ -216,43 +198,31 @@ export class SetList extends FuckUi {
                 YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                 YJLoadAssets.setLoadAsset(item, this.loadAsset);
             }
+            this.setItemPosition(item, i);
         }
     }
 
-    private async setList(start: number) {
+    private async setList() {
         if (!this.node.isValid) return;
-        let listItems = this.content.children;
-        await no.waitFor(() => { return listItems.length >= this.showNum; }, this);
-        if (!this.itemSize) return;
-        if (start != this.lastIndex) {
-            if (this.allNum - start < this.showMax) {
-                start = this.allNum - this.showMax;
-            }
-            if (start < 0) start = 0;
-            let p = this.scrollViewContent.getPosition();
-            if (this.isVertical) {
-                p.y = start * this.itemSize.height;
-            } else {
-                p.x = start * this.itemSize.width;
+        no.sortArray(this.content.children, (a, b) => {
+            return a['__dataIndex'] - b['__dataIndex'];
+        });
 
-            }
-            this.scrollViewContent.setPosition(p);
-            this.lastIndex = start;
-        }
-        let i = 0, n = listItems.length;
+        const n = this.content.children.length;
+        let i = 0;
         await YJJobManager.ins.execute(() => {
             if (!this?.node?.isValid) return false;
-            this.setItem(start, i++);
+            this.setItem(i++);
             if (i >= n) return false;
         }, this);
     }
 
-    private setItem(start: number, i: number) {
-        let item = this.content.children[i];
+    private setItem(i: number) {
+        const item = this.content.children[i];
         if (!item) return;
-        this.setItemPosition(item, start + i);
-        if (this.listData[start + i]) {
-            this.setItemData(item, this.listData[start + i]);
+        const data_idx = item['__dataIndex'];
+        if (this.listData[data_idx]) {
+            this.setItemData(item, this.listData[data_idx]);
         }
         no.visible(item, i < this.showNum);
     }
@@ -295,7 +265,6 @@ export class SetList extends FuckUi {
     }
 
     private updatePos() {
-        // if (!this.touched) return;
         if (!isValid(this?.node)) return;
         let listItems = this.content.children;
         if (this.listData == null || listItems == null || listItems.length == 0) return;
