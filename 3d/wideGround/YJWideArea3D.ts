@@ -1,6 +1,6 @@
+import { YJTouchListener } from "../../base/touch/YJTouchListener";
 import { no } from "../../no";
 import { EventTouch, Vec2, ccclass, property, Node, instantiate, v2, Vec4, v4, Vec3, v3 } from "../../yj";
-import { YJTouchListener3D } from "../base/touch/YJTouchListener3D";
 import { YJWideAreaDelegate3D } from "./YJWideAreaDelegate3D";
 
 
@@ -8,7 +8,7 @@ import { YJWideAreaDelegate3D } from "./YJWideAreaDelegate3D";
  * 广域
  */
 @ccclass('YJWideArea3D')
-export class YJWideArea3D extends YJTouchListener3D {
+export class YJWideArea3D extends YJTouchListener {
     @property({ displayName: '网格大小', tooltip: '整个地面将按该大小分为无数个网格，每个网格有其对应的网格坐标UV，原点处网格坐标为(0,0)', min: 0, max: 1 })
     meshSize: number = 0.03125;
     @property({ displayName: '使用视图块' })
@@ -53,6 +53,10 @@ export class YJWideArea3D extends YJTouchListener3D {
         //每次加载广阔相对于无限空间的当前坐标都为(0,0)
         this._curPos = v2();
         this._isMoving = false;
+        if (this.autoMove) {
+            this._isMoving = true;
+            this._dir = { angle: 90, radian: 1.57 };
+        }
         this.createBlocks();
     }
 
@@ -61,14 +65,13 @@ export class YJWideArea3D extends YJTouchListener3D {
         this.move(dt);
     }
 
-    public onStart(e: EventTouch) {
-        super.onStart(e);
+    public onStart(e: EventTouch): boolean {
         this.startTouchPos = this.touchUILocationAR(e);
         this.delegate?.onStart(this._curPos.clone());
+        return true;
     }
 
-    public onMove(e: EventTouch) {
-        super.onMove(e);
+    public onMove(e: EventTouch): boolean {
         const pos = this.touchUILocationAR(e),
             // step = e.getDelta(),//步进值
             dis = Vec2.distance(this.startTouchPos, pos);//与第一次点击坐标的距离
@@ -79,16 +82,17 @@ export class YJWideArea3D extends YJTouchListener3D {
         //与第一次点击坐标的夹角
         this._dir = no.angleTo(this.startTouchPos, pos);
         this._isMoving = true;
+        return true;
     }
 
 
-    public onEnd(e: EventTouch) {
-        super.onEnd(e);
+    public onEnd(e: EventTouch): boolean {
         if (!this.autoMove) {
             this._isMoving = false;
             this._speedMultipel = 1;
         }
         this.delegate?.onEnd(this._curPos.clone());
+        return true;
     }
 
     /**行数 */

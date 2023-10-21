@@ -30,6 +30,8 @@ export class YJTouchController extends Component {
     needCancel: boolean = true;
     @property({ displayName: '捕获' })
     useCapture: boolean = true;
+    @property({ displayName: '吞噬' })
+    canSwallow: boolean = true;
 
     protected _touched: boolean;
     protected currentTouch: Touch;
@@ -59,6 +61,7 @@ export class YJTouchController extends Component {
 
     protected onStart(event: EventTouch) {
         if (!this.checkTouched(event)) return;
+        event.preventSwallow = !this.canSwallow;
         this.currentTouch = event.touch;
         this._touched = true;
         if (this.dispatcher)
@@ -67,12 +70,14 @@ export class YJTouchController extends Component {
 
     protected onMove(event: EventTouch) {
         if (this.selected && !this._touched) return;
+        event.preventSwallow = !this.canSwallow;
         if (this.dispatcher)
             this.dispatcher.onMove(event)
     }
 
     protected onEnd(event: EventTouch) {
         if (this.selected && !this._touched) return;
+        event.preventSwallow = !this.canSwallow;
         this._touched = false;
         this.currentTouch = null;
         if (this.dispatcher)
@@ -81,6 +86,7 @@ export class YJTouchController extends Component {
 
     protected onCancel(event: EventTouch) {
         if (this.selected && !this._touched || !this.needCancel) return;
+        event.preventSwallow = !this.canSwallow;
         this._touched = false;
         this.currentTouch = null;
         if (this.dispatcher)

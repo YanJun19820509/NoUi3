@@ -1,7 +1,8 @@
 
-import { ccclass, menu, Component, Node, EventTouch } from '../../yj';
+import { ccclass, menu, Component, Node, EventTouch, property } from '../../yj';
 import { no } from '../../no';
 import { YJTouchListener } from './YJTouchListener';
+import { YJTouchManager } from './YJTouchManager';
 
 /**
  * Predefined variables
@@ -20,24 +21,18 @@ import { YJTouchListener } from './YJTouchListener';
 @ccclass('YJTouchDispatcher')
 @menu('NoUi/touch/YJTouchDispatcher(分发器)')
 export class YJTouchDispatcher extends Component {
+    @property({ displayName: '注册到管理器' })
+    addToManager: boolean = false;
+
+    onLoad() {
+        if (this.addToManager) YJTouchManager.ins.register(this);
+    }
+
+    onDestroy() {
+        if (this.addToManager) YJTouchManager.ins.unregister(this);
+    }
+
     private listeners: YJTouchListener[] = [];
-
-    // private static _ins: YJTouchDispatcher;
-
-    // /**
-    //  * 单例
-    //  */
-    // public static get ins(): YJTouchDispatcher {
-    //     return this._ins;
-    // }
-
-    // onLoad() {
-    //     YJTouchDispatcher._ins = this;
-    // }
-
-    // onDestroy() {
-    //     YJTouchDispatcher._ins = null;
-    // }
 
     public onStart(event: EventTouch) {
         for (let i = 0, n = this.listeners.length; i < n; i++) {
