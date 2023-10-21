@@ -158,11 +158,14 @@ export class SetList extends FuckUi {
         if (this.columnNumber > 1) {
             a = no.arrayToArrays(a, this.columnNumber);
         }
-        this.allNum = a.length;
         if (listItems.length == 0) {
+            this.allNum = a.length;
             this.showNum = this.showMax;
             await this.initItems();
             if (!this?.node?.isValid) return;
+        } else if (this.allNum != a.length && this.allNum < this.showNum) {
+            this.allNum = a.length;
+            await this.initItems();
         } else if (this.autoScrollBack) {
             this.lastIndex = 0;
             for (let i = 0, n = listItems.length; i < n; i++) {
