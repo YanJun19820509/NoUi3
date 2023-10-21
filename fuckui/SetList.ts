@@ -224,7 +224,7 @@ export class SetList extends FuckUi {
         if (this.listData[data_idx]) {
             this.setItemData(item, this.listData[data_idx]);
         }
-        no.visible(item, i < this.showNum);
+        no.visible(item, i < this.allNum);
     }
 
     private setItemData(item: Node, data = []) {
