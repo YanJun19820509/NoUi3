@@ -151,11 +151,14 @@ export const HtmlTextParser = _cc.HtmlTextParser;
 export type HtmlTextParser = _cc.HtmlTextParser;
 export const MeshRender = _cc.MeshRenderer;
 export type MeshRender = _cc.MeshRenderer;
+export const Mesh = _cc.Mesh;
+export type Mesh = _cc.Mesh;
 
 export const Game = _cc.Game;
 export const Enum = _cc.Enum;
 export const CCString = _cc.CCString;
 export const Layers = _cc.Layers;
+export const utils = _cc.utils;
 
 export class EventTarget extends _cc.EventTarget { };
 export const Button = _cc.Button;
@@ -207,6 +210,7 @@ export function isDisplayStats() {
     return _cc.profiler.isShowingStats();
 }
 
+export const AttributeName = _cc.gfx.AttributeName;
 
 //3d
 export const Ray = _cc.geometry.Ray;
@@ -214,3 +218,4 @@ export type Ray = _cc.geometry.Ray;
 export const Input = _cc.Input;
 export const input = _cc.input;
 export const PhysicsSystem = _cc.PhysicsSystem;
+export const primitives = _cc.primitives;

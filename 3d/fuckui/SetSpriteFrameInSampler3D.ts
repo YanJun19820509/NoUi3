@@ -1,9 +1,9 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, MeshRender, SpriteFrame, v4 } from '../../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, MeshRender, SpriteFrame, v4, utils } from '../../yj';
 import { YJLoadAssets3D } from '../editor/YJLoadAssets3D';
 import { no } from '../../no';
-import { YJVertexColorTransition } from '../../effect/YJVertexColorTransition';
 import { FuckUi } from '../../fuckui/FuckUi';
+import { YJVertexColorTransition3D } from '../effect/YJVertexColorTransition3D';
 
 /**
  * Predefined variables
@@ -22,7 +22,7 @@ import { FuckUi } from '../../fuckui/FuckUi';
  */
 
 @ccclass('SetSpriteFrameInSampler3D')
-@requireComponent([MeshRender, YJVertexColorTransition])
+@requireComponent([MeshRender, YJVertexColorTransition3D])
 @disallowMultiple()
 export class SetSpriteFrameInSampler3D extends FuckUi {
     @property({ type: SpriteFrame })
@@ -72,6 +72,7 @@ export class SetSpriteFrameInSampler3D extends FuckUi {
         if (!this.loadAsset) {
             return;
         }
+        if (!this.getComponent(MeshRender).mesh) this.setMesh();
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             if (this._num < 10) {
@@ -85,15 +86,64 @@ export class SetSpriteFrameInSampler3D extends FuckUi {
             return;
         }
         this.setSpriteEnable(true);
+        // this.updateMesh(spriteFrame.uv);
         this.setTilingOffset(spriteFrame.uv);
-        let t = `${this.defineIndex}-${i + 1}00`;
-        const defines: any = {};
-        defines[t] = true;
-        if (this.lastDefine && this.lastDefine != t) {
-            defines[this.lastDefine] = false;
-        }
-        this.lastDefine = t;
-        this.getComponent(YJVertexColorTransition).setEffect(defines);
+        // let t = `${this.defineIndex}-${i + 1}00`;
+        // const defines: any = {};
+        // defines[t] = true;
+        // if (this.lastDefine && this.lastDefine != t) {
+        //     defines[this.lastDefine] = false;
+        // }
+        // this.lastDefine = t;
+        // this.getComponent(YJVertexColorTransition3D).setEffect(defines);
+    }
+
+    private setMesh() {
+        const point = [-0.5, -0.5, 0, 0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0],
+            normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+            uvs = [0, 1, 1, 1, 0, 0, 1, 0],
+            tangents = [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1],
+            color = [0, 0, 1, 1],
+            indices = [
+                0, 1, 2, 2, 1, 3
+            ], geometry = {
+                positions: new Float32Array(point),
+                uvs: new Float32Array(uvs),
+                tangents: new Float32Array(tangents),
+                normals: new Float32Array(normals),
+                color: new Float32Array(color),
+                indices16: new Uint16Array(indices),
+                minPos: { x: -.5, y: -.5, z: 0 },
+                maxPos: { x: .5, y: .5, z: 0 }
+            }, render = this.getComponent(MeshRender);
+        const mesh = utils.MeshUtils.createDynamicMesh(0, geometry, undefined, {
+            maxSubMeshes: 1,
+            maxSubMeshIndices: 6,
+            maxSubMeshVertices: 4
+        });
+        mesh.updateSubMesh(0, geometry);
+        render.mesh = mesh;
+        render.onGeometryChanged();
+    }
+
+    private updateMesh(uvs: number[]) {
+        const point = [-0.5, -0.5, 0, 0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0],
+            normals = [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+            tangents = [1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1],
+            indices = [
+                0, 1, 2, 2, 1, 3
+            ], geometry = {
+                positions: new Float32Array(point),
+                uvs: new Float32Array(uvs),
+                tangents: new Float32Array(tangents),
+                normals: new Float32Array(normals),
+                indices16: new Uint16Array(indices),
+                minPos: { x: -.5, y: -.5, z: 0 },
+                maxPos: { x: .5, y: .5, z: 0 }
+            }, render = this.getComponent(MeshRender),
+            mesh = render.mesh;
+        mesh.updateSubMesh(0, geometry);
+        render.onGeometryChanged();
     }
 
     private setTilingOffset(uv: number[]) {
