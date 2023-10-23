@@ -81,6 +81,7 @@ export class SetSpine extends FuckUi {
     }
 
     onDisable() {
+        if (!this.canDisable) return;
         this.a_clearData();
         let spine = this.getComponent(Skeleton);
         spine?.clearTracks();
