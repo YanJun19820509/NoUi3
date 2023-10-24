@@ -103,6 +103,12 @@ export class SetSpine extends FuckUi {
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
         const spine = this.getComponent(Skeleton);
 
+        if (!path && !animation) {
+            spine.clearTracks();
+            spine.enabled = false;
+            return;
+        }
+
         if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
             path = this.spineUrl;
         }
