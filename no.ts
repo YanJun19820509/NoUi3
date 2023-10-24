@@ -4503,6 +4503,19 @@ export namespace no {
             window[key] = obj;
         }
     }
+
+    /**
+     * 获取字符串字节长度
+     * @param v 
+     * @returns 
+     */
+    export function getStringByteLength(v: string): number {
+        let len = 0;
+        for (let i = 0, n = v.length; i < n; i++) {
+            v.charCodeAt(i) < 256 ? (len += 1) : (len += 2)
+        }
+        return len
+    }
 }
 
 no.addToWindowForDebug('no', no);
