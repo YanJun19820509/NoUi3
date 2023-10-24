@@ -31,6 +31,8 @@ export class YJPanel extends Component {
 
     public lastCloseTime: number = -1;
 
+    public status: string = 'close';
+
     @property
     panelType: string = '';
 
@@ -75,6 +77,7 @@ export class YJPanel extends Component {
     public async initPanel(): Promise<void> {
         //todo 先调数据接口同时加载资源
         if (!this._loaded) {
+            this.status = 'open';
             this._loaded = true;
             this._originX = no.x(this.node);
             if (this.getComponent(YJLoadAssets)) {
@@ -103,6 +106,7 @@ export class YJPanel extends Component {
     }
 
     public closePanel() {
+        this.status = 'close';
         no.log('panel close', this.panelType);
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
@@ -127,11 +131,13 @@ export class YJPanel extends Component {
     }
 
     public hide() {
+        this.status = 'close';
         no.visible(this.node, false);
         no.x(this.node, 10000);
     }
 
     public show() {
+        this.status = 'open';
         no.visible(this.node, true);
         no.x(this.node, this._originX);
     }

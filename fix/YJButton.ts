@@ -46,6 +46,7 @@ export class YJButton extends Component {
     }
 
     public a_trigger(event: EventTouch) {
+        if (!this._canClick && event) return;
         if (event && event.touch?.getID() != 0) return;
         if (this.needWait) return;
         this.needWait = true;
@@ -56,11 +57,6 @@ export class YJButton extends Component {
     }
 
     public set canClick(v: boolean) {
-        if (!v) {
-            this._canClick = this.getComponent(Button).interactable;
-            this.getComponent(Button).interactable = false;
-        } else {
-            this.getComponent(Button).interactable = this._canClick;
-        }
+        this._canClick = v;
     }
 }

@@ -138,7 +138,7 @@ export class Range {
      */
     public static fromString(v: string): Range {
         const a = v.split(',');
-        return new Range(Number(v[0]), Number(v[1]));
+        return new Range(Number(a[0]), Number(a[1]));
     }
 
     /**
