@@ -154,9 +154,9 @@ export class SetSpine extends FuckUi {
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
-        spine?.setAnimation(0, name, false);
         this.bindStartCall(spine);
         this.bindEndCall(spine);
+        spine?.setAnimation(0, name, false);
     }
 
     public a_playLoop(e: any, animation?: string) {
