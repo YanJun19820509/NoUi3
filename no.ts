@@ -4516,6 +4516,21 @@ export namespace no {
         }
         return len
     }
+
+    /**
+     * 字符串转数字数组
+     * @param v like '1,2,3,4'
+     * @param split 分隔符，默认为','
+     * @returns 
+     */
+    export function stringToNumberArray(v: string, split = ','): number[] {
+        const a = v.split(split);
+        let b: number[] = [];
+        a.forEach(c => {
+            b[b.length] = Number(c);
+        });
+        return b;
+    }
 }
 
 no.addToWindowForDebug('no', no);
