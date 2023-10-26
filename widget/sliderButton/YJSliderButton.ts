@@ -60,6 +60,7 @@ export class YJSliderButton extends Component {
     }
 
     private onClick() {
+        this._first = false;
         if (!this.interactable || !this.enabled) return;
         if (!this._done) return;
         if (this.needWait) return;
@@ -103,7 +104,6 @@ export class YJSliderButton extends Component {
             this.setCheckedNodesVisible();
             if (!noChange)
                 no.EventHandlerInfo.execute(this.onChange, this._checked);
-            this._done = true;
         });
     }
 
@@ -114,6 +114,7 @@ export class YJSliderButton extends Component {
         this.checkedHideNodes.forEach(n => {
             no.visible(n, !this._checked);
         });
+        this._done = true;
     }
 
     /**
