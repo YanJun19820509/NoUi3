@@ -32,7 +32,7 @@ export class YJRepeatBox extends YJDataWork {
     @property(YJRepeatBoxTemplate)
     templates: YJRepeatBoxTemplate[] = [];
     @property({ step: 1, tooltip: '填充类型，当重复个数不足最大个数时，用来填充的templates下标，如果找不到则不填充' })
-    fileType: number = 0;
+    fillType: number = 0;
 
     private _n: number = 0;
     private _max: number;
@@ -41,7 +41,7 @@ export class YJRepeatBox extends YJDataWork {
         this._n = this._max;
         this.node.active = false;
         let temp = this.templates[this.data.type || 0].tempNode;
-        let fill = this.templates[this.fileType]?.tempNode;
+        let fill = this.templates[this.fillType]?.tempNode;
         let n = this._max;
         for (let i = 0; i < n; i++) {
             let item = this.node.children[i];
@@ -75,7 +75,7 @@ export class YJRepeatBox extends YJDataWork {
 
     private _set() {
         let temp = this.templates[this.data.type || 0].tempNode;
-        let fill = this.templates[this.fileType]?.tempNode;
+        let fill = this.templates[this.fillType]?.tempNode;
         let i = this._max - this._n;
         --this._n;
         let item = this.node.children[i];
