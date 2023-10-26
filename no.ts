@@ -4503,6 +4503,51 @@ export namespace no {
             window[key] = obj;
         }
     }
+
+    /**
+     * 获取字符串字节长度
+     * @param v 
+     * @returns 
+     */
+    export function getStringByteLength(v: string): number {
+        let len = 0;
+        for (let i = 0, n = v.length; i < n; i++) {
+            v.charCodeAt(i) < 256 ? (len += 1) : (len += 2)
+        }
+        return len
+    }
+
+    /**
+     * 裁剪字符串
+     * @param v 
+     * @param maxLen 最大长度
+     * @param chinese2 中文算2个字节长度
+     */
+    export function cutString(v: string, maxLen: number, chinese2 = true): string {
+        let len = 0, s: string[] = [];
+        for (let i = 0, n = v.length; i < n; i++) {
+            v.charCodeAt(i) < 256 ? (len += 1) : (len += 2)
+            if (len <= maxLen) {
+                s[s.length] = v[i];
+            } else break;
+        }
+        return s.join('');
+    }
+
+    /**
+     * 字符串转数字数组
+     * @param v like '1,2,3,4'
+     * @param split 分隔符，默认为','
+     * @returns 
+     */
+    export function stringToNumberArray(v: string, split = ','): number[] {
+        const a = v.split(split);
+        let b: number[] = [];
+        a.forEach(c => {
+            b[b.length] = Number(c);
+        });
+        return b;
+    }
 }
 
 no.addToWindowForDebug('no', no);

@@ -22,6 +22,10 @@ import { FuckUi } from './FuckUi';
 export class SetEditBox extends FuckUi {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
+    @property({ displayName: '字节最大长度', step: 1, min: 0 })
+    maxLen: number = 50;
+    @property({ displayName: '中文算2个字节长度', visible() { return this.maxLen > 0; } })
+    chinese2: boolean = true;
     @property
     public get bindEditiongDidEnded(): boolean {
         return false;
@@ -52,7 +56,15 @@ export class SetEditBox extends FuckUi {
     }
 
     private onEditEnd(v: string) {
-        if (v == this.oldData) return;
+        if (this.maxLen > 0) {
+            let v1 = no.cutString(v, this.maxLen, this.chinese2);
+            if (v != v1) {
+                v = v1;
+                this.scheduleOnce(() => {
+                    this.setData(JSON.stringify(v));
+                });
+            }
+        }
         this.dataWork?.setValue(this.bind_keys, v);
     }
 }

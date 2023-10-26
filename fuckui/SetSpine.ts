@@ -81,6 +81,7 @@ export class SetSpine extends FuckUi {
     }
 
     onDisable() {
+        if (!this.canDisable) return;
         this.a_clearData();
         let spine = this.getComponent(Skeleton);
         spine?.clearTracks();
@@ -101,6 +102,12 @@ export class SetSpine extends FuckUi {
         if (!data) return;
         let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
         const spine = this.getComponent(Skeleton);
+
+        if (!path && !animation) {
+            spine.clearTracks();
+            spine.enabled = false;
+            return;
+        }
 
         if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
             path = this.spineUrl;
@@ -153,9 +160,9 @@ export class SetSpine extends FuckUi {
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
-        spine?.setAnimation(0, name, false);
         this.bindStartCall(spine);
         this.bindEndCall(spine);
+        spine?.setAnimation(0, name, false);
     }
 
     public a_playLoop(e: any, animation?: string) {

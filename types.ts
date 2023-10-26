@@ -132,6 +132,16 @@ export class Range {
     }
 
     /**
+     * 字符串转range
+     * @param v like '1,2'
+     * @returns 
+     */
+    public static fromString(v: string): Range {
+        const a = v.split(',');
+        return new Range(Number(a[0]), Number(a[1]));
+    }
+
+    /**
      * 当v<min,返回min；当v>max，返回max；否则返回v
      * @param v 
      */
