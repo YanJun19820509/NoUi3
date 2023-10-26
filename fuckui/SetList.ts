@@ -43,6 +43,8 @@ export class SetList extends FuckUi {
     scrollView: ScrollView = null;
     @property(Node)
     content: Node = null;
+    @property({ displayName: 'content扩展' })
+    offset: Size = size();
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
     @property(YJLoadAssets)
@@ -184,11 +186,11 @@ export class SetList extends FuckUi {
         await no.waitFor(() => { return this.template != null; }, this);
         if (!this.itemSize) return;
         if (this.isVertical) {
-            this.contentSize = this.allNum * this.itemSize.height;
+            this.contentSize = this.allNum * this.itemSize.height + this.offset.height;
             this.content.getComponent(UITransform).width = this.itemSize.width;
             this.content.getComponent(UITransform).height = this.contentSize;
         } else {
-            this.contentSize = this.allNum * this.itemSize.width;
+            this.contentSize = this.allNum * this.itemSize.width + this.offset.width;
             this.content.getComponent(UITransform).width = this.contentSize;
             this.content.getComponent(UITransform).height = this.itemSize.height;
         }
