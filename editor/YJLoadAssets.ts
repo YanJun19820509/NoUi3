@@ -216,9 +216,7 @@ export class YJLoadAssets extends Component {
                                 } else if (item instanceof Texture2D) {
                                     textures[textures.length] = item;
                                 } else if (item instanceof ImageAsset) {
-                                    const texture = new Texture2D();
-                                    texture.image = item;
-                                    textures[textures.length] = texture;
+                                    textures[textures.length] = no.assetBundleManager.getCachedTexture(item);
                                 }
                             });
                         }

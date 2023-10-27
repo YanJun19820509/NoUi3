@@ -410,6 +410,8 @@ export class YJCharLabel extends Sprite {
     //已测量文字最大最小宽
     private _measuredWidth: { [k: string]: number } = {};
 
+    private _texture: Texture2D;
+
     onLoad() {
         super.onLoad();
         if (EDITOR) return;
@@ -423,6 +425,7 @@ export class YJCharLabel extends Sprite {
         super.onDestroy();
         this.unscheduleAllCallbacks();
         this.node.targetOff(this);
+        this._texture?.destroy();
     }
 
     onEnable() {
@@ -770,18 +773,18 @@ export class YJCharLabel extends Sprite {
         if (this.packToAtlas && this.dynamicAtlas) {
             this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
                 const image = new ImageAsset(canvas);
-                let texture = new Texture2D();
-                texture.image = image;
+                this._texture = new Texture2D();
+                this._texture.image = image;
                 let spriteFrame = new SpriteFrame();
-                spriteFrame.texture = texture;
+                spriteFrame.texture = this._texture;
                 this.spriteFrame = spriteFrame;
             });
         } else {
             const image = new ImageAsset(canvas);
-            let texture = new Texture2D();
-            texture.image = image;
+            this._texture = new Texture2D();
+            this._texture.image = image;
             let spriteFrame = new SpriteFrame();
-            spriteFrame.texture = texture;
+            spriteFrame.texture = this._texture;
             this.spriteFrame = spriteFrame;
         }
     }

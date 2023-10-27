@@ -2345,6 +2345,7 @@ export namespace no {
         private needReleaseAssets: Asset[] = [];
         private remoteAssetsCache: any = {};
         private _cacheNode: { [k: string]: Node } = {};
+        private _cacheTexture: { [k: string]: Texture2D } = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -3019,6 +3020,17 @@ export namespace no {
                     });
                 }
             });
+        }
+
+        public getCachedTexture(img: ImageAsset): Texture2D | null {
+            const uuid = img.uuid;
+            let texture = this._cacheTexture[uuid];
+            if (!texture) {
+                texture = new Texture2D();
+                texture.image = img;
+                this._cacheTexture[uuid] = texture;
+            }
+            return texture;
         }
     }
 
