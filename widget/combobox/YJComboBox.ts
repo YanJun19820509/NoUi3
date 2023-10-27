@@ -93,6 +93,16 @@ export class YJComboBox extends YJDataWork {
             x: v ? 0 : -10000
         };
         v ? no.EventHandlerInfo.execute(this.onShow) : no.EventHandlerInfo.execute(this.onHide);
+
+        if (v) {
+            this.setListData()
+        }
+    }
+
+    private setListData() {
+        this.data = {
+            arr: this.data.list
+        }
     }
 
     private setChecked(id: string) {
