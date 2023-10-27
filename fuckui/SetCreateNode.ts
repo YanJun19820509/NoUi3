@@ -111,6 +111,7 @@ export class SetCreateNode extends FuckUi {
         if (this.onlyOne) {
             await this.setDynamicAtlasNode(data[0]);
             no.EventHandlerInfo.execute(this.onComplete);
+            this._isSettingData = false;
             return;
         }
 
