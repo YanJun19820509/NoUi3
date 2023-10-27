@@ -22,8 +22,17 @@ import { FuckUi } from './FuckUi';
 export class SetEditBox extends FuckUi {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
+    @property({ serializable: true })
+    _maxLen: number = 50;
     @property({ displayName: '字节最大长度', step: 1, min: 0 })
-    maxLen: number = 50;
+    public get maxLen(): number {
+        return this._maxLen;
+    }
+
+    public set maxLen(v: number) {
+        this._maxLen = v;
+        this.getComponent(EditBox).maxLength = v;
+    }
     @property({ displayName: '中文算2个字节长度', visible() { return this.maxLen > 0; } })
     chinese2: boolean = true;
     @property
