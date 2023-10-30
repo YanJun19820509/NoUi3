@@ -97,23 +97,22 @@ export class SetTimeCountDown extends FuckUi {
     public doTickTock(now: number) {
         if (!this.enabledInHierarchy) return;
         let a = this._deadline - now;
-        if (this.isLabel) {
-            if (this.decorator) this.setLabel(this.decorator.format(a));
-            else
-                this.setLabel(no.sec2time(a, this.formatter, this.show0));
-        }
-        this.setPercent(a);
-        if (a <= 1) {
+        if (a <= 0) {
             no.sysTime.offTickTock(this);
-            this.scheduleOnce(() => {
-                no.EventHandlerInfo.execute(this.endCalls);
-            }, 1);
+            no.EventHandlerInfo.execute(this.endCalls);
+            return;
         } else {
             no.EventHandlerInfo.execute(this.secondCalls);
             if (this.isTime && a == this.time) {
                 no.EventHandlerInfo.execute(this.timeCalls);
             }
         }
+        if (this.isLabel) {
+            if (this.decorator) this.setLabel(this.decorator.format(a));
+            else
+                this.setLabel(no.sec2time(a, this.formatter, this.show0));
+        }
+        this.setPercent(a);
     }
 
     private setLabel(str: string): void {
