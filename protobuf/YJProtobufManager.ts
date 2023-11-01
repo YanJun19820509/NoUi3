@@ -1,6 +1,5 @@
-import { CCString } from "cc";
 import { no } from "../no";
-import { ccclass, Component, EDITOR, executeInEditMode, property, TextAsset } from "../yj";
+import { ccclass, Component, EDITOR, executeInEditMode, property, TextAsset, CCString } from "../yj";
 import { YJProtobuf } from "./YJProtobuf";
 
 /**proto管理器 
@@ -14,10 +13,8 @@ export class YJProtobufManager extends Component {
     root: string = '';
     @property
     check: boolean = false;
-    @property({ readonly: true })
+    @property({ type: CCString, readonly: true })
     protoFiles: string[] = [];
-    @property({ readonly: true })
-    bundleName: string = '';
 
     private static _protobuf: YJProtobuf;
 
@@ -40,8 +37,13 @@ export class YJProtobufManager extends Component {
     }
 
     private loadAllProtoFiles() {
+        const p = no.assetBundleManager.assetPath(this.root);
+        let files: string[] = [];
+        this.protoFiles.forEach(file => {
+            files[files.length] = file.replace(this.root, p.path).replace('.json', '');
+        });
         YJProtobufManager._protobuf = new YJProtobuf();
-        YJProtobufManager._protobuf.loadProtoJson(this.bundleName, this.protoFiles);
+        YJProtobufManager._protobuf.loadProtoJson(p.bundle, files);
     }
 
     private loadFiles() {
@@ -50,10 +52,8 @@ export class YJProtobufManager extends Component {
             console.log(infos);
             infos.forEach(info => {
                 if (info.url.includes('.json'))
-                    this.protoFiles[this.protoFiles.length] = info.url.replace(this.root + '/', '').replace('.json', '');
+                    this.protoFiles[this.protoFiles.length] = info.url;
             });
         });
-        this.bundleName = this.root.replace('db://assets/', '');
-
     }
 }
