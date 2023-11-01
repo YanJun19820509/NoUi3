@@ -25,9 +25,10 @@ export class SetVisibility extends FuckUi {
     @property({ displayName: '默认激活' })
     default: boolean = true;
 
+    private _needSetDefault: boolean = true;
     onLoad() {
         super.onLoad();
-        if (!EDITOR) {
+        if (!EDITOR && this._needSetDefault) {
             this.setDefault();
         }
     }
@@ -68,14 +69,17 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_show(): void {
+        this._needSetDefault = false;
         this.setData('true');
     }
 
     public a_hide(): void {
+        this._needSetDefault = false;
         this.setData('false');
     }
 
     public a_changeVisible(): void {
+        this._needSetDefault = false;
         this.setData(no.visible(this.node) ? 'false' : 'true');
     }
 }
