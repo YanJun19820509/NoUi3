@@ -660,7 +660,7 @@ export namespace no {
     export function num2str(n: number): string {
         if (n == null) return '';
         if (n < 1000) return String(n);
-        let unit = ['k', 'm', 'b'];
+        let unit = ['K', 'M', 'B'];
         var a = '';
         let s = String(n);
         let len = s.length;
