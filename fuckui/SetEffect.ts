@@ -1,5 +1,5 @@
 
-import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, requireComponent, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -27,7 +27,6 @@ import { FuckUi } from './FuckUi';
  */
 @ccclass('SetEffect')
 @menu('NoUi/ui/SetEffect(设置shader:object)')
-@requireComponent(YJVertexColorTransition)
 export class SetEffect extends FuckUi {
     @property({ min: 0, step: 1, displayName: '合图属性下标', tooltip: '区分同一材质中多个合图中的纹理需要对应的其在合图中的rect属性，如idx=0，着色器中对应属性为factRect0' })
     idx: number = 0;

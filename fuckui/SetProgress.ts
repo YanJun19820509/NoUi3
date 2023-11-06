@@ -51,7 +51,7 @@ export class SetProgress extends FuckUi {
 
     protected onDataChange(data: any) {
         this.setLabel(data);
-        if (data instanceof Array) data = data[0] / data[1];
+        if (data instanceof Array) data = Math.min(data[0], data[1]) / data[1];
         if (data > 0 && data < this.initValue)
             data = this.initValue;
         this.targetValue = data;
