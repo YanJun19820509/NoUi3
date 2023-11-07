@@ -1,10 +1,11 @@
 import { JsonAsset, TextAsset, ccclass } from '../yj';
 import { no } from '../no';
-import protobuf from './protobuf.js'
+// import protobuf from './protobuf.js'
 
 @ccclass('YJProtobuf')
 export class YJProtobuf {
     private _root: any;
+    private _protobuf: any;
 
     public static new(): YJProtobuf;
     public static new(pkgName: string, protoDefine: string): YJProtobuf;
@@ -17,6 +18,8 @@ export class YJProtobuf {
     constructor(pkgName: string, protoDefine: string);
     constructor(pkgName: string, msgName: string, obj: any);
     constructor(pkgName?: string, msgName?: string, obj?: any) {
+        // this._protobuf = protobuf;
+        this._protobuf = window['protobuf'];
         if (!pkgName) return;
         this.init(pkgName, msgName, obj);
     }
@@ -30,7 +33,7 @@ export class YJProtobuf {
         } else {
             pbd = msgName;
         }
-        this._root = protobuf.parse(pbd, { keepCase: true }).root;
+        this._root = this._protobuf.parse(pbd, { keepCase: true }).root;
     }
 
     public async loadProtoJson(bundleName: string, files: string | string[]) {
@@ -38,7 +41,7 @@ export class YJProtobuf {
             files = [].concat(files);
             no.assetBundleManager.loadFiles<JsonAsset>(bundleName, files, null, (assets: JsonAsset[]) => {
                 assets.forEach(asset => {
-                    const a = protobuf.Root.fromJSON(asset.json);
+                    const a = this._protobuf.Root.fromJSON(asset.json);
                     if (!this._root) this._root = a.root;
                     else {
                         for (const ns in a.root.nested) {
@@ -56,7 +59,7 @@ export class YJProtobuf {
             files = [].concat(files);
             no.assetBundleManager.loadFiles<TextAsset>(bundleName, files, null, (assets: TextAsset[]) => {
                 assets.forEach(asset => {
-                    const a = protobuf.parse(asset.text, { keepCase: true });
+                    const a = this._protobuf.parse(asset.text, { keepCase: true });
                     if (!this._root) this._root = a.root;
                     else {
                         for (const ns in a.root.nested) {

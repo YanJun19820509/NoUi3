@@ -1,7 +1,7 @@
 
 import { ccclass, assetManager, BufferAsset } from '../yj';
 import { no } from '../../NoUi3/no';
-import pako from './pako.min.js';
+// import pako from './pako.min.js';
 
 /**
  * Predefined variables
@@ -86,12 +86,14 @@ export class YJZip {
 
     /**压缩数据 */
     public static compress(data: string): Uint8Array {
+        const pako = window['pako'];
         if (!pako) return no.string2Bytes(data);
         return pako.gzip(data);
     }
 
     /**解压数据 */
     public static decompress(buffer: Uint8Array): string {
+        const pako = window['pako'];
         if (!pako) return no.bytes2String(buffer);
         return pako.ungzip(buffer, { to: 'string' });
     }

@@ -1,8 +1,7 @@
-import { DEBUG } from "cc/env";
 import { no } from "../../no";
-import CryptoJS from "./crypto-js.min.js"
+// import CryptoJS from "./crypto-js.min.js"
 export namespace YJCrypto {
-    // let CryptoJS = window['CryptoJS'];
+    // const CryptoJS = window['CryptoJS'];
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!@#$%^&*=';
     const hexs = '0123456789abcdef';
     let AESKey: string;
@@ -21,7 +20,7 @@ export namespace YJCrypto {
         for (let i = 0; i < len; i += 1) {
             words[i >>> 2] |= (u8[i] & 0xff) << (24 - (i % 4) * 8);
         }
-        return CryptoJS.lib.WordArray.create(words, len);
+        return window['CryptoJS'].lib.WordArray.create(words, len);
     }
 
     function WordArrayToArrayBuffer(wordArray) {
@@ -40,8 +39,8 @@ export namespace YJCrypto {
         if (newAESIv) AESIv = no.arrayRandom(hexs.split(''), 16, true).join('');
         if (!newAESIv) cb?.(AESKey);
         else cb?.({ key: AESKey, iv: AESIv });
-        key = CryptoJS.enc.Utf8.parse(AESKey);
-        iv = CryptoJS.enc.Utf8.parse(AESIv);
+        key = window['CryptoJS'].enc.Utf8.parse(AESKey);
+        iv = window['CryptoJS'].enc.Utf8.parse(AESIv);
     }
 
     /**
@@ -56,7 +55,7 @@ export namespace YJCrypto {
         let encrypted: any;
         if (data instanceof Uint8Array) {
             let wordBuffer = ArrayBufferToWordArray(data);
-            encrypted = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+            encrypted = window['CryptoJS'].AES.encrypt(wordBuffer, key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
             return WordArrayToArrayBuffer(encrypted.ciphertext);
         } else {
             let str = "";
@@ -66,12 +65,12 @@ export namespace YJCrypto {
                 str = no.jsonStringify(data);
             }
             if (!toBuffer) {
-                let encrypted = CryptoJS.AES.encrypt(str, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                let encrypted = window['CryptoJS'].AES.encrypt(str, key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
                 return encrypted.toString();
             } else {
                 let arrayBuffer = no.string2ArrayBuffer(str);
                 let wordBuffer = ArrayBufferToWordArray(arrayBuffer);
-                let encrypt = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+                let encrypt = window['CryptoJS'].AES.encrypt(wordBuffer, key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
                 return WordArrayToArrayBuffer(encrypt.ciphertext);
             }
         }
@@ -84,12 +83,12 @@ export namespace YJCrypto {
      */
     export function aesDecode(data: string | ArrayBufferLike): string | ArrayBuffer {
         if (typeof data == 'string') {
-            let decrypt = CryptoJS.AES.decrypt(data, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
-            return decrypt.toString(CryptoJS.enc.Utf8);
+            let decrypt = window['CryptoJS'].AES.decrypt(data, key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
+            return decrypt.toString(window['CryptoJS'].enc.Utf8);
         } else {
             let wordArr = ArrayBufferToWordArray(data)
-            let decrypt = CryptoJS.AES.decrypt(wordArr.toString(CryptoJS.enc.Base64),
-                key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+            let decrypt = window['CryptoJS'].AES.decrypt(wordArr.toString(window['CryptoJS'].enc.Base64),
+                key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
             return WordArrayToArrayBuffer(decrypt);
         }
     }
@@ -101,7 +100,7 @@ export namespace YJCrypto {
     //  */
     // export function aesEncodeToBuffer(arrayBuffer: ArrayBuffer): ArrayBuffer {
     //     let wordBuffer = ArrayBufferToWordArray(arrayBuffer);
-    //     let encrypt = CryptoJS.AES.encrypt(wordBuffer, key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+    //     let encrypt = window['CryptoJS'].AES.encrypt(wordBuffer, key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
     //     return WordArrayToArrayBuffer(encrypt.ciphertext);
     // }
     // /**
@@ -111,10 +110,8 @@ export namespace YJCrypto {
     //  */
     // export function aesDecodeBuffer(arrayBuffer: ArrayBuffer): ArrayBuffer { // 这里的data是WordBuffer类型的数据
     //     let wordArr = ArrayBufferToWordArray(arrayBuffer)
-    //     let decrypt = CryptoJS.AES.decrypt(wordArr.toString(CryptoJS.enc.Base64),
-    //         key, { iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 });
+    //     let decrypt = window['CryptoJS'].AES.decrypt(wordArr.toString(window['CryptoJS'].enc.Base64),
+    //         key, { iv: iv, mode: window['CryptoJS'].mode.CBC, padding: window['CryptoJS'].pad.Pkcs7 });
     //     return WordArrayToArrayBuffer(decrypt);;
     // }
 }
-
-if (DEBUG) window['YJCrypto'] = YJCrypto;

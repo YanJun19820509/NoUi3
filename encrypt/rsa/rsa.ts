@@ -1,6 +1,5 @@
-import { DEBUG } from "cc/env";
 import { no } from "../../no";
-import JSEncrypt from './jsencrypt.min.js'
+// import JSEncrypt from './jsencrypt.min.js'
 
 export namespace rsa {
     const pukey = `MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDlOJu6TyygqxfWT7eLtGDwajtN
@@ -20,11 +19,13 @@ export namespace rsa {
     aTgjFnqE/lQ22Rk0eGaYO80cc643BXVGafNfd9fcvwBMnk0iGX0XRsOozVt5Azil
     psLBYuApa66NcVHJpCECQQDTjI2AQhFc1yRnCU/YgDnSpJVm1nASoRUnU8Jfm3Oz
     uku7JUXcVpt08DFSceCEX9unCuMcT72rAQlLpdZir876`;
-    const encrypt = new JSEncrypt();
+    let encrypt: any;
 
     export function init(publicKey?: string, privateKey?: string) {
         publicKey = publicKey || pukey;
         privateKey = privateKey || prkey;
+        // encrypt = new JSEncrypt();
+        encrypt = new window['JSEncrypt']();
         encrypt.setPublicKey(publicKey);
         // encrypt.setPrivateKey(privateKey);
     }
@@ -32,13 +33,13 @@ export namespace rsa {
     export function encode(d: string | object): string {
         let v = d;
         if (typeof v != 'string') v = no.jsonStringify(v);
-        return encrypt.encrypt(v);
+        return encrypt?.encrypt(v);
     }
 
     export function decode(d: string | ArrayBufferLike): string {
         let v = d;
         if (typeof v != 'string') v = no.arrayBuffer2String(v);
-        return encrypt.decrypt(v);
+        return encrypt?.decrypt(v);
     }
 }
-if (DEBUG) window['rsa'] = rsa;
+no.addToWindowForDebug('rsa', rsa);
