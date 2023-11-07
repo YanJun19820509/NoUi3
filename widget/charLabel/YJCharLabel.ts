@@ -150,7 +150,7 @@ export class YJCharLabel extends Sprite {
     //垂直对齐
     @property({ type: Enum(VerticalTextAlignment), visible() { return false; } })
     public get verticalAlign(): number {
-        return this._verticalAlign;
+        return 1;
     }
 
     public set verticalAlign(v: number) {
@@ -368,7 +368,7 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _horizontalAlign: number = 0;
     @property({ serializable: true })
-    protected _verticalAlign: number = 1;
+    protected _verticalAlign: number = 2;
     @property({ serializable: true })
     protected _overflow: number = 0;
     @property({ serializable: true })
