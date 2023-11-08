@@ -3067,7 +3067,7 @@ export namespace no {
         public recycle(type: string, object: any, canRelease = true): void {
             if (type == null || type == '') {
                 log(`${object.name}未指定回收类型，不做回收处理，直接销毁`);
-                this.clear(object);
+                this._clear(object);
                 return;
             }
             if (!this.cacheMap.has(type)) this.cacheMap.set(type, []);
