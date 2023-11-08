@@ -37,6 +37,8 @@ export class YJMenu extends Component {
 
     public createMenu(menuItems: YJMenuItemInfo[]) {
         if (!menuItems || menuItems.length == 0) return;
+        this.container = this.container || this.node;
+        this.container.removeAllChildren();
         menuItems.forEach((info, i) => {
             if (!no.isDebug() && info.DEBUG) return;
             const item = instantiate(this.itemTemp);
