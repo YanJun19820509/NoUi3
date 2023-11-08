@@ -65,7 +65,7 @@ export class SetTimeCountDown extends FuckUi {
         if (this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).needClear = true;
 
 
-        if (Editor) {
+        if (EDITOR) {
             if (this.charLabel) {
                 this.charLabel.packToAtlas = false;
             }
