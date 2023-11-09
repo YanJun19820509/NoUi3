@@ -1,5 +1,5 @@
 
-import { EDITOR,ccclass, property, requireComponent, executeInEditMode, Component, Node, Enum } from '../yj';
+import { EDITOR, ccclass, property, requireComponent, executeInEditMode, Component, Node, Enum } from '../yj';
 import { no } from '../no';
 import { SimpleValueType } from '../types';
 import { YJDataWork } from './YJDataWork';
@@ -54,7 +54,7 @@ export class YJInitDataWork extends Component {
                 let v: any;
                 switch (info.type) {
                     case SimpleValueType.Boolean:
-                        v = Boolean(info.value);
+                        v = info.value == 'true';
                         break;
                     case SimpleValueType.Number:
                         v = Number(info.value);
