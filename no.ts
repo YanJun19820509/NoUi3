@@ -1930,6 +1930,7 @@ export namespace no {
      * @returns 
      */
     export function parse2Json(s: string): any {
+        if (s == '') return {};
         try {
             return JSON.parse(s, function (k, v) {
                 if (!WECHAT)//微信小游戏平台不支持
