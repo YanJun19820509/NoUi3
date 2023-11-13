@@ -24,13 +24,13 @@ export class YJCharLabel extends Sprite {
     get spriteAtlas(): SpriteAtlas {
         return super.spriteAtlas;
     }
-    @property({ visible() { return false; }, override: true })
-    set spriteFrame(v: SpriteFrame) {
-        super.spriteFrame = v;
-    }
-    get spriteFrame(): SpriteFrame {
-        return super.spriteFrame;
-    }
+    // @property({ visible() { return false; }, override: true })
+    // set spriteFrame(v: SpriteFrame) {
+    //     super.spriteFrame = v;
+    // }
+    // get spriteFrame(): SpriteFrame {
+    //     return super.spriteFrame;
+    // }
 
     @property({ visible() { return false; }, override: true })
     set sizeMode(v: number) {

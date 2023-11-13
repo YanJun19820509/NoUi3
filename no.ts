@@ -1931,20 +1931,21 @@ export namespace no {
      */
     export function parse2Json(s: string): any {
         if (s == '') return {};
-        try {
-            return JSON.parse(s, function (k, v) {
-                if (sys.platform != sys.Platform.WECHAT_GAME)//微信小游戏平台不支持
+        if (sys.platform != sys.Platform.WECHAT_GAME) {//微信小游戏平台不支持
+            try {
+                return JSON.parse(s, function (k, v) {
                     if (v && v.indexOf && v.indexOf('function') > -1) {
                         // return eval("(function(){return " + v + " })()");
                         let FN = Function;
                         return new FN(`return ${v}`)();
                     }
-                return v;
-            });
-        } catch (e) {
-            no.err('JSON.parse', 'parse2Json', s);
-            return null;
-        }
+                    return v;
+                });
+            } catch (e) {
+                no.err('JSON.parse', 'parse2Json', s);
+                return null;
+            }
+        } else return JSON.parse(s);
     }
 
     /**
@@ -2114,10 +2115,12 @@ export namespace no {
         }
 
         /**将json string转成data */
-        public set json(v: string) {
+        public set json(v: any) {
             if (v != undefined) {
                 try {
-                    this._data = parse2Json(v);
+                    if (typeof v == 'string')
+                        this._data = parse2Json(v);
+                    else this._data = v;
                     this.emit(Data.DataChangeEvent, this);
                 } catch (e) {
                     no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
@@ -2962,7 +2965,7 @@ export namespace no {
             }, (e, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(1);
-                    err('loadAnyFiles', requests, e.stack);
+                    err('loadAnyFiles', requests, e?.stack);
                 } else {
                     items = [].concat(items);
                     items.forEach(item => {

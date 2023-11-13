@@ -112,7 +112,7 @@ export class YJWindowManager extends Component {
                 a.initPanel().then(() => {
                     a.onEnable();
                     afterInit?.(a as T);
-                }).catch(e => { no.err('windowmanager', e.message); });
+                }).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 a.node.setSiblingIndex(content.children.length - 1);
                 return;
             }
