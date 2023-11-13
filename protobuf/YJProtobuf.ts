@@ -1,6 +1,6 @@
 import { JsonAsset, TextAsset, ccclass } from '../yj';
 import { no } from '../no';
-// import protobuf from './protobuf.js'
+// import protobufjs from 'protobufjs'
 
 @ccclass('YJProtobuf')
 export class YJProtobuf {
@@ -18,8 +18,8 @@ export class YJProtobuf {
     constructor(pkgName: string, protoDefine: string);
     constructor(pkgName: string, msgName: string, obj: any);
     constructor(pkgName?: string, msgName?: string, obj?: any) {
-        // this._protobuf = protobuf;
-        this._protobuf = window['protobuf'];
+        // this._protobuf = protobufjs;
+        // this._protobuf = window['protobuf'];
         if (!pkgName) return;
         this.init(pkgName, msgName, obj);
     }

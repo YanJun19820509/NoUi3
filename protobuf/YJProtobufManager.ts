@@ -1,5 +1,5 @@
 import { no } from "../no";
-import { ccclass, Component, EDITOR, executeInEditMode, property, TextAsset, CCString } from "../yj";
+import { ccclass, Component, property, JsonAsset } from "../yj";
 import { YJProtobuf } from "./YJProtobuf";
 
 /**proto管理器 
@@ -7,29 +7,26 @@ import { YJProtobuf } from "./YJProtobuf";
  * proto管理器将加载该.json文件
 */
 @ccclass('YJProtobufManager')
-@executeInEditMode()
 export class YJProtobufManager extends Component {
-    @property
-    root: string = '';
-    @property
-    check: boolean = false;
-    @property({ type: CCString, readonly: true })
-    protoFiles: string[] = [];
+    @property({ type: JsonAsset })
+    public get protoJSON(): JsonAsset {
+        return null;
+    }
+
+    public set protoJSON(v: JsonAsset) {
+        no.getAssetUrlInEditorMode(v._uuid, url => {
+            if (!url) return;
+            this.filePath = url;
+        });
+    }
+    @property({ readonly: true })
+    filePath: string = '';
 
     private static _protobuf: YJProtobuf;
 
-    update() {
-        if (EDITOR) {
-            if (this.check) {
-                this.check = false;
-                this.loadFiles();
-            }
-        }
-    }
 
     onLoad() {
-        if (EDITOR) return;
-        this.loadAllProtoFiles();
+        // this.loadAllProtoFiles();
     }
 
     public static get protobufInstance(): YJProtobuf {
@@ -37,23 +34,8 @@ export class YJProtobufManager extends Component {
     }
 
     private loadAllProtoFiles() {
-        const p = no.assetBundleManager.assetPath(this.root);
-        let files: string[] = [];
-        this.protoFiles.forEach(file => {
-            files[files.length] = file.replace(this.root, p.path).replace('.json', '');
-        });
+        const p = no.assetBundleManager.assetPath(this.filePath);
         YJProtobufManager._protobuf = new YJProtobuf();
-        YJProtobufManager._protobuf.loadProtoJson(p.bundle, files);
-    }
-
-    private loadFiles() {
-        this.protoFiles.length = 0;
-        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.root, 'cc.JsonAsset', infos => {
-            console.log(infos);
-            infos.forEach(info => {
-                if (info.url.includes('.json'))
-                    this.protoFiles[this.protoFiles.length] = info.url;
-            });
-        });
+        YJProtobufManager._protobuf.loadProtoJson(p.bundle, p.path);
     }
 }
