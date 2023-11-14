@@ -81,7 +81,9 @@ export class YJWebSocket implements YJSocketInterface {
 
     private _onMessage(data: any) {
         if (data == null || data == '') return;
-        if (data instanceof Blob) {
+        if (typeof data == 'string') this.onMessage(data);
+        else if (data instanceof ArrayBuffer) this.onMessage(data);
+        else if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
                 this.onMessage(v);
             }).catch(e => { no.err('YJWebSocket _onMessage error'); });
