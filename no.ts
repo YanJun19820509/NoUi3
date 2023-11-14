@@ -2359,6 +2359,29 @@ export namespace no {
             assetManager.downloader.maxRetryCount = 2;
         }
 
+        public get server(): string {
+            return assetManager.downloader.remoteServerAddress;
+        }
+
+        public get remoteBundles(): readonly string[] {
+            return assetManager.downloader.remoteBundles;
+        }
+
+        public isRemoteBundle(bundleName: string): boolean {
+            return this.remoteBundles.includes(bundleName);
+        }
+
+        public bundleVer(bundleName: string): string {
+            return assetManager.downloader.bundleVers[bundleName];
+        }
+
+        public bundleUrl(bundleName: string): string {
+            if (this.isRemoteBundle(bundleName)) {
+                return this.server + bundleName;
+            }
+            return bundleName;
+        }
+
         public getPrefabNode(k: string): Node {
             const n = this._cacheNode[k];
             if (n) return instantiate(n);
@@ -2455,9 +2478,11 @@ export namespace no {
                 callback?.();
                 return;
             }
-            assetManager.loadBundle(name, (err, b) => {
-                if (err != null) {
-                    log('loadBundle', name, err);
+            const url = this.bundleUrl(name);
+            log('load bundle', url);
+            assetManager.loadBundle(url, (e, b) => {
+                if (e != null) {
+                    err('loadBundle', url, e);
                 } else {
                     callback?.();
                 }
