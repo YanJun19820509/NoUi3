@@ -2482,7 +2482,7 @@ export namespace no {
             log('load bundle', url);
             assetManager.loadBundle(url, (e, b) => {
                 if (e != null) {
-                    err('loadBundle', url, e);
+                    err('loadBundle', url, e.message);
                 } else {
                     callback?.();
                 }
