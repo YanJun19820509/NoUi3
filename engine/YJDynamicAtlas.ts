@@ -1,10 +1,10 @@
 
 import {
     EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Component, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton, v2
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
-import { Atlas } from './atlas';
+import { Atlas, DynamicAtlasTexture } from './atlas';
 import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 import { no } from '../no';
 
@@ -45,6 +45,8 @@ export class YJDynamicAtlas extends UIRenderer {
 
     private thisNodeName: string;
 
+    private _spriteTexture: DynamicAtlasTexture;
+
     onLoad() {
         this.thisNodeName = this.node.name;
     }
@@ -56,6 +58,7 @@ export class YJDynamicAtlas extends UIRenderer {
         YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
         this.atlas = null;
+        this._spriteTexture?.destroy();
     }
 
     public get texture() {
@@ -63,10 +66,17 @@ export class YJDynamicAtlas extends UIRenderer {
         return this.atlas._texture;
     }
 
+    public get spriteTexture() {
+        this.initAtlas();
+        return this._spriteTexture;
+    }
+
     private initAtlas() {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
+            this._spriteTexture = new DynamicAtlasTexture();
+            this._spriteTexture.initWithSize(1, 1);
         }
     }
 
@@ -280,7 +290,7 @@ export class YJDynamicAtlas extends UIRenderer {
         let newSpriteFrame: SpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
         if (!newSpriteFrame) {
             newSpriteFrame = new SpriteFrame();
-            newSpriteFrame.texture = this.texture;
+            newSpriteFrame.texture = this.spriteTexture;
             newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
             newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
             newSpriteFrame.uv = spriteFrame.uv;
