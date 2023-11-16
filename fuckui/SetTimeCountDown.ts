@@ -78,6 +78,10 @@ export class SetTimeCountDown extends FuckUi {
 
     protected onDataChange(data: any) {
         no.sysTime.offTickTock(this);
+        if (typeof data == 'string') {
+            this.setLabel(data);
+            return;
+        }
         let now = no.sysTime.now;
         if (data instanceof Array) {
             let a = Number(data[0]);
