@@ -16,7 +16,8 @@ uniform ZZ {
 //标准纹理效果
 vec4 normalTexture(sampler2D _texture, vec2 _uv) {
   #if USE_TEXTURE
-    return CCSampleWithAlphaSeparated(_texture, _uv); 
+    return texture(_texture, _uv);
+    // return CCSampleWithAlphaSeparated(_texture, _uv); 
   #else
     return texture(_texture, _uv);
   #endif

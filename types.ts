@@ -254,6 +254,8 @@ export class LoadAssetsInfo {
     assetUuid: string = '';
     @property({ readonly: true })
     assetName: string = '';
+    @property({ readonly: true })
+    path: string = '';
 
     public async load(): Promise<Asset> {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
@@ -262,9 +264,16 @@ export class LoadAssetsInfo {
             return file;
         } else
             return new Promise<Asset>(resolve => {
-                no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
-                    resolve(file);
-                });
+                if (this.path)
+                    no.assetBundleManager.loadBundle(no.assetBundleManager.assetPath(this.path).bundle, () => {
+                        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                            resolve(file);
+                        });
+                    });
+                else
+                    no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                        resolve(file);
+                    });
             });
     }
 
@@ -273,6 +282,16 @@ export class LoadAssetsInfo {
         if (file) {
             cb?.(file);
             no.assetBundleManager.release(file);
+        }
+    }
+
+    public setPath() {
+        if (!this.assetUuid) {
+            this.path = '';
+        } else {
+            no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+                this.path = info?.path;
+            });
         }
     }
 }

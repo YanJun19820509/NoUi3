@@ -47,6 +47,10 @@ export class SetText extends FuckUi {
     protected label: Label | RichText | YJCharLabel;
     private newData: any;
 
+    onLoad() {
+        super.onLoad();
+    }
+
     protected onDataChange(data: any) {
         this.newData = data;
         this.lateSet();

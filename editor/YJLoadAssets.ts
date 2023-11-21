@@ -8,6 +8,7 @@ import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
+import { resolve } from 'path';
 
 /**
  * Predefined variables
@@ -46,6 +47,7 @@ export class TextureInfo extends LoadAssetsInfo {
         if (v) {
             this.assetUuid = v.uuid;
             no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+                this.path = info.path;
                 this.assetName = info?.displayName;
                 let path = info?.path.replace('/texture', '_atlas.json');
                 if (path) {
@@ -61,6 +63,7 @@ export class TextureInfo extends LoadAssetsInfo {
     atlasJsonUuid: string = '';
     @property({ readonly: true })
     atlasJsonName: string = '';
+
 }
 @ccclass('MaterialInfo')
 export class MaterialInfo extends LoadAssetsInfo {
@@ -121,6 +124,16 @@ export class YJLoadAssets extends Component {
     // jsonInfos: JsonInfo[] = [];
     @property(TextureInfo)
     textureInfos: TextureInfo[] = [];
+    @property
+    public get getTexturePath(): boolean {
+        return false
+    }
+
+    public set getTexturePath(v: boolean) {
+        this.textureInfos.forEach(info => {
+            info.setPath();
+        });
+    }
     @property(SpriteFrameInfo)
     spriteFrameInfos: SpriteFrameInfo[] = [];
     @property(PrefabInfo)
@@ -137,6 +150,7 @@ export class YJLoadAssets extends Component {
     }
 
     private atlases: any[] = [];
+    private textures: Texture2D[] = [];
 
     onLoad() {
         this.autoLoad &&
@@ -167,8 +181,10 @@ export class YJLoadAssets extends Component {
      * 加载图集
      */
     public async load() {
-        let requests: { uuid: string, type: typeof Asset }[] = [];
+        let bundles: string[] = [], requests: { uuid: string, type: typeof Asset }[] = [];
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
+            if (this.spriteFrameInfos[i].path)
+                bundles[bundles.length] = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
             requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
         }
         let atlasUuids: string[] = [];
@@ -178,15 +194,22 @@ export class YJLoadAssets extends Component {
         // }
         let textureUuids: string[] = [];
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
+            if (this.textureInfos[i].path)
+                bundles[bundles.length] = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
             atlasUuids[atlasUuids.length] = this.textureInfos[i].atlasJsonUuid;
             textureUuids[textureUuids.length] = this.textureInfos[i].assetUuid;
             requests[requests.length] = { uuid: this.textureInfos[i].assetUuid, type: Texture2D };
             requests[requests.length] = { uuid: this.textureInfos[i].atlasJsonUuid, type: JsonAsset };
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
+            if (this.prefabInfos[i].path)
+                bundles[bundles.length] = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle;
             requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
         if (requests.length == 0) return;
+
+        if (this.loadLanguageBundle) bundles[bundles.length] = YJi18n.ins.language;
+        await this.loadBundles(bundles);
 
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
@@ -208,16 +231,17 @@ export class YJLoadAssets extends Component {
 
 
                 if (this.loadLanguageBundle) {
-                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, SpriteAtlas, null, items => {
+                    no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
                         if (items) {
                             items.forEach(item => {
                                 if (item instanceof JsonAsset) {
                                     this.atlases[this.atlases.length] = item.json;
                                 } else if (item instanceof Texture2D) {
                                     textures[textures.length] = item;
-                                } else if (item instanceof ImageAsset) {
-                                    textures[textures.length] = no.assetBundleManager.getCachedTexture(item);
                                 }
+                                // else if (item instanceof ImageAsset) {
+                                //     textures[textures.length] = no.assetBundleManager.getCachedTexture(item);
+                                // }
                             });
                         }
                         this.createMaterial(textures);
@@ -234,12 +258,22 @@ export class YJLoadAssets extends Component {
         });
     }
 
+    private async loadBundles(bundles: string[]) {
+        no.log('YJLoadAssets loadBundles', bundles);
+        return new Promise<void>(resolve => {
+            no.assetBundleManager.loadBundles(bundles, p => {
+                if (p >= 1) resolve();
+            });
+        });
+    }
+
     private createMaterial(textures: Texture2D[]) {
         const ssm = this.getComponent(YJSetSample2DMaterial);
         if (ssm && textures.length) {
             ssm.setAtlases(textures);
             this.getComponent(YJDynamicAtlas).customMaterial = ssm.material;
         }
+        this.textures = textures;
     }
 
     /**
@@ -268,6 +302,18 @@ export class YJLoadAssets extends Component {
             }
         }
         return [idx, info];
+    }
+
+    public getSpriteFrame(name: string, cb: (sf: SpriteFrame) => void) {
+        let info: SpriteFrameDataType;
+        for (let i = 0, n = this.atlases.length; i < n; i++) {
+            const s = this.atlases[i][name];
+            if (s) {
+                info = s;
+                break;
+            }
+        }
+        no.assetBundleManager.loadAny({ uuid: info.uuid }, cb);
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {

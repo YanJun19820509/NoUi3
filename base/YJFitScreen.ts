@@ -50,7 +50,7 @@ export class YJFitScreen extends Component {
 
         const canvasSize = this.canvas.node.getComponent(UITransform).contentSize;
 
-        view.setDesignResolutionSize(dsize.width, dsize.height, policyType);
+        // view.setDesignResolutionSize(dsize.width, dsize.height, policyType);
 
         if ((dss < 1 && policyType == ResolutionPolicy.FIXED_HEIGHT) || (dss > 1 && policyType == ResolutionPolicy.FIXED_WIDTH)) {
             const result = view.getResolutionPolicy()['_contentStrategy']['_result'],

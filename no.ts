@@ -1177,7 +1177,7 @@ export namespace no {
             let a = show0 ? '00' : '0';
             return formatString(formatter, { h: a, m: a, s: a });
         }
-        let d = floor(sec / 3600 / 24);
+        let d = floor(sec / 86400);
         let h = floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
@@ -2735,20 +2735,21 @@ export namespace no {
             return a;
         }
 
-        public loadAllFilesInBundle(bundleName: string, exceptAssetType: typeof Asset, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
+        public loadAllFilesInBundle(bundleName: string, exceptAssetTypes: typeof Asset[], onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let bundle = this.getBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let requests: any[] = [];
                 for (const uuid in assetInfos) {
-                    if (uuid.includes('@') || !assetInfos[uuid].ctor) continue;
-                    if (exceptAssetType && assetInfos[uuid].ctor == exceptAssetType) continue;
+                    const info = assetInfos[uuid];
+                    if (!info.path?.endsWith('/texture') && (uuid.includes('@') || !info.ctor)) continue;
+                    if (exceptAssetTypes && exceptAssetTypes.includes(info.ctor)) continue;
                     requests[requests.length] = { uuid: uuid };
                 }
                 this.loadAnyFiles(requests, onProgress, onComplete);
             } else {
                 this.loadBundle(bundleName, () => {
-                    this.loadAllFilesInBundle(bundleName, exceptAssetType, onProgress, onComplete);
+                    this.loadAllFilesInBundle(bundleName, exceptAssetTypes, onProgress, onComplete);
                 });
             }
         }

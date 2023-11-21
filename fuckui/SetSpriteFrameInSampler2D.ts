@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -93,19 +93,23 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (this.defaultName != name) this.defaultName = name;
-        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
-        if (!spriteFrame) {
-            no.err('setSpriteFrame not get', name);
-            this.resetSprite();
-            return;
-        }
-        let sprite = this.getComponent(Sprite);
+        const sprite = this.getComponent(Sprite);
         if (sprite.type == Sprite.Type.FILLED) {
             // sprite.spriteFrame = spriteFrame;
             return;
         }
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
+        }
+        if (sys.platform != sys.Platform.DESKTOP_BROWSER) {
+            this.setSpriteFrameForNotWeb(name)
+            return;
+        }
+        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
+        if (!spriteFrame) {
+            no.err('setSpriteFrame not get', name);
+            this.resetSprite();
+            return;
         }
         let t = `${this.defineIndex}-${i + 1}00`;
         const defines: any = {};
@@ -118,11 +122,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.getComponent(YJVertexColorTransition).setEffect(defines);
     }
 
-    private resize(width: number, height: number) {
+    private setSpriteFrameForNotWeb(name: string) {
         const sprite = this.getComponent(Sprite);
-        if (sprite.sizeMode == Sprite.SizeMode.CUSTOM) return;
-        let ut = this.getComponent(UITransform);
-        ut.setContentSize(width, height);
+        this.loadAsset.getSpriteFrame(name, sf => {
+            sprite.spriteFrame = sf;
+        });
     }
 
     public a_setEmpty(): void {
