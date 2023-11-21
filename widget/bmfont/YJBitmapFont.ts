@@ -93,15 +93,16 @@ export class YJBitmapFont extends Component {
         no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
             if (!bf) return;
 
-            if (!EDITOR && this.dynamicAtlas) {
-                let font = new BitmapFont();
-                font.name = bf.name;
-                font.fntConfig = bf.fntConfig;
-                font.fontDefDictionary = bf.fontDefDictionary;
-                font.fontSize = bf.fontSize;
-                this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, bf.spriteFrame);
-                this.setFont(font);
-            } else this.setFont(bf);
+            // if (!EDITOR && this.dynamicAtlas) {
+            //     let font = new BitmapFont();
+            //     font.name = bf.name;
+            //     font.fntConfig = bf.fntConfig;
+            //     font.fontDefDictionary = bf.fontDefDictionary;
+            //     font.fontSize = bf.fontSize;
+            //     this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, bf.spriteFrame);
+            //     this.setFont(font);
+            // } else 
+            this.setFont(bf);
         });
     }
 

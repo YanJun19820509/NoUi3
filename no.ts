@@ -2377,8 +2377,9 @@ export namespace no {
 
         public bundleUrl(bundleName: string): string {
             if (this.isRemoteBundle(bundleName)) {
-                let os = sys.os == sys.OS.IOS ? 'ios' : 'other';
-                return `${this.server}/${os}/remote/${bundleName}`;
+                // let os = sys.os == sys.OS.IOS ? 'ios' : 'other';
+                // return `${this.server}/${os}/remote/${bundleName}`;
+                return `${this.server}/remote/${bundleName}`;
             }
             return bundleName;
         }
