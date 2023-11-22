@@ -122,7 +122,11 @@ export class YJToggleGroupManager extends Component {
     public a_check(idx: number): void {
         idx = Number(idx);
         let items = this.getComponentsInChildren(Toggle);
-        if (items[idx] && !items[idx].isChecked) this.a_onCheck(items[idx]);
+        if (items[idx]) {
+            if (items[idx].isChecked) this.setCheckByUuid(items[idx].uuid);
+            else
+                this.a_onCheck(items[idx]);
+        }
     }
 
     public a_checkWithoutEvent(idx: number) {
