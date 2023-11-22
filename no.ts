@@ -2379,7 +2379,7 @@ export namespace no {
             if (this.isRemoteBundle(bundleName)) {
                 // let os = sys.os == sys.OS.IOS ? 'ios' : 'other';
                 // return `${this.server}/${os}/remote/${bundleName}`;
-                return `${this.server}/remote/${bundleName}`;
+                return no.pathjoin(this.server, 'remote', bundleName);
             }
             return bundleName;
         }
@@ -4316,7 +4316,7 @@ export namespace no {
         let l = args.length;
         let result = "";
         for (let i = 0; i < l; i++) {
-            result = (result + (result === "" ? "" : "/") + args[i]).replace(/(\/|\\\\)$/, "");
+            result = (result + (result === "" ? "" : "/") + args[i]).replace('/', '').replace(/(\/|\\\\)$/, "");
         }
         return result;
     }
