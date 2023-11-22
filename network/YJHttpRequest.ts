@@ -1,5 +1,5 @@
 
-import { ccclass, native, JSB } from '../yj';
+import { ccclass, native, JSB, sys } from '../yj';
 import { decode, encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
@@ -123,6 +123,7 @@ export class YJHttpRequest implements YJSocketInterface {
     }
 
     private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
+        if (this.wxRequest(type, url, data, contentType, okCall, errorCall)) return;
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
@@ -159,5 +160,32 @@ export class YJHttpRequest implements YJSocketInterface {
         if (data)
             xhr.send(data);
         else xhr.send();
+    }
+
+    private wxRequest(type: string, url: string, data: any, contentType: string, okCall: (v: any) => void, errorCall: (v: any) => void) {
+        if (sys.platform != sys.Platform.WECHAT_GAME) return false;
+        no.log('wxRequest')
+        let h = {
+            'content-type': contentType
+        };
+        if (this.headers.length > 0) {
+            this.headers.forEach(header => {
+                h[header.name] = header.value;
+            });
+        }
+        window['wx'].request({
+            url: url,
+            data: data,
+            method: type,
+            header: h,
+            success(res) {
+                okCall?.(res.data);
+            },
+            fail(err) {
+                no.err('无法连接服务器：', url, err);
+                errorCall?.('no_server');
+            }
+        });
+        return true;
     }
 }
