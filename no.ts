@@ -1942,7 +1942,7 @@ export namespace no {
                     return v;
                 });
             } catch (e) {
-                no.err('JSON.parse', 'parse2Json', s);
+                err('JSON.parse', 'parse2Json', s);
                 return null;
             }
         } else return JSON.parse(s);
@@ -4173,6 +4173,17 @@ export namespace no {
         return bytes2String(bytes);
     }
 
+    export function Uint8Array2ArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+        const arraybuffer = new ArrayBuffer(bytes.length);
+        const view = new Uint8Array(arraybuffer);
+        view.set(bytes);
+        return arraybuffer;
+    }
+
+    export function ArrayBuffer2Uint8Array(buffer: ArrayBuffer): Uint8Array {
+        return new Uint8Array(buffer);
+    }
+
     function testArrayBuffers(buffer1: ArrayBuffer, buffer2: ArrayBuffer): boolean {
         const len1 = buffer1.byteLength;
         const len2 = buffer2.byteLength;
@@ -4410,7 +4421,7 @@ export namespace no {
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
         if (!EDITOR) {
-            if (v != undefined) {
+            if (v != undefined && node.active != v) {
                 node.active = v;
             }
             return node.active;

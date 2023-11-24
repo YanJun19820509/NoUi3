@@ -34,12 +34,7 @@ export class YJHttpRequest implements YJSocketInterface {
             this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, contentType, v => {
                 let a = decode(v, encryptType);
                 no.log('getDataFromServer', a);
-                try {
-                    resolve(no.parse2Json(a));
-                } catch (e) {
-                    resolve(a);
-                    no.err('no.parse2Json', 'YJHttpRequest.getDataFromServer', a);
-                }
+                resolve(this.parseData(a));
             }, v => {
                 resolve(null);
             });
@@ -49,19 +44,29 @@ export class YJHttpRequest implements YJSocketInterface {
     getJsonFromServer(code: string): Promise<any | null> {
         return new Promise<any>(resolve => {
             this.httpRequest('GET', this.url + '/' + code, null, 'application/json', v => {
-                if (v instanceof Object) {
-                    resolve(v);
-                } else {
-                    try {
-                        resolve(no.parse2Json(v));
-                    } catch (e) {
-                        no.err('no.parse2Json', 'YJHttpRequest.getJsonFromServer', v);
-                    }
-                }
+                resolve(this.parseData(v));
             }, v => {
                 resolve(null);
             });
         });
+    }
+
+    private parseData(v: any) {
+        if (v instanceof Object) {
+            return v;
+        } else {
+            try {
+                return no.parse2Json(v)
+            } catch (e) {
+                no.err('no.parse2Json1', 'YJHttpRequest.getJsonFromServer', v);
+                try {
+                    return no.parse2Json(`'${v}'`);
+                } catch (ee) {
+                    no.err('no.parse2Json2', 'YJHttpRequest.getJsonFromServer', v);
+                    return v;
+                }
+            }
+        }
     }
 
     static downloadFile(url: string, onProgress: (loaded: number, total: number) => void, onComplete: (storageFilePath?: string, fileData?: any) => void, responseType?: XMLHttpRequestResponseType) {
@@ -123,7 +128,7 @@ export class YJHttpRequest implements YJSocketInterface {
     }
 
     private httpRequest(type: string, url: string, data: any, contentType = 'application/json', okCall?: (v: any) => void, errorCall?: (v: any) => void): void {
-        if (this.wxRequest(type, url, data, contentType, okCall, errorCall)) return;
+        // if (this.wxRequest(type, url, data, contentType, okCall, errorCall)) return;
         let xhr = new XMLHttpRequest();
         xhr.open(type, url, true);
         if (type == 'POST') {
@@ -143,6 +148,7 @@ export class YJHttpRequest implements YJSocketInterface {
 
         xhr.onload = function () {
             if ((xhr.status >= 200 && xhr.status < 300) || xhr.status == 304) {
+                no.log('http data onload', xhr.response);
                 okCall?.(xhr.response);
             }
         };
@@ -179,7 +185,11 @@ export class YJHttpRequest implements YJSocketInterface {
             method: type,
             header: h,
             success(res) {
-                okCall?.(res.data);
+                if (res.data instanceof Object) {
+                    okCall?.(res.data);
+                } else {
+                    okCall?.(`'${res.data}'`);
+                }
             },
             fail(err) {
                 no.err('无法连接服务器：', url, err);

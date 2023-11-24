@@ -1,5 +1,5 @@
 
-import { ccclass, native, JSB } from '../yj';
+import { ccclass, native, JSB, sys } from '../yj';
 import { encode, EncryptType } from '../encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
@@ -18,7 +18,7 @@ import { YJSocketInterface } from './YJSocketInterface';
 
 @ccclass('YJWebSocket')
 export class YJWebSocket implements YJSocketInterface {
-    protected ws: WebSocket;
+    protected ws: any;
     private url: string;
     private reIniting: boolean = false;
     // protected receivedData: any[] = [];
@@ -35,6 +35,7 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     protected initWebSocket() {
+        no.log('YJWebSocket initWebSocket');
         if (JSB && native.fileUtils) {
             let AdapterWebSocket: any = WebSocket;
             let realPath = "cacert.pem";
@@ -50,13 +51,19 @@ export class YJWebSocket implements YJSocketInterface {
                     fileUtils.writeStringToFile(content, ca_cache_path);
                 }
             }
+            // Android 必须加入CA证书才能使用wss
             realPath = ca_cache_path;
             this.ws = new AdapterWebSocket(this.url, [], realPath);
+            this._initWs();
+        } else if (sys.platform == sys.Platform.WECHAT_GAME) {
+            this._createWXws();
         } else {
             this.ws = new WebSocket(this.url);
+            this._initWs();
         }
-        // Android 必须加入CA证书才能使用wss
-        no.log('YJWebSocket initWebSocket');
+    }
+
+    private _initWs() {
         this.ws['_uuid'] = no.uuid();
 
         this.ws.onopen = (event) => {
@@ -68,15 +75,46 @@ export class YJWebSocket implements YJSocketInterface {
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.err(`websocket error:${this.url}`);
+            no.err(`websocket error:${this.url}`, event);
             this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
-            no.err(`websocket close:${this.url}`);
+            no.err(`websocket close:${this.url}`, event);
             this.isClosed = true;
             this.onClose();
         };
+    }
+
+    private _createWXws() {
+        no.log('_createWXws');
+        const wx = window['wx'];
+        this.ws = wx.connectSocket({
+            url: this.url
+        });
+
+        this.ws['_uuid'] = no.uuid();
+
+        this.ws.onOpen((res) => {
+            no.log(`websocket open:${this.url}`);
+            this.isClosed = false;
+        });
+
+        this.ws.onMessage((res) => {
+            this._onMessage(res.data);
+        });
+
+        this.ws.onError((res) => {
+            no.err(`websocket error:${this.url}`, res);
+            this.isClosed = true;
+            this.onClose();
+        });
+
+        this.ws.onClose((res) => {
+            no.err(`websocket close:${this.url}`, res);
+            this.isClosed = true;
+            this.onClose();
+        });
     }
 
     private _onMessage(data: any) {
@@ -88,6 +126,17 @@ export class YJWebSocket implements YJSocketInterface {
                 this.onMessage(v);
             }).catch(e => { no.err('YJWebSocket _onMessage error'); });
         } else this.onMessage(data);
+    }
+
+    private sendData(v: any) {
+        if (sys.platform == sys.Platform.WECHAT_GAME) {
+            if (v instanceof Uint8Array)
+                this.ws?.send({ data: no.Uint8Array2ArrayBuffer(v) });
+            else
+                this.ws?.send({ data: v });
+        } else {
+            this.ws?.send(v);
+        }
     }
 
     public onMessage(v: any) {
@@ -135,6 +184,8 @@ export class YJWebSocket implements YJSocketInterface {
         if (this.ws && this.ws.readyState == WebSocket.OPEN) {
             this.ws.onclose = () => { };
             this.ws.onerror = () => { };
+            this.ws.onClose = () => { };
+            this.ws.onError = () => { };
             this.ws.close();
             this.ws = null;
         }
@@ -147,43 +198,12 @@ export class YJWebSocket implements YJSocketInterface {
      */
     public async sendDataToServer(encryptType: EncryptType, data: any) {
         if (await this.isOk()) {
-            let v: string | ArrayBuffer = encode(data, encryptType);
-            // no.log('sendDataToServer', this.ws['_uuid']);
-            this.ws?.send(v);
+            let v: string | ArrayBuffer | Uint8Array = encode(data, encryptType);
+            this.sendData(v);
             return true;
         }
         return false;
     }
-
-    // /**
-    //  * 从服务器返回的数据中查找
-    //  * @param handler 
-    //  */
-    // public findReceiveData(handler: (data: any) => boolean) {
-    //     if (this.isClosed || !this.receivedData?.length) return;
-    //     for (let i = 0, n = this.receivedData.length; i < n; i++) {
-    //         if (handler(this.receivedData[i])) {
-    //             this.receivedData.splice(i, 1);
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // /**
-    //  * 外部处理已返回的数据，并从队列中移除
-    //  * @param handler 
-    //  */
-    // public dealReceivedData(handler: (data: any) => void): void {
-    //     if (this.isClosed || !this.receivedData?.length) return;
-    //     for (let i = this.receivedData.length - 1; i >= 0; i--) {
-    //         handler(this.receivedData[i]);
-    //         this.receivedData.splice(i, 1);
-    //     }
-    // }
-
-    // public clear(): void {
-    //     this.receivedData.length = 0;
-    // }
 
     public isOpen(): boolean {
         return this.ws?.readyState == WebSocket.OPEN;

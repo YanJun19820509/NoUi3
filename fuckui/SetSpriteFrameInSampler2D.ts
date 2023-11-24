@@ -95,13 +95,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (this.defaultName != name) this.defaultName = name;
         const sprite = this.getComponent(Sprite);
         if (sprite.type == Sprite.Type.FILLED) {
-            // sprite.spriteFrame = spriteFrame;
+            this.setSpriteFrameForNotWeb(name)
             return;
         }
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
-        if (sys.platform != sys.Platform.DESKTOP_BROWSER) {
+        if (sys.platform == sys.Platform.WECHAT_GAME) {
             this.setSpriteFrameForNotWeb(name)
             return;
         }
@@ -123,9 +123,18 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setSpriteFrameForNotWeb(name: string) {
-        const sprite = this.getComponent(Sprite);
-        this.loadAsset.getSpriteFrame(name, sf => {
-            sprite.spriteFrame = sf;
+        if (this.defaultSpriteFrameUuid)
+            this.setSpriteFrameByDefaultSpriteFrameUuid();
+        else {
+            this.loadAsset.getSpriteFrame(name, sf => {
+                this.getComponent(Sprite).spriteFrame = sf;
+            });
+        }
+    }
+
+    private setSpriteFrameByDefaultSpriteFrameUuid() {
+        no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+            this.getComponent(Sprite).spriteFrame = file;
         });
     }
 
@@ -135,9 +144,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public resetSprite() {
         if (this.defaultSpriteFrameUuid)
-            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
-                this.getComponent(Sprite).spriteFrame = file;
-            });
+            this.setSpriteFrameByDefaultSpriteFrameUuid();
         else this.removeSprite();
     }
 

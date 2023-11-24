@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 #include <builtin/uniforms/cc-global>
 #if USE_LOCAL
   #include <builtin/uniforms/cc-local>

@@ -8,7 +8,6 @@ import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
-import { resolve } from 'path';
 
 /**
  * Predefined variables
@@ -313,7 +312,9 @@ export class YJLoadAssets extends Component {
                 break;
             }
         }
-        no.assetBundleManager.loadAny({ uuid: info.uuid }, cb);
+        if (info)
+            no.assetBundleManager.loadByUuid(info.uuid, SpriteFrame, cb);
+        else cb?.(null);
     }
 
     public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {

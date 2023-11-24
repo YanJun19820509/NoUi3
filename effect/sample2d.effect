@@ -32,7 +32,7 @@ CCProgram vs %{
 }%
 
 CCProgram unlit-fs %{
-  precision mediump float;
+  precision highp float;
   #include <cc-global>
   #include <embedded-alpha>
   #include <alpha-test>
