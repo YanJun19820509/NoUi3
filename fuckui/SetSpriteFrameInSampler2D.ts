@@ -49,7 +49,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onEnable() {
-        if (this.defaultName) this.setSpriteFrame(this.defaultName);
+        this.setSpriteFrameByDefaultSpriteFrameUuid();
     }
 
     onDisable() {
@@ -83,16 +83,19 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(name: string) {
-        if (!this.enabled || !this.dynamicAtlas) return;
+        if (!this.enabled) return;
         if (!this.loadAsset) {
             this.resetSprite();
+            return;
+        }
+        if (!this.dynamicAtlas || sys.platform == sys.Platform.WECHAT_GAME) {
+            this.setSpriteFrameForNotWeb(name)
             return;
         }
         if (name == '') {
             this.a_setEmpty();
             return;
         }
-        if (this.defaultName != name) this.defaultName = name;
         const sprite = this.getComponent(Sprite);
         if (sprite.type == Sprite.Type.FILLED) {
             this.setSpriteFrameForNotWeb(name)
@@ -100,10 +103,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
-        }
-        if (sys.platform == sys.Platform.WECHAT_GAME) {
-            this.setSpriteFrameForNotWeb(name)
-            return;
         }
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
@@ -123,19 +122,17 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setSpriteFrameForNotWeb(name: string) {
-        if (this.defaultSpriteFrameUuid)
-            this.setSpriteFrameByDefaultSpriteFrameUuid();
-        else {
-            this.loadAsset.getSpriteFrame(name, sf => {
+        this.loadAsset.getSpriteFrame(name, sf => {
+            if (sf)
                 this.getComponent(Sprite).spriteFrame = sf;
-            });
-        }
+        });
     }
 
     private setSpriteFrameByDefaultSpriteFrameUuid() {
-        no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
-            this.getComponent(Sprite).spriteFrame = file;
-        });
+        if (this.defaultSpriteFrameUuid)
+            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                this.getComponent(Sprite).spriteFrame = file;
+            });
     }
 
     public a_setEmpty(): void {

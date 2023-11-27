@@ -2363,6 +2363,10 @@ export namespace no {
             return assetManager.downloader.remoteServerAddress;
         }
 
+        public set server(v: string) {
+            assetManager.downloader['_remoteServerAddress'] = v;
+        }
+
         public get remoteBundles(): readonly string[] {
             return assetManager.downloader.remoteBundles;
         }
@@ -2377,8 +2381,6 @@ export namespace no {
 
         public bundleUrl(bundleName: string): string {
             if (this.isRemoteBundle(bundleName)) {
-                // let os = sys.os == sys.OS.IOS ? 'ios' : 'other';
-                // return `${this.server}/${os}/remote/${bundleName}`;
                 return no.pathjoin(this.server, 'remote', bundleName);
             }
             return bundleName;
@@ -2483,6 +2485,7 @@ export namespace no {
             const url = this.bundleUrl(name);
             log('load bundle', url);
             assetManager.loadBundle(url, (e, b) => {
+                log('load bundle end', url, e);
                 if (e != null) {
                     err('loadBundle', url, e.message);
                 } else {
@@ -4324,12 +4327,12 @@ export namespace no {
 
 
     export function pathjoin(...args: string[]) {
-        let l = args.length;
-        let result = "";
-        for (let i = 0; i < l; i++) {
-            result = (result + (result === "" ? "" : "/") + args[i]).replace('/', '').replace(/(\/|\\\\)$/, "");
+        let a: string[] = [];
+        for (let i = 0, l = args.length; i < l; i++) {
+            if (args[i])
+                a[a.length] = args[i].replace('/', '').replace('\\', '').replace(/(\/|\\\\)$/, "");
         }
-        return result;
+        return a.join('/');
     }
 
     export function getFileName(path: string): string {

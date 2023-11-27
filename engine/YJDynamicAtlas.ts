@@ -320,12 +320,12 @@ export class YJDynamicAtlas extends UIRenderer {
                 b.dynamicAtlas = dynamicAtlas;
         });
 
-        let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
-        r.forEach(rr => {
-            if (!rr.customMaterial) {
-                rr.customMaterial = dynamicAtlas.customMaterial;
-            }
-        });
+        // let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
+        // r.forEach(rr => {
+        //     if (!rr.customMaterial) {
+        //         rr.customMaterial = dynamicAtlas.customMaterial;
+        //     }
+        // });
     }
 
 
