@@ -62,8 +62,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
             if (this.getComponent(Sprite).spriteAtlas)
                 this.getComponent(Sprite).spriteAtlas = null;
-        } else if (!this.getComponent(Sprite).customMaterial) {
-            this.getComponent(Sprite).customMaterial = this.dynamicAtlas?.customMaterial;
         }
     }
 
@@ -125,6 +123,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.loadAsset.getSpriteFrame(name, sf => {
             if (sf)
                 this.getComponent(Sprite).spriteFrame = sf;
+            else
+                no.err('setSpriteFrameForNotWeb not get', name);
         });
     }
 
