@@ -133,10 +133,15 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setSpriteFrameByDefaultSpriteFrameUuid() {
-        if (this.defaultSpriteFrameUuid)
+        if (this.defaultSpriteFrameUuid) {
+            const sprite = this.getComponent(Sprite);
+            if (!sprite.customMaterial) {
+                sprite.customMaterial = this.dynamicAtlas?.customMaterial;
+            }
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
-                this.getComponent(Sprite).spriteFrame = file;
+                sprite.spriteFrame = file;
             });
+        }
     }
 
     public a_setEmpty(): void {
