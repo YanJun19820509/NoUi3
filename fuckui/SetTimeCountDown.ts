@@ -78,7 +78,7 @@ export class SetTimeCountDown extends FuckUi {
 
     protected onDataChange(data: any) {
         no.sysTime.offTickTock(this);
-        if (typeof data == 'string') {
+        if (typeof data == 'string' && isNaN(Number(data))) {
             this.setLabel(data);
             return;
         }

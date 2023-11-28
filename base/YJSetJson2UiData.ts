@@ -20,6 +20,11 @@ export class Json2UiDataInfo {
     json: string = '';
     @property(FuckUi)
     ui: FuckUi = null;
+
+    public setData() {
+        if (this.json == '' || !this.ui) return;
+        this.ui.setData(this.json.replace(/\n/g, '').replace(/\'/g, '\"'));
+    }
 }
 /**
  * 将json string转any,并在start时给fuckui赋值
@@ -35,13 +40,12 @@ export class YJSetJson2UiData extends Component {
     start() {
         if (!this.autoSet) return;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            this.a_set(i);
+            this.infos[i].setData();
         }
     }
 
     public a_set(event: any, idx?: string | number) {
         let info = this.infos[Number(idx || event)];
-        if (!info || info.json == '' || !info.ui) return;
-        info.ui.setData(info.json.replace(/\n/g, '').replace(/\'/g, '\"'));
+        info?.setData();
     }
 }
