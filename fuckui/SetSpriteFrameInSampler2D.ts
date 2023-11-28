@@ -38,6 +38,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private lastDefine: string;
 
     private defineIndex: number = 0;
+    private _lastName: string;
 
     onLoad() {
         super.onLoad();
@@ -49,7 +50,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onEnable() {
-        this.setSpriteFrameByDefaultSpriteFrameUuid();
+        if (this._lastName) this.setSpriteFrame(this._lastName);
+        else
+            this.setSpriteFrameByDefaultSpriteFrameUuid();
     }
 
     onDisable() {
@@ -86,6 +89,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.resetSprite();
             return;
         }
+        if (name != this.defaultName) this._lastName = name;
         if (!this.dynamicAtlas || sys.platform == sys.Platform.WECHAT_GAME) {
             this.setSpriteFrameForNotWeb(name)
             return;
