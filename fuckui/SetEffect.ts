@@ -42,7 +42,8 @@ export class SetEffect extends FuckUi {
     }
 
     protected setMaterial(path: string, defines: any, properties: any) {
-        if (this.getComponent(YJVertexColorTransition)) {
+        const a = this.getComponent(YJVertexColorTransition);
+        if (a && a.enabled) {
             this.setVertex(defines, properties);
             this.work();
         }
