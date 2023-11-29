@@ -39,7 +39,6 @@ export class YJRepeatBox extends YJDataWork {
     protected afterDataInit() {
         this._max = Math.max(this.data.max, this.node.children.length);
         this._n = this._max;
-        this.node.active = false;
         let temp = this.templates[this.data.type || 0].tempNode;
         let fill = this.templates[this.fillType]?.tempNode;
         let n = this._max;
@@ -72,7 +71,6 @@ export class YJRepeatBox extends YJDataWork {
                 }
             }
         }
-        this.node.active = true;
     }
 
     private _set() {

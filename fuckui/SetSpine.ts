@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, Node, Layers, requireComponent, AnimationCacheMode } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, Node, Layers, requireComponent, AnimationCacheMode, sys } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -74,10 +74,12 @@ export class SetSpine extends FuckUi {
     }
 
     onEnable() {
+        let spine = this.getComponent(Skeleton);
         if (this.autoPlayOnEnable) {
-            let spine = this.getComponent(Skeleton);
             this.onDataChange({ animation: this.animationName, loop: spine.loop });
         }
+        if (sys.platform == sys.Platform.WECHAT_GAME)
+            spine.timeScale = .5;
     }
 
     onDisable() {
