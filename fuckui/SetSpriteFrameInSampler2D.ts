@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -50,9 +50,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onEnable() {
-        if (this._lastName) this.setSpriteFrame(this._lastName);
-        else
-            this.setSpriteFrameByDefaultSpriteFrameUuid();
+        this.setSpriteFrame(this._lastName || this.defaultName);
     }
 
     onDisable() {
@@ -89,22 +87,25 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.resetSprite();
             return;
         }
-        if (name != this.defaultName) this._lastName = name;
-        if (!this.dynamicAtlas || sys.platform == sys.Platform.WECHAT_GAME) {
-            this.setSpriteFrameForNotWeb(name)
-            return;
-        }
-        if (name == '') {
+        if (!name) {
             this.a_setEmpty();
             return;
         }
         const sprite = this.getComponent(Sprite);
-        if (sprite.type == Sprite.Type.FILLED) {
-            this.setSpriteFrameForNotWeb(name)
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas.customMaterial;
+        }
+        if (sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
+            if (name == this.defaultName)
+                this.setSpriteFrameByDefaultSpriteFrameUuid();
+            else
+                this.setSpriteFrameForNotWeb(name)
             return;
         }
-        if (!sprite.customMaterial) {
-            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
+        if (name != this.defaultName) this._lastName = name;
+        if (sys.platform == sys.Platform.WECHAT_GAME) {
+            this.setSpriteFrameForNotWeb(name)
+            return;
         }
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
@@ -127,8 +128,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.loadAsset.getSpriteFrame(name, sf => {
             if (sf)
                 this.getComponent(Sprite).spriteFrame = sf;
-            else
+            else {
                 no.err('setSpriteFrameForNotWeb not get', name);
+                this.setSpriteFrameByDefaultSpriteFrameUuid();
+            }
         });
     }
 

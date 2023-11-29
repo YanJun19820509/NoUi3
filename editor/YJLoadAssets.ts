@@ -1,7 +1,7 @@
 
 import {
     ccclass, property, menu, executeInEditMode, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, ImageAsset, SpriteAtlas
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys
 } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
@@ -212,70 +212,52 @@ export class YJLoadAssets extends Component {
                 requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
 
-        return new Promise<void>(resolve => {
-            let textures: Texture2D[] = [];
-            if (requests.length > 0) {
-                no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
-                    if (!this?.isValid) {
-                        return;
-                    }
-                    items.forEach(item => {
-                        const uuid = item._uuid;
-                        let i = atlasUuids.indexOf(uuid);
+        let textures: Texture2D[] = [];
+        if (requests.length > 0) {
+            let a = false;
+            no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
+                items.forEach(item => {
+                    const uuid = item._uuid;
+                    let i = atlasUuids.indexOf(uuid);
+                    if (i > -1)
+                        this.atlases[i] = (item as JsonAsset).json;
+                    else {
+                        i = textureUuids.indexOf(uuid);
                         if (i > -1)
-                            this.atlases[i] = (item as JsonAsset).json;
-                        else {
-                            i = textureUuids.indexOf(uuid);
-                            if (i > -1)
-                                textures[i] = item as Texture2D;
-                        }
-                    });
-
-
-                    if (this.loadLanguageBundle) {
-                        no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
-                            if (items) {
-                                items.forEach(item => {
-                                    if (item instanceof JsonAsset) {
-                                        this.atlases[this.atlases.length] = item.json;
-                                    } else if (item instanceof Texture2D) {
-                                        textures[textures.length] = item;
-                                    }
-                                    // else if (item instanceof ImageAsset) {
-                                    //     textures[textures.length] = no.assetBundleManager.getCachedTexture(item);
-                                    // }
-                                });
-                            }
-                            this.createMaterial(textures);
-                            resolve();
-                        });
-                    } else {
-                        this.createMaterial(textures);
-                        resolve();
+                            textures[i] = item as Texture2D;
                     }
-                    this.backgroundLoadInfos.forEach(info => {
-                        info.load();
-                    });
                 });
-            } else if (this.loadLanguageBundle) {
-                no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
-                    if (items) {
-                        items.forEach(item => {
-                            if (item instanceof JsonAsset) {
-                                this.atlases[this.atlases.length] = item.json;
-                            } else if (item instanceof Texture2D) {
-                                textures[textures.length] = item;
-                            }
-                            // else if (item instanceof ImageAsset) {
-                            //     textures[textures.length] = no.assetBundleManager.getCachedTexture(item);
-                            // }
-                        });
+                a = true;
+            });
+            await no.waitFor(() => { return a });
+            if (this.loadLanguageBundle) {
+                textures = textures.concat(await this._loadLanguageBundle());
+            }
+        } else if (this.loadLanguageBundle) {
+            textures = textures.concat(await this._loadLanguageBundle());
+        }
+        this.createMaterial(textures);
+        this.backgroundLoadInfos.forEach(info => {
+            info.load();
+        });
+    }
+
+    private async _loadLanguageBundle() {
+        let a = false, textures: Texture2D[] = [];
+        no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
+            if (items) {
+                items.forEach(item => {
+                    if (item instanceof JsonAsset) {
+                        this.atlases[this.atlases.length] = item.json;
+                    } else if (item instanceof Texture2D) {
+                        textures[textures.length] = item;
                     }
-                    this.createMaterial(textures);
-                    resolve();
                 });
             }
+            a = true;
         });
+        await no.waitFor(() => { return a; });
+        return textures;
     }
 
     private async loadBundles(bundles: string[]) {
@@ -288,6 +270,7 @@ export class YJLoadAssets extends Component {
     }
 
     private createMaterial(textures: Texture2D[]) {
+        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
         const ssm = this.getComponent(YJSetSample2DMaterial);
         if (ssm && ssm.enabled && textures.length) {
             ssm.setAtlases(textures);

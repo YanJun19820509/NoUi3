@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, UIRenderer } from '../yj';
+import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, UIRenderer, Sprite } from '../yj';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
 import { no } from '../no';
@@ -48,14 +48,18 @@ export class SetGray extends FuckUi {
     private setGray(v: boolean) {
         let a = this.getComponent(UIRenderer);
         if (a) {
-            let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-            setEffect.setData(no.jsonStringify(
-                {
-                    defines: {
-                        [this.isMask ? '0-5' : '0-2']: v
+            if (!a.customMaterial) {
+                this.setGrayNoEffect(v);
+            } else {
+                let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
+                setEffect.setData(no.jsonStringify(
+                    {
+                        defines: {
+                            [this.isMask ? '0-5' : '0-2']: v
+                        }
                     }
-                }
-            ));
+                ));
+            }
         }
         if (this.recursive) {
             this.getComponentsInChildren(UIRenderer).forEach(child => {
@@ -63,6 +67,12 @@ export class SetGray extends FuckUi {
                 child.getComponent(SetGray)?.setData(no.jsonStringify(v));
             });
         }
+    }
+
+    private setGrayNoEffect(v: boolean) {
+        const a = this.getComponent(Sprite);
+        if (!a) return;
+        a.grayscale = v;
     }
 
     update() {

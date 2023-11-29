@@ -2921,7 +2921,7 @@ export namespace no {
             });
         }
 
-        public loadAny<T extends Asset>(request: { path?: string, uuid?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
+        public loadAny<T extends Asset>(request: { path?: string, uuid?: string, url?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
             if (request.path) {
                 const p = this.assetPath(request.path);
                 this.load(p.bundle, p.path, p.type, callback);
@@ -3010,6 +3010,10 @@ export namespace no {
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
             return this.getBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
+        }
+
+        public getUrlWithUuid(uuid: string): string {
+            return assetManager.utils.getUrlWithUuid(uuid);
         }
 
         public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<_AssetInfo | null> {
