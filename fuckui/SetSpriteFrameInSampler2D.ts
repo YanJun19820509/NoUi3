@@ -50,6 +50,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onEnable() {
+        if (EDITOR) return; 
         this.setSpriteFrame(this._lastName || this.defaultName);
     }
 
