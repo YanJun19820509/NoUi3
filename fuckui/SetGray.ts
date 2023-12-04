@@ -45,10 +45,18 @@ export class SetGray extends FuckUi {
         this.setGray(data);
     }
 
+    private _num = 30;
     private setGray(v: boolean) {
         let a = this.getComponent(UIRenderer);
         if (a) {
             if (!a.customMaterial) {
+                if (this._num > 0) {
+                    this._num--;
+                    this.scheduleOnce(() => {
+                        this.setGray(v);
+                    });
+                    return;
+                }
                 this.setGrayNoEffect(v);
             } else {
                 let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);

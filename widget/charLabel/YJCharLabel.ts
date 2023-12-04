@@ -106,12 +106,14 @@ export class YJCharLabel extends Sprite {
     //自定义字体
     @property(Font)
     public get font(): Font {
-        return this._font;
+        return null;
     }
 
     public set font(v: Font) {
-        if (v == this._font) return;
-        this._font = v;
+        // if (v == this._font) return;
+        // this._font = v;
+        // this._fontUuid = v.uuid;
+        this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
     }
     //系统字体
@@ -359,8 +361,10 @@ export class YJCharLabel extends Sprite {
     protected _fontColor: Color = Color.WHITE.clone();
     @property({ serializable: true })
     protected _fontSize: number = 22;
-    @property({ serializable: true })
-    protected _font: Font = null;
+    // @property({ serializable: true })
+    // protected _font: Font = null;
+    // @property({ serializable: true })
+    // protected _fontUuid: string = '';
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
     @property({ serializable: true })
@@ -456,7 +460,7 @@ export class YJCharLabel extends Sprite {
     }
 
     private getUuid(): string {
-        let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + (this.font?.name || this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
+        let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + (this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
         return a;
     }
 
@@ -491,7 +495,7 @@ export class YJCharLabel extends Sprite {
         }
         ctx.textAlign = 'left';
         ctx.imageSmoothingQuality = 'high';
-        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.font?.['_fontFamily'] || this.fontFamily}`;
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
         ctx.fillStyle = color;
     }
 

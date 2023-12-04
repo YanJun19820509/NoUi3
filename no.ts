@@ -1045,7 +1045,7 @@ export namespace no {
      */
     export function localDateSeconds(utcSeconds: number): number {
         const t = new Date(utcSeconds * 1000);
-        t.setMinutes(t.getMinutes() - t.getTimezoneOffset());
+        t.setUTCMinutes(t.getMinutes() - t.getTimezoneOffset());
         return Math.floor(t.getTime() * .001);
     }
 
@@ -1091,40 +1091,40 @@ export namespace no {
     /**当前零点时间戳（秒） */
     export function zeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
+        a.setUTCHours(0, 0, 0, 0);
         return floor(a.getTime() / 1000) + v;
     }
 
     /**本周一 零点时间戳（秒）*/
     export function mondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
-        a.setDate(a.getDate() - a.getDay() + 1);
+        a.setUTCHours(0, 0, 0, 0);
+        a.setUTCDate(a.getDate() - a.getDay() + 1);
         return floor(a.getTime() / 1000) + v;
     }
 
     /**下周一 零点时间戳（秒）*/
     export function nextMondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
-        a.setDate(a.getDate() - a.getDay() + 8);
+        a.setUTCHours(0, 0, 0, 0);
+        a.setUTCDate(a.getDate() - a.getDay() + 8);
         return floor(a.getTime() / 1000) + v;
     }
 
     /**本月1号 零点时间戳（秒）*/
     export function date1ZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
-        a.setDate(1);
+        a.setUTCHours(0, 0, 0, 0);
+        a.setUTCDate(1);
         return floor(a.getTime() / 1000) + v;
     }
 
     /**下月1号 零点时间戳（秒）*/
     export function nextMonthDate1ZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
-        a.setDate(1);
-        a.setMonth(a.getMonth() + 1);
+        a.setUTCHours(0, 0, 0, 0);
+        a.setUTCDate(1);
+        a.setUTCMonth(a.getMonth() + 1);
         return floor(a.getTime() / 1000) + v;
     }
 
@@ -1132,7 +1132,7 @@ export namespace no {
     /**转换为当前零点时间戳（秒） */
     export function toZeroTimestamp(v: number): number {
         let a = new Date(v * 1000);
-        a.setHours(0, 0, 0, 0);
+        a.setUTCHours(0, 0, 0, 0);
         return floor(a.getTime() / 1000);
     }
 
@@ -2994,9 +2994,10 @@ export namespace no {
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
             }, (e, items) => {
-                if (items == null || items.length == 0) {
+                if (e) {
                     onProgress && onProgress(1);
-                    err('loadAnyFiles', requests, e?.stack);
+                    onComplete?.([]);
+                    err('loadAnyFiles', requests, e.stack);
                 } else {
                     items = [].concat(items);
                     items.forEach(item => {

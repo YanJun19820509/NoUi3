@@ -163,16 +163,22 @@ export class YJLoadAssets extends Component {
     public async load() {
         let bundles: string[] = [], requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset }[] = [];
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            if (this.spriteFrameInfos[i].path)
-                bundles[bundles.length] = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
+            if (this.spriteFrameInfos[i].path) {
+                const b = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
+                no.addToArray(bundles, b);
+            }
         }
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
-            if (this.textureInfos[i].path)
-                bundles[bundles.length] = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
+            if (this.textureInfos[i].path) {
+                const b = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
+                no.addToArray(bundles, b);
+            }
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            if (this.prefabInfos[i].path)
-                bundles[bundles.length] = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle;
+            if (this.prefabInfos[i].path) {
+                const b = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle;
+                no.addToArray(bundles, b);
+            }
         }
 
         if (this.loadLanguageBundle) bundles[bundles.length] = YJi18n.ins.language;
