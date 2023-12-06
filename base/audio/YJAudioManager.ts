@@ -1,5 +1,5 @@
 
-import {  ccclass,  menu, requireComponent, Component, AudioSource, AudioClip } from '../../yj';
+import { ccclass, menu, requireComponent, Component, AudioSource, AudioClip } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -33,10 +33,8 @@ export class YJAudioManager extends Component {
     onLoad() {
         YJAudioManager._ins = this;
         this.audioSource = this.getComponent(AudioSource);
-        let a = localStorage.getItem(this.musicOn);
-        if (a == null) a = '1';
-        let b = localStorage.getItem(this.effectOn);
-        if (b == null) b = '1';
+        let a = localStorage.getItem(this.musicOn) || '1';
+        let b = localStorage.getItem(this.effectOn) || '1';
         this.setBGMOn(a == '1');
         this.setEffectOn(b == '1');
     }

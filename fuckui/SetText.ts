@@ -1,11 +1,12 @@
 
-import { ccclass, property, menu, executeInEditMode, Label, RichText, EDITOR, BitmapFont } from '../yj';
+import { ccclass, property, menu, Label, RichText, EDITOR, BitmapFont } from '../yj';
 import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
+import { YJDynamicLoadFont } from '../base/YJDynamicLoadFont';
 
 /**
  * Predefined variables
@@ -53,7 +54,12 @@ export class SetText extends FuckUi {
 
     protected onDataChange(data: any) {
         this.newData = data;
-        this.lateSet();
+        if (this.getComponent(YJDynamicLoadFont))
+            this.getComponent(YJDynamicLoadFont).loadFont().then(() => {
+                this.lateSet();
+            });
+        else
+            this.lateSet();
     }
 
     protected setLabel(data: any): void {

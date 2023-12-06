@@ -5,6 +5,7 @@ import { no } from '../../no';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
+import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
 
 /**
  * Predefined variables
@@ -86,6 +87,7 @@ export class YJWindowManager extends Component {
                 YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
             }
             content.addChild(node);
+            YJSoundEffectManager.ins.playOpenSoundEffect();
             afterInit?.(a as T);
         }).catch(e => { no.err('windowmanager', e.message); });
     }

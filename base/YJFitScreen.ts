@@ -50,11 +50,11 @@ export class YJFitScreen extends Component {
         view.setResolutionPolicy(policyType)
         size = view.getVisibleSize();
         if (policyType == ResolutionPolicy.FIXED_HEIGHT) {
-            s = dsize.width / size.width;
-            rect.xMin = .5 - s / 2;
-            rect.xMax = .5 + s / 2;
+            // s = dsize.width / size.width;
+            // rect.xMin = .5 - s / 2;
+            // rect.xMax = .5 + s / 2;
             no.size(this.canvas.node, dsize);
-            this.camera.rect = rect;
+            // this.camera.rect = rect;
         } else if (policyType == ResolutionPolicy.FIXED_WIDTH) {
             // no.size(this.canvas.node, dsize);
             this.canvas.alignCanvasWithScreen = true;

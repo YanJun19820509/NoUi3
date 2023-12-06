@@ -55,7 +55,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDisable() {
-        this.a_setEmpty();
+        // this.a_setEmpty();
     }
 
     public setDynamicAtlas() {

@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Layers, Node } from '../yj';
+import { ccclass, property, Component, Layers, Node, sys } from '../yj';
 import { no } from '../no';
 
 /**
@@ -62,6 +62,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private changeLayer(node: Node, v: boolean) {
+        if (sys.platform == sys.Platform.WECHAT_GAME) return;
         no.visible(node, v);
     }
 }

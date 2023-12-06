@@ -76,32 +76,41 @@ export class YJPanel extends Component {
      */
     public async initPanel(): Promise<void> {
         //todo 先调数据接口同时加载资源
+            no.evn.emit('show_info___', 'initPanel 1')
         if (!this._loaded) {
             this.status = 'open';
             this._loaded = true;
             this._originX = no.x(this.node);
             if (this.getComponent(YJLoadAssets)) {
+                no.evn.emit('show_info___', 'initPanel 2')
                 return this.getComponent(YJLoadAssets).load().then(() => {
+                    no.evn.emit('show_info___', 'initPanel 3')
                     this.onInitPanel();
                     if (this.isFullScreen)
                         no.evn.emit('_full_screen_panel_open', this.panelType);
                     this._lastMultiTouchState = no.multiTouch();
                     no.multiTouch(this.multiTouch);
+                    no.evn.emit('show_info___', 'initPanel 5')
                     return Promise.resolve();
-                }).catch(e => { no.err('yjpanel', this.node.name, e); });
+                }).catch(e => { no.err('yjpanel', this.node.name, e); 
+            
+                no.evn.emit('show_info___', 'initPanel 4', e.message)});
             }
         } else {
+            no.evn.emit('show_info___', 'initPanel 6')
             this.show();
             this.getComponentsInChildren(Component).forEach(c => {
                 if (c.enabledInHierarchy) c['onEnable']?.();
             });
         }
+        no.evn.emit('show_info___', 'initPanel 7')
         //todo 等待数据返回
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
+        no.evn.emit('show_info___', 'initPanel 8')
         return Promise.resolve();
     }
 
