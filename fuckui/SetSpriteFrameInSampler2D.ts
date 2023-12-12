@@ -30,6 +30,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultSpriteFrameUuid: string = '';
     @property
     defaultName: string = '';
+    @property({ displayName: '从图集加载' })
+    loadFromAtlas: boolean = true;
     @property({ type: YJLoadAssets, readonly: true })
     loadAsset: YJLoadAssets = null;
     @property({ type: YJDynamicAtlas, readonly: true })
@@ -50,7 +52,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onEnable() {
-        if (EDITOR) return; 
+        if (EDITOR) return;
         this.setSpriteFrame(this._lastName || this.defaultName);
     }
 
@@ -96,7 +98,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas.customMaterial;
         }
-        if (sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
+        if (!this.loadFromAtlas || sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
                 this.setSpriteFrameByDefaultSpriteFrameUuid();
             else
