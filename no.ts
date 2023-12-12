@@ -200,8 +200,10 @@ export namespace no {
          * @param type 
          * @param handler 
          * @param target 
+         * @param onlyone 是否独占，为true时为先执行typeOff，默认false
          */
-        public on(type: string, handler: Function, target?: any): void {
+        public on(type: string, handler: Function, target?: any, onlyone = false): void {
+            if (onlyone) this.typeOff(type);
             let a: { h: Function, t: any, o: boolean }[] = this._map[type] || [];
             a[a.length] = {
                 h: handler,
