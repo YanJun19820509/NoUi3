@@ -85,12 +85,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(name: string) {
-        if (!this.enabled) return;
+        if (!this.enabled || !name) return;
         if (!this.loadAsset) {
             this.resetSprite();
             return;
         }
-        if (!name) {
+        if (name == 'null') {
             this.a_setEmpty();
             return;
         }
