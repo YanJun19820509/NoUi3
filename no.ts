@@ -1785,6 +1785,21 @@ export namespace no {
         }
         return p.z;
     }
+    /**
+     * 获取或设置节点siblingIndex
+     * @param node 节点
+     * @param index siblingIndex，为空时则返回当前siblingIndex；否则修改当前siblingIndex
+     * @returns
+     */
+    export function siblingIndex(node: Node, index?: number): number {
+        if (!node) return;
+        let p = node.getSiblingIndex();
+        if (index != undefined && p != index) {
+            p = index;
+            node.setSiblingIndex(p);
+        }
+        return p;
+    }
 
     /**
      * 获取或设置节点position

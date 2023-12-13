@@ -76,7 +76,7 @@ export class YJPanel extends Component {
      */
     public async initPanel(): Promise<void> {
         //todo 先调数据接口同时加载资源
-            no.evn.emit('show_info___', 'initPanel 1')
+        no.evn.emit('show_info___', 'initPanel 1')
         if (!this._loaded) {
             this.status = 'open';
             this._loaded = true;
@@ -92,9 +92,11 @@ export class YJPanel extends Component {
                     no.multiTouch(this.multiTouch);
                     no.evn.emit('show_info___', 'initPanel 5')
                     return Promise.resolve();
-                }).catch(e => { no.err('yjpanel', this.node.name, e); 
-            
-                no.evn.emit('show_info___', 'initPanel 4', e.message)});
+                }).catch(e => {
+                    no.err('yjpanel', this.node.name, e);
+
+                    no.evn.emit('show_info___', 'initPanel 4', e.message)
+                });
             }
         } else {
             no.evn.emit('show_info___', 'initPanel 6')
@@ -124,13 +126,18 @@ export class YJPanel extends Component {
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
         no.multiTouch(this._lastMultiTouchState);
-        if (YJPanel.cacheOpened && this.needCache) {
-            this.hide();
-            this.node.setSiblingIndex(0);
-            this.getComponentsInChildren(Component).forEach(c => {
-                if (c.enabledInHierarchy) c['onDisable']?.();
-            });
-        } else this.clear();
+        this.cache();
+        // if (YJPanel.cacheOpened && this.needCache) {
+        //     this.cache();
+        // } else this.clear();
+    }
+
+    private cache() {
+        this.hide();
+        this.node.setSiblingIndex(0);
+        this.getComponentsInChildren(Component).forEach(c => {
+            if (c.enabledInHierarchy) c['onDisable']?.();
+        });
     }
 
     public clear(force = false) {
