@@ -47,12 +47,10 @@ export class SetCreateNodeByUrl extends FuckUi {
 
 
     onDisable() {
-        // if (this.clearOnDisable) {
-        //     this.a_clearData();
-        //     this.clear(true);
-        // }
         this.a_clearData();
-        this.clear(true);
+        if (this.clearOnDisable) {
+            this.clear(true);
+        }
     }
 
     onDestroy() {

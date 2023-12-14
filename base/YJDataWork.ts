@@ -52,13 +52,16 @@ export class YJDataWork extends Component {
         this.register.init();
     }
 
+    onEnable() {
+        this.afterInit();
+    }
+
     /**
      * 初始化，可手动执行，或在onLoad时自动执行，若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      * @returns
      */
     public init() {
         if (!this._loaded) return;
-        this.afterInit();
         const afterDataInit = this['afterDataInit'];
         if (typeof afterDataInit == 'function') {
             this.unschedule(this._checkData);

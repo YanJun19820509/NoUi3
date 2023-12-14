@@ -46,10 +46,6 @@ export class YJDataMap extends YJDataWork {
 
     private _dataSource: YJGameData;
 
-    onEnable() {
-        this.afterInit();
-    }
-
     protected afterInit() {
         if (!this._dataSource) {
             no.unschedule(this);

@@ -108,16 +108,12 @@ export class SetCreateNodeWithPosition extends FuckUi {
     onDisable() {
         if (this._isSettingData) return;
         this.unscheduleAllCallbacks();
-        // if (this.clearOnDisable) {
-        //     !this.recreateOnEnable && this.a_clearData();
-        //     this.container?.children.forEach(child => {
-        //         child.destroy();
-        //     });
-        // }
         this.a_clearData();
-        this.container?.children.forEach(child => {
-            child.destroy();
-        });
+        if (this.clearOnDisable) {
+            this.container?.children.forEach(child => {
+                child.destroy();
+            });
+        }
     }
 
     protected onDataChange(data: any) {
