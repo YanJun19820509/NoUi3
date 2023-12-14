@@ -13,6 +13,10 @@ import { FuckUi } from './FuckUi';
 @requireComponent(YJMenu)
 export class SetMenu extends FuckUi {
 
+    onDisable() {
+        this.a_clearData();
+    }
+
     protected onDataChange(data: any) {
         this.getComponent(YJMenu).createMenu(data);
     }

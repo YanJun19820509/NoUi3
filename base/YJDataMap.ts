@@ -46,8 +46,13 @@ export class YJDataMap extends YJDataWork {
 
     private _dataSource: YJGameData;
 
+    onEnable() {
+        this.afterInit();
+    }
+
     protected afterInit() {
         if (!this._dataSource) {
+            no.unschedule(this);
             const c = js.getClassByName(this.dataSourceClassName) as (typeof YJGameData);
             this._dataSource = c.instance();
             if (this._dataSource) {

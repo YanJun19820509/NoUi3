@@ -41,6 +41,10 @@ export class YJMenu extends Component {
         })
     }
 
+    onDisable() {
+        this.container.removeAllChildren();
+    }
+
     public createMenu(menuItems: YJMenuItemInfo[]) {
         if (!menuItems || menuItems.length == 0) return;
         this.container = this.container || this.node;
