@@ -121,12 +121,16 @@ export class SetList extends FuckUi {
     onDisable() {
         if (EDITOR) return;
         if (this._isSettingData) return;
-        if (this.clearOnDisable) {
-            !this.recreateOnEnable && this.a_clearData();
-            this.content?.children.forEach(item => {
-                item.destroy();
-            });
-        }
+        // if (this.clearOnDisable) {
+        //     !this.recreateOnEnable && this.a_clearData();
+        //     this.content?.children.forEach(item => {
+        //         item.destroy();
+        //     });
+        // }
+        this.a_clearData();
+        this.content?.children.forEach(item => {
+            item.destroy();
+        });
     }
 
     onDestroy() {

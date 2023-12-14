@@ -35,6 +35,12 @@ export class YJMenu extends Component {
         this.autoCreate && this.createMenu(this.menuItems);
     }
 
+    onEnable() {
+        this.scheduleOnce(() => {
+            this.getComponent(YJToggleGroupManager).initToggles();
+        })
+    }
+
     public createMenu(menuItems: YJMenuItemInfo[]) {
         if (!menuItems || menuItems.length == 0) return;
         this.container = this.container || this.node;
@@ -56,8 +62,5 @@ export class YJMenu extends Component {
             item.active = true;
             item.parent = this.container || this.node;
         });
-        this.scheduleOnce(() => {
-            this.getComponent(YJToggleGroupManager).initToggles();
-        })
     }
 }

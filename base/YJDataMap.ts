@@ -53,7 +53,7 @@ export class YJDataMap extends YJDataWork {
             if (this._dataSource) {
                 no.scheduleForever(() => {
                     this._dataSource.checkStateChange(this) && this.syncWithDataSource();
-                }, .1, this);
+                }, .5, this);
             }
         }
         this.syncWithDataSource();

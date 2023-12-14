@@ -26,10 +26,12 @@ export class SetGraphics extends FuckUi {
     clearOnDisable: boolean = false;
 
     onDisable() {
-        if (this.clearOnDisable) {
-            this.a_clearData();
-            this.getComponent(Graphics)?.clear();
-        }
+        // if (this.clearOnDisable) {
+        //     this.a_clearData();
+        //     this.getComponent(Graphics)?.clear();
+        // }
+        this.a_clearData();
+        this.getComponent(Graphics)?.clear();
     }
 
     protected onDataChange(data: { [x: string]: no.GraphicsData[] }) {

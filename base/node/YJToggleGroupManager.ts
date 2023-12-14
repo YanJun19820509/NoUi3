@@ -42,7 +42,6 @@ export class YJToggleGroupManager extends Component {
 
     private checkedToggleUuid: string = null;
     private needWait: boolean = false;
-    private isInit: boolean = true;
 
     onLoad() {
         if (EDITOR) {
@@ -50,23 +49,6 @@ export class YJToggleGroupManager extends Component {
             this.initToggles();
             return;
         }
-    }
-
-    onEnable() {
-        if (EDITOR) return;
-        this.isInit = true;
-        // let items = this.getComponentsInChildren(Toggle);
-        // for (let i = 0, n = items.length; i < n; i++) {
-        //     let toggle = items[i];
-
-        //     if (toggle.isChecked) {
-
-        //         if (this.checkOnEnabel) {
-        //             toggle.isChecked = false;
-        //             this.a_onCheck(toggle);
-        //         }
-        //     }
-        // }
     }
 
     onDisable() {

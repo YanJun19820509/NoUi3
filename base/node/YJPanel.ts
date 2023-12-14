@@ -101,9 +101,9 @@ export class YJPanel extends Component {
         } else {
             no.evn.emit('show_info___', 'initPanel 6')
             this.show();
-            this.getComponentsInChildren(Component).forEach(c => {
-                if (c.enabledInHierarchy) c['onEnable']?.();
-            });
+            // this.getComponentsInChildren(Component).forEach(c => {
+            //     if (c.enabledInHierarchy) c['onEnable']?.();
+            // });
         }
         no.evn.emit('show_info___', 'initPanel 7')
         //todo 等待数据返回

@@ -22,6 +22,10 @@ export class SetDataWork extends FuckUi {
     @property(YJDataWork)
     dataWork: YJDataWork = null;
 
+    onDisable() {
+        this.a_clearData();
+    }
+
     protected onDataChange(data: any) {
         if (this.dataWork) {
             this.dataWork.data = data;
