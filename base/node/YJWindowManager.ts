@@ -42,6 +42,7 @@ export class YJWindowManager extends Component {
     duration: number = 10;
 
     private createdPanel: string[] = [];
+    private prefabPathOrUuidToNodeName: any = {};
 
     private static _ins: YJWindowManager;
 
@@ -153,9 +154,22 @@ export class YJWindowManager extends Component {
      * @param afterInit 
      */
     public static createPanelByPrefab(prefabPathOrUuid: string, to?: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
+        const self = YJWindowManager._ins,
+            name = self.prefabPathOrUuidToNodeName[prefabPathOrUuid],
+            content: Node = self.getContent(to);
+        if (name) {
+            const a = this.opennedPanelByType(name, to);
+            if (a != null) {
+                beforeInit?.(a);
+                a.initPanel().then(() => {
+                    a.onEnable();
+                    afterInit?.(a);
+                }).catch(e => { no.err('windowmanager', e.stack, e.message); });
+                a.node.setSiblingIndex(content.children.length - 1);
+                return;
+            }
+        }
         const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
-        const self = YJWindowManager._ins;
-        let content: Node = self.getContent(to);
         if (node) this.initNode(node, YJPanel, content, beforeInit, afterInit);
         else {
             const request = { type: Prefab, path: prefabPathOrUuid, uuid: prefabPathOrUuid };
@@ -163,6 +177,7 @@ export class YJWindowManager extends Component {
                 if (!pf) return;
                 const node = instantiate(pf);
                 no.assetBundleManager.setPrefabNode(prefabPathOrUuid, node);
+                self.prefabPathOrUuidToNodeName[prefabPathOrUuid] = node.getComponent(YJPanel).panelType;
                 if (!content?.isValid) {
                     return
                 }
