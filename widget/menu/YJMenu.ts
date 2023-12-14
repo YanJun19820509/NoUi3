@@ -31,11 +31,8 @@ export class YJMenu extends Component {
     @property
     autoCreate: boolean = true;
 
-    onLoad() {
-        this.autoCreate && this.createMenu(this.menuItems);
-    }
-
     onEnable() {
+        this.autoCreate && this.createMenu(this.menuItems);
         this.scheduleOnce(() => {
             this.getComponent(YJToggleGroupManager).initToggles();
         })
