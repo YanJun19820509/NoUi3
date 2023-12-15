@@ -37,6 +37,7 @@ export class YJVertexColorTransition extends Component {
     }
 
     public setEffect(defines: any, properties?: number[]) {
+        if (!this.enabled) return;
         if (!this.renderComp)
             this.renderComp = this.getComponent(UIRenderer);
         if (!this.renderComp || !defines) return;
