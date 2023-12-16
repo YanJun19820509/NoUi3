@@ -54,6 +54,8 @@ export class YJFitScreen extends Component {
             // rect.xMin = .5 - s / 2;
             // rect.xMax = .5 + s / 2;
             no.size(this.canvas.node, dsize);
+            //canvas  锚点虽然是0.5,0.5  但实际是0,0   需要重新设置坐标定位
+            no.position(this.canvas.node, v3(dsize.width / 2, dsize.height / 2));
             // this.camera.rect = rect;
         } else if (policyType == ResolutionPolicy.FIXED_WIDTH) {
             // no.size(this.canvas.node, dsize);
@@ -110,7 +112,7 @@ export class YJFitScreen extends Component {
             const scaleSize = view.getVisibleSize(),
                 screenSize = view.getVisibleSizeInPixel();
             let scale = 1 / view.getScaleX();
-            touchLocation.x -= (screenSize.width - scaleSize.width) / 2 * scale;
+            touchLocation.x -= (scaleSize.width - this.getVisibleSize().width) / 2;
         }
         return touchLocation;
     }
