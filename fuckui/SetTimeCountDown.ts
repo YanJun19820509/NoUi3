@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Label } from '../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Label, isValid } from '../yj';
 import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -99,7 +99,7 @@ export class SetTimeCountDown extends FuckUi {
     }
 
     public doTickTock(now: number) {
-        if (!this.enabledInHierarchy) return;
+        if (!isValid(this.node, true)) return;
         let a = this._deadline - now;
         if (a <= 0) {
             no.sysTime.offTickTock(this);
