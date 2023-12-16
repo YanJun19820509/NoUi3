@@ -54,11 +54,13 @@ export class YJFitScreen extends Component {
             // rect.xMin = .5 - s / 2;
             // rect.xMax = .5 + s / 2;
             no.size(this.canvas.node, dsize);
+            no.size(this.node, dsize);
             //canvas  锚点虽然是0.5,0.5  但实际是0,0   需要重新设置坐标定位
             no.position(this.canvas.node, v3(dsize.width / 2, dsize.height / 2));
             // this.camera.rect = rect;
         } else if (policyType == ResolutionPolicy.FIXED_WIDTH) {
             // no.size(this.canvas.node, dsize);
+            no.size(this.node, no.size(this.canvas.node));
             this.canvas.alignCanvasWithScreen = true;
         }
         // no.scale(this.canvas.node, v3(s, s, 1));
