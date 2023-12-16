@@ -2398,7 +2398,7 @@ export namespace no {
 
         public bundleUrl(bundleName: string): string {
             if (this.isRemoteBundle(bundleName)) {
-                return no.pathjoin(this.server, 'remote', bundleName);
+                return this.server + pathjoin('remote', bundleName);
             }
             return bundleName;
         }
