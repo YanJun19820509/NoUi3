@@ -123,6 +123,7 @@ export class SetList extends FuckUi {
         if (this._isSettingData) return;
         this.a_clearData();
         if (this.clearOnDisable) {
+            this.content?.setPosition(0, 0);
             this.content?.children.forEach(item => {
                 item.destroy();
             });
