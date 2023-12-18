@@ -113,7 +113,7 @@ export class YJWindowManager extends Component {
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
-                    a.onEnable();
+                    // a.onEnable();
                     afterInit?.(a as T);
                 }).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 a.node.setSiblingIndex(content.children.length - 1);
@@ -162,7 +162,7 @@ export class YJWindowManager extends Component {
             if (a != null) {
                 beforeInit?.(a);
                 a.initPanel().then(() => {
-                    a.onEnable();
+                    // a.onEnable();
                     afterInit?.(a);
                 }).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 a.node.setSiblingIndex(content.children.length - 1);
