@@ -920,6 +920,20 @@ export namespace no {
     }
 
     /**
+     * 将数组转成kv结构
+     * @param array 
+     * @param keyType 
+     * @returns 
+     */
+    export function arrayToKV(array: any[], keyType: string): any {
+        let b: any = {};
+        array.forEach(a => {
+            b[a[keyType]] = a;
+        });
+        return b;
+    }
+
+    /**
      * 遍历kv对象
      * @param d kv对象
      * @param func return true时终止遍历

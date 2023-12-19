@@ -94,7 +94,6 @@ export class YJPanel extends Component {
                     return Promise.resolve();
                 }).catch(e => {
                     no.err('yjpanel', this.node.name, e);
-
                     no.evn.emit('show_info___', 'initPanel 4', e.message)
                 });
             }
@@ -166,7 +165,7 @@ export class YJPanel extends Component {
 
     }
     /**
-     * 需要动态创建节点的逻辑放在这里
+     * 需要动态创建节点的逻辑放在这里，仅在onEnable时执行
      */
     protected onLoadPanel() {
 
