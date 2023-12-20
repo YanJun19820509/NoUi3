@@ -167,6 +167,13 @@ export namespace no {
         else
             _scheduler.unschedule(cb, target);
     }
+
+    /**
+     * 取消所有定时回调
+     */
+    export function unscheduleAll() {
+        _scheduler?.unscheduleAll();
+    }
     /**
      * 每帧执行target的update方法
      * @param target 
