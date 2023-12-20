@@ -2514,11 +2514,14 @@ export namespace no {
          * @param name
          * @param callback
          */
-        public loadBundle(name: string, callback: () => void): void {
+        public loadBundle(name: string, callback: () => void, force = false): void {
             let bundle = this.getBundle(name);
             if (bundle != null) {
-                callback?.();
-                return;
+                if (force) assetManager.removeBundle(bundle);
+                else {
+                    callback?.();
+                    return;
+                }
             }
             const url = this.bundleUrl(name);
             log('load bundle', url);
@@ -2737,7 +2740,7 @@ export namespace no {
          * @returns  `{'bundle','file','type'}
          */
         public assetPath(path: string): AssetPath {
-            path = path.replace('db://assets/', '');
+            path = path.split('/assets/').pop();
             let p = path.split('/');
             let bundle: string;
             for (let i = 0, n = p.length; i < n; i++) {
@@ -2951,11 +2954,19 @@ export namespace no {
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
-                if (e != null) {
-                    err(uuid, e.stack);
+                if (e != null) {//如果加载失败，尝试重新加载所属包
+                    const url = this.getUrlWithUuid(uuid);
+                    if (url) {
+                        const p = this.assetPath(url);
+                        this.loadBundle(p.bundle, () => {
+                            this.loadByUuid(uuid, type, callback);
+                        });
+                    } else
+                        err(uuid, e.stack);
+                } else {
+                    this.addRef(f);//增加引用计数
+                    callback?.(f);
                 }
-                this.addRef(f);//增加引用计数
-                callback?.(f);
             });
         }
 
