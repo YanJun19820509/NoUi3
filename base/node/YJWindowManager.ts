@@ -192,6 +192,12 @@ export class YJWindowManager extends Component {
         });
     }
 
+    public static setPanelTo(panel: YJPanel, to: string) {
+        const self = YJWindowManager._ins,
+            content: Node = self.getContent(to);
+        panel.node.parent = content;
+    }
+
     /**
      * 关闭某个窗口
      * @param name 窗口类名

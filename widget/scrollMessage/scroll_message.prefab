@@ -465,7 +465,7 @@
     },
     "bind_keys": "move",
     "once": false,
-    "saveIgnore": true,
+    "saveIgnore": false,
     "showValueLog": false,
     "beforeCall": [],
     "endCall": [],
