@@ -34,6 +34,11 @@ export namespace YJCrypto {
         return u8;
     }
 
+    export function setAESKeyAndIv(key: string, iv: string) {
+        AESKey = key;
+        AESIv = iv;
+    }
+
     export function createAESKey(cb: (d: { key: string, iv: string } | string) => void, newAESIv = false) {
         AESKey = no.arrayRandom(chars.split(''), 16, true).join('');
         if (newAESIv) AESIv = no.arrayRandom(hexs.split(''), 16, true).join('');
@@ -115,3 +120,4 @@ export namespace YJCrypto {
     //     return WordArrayToArrayBuffer(decrypt);;
     // }
 }
+no.addToWindowForDebug('YJCrypto', YJCrypto);

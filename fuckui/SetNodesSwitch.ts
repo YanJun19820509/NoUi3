@@ -1,6 +1,6 @@
 
 import { no } from '../no';
-import { ccclass, property, menu, Node } from '../yj';
+import { ccclass, property, menu, Node, EDITOR } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -35,6 +35,12 @@ export class SwitchInfo {
             no.x(node, !a ? 20000 : node['__origin_x__']);
         });
     }
+
+    public init() {
+        this.nodes.forEach(node => {
+            node.active = false;
+        });
+    }
 }
 @ccclass('SetNodesSwitch')
 @menu('NoUi/ui/SetNodesSwitch(设置显隐切换:string)')
@@ -42,6 +48,16 @@ export class SetNodesSwitch extends FuckUi {
 
     @property(SwitchInfo)
     infos: SwitchInfo[] = [];
+
+    onLoad() {
+        super.onLoad();
+        if (EDITOR) {
+            for (let i = 0, n = this.infos.length; i < n; i++) {
+                let info = this.infos[i];
+                info.init();
+            }
+        }
+    }
 
     protected onDataChange(data: any) {
         data = String(data);
