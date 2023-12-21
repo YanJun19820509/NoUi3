@@ -85,12 +85,18 @@ export class SetTimeCountDown extends FuckUi {
         let now = no.sysTime.now;
         if (data instanceof Array) {
             let a = Number(data[0]);
-            if (a <= 0) return;
+            if (a <= 0) {
+                this.setLabel('');
+                return;
+            }
             this._deadline = a + now;
             this._max = Number(data[1]);
         } else {
             let a = Number(data);
-            if (a <= 0) return;
+            if (a <= 0) {
+                this.setLabel('');
+                return;
+            }
             this._deadline = a + now;
             this._max = a;
         }
