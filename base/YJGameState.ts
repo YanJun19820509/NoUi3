@@ -52,10 +52,12 @@ export class YJGameState extends Component {
 
     private onHide(): void {
         no.EventHandlerInfo.execute(this.onHideCalls);
+        no.evn.emit('game_hide')
     }
 
     private onShow(): void {
         no.EventHandlerInfo.execute(this.onShowCalls);
+        no.evn.emit('game_show')
     }
 
     private onLowMemory() {
