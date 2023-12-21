@@ -45,14 +45,14 @@ export class FuckUi extends Component {
         }
     }
 
-    public setData(d: string) {
+    public setData(d: string, disignore = false) {
         if (!isValid(this?.node)) return;
         if (d == 'null') {
             this.a_setEmpty();
             this._oldData = null;
             return;
         }
-        if (this.saveIgnore && d == this._oldData) return;
+        if (!disignore && this.saveIgnore && d == this._oldData) return;
         this._oldData = d;
 
         if (d != '') {
