@@ -30,21 +30,22 @@ export class YJMenu extends Component {
     defaultChecked: number = 0;
     @property
     autoCreate: boolean = true;
+    @property
+    clearOnDisable: boolean = true;
 
     onEnable() {
-        this.autoCreate && this.createMenu(this.menuItems);
-        this.scheduleOnce(() => {
-            this.getComponent(YJToggleGroupManager).initToggles();
-        })
+        this.autoCreate && this.createMenu(this.menuItems, false);
     }
 
     onDisable() {
-        this.container.removeAllChildren();
+        if (this.clearOnDisable)
+            this.container.removeAllChildren();
     }
 
-    public createMenu(menuItems: YJMenuItemInfo[]) {
+    public createMenu(menuItems: YJMenuItemInfo[], force = true) {
         if (!menuItems || menuItems.length == 0) return;
         this.container = this.container || this.node;
+        if (!force && this.container.children.length > 0) return;
         this.container.removeAllChildren();
         menuItems.forEach((info, i) => {
             if (!no.isDebug() && info.DEBUG) return;
@@ -63,5 +64,8 @@ export class YJMenu extends Component {
             item.active = true;
             item.parent = this.container || this.node;
         });
+        this.scheduleOnce(() => {
+            this.getComponent(YJToggleGroupManager).initToggles();
+        })
     }
 }
