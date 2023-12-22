@@ -1,8 +1,7 @@
 
-import { EDITOR, ccclass, property, requireComponent, Component, Node, BitmapFont, Label, isValid, instantiate } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
-import { YJJobManager } from '../../base/YJJobManager';
 
 /**
  * Predefined variables
@@ -18,6 +17,7 @@ import { YJJobManager } from '../../base/YJJobManager';
 
 @ccclass('YJBitmapFont')
 @requireComponent([Label])
+@executeInEditMode()
 export class YJBitmapFont extends Component {
     @property(BitmapFont)
     public get font(): BitmapFont {
@@ -78,13 +78,28 @@ export class YJBitmapFont extends Component {
 
     private _font: BitmapFont = null;
 
+    onLoad() {
+        if (EDITOR) {
+            const label = this.getComponent(Label),
+                font = label.font;
+            if (font && font instanceof BitmapFont) {
+                this.font = font;
+                label.font = null;
+                label.enabled = false;
+            }
+            this.getComponent('YJDynamicTexture')?.destroy();
+        }
+    }
+
     start() {
+        if (EDITOR) return;
         if (this._spacingX != 0)
             this.getComponent(Label).spacingX = this._spacingX;
         this.resetFont();
     }
 
     public resetFont() {
+        if (EDITOR) return;
         if (this.fontUuid == '') return;
         this.setBitmapFont(this.fontUuid);
     }
