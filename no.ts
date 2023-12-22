@@ -2750,6 +2750,7 @@ export namespace no {
                     break;
                 }
             }
+            if (!bundle) return {};
             let file = p.pop().split('.');
             let fileType = file.pop(),
                 fileName = file.join('.') || fileType;
