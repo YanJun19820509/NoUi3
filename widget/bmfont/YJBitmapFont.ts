@@ -84,6 +84,7 @@ export class YJBitmapFont extends Component {
                 font = label.font;
             if (font && font instanceof BitmapFont) {
                 this.font = font;
+                this.spacingX = label.spacingX;
                 label.font = null;
                 label.enabled = false;
             }
