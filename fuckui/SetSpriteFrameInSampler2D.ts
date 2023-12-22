@@ -161,6 +161,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public removeSprite() {
+        this._lastName = null;
         this.getComponent(Sprite).spriteFrame = null;
         this.getComponent(Sprite).spriteAtlas = null;
         if (EDITOR && this.bind_keys) {
