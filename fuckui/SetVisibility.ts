@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu } from '../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -17,24 +17,32 @@ import { FuckUi } from './FuckUi';
 
 @ccclass('SetVisibility')
 @menu('NoUi/ui/SetVisibility(设置显隐:bool)')
+@executeInEditMode()
 export class SetVisibility extends FuckUi {
 
     @property({ displayName: '取反' })
     reverse: boolean = false;
-
     @property({ displayName: '默认激活' })
-    default: boolean = true;
+    public get defaultActive(): boolean {
+        return this.default;
+    }
 
+    public set defaultActive(v: boolean) {
+        if (this.default == v) return;
+        this.default = v;
+        this.node.active = v;
+    }
+
+    @property({ serializable: true, visible() { return false; } })
+    protected default: boolean = true;
+
+    /**
+     * @deprecated
+     */
     private _needSetDefault: boolean = true;
     onLoad() {
         super.onLoad();
         if (!EDITOR && this._needSetDefault) {
-            this.setDefault();
-        }
-    }
-
-    update() {
-        if (EDITOR) {
             this.setDefault();
         }
     }
@@ -66,6 +74,7 @@ export class SetVisibility extends FuckUi {
         if (!this.enabled) return;
         this.reverse && (v = !v);
         no.visible(this.node, v);
+        no.log('show', v)
     }
 
     public a_show(): void {
