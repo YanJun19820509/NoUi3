@@ -2524,7 +2524,11 @@ export namespace no {
                 }
             }
             const url = this.bundleUrl(name);
-            log('load bundle', url);
+            log('load bundle', name, url);
+            if (!url) {
+                callback?.();
+                return;
+            }
             assetManager.loadBundle(url, (e, b) => {
                 log('load bundle end', url, e);
                 if (e != null) {
