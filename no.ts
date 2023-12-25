@@ -1122,7 +1122,7 @@ export namespace no {
     export function mondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
-        a.setDate(a.getDate() - a.getDay() + 1);
+        a.setDate(a.getDate() - (a.getDay() || 7) + 1);
         return floor(a.getTime() / 1000) + v;
     }
 
@@ -1130,7 +1130,7 @@ export namespace no {
     export function nextMondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
-        a.setDate(a.getDate() - a.getDay() + 8);
+        a.setDate(a.getDate() - (a.getDay() || 7) + 8);
         return floor(a.getTime() / 1000) + v;
     }
 
