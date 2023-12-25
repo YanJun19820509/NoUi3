@@ -2960,14 +2960,15 @@ export namespace no {
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
             assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
                 if (e != null) {//如果加载失败，尝试重新加载所属包
-                    const url = this.getUrlWithUuid(uuid);
-                    if (url) {
-                        const p = this.assetPath(url);
-                        this.loadBundle(p.bundle, () => {
-                            this.loadByUuid(uuid, type, callback);
-                        });
-                    } else
-                        err(uuid, e.stack);
+                    // const bundle = this.getBundleNameByUuid(uuid);
+                    // if (bundle) {
+                    //     this.loadBundle(bundle, () => {
+                    //         this.loadByUuid(uuid, type, callback);
+                    //     });
+                    // } else {
+                    callback?.(f);
+                    err(uuid, e.stack);
+                    // }
                 } else {
                     this.addRef(f);//增加引用计数
                     callback?.(f);
@@ -3069,6 +3070,15 @@ export namespace no {
 
         public getUrlWithUuid(uuid: string): string {
             return assetManager.utils.getUrlWithUuid(uuid);
+        }
+
+        public getBundleNameByUuid(uuid: string): string {
+            const bundles = assetManager.bundles;
+            let name: string;
+            bundles.forEach((bundle, key) => {
+                if (bundle.getAssetInfo(uuid)) name = bundle.name;
+            });
+            return name;
         }
 
         public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<_AssetInfo | null> {
