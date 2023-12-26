@@ -74,7 +74,6 @@ export class SetVisibility extends FuckUi {
         if (!this.enabled) return;
         this.reverse && (v = !v);
         no.visible(this.node, v);
-        no.log('show', v)
     }
 
     public a_show(): void {

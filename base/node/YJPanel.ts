@@ -133,10 +133,10 @@ export class YJPanel extends Component {
 
     private cache() {
         this.hide();
-        this.node.setSiblingIndex(0);
-        this.getComponentsInChildren(Component).forEach(c => {
-            if (c.enabledInHierarchy) c['onDisable']?.();
-        });
+        this.node?.setSiblingIndex(0);
+        // this.getComponentsInChildren(Component).forEach(c => {
+        //     if (c.enabledInHierarchy) c['onDisable']?.();
+        // });
     }
 
     public clear(force = false) {
