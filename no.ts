@@ -406,7 +406,7 @@ export namespace no {
             this._time = t;
             this._targets = [];
             this._num = 1;
-            setTimeout(() => {
+            setInterval(() => {
                 this._time++;
                 this.cb();
             }, 1000);
