@@ -406,11 +406,10 @@ export namespace no {
             this._time = t;
             this._targets = [];
             this._num = 1;
-            scheduleForever(() => {
+            setTimeout(() => {
                 this._time++;
                 this.cb();
-            }, 1, this);
-
+            }, 1000);
         }
 
         /**
@@ -3144,12 +3143,12 @@ export namespace no {
     /**缓存池 */
     class CachePool {
         private cacheMap: Map<string, { o: any, t: number }[]>;
-        private checkDuration = 60;
+        private checkDuration = 60000;
         constructor() {
             this.cacheMap = new Map<string, any[]>();
-            scheduleForever(() => {
+            setInterval(() => {
                 this.checkClear();
-            }, this.checkDuration / 2, this);
+            }, this.checkDuration / 2);
         }
 
         /**
@@ -3252,9 +3251,9 @@ export namespace no {
 
         constructor() {
             super();
-            scheduleForever(() => {
+            setInterval(() => {
                 this.checkHint();
-            }, 2, this);
+            }, 2000);
         }
 
         /**
