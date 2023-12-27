@@ -107,8 +107,6 @@ export class YJBitmapFont extends Component {
 
     public setBitmapFont(fontUuid: string) {
         no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
-            if (!bf) return;
-
             // if (!EDITOR && this.dynamicAtlas) {
             //     let font = new BitmapFont();
             //     font.name = bf.name;
@@ -124,7 +122,9 @@ export class YJBitmapFont extends Component {
 
     private setFont(font: BitmapFont) {
         const label = this.getComponent(Label);
-        label.font = font;
+        if (font) {
+            label.font = font;
+        }
         if (!label.customMaterial)
             label.customMaterial = this.dynamicAtlas?.customMaterial;
         label.enabled = true;

@@ -32,8 +32,10 @@ export class YJDynamicLoadFont extends Component {
             if (label.font) return;
             let a = false;
             no.assetBundleManager.loadByUuid<Font>(this.fontUuid, Font, (file) => {
-                label.useSystemFont = true;
-                label.font = file;
+                if (file) {
+                    label.useSystemFont = true;
+                    label.font = file;
+                }
                 a = true;
             });
             await no.waitFor(() => { return a; });
