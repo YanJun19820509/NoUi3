@@ -246,6 +246,15 @@ export function addPanelTo(targetName: string) {
 export function AllowMultipleOpen() {
     return addMeta(YJAllowMultipleOpen, '1');
 }
+/**
+ * 向SingleObjectManager注册单例对象
+ * @returns 
+ */
+export function singleObject() {
+    return function (target: Function) {
+        no.SingleObjectManager.register(target);
+    };
+}
 
 
 @ccclass("LoadAssetsInfo")

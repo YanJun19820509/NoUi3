@@ -301,6 +301,9 @@ export namespace no {
             });
         }
 
+        public clear() {
+            this._map = {};
+        }
     }
     /**
     * 消息系统
@@ -4416,6 +4419,22 @@ export namespace no {
         protected static instance(): any {
             if (!this._ins) this._ins = new this();
             return this._ins;
+        }
+    }
+
+    /**
+     * 单例对象管理器
+     */
+    export class SingleObjectManager {
+        private static _singleObjects: any[] = [];
+        public static register(singleObject: any) {
+            this._singleObjects[this._singleObjects.length] = singleObject;
+        }
+        public static clear() {
+            this._singleObjects.forEach(so => {
+                so['_ins']?.clear();
+                so['_ins'] = null;
+            });
         }
     }
 

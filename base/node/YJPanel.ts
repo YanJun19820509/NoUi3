@@ -76,6 +76,7 @@ export class YJPanel extends Component {
      */
     public async initPanel(): Promise<void> {
         //todo 先调数据接口同时加载资源
+        no.evn.targetOff(this);
         no.evn.emit('show_info___', 'initPanel 1')
         if (!this._loaded) {
             this.status = 'open';
