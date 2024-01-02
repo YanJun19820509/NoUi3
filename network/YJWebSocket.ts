@@ -21,8 +21,7 @@ export class YJWebSocket implements YJSocketInterface {
     protected ws: any;
     private url: string;
     private reIniting: boolean = false;
-    // protected receivedData: any[] = [];
-    private isClosed: boolean = true;
+    private isClosed: boolean = false;
 
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
@@ -75,14 +74,14 @@ export class YJWebSocket implements YJSocketInterface {
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            if (this.isClosed) return;
             no.err(`websocket error:${this.url}`, event);
+            if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
-            if (this.isClosed) return;
             no.err(`websocket close:${this.url}`, event);
+            if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         };
@@ -108,12 +107,14 @@ export class YJWebSocket implements YJSocketInterface {
 
         this.ws.onError((res) => {
             no.err(`websocket error:${this.url}`, res);
+            if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         });
 
         this.ws.onClose((res) => {
             no.err(`websocket close:${this.url}`, res);
+            if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         });
@@ -163,11 +164,11 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     public async isOk(): Promise<boolean> {
-        if (!this.isClosed) return true;
+        if (this.ws?.readyState == WebSocket.OPEN) return true;
         return new Promise<boolean>(resolve => {
             let n = 0;
             no.scheduleForever(() => {
-                if (!this.isClosed) {
+                if (this.ws?.readyState == WebSocket.OPEN) {
                     no.unschedule(this);
                     resolve(true);
                 } else {
