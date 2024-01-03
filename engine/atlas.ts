@@ -487,6 +487,8 @@ js.mixin(dynamicAtlasManager['__proto__'], {
     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;
+        //微信端不合图
+        if (sys.platform == sys.Platform.WECHAT_GAME) return;
         let a: any = comp.getComponent('YJDynamicTexture');
         if (!a) return;
         if (frame?.original) return;
