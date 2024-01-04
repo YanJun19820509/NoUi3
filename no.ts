@@ -8,6 +8,11 @@ import {
 export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
+    let _isLogEnabled: boolean = DEBUG;
+
+    export function setLogEnabled(v: boolean) {
+        _isLogEnabled = v;
+    }
 
     export function isDebug(): boolean {
         return _debug;
@@ -488,7 +493,7 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+       _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
@@ -559,9 +564,12 @@ export namespace no {
      * @returns 
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
-        return new Promise<void>(resolve => {
-            scheduleUpdateCheck(express, resolve, comp);
-        });
+        if (comp)
+            return new Promise<void>(resolve => {
+                scheduleUpdateCheck(express, resolve, comp);
+            });
+        else
+            return checkUntil(express);
     }
 
     /**
@@ -609,6 +617,17 @@ export namespace no {
     export function clearWaitForEvent(type: string) {
         evn.emit(type, '__clear_Wait_For_Event__');
         evn.typeOff(type);
+    }
+
+    export async function checkUntil(express: () => boolean) {
+        return new Promise<void>(resolve => {
+            const a = setInterval(() => {
+                if (express()) {
+                    clearInterval(a);
+                    resolve();
+                }
+            });
+        });
     }
 
     /**
@@ -1061,7 +1080,7 @@ export namespace no {
     export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        const a = random() * (max - min + 1);
+        const a = random() * (max - min + (min > 1 ? 1 : 0));
         return (isInt ? floor(a) : a) + min;
     }
 
@@ -1632,7 +1651,7 @@ export namespace no {
                             break;
                         case 'scale':
                             np = np || {};
-                            np['scale'] = new Vec3(v[0] || v, v[1] || v[0] || v, v[2] || 1);
+                            np['scale'] = new Vec3(v[0] == undefined ? v : v[0], v[1] == undefined ? (v[0] == undefined ? v : v[0]) : v[1], v[2] == undefined ? 1 : v[2]);
                             break;
                         case 'angle':
                             np = np || {};

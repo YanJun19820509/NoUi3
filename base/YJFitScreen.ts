@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, Canvas, Camera, screen, view, ResolutionPolicy, Widget, UITransform, Touch, Rect, Vec2, Size, v3 } from '../yj';
+import { ccclass, property, Component, Node, Canvas, Camera, view, ResolutionPolicy, Widget, UITransform, Touch, Rect, Vec2, Size, v3 } from '../yj';
 import { no } from '../no';
 
 /**
@@ -29,12 +29,19 @@ export class YJFitScreen extends Component {
     public static policy: number = ResolutionPolicy.NO_BORDER;
 
     onLoad() {
+        this.adapt();
+        window.addEventListener('resize', () => {
+            no.log('window resize');
+            this.adapt();
+        });
+    }
+
+    private adapt() {
         let size = view.getVisibleSize();
         if (!this.enabled) {
             YJFitScreen.rect = new Rect(0, 0, size.width, size.height);
             return;
         }
-
         const dsize = view.getDesignResolutionSize(),
             ss = size.width / size.height,
             dss = dsize.width / dsize.height;
