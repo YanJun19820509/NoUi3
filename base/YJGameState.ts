@@ -1,6 +1,7 @@
 
 import { JSB, ccclass, property, menu, Component, game, sys, Game } from '../yj';
 import { no } from '../no';
+import { YJWindowManager } from './node/YJWindowManager';
 
 /**
  * Predefined variables
@@ -61,6 +62,11 @@ export class YJGameState extends Component {
     }
 
     private onLowMemory() {
+        YJWindowManager.clearClosedPanel();
+        if (sys.platform == sys.Platform.WECHAT_GAME)
+            window['wx'].triggerGC();
+        else
+            sys.garbageCollect();
         no.EventHandlerInfo.execute(this.onLowMemoryCalls);
     }
 

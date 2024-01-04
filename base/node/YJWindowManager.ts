@@ -317,4 +317,8 @@ export class YJWindowManager extends Component {
     public static clearAll() {
         YJWindowManager._ins.clearAll();
     }
+
+    public static clearClosedPanel() {
+        YJWindowManager._ins.clearClosedPanel();
+    }
 }
