@@ -37,11 +37,6 @@ export class SetProgress extends FuckUi {
     private isFirst: boolean = true;
     private lastValue: number = 0;
 
-    onLoad() {
-        super.onLoad();
-        this.speed = 1000 / this.motionSpeed;
-    }
-
     onDisable() {
         this.isFirst = true;
         if (this.targetValue >= 0) {
@@ -50,6 +45,8 @@ export class SetProgress extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        if (!this.speed)
+            this.speed = 1000 / this.motionSpeed;
         this.setLabel(data);
         if (data instanceof Array) data = Math.min(data[0], data[1]) / data[1];
         if (data instanceof Object) data = data.cur / data.max;
