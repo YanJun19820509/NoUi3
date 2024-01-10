@@ -30,10 +30,10 @@ export class YJFitScreen extends Component {
 
     onLoad() {
         this.adapt();
-        window.addEventListener('resize', () => {
+        view.on("canvas-resize", () => {
             no.log('window resize');
             this.adapt();
-        });
+        }, this);
     }
 
     private adapt() {
