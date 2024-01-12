@@ -60,7 +60,9 @@ export class SetVisibility extends FuckUi {
             }
             this.show(a);
         } else {
-            this.show(Boolean(data));
+            if (data == 'null') this.show(false);
+            else
+                this.show(Boolean(data));
         }
     }
 
