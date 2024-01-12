@@ -49,10 +49,12 @@ export class YJDataWork extends Component {
     }
 
     protected start() {
+        if (EDITOR) return;
         this.register.init();
     }
 
     onEnable() {
+        if (EDITOR) return;
         this.afterInit();
     }
 
@@ -101,6 +103,7 @@ export class YJDataWork extends Component {
     }
 
     protected lateUpdate(dt: number): void {
+        if (EDITOR) return;
         if (this._dataChanged) {
             this.setChangedDataToUi();
             this._dataChanged = false;

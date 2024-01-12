@@ -22,6 +22,7 @@ export class YJWebSocket implements YJSocketInterface {
     private url: string;
     private reIniting: boolean = false;
     private isClosed: boolean = false;
+    private isWxWs: boolean = false;
 
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
@@ -54,9 +55,11 @@ export class YJWebSocket implements YJSocketInterface {
             realPath = ca_cache_path;
             this.ws = new AdapterWebSocket(this.url, [], realPath);
             this._initWs();
-        } else if (sys.platform == sys.Platform.WECHAT_GAME) {
+        }
+        else if (sys.platform == sys.Platform.WECHAT_GAME) {
             this._createWXws();
-        } else {
+        } 
+        else {
             this.ws = new WebSocket(this.url);
             this._initWs();
         }
@@ -118,6 +121,7 @@ export class YJWebSocket implements YJSocketInterface {
             this.isClosed = true;
             this.onClose();
         });
+        this.isWxWs = true;
     }
 
     private _onMessage(data: any) {
@@ -132,7 +136,7 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     private sendData(v: any) {
-        if (sys.platform == sys.Platform.WECHAT_GAME) {
+        if (this.isWxWs) {
             if (v instanceof Uint8Array)
                 this.ws?.send({ data: no.Uint8Array2ArrayBuffer(v) });
             else
