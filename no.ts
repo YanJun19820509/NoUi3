@@ -274,7 +274,10 @@ export namespace no {
                 });
             } else
                 a.forEach(b => {
-                    b.h.apply(b.t, args);
+                    if (b.t && !checkValid(b.t)) {
+                        b.o = true;
+                    } else
+                        b.h.apply(b.t, args);
                 });
             for (let i = a.length - 1; i >= 0; i--) {
                 let b = a[i];
@@ -493,7 +496,7 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-       _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+        _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function err(...Evns: any[]): void {
