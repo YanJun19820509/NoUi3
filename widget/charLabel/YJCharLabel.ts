@@ -811,7 +811,7 @@ export class YJCharLabel extends Sprite {
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
             maxSize = Math.max(maxSize, style?.size || 0);
 
-            let w = this.getMeasureWidth(ctx, v, style?.size);
+            let w = this.getMeasureWidth(ctx, text, style?.size);
             ww += w;
         }
         if (this.overflow == Label.Overflow.CLAMP) {
