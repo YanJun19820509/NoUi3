@@ -33,12 +33,17 @@ export class YJScrollMessage extends YJPanel {
 
     private static _ins: YJScrollMessage;
 
-    public static show(msgs: string | string[]) {
+    /**
+     * 
+     * @param msgs 消息
+     * @param top 是否插入前排
+     */
+    public static show(msgs: string | string[], top = false) {
         if (!this._ins) {
             YJWindowManager.createPanel<YJScrollMessage>(YJScrollMessage, 'mess', null, panel => {
-                panel.setInfo(msgs);
+                panel.setInfo(msgs, top);
             });
-        } else this._ins.setInfo(msgs);
+        } else this._ins.setInfo(msgs, top);
     }
 
     onLoad() {
@@ -51,10 +56,15 @@ export class YJScrollMessage extends YJPanel {
         YJScrollMessage._ins = null;
     }
 
-    private setInfo(msgs: string | string[]) {
-        this._list = this._list.concat(msgs);
+    private setInfo(msgs: string | string[], top: boolean) {
+        if (!top)
+            this._list = this._list.concat(msgs);
+        else {
+            this._list = [].concat(msgs, this._list);
+        }
         if (this.moving) return;
         this.moving = true;
+        this.dataWork.setValue('show', true);
         this.setMsgItem();
     }
 
@@ -63,6 +73,7 @@ export class YJScrollMessage extends YJPanel {
         const msg = this._list.shift();
         if (!msg) {
             this.moving = false;
+            this.dataWork.setValue('show', false);
             return;
         }
         this.msgItem.getComponent(YJDataWork).data = { msg: msg };
