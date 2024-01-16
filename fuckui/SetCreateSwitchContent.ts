@@ -76,11 +76,27 @@ export class SetCreateSwitchContent extends FuckUi {
     @property(YJLoadAssets)
     loadAsset: YJLoadAssets = null;
 
+    @property({ tooltip: 'disable时清除子节点' })
+    clearOnDisable: boolean = false;
+
     onLoad() {
         if (EDITOR) {
             if (!this.container)
                 this.container = this.node;
         } else super.onLoad();
+    }
+
+    onDisable() {
+        if (EDITOR) {
+            return;
+        }
+        this.unscheduleAllCallbacks();
+        this.a_clearData();
+        if (this.clearOnDisable) {
+            this.contents?.forEach(info => {
+                info.clear();
+            });
+        }
     }
 
     protected onDataChange(data: any) {

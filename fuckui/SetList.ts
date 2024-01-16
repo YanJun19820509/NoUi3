@@ -39,6 +39,9 @@ export class SetList extends FuckUi {
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
 
+    @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
+    onComplete: no.EventHandlerInfo[] = [];
+
     @property(ScrollView)
     scrollView: ScrollView = null;
     @property(Node)
@@ -123,11 +126,15 @@ export class SetList extends FuckUi {
         if (this._isSettingData) return;
         this.a_clearData();
         if (this.clearOnDisable) {
-            this.content?.setPosition(0, 0);
-            this.content?.children.forEach(item => {
-                item.destroy();
-            });
+            this.clearItems();
         }
+    }
+
+    public clearItems() {
+        this.content?.setPosition(0, 0);
+        this.content?.children.forEach(item => {
+            item.destroy();
+        });
     }
 
     onDestroy() {
@@ -180,6 +187,7 @@ export class SetList extends FuckUi {
         this.listData = a;
         await this.setList();
         if (!this?.node?.isValid) return;
+        no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }
 
