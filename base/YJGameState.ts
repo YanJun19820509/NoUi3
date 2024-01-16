@@ -45,6 +45,11 @@ export class YJGameState extends Component {
         game.on(Game.EVENT_LOW_MEMORY, this.onLowMemory, this);
         no.evn.on(this.event_end, this.onEvent, this);
         no.evn.on(this.event_restart, this.onEvent, this);
+        if (sys.platform == sys.Platform.WECHAT_GAME) {
+            window['wx'].onMemoryWarning(() => {
+                this.onLowMemory();
+            });
+        }
     }
 
     onDestroy() {
