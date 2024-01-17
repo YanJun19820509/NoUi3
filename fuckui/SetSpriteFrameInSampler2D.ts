@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager, v3, Vec3 } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -41,6 +41,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private defineIndex: number = 0;
     private _lastName: string;
+    private _oriScale: Vec3;
 
     onLoad() {
         super.onLoad();
@@ -125,6 +126,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.lastDefine = t;
         this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition).setEffect(defines);
+        if (spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+            if (!this._oriScale)
+                this._oriScale = no.scale(this.node);
+            no.scale(this.node, v3(this._oriScale.x * spriteFrame.scale, this._oriScale.y * spriteFrame.scale, 1));
+        }
     }
 
     private setSpriteFrameForNotWeb(name: string) {

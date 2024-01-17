@@ -38,6 +38,17 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         });
     }
 
+    @property
+    public get scale(): number {
+        return YJCollectSpriteFrameDataInAtlas._scale;
+    }
+
+    public set scale(v: number) {
+        YJCollectSpriteFrameDataInAtlas._scale = v;
+    }
+
+    private static _scale: number = 1;
+
     private static queryAllPlist() {
         this.createAtlasConfig();
     }
@@ -55,6 +66,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 uvSliced: sf.uvSliced,
                 capInsets: sf['_capInsets'],
                 rotated: sf.rotated,
+                scale: this._scale
             };
         });
         return infoMap;
