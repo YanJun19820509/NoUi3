@@ -98,9 +98,12 @@ export class YJNodeTarget extends Component {
         return p;
     }
 
-    public get boundingBox(): Rect {
-        const size = no.size(this.node),
-            pos = this.nodeWorldPosition;
+    public boundingBox(inOtherNode?: Node): Rect {
+        const size = no.size(this.node);
+        let pos = this.nodeWorldPosition;
+        if (inOtherNode) {
+            no.worldPositionInNode(pos, inOtherNode, pos);
+        }
         return rect(pos.x - size.width / 2, pos.y - size.height / 2, size.width, size.height);
     }
 
