@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, disallowMultiple, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys } from '../../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, disallowMultiple, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, Rect, rect, v2 } from '../../yj';
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJJobManager } from '../YJJobManager';
@@ -96,6 +96,12 @@ export class YJNodeTarget extends Component {
         let p = v3();
         this.node.parent?.getComponent(UITransform).convertToWorldSpaceAR(this.node.position, p);
         return p;
+    }
+
+    public get boundingBox(): Rect {
+        const size = no.size(this.node),
+            pos = this.nodeWorldPosition;
+        return rect(pos.x - size.width / 2, pos.y - size.height / 2, size.width, size.height);
     }
 
     /**

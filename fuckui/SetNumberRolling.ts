@@ -7,7 +7,7 @@ import { FuckUi } from './FuckUi';
  * 数字滚动效果
  * Author mqsy_yj
  * DateTime Tue Oct 10 2023 14:54:12 GMT+0800 (中国标准时间)
- * data:{from:number,to:number}
+ * data:{from:number,to:number, format:string}
  */
 
 @ccclass('SetNumberRolling')
@@ -16,6 +16,8 @@ export class SetNumberRolling extends FuckUi {
     duration: number = 1;
     @property({ displayName: '次数', min: 0 })
     num: number = 1;
+    @property({ displayName: '保留小数位', min: 0, step: 1 })
+    decimal: number = 0;
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
     @property({ type: no.EventHandlerInfo })
@@ -24,14 +26,16 @@ export class SetNumberRolling extends FuckUi {
     protected label: Label | RichText | YJCharLabel;
 
     protected onDataChange(data: any) {
+        if (data.format) this.formatter = data.format;
         this.rolling(data);
     }
 
     private rolling(data: any) {
         const from = data.from,
             to = data.to,
-            add = no.float((to - from) / this.num, 1);
+            add = no.float((to - from) / this.num, this.decimal);
         this.setLabel(from);
+        if (from == to) return;
         let v = from;
         no.schedule(() => {
             v += add;
