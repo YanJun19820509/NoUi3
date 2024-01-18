@@ -99,6 +99,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas.customMaterial;
         }
+
+        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
+        if (spriteFrame && spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+            this.setScale(spriteFrame.scale);
+        }
+
         if (!this.loadFromAtlas || sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
                 this.setSpriteFrameByDefaultSpriteFrameUuid();
@@ -107,12 +113,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (name != this.defaultName) this._lastName = name;
-        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
-
-        if (spriteFrame && spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
-            this.setScale(spriteFrame.scale);
-        }
-
         if (sys.platform == sys.Platform.WECHAT_GAME) {
             this.setSpriteFrameForNotWeb(name)
             return;
