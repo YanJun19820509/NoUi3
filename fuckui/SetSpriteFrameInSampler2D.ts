@@ -107,11 +107,16 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (name != this.defaultName) this._lastName = name;
+        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
+
+        if (spriteFrame && spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+            this.setScale(spriteFrame.scale);
+        }
+
         if (sys.platform == sys.Platform.WECHAT_GAME) {
             this.setSpriteFrameForNotWeb(name)
             return;
         }
-        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.err('setSpriteFrame not get', name);
             this.resetSprite();
@@ -126,11 +131,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.lastDefine = t;
         this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition).setEffect(defines);
-        if (spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
-            if (!this._oriScale)
-                this._oriScale = no.scale(this.node);
-            no.scale(this.node, v3(this._oriScale.x * spriteFrame.scale, this._oriScale.y * spriteFrame.scale, 1));
-        }
     }
 
     private setSpriteFrameForNotWeb(name: string) {
@@ -183,5 +183,18 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public setSpriteMaterial(material: Material) {
         this.getComponent(Sprite).customMaterial = material;
+    }
+
+    private setScale(scale: number) {
+        if (!this._oriScale)
+            this._oriScale = no.scale(this.node);
+        if (this._oriScale.x == scale) return;
+        no.scale(this.node, v3(this._oriScale.x * scale, this._oriScale.y * scale, 1));
+        const s = 1 / scale;
+        this.node.children.forEach(c => {
+            // if (c.getComponent('Label') || c.getComponent("YJCharLabel") || c.getComponent('RichText')) {
+                no.scale(c, v3(s, s, 1));
+            // }
+        });
     }
 }

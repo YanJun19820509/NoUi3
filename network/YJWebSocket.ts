@@ -58,7 +58,7 @@ export class YJWebSocket implements YJSocketInterface {
         }
         else if (sys.platform == sys.Platform.WECHAT_GAME) {
             this._createWXws();
-        } 
+        }
         else {
             this.ws = new WebSocket(this.url);
             this._initWs();
@@ -131,7 +131,7 @@ export class YJWebSocket implements YJSocketInterface {
         else if (data instanceof Blob) {
             data.arrayBuffer().then(v => {
                 this.onMessage(v);
-            }).catch(e => { no.err('YJWebSocket _onMessage error'); });
+            }).catch(e => { no.err('YJWebSocket _onMessage error', e); });
         } else this.onMessage(data);
     }
 
