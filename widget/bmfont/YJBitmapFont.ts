@@ -92,6 +92,11 @@ export class YJBitmapFont extends Component {
         }
     }
 
+    onDestroy() {
+        if (this._font) no.assetBundleManager.decRef(this._font);
+        this._font = null;
+    }
+
     start() {
         if (EDITOR) return;
         if (this._spacingX != 0)
@@ -124,6 +129,7 @@ export class YJBitmapFont extends Component {
         const label = this.getComponent(Label);
         if (font) {
             label.font = font;
+            this._font = font;
         }
         if (!label.customMaterial)
             label.customMaterial = this.dynamicAtlas?.customMaterial;
@@ -132,6 +138,7 @@ export class YJBitmapFont extends Component {
 
     removeFont() {
         const label = this.getComponent(Label);
+        if (label.font) no.assetBundleManager.decRef(label.font);
         label.font = null;
         label.enabled = false;
     }

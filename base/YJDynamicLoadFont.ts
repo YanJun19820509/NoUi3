@@ -22,8 +22,15 @@ export class YJDynamicLoadFont extends Component {
         }
     }
 
+    private _font: Font;
+
     onLoad() {
         this.loadFont();
+    }
+
+    onDestroy() {
+        if (this._font) no.assetBundleManager.decRef(this._font);
+        this._font = null;
     }
 
     public async loadFont() {
@@ -35,6 +42,7 @@ export class YJDynamicLoadFont extends Component {
                 if (file) {
                     label.useSystemFont = false;
                     label.font = file;
+                    this._font = file;
                 }
                 a = true;
             });

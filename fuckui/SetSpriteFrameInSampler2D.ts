@@ -193,7 +193,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         const s = 1 / scale;
         this.node.children.forEach(c => {
             // if (c.getComponent('Label') || c.getComponent("YJCharLabel") || c.getComponent('RichText')) {
-                no.scale(c, v3(s, s, 1));
+            no.scale(c, v3(s, s, 1));
             // }
         });
     }

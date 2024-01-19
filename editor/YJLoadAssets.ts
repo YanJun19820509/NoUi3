@@ -145,6 +145,7 @@ export class YJLoadAssets extends Component {
     }
 
     private atlases: any[] = [];
+    private textures: Texture2D[] = [];
 
     onLoad() {
         this.autoLoad &&
@@ -220,7 +221,6 @@ export class YJLoadAssets extends Component {
                 requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
 
-        let textures: Texture2D[] = [];
         no.evn.emit('show_info___', 'YJLoadAssets load 3', requests)
         if (requests.length > 0) {
             let a = false;
@@ -235,7 +235,7 @@ export class YJLoadAssets extends Component {
                     else {
                         i = textureUuids.indexOf(uuid);
                         if (i > -1)
-                            textures[i] = item as Texture2D;
+                            this.textures[i] = item as Texture2D;
                     }
                 });
                 a = true;
@@ -243,14 +243,14 @@ export class YJLoadAssets extends Component {
             await no.waitFor(() => { return a });
             no.evn.emit('show_info___', 'YJLoadAssets load 5')
             if (this.loadLanguageBundle) {
-                textures = textures.concat(await this._loadLanguageBundle());
+                await this._loadLanguageBundle();
                 no.evn.emit('show_info___', 'YJLoadAssets load 6')
             }
         } else if (this.loadLanguageBundle) {
-            textures = textures.concat(await this._loadLanguageBundle());
+            await this._loadLanguageBundle();
             no.evn.emit('show_info___', 'YJLoadAssets load 7')
         }
-        this.createMaterial(textures);
+        this.createMaterial();
         this.backgroundLoadInfos.forEach(info => {
             info.load();
         });
@@ -258,7 +258,7 @@ export class YJLoadAssets extends Component {
 
     private async _loadLanguageBundle() {
         no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 1')
-        let a = false, textures: Texture2D[] = [];
+        let a = false;
         no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
             no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 2', items?.length)
             if (items) {
@@ -266,7 +266,7 @@ export class YJLoadAssets extends Component {
                     if (item instanceof JsonAsset) {
                         this.atlases[this.atlases.length] = item.json;
                     } else if (item instanceof Texture2D) {
-                        textures[textures.length] = item;
+                        this.textures[this.textures.length] = item;
                     }
                 });
             }
@@ -274,7 +274,6 @@ export class YJLoadAssets extends Component {
         });
         await no.waitFor(() => { return a; });
         no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 3')
-        return textures;
     }
 
     private async loadBundles(bundles: string[]) {
@@ -288,11 +287,11 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private createMaterial(textures: Texture2D[]) {
+    private createMaterial() {
         if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
         const ssm = this.getComponent(YJSetSample2DMaterial);
-        if (ssm && ssm.enabled && textures.length) {
-            ssm.setAtlases(textures);
+        if (ssm && ssm.enabled && this.textures.length) {
+            ssm.setAtlases(this.textures);
             this.getComponent(YJDynamicAtlas).customMaterial = ssm.material;
         }
     }
@@ -304,6 +303,11 @@ export class YJLoadAssets extends Component {
         this.spriteFrameInfos.forEach(info => {
             info.release && info.release(null);
         });
+        this.textures.forEach(a => {
+            no.assetBundleManager.decRef(a);
+        });
+        this.textures.length = 0;
+        this.atlases.length = 0;
     }
 
 

@@ -2412,6 +2412,7 @@ export namespace no {
         private remoteAssetsCache: any = {};
         private _cacheNode: { [k: string]: Node } = {};
         private _cacheTexture: { [k: string]: Texture2D } = {};
+        private _assetRef: { [uuid: string]: number } = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -3015,12 +3016,18 @@ export namespace no {
         }
 
         public addRef(asset: Asset): void {
-            asset?.addRef();
+            // asset?.addRef();
+            this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 0) + 1;
+            log('addRef', asset.uuid, this._assetRef[asset.uuid]);
         }
 
         public decRef(asset: Asset): void {
+            this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 1) - 1;
             scheduleOnce(() => {
-                asset?.decRef();
+                if (asset && this._assetRef[asset.uuid] < 1) {
+                    log('decRef', asset.uuid, this._assetRef[asset.uuid]);
+                    this.release(asset, true);
+                }
             }, .02);
         }
 
@@ -3035,6 +3042,7 @@ export namespace no {
             list.forEach(uuid => {
                 a.push({ uuid: uuid });
             });
+            log('loadDepends', a);
             assetManager.loadAny(a, (e, item) => {
                 if (item == null) err(uuid, e.message);
             });
