@@ -28,6 +28,13 @@ export class SetSpriteFrame extends FuckUi {
     @property
     path: string = '';
 
+    @property({ tooltip: 'disable时清除' })
+    clearOnDisable: boolean = false;
+
+    onDisable() {
+        this.clearOnDisable && this.a_setEmpty();
+    }
+
     protected onDataChange(data: any) {
         this.lateSet(data);
     }

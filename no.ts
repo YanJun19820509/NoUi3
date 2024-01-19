@@ -1,7 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit, JSB
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit, JSB, TTFFont
 } from "./yj";
 
 
@@ -2413,6 +2413,7 @@ export namespace no {
         private _cacheNode: { [k: string]: Node } = {};
         private _cacheTexture: { [k: string]: Texture2D } = {};
         private _assetRef: { [uuid: string]: number } = {};
+        private _ttfFont: { [fontFamily: string]: TTFFont } = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -3016,19 +3017,22 @@ export namespace no {
         }
 
         public addRef(asset: Asset): void {
-            // asset?.addRef();
             if (!asset) return;
-            this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 0) + 1;
-            log('addRef', asset.uuid, this._assetRef[asset.uuid]);
+            if (asset instanceof TTFFont) {
+                this._ttfFont[asset._fontFamily] = asset;
+            }
+            asset.addRef();
+            // this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 0) + 1;
+            // log('addRef', asset.uuid, asset.refCount);
         }
 
         public decRef(asset: Asset): void {
             if (!asset) return;
-            this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 1) - 1;
+            // this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 1) - 1;
             scheduleOnce(() => {
-                if (asset && this._assetRef[asset.uuid] < 1) {
-                    log('decRef', asset.uuid, this._assetRef[asset.uuid]);
-                    this.release(asset, true);
+                if (asset) {
+                    asset.decRef();
+                    // log('decRef', asset.uuid, asset.refCount);
                 }
             }, .02);
         }

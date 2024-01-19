@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 
@@ -106,18 +106,18 @@ export class YJCharLabel extends Sprite {
     //自定义字体
     @property(Font)
     public get font(): Font {
-        return null;
+        return this._font;
     }
 
     public set font(v: Font) {
-        // if (v == this._font) return;
-        // this._font = v;
-        // this._fontUuid = v.uuid;
+        if (v == this._font) return;
+        this._font = v;
+        this._fontUuid = v ? v.uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
     }
     //系统字体
-    @property
+    @property({ readonly: true })
     public get fontFamily(): string {
         return this._foitnFamily;
     }
@@ -125,7 +125,10 @@ export class YJCharLabel extends Sprite {
     public set fontFamily(v: string) {
         if (v == this._foitnFamily) return;
         this._foitnFamily = v;
-        this.setLabel();
+    }
+
+    private getFont(): TTFFont {
+        return no.assetBundleManager['_ttfFont'][this._foitnFamily];
     }
     //行高
     @property
@@ -361,10 +364,10 @@ export class YJCharLabel extends Sprite {
     protected _fontColor: Color = Color.WHITE.clone();
     @property({ serializable: true })
     protected _fontSize: number = 22;
-    // @property({ serializable: true })
-    // protected _font: Font = null;
-    // @property({ serializable: true })
-    // protected _fontUuid: string = '';
+    @property({ serializable: true })
+    protected _font: Font = null;
+    @property({ serializable: true })
+    protected _fontUuid: string = '';
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
     @property({ serializable: true })
@@ -1026,11 +1029,17 @@ export class YJCharLabel extends Sprite {
 
     public removeLabel() {
         this.spriteFrame = null;
+        this._font = null;
         this._needSetLabel = false;
     }
 
     public resetLabel() {
         this._needSetLabel = true;
+        if (this._fontUuid) {
+            no.assetBundleManager.loadAny({ uuid: this._fontUuid, type: TTFFont }, font => {
+                this._font = font;
+            });
+        }
         this.setLabel();
     }
 }

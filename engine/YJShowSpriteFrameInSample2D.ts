@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node } from '../yj';
+import { ccclass, property, Component } from '../yj';
 
 /**
  * Predefined variables

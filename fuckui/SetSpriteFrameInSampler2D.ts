@@ -188,12 +188,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private setScale(scale: number) {
         if (!this._oriScale)
             this._oriScale = no.scale(this.node);
-        if (this._oriScale.x == scale) return;
+        let s = no.scale(this.node);
+        if (s.x == scale) return;
         no.scale(this.node, v3(this._oriScale.x * scale, this._oriScale.y * scale, 1));
-        const s = 1 / scale;
+        const ss = 1 / scale;
         this.node.children.forEach(c => {
             // if (c.getComponent('Label') || c.getComponent("YJCharLabel") || c.getComponent('RichText')) {
-            no.scale(c, v3(s, s, 1));
+            no.scale(c, v3(ss, ss, 1));
             // }
         });
     }
