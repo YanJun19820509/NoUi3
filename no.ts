@@ -3017,11 +3017,13 @@ export namespace no {
 
         public addRef(asset: Asset): void {
             // asset?.addRef();
+            if (!asset) return;
             this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 0) + 1;
             log('addRef', asset.uuid, this._assetRef[asset.uuid]);
         }
 
         public decRef(asset: Asset): void {
+            if (!asset) return;
             this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 1) - 1;
             scheduleOnce(() => {
                 if (asset && this._assetRef[asset.uuid] < 1) {
