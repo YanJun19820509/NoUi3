@@ -113,7 +113,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (name != this.defaultName) this._lastName = name;
-        if (sys.platform == sys.Platform.WECHAT_GAME) {
+        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) {
             this.setSpriteFrameForNotWeb(name)
             return;
         }

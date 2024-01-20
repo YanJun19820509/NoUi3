@@ -109,7 +109,7 @@ export class YJCharLabel extends Sprite {
         return this._font;
     }
 
-    public set font(v: Font) {
+    public set font(v: TTFFont) {
         if (v == this._font) return;
         this._font = v;
         this._fontUuid = v ? v.uuid : '';
@@ -365,7 +365,7 @@ export class YJCharLabel extends Sprite {
     @property({ serializable: true })
     protected _fontSize: number = 22;
     @property({ serializable: true })
-    protected _font: Font = null;
+    protected _font: TTFFont = null;
     @property({ serializable: true })
     protected _fontUuid: string = '';
     @property({ serializable: true })
@@ -450,11 +450,13 @@ export class YJCharLabel extends Sprite {
             return;
         } else {
             if (this.packToAtlas && this.setPackedTexture()) return;
-            if (this.richText)
-                this.drawRichString(this._string)
-            else
-                this.drawString(this._string);
-            this.updateTexture();
+            this.loadFont().then(() => {
+                if (this.richText)
+                    this.drawRichString(this._string)
+                else
+                    this.drawString(this._string);
+                this.updateTexture();
+            });
         }
     }
 
@@ -498,7 +500,7 @@ export class YJCharLabel extends Sprite {
         }
         ctx.textAlign = 'left';
         ctx.imageSmoothingQuality = 'high';
-        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this._font?._fontFamily || this.fontFamily}`;
         ctx.fillStyle = color;
     }
 
@@ -1036,10 +1038,24 @@ export class YJCharLabel extends Sprite {
     public resetLabel() {
         this._needSetLabel = true;
         if (this._fontUuid) {
-            no.assetBundleManager.loadAny({ uuid: this._fontUuid, type: TTFFont }, font => {
+            no.assetBundleManager.loadAny<TTFFont>({ uuid: this._fontUuid, type: TTFFont }, font => {
                 this._font = font;
+                this.setLabel();
+            });
+        } else
+            this.setLabel();
+    }
+
+    public async loadFont() {
+        if (!this._font && this._fontUuid) {
+            return new Promise<void>(resolve => {
+                no.assetBundleManager.loadByUuid<TTFFont>(this._fontUuid, TTFFont, (file) => {
+                    if (file) {
+                        this._font = file;
+                    }
+                    resolve();
+                });
             });
         }
-        this.setLabel();
     }
 }

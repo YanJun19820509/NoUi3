@@ -116,14 +116,14 @@ export class SetCreateNode extends FuckUi {
             return;
         }
 
-        let n = data.length;
         let l = this.container.children.length;
         if (!this.onlyAdd)
             for (let i = l - 1; i >= 0; i--) {
                 no.visible(this.container.children[i], !!data[i]);
             }
 
-        if (!data.length) return;
+        let n = data.length;
+        if (!n) return;
 
         const prefabUrl = this.loadPrefab?.prefabUrl;
         if (prefabUrl && YJPreCreateNode.ins?.has(prefabUrl)) {

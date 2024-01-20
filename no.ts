@@ -3366,6 +3366,11 @@ export namespace no {
             });
             return true;
         }
+
+        public clear() {
+            this.data.clear();
+            this.timestampHit = {};
+        }
     }
     /**全局红点管理器 */
     export const hintCenter = new HintCenter();

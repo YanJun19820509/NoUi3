@@ -1,7 +1,7 @@
 
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-import { Asset, Texture2D, ccclass, property } from './yj';
+import { Asset, Prefab, Texture2D, ccclass, property } from './yj';
 
 /**
  * Predefined variables
@@ -300,6 +300,16 @@ export class LoadAssetsInfo {
         } else {
             no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
                 this.path = info?.path;
+            });
+        }
+    }
+
+    public setUuid() {
+        if (!this.path) {
+            this.assetUuid = '';
+        } else {
+            no.assetBundleManager.loadFileInEditorMode(this.path, Prefab, (file, info) => {
+                this.assetUuid = info?.uuid;
             });
         }
     }

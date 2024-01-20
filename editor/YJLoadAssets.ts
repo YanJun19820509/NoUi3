@@ -1,13 +1,15 @@
 
 import {
     ccclass, property, menu, executeInEditMode, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys, Sprite
 } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
+import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
+import YJLoadPrefab from '../base/node/YJLoadPrefab';
 
 /**
  * Predefined variables
@@ -44,19 +46,23 @@ export class TextureInfo extends LoadAssetsInfo {
 
     public set texture(v: Texture2D) {
         if (v) {
-            this.assetUuid = v.uuid;
-            no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
-                this.path = info.path;
-                this.assetName = info?.displayName;
-                let path = info?.path.replace('/texture', '_atlas.json');
-                if (path) {
-                    no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
-                        this.atlasJsonName = info.name;
-                        this.atlasJsonUuid = info.uuid;
-                    });
-                }
-            });
+            this.addTexture(v.uuid);
         }
+    }
+
+    public addTexture(uuid: string) {
+        this.assetUuid = uuid;
+        no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+            this.path = info.path;
+            this.assetName = info?.displayName;
+            let path = info?.path.replace('/texture', '_atlas.json');
+            if (path) {
+                no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
+                    this.atlasJsonName = info.name;
+                    this.atlasJsonUuid = info.uuid;
+                });
+            }
+        });
     }
     @property({ readonly: true })
     atlasJsonUuid: string = '';
@@ -89,7 +95,13 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
         if (v) {
             this.assetUuid = v.uuid;
             this.assetName = v.name;
+            this.setPath();
         }
+    }
+
+    public addSpriteFrame(uuid: string) {
+        this.assetUuid = uuid;
+        this.setPath();
     }
 }
 @ccclass('PrefabInfo')
@@ -104,6 +116,11 @@ export class PrefabInfo extends LoadAssetsInfo {
             this.assetUuid = v.uuid;
             this.assetName = v.name;
         }
+    }
+
+    public addPrefab(url: string) {
+        this.path = url;
+        this.setUuid();
     }
 }
 
@@ -142,6 +159,48 @@ export class YJLoadAssets extends Component {
 
     public set autoSetSubLoadAsset(v: boolean) {
         if (v) YJLoadAssets.setLoadAsset(this.node, this);
+    }
+    @property
+    public get getAllAssets(): boolean {
+        return false;
+    }
+
+    public set getAllAssets(v: boolean) {
+        const list = this.getComponentsInChildren(SetSpriteFrameInSampler2D),
+            textureUuid: string[] = [],
+            spriteFrameUuid: string[] = [];
+        list.forEach(a => {
+            if (a.loadFromAtlas) {
+                const sf = a.getComponent(Sprite).spriteFrame;
+                if (sf) {
+                    let uuid = sf.texture.uuid;
+                    no.addToArray(textureUuid, uuid);
+                } else {
+                    no.err(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
+                }
+            } else if (a.defaultSpriteFrameUuid)
+                no.addToArray(spriteFrameUuid, a.defaultSpriteFrameUuid);
+        });
+        this.textureInfos.length = 0;
+        textureUuid.forEach(uuid => {
+            const info = new TextureInfo();
+            info.addTexture(uuid);
+            this.textureInfos[this.textureInfos.length] = info;
+        });
+        this.spriteFrameInfos.length = 0;
+        spriteFrameUuid.forEach(uuid => {
+            const info = new SpriteFrameInfo();
+            info.addSpriteFrame(uuid);
+            this.spriteFrameInfos[this.spriteFrameInfos.length] = info;
+        });
+
+        const list1 = this.getComponentsInChildren(YJLoadPrefab);
+        this.prefabInfos.length = 0;
+        list1.forEach(a => {
+            const info = new PrefabInfo();
+            info.addPrefab(a.prefabUrl);
+            this.prefabInfos[this.prefabInfos.length] = info;
+        });
     }
 
     private atlases: any[] = [];

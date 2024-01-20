@@ -1,7 +1,7 @@
 
 import {
     EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Component, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton, v2
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton, v2, sys
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas, DynamicAtlasTexture } from './atlas';
@@ -83,7 +83,7 @@ export class YJDynamicAtlas extends UIRenderer {
     private createSpriteFrame(uuid: string, packedFrame: PackedFrameData): SpriteFrame {
         let spriteFrame = new SpriteFrame();
         spriteFrame._uuid = uuid;
-        spriteFrame.originalSize = size(100, 100);
+        spriteFrame.originalSize = size(10, 10);
         spriteFrame.texture = packedFrame.texture;
         spriteFrame.rotated = packedFrame.rotate;
         spriteFrame.rect = rect(packedFrame.x, packedFrame.y, packedFrame.w, packedFrame.h);
