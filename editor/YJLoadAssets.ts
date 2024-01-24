@@ -8,7 +8,6 @@ import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
-import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 
 /**
@@ -166,7 +165,7 @@ export class YJLoadAssets extends Component {
     }
 
     public set getAllAssets(v: boolean) {
-        const list = this.getComponentsInChildren(SetSpriteFrameInSampler2D),
+        const list: any = this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             textureUuid: string[] = [],
             spriteFrameUuid: string[] = [];
         list.forEach(a => {
