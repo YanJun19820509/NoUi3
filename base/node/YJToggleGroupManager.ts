@@ -46,9 +46,12 @@ export class YJToggleGroupManager extends Component {
     onLoad() {
         if (EDITOR) {
             this.getComponent(ToggleContainer)?.destroy();
-            this.initToggles();
-            return;
         }
+    }
+
+    onEnable() {
+        if (EDITOR) return;
+        this.initToggles();
     }
 
     onDisable() {

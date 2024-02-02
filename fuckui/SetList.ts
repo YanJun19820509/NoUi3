@@ -263,7 +263,7 @@ export class SetList extends FuckUi {
         if (this.isVertical) {
             p.y = -(index + 1 - itemAnchor.y) * this.itemSize.height + contentSize.height * (1 - no.anchorY(this.content));
         } else {
-            p.x = (index + itemAnchor.x) * this.itemSize.width - contentSize.height * no.anchorX(this.content);
+            p.x = (index + itemAnchor.x) * this.itemSize.width - contentSize.width * no.anchorX(this.content);
         }
         item.setPosition(p);
     }

@@ -36,6 +36,7 @@ export class YJHttpRequest implements YJSocketInterface {
                 no.log('getDataFromServer', a);
                 resolve(this.parseData(a));
             }, v => {
+                no.err('getDataFromServer', v);
                 resolve(null);
             });
         });

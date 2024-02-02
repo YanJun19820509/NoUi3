@@ -2,7 +2,7 @@
 import {
     EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
-    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont
+    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math
 } from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -41,7 +41,7 @@ import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 export class AutoCreateNode extends Component {
 
     private atlases: SpriteAtlas[] = [];
-    private fonts: Font[] = [];
+    private fonts: TTFFont[] = [];
     private nameMap: any;
     private parent: Node;
     private rootPath: string;
@@ -73,13 +73,16 @@ export class AutoCreateNode extends Component {
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-                no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
-                    this.atlases = this.atlases.concat(assets);
-                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/sub/atlas', 'cc.SpriteAtlas', assets => {
+                no.assetBundleManager.loadSpriteAtlasInEditorMode(['db://assets/i18n/chinese/chinese.plist'], (fs, infos) => {
+                    this.atlases = this.atlases.concat(fs);
+                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
                         this.atlases = this.atlases.concat(assets);
-                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/sub/common/font', 'cc.TTFFont', assets => {
-                            this.fonts = this.fonts.concat(assets);
-                            this.loadJson(dest, name);
+                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/res/atlas', 'cc.SpriteAtlas', assets => {
+                            this.atlases = this.atlases.concat(assets);
+                            no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/res/common/font', 'cc.TTFFont', assets => {
+                                this.fonts = this.fonts.concat(assets);
+                                this.loadJson(dest, name);
+                            });
                         });
                     });
                 });
@@ -162,6 +165,7 @@ export class AutoCreateNode extends Component {
                 this.createSpriteNode(n, parent);
                 break;
             case 'button':
+            case 'btn':
                 this.createButton(n, parent);
                 break;
             case 'progress':
@@ -208,6 +212,11 @@ export class AutoCreateNode extends Component {
         if (sf?.insetTop != 0 || sf?.insetBottom != 0 || sf?.insetRight != 0 || sf?.insetLeft != 0) {
             is9 = true;
         }
+        if (c.name.indexOf('_scale_') > 0) {
+            var aa = c.name.split('_scale_');
+            n.name = aa[0];
+            no.scale(n, new Vec3(aa[1], aa[1], 1));
+        }
         if (c['9'] || is9) {
             s.sizeMode = Sprite.SizeMode.CUSTOM;
             s.type = Sprite.Type.SLICED;
@@ -245,9 +254,9 @@ export class AutoCreateNode extends Component {
         if (n.getComponent('fixedLab')) {
             let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             l.string = c.text;
-            l.fontSize = Number(c.size);
+            l.fontSize = Math.ceil(Number(c.size));
             l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
-            l.lineHeight = l.fontSize;
+            l.lineHeight = l.fontSize + 2;
             l.fontColor = no.str2Color(c.textColor);
             l.bold = c.bold;
             l.italic = c.italic;
@@ -296,7 +305,7 @@ export class AutoCreateNode extends Component {
             let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             char.string = c.text;
             char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
-            char.fontSize = Number(c.size);
+            char.fontSize = Math.ceil(Number(c.size));
             char.lineHeight = char.fontSize;
             char.color = no.str2Color(c.textColor);
             char.bold = c.bold;
@@ -552,7 +561,7 @@ export class AutoCreateNode extends Component {
         return new Vec2(lonlat[0], lonlat[1])
     }
 
-    private getFont(name: string): Font {
+    private getFont(name: string): TTFFont {
         for (let i = 0, n = this.fonts.length; i < n; i++) {
             if (this.fonts[i].name == name) return this.fonts[i];
         }

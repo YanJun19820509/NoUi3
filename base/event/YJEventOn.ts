@@ -71,7 +71,7 @@ export class YJEventOn extends Component {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.type == type) {
-                no.EventHandlerInfo.execute(info.calls, type, args);
+                no.EventHandlerInfo.execute(info.calls, type, args.length == 1 ? args[0] : args);
                 break;
             }
         }

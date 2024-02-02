@@ -26,7 +26,9 @@ export type YJGoToInfo = {
     //是否为accompany的子功能
     isSub: boolean,
     //'备注
-    desc: string
+    desc: string,
+    //数据
+    data?: any
 };
 
 @ccclass('YJGoToConfigDelegate')

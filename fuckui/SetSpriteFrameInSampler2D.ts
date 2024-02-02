@@ -151,6 +151,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 sprite.customMaterial = this.dynamicAtlas?.customMaterial;
             }
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                if (!file) {
+                    no.err(this.node.name)
+                }
                 sprite.spriteFrame = file;
             });
         }

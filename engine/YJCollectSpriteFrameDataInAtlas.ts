@@ -38,15 +38,6 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         });
     }
 
-    @property
-    public get scale(): number {
-        return YJCollectSpriteFrameDataInAtlas._scale;
-    }
-
-    public set scale(v: number) {
-        YJCollectSpriteFrameDataInAtlas._scale = v;
-    }
-
     private static _scale: number = 1;
 
     private static queryAllPlist() {
@@ -54,8 +45,12 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
     }
 
     private static getSpriteFramesInfo(atlas: SpriteAtlas): { [k: string]: SpriteFrameDataType } {
+        const aa = atlas.name.split('_');
+        let scale = Number(aa[aa.length - 1]) || 1;
+        if (scale != 1) scale = Math.floor(1 / scale * 1000) / 1000;
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
         atlas.getSpriteFrames().forEach(sf => {
+            console.log(sf);
             infoMap[sf.name] = {
                 uuid: sf.uuid,
                 x: sf.rect.x,
@@ -66,7 +61,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 uvSliced: sf.uvSliced,
                 capInsets: sf['_capInsets'],
                 rotated: sf.rotated,
-                scale: this._scale
+                scale: scale
             };
         });
         return infoMap;

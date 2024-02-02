@@ -36,6 +36,7 @@ export class YJHintWatcher extends Component {
     }
 
     private bind() {
+        no.hintCenter.offHint(this);
         if (this.types == '') return;
         let types = this.types.split(',');
         this.typeList = types;
@@ -73,5 +74,6 @@ export class YJHintWatcher extends Component {
      */
     public setHintTypes(types: string) {
         this.types = types;
+        this.bind();
     }
 }

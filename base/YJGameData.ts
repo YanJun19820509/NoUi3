@@ -17,8 +17,9 @@ export class YJGameData extends no.Data {
         if (!this._ins) {
             this._ins = new this();
             this._ins._state = new no.State();
+            this._ins.onInit();
         }
-        this._ins.onInit();
+        
         return this._ins;
     }
 

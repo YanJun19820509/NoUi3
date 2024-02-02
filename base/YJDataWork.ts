@@ -91,6 +91,11 @@ export class YJDataWork extends Component {
         }
     }
 
+    public setDataToDataWork(t: any, d: any) {
+        this.data = d || t;
+        this.init();
+    }
+
     public getValue(key: string): any {
         return this._data.get(key);
     }

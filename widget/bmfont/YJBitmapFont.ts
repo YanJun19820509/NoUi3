@@ -89,6 +89,10 @@ export class YJBitmapFont extends Component {
                 label.enabled = false;
             }
             this.getComponent('YJDynamicTexture')?.destroy();
+        } else {
+            if (this._spacingX != 0)
+                this.getComponent(Label).spacingX = this._spacingX;
+            this.resetFont();
         }
     }
 
@@ -97,15 +101,7 @@ export class YJBitmapFont extends Component {
         this._font = null;
     }
 
-    start() {
-        if (EDITOR) return;
-        if (this._spacingX != 0)
-            this.getComponent(Label).spacingX = this._spacingX;
-        this.resetFont();
-    }
-
     public resetFont() {
-        if (EDITOR) return;
         if (this.fontUuid == '') return;
         this.setBitmapFont(this.fontUuid);
     }
@@ -120,8 +116,8 @@ export class YJBitmapFont extends Component {
             //     font.fontSize = bf.fontSize;
             //     this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(font, bf.spriteFrame);
             //     this.setFont(font);
-            // } else 
-            this.setFont(bf);
+            // } else
+                this.setFont(bf);
         });
     }
 

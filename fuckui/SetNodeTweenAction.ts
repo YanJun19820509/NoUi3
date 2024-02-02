@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu } from '../yj';
+import { ccclass, property, menu, Node } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -24,6 +24,9 @@ export class SetNodeTweenAction extends FuckUi {
     @property({ type: no.EventHandlerInfo, displayName: '缓动完成回调' })
     endCall: no.EventHandlerInfo[] = [];
 
+    @property({ type: Node, displayName: '缓动目标' })
+    targetNode: Node = null;
+
     private _action: no.TweenSet | no.TweenSet[];
 
     protected onDataChange(data: any) {
@@ -35,7 +38,7 @@ export class SetNodeTweenAction extends FuckUi {
     }
 
     protected createAction(data: any): no.TweenSet | no.TweenSet[] {
-        return no.parseTweenData(data, this.node);
+        return no.parseTweenData(data, this.targetNode || this.node);
     }
 
     private run() {

@@ -52,7 +52,7 @@ export class YJGoToManager extends Component {
             no.evn.once('PopuPanelContent_create', (panel) => {
                 this._ins.trigger(panel, args, cb);
             }, this);
-            clazz['show']();
+            clazz['show'](info.data);
         } else if (clazz['$super'] == YJPanel) {
             let panel = YJWindowManager.opennedPanel(info.target);
             if (panel && panel.node.activeInHierarchy) this._ins.trigger(panel, args, cb);

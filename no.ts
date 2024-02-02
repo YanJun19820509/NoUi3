@@ -140,7 +140,10 @@ export namespace no {
      * @param target 
      */
     export function scheduleUntil(cb: (dt?: number) => void, interval: number, until: () => boolean, delay?: number, target: any = {}) {
-        if (until.call(target)) return;
+        if (until.call(target)) {
+            cb?.call(target);
+            return;
+        }
         if (!_scheduler) _scheduler = director.getScheduler();
         if (target && target.uuid == undefined) target.uuid = uuid();
         let targetT = { uuid: target.uuid };
@@ -870,7 +873,7 @@ export namespace no {
      * @param key
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
-        if (array == null) return -1;
+        if (array == null || item == null) return -1;
         let len = array.length;
         for (let i = 0; i < len; i++) {
             if (array[i][key] == item || (array[i][key] == item[key] && item[key] != undefined)) {

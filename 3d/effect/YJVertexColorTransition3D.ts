@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, MeshRender, Vec4, Sprite, math, UIOpacity, Color, Label, AttributeName } from '../../yj';
+import { ccclass, disallowMultiple, Component, MeshRender, Vec4, AttributeName } from '../../yj';
 import { no } from '../../no';
 
 /**
