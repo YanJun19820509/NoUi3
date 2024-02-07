@@ -417,6 +417,7 @@ export class YJCharLabel extends Sprite {
     private _measuredWidth: { [k: string]: number } = {};
 
     private _texture: Texture2D;
+    private _needSet: boolean = true;
 
     onLoad() {
         super.onLoad();
@@ -424,7 +425,8 @@ export class YJCharLabel extends Sprite {
         if (this.packToAtlas) {
             if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.customMaterial;
         }
-        this.setLabel();
+        if (this._needSet)
+            this.setLabel();
     }
 
     onDestroy() {
@@ -436,7 +438,8 @@ export class YJCharLabel extends Sprite {
 
     onEnable() {
         super.onEnable();
-        this.setLabel();
+        if (this._needSet)
+            this.setLabel();
     }
 
     private setLabel(): void {
@@ -444,6 +447,7 @@ export class YJCharLabel extends Sprite {
         if (!isValid(this.node) || !this.node.activeInHierarchy) {
             return;
         }
+        this._needSet = false;
         this.clearCanvas();
         if (this._string == '') {
             this.clearString();

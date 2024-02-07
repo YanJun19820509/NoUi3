@@ -5,6 +5,7 @@ import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJi18n } from '../base/YJi18n';
 
 /**
  * Predefined variables
@@ -32,6 +33,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultName: string = '';
     @property({ displayName: '从图集加载' })
     loadFromAtlas: boolean = true;
+    @property({ displayName: '多语言' })
+    multiLan: boolean = false;
     @property({ type: YJLoadAssets, readonly: true })
     loadAsset: YJLoadAssets = null;
     @property({ type: YJDynamicAtlas, readonly: true })
@@ -85,16 +88,22 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.setSpriteFrame(name);
     }
 
-    public setSpriteFrame(name: string) {
-        if (!this.enabled || !name) return;
+    public setSpriteFrame(spriteName: string) {
+        if (!this.enabled || !spriteName) return;
         if (!this.loadAsset) {
             this.resetSprite();
             return;
         }
-        if (name == 'null') {
+        if (spriteName == 'null') {
             this.a_setEmpty();
             return;
         }
+        let name: string;
+        if (this.multiLan) {
+            const a = spriteName.split('/');
+            name = YJi18n.ins.language + '/' + (a[1] || a[0]);
+        } else name = spriteName;
+
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas.customMaterial;

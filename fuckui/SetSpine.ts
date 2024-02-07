@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, Node, Layers, requireComponent, AnimationCacheMode, sys } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -29,8 +29,12 @@ export class SetSpine extends FuckUi {
     spineUrl: string = '';
     @property({ visible() { return this.autoPlayOnEnable; } })
     animationName: string = '';
+    @property({ displayName: '支持开始回调的下标', tooltip: '当有动画播放队列时，可指定队列中某些下标的动画在开始播放时执行回调，多个下标用逗号分隔' })
+    startIndexes: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '动画播放开始回调' })
     startCall: no.EventHandlerInfo = new no.EventHandlerInfo();
+    @property({ displayName: '支持结束回调的下标', tooltip: '当有动画播放队列时，可指定队列中某些下标的动画在结束播放时执行回调，多个下标用逗号分隔' })
+    endIndexes: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
@@ -45,9 +49,11 @@ export class SetSpine extends FuckUi {
     private canSetSpine: boolean = true;
     private isFullScreenHide: boolean = false;
     private spineQueue: any[];
-    private spine: Skeleton;
+    private queueIndex: number = 0;
     private GlobalScale: number = 1;
     private loopNum: number = 0;
+    private _startIndexes: string[];
+    private _endIndexes: string[];
 
     protected update(): void {
         if (!EDITOR) return;
@@ -99,14 +105,19 @@ export class SetSpine extends FuckUi {
         if (sys.platform == sys.Platform.WECHAT_GAME && this.GlobalScale != .5)
             this.GlobalScale = .5;
         if (!this.canSetSpine) return;
+        if (this.startIndexes)
+            this._startIndexes = this.startIndexes.split(',');
+        if (this.endIndexes)
+            this._endIndexes = this.endIndexes.split(',');
         this.spineQueue = [].concat(data);
+        this.queueIndex = -1;
         this.setSpineData();
     }
 
     private setSpineData() {
-        const data = this.spineQueue.shift();
+        const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
-        let { path, skin, animation, loop, timeScale, loopNum }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number } = data;
+        let { path, skin, animation, loop, timeScale, loopNum, pause }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean } = data;
         const spine = this.getComponent(Skeleton);
 
         if (!path && !animation) {
@@ -140,7 +151,9 @@ export class SetSpine extends FuckUi {
                 spine.skeletonData = res;
 
                 let tempStr = (skin ? (skin + ':') : '') + animation;
-                if (loop) this.a_playLoop(tempStr);
+                if (pause) {
+                    this.a_pause(tempStr);
+                } else if (loop) this.a_playLoop(tempStr);
                 else if (loopNum > 1) {
                     this.loopNum = loopNum;
                     this.playLoopNum(tempStr);
@@ -148,7 +161,10 @@ export class SetSpine extends FuckUi {
             });
         } else if (animation != null) {
             let tempStr = (skin ? (skin + ':') : '') + animation;
-            if (loop) this.a_playLoop(tempStr);
+            if (pause) {
+                this.a_pause(tempStr);
+            }
+            else if (loop) this.a_playLoop(tempStr);
             else if (loopNum > 1) {
                 this.loopNum = loopNum;
                 this.playLoopNum(tempStr);
@@ -217,6 +233,20 @@ export class SetSpine extends FuckUi {
         spine.enabled = false;
     }
 
+    public a_pause(e: any, animation?: string): void {
+        animation = animation || e;
+        if (!animation) return;
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        if (name == null) return;
+        const spine = this.getComponent(Skeleton);
+        if (spine.enabled)
+            this.needClearTracks && spine.clearTracks();
+        else spine.enabled = true;
+        spine.loop = false;
+        !!skin && spine.setSkin(skin);
+    }
+
 
     public a_setEmpty(): void {
         this.a_stop();
@@ -224,14 +254,16 @@ export class SetSpine extends FuckUi {
 
     private bindStartCall(spine: Skeleton) {
         spine?.setStartListener(() => {
-            this?.startCall.execute(spine.animation);
+            if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
+                this?.startCall.execute(spine.animation);
             spine?.setStartListener(() => { });
         });
     }
 
     private bindEndCall(spine: Skeleton) {
         spine?.setCompleteListener(() => {
-            this?.endCall.execute(spine.animation);
+            if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
+                this?.endCall.execute(spine.animation);
             spine?.setCompleteListener(() => { });
             this.setSpineData();
         });

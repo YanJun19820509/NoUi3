@@ -1,7 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TransformBit, JSB, TTFFont
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents
 } from "./yj";
 
 
@@ -4570,6 +4570,37 @@ export namespace no {
             //如果哪天原生支持yj_need_render，则开启
             // const btn = node.getComponent('YJButton');
             // if (btn) btn['canClick'] = v;
+        }
+        return node['yj_need_render'] !== false;
+    }
+
+    /**
+     * 设置节点可渲染标志
+     * @param node 
+     * @param v 
+     * @returns 
+     */
+    export function visibleByOpacity(node: Node, v?: boolean): boolean {
+        if (!checkValid(node)) return false;
+        if (!EDITOR) {
+            if (v != undefined && node['yj_need_render'] != v) {
+                node['yj_need_render'] = v;
+                const uiopacity = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+                if (!v) {
+                    node['yj_origin_opacity'] = uiopacity.opacity;
+                    uiopacity.opacity = 0;
+                } else {
+                    uiopacity.opacity = node['yj_origin_opacity'];
+                    if (!node.active) node.active = true;
+                }
+                const blockInputEvents = node.getComponent(BlockInputEvents);
+                if (blockInputEvents)
+                    blockInputEvents.enabled = v;
+
+                node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+                const btn = node.getComponent('YJButton');
+                if (btn) btn['canClick'] = v;
+            }
         }
         return node['yj_need_render'] !== false;
     }

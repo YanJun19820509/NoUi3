@@ -30,7 +30,7 @@ export class SetVisibility extends FuckUi {
     public set defaultActive(v: boolean) {
         if (this.default == v) return;
         this.default = v;
-        this.node.active = v;
+        no.visible(this.node, v);
     }
 
     @property({ serializable: true, visible() { return false; } })
@@ -76,6 +76,7 @@ export class SetVisibility extends FuckUi {
         if (!this.enabled) return;
         this.reverse && (v = !v);
         no.visible(this.node, v);
+        // no.log('$$$$$$$$$$$$  SetVisibility', this.bind_keys, v);
     }
 
     public a_show(): void {

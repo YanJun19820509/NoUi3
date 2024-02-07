@@ -48,7 +48,6 @@ export class YJPreCreateNodeInfo {
                 let n = this.createNum - this._createdNodes.length;
                 for (let i = 0; i < n; i++) {
                     const a = instantiate(item);
-                    // a.active = false;
                     no.visible(a, false);
                     this._createdNodes[this._createdNodes.length] = a;
                 }

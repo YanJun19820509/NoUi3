@@ -75,8 +75,9 @@ export class YJDynamicAtlas extends UIRenderer {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
-            this._spriteTexture = new DynamicAtlasTexture();
-            this._spriteTexture.initWithSize(1, 1);
+            this._spriteTexture = this.atlas._texture;
+            // this._spriteTexture = new DynamicAtlasTexture();
+            // this._spriteTexture.initWithSize(1, 1);
         }
     }
 

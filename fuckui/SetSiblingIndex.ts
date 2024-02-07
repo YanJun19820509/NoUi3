@@ -1,4 +1,4 @@
-
+import { no } from '../no';
 import { ccclass, menu, property, Enum } from '../yj';
 import { FuckUi } from './FuckUi';
 
@@ -29,13 +29,13 @@ export class SetSiblingIndex extends FuckUi {
     protected onDataChange(data: any) {
         switch (this.type) {
             case SiblingType.None:
-                this.node.setSiblingIndex(Number(data));
+                no.siblingIndex(this.node, Number(data));
                 break;
             case SiblingType.Top:
-                if (Boolean(data)) this.node.setSiblingIndex(this.node.parent.children.length - 1);
+                if (Boolean(data)) no.siblingIndex(this.node, this.node.parent.children.length - 1);
                 break;
             case SiblingType.Bottom:
-                if (Boolean(data)) this.node.setSiblingIndex(0);
+                if (Boolean(data)) no.siblingIndex(this.node, 0);
                 break;
         }
     }

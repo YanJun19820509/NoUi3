@@ -50,6 +50,9 @@ export class SetText extends FuckUi {
 
     onLoad() {
         super.onLoad();
+        if (!this.node.parent.getComponent('Layout')) {
+            no.siblingIndex(this.node, this.node.parent.children.length - 1);
+        }
     }
 
     protected onDataChange(data: any) {

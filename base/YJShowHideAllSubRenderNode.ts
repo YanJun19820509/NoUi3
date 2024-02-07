@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Layers, Node, sys } from '../yj';
+import { ccclass, property, Component, Layers, Node, sys, disallowMultiple } from '../yj';
 import { no } from '../no';
 
 /**
@@ -15,6 +15,7 @@ import { no } from '../no';
  */
 //显示or隐藏所有渲染子节点
 @ccclass('YJShowHideAllSubRenderNode')
+@disallowMultiple()
 export class YJShowHideAllSubRenderNode extends Component {
     @property({ readonly: true })
     showSubRenderNodeEvent: string = '_show_sub_render_node';
@@ -43,6 +44,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onShow(type: string) {
+        if (this.node.name == type) return;
         no.removeFromArray(this._fullPanels, type);
         if (!this._fullPanels.length) {
             this.showSubRenderNode();
@@ -50,6 +52,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private onHide(type: string) {
+        if (this.node.name == type) return;
         no.addToArray(this._fullPanels, type);
         this.showSubRenderNode();
     }
@@ -62,7 +65,6 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private changeLayer(node: Node, v: boolean) {
-        if (sys.platform == sys.Platform.WECHAT_GAME) return;
-        no.visible(node, v);
+        no.visibleByOpacity(node, v);
     }
 }

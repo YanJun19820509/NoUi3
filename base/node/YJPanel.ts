@@ -134,7 +134,6 @@ export class YJPanel extends Component {
 
     private cache() {
         this.hide();
-        this.node?.setSiblingIndex(0);
         // this.getComponentsInChildren(Component).forEach(c => {
         //     if (c.enabledInHierarchy) c['onDisable']?.();
         // });
@@ -150,6 +149,7 @@ export class YJPanel extends Component {
         this.status = 'close';
         no.visible(this.node, false);
         no.x(this.node, 10000);
+        no.siblingIndex(this.node, 0);
     }
 
     public show() {

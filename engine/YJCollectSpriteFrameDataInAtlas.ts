@@ -16,14 +16,14 @@ import { SpriteFrameDataType } from '../types';
 //查找所有图集的plist，获取spriteFrame的相关数据并生成json文件
 @ccclass('YJCollectSpriteFrameDataInAtlas')
 export class YJCollectSpriteFrameDataInAtlas extends Component {
-    @property({ displayName: '查找plist文件并生成json' })
-    public get run(): boolean {
-        return false;
-    }
+    // @property({ displayName: '查找plist文件并生成json' })
+    // public get run(): boolean {
+    //     return false;
+    // }
 
-    public set run(v: boolean) {
-        YJCollectSpriteFrameDataInAtlas.queryAllPlist();
-    }
+    // public set run(v: boolean) {
+    //     YJCollectSpriteFrameDataInAtlas.queryAllPlist();
+    // }
 
     @property({ type: SpriteAtlas, displayName: '单个图集' })
     public get oneAtlas(): SpriteAtlas {
@@ -38,6 +38,15 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         });
     }
 
+    @property
+    public get scale(): number {
+        return YJCollectSpriteFrameDataInAtlas._scale;
+    }
+
+    public set scale(v: number) {
+        YJCollectSpriteFrameDataInAtlas._scale = v;
+    }
+
     private static _scale: number = 1;
 
     private static queryAllPlist() {
@@ -46,7 +55,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
 
     private static getSpriteFramesInfo(atlas: SpriteAtlas): { [k: string]: SpriteFrameDataType } {
         const aa = atlas.name.split('_');
-        let scale = Number(aa[aa.length - 1]) || 1;
+        let scale = Number(aa[aa.length - 1]) || YJCollectSpriteFrameDataInAtlas._scale;
         if (scale != 1) scale = Math.floor(1 / scale * 1000) / 1000;
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
         atlas.getSpriteFrames().forEach(sf => {

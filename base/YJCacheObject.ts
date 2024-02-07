@@ -35,6 +35,7 @@ export class YJCacheObject extends Component {
     }
 
     public recycle(): void {
+        if (!this.enabled) return;
         this._recycled = true;
         no.cachePool.recycle(this.recycleType, this.node, this.needRelease);
     }

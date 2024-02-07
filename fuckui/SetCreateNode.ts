@@ -179,10 +179,11 @@ export class SetCreateNode extends FuckUi {
     }
 
     private setItem(data: any[], start: number, i: number) {
+        let item = this.container.children[start + i];
         if (data[i] == null) {
+            no.visible(item, false);
             return;
         }
-        let item = this.container.children[start + i];
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
             a.data = data[i];

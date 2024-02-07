@@ -242,10 +242,8 @@ export class YJLoadAssets extends Component {
 
         if (this.loadLanguageBundle) bundles[bundles.length] = YJi18n.ins.language;
         if (bundles.length == 0) return;
-        no.evn.emit('show_info___', `YJLoadAssets load 1 ${bundles}`)
         await this.loadBundles(bundles);
 
-        no.evn.emit('show_info___', 'YJLoadAssets load 2')
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             if (this.spriteFrameInfos[i].path) {
                 const bundle = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle,
@@ -279,12 +277,9 @@ export class YJLoadAssets extends Component {
                 requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
 
-        no.evn.emit('show_info___', 'YJLoadAssets load 3', requests)
         if (requests.length > 0) {
             let a = false;
-            no.evn.emit('show_info___', 'YJLoadAssets load 4')
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
-                no.evn.emit('show_info___', 'YJLoadAssets load 5', items?.length)
                 items.forEach(item => {
                     const uuid = item._uuid;
                     let i = atlasUuids.indexOf(uuid);
@@ -299,14 +294,11 @@ export class YJLoadAssets extends Component {
                 a = true;
             });
             await no.waitFor(() => { return a });
-            no.evn.emit('show_info___', 'YJLoadAssets load 5')
             if (this.loadLanguageBundle) {
                 await this._loadLanguageBundle();
-                no.evn.emit('show_info___', 'YJLoadAssets load 6')
             }
         } else if (this.loadLanguageBundle) {
             await this._loadLanguageBundle();
-            no.evn.emit('show_info___', 'YJLoadAssets load 7')
         }
         this.createMaterial();
         this.backgroundLoadInfos.forEach(info => {
@@ -315,10 +307,8 @@ export class YJLoadAssets extends Component {
     }
 
     private async _loadLanguageBundle() {
-        no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 1')
         let a = false;
         no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
-            no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 2', items?.length)
             if (items) {
                 items.forEach(item => {
                     if (item instanceof JsonAsset) {
@@ -331,15 +321,12 @@ export class YJLoadAssets extends Component {
             a = true;
         });
         await no.waitFor(() => { return a; });
-        no.evn.emit('show_info___', 'YJLoadAssets _loadLanguageBundle 3')
     }
 
     private async loadBundles(bundles: string[]) {
-        no.evn.emit('show_info___', bundles)
         no.log('YJLoadAssets loadBundles', bundles);
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadBundles(bundles, p => {
-                no.evn.emit('show_info___', `loadBundles pro ${p}`)
                 if (p >= 1) resolve();
             });
         });

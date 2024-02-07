@@ -41,7 +41,7 @@ const _a = setInterval(function () {
 const _hitTest = UITransform.prototype.hitTest;
 js.mixin(UITransform.prototype, {
     hitTest(screenPoint, windowId) {
-        if (!no.visible(this.node)) {
+        if (!no.visible(this.node) && !no.visibleByOpacity(this.node)) {
             // no.log('hitTest false', this.node.name)
             return false;
         }
@@ -56,7 +56,7 @@ js.mixin(Layout.prototype, {
         for (let i = 0; i < children.length; ++i) {
             const child = children[i];
             const uiTrans = child._uiProps.uiTransformComp;
-            if (child.activeInHierarchy && uiTrans && no.visible(child)) {
+            if (child.activeInHierarchy && uiTrans && no.visible(child) && no.visibleByOpacity(child)) {
                 this._usefulLayoutObj.push(uiTrans);
             }
         }

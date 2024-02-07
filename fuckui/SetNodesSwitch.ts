@@ -31,7 +31,7 @@ export class SwitchInfo {
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }
-            no.visible(node, a);
+            no.visibleByOpacity(node, a);
             no.x(node, !a ? 20000 : node['__origin_x__']);
         });
     }
