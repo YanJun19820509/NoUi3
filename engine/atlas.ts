@@ -71,10 +71,13 @@ export class Atlas {
 
         let x = p.x, y = p.y;
         this.setSpriteFrameTextureRect(_uuid, x, y, width, height, needRotated);
-        if (plat_not_mini_game)
-            this.drawImageAt(spriteFrame, x, y, needRotated);
-        else
-            this.drawTextureAt(spriteFrame, x, y);
+        this.drawImageAt(spriteFrame, x, y, needRotated);
+        // if (plat_not_mini_game)
+        //     this.drawImageAt(spriteFrame, x, y, needRotated);
+        // else {
+        //     if (!spriteFrame.texture['image']?.['data']) return null;
+        //     this.drawTextureAt(spriteFrame, x, y);
+        // }
         return {
             x: x,
             y: y,
@@ -319,7 +322,7 @@ export class DynamicAtlasTexture extends Texture2D {
 
         const gfxDevice = this._getGFXDevice();
         if (!gfxDevice) {
-            console.warn('Unable to get device');
+            console.warn('drawTextureAt Unable to get device');
             return;
         }
 
@@ -349,7 +352,7 @@ export class DynamicAtlasTexture extends Texture2D {
 
         const gfxDevice = this._getGFXDevice();
         if (!gfxDevice) {
-            console.warn('Unable to get device');
+            console.warn('drawImageAt Unable to get device');
             return;
         }
 
@@ -375,7 +378,7 @@ export class DynamicAtlasTexture extends Texture2D {
 
         const gfxDevice = this._getGFXDevice();
         if (!gfxDevice) {
-            console.warn('Unable to get device');
+            console.warn('drawTextureBufferAt Unable to get device');
             return;
         }
 
@@ -394,7 +397,7 @@ export class DynamicAtlasTexture extends Texture2D {
         }
         const gfxDevice = this._getGFXDevice();
         if (!gfxDevice) {
-            console.warn('Unable to get device');
+            console.warn('getTextureBuffer Unable to get device');
             return;
         }
         let buffer = new Uint8Array(rect.width * rect.height * 4);

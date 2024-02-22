@@ -2,7 +2,7 @@
 import {
     EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
-    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math
+    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents
 } from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -130,20 +130,14 @@ export class AutoCreateNode extends Component {
             this.node.getComponent(UITransform).setContentSize(size);
             // if (!this.node.getComponent(YJReleasePrefab))
             //     this.node.addComponent(YJReleasePrefab);
+            if (!this.node.getComponent(YJDataWork))
+                this.node.addComponent(YJDataWork);
             if (!this.node.getComponent(YJShowSpriteFrameInSample2D))
                 this.node.addComponent(YJShowSpriteFrameInSample2D);
+            if (!this.node.getComponent(BlockInputEvents))
+                this.node.addComponent(BlockInputEvents);
             this.parent = this.node.getChildByName('Canvas') || this.node;
-            // if (!this.node.getComponent(Widget)) {
-            //     let widget = this.node.addComponent(Widget);
-            //     widget.isAlignTop = true;
-            //     widget.isAlignBottom = true;
-            //     widget.isAlignLeft = true;
-            //     widget.isAlignRight = true;
-            //     widget.top = 0;
-            //     widget.bottom = 0;
-            //     widget.left = 0;
-            //     widget.right = 0;
-            // }
+
             config.nodes.forEach((n: any) => {
                 n.x = n.x - size.width / 2;
                 n.y = size.height / 2 - n.y;

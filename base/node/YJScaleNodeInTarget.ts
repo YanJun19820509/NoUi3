@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform } from '../../yj';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, isValid } from '../../yj';
 
 /**
  * Predefined variables
@@ -36,6 +36,7 @@ export class YJScaleNodeInTarget extends Component {
 
     private onResize() {
         if (!this.target) return;
+        if (!isValid(this.node)) return;
         let tSize = this.target.getComponent(UITransform).contentSize.clone();
         let size = this.node.getComponent(UITransform).contentSize;
         let scale = this.node.scale.clone();

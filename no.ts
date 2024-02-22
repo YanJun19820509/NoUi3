@@ -4600,9 +4600,17 @@ export namespace no {
                 node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
                 const btn = node.getComponent('YJButton');
                 if (btn) btn['canClick'] = v;
+                onVisibleChange(node, v);
             }
         }
         return node['yj_need_render'] !== false;
+    }
+
+    function onVisibleChange(node: Node, v: boolean) {
+        const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
+        arr.forEach(a => {
+            a.changeVisible(v);
+        });
     }
 
     /**

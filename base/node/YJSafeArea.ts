@@ -1,5 +1,5 @@
 
-import { ccclass, requireComponent, property, sys, Widget, SafeArea, UITransform, widgetManager } from '../../yj';
+import { ccclass, requireComponent, property, sys, Widget, SafeArea, UITransform, widgetManager, isValid } from '../../yj';
 import { EDITOR } from 'cc/env';
 import { YJFitScreen } from '../YJFitScreen';
 
@@ -27,6 +27,7 @@ export class YJSafeArea extends SafeArea {
 
     public updateArea() {
         // TODO Remove Widget dependencies in the future
+        if (!isValid(this.node)) return;
         const widget = this.node.getComponent(Widget) as Widget;
         const uiTransComp = this.node.getComponent(UITransform) as UITransform;
         if (!widget || !uiTransComp) {

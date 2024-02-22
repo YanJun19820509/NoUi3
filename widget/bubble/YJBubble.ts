@@ -1,5 +1,5 @@
 
-import { ccclass, property, v3, Vec3, UITransform } from '../../yj';
+import { ccclass, property, v3, Vec3, UITransform, isValid } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
@@ -41,6 +41,7 @@ export class YJBubble extends YJDataWork {
             pos.x = p.x;
             pos.y = p.y;
         } else return;
+        if (!isValid(this.node)) return;
         this.node.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
         this.setValue('pos', [pos.x + this.offset.x, pos.y + this.offset.y]);
         this.setValue('show', true);

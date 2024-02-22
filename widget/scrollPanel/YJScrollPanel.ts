@@ -1,5 +1,5 @@
 
-import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3 } from '../../yj';
+import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3, isValid } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
@@ -187,6 +187,7 @@ export class YJScrollPanel extends Component {
     }
 
     private checkScaleRange(): void {
+        if (!isValid(this.node)) return;
         let nsize = this.node.getComponent(UITransform).contentSize;
         let csize = this.content.getComponent(UITransform).contentSize;
         let minScale = Math.min(Math.max(nsize.width / csize.width, nsize.height / csize.height), 1);

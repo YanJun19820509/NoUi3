@@ -24,11 +24,13 @@ export class OpenWindowInfo {
     prefabPathOrUuid: string = '';
     @property
     to: string = '';
+    @property({ tooltip: '传参，仅用于show' })
+    args: string = '';
 
     public open() {
         if (this.windowName != '') {
             const clazz = js.getClassByName(this.windowName);
-            if (typeof clazz['show'] == 'function') clazz['show']();
+            if (typeof clazz['show'] == 'function') clazz['show'](!!this.args ? this.args : null);
             else if (clazz['$super'] == YJPanel)
                 YJWindowManager.createPanel(this.windowName, this.to);
         } else if (this.prefabPathOrUuid != '') {

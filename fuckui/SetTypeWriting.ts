@@ -1,7 +1,7 @@
 
 import {
     ccclass, property, executeInEditMode, EDITOR, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack,
-    LabelOutline, Layers, UITransform, math, UIOpacity, Vec2
+    LabelOutline, Layers, UITransform, math, UIOpacity, Vec2, isValid
 } from '../yj';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -316,6 +316,7 @@ export class SetTypeWritting extends FuckUi {
     private _anc: Vec2;
     private _width: number;
     private setPos(node: Node) {
+        if (!isValid(this.node)) return;
         if (this._x == null) {
             this._anc = this.node.getComponent(UITransform).anchorPoint;
             this._width = this.node.getComponent(UITransform).width;

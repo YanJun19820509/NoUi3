@@ -115,6 +115,7 @@ export class YJCharLabel extends Sprite {
         this._fontUuid = v ? v.uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
+        console.log(this._fontUuid)
     }
     //系统字体
     @property({ readonly: true })
@@ -419,6 +420,9 @@ export class YJCharLabel extends Sprite {
     private _texture: Texture2D;
     private _needSet: boolean = true;
 
+    private static fontMap: { [uuid: string]: TTFFont } = {};
+    private static fontLoading: { [uuid: string]: boolean } = {};
+
     onLoad() {
         super.onLoad();
         if (EDITOR) return;
@@ -444,7 +448,7 @@ export class YJCharLabel extends Sprite {
 
     private setLabel(): void {
         if (EDITOR && !this._needSetLabel) return;
-        if (!isValid(this.node) || !this.node.activeInHierarchy) {
+        if (!isValid(this.node)) {
             return;
         }
         this._needSet = false;
@@ -469,7 +473,7 @@ export class YJCharLabel extends Sprite {
     }
 
     private getUuid(): string {
-        let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + (this.fontFamily) + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
+        let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + this.fontFamily + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
         return a;
     }
 
@@ -504,7 +508,7 @@ export class YJCharLabel extends Sprite {
         }
         ctx.textAlign = 'left';
         ctx.imageSmoothingQuality = 'high';
-        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this._font?._fontFamily || this.fontFamily}`;
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
         ctx.fillStyle = color;
     }
 
@@ -1050,16 +1054,39 @@ export class YJCharLabel extends Sprite {
             this.setLabel();
     }
 
+    private getFontFromCache(fontUuid: string) {
+        return YJCharLabel.fontMap[fontUuid];
+    }
+
+    private setFontToCache(fontUuid: string, bf: TTFFont) {
+        if (!this.getFontFromCache(fontUuid))
+            YJCharLabel.fontMap[fontUuid] = bf;
+    }
+
+
     public async loadFont() {
         if (!this._font && this._fontUuid) {
-            return new Promise<void>(resolve => {
-                no.assetBundleManager.loadByUuid<TTFFont>(this._fontUuid, TTFFont, (file) => {
-                    if (file) {
-                        this._font = file;
-                    }
-                    resolve();
+            const bf = this.getFontFromCache(this._fontUuid);
+            if (bf) {
+                this._font = bf;
+            }
+            else if (YJCharLabel.fontLoading[this._fontUuid]) {
+                await no.sleep(0);
+                await this.loadFont();
+            }
+            else {
+                YJCharLabel.fontLoading[this._fontUuid] = true;
+                return new Promise<void>(resolve => {
+                    no.assetBundleManager.loadByUuid<TTFFont>(this._fontUuid, TTFFont, file => {
+                        if (file) {
+                            this._font = file;
+                            this.setFontToCache(this._fontUuid, file);
+                            this.fontFamily = this._font._fontFamily;
+                        }
+                        resolve();
+                    });
                 });
-            });
+            }
         }
     }
 }

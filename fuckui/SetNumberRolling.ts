@@ -1,4 +1,4 @@
-import { Label, RichText, ccclass, property } from '../../NoUi3/yj';
+import { Label, RichText, ccclass, isValid, property } from '../../NoUi3/yj';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { FuckUi } from './FuckUi';
@@ -46,6 +46,7 @@ export class SetNumberRolling extends FuckUi {
     }
 
     private setLabel(v: number) {
+        if (!isValid(this.node)) return;
         if (!this.label) {
             this.label = this.node.getComponent(Label) || this.node.getComponent(RichText) || this.node.getComponent(YJCharLabel);
         }

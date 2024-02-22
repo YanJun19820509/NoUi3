@@ -1,4 +1,5 @@
 
+import { no } from '../no';
 import { ccclass, property, menu, UITransform } from '../yj';
 import { FuckUi } from './FuckUi';
 
@@ -24,8 +25,7 @@ export class SetHeight extends FuckUi {
     max: number = 0;
 
     protected onDataChange(data: any) {
-        if (!this.node?.getComponent(UITransform)) return;
-        this.node.getComponent(UITransform).height = this.caculate(data);
+        no.height(this.node, this.caculate(data));
     }
 
     protected caculate(data: any): number {

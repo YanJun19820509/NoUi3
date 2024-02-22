@@ -175,15 +175,22 @@ export class YJDynamicAtlas extends UIRenderer {
         } else onFail?.();
     }
 
-    public packBitmapFontSpriteFrameToDynamicAtlas(font: BitmapFont, frame: SpriteFrame, canRotate?: boolean, onFail?: () => void) {
+    public packBitmapFontSpriteFrameToDynamicAtlas(bf: BitmapFont, canRotate?: boolean, onSuccess?: (bf: BitmapFont) => void, onFail?: () => void) {
         if (!this.isWork) {
             onFail?.();
             return;
         }
+        const frame = bf.spriteFrame;
         if (frame && frame.original && frame.texture._uuid == this.atlas?._texture._uuid) {
             onFail?.();
             return;
         }
+
+        let font = new BitmapFont();
+        font.name = bf.name;
+        font.fntConfig = bf.fntConfig;
+        font.fontDefDictionary = bf.fontDefDictionary;
+        font.fontSize = bf.fontSize;
         const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
         if (packedFrame) {
             let ff = frame.clone();
@@ -192,6 +199,7 @@ export class YJDynamicAtlas extends UIRenderer {
             ff._setDynamicAtlasFrame(packedFrame);
             font.spriteFrame = ff;
             no.setValueSafely(this.spriteFrameMap, { [frame.uuid]: ff });
+            onSuccess?.(font);
         } else onFail?.();
     }
 
@@ -269,7 +277,7 @@ export class YJDynamicAtlas extends UIRenderer {
         this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            console.log(`${this.thisNodeName}动态图集无空间！`);
+            no.err(`${this.thisNodeName}动态图集无空间！`);
         });
         return frame;
     }

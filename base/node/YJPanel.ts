@@ -156,6 +156,7 @@ export class YJPanel extends Component {
         this.status = 'open';
         no.visible(this.node, true);
         no.x(this.node, this._originX);
+        no.siblingIndex(this.node, 9999);
     }
 
     //////由子类实现
