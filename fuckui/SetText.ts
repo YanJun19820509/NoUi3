@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Label, RichText, EDITOR, BitmapFont, isValid } from '../yj';
+import { ccclass, property, menu, Label, RichText, EDITOR, BitmapFont, isValid, Layout } from '../yj';
 import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -50,7 +50,7 @@ export class SetText extends FuckUi {
 
     onLoad() {
         super.onLoad();
-        if (!this.node.parent.getComponent('Layout')) {
+        if (!this.node.parent.getComponent(Layout)) {
             no.siblingIndex(this.node, this.node.parent.children.length - 1);
         }
     }

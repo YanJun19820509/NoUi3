@@ -139,7 +139,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         this.lastDefine = t;
         this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
-        this.getComponent(YJVertexColorTransition).setEffect(defines);
+        this.getComponent(YJVertexColorTransition)?.setEffect(defines);
     }
 
     private setSpriteFrameForNotWeb(name: string) {

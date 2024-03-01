@@ -28,9 +28,9 @@ import { no } from '../no';
 @executeInEditMode()
 export class YJDynamicAtlas extends UIRenderer {
     @property({ min: 1, max: 2048, step: 1 })
-    width: number = 64;
+    width: number = 512;
     @property({ min: 1, max: 2048, step: 1 })
-    height: number = 64;
+    height: number = 512;
     @property({ visible() { return EDITOR; } })
     autoSetSubMaterial: boolean = false;
     @property({ tooltip: '文本是否合图' })

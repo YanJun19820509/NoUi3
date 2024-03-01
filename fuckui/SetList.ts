@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, ScrollView, Size, UITransform, Layout, size, isValid } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, ScrollView, Size, UITransform, Layout, size, isValid, v3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -175,11 +175,13 @@ export class SetList extends FuckUi {
             if (!this?.node?.isValid) return;
         } else if (this.autoScrollBack) {
             this.lastIndex = 0;
+            no.position(this.scrollViewContent, v3(0, 0));
             for (let i = 0, n = listItems.length; i < n; i++) {
                 let item = listItems[i];
                 this.setItemPosition(item, i);
             }
-        } else if (this.allNum != a.length) {
+        }
+        if (this.allNum != a.length) {
             this.allNum = a.length;
             await this.initItems();
             this.updatePos();
@@ -204,16 +206,19 @@ export class SetList extends FuckUi {
             this.content.getComponent(UITransform).width = this.contentSize;
             this.content.getComponent(UITransform).height = this.itemSize.height;
         }
-        let listItems = this.content.children;
-        for (let i = listItems.length; i < this.showNum; i++) {
-            let item = instantiate(this.template);
-            item.active = true;
-            item.parent = this.content;
-            if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                YJLoadAssets.setLoadAsset(item, this.loadAsset);
+        let listItems = this.content.children,
+            len = listItems.length;
+        if (this.showNum > len) {
+            for (let i = len; i < this.showNum; i++) {
+                let item = instantiate(this.template);
+                item.active = true;
+                item.parent = this.content;
+                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
+                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
+                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
+                }
+                this.setItemPosition(item, i);
             }
-            this.setItemPosition(item, i);
         }
     }
 

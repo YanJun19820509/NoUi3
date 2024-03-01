@@ -31,7 +31,7 @@ export class YJPanel extends Component {
 
     public lastCloseTime: number = -1;
 
-    public status: string = 'close';
+    public status: 'close' | 'open' = 'close';
 
     @property
     panelType: string = '';
@@ -52,8 +52,8 @@ export class YJPanel extends Component {
     @property({ displayName: '多点触摸' })
     multiTouch: boolean = false;
 
-    private _lastMultiTouchState: boolean = false;
-    private _originX: number;
+    protected _lastMultiTouchState: boolean = false;
+    protected _originX: number;
     private _loaded: boolean = false;
 
     onLoad() {
@@ -76,7 +76,8 @@ export class YJPanel extends Component {
      */
     public async initPanel(): Promise<void> {
         //todo 先调数据接口同时加载资源
-        no.evn.targetOff(this);
+        if (this.status == 'close')
+            no.evn.targetOff(this);
         no.evn.emit('show_info___', 'initPanel 1')
         if (!this._loaded) {
             this.status = 'open';

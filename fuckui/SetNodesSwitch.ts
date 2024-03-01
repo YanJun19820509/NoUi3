@@ -1,6 +1,6 @@
 
 import { no } from '../no';
-import { ccclass, property, menu, Node, EDITOR } from '../yj';
+import { ccclass, property, menu, Node, EDITOR, isValid } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -28,6 +28,7 @@ export class SwitchInfo {
         if (!this.conditions) this.conditions = this.condition.split(',');
         let a = this.conditions.indexOf(v) != -1;
         this.nodes.forEach(node => {
+            if (!isValid(node)) return;
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }

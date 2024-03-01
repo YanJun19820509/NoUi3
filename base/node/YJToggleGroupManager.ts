@@ -19,7 +19,7 @@ import { no } from '../../no';
 @menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
 @executeInEditMode()
 export class YJToggleGroupManager extends Component {
-    @property({ displayName: '默认选中项', min: 0, step: 1 })
+    @property({ displayName: '默认选中项', min: -1, step: 1, tooltip: '当为-1时都不选中' })
     defaultCheckedIdx: number = 0;
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
@@ -65,11 +65,16 @@ export class YJToggleGroupManager extends Component {
             let toggle = items[i];
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'a_onCheck', false);
             no.addClickEventsToButton(toggle, this.node, YJToggleGroupManager, 'p_onClick', false);
-            if (this.checkOnEnabel && this.defaultCheckedIdx == i) {
-                if (toggle.isChecked)
-                    (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
-                else
-                    this.a_onCheck(toggle);
+            if (this.checkOnEnabel) {
+                if (this.defaultCheckedIdx == -1) {
+                    toggle.isChecked = false;
+                    toggle.interactable = true;
+                } else if (this.defaultCheckedIdx == i) {
+                    if (toggle.isChecked)
+                        (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
+                    else
+                        this.a_onCheck(toggle);
+                }
             }
         }
     }
