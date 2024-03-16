@@ -50,6 +50,10 @@ export class YJHintWatcher extends Component {
     }
 
     protected setHint(v: number): void {
+        if (!this.hint) {
+            no.hintCenter.offHint(this);
+            return;
+        }
         let n = 0;
         if (this.hint.isNumber) {
             this.typeList.forEach(type => {

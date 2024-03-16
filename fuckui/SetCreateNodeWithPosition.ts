@@ -21,7 +21,7 @@ import { FuckUi } from './FuckUi';
 
 @ccclass('PositionInfo')
 export class PositionInfo {
-    @property
+    @property(Vec3)
     positions: Vec3[] = [];
 }
 
@@ -49,6 +49,8 @@ export class SetCreateNodeWithPosition extends FuckUi {
     previewNum: number = 0;
     @property({ editorOnly: true })
     previewCreate: boolean = false;
+    @property({ type: no.EventHandlerInfo })
+    afterCreated: no.EventHandlerInfo[] = [];
 
 
     protected needSetDynamicAtlas: boolean = true;
@@ -141,12 +143,14 @@ export class SetCreateNodeWithPosition extends FuckUi {
             no.visible(this.container.children[i], !!data[i]);
         }
 
+        let positionInfo = this.getPositions(n);
         if (n > l) {
             // this.container.active = false;
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) return false;
                 let item = instantiate(this.template);
                 item.active = true;
+                item.setPosition(positionInfo.positions[this.container.children.length]);
                 no.visible(item, false);
                 item.parent = this.container;
                 if (this.container.children.length >= max) return false;
@@ -156,17 +160,18 @@ export class SetCreateNodeWithPosition extends FuckUi {
         } else if (n - l == 1) {
             let item = instantiate(this.template);
             item.active = true;
+            item.setPosition(positionInfo.positions[this.container.children.length]);
             no.visible(item, false);
             item.parent = this.container;
         }
-        let positionInfo = this.getPositions(n);
         for (let i = 0; i < n; i++) {
-            this.setItem(data, 0, i, positionInfo.positions[i]);
+            this.setItem(data, 0, i);
         }
         this._isSettingData = false;
+        no.EventHandlerInfo.execute(this.afterCreated);
     }
 
-    private setItem(data: any[], start: number, i: number, pos: Vec3) {
+    private setItem(data: any[], start: number, i: number) {
         if (data[i] == null) {
             return;
         }
@@ -176,7 +181,6 @@ export class SetCreateNodeWithPosition extends FuckUi {
             a.data = data[i];
             a.init();
         }
-        item.setPosition(pos);
         // item.active = true;
         no.visible(item, true);
     }

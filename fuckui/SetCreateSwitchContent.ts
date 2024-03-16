@@ -1,5 +1,5 @@
 
-import { ccclass, property, executeInEditMode, EDITOR, Node } from '../yj';
+import { ccclass, property, executeInEditMode, EDITOR, Node, isValid } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
@@ -39,12 +39,13 @@ class ContentInfo {
     }
 
     public show(v: boolean): void {
-        if (this.loadedNode) { //this.loadedNode.active = v;
-            // if (this.loadedNode['__origin_x__'] == null) {
-            //     this.loadedNode['__origin_x__'] = no.x(this.loadedNode);
-            // }
-            no.visible(this.loadedNode, v);
-            // no.x(this.loadedNode, v ? this.loadedNode['__origin_x__'] : 20000);
+        if (this.loadedNode) {
+            if (!isValid(this.loadedNode)) return;
+            if (this.loadedNode['__origin_x__'] == null) {
+                this.loadedNode['__origin_x__'] = no.x(this.loadedNode);
+            }
+            no.visibleByOpacity(this.loadedNode, v);
+            no.x(this.loadedNode, !v ? 20000 : this.loadedNode['__origin_x__']);
         }
     }
 

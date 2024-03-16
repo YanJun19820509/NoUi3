@@ -63,13 +63,14 @@ js.mixin(Layout.prototype, {
     }
 });
 
-js.mixin(Toggle.prototype, {
-    playEffect() {
-        if (this._checkMark) {
-            no.visible(this._checkMark.node, this._isChecked)
-        }
-    }
-});
+//会出现错位，先去掉
+// js.mixin(Toggle.prototype, {
+//     playEffect() {
+//         if (this._checkMark) {
+//             no.visible(this._checkMark.node, this._isChecked)
+//         }
+//     }
+// });
 
 
 // const _commitIA: Function = cc['internal']?.['Batcher2D']['prototype']['commitIA'];

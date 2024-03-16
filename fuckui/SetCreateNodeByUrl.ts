@@ -21,7 +21,7 @@ import { FuckUi } from './FuckUi';
 /**
  * 参数 : {
  *  url: string,
- *  data: object | array
+ *  data: array
  * }
  */
 @ccclass('SetCreateNodeByUrl')

@@ -48,6 +48,7 @@ export class SetVisibility extends FuckUi {
     }
 
     protected onDataChange(data: any) {
+        if (!this.enabled) return;
         if (data instanceof Object) {
             let a = true;
             for (const key in data) {
@@ -67,6 +68,7 @@ export class SetVisibility extends FuckUi {
     }
 
     private setDefault() {
+        if (!this.enabled) return;
         if (this.dataSetted) return;
         if (this.default) no.visible(this.node, true);
         else no.visible(this.node, false);

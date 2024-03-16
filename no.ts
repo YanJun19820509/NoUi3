@@ -1,13 +1,14 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents, JSB
 } from "./yj";
 
 
 export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
+    let _appVer: string = '';
     let _isLogEnabled: boolean = DEBUG;
 
     export function setLogEnabled(v: boolean) {
@@ -21,12 +22,33 @@ export namespace no {
         _debug = v;
     }
 
+    /**
+     * 游戏资源版本
+     * @returns 
+     */
     export function gameVersion(): string {
         return _version;
     }
-
+    /**
+     * 游戏资源版本
+     * @param v 
+     */
     export function setGameVersion(v: string) {
         _version = v;
+    }
+    /**
+     * 上线版本
+     * @returns 
+     */
+    export function appVer(): string {
+        return _appVer;
+    }
+    /**
+     * 上线版本
+     * @param v 
+     */
+    export function setAppVer(v: string) {
+        _appVer = v;
     }
 
     /**
@@ -4554,22 +4576,32 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (!EDITOR) {
+        if (JSB) {
             if (v != undefined && node.active != v) {
                 node.active = v;
             }
             return node.active;
         }
+
+        if (node['__origin_x__'] == null) {
+            node['__origin_x__'] = no.x(node);
+        }
+        //原生不支持，小游戏支持
         if (v != undefined && node['yj_need_render'] != v) {
             node['yj_need_render'] = v;
             if (v) {
-                node.getWorldPosition(_pos);
-                node.setWorldPosition(_pos);
+                if (!node.active) node.active = true;
             }
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
-            //如果哪天原生支持yj_need_render，则开启
-            // const btn = node.getComponent('YJButton');
-            // if (btn) btn['canClick'] = v;
+            if (!EDITOR) {
+                no.x(node, !v ? 20000 : node['__origin_x__']);
+                const blockInputEvents = node.getComponent(BlockInputEvents);
+                if (blockInputEvents)
+                    blockInputEvents.enabled = v;
+                const btn = node.getComponent('YJButton');
+                if (btn)
+                    btn['canClick'] = v;
+            }
         }
         return node['yj_need_render'] !== false;
     }
@@ -4593,11 +4625,11 @@ export namespace no {
                     uiopacity.opacity = node['yj_origin_opacity'];
                     if (!node.active) node.active = true;
                 }
+                node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
                 const blockInputEvents = node.getComponent(BlockInputEvents);
                 if (blockInputEvents)
                     blockInputEvents.enabled = v;
 
-                node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
                 const btn = node.getComponent('YJButton');
                 if (btn) btn['canClick'] = v;
                 onVisibleChange(node, v);

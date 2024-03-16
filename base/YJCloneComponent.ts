@@ -1,4 +1,5 @@
 
+import { no } from '../no';
 import { ccclass, property, executeInEditMode, Component, Node, js } from '../yj';
 import { EDITOR } from 'cc/env';
 
@@ -17,31 +18,37 @@ import { EDITOR } from 'cc/env';
  * 节点组件clone，将target节点上node属性和enabled的组件clone到当前节点上
  */
 @ccclass('YJCloneComponent')
-@executeInEditMode()
 export class YJCloneComponent extends Component {
     @property(Node)
-    target: Node = null;
-    @property
-    asyncPosition: boolean = false;
+    public get target(): Node {
+        return null;
+    }
 
-    update() {
-        if (!EDITOR) return;
-        if (!this.target) return;
-        this.setNodeProperties();
-        let comps = this.target.getComponents(Component);
+    public set target(v: Node) {
+        this.setNodeProperties(v);
+        let comps = v.getComponents(Component);
         comps.forEach(comp => {
             if (!comp.enabled) return;
             this.addComp(comp);
         });
-        this.target = null;
     }
+    @property
+    asyncPosition: boolean = false;
+    @property
+    asyncUITransform: boolean = false;
 
-    private setNodeProperties() {
-        if (!this.asyncPosition) return;
-        this.node.position = this.target.position;
-        this.node.rotation = this.target.rotation;
-        this.node.scale = this.target.scale;
-        this.node.layer = this.target.layer;
+    private setNodeProperties(target: Node) {
+        if (this.asyncPosition) {
+            this.node.position = target.position;
+            this.node.rotation = target.rotation;
+            this.node.scale = target.scale;
+            this.node.layer = target.layer;
+        }
+        if (this.asyncUITransform) {
+            no.size(this.node, no.size(target));
+            const anchor = no.anchor(target);
+            no.anchor(this.node, anchor.x, anchor.y);
+        }
     }
 
     private addComp(comp: Component) {

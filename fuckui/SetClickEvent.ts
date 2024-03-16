@@ -37,9 +37,9 @@ export class SetClickEvent extends FuckUi {
         this._v = data;
     }
 
-    public a_onClick() {
+    public a_onClick(e: any, v: any) {
         if (this.type != '')
-            no.evn.emit(this.type, this._v);
-        no.EventHandlerInfo.execute(this.onClick, this._v);
+            no.evn.emit(this.type, this._v == null ? v : this._v);
+        no.EventHandlerInfo.execute(this.onClick, this._v == null ? v : this._v);
     }
 }

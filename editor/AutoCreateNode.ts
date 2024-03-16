@@ -125,8 +125,8 @@ export class AutoCreateNode extends Component {
             // console.log('createNodes', config);
             let size = new Size(config.width, config.height);
             let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
-            da.width = 64;
-            da.height = 64;
+            da.width = 512;
+            da.height = 512;
             this.node.getComponent(UITransform).setContentSize(size);
             // if (!this.node.getComponent(YJReleasePrefab))
             //     this.node.addComponent(YJReleasePrefab);
@@ -460,6 +460,8 @@ export class AutoCreateNode extends Component {
         n.parent = parent;
         n.setPosition(x, y);
         n.getComponent(UITransform).setContentSize(w, h || 30);
+        this.setAngle(n, cname);
+        this.setMirror(n, cname);
         this.setWidget(n);
         if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         return n;
@@ -560,5 +562,28 @@ export class AutoCreateNode extends Component {
             if (this.fonts[i].name == name) return this.fonts[i];
         }
         return null;
+    }
+
+    /**
+     * 设置旋转
+     * @param v 
+     */
+    private setAngle(node: Node, name: string) {
+        const a = name.split('_')[1];
+        if (!a || a.indexOf('^') != 0) return;
+        const angle = Number(a.replace('^', ''));
+        if (!angle) return;
+        node.angle = -angle;
+    }
+
+    /**
+     * 设置镜像
+     */
+    private setMirror(node: Node, name: string) {
+        const a = name.split('_')[1];
+        if (!a || a.indexOf('%') != 0) return;
+        const b = a.replace('%', '');
+        if (b == 'x') no.scale(node, v3(-1, 1));
+        else if (b == 'y') no.scale(node, v3(1, -1));
     }
 }

@@ -17,6 +17,10 @@ import { no } from '../../no';
 @ccclass('YJNodeTouchHandler')
 @menu('NoUi/touch/YJNodeTouchHandler(单个节点的触控处理)')
 export class YJNodeTouchHandler extends Component {
+    @property({ displayName: '捕获' })
+    useCapture: boolean = true;
+    @property({ displayName: '吞噬' })
+    canSwallow: boolean = true;
     @property(no.EventHandlerInfo)
     touchStart: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property(no.EventHandlerInfo)
@@ -27,10 +31,10 @@ export class YJNodeTouchHandler extends Component {
     touchCancel: no.EventHandlerInfo = new no.EventHandlerInfo();
 
     onEnable() {
-        this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this);
-        this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this);
-        this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this);
-        this.node.on(Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this);
+        this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this, this.useCapture);
+        this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this, this.useCapture);
+        this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this, this.useCapture);
+        this.node.on(Node.EventType.TOUCH_CANCEL, this.onTouchCancel, this, this.useCapture);
     }
 
     onDisable() {
@@ -41,18 +45,22 @@ export class YJNodeTouchHandler extends Component {
     }
 
     private onTouchStart(e: EventTouch) {
+        e.preventSwallow = !this.canSwallow;
         this.touchStart.execute(e);
     }
 
     private onTouchMove(e: EventTouch) {
+        e.preventSwallow = !this.canSwallow;
         this.touchMove.execute(e);
     }
 
     private onTouchEnd(e: EventTouch) {
+        e.preventSwallow = !this.canSwallow;
         this.touchEnd.execute(e);
     }
 
     private onTouchCancel(e: EventTouch) {
+        e.preventSwallow = !this.canSwallow;
         this.touchCancel.execute(e);
     }
 }

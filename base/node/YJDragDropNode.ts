@@ -1,9 +1,10 @@
 
-import { ccclass, property, Component, Node, EventTouch, math, UITransform, Rect, Vec3, Vec2 } from '../../yj';
+import { ccclass, property, Component, Node, EventTouch, math, UITransform, Rect, Vec3, Vec2, Vec4, v4 } from '../../yj';
 import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
 import { no } from '../../no';
 import { YJTouchListener } from '../touch/YJTouchListener';
 import { YJNodeTarget } from './YJNodeTarget';
+import { Range } from '../../types';
 
 /**
  * Predefined variables
@@ -33,6 +34,22 @@ export class YJDragDropNode extends YJTouchListener {
     onAchieveTarget: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '点击时' })
     onClick: no.EventHandlerInfo[] = [];
+    @property({ displayName: '开启左右拖动' })
+    moveX: boolean = true;
+    @property({ displayName: '开启上下拖动' })
+    moveY: boolean = true;
+    @property({ displayName: '开启拖动范围限制' })
+    isRange: boolean = false;
+    @property({ displayName: '拖动范围', visible() { return this.isRange; } })
+    range: Vec4 = v4();
+    @property({ displayName: '开启左右翻转', tooltip: '拖动到指定x坐标时进行左右翻转' })
+    isTurnX: boolean = false;
+    @property({ type: Range, displayName: '左右翻转点x', tooltip: '拖动时x小于该值scaleX为-1，否则为1', visible() { return this.isTurnX; } })
+    xTurnPos: Range = Range.new();
+    @property({ displayName: '开启上下翻转', tooltip: '拖动到指定y坐标时进行上下翻转' })
+    isTurnY: boolean = false;
+    @property({ type: Range, displayName: '上下翻转点y', tooltip: '拖动时x小于该值scaleY为-1，否则为1', visible() { return this.isTurnY; } })
+    yTurnPos: Range = Range.new();
 
     private _originalPos: Vec3;
     private _targetRect: Rect;
@@ -114,8 +131,28 @@ export class YJDragDropNode extends YJTouchListener {
     private setPosition(deltaPos: Vec2) {
         const node = this.moveTarget || this.node;
         let pos = no.position(node);
-        pos.add3f(deltaPos.x, deltaPos.y, 0);
+        pos.add3f(this.moveX ? deltaPos.x : 0, this.moveY ? deltaPos.y : 0, 0);
+        if (this.isRange) {
+            if (pos.x < this.range.x) pos.x = this.range.x;
+            if (pos.x > this.range.z) pos.x = this.range.z;
+            if (pos.y < this.range.y) pos.y = this.range.y;
+            if (pos.y > this.range.w) pos.y = this.range.w;
+        }
         no.position(node, pos);
+        let scale = no.scale(node);
+        if (this.isTurnX) {
+            if (pos.x < this.xTurnPos.min && scale.x != -1)
+                scale.x = -1;
+            else if (pos.x >= this.xTurnPos.max && scale.x != 1)
+                scale.x = 1;
+        }
+        if (this.isTurnY) {
+            if (pos.y < this.yTurnPos.min && scale.y != -1)
+                scale.y = -1;
+            else if (pos.y >= this.yTurnPos.max && scale.y != 1)
+                scale.y = 1;
+        }
+        no.scale(node, scale);
     }
 
     // private getTouchLocation(event: EventTouch): math.Vec2 {

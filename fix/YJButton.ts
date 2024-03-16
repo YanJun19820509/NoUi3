@@ -28,17 +28,20 @@ export class YJButton extends Component {
 
     private _clickEvents: EventHandler[] = [];
     private needWait: boolean = false;
+    private interactable: boolean;
 
     onEnable() {
         this.needWait = false;
-        let btn = this.getComponent(Button);
-        btn.clickEvents.forEach(e => {
-            this._clickEvents[this._clickEvents.length] = e;
-        });
-        btn.clickEvents.length = 0;
-        this.scheduleOnce(() => {
-            btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
-        }, this.wait);
+        if (this._clickEvents.length == 0) {
+            const btn = this.getComponent(Button);
+            btn.clickEvents.forEach(e => {
+                this._clickEvents[this._clickEvents.length] = e;
+            });
+            btn.clickEvents.length = 0;
+            this.scheduleOnce(() => {
+                btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
+            }, this.wait);
+        }
     }
 
     public addClickHandler(handler: EventHandler) {
@@ -58,5 +61,9 @@ export class YJButton extends Component {
 
     public set canClick(v: boolean) {
         this._canClick = v;
+        const btn = this.getComponent(Button);
+        if (this.interactable == null) this.interactable = btn.interactable;
+        if (v) btn.interactable = this.interactable;
+        else btn.interactable = false;
     }
 }

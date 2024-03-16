@@ -95,7 +95,7 @@ export class YJPanel extends Component {
                     no.evn.emit('show_info___', 'initPanel 5')
                     return Promise.resolve();
                 }).catch(e => {
-                    no.err('yjpanel', this.node.name, e);
+                    no.err('yjpanel', this.node.name, e.stack);
                     no.evn.emit('show_info___', 'initPanel 4', e.message)
                 });
             }
@@ -149,15 +149,24 @@ export class YJPanel extends Component {
     public hide() {
         this.status = 'close';
         no.visible(this.node, false);
-        no.x(this.node, 10000);
+        // no.x(this.node, 10000);
         no.siblingIndex(this.node, 0);
+        const arr: Component[] = this.getComponentsInChildren(Component);
+        arr.forEach(c => {
+            c.node.active && c['onDisable']?.();
+        });
     }
 
     public show() {
         this.status = 'open';
+        if (this.node.active) this.onEnable();
         no.visible(this.node, true);
-        no.x(this.node, this._originX);
+        // no.x(this.node, this._originX);
         no.siblingIndex(this.node, 9999);
+        const arr: Component[] = this.getComponentsInChildren(Component);
+        arr.forEach(c => {
+            c.node.active && c['onEnable']?.();
+        });
     }
 
     //////由子类实现

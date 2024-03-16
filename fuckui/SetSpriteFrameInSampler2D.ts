@@ -66,8 +66,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public setDynamicAtlas() {
         if (EDITOR) {
-            if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
-            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+            this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
+            this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
             if (this.getComponent(Sprite).spriteAtlas)
                 this.getComponent(Sprite).spriteAtlas = null;
         }
