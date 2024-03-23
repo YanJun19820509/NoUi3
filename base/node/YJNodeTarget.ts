@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, executeInEditMode, disallowMultiple, C
 import { no } from '../../no';
 import { YJFitScreen } from '../YJFitScreen';
 import { YJJobManager } from '../YJJobManager';
+import { YJTouchListener } from '../touch/YJTouchListener';
 
 /**
  * Predefined variables
@@ -115,13 +116,20 @@ export class YJNodeTarget extends Component {
      */
     public checkTouch(e: EventTouch, trigger = true): boolean {
         if (!no.checkValid(this.node)) return false;
-        let rect = no.nodeBoundingBox(this.node);
-        let a = rect.contains(YJFitScreen.fitTouchPoint(e.touch));
+        const rect = no.nodeBoundingBox(this.node);
+        const a = rect.contains(YJFitScreen.fitTouchPoint(e.touch));
         if (a && trigger) {
-            let btn = this.getComponent(Button);
-            if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e, btn);
-            if (btn instanceof Toggle)
-                btn.isChecked = true;
+            const btn = this.getComponent(Button);
+            if (btn) {
+                if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e, btn);
+                if (btn instanceof Toggle)
+                    btn.isChecked = true;
+            } else {
+                const touchListener = this.getComponent(YJTouchListener);
+                if (touchListener) {
+                    no.EventHandlerInfo.execute(touchListener.endHandlers);
+                }
+            }
         }
         return a;
     }

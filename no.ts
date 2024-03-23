@@ -1946,7 +1946,7 @@ export namespace no {
      */
     export function opacity(node: Node, opacity?: number): number {
         if (!node) return;
-        let op = node.getComponent(UIOpacity);
+        let op = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
         if (opacity != undefined) op.opacity = opacity;
         return op.opacity;
     }
@@ -2382,7 +2382,9 @@ export namespace no {
          * @param path 如a.b.c 或[a,b,c]
          */
         public getJSON(path?: string | string[]): any {
-            return this._json.get(path);
+            const a = this._json.get(path);
+            if (!a) err('配置数据不存在：', path);
+            return a;
         }
 
         /**
@@ -4576,7 +4578,7 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (JSB) {
+        if (!EDITOR) {
             if (v != undefined && node.active != v) {
                 node.active = v;
             }
@@ -4587,7 +4589,7 @@ export namespace no {
             node['__origin_x__'] = no.x(node);
         }
         //原生不支持，小游戏支持
-        if (v != undefined && node['yj_need_render'] != v) {
+        if (v != undefined) {
             node['yj_need_render'] = v;
             if (v) {
                 if (!node.active) node.active = true;
@@ -4614,18 +4616,20 @@ export namespace no {
      */
     export function visibleByOpacity(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (!EDITOR) {
-            if (v != undefined && node['yj_need_render'] != v) {
-                node['yj_need_render'] = v;
-                const uiopacity = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
-                if (!v) {
-                    node['yj_origin_opacity'] = uiopacity.opacity;
-                    uiopacity.opacity = 0;
-                } else {
-                    uiopacity.opacity = node['yj_origin_opacity'];
-                    if (!node.active) node.active = true;
-                }
-                node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+        if (v != undefined) {
+            node['yj_need_render'] = v;
+            const uiopacity = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+            if (node['yj_origin_opacity'] == null)
+                node['yj_origin_opacity'] = uiopacity.opacity;
+            if (!v) {
+                uiopacity.opacity = 0;
+            } else {
+                uiopacity.opacity = node['yj_origin_opacity'];
+                if (!node.active) node.active = true;
+            }
+            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
+
+            if (!EDITOR) {
                 const blockInputEvents = node.getComponent(BlockInputEvents);
                 if (blockInputEvents)
                     blockInputEvents.enabled = v;

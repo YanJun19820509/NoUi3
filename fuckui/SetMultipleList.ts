@@ -1,6 +1,5 @@
 import { EDITOR, Node, ScrollView, Size, Vec2, ccclass, instantiate, isValid, property, size } from '../../NoUi3/yj';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJJobManager } from '../base/YJJobManager';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -46,6 +45,8 @@ export class SetMultipleList extends FuckUi {
     templates: SetMultipleListInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
     onComplete: no.EventHandlerInfo[] = [];
+    @property({ type: no.EventHandlerInfo, displayName: '滚动时回调' })
+    onScrolling: no.EventHandlerInfo[] = [];
 
     @property(ScrollView)
     scrollView: ScrollView = null;
@@ -159,6 +160,10 @@ export class SetMultipleList extends FuckUi {
         return data;
     }
 
+    public updateData(d: any) {
+        this.listData = [].concat(d);
+    }
+
     private async initTemplates() {
         if (this._loaded) return;
         this.isVertical = this.scrollView.vertical;
@@ -259,6 +264,31 @@ export class SetMultipleList extends FuckUi {
         this._isSettingData = false;
     }
 
+    // private setList() {
+    //     if (!this.node.isValid) return;
+    //     for (const type in this.typeDataIndexMap) {
+    //         const indexs: number[] = this.typeDataIndexMap[type],
+    //             items: Node[] = this.itemsMap[type],
+    //             n = indexs.length,
+    //             len = items.length,
+    //             lastIndex = this.lastIndex;
+    //         let i = 0;
+    //         for (; i < n; i++) {
+    //             if (i >= lastIndex) break;
+    //         }
+    //         if (n - i < len) i = n - len;
+    //         for (let j = 0; j < len; j++) {
+    //             const k = indexs[i + j],
+    //                 item = items[j];
+    //             if (k != undefined) {
+    //                 this.setItemData(item, this.listData[k]);
+    //                 this.setItemPosition(item, k);
+    //                 no.visible(item, true);
+    //             }
+    //         }
+    //     }
+    // }
+
     private setList() {
         if (!this.node.isValid) return;
         for (const type in this.typeDataIndexMap) {
@@ -272,7 +302,8 @@ export class SetMultipleList extends FuckUi {
                             this.setItemData(item, this.listData[k]);
                             this.setItemPosition(item, k);
                             no.visible(item, true);
-                        } else
+                        }
+                        else
                             no.visible(item, false);
                     });
                     break;
@@ -302,6 +333,9 @@ export class SetMultipleList extends FuckUi {
                 if (nd) {
                     this.setItemData(item, nd);
                     this.setItemPosition(item, nIndex);
+                    no.visible(item, true);
+                } else {
+                    no.log(index);
                 }
             }
         } else {
@@ -321,6 +355,9 @@ export class SetMultipleList extends FuckUi {
                 if (nd) {
                     this.setItemData(item, nd);
                     this.setItemPosition(item, index);
+                    no.visible(item, true);
+                } else {
+                    no.log(index);
                 }
             }
         }
@@ -369,6 +406,7 @@ export class SetMultipleList extends FuckUi {
                 }
             }
         }
+        no.EventHandlerInfo.execute(this.onScrolling, curPos, -curPos / this.contentSize);
         if (this.positionMap[startIndex] == null) return;
 
         let diff = startIndex - this.lastIndex;

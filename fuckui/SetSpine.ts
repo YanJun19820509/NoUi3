@@ -117,7 +117,7 @@ export class SetSpine extends FuckUi {
     private setSpineData() {
         const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
-        let { path, skin, animation, loop, timeScale, loopNum, pause }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean } = data;
+        let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean, duration: number } = data;
         const spine = this.getComponent(Skeleton);
 
         if (!path && !animation) {
@@ -158,6 +158,7 @@ export class SetSpine extends FuckUi {
                     this.loopNum = loopNum;
                     this.playLoopNum(tempStr);
                 } else this.a_playOnce(tempStr);
+                this.playDuration(duration);
             });
         } else if (animation != null) {
             let tempStr = (skin ? (skin + ':') : '') + animation;
@@ -169,6 +170,7 @@ export class SetSpine extends FuckUi {
                 this.loopNum = loopNum;
                 this.playLoopNum(tempStr);
             } else this.a_playOnce(tempStr);
+            this.playDuration(duration);
         } else {
             spine.clearTracks();
             spine.enabled = false;
@@ -193,6 +195,17 @@ export class SetSpine extends FuckUi {
         else
             this.bindLoop1EndCall(spine);
         spine?.setAnimation(0, name, false);
+    }
+
+    private playDuration(duration: number) {
+        if (!duration) return;
+        this.scheduleOnce(() => {
+            const spine = this.getComponent(Skeleton);
+            spine.clearTrack(0);
+            spine.loop = false;
+            this?.endCall.execute(spine.animation);
+            this.setSpineData();
+        }, duration);
     }
 
     public a_playOnce(e: any, animation?: string) {

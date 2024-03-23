@@ -42,12 +42,13 @@ export class SetVisibility extends FuckUi {
     private _needSetDefault: boolean = true;
     onLoad() {
         super.onLoad();
-        if (!EDITOR && this._needSetDefault) {
+        if (!EDITOR) {
             this.setDefault();
         }
     }
 
     protected onDataChange(data: any) {
+        this._needSetDefault = false;
         if (!this.enabled) return;
         if (data instanceof Object) {
             let a = true;
@@ -68,8 +69,7 @@ export class SetVisibility extends FuckUi {
     }
 
     private setDefault() {
-        if (!this.enabled) return;
-        if (this.dataSetted) return;
+        if (!this.enabled || !this._needSetDefault) return;
         if (this.default) no.visible(this.node, true);
         else no.visible(this.node, false);
     }
@@ -82,17 +82,14 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_show(): void {
-        this._needSetDefault = false;
         this.setData('true');
     }
 
     public a_hide(): void {
-        this._needSetDefault = false;
         this.setData('false');
     }
 
     public a_changeVisible(): void {
-        this._needSetDefault = false;
         this.setData(no.visible(this.node) ? 'false' : 'true');
     }
 }

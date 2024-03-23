@@ -18,6 +18,8 @@ import { no } from '../../no';
 export class ListenerInfo {
     @property
     type: string = '';
+    @property({ tooltip: '' })
+    value: string = '';
     @property(no.EventHandlerInfo)
     calls: no.EventHandlerInfo[] = [];
 }
@@ -66,14 +68,30 @@ export class YJEventOn extends Component {
     }
 
     private _on(...args: string[]) {
+        if (!this.infos) {
+            this.onDisable();
+            return;
+        }
         let type = args.pop();
         no.log('YJEventOn', type, args);
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.type == type) {
-                no.EventHandlerInfo.execute(info.calls, type, args.length == 1 ? args[0] : args);
+                if (info.value == '')
+                    no.EventHandlerInfo.execute(info.calls, type, args.length == 1 ? args[0] : args);
+                else if (String(args[0]) == info.value) {
+                    args.shift();
+                    no.EventHandlerInfo.execute(info.calls, type, args);
+                }
                 break;
             }
         }
+    }
+
+    public setEventValue(v: string) {
+        const a = String(v).split(',');
+        this.infos.forEach((info, i) => {
+            info.value = a[i];
+        });
     }
 }

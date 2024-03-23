@@ -11,7 +11,7 @@ import { FuckUi } from './FuckUi';
  * FileBasenameNoExtension = SetScrollToPercent
  * URL = db://assets/Script/NoUi3/fuckui/SetScrollToPercent.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
- *
+ * data:number|{per:number, duration: number}
  */
 
 @ccclass('SetScrollToPercent')
@@ -35,11 +35,13 @@ export class SetScrollToPercent extends FuckUi {
 
     protected onDataChange(data: any) {
         this.scheduleOnce(() => {
-            this.a_scrollToPercent(data);
+            if (typeof data == 'number')
+                this.a_scrollToPercent(data);
+            else this.a_scrollToPercent(data.per, data.duration);
         }, this.wait);
     }
 
-    public a_scrollToPercent(per: number) {
+    public a_scrollToPercent(per: number, duration?: number) {
         if (!this.scrollView?.isValid) return;
         let cs = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
@@ -51,7 +53,7 @@ export class SetScrollToPercent extends FuckUi {
         if (!this.scrollView.horizontal) {
             offset.x = 0;
         }
-        this.scrollToOffset(offset, this.duration);
+        this.scrollToOffset(offset, duration || this.duration);
     }
 
     protected scrollToOffset(offset: Vec2, duration = 0) {

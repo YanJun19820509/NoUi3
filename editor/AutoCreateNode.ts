@@ -211,11 +211,10 @@ export class AutoCreateNode extends Component {
             n.name = aa[0];
             no.scale(n, new Vec3(aa[1], aa[1], 1));
         }
+        s.sizeMode = Sprite.SizeMode.CUSTOM;
         if (c['9'] || is9) {
-            s.sizeMode = Sprite.SizeMode.CUSTOM;
             s.type = Sprite.Type.SLICED;
         } else {
-            s.sizeMode = Sprite.SizeMode.RAW;
             s.type = Sprite.Type.SIMPLE;
         }
 
@@ -462,6 +461,8 @@ export class AutoCreateNode extends Component {
         n.getComponent(UITransform).setContentSize(w, h || 30);
         this.setAngle(n, cname);
         this.setMirror(n, cname);
+        this.setOpacity(n, cname);
+        this.setScale(n, cname);
         this.setWidget(n);
         if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         return n;
@@ -585,5 +586,25 @@ export class AutoCreateNode extends Component {
         const b = a.replace('%', '');
         if (b == 'x') no.scale(node, v3(-1, 1));
         else if (b == 'y') no.scale(node, v3(1, -1));
+    }
+
+    /**
+     * 设置透明度
+     */
+    private setOpacity(node: Node, name: string) {
+        const a = name.split('_')[1];
+        if (!a || a.indexOf('@') != 0) return;
+        const b = Number(a.replace('@', ''));
+        no.opacity(node, b);
+    }
+
+    /**
+     * 设置透明度
+     */
+    private setScale(node: Node, name: string) {
+        const a = name.split('_')[1];
+        if (a != 'scale') return;
+        const b = Number(a[2]);
+        no.scale(node, v3(b, b));
     }
 }

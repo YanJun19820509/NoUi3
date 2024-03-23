@@ -39,7 +39,7 @@ export class SwitchInfo {
 
     public init() {
         this.nodes.forEach(node => {
-            node.active = false;
+            no.visibleByOpacity(node, false);
         });
     }
 }
@@ -50,15 +50,15 @@ export class SetNodesSwitch extends FuckUi {
     @property(SwitchInfo)
     infos: SwitchInfo[] = [];
 
-    onLoad() {
-        super.onLoad();
-        if (EDITOR) {
-            for (let i = 0, n = this.infos.length; i < n; i++) {
-                let info = this.infos[i];
-                info.init();
-            }
-        }
-    }
+    // onLoad() {
+    //     super.onLoad();
+    //     if (EDITOR) {
+    //         for (let i = 0, n = this.infos.length; i < n; i++) {
+    //             let info = this.infos[i];
+    //             info.init();
+    //         }
+    //     }
+    // }
 
     protected onDataChange(data: any) {
         data = String(data);

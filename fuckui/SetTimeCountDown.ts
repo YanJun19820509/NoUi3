@@ -72,7 +72,7 @@ export class SetTimeCountDown extends FuckUi {
         }
     }
 
-    onDestroy() {
+    onDisable() {
         no.sysTime.offTickTock(this);
     }
 

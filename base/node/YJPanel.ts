@@ -151,10 +151,10 @@ export class YJPanel extends Component {
         no.visible(this.node, false);
         // no.x(this.node, 10000);
         no.siblingIndex(this.node, 0);
-        const arr: Component[] = this.getComponentsInChildren(Component);
-        arr.forEach(c => {
-            c.node.active && c['onDisable']?.();
-        });
+        // const arr: Component[] = this.getComponentsInChildren(Component);
+        // arr.forEach(c => {
+        //     c.node.active && c['onDisable']?.();
+        // });
     }
 
     public show() {
@@ -163,10 +163,10 @@ export class YJPanel extends Component {
         no.visible(this.node, true);
         // no.x(this.node, this._originX);
         no.siblingIndex(this.node, 9999);
-        const arr: Component[] = this.getComponentsInChildren(Component);
-        arr.forEach(c => {
-            c.node.active && c['onEnable']?.();
-        });
+        // const arr: Component[] = this.getComponentsInChildren(Component);
+        // arr.forEach(c => {
+        //     c.node.active && c['onEnable']?.();
+        // });
     }
 
     //////由子类实现
