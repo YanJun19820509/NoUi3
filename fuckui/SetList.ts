@@ -173,7 +173,7 @@ export class SetList extends FuckUi {
             this.showNum = this.showMax;
             await this.initItems();
             if (!this?.node?.isValid) return;
-        } else if (this.autoScrollBack) {
+        } else if (this.autoScrollBack || this.allNum != a.length) {
             this.lastIndex = 0;
             no.position(this.scrollViewContent, v3(0, 0));
             for (let i = 0, n = listItems.length; i < n; i++) {
@@ -182,9 +182,14 @@ export class SetList extends FuckUi {
             }
         }
         if (this.allNum != a.length) {
+            // this.lastIndex = 0;
+            // no.position(this.scrollViewContent, v3(0, 0));
             this.allNum = a.length;
             await this.initItems();
-            this.updatePos();
+            // for (let i = 0, n = listItems.length; i < n; i++) {
+            //     let item = listItems[i];
+            //     this.setItemPosition(item, i);
+            // }
         }
         this.listData = a;
         await this.setList();

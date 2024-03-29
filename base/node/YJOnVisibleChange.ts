@@ -4,9 +4,9 @@ import { Component, ccclass, property } from "../../yj";
 
 @ccclass('YJOnVisibleChange')
 export class YJOnVisibleChange extends Component {
-    @property({ type: no.EventHandlerInfo })
+    @property({ type: no.EventHandlerInfo, displayName: '可见时' })
     onVisible: no.EventHandlerInfo[] = [];
-    @property({ type: no.EventHandlerInfo })
+    @property({ type: no.EventHandlerInfo, displayName: '不可见时' })
     onInVisible: no.EventHandlerInfo[] = [];
 
     public changeVisible(v: boolean) {

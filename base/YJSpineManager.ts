@@ -1,6 +1,7 @@
 
 import { ccclass, Component, Node, SkeletonData } from '../yj';
 import { no } from '../no';
+import { singleObject } from '../types';
 
 /**
  * Predefined variables
@@ -15,12 +16,25 @@ import { no } from '../no';
  */
 //spine资源加载和缓存管理器
 @ccclass('YJSpineManager')
+@singleObject()
 export class YJSpineManager extends no.SingleObject {
     public static get ins(): YJSpineManager {
         return this.instance();
     }
 
     private _map: { [path: string]: { data: SkeletonData, t: number } } = {};
+    private _timer: any;
+    constructor() {
+        super();
+
+        if (this._timer) {
+            clearInterval(this._timer);
+            this._timer = null;
+        }
+        this._timer = setInterval(() => {
+            this.release();
+        }, 10000);
+    }
 
     public set(path: string, data?: SkeletonData) {
         if (this._map[path]) {
@@ -42,15 +56,23 @@ export class YJSpineManager extends no.SingleObject {
         // }
     }
 
-    public release(duration: number) {
-        const a = no.sysTime.now - duration;
+    public release() {
+        const a = no.sysTime.now - 5;
         let keys: string[] = [];
         for (const key in this._map) {
             if (this._map[key].t <= a) keys[keys.length] = key;
         }
         keys.forEach(k => {
-            this._map[k].data.decRef();
-            this._map[k] = null;
+            // this._map[k].data.decRef();
+            no.assetBundleManager.release(this._map[k].data, true);
+            delete this._map[k];
         });
+    }
+
+    public clear() {
+        if (this._timer) {
+            clearInterval(this._timer);
+            this._timer = null;
+        }
     }
 }

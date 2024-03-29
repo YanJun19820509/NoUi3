@@ -9,6 +9,7 @@ import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
 
 /**
  * Predefined variables
@@ -283,12 +284,16 @@ export class YJLoadAssets extends Component {
                 items.forEach(item => {
                     const uuid = item._uuid;
                     let i = atlasUuids.indexOf(uuid);
-                    if (i > -1)
+                    if (i > -1) {
                         this.atlases[i] = (item as JsonAsset).json;
-                    else {
+                        no.assetBundleManager.decRef(item);
+                    } else {
                         i = textureUuids.indexOf(uuid);
-                        if (i > -1)
+                        if (i > -1) {
                             this.textures[i] = item as Texture2D;
+                            item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
+                        } else
+                            no.assetBundleManager.decRef(item);
                     }
                 });
                 a = true;
@@ -326,7 +331,11 @@ export class YJLoadAssets extends Component {
     private async loadBundles(bundles: string[]) {
         no.log('YJLoadAssets loadBundles', bundles);
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadBundles(bundles, p => {
+            // no.assetBundleManager.loadBundles(bundles, p => {
+            //     if (p >= 1) resolve();
+            // });
+
+            YJRemotePackageDownloader.new.loadBundles(bundles, p => {
                 if (p >= 1) resolve();
             });
         });
@@ -349,7 +358,9 @@ export class YJLoadAssets extends Component {
             info.release && info.release(null);
         });
         this.textures.forEach(a => {
-            no.assetBundleManager.decRef(a);
+            // no.assetBundleManager.decRef(a);
+            if (--a['_yj_ref'] == 0)
+                no.assetBundleManager.release(a, true);
         });
         this.textures.length = 0;
         this.atlases.length = 0;

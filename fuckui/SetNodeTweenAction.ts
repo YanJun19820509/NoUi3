@@ -27,7 +27,15 @@ export class SetNodeTweenAction extends FuckUi {
     @property({ type: Node, displayName: '缓动目标' })
     targetNode: Node = null;
 
+    @property
+    canDisable: boolean = false;
+
     private _action: no.TweenSet | no.TweenSet[];
+
+    onDisable() {
+        if (this.canDisable)
+            this.stop();
+    }
 
     protected onDataChange(data: any) {
         this.stop();

@@ -87,10 +87,10 @@ export class SetCreateNode extends FuckUi {
         this.unscheduleAllCallbacks();
         this.a_clearData();
         if (this.clearOnDisable) {
-            // !this.recreateOnEnable && this.a_clearData();
-            // this.container?.children.forEach(child => {
-            //     child.destroy();
-            // });
+            !this.recreateOnEnable && this.a_clearData();
+            this.container?.children.forEach(child => {
+                child.destroy();
+            });
         }
     }
 

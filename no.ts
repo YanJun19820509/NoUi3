@@ -292,18 +292,21 @@ export namespace no {
             args = args || [];
             args[args.length] = type;
             if (DEBUG) {
-                a.forEach(b => {
+                for (let i = a.length - 1; i >= 0; i--) {
+                    const b = a[i];
                     try {
                         b.h.apply(b.t, args);
                     } catch (e) { console.error(e); }
-                });
-            } else
-                a.forEach(b => {
+                }
+            } else {
+                for (let i = a.length - 1; i >= 0; i--) {
+                    const b = a[i];
                     if (b.t && !checkValid(b.t)) {
                         b.o = true;
                     } else
                         b.h.apply(b.t, args);
-                });
+                }
+            }
             for (let i = a.length - 1; i >= 0; i--) {
                 let b = a[i];
                 if (b.o) {
@@ -2433,7 +2436,7 @@ export namespace no {
     /**资源管理 */
 
     export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset };
-    class AssetBundleManager {
+    export class AssetBundleManager {
 
         private needReleaseAssets: Asset[] = [];
         private remoteAssetsCache: any = {};

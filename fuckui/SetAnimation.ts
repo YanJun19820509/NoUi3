@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent , AnimationClip, Animation } from '../yj';
+import { ccclass, property, requireComponent, AnimationClip, Animation } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -18,6 +18,8 @@ import { FuckUi } from './FuckUi';
 @ccclass('SetAnimation')
 @requireComponent(Animation)
 export class SetAnimation extends FuckUi {
+    @property
+    defaultName: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '播放开始前的回调' })
     beforeStartHandlers: no.EventHandlerInfo[] = [];
 
@@ -43,7 +45,7 @@ export class SetAnimation extends FuckUi {
         let ani = this.getComponent(Animation);
         await no.waitFor(() => { return ani.enabled; }, this);
         let { path, name, speed, repeat } = data;
-
+        name = name || this.defaultName;
         if (name) {
             if (!ani.getState(name) && path) {
                 if (!await this._loadClip(path, name)) return;

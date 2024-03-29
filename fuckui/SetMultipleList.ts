@@ -303,8 +303,10 @@ export class SetMultipleList extends FuckUi {
                             this.setItemPosition(item, k);
                             no.visible(item, true);
                         }
-                        else
+                        else {
                             no.visible(item, false);
+                            item['__dataIndex'] = -1;
+                        }
                     });
                     break;
                 }
@@ -346,9 +348,10 @@ export class SetMultipleList extends FuckUi {
                     items = this.itemsMap[templateType];
                 if (no.itemOfArray(items, index, '__dataIndex')) continue;
                 const indexs = this.typeDataIndexMap[templateType],
-                    i = indexs.indexOf(index) + showNum,
-                    nIndex = indexs[i],
-                    item: Node = no.itemOfArray(items, nIndex, '__dataIndex');
+                    i = indexs.indexOf(index) + showNum;
+                let nIndex = indexs[i];
+                if (nIndex == undefined) nIndex = -1;
+                let item: Node = no.itemOfArray(items, nIndex, '__dataIndex');
                 // no.log(`setMultipleList from ${nIndex} to ${index}`)
                 if (!item) continue;
                 const nd = this.listData[index];

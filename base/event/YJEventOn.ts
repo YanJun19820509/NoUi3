@@ -83,7 +83,7 @@ export class YJEventOn extends Component {
                     args.shift();
                     no.EventHandlerInfo.execute(info.calls, type, args);
                 }
-                break;
+                // break;
             }
         }
     }

@@ -185,5 +185,6 @@ export class YJPanel extends Component {
 
     protected onClosePanel() {
         no.evn.targetOff(this);
+        this.unscheduleAllCallbacks();
     }
 }
