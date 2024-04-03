@@ -177,6 +177,7 @@ export class YJWindowManager extends Component {
                 if (!pf) return;
                 const node = instantiate(pf);
                 no.assetBundleManager.setPrefabNode(prefabPathOrUuid, node);
+                no.assetBundleManager.decRef(pf);
                 self.prefabPathOrUuidToNodeName[prefabPathOrUuid] = node.getComponent(YJPanel).panelType;
                 if (!content?.isValid) {
                     return
@@ -316,6 +317,7 @@ export class YJWindowManager extends Component {
 
     public static clearAll() {
         YJWindowManager._ins.clearAll();
+        no.assetBundleManager.clearPrefabNode();
     }
 
     public static clearClosedPanel() {

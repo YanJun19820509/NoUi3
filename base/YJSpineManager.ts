@@ -22,7 +22,7 @@ export class YJSpineManager extends no.SingleObject {
         return this.instance();
     }
 
-    private _map: { [path: string]: { data: SkeletonData, t: number } } = {};
+    private _map: { [path: string]: { data: SkeletonData, ref: number, t: number } } = {};
     private _timer: any;
     constructor() {
         super();
@@ -33,30 +33,34 @@ export class YJSpineManager extends no.SingleObject {
         }
         this._timer = setInterval(() => {
             this.release();
-        }, 10000);
+        }, 2000);
     }
 
     public set(path: string, data?: SkeletonData) {
         if (this._map[path]) {
+            this._map[path].ref--;
             this._map[path].t = no.sysTime.now;
         } else if (!!data) {
-            this._map[path] = { data: data, t: no.sysTime.now };
+            this._map[path] = { data: data, t: no.sysTime.now, ref: 0 };
         }
     }
 
     public async get(path: string): Promise<SkeletonData> {
-        // if (this._map[path]) return this._map[path].data;
-        // else {
-        return new Promise<SkeletonData>(resolve => {
-            no.assetBundleManager.loadSpine(path, res => {
-                resolve(res);
-                this._map[path] = { data: res, t: no.sysTime.now + 86400 };
+        if (this._map[path]) {
+            this._map[path].ref++;
+            return this._map[path].data;
+        }
+        else {
+            return new Promise<SkeletonData>(resolve => {
+                no.assetBundleManager.loadSpine(path, res => {
+                    resolve(res);
+                    this._map[path] = { data: res, t: no.sysTime.now + 86400, ref: 1 };
+                });
             });
-        });
-        // }
+        }
     }
 
-    public release() {
+    private release() {
         const a = no.sysTime.now - 5;
         let keys: string[] = [];
         for (const key in this._map) {
@@ -64,12 +68,14 @@ export class YJSpineManager extends no.SingleObject {
         }
         keys.forEach(k => {
             // this._map[k].data.decRef();
-            no.assetBundleManager.release(this._map[k].data, true);
-            delete this._map[k];
+            if (this._map[k].ref == 0) {
+                no.assetBundleManager.release(this._map[k].data, true);
+                delete this._map[k];
+            }
         });
     }
 
-    public clear() {
+    private clear() {
         if (this._timer) {
             clearInterval(this._timer);
             this._timer = null;

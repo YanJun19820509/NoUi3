@@ -95,6 +95,7 @@ export class SetSpine extends FuckUi {
         this.a_clearData();
         let spine = this.getComponent(Skeleton);
         spine?.clearTracks();
+        spine?.destroyRenderData();
     }
 
     onDestroy() {

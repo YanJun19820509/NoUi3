@@ -290,7 +290,7 @@ export class LoadAssetsInfo {
         let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
         if (file) {
             cb?.(file);
-            no.assetBundleManager.release(file);
+            no.assetBundleManager.decRef(file);
         }
     }
 

@@ -2490,6 +2490,10 @@ export namespace no {
             this._cacheNode[k] = node;
         }
 
+        public clearPrefabNode() {
+            this._cacheNode = {};
+        }
+
         /**
          * 预加载bundles
          * @param paths

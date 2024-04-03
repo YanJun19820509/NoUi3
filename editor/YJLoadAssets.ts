@@ -134,6 +134,8 @@ export class YJLoadAssets extends Component {
     loadLanguageBundle: boolean = true;
     @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
     onLoaded: no.EventHandlerInfo[] = [];
+    @property({ displayName: '不主动释放资源' })
+    notRelease: boolean = false;
     @property(TextureInfo)
     textureInfos: TextureInfo[] = [];
     @property
@@ -358,9 +360,12 @@ export class YJLoadAssets extends Component {
             info.release && info.release(null);
         });
         this.textures.forEach(a => {
-            // no.assetBundleManager.decRef(a);
-            if (--a['_yj_ref'] == 0)
-                no.assetBundleManager.release(a, true);
+            if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
+                if (this.notRelease)
+                    no.assetBundleManager.decRef(a);
+                else if (--a['_yj_ref'] == 0)
+                    no.assetBundleManager.release(a, true);
+            } else no.assetBundleManager.decRef(a);
         });
         this.textures.length = 0;
         this.atlases.length = 0;

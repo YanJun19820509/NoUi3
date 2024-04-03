@@ -65,12 +65,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setDynamicAtlas() {
-        if (EDITOR) {
+        if (this.getComponent(Sprite).spriteAtlas)
+            this.getComponent(Sprite).spriteAtlas = null;
+        if (!this.loadAsset)
             this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
+        if (!this.dynamicAtlas)
             this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-            if (this.getComponent(Sprite).spriteAtlas)
-                this.getComponent(Sprite).spriteAtlas = null;
-        }
     }
 
     public initSpriteFrameInfo() {
@@ -89,6 +89,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(spriteName: string) {
+        this.setDynamicAtlas();
         if (!this.enabled || !spriteName) return;
         if (!this.loadAsset) {
             this.resetSprite();
@@ -155,6 +156,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setSpriteFrameByDefaultSpriteFrameUuid() {
         if (this.defaultSpriteFrameUuid) {
+            // no.err('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid);
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
                 sprite.customMaterial = this.dynamicAtlas?.customMaterial;
