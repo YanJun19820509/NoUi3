@@ -1,7 +1,9 @@
 
 import {
-    EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Component, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton, v2, sys
+    EDITOR, ccclass, property, disallowMultiple, SpriteFrame, Label, UIRenderer, Texture2D,
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton,
+    Graphics,
+    Component
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas, DynamicAtlasTexture } from './atlas';
@@ -25,14 +27,62 @@ import { no } from '../no';
  */
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
-@executeInEditMode()
-export class YJDynamicAtlas extends UIRenderer {
+export class YJDynamicAtlas extends Component {
+    @property({ type: Material })
+    customMaterial: Material = null;
+    @property
+    public get createMaterial(): boolean {
+        return false;
+    }
+
+    public set createMaterial(v: boolean) {
+        const material = this.customMaterial;
+        if (!material) {
+            const prefab = this.node['_prefab'].asset;
+            no.getAssetUrlInEditorMode(prefab.uuid, url => {
+                const path = url.replace('.prefab', '.mtl');
+                Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
+                    no.assetBundleManager.loadFileInEditorMode<Material>(path, Material, m => {
+                        this.customMaterial = m;
+                        this.setSubMaterial = true;
+                    });
+                });
+            });
+        }
+    }
     @property({ min: 1, max: 2048, step: 1 })
     width: number = 512;
     @property({ min: 1, max: 2048, step: 1 })
     height: number = 512;
-    @property({ visible() { return EDITOR; } })
-    autoSetSubMaterial: boolean = false;
+    @property
+    public get setSubMaterial(): boolean {
+        return false;
+    }
+
+    public set setSubMaterial(v: boolean) {
+        let renderComps = this.getComponentsInChildren(UIRenderer);
+        renderComps.forEach(comp => {
+            if (comp instanceof Skeleton) return;
+            if (comp instanceof Graphics) return;
+            if (!comp.customMaterial)
+                comp.customMaterial = this.customMaterial;
+        });
+    }
+    @property
+    public get clearSubMaterial(): boolean {
+        return false;
+    }
+
+    public set clearSubMaterial(v: boolean) {
+        let renderComps = this.getComponentsInChildren(UIRenderer);
+        renderComps.forEach(comp => {
+            if (comp instanceof Skeleton) return;
+            if (comp instanceof Graphics) return;
+            if (this.customMaterial == comp.customMaterial)
+                comp.customMaterial = null;
+        });
+        this.customMaterial = null;
+    }
     @property({ tooltip: '文本是否合图' })
     packLabel: boolean = true;
 
@@ -337,19 +387,27 @@ export class YJDynamicAtlas extends UIRenderer {
         // });
     }
 
+    public setMaterialTextures(textureUuids: string[]) {
+        if (!EDITOR) return;
+        const material = this.customMaterial;
+        if (material) {
+            let props: any = {};
+            textureUuids.forEach((uuid, i) => {
+                const key = `atlas${i}`;//空出atlas0，用于放多语言
+                props[key] = {
+                    "__uuid__": uuid,
+                    "__expectedType__": "cc.Texture2D"
+                };
+            });
+            this.setSubMaterial = true;
 
-    //////////////EDITOR/////////////
-    update() {
-        if (!EDITOR) {
-            return;
+            const fs = require('fs');
+            Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {
+                console.log(info);
+                let json = JSON.parse(fs.readFileSync(info.file));
+                json['_props'] = [props];
+                fs.writeFileSync(info.file, JSON.stringify(json, null, 2));
+            });
         }
-        if (!this.autoSetSubMaterial) return;
-        this.autoSetSubMaterial = false;
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (this.customMaterial != comp.customMaterial)
-                comp.customMaterial = this.customMaterial;
-        });
     }
 }

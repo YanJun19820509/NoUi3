@@ -79,8 +79,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!!name && this.defaultName != name) {
             this.defaultName = name;
         }
-        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame._uuid != this.defaultSpriteFrameUuid))
-            this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame._uuid;
+        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid))
+            this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
     }
 
     onDataChange(data: any) {
@@ -89,6 +89,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(spriteName: string) {
+        if (spriteName == 'sea') {
+            console.log(1)
+        }
         this.setDynamicAtlas();
         if (!this.enabled || !spriteName) return;
         if (!this.loadAsset) {
@@ -123,10 +126,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (name != this.defaultName) this._lastName = name;
-        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) {
-            this.setSpriteFrameForNotWeb(name)
-            return;
-        }
+        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) {
+        //     this.setSpriteFrameForNotWeb(name)
+        //     return;
+        // }
         if (!spriteFrame) {
             no.err('setSpriteFrame not get', name);
             this.resetSprite();
@@ -156,7 +159,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setSpriteFrameByDefaultSpriteFrameUuid() {
         if (this.defaultSpriteFrameUuid) {
-            // no.err('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid);
+            no.err('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid);
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
                 sprite.customMaterial = this.dynamicAtlas?.customMaterial;

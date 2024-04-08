@@ -68,7 +68,7 @@ export class YJSpineManager extends no.SingleObject {
         }
         keys.forEach(k => {
             // this._map[k].data.decRef();
-            if (this._map[k].ref == 0) {
+            if (this._map[k].ref <= 0) {
                 no.assetBundleManager.release(this._map[k].data, true);
                 delete this._map[k];
             }

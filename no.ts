@@ -3447,6 +3447,23 @@ export namespace no {
                     this.targetMap.delete(type);
             }
         }
+
+        public getSub<T>(type: string, subs: string[]): T {
+            let target = this.get<any>(type);
+            let sub = subs.shift();
+            if (!isNaN(Number(sub)))
+                target = target.node.children[sub]?.getComponentsInChildren('YJNodeTarget')[0];
+            else if (subs.length == 0) {
+                let arr = target.node.getComponentsInChildren('YJNodeTarget');
+                for (let i = 0, n = arr.length; i < n; i++) {
+                    if (arr[i].subType == sub) {
+                        return arr[i];
+                    }
+                }
+            }
+            if (subs.length == 0) return target;
+            return this.getSub<T>(sub, subs);
+        }
     }
     /**全局节点管理类 */
     export const nodeTargetManager = new NodeTargetManager();

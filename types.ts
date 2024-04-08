@@ -299,6 +299,7 @@ export class LoadAssetsInfo {
             this.path = '';
         } else {
             no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+                this.assetName = info.name;
                 this.path = info?.path;
             });
         }

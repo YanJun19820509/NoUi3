@@ -113,8 +113,8 @@ export class AutoCreateNode extends Component {
         // console.log('loadjson');
         no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
             // console.log(f.json);
-            this.createNodes(f.json);
             this.deleteConfigFile(dest + `/${name}.json`);
+            this.createNodes(f.json);
         }, () => {
             this.enabled = false;
         });
