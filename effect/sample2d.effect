@@ -24,7 +24,6 @@ CCEffect %{
         atlas4: {value: black}
         atlas5: {value: black}
         atlas6: {value: black}
-        atlas7: {value: black}
 }%
 
 CCProgram vs %{
@@ -33,9 +32,9 @@ CCProgram vs %{
 
 CCProgram unlit-fs %{
   precision highp float;
-  #include <cc-global>
-  #include <embedded-alpha>
-  #include <alpha-test>
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
   #include <./common-fs>
   #include <./utils>
 
@@ -46,53 +45,43 @@ CCProgram unlit-fs %{
   uniform sampler2D atlas4;
   uniform sampler2D atlas5;
   uniform sampler2D atlas6;
-  uniform sampler2D atlas7;
 
-  vec4 setTexture(float type, vec2 uv, vec4 _color){
+  vec4 setTexture(int type, vec2 uv){
     //贴图纹理取值0
-    if (type == 1.){ 
-      _color *= normalTexture(atlas0, uv);
+    if (type == 0){ 
+      return texture(atlas0, uv);
     }
 
     //贴图纹理取值1
-    else if (type == 2.){ 
-      _color *= normalTexture(atlas1, uv);
+    else if (type == 1){ 
+      return texture(atlas1, uv);
     }
 
     //贴图纹理取值2
-    else if (type == 3.){ 
-      _color *= normalTexture(atlas2, uv);
+    else if (type == 2){ 
+      return texture(atlas2, uv);
     }
 
     //贴图纹理取值3
-    else if (type == 4.){ 
-      _color *= normalTexture(atlas3, uv);
+    else if (type == 3){ 
+      return texture(atlas3, uv);
     }
 
     //贴图纹理取值4
-    else if (type == 5.){ 
-      _color *= normalTexture(atlas4, uv);
+    else if (type == 4){ 
+      return texture(atlas4, uv);
     }
 
     //贴图纹理取值5
-    else if (type == 6.){ 
-      _color *= normalTexture(atlas5, uv);
+    else if (type == 5){ 
+      return texture(atlas5, uv);
     }
 
     //贴图纹理取值6
-    else if (type == 7.){ 
-      _color *= normalTexture(atlas6, uv);
+    else if (type == 6){ 
+      return texture(atlas6, uv);
     }
-
-    //贴图纹理取值7
-    else if (type == 8.){ 
-      _color *= normalTexture(atlas7, uv);
-    }else {
-      #if USE_TEXTURE
-        _color *= normalTexture(cc_spriteTexture, uv);
-      #endif
-    }
-    return _color;
+    return vec4(1, 1, 1, 1);
   }
 
   vec4 setEffect(float type, vec4 _color){
@@ -148,17 +137,12 @@ CCProgram unlit-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    
-    if (def < 0.0){
-      float defs = abs(def);
-      float t1 = floor((defs+1.)/100.);//有些手机整除后floor后会-1，所以不能整除
-      float t2 = (defs - t1 * 100.);
-      o = setTexture(t1, uv0, o);
+    int tt1 = int(t1) - 1;
+    if (tt1 >= 0){
+      o *= setTexture(tt1, uv0);
       o = setEffect(t2, o);
     } else {
-      #if USE_TEXTURE
-        o *= normalTexture(cc_spriteTexture, uv0);
-      #endif
+      o *= normalTexture(cc_spriteTexture, uv0);
     }
 
     o*=color;

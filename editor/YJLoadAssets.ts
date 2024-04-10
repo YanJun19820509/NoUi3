@@ -10,7 +10,6 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
-import { resolve } from 'path';
 
 /**
  * Predefined variables
@@ -227,7 +226,7 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    @property
+    @property({ visible() { return false; } })
     public get setMaterial(): boolean {
         return false;
     }
@@ -345,10 +344,8 @@ export class YJLoadAssets extends Component {
 
         if (requests.length > 0) {
             await this._loadTextures(requests, atlasUuids, textureUuids);
-            if (this.loadLanguageBundle) {
-                await this._loadLanguageBundle(atlasUuids, textureUuids, needCreateMaterial);
-            }
-        } else if (this.loadLanguageBundle) {
+        }
+        if (this.loadLanguageBundle) {
             await this._loadLanguageBundle(atlasUuids, textureUuids, needCreateMaterial);
         }
         if (needCreateMaterial)
@@ -359,6 +356,7 @@ export class YJLoadAssets extends Component {
     }
 
     private async _loadMaterial(path: string) {
+        console.log('_loadMaterial', path)
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadMaterial(path, item => {
                 item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
@@ -444,7 +442,7 @@ export class YJLoadAssets extends Component {
     }
 
     private createMaterial() {
-        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
+        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
         const ssm = this.getComponent(YJSetSample2DMaterial);
         if (ssm && ssm.enabled && this.textures.length) {
             ssm.setAtlases(this.textures);
@@ -456,7 +454,7 @@ export class YJLoadAssets extends Component {
         const material = this.getComponent(YJDynamicAtlas).customMaterial;
         if (material) {
             const key = `atlas${i}`;
-            if (no.materialHasProperty(material, key)) {
+            if (no.materialHasProperty(material, 0, 0, key)) {
                 material.setProperty(key, this.textures[i], 0);
             }
         }

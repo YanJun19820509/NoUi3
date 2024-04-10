@@ -29,7 +29,7 @@ export class YJSetSample2DMaterial extends Component {
         const material = this.material;
         for (let i = 0, n = textures.length; i < n; i++) {
             const key = `atlas${i}`;
-            if (no.materialHasProperty(material, key)) {
+            if (no.materialHasProperty(material, 0, 0, key)) {
                 material.setProperty(key, textures[i], 0);
             }
         }

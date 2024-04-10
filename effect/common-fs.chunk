@@ -2,6 +2,8 @@ in vec4 color;
 in vec2 ext;
 in float def;
 in vec2 uv0;  
+in float t1;
+in float t2; 
 
 #if USE_TEXTURE
   #pragma builtin(local)
@@ -16,7 +18,6 @@ uniform ZZ {
 //标准纹理效果
 vec4 normalTexture(sampler2D _texture, vec2 _uv) {
   #if USE_TEXTURE
-    // return texture(_texture, _uv);
     return CCSampleWithAlphaSeparated(_texture, _uv); 
   #else
     return texture(_texture, _uv);

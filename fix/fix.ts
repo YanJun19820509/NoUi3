@@ -2,6 +2,7 @@
 import { Toggle } from 'cc';
 import { no } from '../no';
 import { js, StencilManager, Node, director, Layout, UITransform, UIRenderer } from '../yj';
+import { YJButton } from './YJButton';
 
 /**
  * Predefined variables
@@ -60,6 +61,20 @@ js.mixin(Layout.prototype, {
                 this._usefulLayoutObj.push(uiTrans);
             }
         }
+    }
+});
+
+js.mixin(YJButton.prototype, {
+    a_trigger(event) {
+        if (!this._canClick && event) return;
+        if (event && event.getAllTouches().length > 1) return;
+        if (this.needWait) return;
+        this.needWait = true;
+        no.executeHandlers(this._clickEvents, event);
+        this.scheduleOnce(() => {
+            this.needWait = false;
+        }, this.delay);
+        no.evn.emit('YJButton_a_trigger')
     }
 });
 

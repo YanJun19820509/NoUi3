@@ -2,6 +2,7 @@
 import { ccclass, Component, Node, SkeletonData } from '../yj';
 import { no } from '../no';
 import { singleObject } from '../types';
+import { sp } from 'cc';
 
 /**
  * Predefined variables
@@ -23,6 +24,8 @@ export class YJSpineManager extends no.SingleObject {
     }
 
     private _map: { [path: string]: { data: SkeletonData, ref: number, t: number } } = {};
+    private _loading: { [x: string]: sp.SkeletonData | PromiseLike<sp.SkeletonData> } = {};
+
     private _timer: any;
     constructor() {
         super();
@@ -42,23 +45,35 @@ export class YJSpineManager extends no.SingleObject {
             this._map[path].t = no.sysTime.now;
         } else if (!!data) {
             this._map[path] = { data: data, t: no.sysTime.now, ref: 0 };
+        } else {
         }
     }
 
     public async get(path: string): Promise<SkeletonData> {
+        // 如果资源已经在加载中，则等待它完成
+        if (this._loading[path]) {
+            await this._loading[path];
+            return this.get(path);
+        }
+
         if (this._map[path]) {
             this._map[path].ref++;
             return this._map[path].data;
-        }
-        else {
-            return new Promise<SkeletonData>(resolve => {
+        } else {
+            // 在检查完成后，将要加载该路径的请求记录下来
+            this._loading[path] = new Promise<SkeletonData>(resolve => {
                 no.assetBundleManager.loadSpine(path, res => {
-                    resolve(res);
+                    // 执行完回调后，从加载中的路径列表中移除该路径
+                    delete this._loading[path];
+                    // 将资源添加到管理器中
                     this._map[path] = { data: res, t: no.sysTime.now + 86400, ref: 1 };
+                    resolve(res);
                 });
             });
+            return this._loading[path];
         }
     }
+
 
     private release() {
         const a = no.sysTime.now - 5;
@@ -68,7 +83,7 @@ export class YJSpineManager extends no.SingleObject {
         }
         keys.forEach(k => {
             // this._map[k].data.decRef();
-            if (this._map[k].ref <= 0) {
+            if (this._map[k].ref == 0) {
                 no.assetBundleManager.release(this._map[k].data, true);
                 delete this._map[k];
             }

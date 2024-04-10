@@ -14,6 +14,8 @@ out vec4 color;
 out vec2 ext;
 out vec2 uv0;
 out float def;
+out float t1;
+out float t2;
 
 vec4 vert() {
   vec4 pos = vec4(a_position, 1);
@@ -40,10 +42,16 @@ vec4 vert() {
     color = vec4(1, 1, 1, a_color.a);
     //设置扩展参数
     ext = a_color.gb;
+    
+    float defs = abs(def);
+    t1 = floor((defs+1.)/100.);//有些手机整除后floor后会-1，所以不能整除
+    t2 = defs - t1 * 100.;
   }else{
     //正常
     ext = vec2(0,0);
     color = a_color;
+    t1 = 0.;
+    t2 = 0.;
   }
   return pos;
 }

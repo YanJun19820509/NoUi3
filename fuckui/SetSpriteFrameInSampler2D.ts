@@ -89,9 +89,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setSpriteFrame(spriteName: string) {
-        if (spriteName == 'sea') {
-            console.log(1)
-        }
         this.setDynamicAtlas();
         if (!this.enabled || !spriteName) return;
         if (!this.loadAsset) {
@@ -131,7 +128,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         //     return;
         // }
         if (!spriteFrame) {
-            no.err('setSpriteFrame not get', name);
+            no.log('setSpriteFrame not get', name);
             this.resetSprite();
             return;
         }
@@ -159,14 +156,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setSpriteFrameByDefaultSpriteFrameUuid() {
         if (this.defaultSpriteFrameUuid) {
-            no.err('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid);
+            no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
                 sprite.customMaterial = this.dynamicAtlas?.customMaterial;
             }
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 if (!file) {
-                    no.err(this.node.name)
+                    no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
                 }
                 sprite.spriteFrame = file;
             });

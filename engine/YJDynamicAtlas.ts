@@ -30,7 +30,7 @@ import { no } from '../no';
 export class YJDynamicAtlas extends Component {
     @property({ type: Material })
     customMaterial: Material = null;
-    @property
+    @property({ visible() { return false; } })
     public get createMaterial(): boolean {
         return false;
     }
@@ -64,7 +64,7 @@ export class YJDynamicAtlas extends Component {
         renderComps.forEach(comp => {
             if (comp instanceof Skeleton) return;
             if (comp instanceof Graphics) return;
-            if (!comp.customMaterial)
+            if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
                 comp.customMaterial = this.customMaterial;
         });
     }

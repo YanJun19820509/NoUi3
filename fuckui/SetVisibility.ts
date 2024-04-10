@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode } from '../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, UIOpacity } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -32,9 +32,22 @@ export class SetVisibility extends FuckUi {
         this.default = v;
         no.visible(this.node, v);
     }
+    @property({ displayName: '改变透明度' })
+    public get opacity(): boolean {
+        return this.isOpacity;
+    }
+
+    public set opacity(v: boolean) {
+        this.isOpacity = v;
+        if (v) {
+            if (!this.getComponent(UIOpacity)) this.addComponent(UIOpacity);
+        } else this.getComponent(UIOpacity)?.destroy();
+    }
 
     @property({ serializable: true, visible() { return false; } })
     protected default: boolean = true;
+    @property({ serializable: true, visible() { return false; } })
+    protected isOpacity: boolean = false;
 
     /**
      * @deprecated
@@ -70,26 +83,31 @@ export class SetVisibility extends FuckUi {
 
     private setDefault() {
         if (!this.enabled || !this._needSetDefault) return;
-        if (this.default) no.visible(this.node, true);
-        else no.visible(this.node, false);
+        if (this.default) this._show(true)
+        else this._show(false)
     }
 
     private show(v: boolean) {
         if (!this.enabled) return;
         this.reverse && (v = !v);
-        no.visible(this.node, v);
+        this._show(v);
         // no.log('$$$$$$$$$$$$  SetVisibility', this.bind_keys, v);
     }
 
+    private _show(v: boolean) {
+        if (this.isOpacity) no.visibleByOpacity(this.node, v);
+        else no.visible(this.node, v);
+    }
+
     public a_show(): void {
-        this.setData('true');
+        this.setData(this.reverse ? 'false' : 'true');
     }
 
     public a_hide(): void {
-        this.setData('false');
+        this.setData(this.reverse ? 'true' : 'false');
     }
 
     public a_changeVisible(): void {
-        this.setData(no.visible(this.node) ? 'false' : 'true');
+        this.setData((this.isOpacity ? no.visibleByOpacity(this.node) : no.visible(this.node)) ? 'false' : 'true');
     }
 }
