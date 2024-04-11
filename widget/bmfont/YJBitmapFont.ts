@@ -29,6 +29,9 @@ export class YJBitmapFont extends Component {
         this._font = v;
         this.fontName = v.name;
         this.fontUuid = v.uuid;
+        no.getAssetUrlInEditorMode(v.uuid, url => {
+            this.fontUrl = url;
+        });
         const label = this.getComponent(Label);
         if (label) {
             label.fontSize = v.fontSize;
@@ -60,6 +63,8 @@ export class YJBitmapFont extends Component {
     fontName: string = '';
     @property({ readonly: true })
     fontUuid: string = '';
+    @property({ readonly: true })
+    fontUrl: string = '';
 
     @property
     public get packToAtlas(): boolean {
@@ -100,7 +105,7 @@ export class YJBitmapFont extends Component {
         } else {
             if (this._spacingX != 0)
                 this.getComponent(Label).spacingX = this._spacingX;
-            this.resetFont();
+            this.setBitmapFont(this.fontUuid, this.fontUrl);
         }
     }
 
@@ -111,11 +116,18 @@ export class YJBitmapFont extends Component {
 
     public resetFont() {
         if (this.fontUuid == '') return;
-        this.setBitmapFont(this.fontUuid);
+        no.assetBundleManager.loadByUuid<BitmapFont>(this.fontUuid, BitmapFont, bf => {
+            this.setFont(bf);
+        });
+        if (!this.fontUrl) {
+            no.getAssetUrlInEditorMode(this.fontUuid, url => {
+                this.fontUrl = url;
+            });
+        }
     }
 
-    public async setBitmapFont(fontUuid: string) {
-        const bf = await this.loadFont(fontUuid);
+    public async setBitmapFont(fontUuid: string, url?: string) {
+        const bf = await this.loadFont(fontUuid, url);
         this.setAtlasFont(bf);
     }
 
@@ -128,26 +140,36 @@ export class YJBitmapFont extends Component {
             YJBitmapFont.fontMap[fontUuid] = bf;
     }
 
-    private async loadFont(fontUuid: string): Promise<BitmapFont> {
+    private async loadFont(fontUuid: string, url?: string): Promise<BitmapFont> {
         const bf = this.getFontFromCache(fontUuid);
         if (bf) return bf;
         else if (YJBitmapFont.fontLoading[fontUuid]) {
             await no.sleep(0);
-            return this.loadFont(fontUuid);
+            return this.loadFont(fontUuid, url);
         }
         else {
             YJBitmapFont.fontLoading[fontUuid] = true;
             return new Promise<BitmapFont>(resolve => {
-                no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
-                    this.setFontToCache(fontUuid, bf);
-                    resolve(bf);
-                });
+                if (!url) {
+                    no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
+                        this.setFontToCache(fontUuid, bf);
+                        resolve(bf);
+                    });
+                } else {
+                    const bundle = no.assetBundleManager.assetPath(url).bundle,
+                        a: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(fontUuid),
+                        requests: any[] = [{ path: a.path, bundle: bundle, type: BitmapFont }];
+                    no.assetBundleManager.loadAnyFiles(requests, null, bfs => {
+                        this.setFontToCache(fontUuid, bfs[0] as BitmapFont);
+                        resolve(bfs[0] as BitmapFont);
+                    });
+                }
             });
         }
     }
 
     private setAtlasFont(bf: BitmapFont) {
-        if (!EDITOR && this.dynamicAtlas) {
+        if (!EDITOR && bf && this.dynamicAtlas) {
             this.dynamicAtlas.packBitmapFontSpriteFrameToDynamicAtlas(bf, false, (nbf) => {
                 this._font = nbf;
                 this.setFont(nbf);

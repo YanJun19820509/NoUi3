@@ -313,6 +313,8 @@
       "a": 255
     },
     "_fontSize": 22,
+    "_font": null,
+    "_fontUuid": "",
     "_foitnFamily": "Arial",
     "_lineHeight": 28,
     "_horizontalAlign": 0,
@@ -349,7 +351,7 @@
     "_richText": false,
     "_hdp": false,
     "_packToAtlas": false,
-    "_needSetLabel": true,
+    "_needSetLabel": false,
     "_id": ""
   },
   {
@@ -469,6 +471,8 @@
     "showValueLog": false,
     "beforeCall": [],
     "endCall": [],
+    "targetNode": null,
+    "canDisable": false,
     "_id": ""
   },
   {

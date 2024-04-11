@@ -74,7 +74,7 @@ export class SetEffect extends FuckUi {
             material.recompileShaders(defines);
         if (properties)
             for (const key in properties) {
-                if (this.hasProperty(material, key)) {
+                if (no.materialHasProperty(material, 0, 0, key)) {
                     let v: number | Vec2 | Vec3 | Vec4,
                         p = [].concat(properties[key]);
                     switch (p.length) {
@@ -112,22 +112,12 @@ export class SetEffect extends FuckUi {
         }
 
         let fr = `factRect${this.idx}`;
-        if (this.hasProperty(material, fr))
+        if (no.materialHasProperty(material, 0, 0, fr))
             material.setProperty(fr, new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
 
         let r = `ratio${this.idx}`;
-        if (this.hasProperty(material, r))
+        if (no.materialHasProperty(material, 0, 0, r))
             material.setProperty(r, texture.width / texture.height);
-    }
-
-    protected hasProperty(material: Material, key: string): boolean {
-        for (let i = 0, n = material.effectAsset.techniques.length; i < n; i++) {
-            for (let j = 0, m = material.effectAsset.techniques[i].passes.length; j < m; j++) {
-                let properties = material.effectAsset.techniques[i].passes[j].properties || {};
-                if (properties[key] !== undefined) return true;
-            }
-        }
-        return false;
     }
 
     /**

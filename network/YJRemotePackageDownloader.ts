@@ -45,7 +45,7 @@ export class YJRemotePackageDownloader {
     private downloadBundleConfig(bundleName: string) {
         const bundlerUrl = this.bundleUrl(bundleName),
             configFileUrl = `${bundlerUrl}/config.${this.bundleVer(bundleName)}.json`;
-        console.error('下载包config文件', configFileUrl);
+        console.log('下载包config文件', configFileUrl);
         this.wxDownload(configFileUrl, (tempFilePath: string) => {
             const resVer = this.getBundleResVer(tempFilePath);
             this.saveBundleConfig(tempFilePath, bundleName)
@@ -65,7 +65,7 @@ export class YJRemotePackageDownloader {
     private downloadBundleRes(bundleName: string, ver: string) {
         const bundlerUrl = this.bundleUrl(bundleName),
             zipFileUrl = `${bundlerUrl}/res.${ver}.zip`;
-        console.error('下载包res文件', zipFileUrl);
+        console.log('下载包res文件', zipFileUrl);
         this.wxDownload(zipFileUrl, (tempFilePath: string) => {
             this.wxUnzip(tempFilePath, bundleName);
         });
@@ -79,20 +79,20 @@ export class YJRemotePackageDownloader {
             return;
         }
         // const onProgressUpdate = function (res: any) {
-        //     console.error('下载进度', res.progress, res.totalBytesWritten + '/' + res.totalBytesExpectedToWrite);
+        //     console.log('下载进度', res.progress, res.totalBytesWritten + '/' + res.totalBytesExpectedToWrite);
         // }
         const downloadTask = wx.downloadFile({
             url: url, //仅为示例，并非真实的资源
             success(res: any) {
                 // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
                 if (res.statusCode === 200) {
-                    console.error('下载完成：', res.tempFilePath);
+                    console.log('下载完成：', res.tempFilePath);
                     cb(res.tempFilePath);
                 }
             },
             fail(res) {
-                console.error(res)
-                console.error('下载失败：', res.tempFilePath);
+                console.log(res)
+                console.log('下载失败：', res.tempFilePath);
                 cb(null);
             },
             complete() {
@@ -114,7 +114,7 @@ export class YJRemotePackageDownloader {
         json.isZip = false;
         json.importBase = 'res/import';
         json.nativeBase = 'res/native';
-        console.error('保存文件' + tempFilePath + '到' + filePath);
+        console.log('保存文件' + tempFilePath + '到' + filePath);
         if (!this.isExist(folder)) {
             fs.mkdirSync(folder, true);
         }
@@ -127,7 +127,7 @@ export class YJRemotePackageDownloader {
         const fs = wx.getFileSystemManager(),
             bundlePath = this.localBundlePath(bundleName),
             me = this;
-        console.error('解压zip文件' + tempFilePath + '到' + bundlePath);
+        console.log('解压zip文件' + tempFilePath + '到' + bundlePath);
         if (!this.isExist(bundlePath)) {
             fs.mkdirSync(bundlePath, true);
         }
@@ -138,7 +138,7 @@ export class YJRemotePackageDownloader {
                 me.loadRemoteBundle(bundleName);
             },
             fail(res) {
-                console.error(res);
+                console.log(res);
                 me._bundleLoadCallback.onError?.();
             }
         })
@@ -167,7 +167,7 @@ export class YJRemotePackageDownloader {
         for (let i = subs.length - 1; i >= 0; i--) {
             const sub = subs[i];
             if (sub != ver) {
-                console.error('clearOldBundleFiles', folder + '/' + sub);
+                console.log('clearOldBundleFiles', folder + '/' + sub);
                 fs.rmdirSync(folder + '/' + sub, true);
             }
         }
@@ -213,15 +213,15 @@ export class YJRemotePackageDownloader {
             this.loadLocalBundle(bundleName);
             return;
         }
-        console.error('加载远程分包', bundleName);
+        console.log('加载远程分包', bundleName);
         this.clearOldBundleFiles(bundleName);
         const path = this.localBundlePath(bundleName);
         if (this.isExist(path)) {
-            console.error('包已存在', bundleName);
+            console.log('包已存在', bundleName);
             assetManager.loadBundle(path, { scriptAsyncLoading: false }, (err, bundle) => {
                 if (err) {
-                    console.error(err);
-                    console.error('2包不存在，开始下载', bundleName);
+                    console.log(err);
+                    console.log('2包不存在，开始下载', bundleName);
                     this.downloadBundleConfig(bundleName);
                 } else {
                     this._completeNum++;
@@ -229,7 +229,7 @@ export class YJRemotePackageDownloader {
                 }
             });
         } else {
-            console.error('1包不存在，开始下载', bundleName);
+            console.log('1包不存在，开始下载', bundleName);
             this.downloadBundleConfig(bundleName);
         }
     }
@@ -274,7 +274,7 @@ export class YJRemotePackageDownloader {
 
     public loadBaseBundles() {
         const all = ["atlas", "commonModel", "pet", "chinese", "roleModel", "main1", "FightScene", "moodEvent"];
-        console.error('loadBaseBundles', all);
+        console.log('loadBaseBundles', all);
         this.loadBundles(all, null, null, null, true);
     }
 }

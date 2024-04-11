@@ -299,18 +299,20 @@ export class YJLoadAssets extends Component {
         let needCreateMaterial = true;
 
         if (this.materialInfos.length > 0) {
-            const info = this.materialInfos[0];
-            if (info.assetUuid) {
-                needCreateMaterial = false;
-                await this._loadMaterial(info.path);
-            }
+            const r: any[] = [];
+            this.materialInfos.forEach(info => {
+                const bundle = no.assetBundleManager.assetPath(info.path).bundle;
+                const a: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(info.assetUuid);
+                r[r.length] = { path: a.path, bundle: bundle, type: Material };
+            });
+            await this._loadMaterial(r);
         }
 
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             if (this.spriteFrameInfos[i].path) {
                 const bundle = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle,
                     info: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.spriteFrameInfos[i].assetUuid);
-                requests[requests.length] = { path: info.path, bundle: bundle };
+                requests[requests.length] = { path: info.path, bundle: bundle, type: SpriteFrame };
             } else
                 requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
         }
@@ -323,10 +325,10 @@ export class YJLoadAssets extends Component {
                 const bundle = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
                 if (needCreateMaterial) {
                     const info1: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.textureInfos[i].assetUuid);
-                    requests[requests.length] = { path: info1.path, bundle: bundle };
+                    requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
                 }
                 const info2: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.textureInfos[i].atlasJsonUuid);
-                requests[requests.length] = { path: info2.path, bundle: bundle };
+                requests[requests.length] = { path: info2.path, bundle: bundle, type: JsonAsset };
             } else {
                 if (needCreateMaterial)
                     requests[requests.length] = { uuid: this.textureInfos[i].assetUuid, type: Texture2D };
@@ -337,7 +339,7 @@ export class YJLoadAssets extends Component {
             if (this.prefabInfos[i].path) {
                 const bundle = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle,
                     info: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.prefabInfos[i].assetUuid);
-                requests[requests.length] = { path: info.path, bundle: bundle };
+                requests[requests.length] = { path: info.path, bundle: bundle, type: Prefab };
             } else
                 requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
         }
@@ -355,25 +357,26 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private async _loadMaterial(path: string) {
-        console.log('_loadMaterial', path)
+    private async _loadMaterial(requests: any[]) {
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadMaterial(path, item => {
-                item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
-                this.materials[this.materials.length] = item;
-                this.setMaterialToDynamicAtlas(item);
-                item['_props'].forEach(p => {
-                    for (const key in p) {
-                        const a = p[key];
-                        if (a instanceof Texture2D) {
-                            a['_yj_ref'] = (a['_yj_ref'] || 0) + 1;
-                            this.textures[this.textures.length] = a;
-                        }
-                    }
+            no.assetBundleManager.loadAnyFiles(requests, null, items => {
+                items.forEach(item => {
+                    item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
+                    this.materials[this.materials.length] = item as Material;
                 });
                 resolve();
             });
         });
+        // this.setMaterialToDynamicAtlas(item);
+        // item['_props'].forEach(p => {
+        //     for (const key in p) {
+        //         const a = p[key];
+        //         if (a instanceof Texture2D) {
+        //             a['_yj_ref'] = (a['_yj_ref'] || 0) + 1;
+        //             this.textures[this.textures.length] = a;
+        //         }
+        //     }
+        // });
     }
 
     private async _loadTextures(requests: any[], atlasUuids: string[], textureUuids: string[]) {
@@ -456,6 +459,8 @@ export class YJLoadAssets extends Component {
             const key = `atlas${i}`;
             if (no.materialHasProperty(material, 0, 0, key)) {
                 material.setProperty(key, this.textures[i], 0);
+            } else {
+                no.err(`YJLoadAssets addTextureToMaterial key(${key}) 不存在！`)
             }
         }
     }

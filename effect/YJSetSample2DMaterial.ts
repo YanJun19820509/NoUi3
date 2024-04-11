@@ -31,6 +31,8 @@ export class YJSetSample2DMaterial extends Component {
             const key = `atlas${i}`;
             if (no.materialHasProperty(material, 0, 0, key)) {
                 material.setProperty(key, textures[i], 0);
+            } else {
+                no.err(`YJSetSample2DMaterial setAtlases key(${key}) 不存在！`)
             }
         }
     }

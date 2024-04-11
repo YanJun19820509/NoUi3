@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR } from '../yj';
+import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR, SpriteFrame } from '../yj';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
@@ -27,9 +27,18 @@ export class SetSpriteFrame extends FuckUi {
     sprite: Sprite = null;
     @property
     path: string = '';
+    @property
+    defaultSpriteFrameUuid: string = '';
+    @property
+    defaultName: string = '';
 
     @property({ tooltip: 'disable时清除' })
     clearOnDisable: boolean = false;
+
+    onEnable() {
+        if (EDITOR) return;
+        this.setSpriteFrameByDefaultSpriteFrameUuid();
+    }
 
     onDisable() {
         this.clearOnDisable && this.a_setEmpty();
@@ -84,9 +93,37 @@ export class SetSpriteFrame extends FuckUi {
         }
     }
 
+    private setSpriteFrameByDefaultSpriteFrameUuid() {
+        if (this.defaultSpriteFrameUuid) {
+            no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
+            const sprite = this.getComponent(Sprite);
+            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                if (!file) {
+                    no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
+                } else
+                    sprite.spriteFrame = file;
+            });
+        }
+    }
+
     public a_setEmpty(): void {
         if (this.sprite == null) return;
         this.sprite.spriteFrame = null;
+    }
+
+    public resetSprite() {
+        this.setSpriteFrameByDefaultSpriteFrameUuid();
+    }
+
+    public removeSprite() {
+        const sprite = this.getComponent(Sprite);
+        if (!sprite) return;
+        sprite.spriteFrame = null;
+        sprite.spriteAtlas = null;
+        if (EDITOR && this.bind_keys) {
+            this.defaultName = '';
+            this.defaultSpriteFrameUuid = '';
+        }
     }
 
     ///////EDITOR
@@ -97,7 +134,17 @@ export class SetSpriteFrame extends FuckUi {
     }
     update() {
         if (!EDITOR) return;
+        this.initSpriteFrameInfo();
         if (this.path == '' || this.path.indexOf('db://assets/') == -1) return;
         this.path = this.path.replace('db://assets/', '');
+    }
+
+    private initSpriteFrameInfo() {
+        let name = this.getComponent(Sprite).spriteFrame?.name;
+        if (!!name && this.defaultName != name) {
+            this.defaultName = name;
+        }
+        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid))
+            this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
     }
 }

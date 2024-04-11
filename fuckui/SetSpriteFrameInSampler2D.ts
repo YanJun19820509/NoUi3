@@ -49,6 +49,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     onLoad() {
         super.onLoad();
         this.setDynamicAtlas();
+        //运行时update方法置空
+        if (!EDITOR) this.update = null;
+        if (EDITOR) {
+            if (!this.loadFromAtlas && this.loadAsset) {
+                this.loadAsset = null;
+                this.dynamicAtlas = null;
+            }
+        }
     }
 
     update() {
@@ -57,7 +65,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     onEnable() {
         if (EDITOR) return;
-        this.setSpriteFrame(this._lastName || this.defaultName);
+        if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
+            this.setSpriteFrameByDefaultSpriteFrameUuid();
+        else
+            this.setSpriteFrame(this._lastName || this.defaultName);
     }
 
     onDisable() {
@@ -65,6 +76,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public setDynamicAtlas() {
+        if (!this.loadFromAtlas) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
         if (!this.loadAsset)
@@ -164,8 +176,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 if (!file) {
                     no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
-                }
-                sprite.spriteFrame = file;
+                } else
+                    sprite.spriteFrame = file;
             });
         }
     }

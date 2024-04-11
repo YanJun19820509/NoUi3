@@ -53,5 +53,15 @@ export class YJShowSpriteFrameInSample2D extends Component {
             if (v) a.resetLabel();
             else a.removeLabel();
         });
+        list = this.getComponentsInChildren('SetMaterial');
+        list.forEach(a => {
+            if (v) a.resetMaterial();
+            else a.removeMaterial();
+        });
+        list = this.getComponentsInChildren('SetSpriteFrame');
+        list.forEach(a => {
+            if (v) a.resetSprite();
+            else a.removeSprite();
+        });
     }
 }
