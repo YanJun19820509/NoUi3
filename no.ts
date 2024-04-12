@@ -9,7 +9,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = DEBUG;
+    let _isLogEnabled: boolean = false;
 
     export function setLogEnabled(v: boolean) {
         _isLogEnabled = v;
@@ -543,13 +543,15 @@ export namespace no {
      * 创建唯一标识
      * @returns 
      */
+    let _uuidCount = 0;
     export function uuid(obj?: any): string {
         if (obj && obj['_uuid']) return obj['_uuid'];
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = floor(random() * 16),
-                v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
+        // return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        //     var r = floor(random() * 16),
+        //         v = c == 'x' ? r : (r & 0x3 | 0x8);
+        //     return v.toString(16);
+        // });
+        return ++_uuidCount + '';
     }
 
     /**
@@ -2440,7 +2442,7 @@ export namespace no {
 
         private needReleaseAssets: Asset[] = [];
         private remoteAssetsCache: any = {};
-        private _cacheNode: { [k: string]: Node } = {};
+        private _cacheNode: { [k: string]: Prefab } = {};
         private _cacheTexture: { [k: string]: Texture2D } = {};
         private _assetRef: { [uuid: string]: number } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
@@ -2486,8 +2488,8 @@ export namespace no {
             return null;
         }
 
-        public setPrefabNode(k: string, node: Node) {
-            this._cacheNode[k] = node;
+        public setPrefabNode(k: string, prefab: Prefab) {
+            this._cacheNode[k] = prefab;
         }
 
         public clearPrefabNode() {
@@ -2523,7 +2525,7 @@ export namespace no {
          * @param onProgress
          */
         public preloadFiles(bundleName: string, filePaths: string[], onProgress: (progress: number) => void): void {
-            let bundle = this.getBundle(bundleName);
+            let bundle = this.getLoadedBundle(bundleName);
             if (bundle == null) {
                 this.loadBundle(bundleName, () => {
                     this.preloadFiles(bundleName, filePaths, onProgress);
@@ -2574,19 +2576,19 @@ export namespace no {
          * @param name
          * @param callback
          */
-        public loadBundle(name: string, callback: () => void, force = false): void {
-            let bundle = this.getBundle(name);
+        public loadBundle(name: string, callback: (bundle: Bundle) => void, force = false): void {
+            let bundle = this.getLoadedBundle(name);
             if (bundle != null) {
                 if (force) assetManager.removeBundle(bundle);
                 else {
-                    callback?.();
+                    callback?.(bundle);
                     return;
                 }
             }
             const url = this.bundleUrl(name);
             log('load bundle', name, url);
             if (!url) {
-                callback?.();
+                callback?.(null);
                 return;
             }
             assetManager.loadBundle(url, (e, b) => {
@@ -2594,7 +2596,7 @@ export namespace no {
                 if (e != null) {
                     err('loadBundle', url, e.message);
                 } else {
-                    callback?.();
+                    callback?.(b);
                 }
             });
         }
@@ -2602,8 +2604,12 @@ export namespace no {
          * 获取已加载的bundle
          * @param name
          */
-        public getBundle(name: string): Bundle {
-            return assetManager.getBundle(name);
+        public getLoadedBundle(name: string): Bundle {
+            const a = assetManager.getBundle(name);
+            if (!a) {
+                err(`包${name}未加载`);
+            }
+            return a;
         }
 
         /**
@@ -2628,7 +2634,7 @@ export namespace no {
         public load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
             // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
-                assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
+                assetManager.loadAny({ 'url': fileName }, (err, item) => {
                     if (item == null) {
                         log('load', fileName, err.message);
                     } else {
@@ -2638,7 +2644,7 @@ export namespace no {
                 });
             }
             else {
-                let bundle = this.getBundle(bundleName);
+                let bundle = this.getLoadedBundle(bundleName);
                 if (bundle != null) {
                     bundle.load(fileName, type, (error, item) => {
                         if (item == null) {
@@ -2718,7 +2724,7 @@ export namespace no {
         // }
 
         public loadFiles<T extends Asset>(bundleName: string, filePaths: string[], onProgress: (progress: number) => void, onComplete: (items: T[]) => void): void {
-            let bundle = this.getBundle(bundleName);
+            let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 bundle.load<T>(filePaths, (finished, total, requestItem) => {
                     onProgress && onProgress(finished / total);
@@ -2847,7 +2853,7 @@ export namespace no {
         }
 
         public loadAllFilesInBundle(bundleName: string, exceptAssetTypes: typeof Asset[], onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
-            let bundle = this.getBundle(bundleName);
+            let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let requests: any[] = [];
@@ -2866,7 +2872,7 @@ export namespace no {
         }
 
         public preloadAllFilesInBundle(bundleName: string, onProgress: (progress: number) => void) {
-            let bundle = this.getBundle(bundleName);
+            let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let paths: string[] = [];
@@ -2889,7 +2895,7 @@ export namespace no {
                 return;
             }
             p.path += '/';
-            let bundle = this.getBundle(p.bundle);
+            let bundle = this.getLoadedBundle(p.bundle);
             const assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
             for (const uuid in assetInfos) {
@@ -2907,7 +2913,7 @@ export namespace no {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
-            let bundle = this.getBundle(p.bundle);
+            let bundle = this.getLoadedBundle(p.bundle);
             let infos = bundle.getDirWithPath(p.path);
             let requests: { uuid: string, type: typeof Asset }[] = [];
             infos.forEach(a => {
@@ -2925,7 +2931,7 @@ export namespace no {
                 onErr?.();
                 return;
             }
-            assetManager.loadAny({ 'uuid': info.uuid, 'type': type }, (err, item: T) => {
+            assetManager.loadAny({ 'uuid': info.uuid }, (err, item: T) => {
                 if (err) {
                     log(url, err);
                     onErr?.();
@@ -2945,7 +2951,7 @@ export namespace no {
             for (const key in info.subAssets) {
                 let sub = info.subAssets[key];
                 if (sub.type == 'cc.SpriteFrame') {
-                    assetManager.loadAny({ 'uuid': sub.uuid, 'type': SpriteFrame }, (err, item: SpriteFrame) => {
+                    assetManager.loadAny({ 'uuid': sub.uuid }, (err, item: SpriteFrame) => {
                         if (err) {
                             log(url, err);
                             onErr?.();
@@ -2969,7 +2975,7 @@ export namespace no {
                 if (!info)
                     log('query-asset-info url无效', urls[i]);
                 else {
-                    requests[requests.length] = { 'uuid': info.uuid, 'type': SpriteAtlas };
+                    requests[requests.length] = { 'uuid': info.uuid };
                     infos[infos.length] = info;
                 }
             }
@@ -2992,7 +2998,7 @@ export namespace no {
                 let aa = [];
                 assets.forEach(a => {
                     if (a['url'].indexOf(url) > -1) {
-                        aa[aa.length] = { uuid: a.uuid, type: a.type };
+                        aa[aa.length] = { uuid: a.uuid };
                     }
                 });
                 if (!aa.length) {
@@ -3018,17 +3024,14 @@ export namespace no {
         }
 
         public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
-            assetManager.loadAny({ 'uuid': uuid, 'type': type }, (e: Error, f: T) => {
-                if (e != null) {//如果加载失败，尝试重新加载所属包
-                    // const bundle = this.getBundleNameByUuid(uuid);
-                    // if (bundle) {
-                    //     this.loadBundle(bundle, () => {
-                    //         this.loadByUuid(uuid, type, callback);
-                    //     });
-                    // } else {
+            if (uuid == '') {
+                no.err('uuid 为空')
+                return;
+            }
+            assetManager.loadAny({ 'uuid': uuid }, (e: Error, f: T) => {
+                if (e != null) {
                     callback?.(f);
                     err(uuid, e.stack);
-                    // }
                 } else {
                     this.addRef(f);//增加引用计数
                     callback?.(f);
@@ -3036,18 +3039,26 @@ export namespace no {
             });
         }
 
-        public loadAny<T extends Asset>(request: { path?: string, uuid?: string, url?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
-            if (request.path) {
-                const p = this.assetPath(request.path);
+        /**
+         * 加载单一资源
+         * @param request {url:完成路径,path:相对于包的路径,uuid:唯一id,bundle:包名,type:资源类型}
+         * @param callback 
+         */
+        public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
+            if (request.url) {
+                const p = this.assetPath(request.url);
                 this.load(p.bundle, p.path, p.type, callback);
-            } else
-                assetManager.loadAny(request, (e: Error, f: T) => {
+            } else if (request.bundle && request.path && request.type) {
+                this.load(request.bundle, request.path, request.type, callback);
+            } else {
+                assetManager.loadAny({ uuid: request.uuid }, (e: Error, f: T) => {
                     if (e != null) {
                         err(request.uuid, e.stack);
                     }
                     this.addRef(f);//增加引用计数
                     callback?.(f);
                 });
+            }
         }
 
         public addRef(asset: Asset): void {
@@ -3116,28 +3127,48 @@ export namespace no {
             return assetManager.assets.get(uuid);
         }
 
+        /**
+         * 加载多个资源
+         * @param requests {url:完成路径,path:相对于包的路径,uuid:唯一id,bundle:包名,type:资源类型}[]
+         * @param onProgress 
+         * @param onComplete 
+         */
+        public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
+            // assetManager.loadAny(requests, (finished, total, requestItem) => {
+            //     onProgress && onProgress(finished / total);
+            // }, (e, items) => {
+            //     if (e) {
+            //         onProgress && onProgress(1);
+            //         onComplete?.([]);
+            //         err('loadAnyFiles', requests, e.stack);
+            //     } else {
+            //         items = [].concat(items);
+            //         items.forEach(item => {
+            //             this.addRef(item);
+            //         });
+            //         onComplete?.(items);
+            //     }
+            // });
+            let n = requests.length, items: any[] = [];
+            for (let i = 0; i < n; i++) {
+                const item = await this._loadAnyFile(requests[i])
+                items[items.length] = item;
+                onProgress?.((i + 1) / n);
+            }
+            onComplete?.(items);
+        }
 
-        public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'type'?: typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void): void {
-            assetManager.loadAny(requests, (finished, total, requestItem) => {
-                onProgress && onProgress(finished / total);
-            }, (e, items) => {
-                if (e) {
-                    onProgress && onProgress(1);
-                    onComplete?.([]);
-                    err('loadAnyFiles', requests, e.stack);
-                } else {
-                    items = [].concat(items);
-                    items.forEach(item => {
-                        this.addRef(item);
-                    });
-                    onComplete?.(items);
-                }
+        private _loadAnyFile(request: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }) {
+            return new Promise<Asset>(resolve => {
+                this.loadAny(request, item => {
+                    resolve(item);
+                });
             });
         }
 
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
-            return this.getBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
+            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
         }
 
         public getUrlWithUuid(uuid: string): string {
@@ -3187,7 +3218,7 @@ export namespace no {
         public has(path: string): Promise<boolean> {
             return new Promise<boolean>(resolve => {
                 const p = this.assetPath(path);
-                let bundle = this.getBundle(p.bundle);
+                let bundle = this.getLoadedBundle(p.bundle);
                 if (bundle != null) {
                     resolve(bundle['_config'].paths.has(p.path));
                 } else {

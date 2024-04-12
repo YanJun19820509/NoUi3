@@ -132,11 +132,10 @@ export class YJWindowManager extends Component {
             const node = no.assetBundleManager.getPrefabNode(k);
             if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             else {
-                const request = { type: Prefab, path: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
+                const request = { type: Prefab, url: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
                 no.assetBundleManager.loadAny<Prefab>(request, pf => {
                     if (!pf) return;
-                    const node = instantiate(pf);
-                    no.assetBundleManager.setPrefabNode(k, node);
+                    no.assetBundleManager.setPrefabNode(k, pf);
                     if (!content?.isValid) {
                         return
                     }
@@ -172,12 +171,10 @@ export class YJWindowManager extends Component {
         const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
         if (node) this.initNode(node, YJPanel, content, beforeInit, afterInit);
         else {
-            const request = { type: Prefab, path: prefabPathOrUuid, uuid: prefabPathOrUuid };
+            const request = { type: Prefab, url: prefabPathOrUuid, uuid: prefabPathOrUuid };
             no.assetBundleManager.loadAny<Prefab>(request, pf => {
                 if (!pf) return;
-                const node = instantiate(pf);
-                no.assetBundleManager.setPrefabNode(prefabPathOrUuid, node);
-                no.assetBundleManager.decRef(pf);
+                no.assetBundleManager.setPrefabNode(prefabPathOrUuid, pf);
                 self.prefabPathOrUuidToNodeName[prefabPathOrUuid] = node.getComponent(YJPanel).panelType;
                 if (!content?.isValid) {
                     return

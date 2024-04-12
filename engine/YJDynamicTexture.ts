@@ -113,12 +113,16 @@ export class YJDynamicTexture extends Component {
         frame.rotated = false;
 
         this.scheduleOnce(() => {
-            YJJobManager.ins.execute(() => {
-                if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
-                this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
-                return false;
-            }, this);
+            YJJobManager.ins.execute(this._pack, this);
         }, 1);
+    }
+
+    private _pack() {
+        const label = this.getComponent(Label),
+            frame = label.ttfSpriteFrame;
+        if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+        this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
+        return false;
     }
 
     public createLabelFrameUuid(label: Label, str?: string): string {

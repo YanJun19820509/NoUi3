@@ -2,6 +2,7 @@
 import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
+import { YJJobManager } from '../../base/YJJobManager';
 
 /**
  * Predefined variables
@@ -459,13 +460,20 @@ export class YJCharLabel extends Sprite {
         } else {
             if (this.packToAtlas && this.setPackedTexture()) return;
             this.loadFont().then(() => {
-                if (this.richText)
-                    this.drawRichString(this._string)
-                else
-                    this.drawString(this._string);
-                this.updateTexture();
+                this.toDraw();
             });
         }
+    }
+
+    private async toDraw() {
+        if (this.richText) {
+            await YJJobManager.ins.execute(this.drawRichString, this, this._string);
+            // this.drawRichString(this._string)
+        } else {
+            await YJJobManager.ins.execute(this.drawString, this, this._string);
+            // this.drawString(this._string);
+        }
+        this.updateTexture();
     }
 
     private get hdpScale(): number {
@@ -612,6 +620,7 @@ export class YJCharLabel extends Sprite {
             }
             this.drawLine(v, !this.fixWidth ? ww : maxWidth, lineHeight);
         }
+        return false;
     }
 
     private drawLine(v: string, width: number, height: number) {
@@ -808,6 +817,7 @@ export class YJCharLabel extends Sprite {
     private drawRichString(v: string) {
         if (this.overflow != Label.Overflow.RESIZE_HEIGHT) this.drawRichStringNotResizeHeight(v);
         else this.drawRichStringWithResizeHeight(v);
+        return false;
     }
 
     private drawRichStringNotResizeHeight(v: string) {

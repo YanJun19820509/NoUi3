@@ -22,6 +22,8 @@ export class YJJobManager extends Component {
     private jobKeys: string[] = [];
     private lastJobKeyIndex: number = 0;
     private needRemoveJobKeys: string[] = [];
+    //是否立刻执行
+    private doNow = false;
 
     onLoad() {
         YJJobManager.ins = this;
@@ -67,7 +69,7 @@ export class YJJobManager extends Component {
                         k = this.jobKeys[i];
                         job = this.jobs[k];
                         if (!job || !no.checkValid(job.target) || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
-                        if (this.nowMs() - frameStartTime > 5) {
+                        if (this.nowMs() - frameStartTime > 5 && !this.doNow) {
                             this.lastJobKeyIndex = i;
                             aa = false;
                             break;

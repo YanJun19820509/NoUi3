@@ -55,6 +55,9 @@ export class SetSpine extends FuckUi {
     private _startIndexes: string[];
     private _endIndexes: string[];
 
+    //不播动效测试
+    private _testNoSpine = false;
+
     protected update(): void {
         if (!EDITOR) return;
         const spine = this.getComponent(Skeleton);
@@ -195,7 +198,7 @@ export class SetSpine extends FuckUi {
             this.bindEndCall(spine);
         else
             this.bindLoop1EndCall(spine);
-        spine?.setAnimation(0, name, false);
+        this._play(spine, name, false);
     }
 
     private playDuration(duration: number) {
@@ -223,7 +226,7 @@ export class SetSpine extends FuckUi {
         !!skin && spine.setSkin(skin);
         this.bindStartCall(spine);
         this.bindEndCall(spine);
-        spine?.setAnimation(0, name, false);
+        this._play(spine, name, false);
     }
 
     public a_playLoop(e: any, animation?: string) {
@@ -238,7 +241,12 @@ export class SetSpine extends FuckUi {
         else spine.enabled = true;
         spine.loop = true;
         !!skin && spine.setSkin(skin);
-        spine?.setAnimation(0, name, true);
+        this._play(spine, name, true);
+    }
+
+    private _play(spine: Skeleton, animationName: string, loop: boolean) {
+        if (this._testNoSpine) return;
+        spine?.setAnimation(0, animationName, loop);
     }
 
     public a_stop(): void {
@@ -267,27 +275,46 @@ export class SetSpine extends FuckUi {
     }
 
     private bindStartCall(spine: Skeleton) {
-        spine?.setStartListener(() => {
+        if (!this._testNoSpine) {
+            spine?.setStartListener(() => {
+                if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
+                    this?.startCall.execute(spine.animation);
+                spine?.setStartListener(() => { });
+            });
+        } else {
             if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
                 this?.startCall.execute(spine.animation);
-            spine?.setStartListener(() => { });
-        });
+        }
     }
 
     private bindEndCall(spine: Skeleton) {
-        spine?.setCompleteListener(() => {
-            if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                this?.endCall.execute(spine.animation);
-            spine?.setCompleteListener(() => { });
-            this.setSpineData();
-        });
+        if (!this._testNoSpine) {
+            spine?.setCompleteListener(() => {
+                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
+                    this?.endCall.execute(spine.animation);
+                spine?.setCompleteListener(() => { });
+                this.setSpineData();
+            });
+        } else {
+            this.scheduleOnce(() => {
+                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
+                    this?.endCall.execute(spine.animation);
+                this.setSpineData();
+            }, 1);
+        }
     }
 
     private bindLoop1EndCall(spine: Skeleton) {
-        spine?.setCompleteListener(() => {
-            spine?.setCompleteListener(() => { });
-            this.playLoopNum(spine.animation);
-        });
+        if (!this._testNoSpine) {
+            spine?.setCompleteListener(() => {
+                spine?.setCompleteListener(() => { });
+                this.playLoopNum(spine.animation);
+            });
+        } else {
+            this.scheduleOnce(() => {
+                this.playLoopNum(spine.animation);
+            }, 1);
+        }
     }
 
     //todo 对循环播放的动画考虑按需暂停

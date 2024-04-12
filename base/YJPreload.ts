@@ -209,7 +209,7 @@ export class YJPreload extends YJComponent {
         } else {
             let request = [];
             this.prefabFiles.forEach(info => {
-                request[request.length] = { uuid: info._uuid, type: Prefab };
+                request[request.length] = { url: info.url };
             });
             this.finished += request.length;
             no.assetBundleManager.loadAnyFiles(request, p => {

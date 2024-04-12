@@ -10,6 +10,7 @@ export class YJRemotePackageDownloader {
     private _bundleLoadCallback: { onProgress?: (p: number) => void, onComplete?: () => void, onError?: () => void } = { onProgress: null, onComplete: null, onError: null };
     private _completeNum: number = 0;
     private _allNum: number = 0;
+    private _onlyDownload = false;
 
     public static get new(): YJRemotePackageDownloader {
         return new YJRemotePackageDownloader();
@@ -135,7 +136,8 @@ export class YJRemotePackageDownloader {
             zipFilePath: tempFilePath,
             targetPath: bundlePath,
             success(res) {
-                me.loadRemoteBundle(bundleName);
+                if (!me._onlyDownload)
+                    me.loadDownloadedBundle(bundleName);
             },
             fail(res) {
                 console.log(res);
@@ -208,30 +210,47 @@ export class YJRemotePackageDownloader {
     }
 
     private loadRemoteBundle(bundleName: string) {
-        const wx = this._wx;
-        if (!wx || !this.isRemoteBundle(bundleName)) {
-            this.loadLocalBundle(bundleName);
+        //已经加载
+        if (assetManager.getBundle(bundleName)) {
+            this._completeNum++;
+            this._bundleLoadCallback.onProgress?.(this._completeNum / this._allNum);
             return;
         }
+        const wx = this._wx;
+        //本地加载
+        if (!wx || !this.isRemoteBundle(bundleName)) {
+            if (!this._onlyDownload)
+                this.loadLocalBundle(bundleName);
+            return;
+        }
+        //远程加载
         console.log('加载远程分包', bundleName);
         this.clearOldBundleFiles(bundleName);
         const path = this.localBundlePath(bundleName);
+        //已经下载
         if (this.isExist(path)) {
             console.log('包已存在', bundleName);
-            assetManager.loadBundle(path, { scriptAsyncLoading: false }, (err, bundle) => {
-                if (err) {
-                    console.log(err);
-                    console.log('2包不存在，开始下载', bundleName);
-                    this.downloadBundleConfig(bundleName);
-                } else {
-                    this._completeNum++;
-                    this._bundleLoadCallback.onProgress?.(this._completeNum / this._allNum);
-                }
-            });
+            if (!this._onlyDownload)
+                this.loadDownloadedBundle(bundleName);
         } else {
+            //开始下载
             console.log('1包不存在，开始下载', bundleName);
             this.downloadBundleConfig(bundleName);
         }
+    }
+    //加载已经下载的包
+    private loadDownloadedBundle(bundleName: string) {
+        const path = this.localBundlePath(bundleName);
+        assetManager.loadBundle(path, { scriptAsyncLoading: false }, (err, bundle) => {
+            if (err) {
+                console.log(err);
+                console.log('2包不存在，开始下载', bundleName);
+                this.downloadBundleConfig(bundleName);
+            } else {
+                this._completeNum++;
+                this._bundleLoadCallback.onProgress?.(this._completeNum / this._allNum);
+            }
+        });
     }
 
     private async loadBundleOneByOne(bundleNames: string[]) {
@@ -242,11 +261,20 @@ export class YJRemotePackageDownloader {
         }
     }
 
+    /**
+     * 加载远程包
+     * @param bundleNames 
+     * @param onProgress 
+     * @param onComplete 
+     * @param onError 
+     * @param needWait 
+     */
     public loadBundles(bundleNames: string[] | string, onProgress?: (p: number) => void, onComplete?: () => void, onError?: () => void, needWait = false) {
         this._bundleLoadCallback.onComplete = onComplete;
         this._bundleLoadCallback.onError = onError;
         this._bundleLoadCallback.onProgress = onProgress;
         this._completeNum = 0;
+        this._onlyDownload = false;
         bundleNames = [].concat(bundleNames);
         this._allNum = bundleNames.length;
         if (needWait) {
@@ -265,17 +293,36 @@ export class YJRemotePackageDownloader {
         }
     }
 
+    /**
+     * 只将远程包下载到本地而不加载到内存
+     * @param bundleNames 
+     * @param onProgress 
+     * @param onComplete 
+     * @param onError 
+     */
+    public downloadBundles(bundleNames: string[] | string, onProgress?: (p: number) => void, onComplete?: () => void, onError?: () => void) {
+        this._bundleLoadCallback.onComplete = onComplete;
+        this._bundleLoadCallback.onError = onError;
+        this._bundleLoadCallback.onProgress = onProgress;
+        this._completeNum = 0;
+        this._onlyDownload = true;
+        bundleNames = [].concat(bundleNames);
+        this._allNum = bundleNames.length;
+        this.loadBundleOneByOne(bundleNames);
+        if (onComplete) {
+            no.waitFor(() => {
+                return this._completeNum == this._allNum;
+            }).then(() => {
+                onComplete();
+            });
+        }
+    }
+
     public clearBundles(bundleNames: string[] | string) {
         bundleNames = [].concat(bundleNames);
         bundleNames.forEach(bundleName => {
             this.clearAllBundleFiles(bundleName);
         });
-    }
-
-    public loadBaseBundles() {
-        const all = ["atlas", "commonModel", "pet", "chinese", "roleModel", "main1", "FightScene", "moodEvent"];
-        console.log('loadBaseBundles', all);
-        this.loadBundles(all, null, null, null, true);
     }
 }
 

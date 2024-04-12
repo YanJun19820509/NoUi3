@@ -144,6 +144,11 @@ export class SetList extends FuckUi {
     }
 
     protected async onDataChange(data: any) {
+        let a = [].concat(data);
+        if (this.isFirst && a.length == 0) {
+            no.EventHandlerInfo.execute(this.onComplete);
+            return;
+        }
         this._isSettingData = true;
         if (this.onlyFirstTime) {
             if (this.isFirst) {
@@ -164,7 +169,6 @@ export class SetList extends FuckUi {
                 no.visible(item, false);
             }
         }
-        let a = [].concat(data);
         if (this.columnNumber > 1) {
             a = no.arrayToArrays(a, this.columnNumber);
         }
@@ -216,7 +220,7 @@ export class SetList extends FuckUi {
         if (this.showNum > len) {
             for (let i = len; i < this.showNum; i++) {
                 let item = instantiate(this.template);
-                item.active = true;
+                // item.active = true;
                 item.parent = this.content;
                 if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);

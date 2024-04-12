@@ -1,4 +1,3 @@
-
 import {
     ccclass, property, menu, Component, Node,
     Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys, Sprite
@@ -273,14 +272,16 @@ export class YJLoadAssets extends Component {
             }
         }
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
-            if (this.textureInfos[i].path) {
-                const b = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
+            const textureInfo = this.textureInfos[i];
+            if (textureInfo.path) {
+                const b = no.assetBundleManager.assetPath(textureInfo.path).bundle;
                 no.addToArray(bundles, b);
             }
         }
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            if (this.prefabInfos[i].path) {
-                const b = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle;
+            const prefabInfo = this.prefabInfos[i];
+            if (prefabInfo.path) {
+                const b = no.assetBundleManager.assetPath(prefabInfo.path).bundle;
                 no.addToArray(bundles, b);
             }
         }
@@ -296,62 +297,63 @@ export class YJLoadAssets extends Component {
 
         await this.loadBundles(bundles);
 
-        let needCreateMaterial = true;
-
         if (this.materialInfos.length > 0) {
             const r: any[] = [];
-            this.materialInfos.forEach(info => {
-                const bundle = no.assetBundleManager.assetPath(info.path).bundle;
-                const a: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(info.assetUuid);
+            for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+                const materialInfo = this.materialInfos[i],
+                    bundle = no.assetBundleManager.assetPath(materialInfo.path).bundle,
+                    a: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(materialInfo.assetUuid);
                 r[r.length] = { path: a.path, bundle: bundle, type: Material };
-            });
+            }
             await this._loadMaterial(r);
         }
 
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            if (this.spriteFrameInfos[i].path) {
-                const bundle = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle,
-                    info: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.spriteFrameInfos[i].assetUuid);
+            const spriteFrameInfo = this.spriteFrameInfos[i];
+            if (spriteFrameInfo.path) {
+                const bundle = no.assetBundleManager.assetPath(spriteFrameInfo.path).bundle,
+                    info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(spriteFrameInfo.assetUuid);
                 requests[requests.length] = { path: info.path, bundle: bundle, type: SpriteFrame };
             } else
-                requests[requests.length] = { uuid: this.spriteFrameInfos[i].assetUuid, type: SpriteFrame };
+                requests[requests.length] = { uuid: spriteFrameInfo.assetUuid, type: SpriteFrame };
         }
+
         let atlasUuids: string[] = [];
         let textureUuids: string[] = [];
+
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
-            atlasUuids[atlasUuids.length] = this.textureInfos[i].atlasJsonUuid;
-            textureUuids[textureUuids.length] = this.textureInfos[i].assetUuid;
-            if (this.textureInfos[i].path) {
-                const bundle = no.assetBundleManager.assetPath(this.textureInfos[i].path).bundle;
-                if (needCreateMaterial) {
-                    const info1: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.textureInfos[i].assetUuid);
-                    requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
-                }
-                const info2: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.textureInfos[i].atlasJsonUuid);
+            const textureInfo = this.textureInfos[i];
+            atlasUuids[atlasUuids.length] = textureInfo.atlasJsonUuid;
+            textureUuids[textureUuids.length] = textureInfo.assetUuid;
+            if (textureInfo.path) {
+                const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
+                const info1: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.assetUuid);
+                requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
+                const info2: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.atlasJsonUuid);
                 requests[requests.length] = { path: info2.path, bundle: bundle, type: JsonAsset };
             } else {
-                if (needCreateMaterial)
-                    requests[requests.length] = { uuid: this.textureInfos[i].assetUuid, type: Texture2D };
-                requests[requests.length] = { uuid: this.textureInfos[i].atlasJsonUuid, type: JsonAsset };
+                requests[requests.length] = { uuid: textureInfo.assetUuid, type: Texture2D };
+                requests[requests.length] = { uuid: textureInfo.atlasJsonUuid, type: JsonAsset };
             }
         }
+
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            if (this.prefabInfos[i].path) {
-                const bundle = no.assetBundleManager.assetPath(this.prefabInfos[i].path).bundle,
-                    info: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(this.prefabInfos[i].assetUuid);
+            const prefabInfo = this.prefabInfos[i];
+            if (prefabInfo.path) {
+                const bundle = no.assetBundleManager.assetPath(prefabInfo.path).bundle,
+                    info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(prefabInfo.assetUuid);
                 requests[requests.length] = { path: info.path, bundle: bundle, type: Prefab };
             } else
-                requests[requests.length] = { uuid: this.prefabInfos[i].assetUuid, type: Prefab };
+                requests[requests.length] = { uuid: prefabInfo.assetUuid, type: Prefab };
         }
 
         if (requests.length > 0) {
             await this._loadTextures(requests, atlasUuids, textureUuids);
         }
         if (this.loadLanguageBundle) {
-            await this._loadLanguageBundle(atlasUuids, textureUuids, needCreateMaterial);
+            await this._loadLanguageBundle(atlasUuids, textureUuids);
         }
-        if (needCreateMaterial)
-            this.createMaterial();
+        this.createMaterial();
         this.backgroundLoadInfos.forEach(info => {
             info.load();
         });
@@ -387,14 +389,15 @@ export class YJLoadAssets extends Component {
                     let i = atlasUuids.indexOf(uuid);
                     if (i > -1) {
                         this.atlases[i] = (item as JsonAsset).json;
-                        no.assetBundleManager.decRef(item);
+                        // no.assetBundleManager.decRef(item);
                     } else {
                         i = textureUuids.indexOf(uuid);
                         if (i > -1) {
                             this.textures[i] = item as Texture2D;
                             item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
-                        } else
-                            no.assetBundleManager.decRef(item);
+                        }
+                        // else
+                        //     no.assetBundleManager.decRef(item);
                     }
                 });
                 resolve();
@@ -402,22 +405,18 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private async _loadLanguageBundle(atlasUuids: string[], textureUuids: string[], needCreateMaterial: boolean) {
-        if (sys.platform == sys.Platform.WECHAT_GAME) return;
+    private async _loadLanguageBundle(atlasUuids: string[], textureUuids: string[]) {
         return new Promise<void>(resolve => {
             no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
                 if (items) {
                     items.forEach(item => {
                         if (item instanceof JsonAsset && !atlasUuids.includes(item.uuid)) {
                             this.atlases[this.atlases.length] = item.json;
-                            no.assetBundleManager.decRef(item);
+                            // no.assetBundleManager.decRef(item);
                         } else if (item instanceof Texture2D && !textureUuids.includes(item.uuid)) {
                             this.textures[this.textures.length] = item;
                             item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
-                            if (!needCreateMaterial) {
-                                this.addTextureToMaterial(this.textures.length - 1);
-                            }
-                        } else no.assetBundleManager.decRef(item);
+                        }
                     });
                 }
                 resolve();
@@ -433,7 +432,9 @@ export class YJLoadAssets extends Component {
             // });
 
             YJRemotePackageDownloader.new.loadBundles(bundles, p => {
-                if (p >= 1) resolve();
+                if (p >= 1) {
+                    resolve();
+                }
             });
         });
     }

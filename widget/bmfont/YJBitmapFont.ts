@@ -105,7 +105,8 @@ export class YJBitmapFont extends Component {
         } else {
             if (this._spacingX != 0)
                 this.getComponent(Label).spacingX = this._spacingX;
-            this.setBitmapFont(this.fontUuid, this.fontUrl);
+            if (this.fontUuid)
+                this.setBitmapFont(this.fontUuid, this.fontUrl);
         }
     }
 
@@ -156,12 +157,9 @@ export class YJBitmapFont extends Component {
                         resolve(bf);
                     });
                 } else {
-                    const bundle = no.assetBundleManager.assetPath(url).bundle,
-                        a: any = no.assetBundleManager.getBundle(bundle).getAssetInfo(fontUuid),
-                        requests: any[] = [{ path: a.path, bundle: bundle, type: BitmapFont }];
-                    no.assetBundleManager.loadAnyFiles(requests, null, bfs => {
-                        this.setFontToCache(fontUuid, bfs[0] as BitmapFont);
-                        resolve(bfs[0] as BitmapFont);
+                    no.assetBundleManager.loadFile(url, BitmapFont, (bf: BitmapFont) => {
+                        this.setFontToCache(fontUuid, bf);
+                        resolve(bf);
                     });
                 }
             });

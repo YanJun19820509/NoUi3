@@ -1,5 +1,5 @@
 
-import { ccclass, menu } from '../yj';
+import { ccclass, menu, property } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -18,9 +18,23 @@ import { FuckUi } from './FuckUi';
 @menu('NoUi/ui/SetScale(设置scale:number|[number])')
 export class SetScale extends FuckUi {
 
+    @property({ tooltip: '乘以节点原有缩放' })
+    isMultiply: boolean = false;
+
     protected onDataChange(data: any) {
+        let temp = this.node.getScale();
         if (data instanceof Array)
-            this.node.setScale(data[0], data[1] || data[0], data[2]);
-        else this.node.setScale(data, data, data);
+            if (this.isMultiply) {
+                this.node.setScale(temp.multiply3f(data[0], data[1] || data[0], data[2] || 1));
+            } else {
+                this.node.setScale(data[0], (data[1] || data[0]), data[2]);
+            }
+        else {
+            if (this.isMultiply) {
+                this.node.setScale(temp.multiplyScalar(data));
+            } else {
+                this.node.setScale(data, data, data);
+            }
+        }
     }
 }
