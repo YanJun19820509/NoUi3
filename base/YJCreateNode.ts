@@ -54,17 +54,16 @@ export class YJCreateNode extends Component {
         }
 
         if (a == null) {
-            let node = this.tempNode || await this.loadPrefab.loadPrefab();
+            a = this.tempNode || await this.loadPrefab.loadPrefab();
             if (!this?.node?.isValid) return;
-            if (node == null) return null;
-            a = instantiate(node);
+            if (a == null) return null;
             if (this.dynamicAtlas && !a.getComponent(YJDynamicAtlas)) {
                 YJDynamicAtlas.setDynamicAtlas(a, this.dynamicAtlas);
             }
             await a.getComponent(YJLoadAssets)?.load();
             if (!this?.node?.isValid) return;
             a.getComponent(YJDataWork)?.init();
-            this._recycleType = node.getComponent(YJCacheObject)?.recycleType;
+            this._recycleType = a.getComponent(YJCacheObject)?.recycleType;
         }
         a.parent = this.target;
         a.active = true;

@@ -31,7 +31,7 @@ export class TimeWatcher {
      * 开始计时
      * @returns 
      */
-    public static start(): TimeWatcher {
+    public static start(Evn?: string): TimeWatcher {
         const a = new TimeWatcher();
         a.t1 = no.sysTime.locationNow;
         return a;

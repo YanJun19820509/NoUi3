@@ -1,6 +1,7 @@
 import {
     ccclass, property, menu, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys, Sprite
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys, Sprite,
+    ImageAsset
 } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
@@ -9,6 +10,7 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
+import { TimeWatcher } from '../TimeWatcher';
 
 /**
  * Predefined variables
@@ -143,6 +145,15 @@ export class PrefabInfo extends LoadAssetsInfo {
     }
 }
 
+/**
+ * 缓存atlas.json文件
+ */
+const AssetAtlasJsonMap: Map<string, any> = new Map();
+const TextureMap: Map<string, [Texture2D, number, number]> = new Map();
+const MaxTextureSize: number = 1024 * 1024 * 20; // 200M
+const LanguageBundleMap: Map<string, [Texture2D, any]> = new Map();
+let TextureAllSize: number = 0;
+
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
 export class YJLoadAssets extends Component {
@@ -248,6 +259,7 @@ export class YJLoadAssets extends Component {
     private atlases: any[] = [];
     private textures: Texture2D[] = [];
     private materials: Material[] = [];
+    private spriteFrameMap: any = {};
 
     onLoad() {
         this.autoLoad &&
@@ -264,7 +276,8 @@ export class YJLoadAssets extends Component {
      * 加载图集
      */
     public async load() {
-        let bundles: string[] = [], requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset }[] = [];
+        let bundles: string[] = [],
+            requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }[] = [];
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             if (this.spriteFrameInfos[i].path) {
                 const b = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
@@ -297,16 +310,59 @@ export class YJLoadAssets extends Component {
 
         await this.loadBundles(bundles);
 
-        if (this.materialInfos.length > 0) {
-            const r: any[] = [];
-            for (let i = 0, n = this.materialInfos.length; i < n; i++) {
-                const materialInfo = this.materialInfos[i],
-                    bundle = no.assetBundleManager.assetPath(materialInfo.path).bundle,
-                    a: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(materialInfo.assetUuid);
-                r[r.length] = { path: a.path, bundle: bundle, type: Material };
+        // if (this.materialInfos.length > 0) {
+        //     const r: any[] = [];
+        //     for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+        //         const materialInfo = this.materialInfos[i],
+        //             bundle = no.assetBundleManager.assetPath(materialInfo.path).bundle,
+        //             a: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(materialInfo.assetUuid);
+        //         r[r.length] = { path: a.path, bundle: bundle, type: Material };
+        //     }
+        //     await this._loadMaterial(r);
+        // }
+        let textureIdx: any = {}, jsonIdx: any = {};
+        for (let i = 0, n = this.textureInfos.length; i < n; i++) {
+            const textureInfo = this.textureInfos[i];
+            const assetUuid = textureInfo.assetUuid.split('@')[0];
+            if (this.hasTexture(assetUuid)) {
+                this.textures[this.textures.length] = this.getTexture(assetUuid);
+            } else {
+                if (textureInfo.path) {
+                    const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
+                    const info1: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(assetUuid);
+                    requests[requests.length] = { path: info1.path, bundle: bundle, type: ImageAsset };
+                } else {
+                    requests[requests.length] = { uuid: assetUuid, type: ImageAsset };
+                }
+                this.textures[this.textures.length] = null;
+                textureIdx[assetUuid] = this.textures.length - 1;
             }
-            await this._loadMaterial(r);
+            if (this.hasAtlasJson(textureInfo.atlasJsonUuid)) {
+                this.atlases[this.atlases.length] = this.getAtlasJson(textureInfo.atlasJsonUuid);
+            } else {
+                if (textureInfo.path) {
+                    const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
+                    const info2: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.atlasJsonUuid);
+                    requests[requests.length] = { path: info2.path, bundle: bundle, type: JsonAsset };
+                } else {
+                    requests[requests.length] = { uuid: textureInfo.atlasJsonUuid, type: JsonAsset };
+                }
+                this.atlases[this.atlases.length] = null;
+                jsonIdx[textureInfo.atlasJsonUuid] = this.atlases.length - 1;
+            }
         }
+
+        if (requests.length > 0) {
+            await this._loadFiles(requests, textureIdx, jsonIdx);
+        }
+        if (this.loadLanguageBundle) {
+            await this._loadLanguageBundle();
+        }
+        this.createMaterial();
+
+        Promise.resolve();
+
+        requests.length = 0; // clear requests
 
         for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
             const spriteFrameInfo = this.spriteFrameInfos[i];
@@ -318,25 +374,6 @@ export class YJLoadAssets extends Component {
                 requests[requests.length] = { uuid: spriteFrameInfo.assetUuid, type: SpriteFrame };
         }
 
-        let atlasUuids: string[] = [];
-        let textureUuids: string[] = [];
-
-        for (let i = 0, n = this.textureInfos.length; i < n; i++) {
-            const textureInfo = this.textureInfos[i];
-            atlasUuids[atlasUuids.length] = textureInfo.atlasJsonUuid;
-            textureUuids[textureUuids.length] = textureInfo.assetUuid;
-            if (textureInfo.path) {
-                const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
-                const info1: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.assetUuid);
-                requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
-                const info2: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.atlasJsonUuid);
-                requests[requests.length] = { path: info2.path, bundle: bundle, type: JsonAsset };
-            } else {
-                requests[requests.length] = { uuid: textureInfo.assetUuid, type: Texture2D };
-                requests[requests.length] = { uuid: textureInfo.atlasJsonUuid, type: JsonAsset };
-            }
-        }
-
         for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
             const prefabInfo = this.prefabInfos[i];
             if (prefabInfo.path) {
@@ -346,14 +383,8 @@ export class YJLoadAssets extends Component {
             } else
                 requests[requests.length] = { uuid: prefabInfo.assetUuid, type: Prefab };
         }
-
-        if (requests.length > 0) {
-            await this._loadTextures(requests, atlasUuids, textureUuids);
-        }
-        if (this.loadLanguageBundle) {
-            await this._loadLanguageBundle(atlasUuids, textureUuids);
-        }
-        this.createMaterial();
+        if (requests.length > 0)
+            no.assetBundleManager.preloadAny(requests, null);
         this.backgroundLoadInfos.forEach(info => {
             info.load();
         });
@@ -369,35 +400,31 @@ export class YJLoadAssets extends Component {
                 resolve();
             });
         });
-        // this.setMaterialToDynamicAtlas(item);
-        // item['_props'].forEach(p => {
-        //     for (const key in p) {
-        //         const a = p[key];
-        //         if (a instanceof Texture2D) {
-        //             a['_yj_ref'] = (a['_yj_ref'] || 0) + 1;
-        //             this.textures[this.textures.length] = a;
-        //         }
-        //     }
-        // });
     }
 
-    private async _loadTextures(requests: any[], atlasUuids: string[], textureUuids: string[]) {
+    private async _loadFiles(requests: any[], textureIdx: any, jsonIdx: any) {
         return new Promise<void>(resolve => {
+            TimeWatcher.blink(`_loadFiles1 ${this.node.name}`)
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
+                TimeWatcher.blink(`_loadFiles2 ${this.node.name}`)
                 items.forEach(item => {
-                    const uuid = item.uuid;
-                    let i = atlasUuids.indexOf(uuid);
-                    if (i > -1) {
-                        this.atlases[i] = (item as JsonAsset).json;
-                        // no.assetBundleManager.decRef(item);
-                    } else {
-                        i = textureUuids.indexOf(uuid);
-                        if (i > -1) {
-                            this.textures[i] = item as Texture2D;
-                            item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
-                        }
-                        // else
-                        //     no.assetBundleManager.decRef(item);
+                    if (item instanceof JsonAsset) {
+                        this.setAtlasJson(item.uuid, item.json)
+                        const i = jsonIdx[item.uuid];
+                        if (i != null)
+                            this.atlases[i] = item.json;
+                        else
+                            this.atlases[this.atlases.length] = item.json;
+                        no.assetBundleManager.decRef(item);
+                    } else if (item instanceof ImageAsset) {
+                        no.assetBundleManager.cacheImage(item);
+                        const t = no.assetBundleManager.createTextureFromCache(item.uuid);
+                        this.addTexure(item.uuid, t);
+                        const i = textureIdx[item.uuid];
+                        if (i != null)
+                            this.textures[i] = t;
+                        else
+                            this.textures[this.textures.length] = t;
                     }
                 });
                 resolve();
@@ -405,19 +432,25 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private async _loadLanguageBundle(atlasUuids: string[], textureUuids: string[]) {
+    private async _loadLanguageBundle() {
+        const lan = YJi18n.ins.language;
+        if (this.hasLanguage(lan)) {
+            this.atlases[this.atlases.length] = this.getLanguageJson(lan);
+            this.textures[this.textures.length] = this.getLanguageTexture(lan);
+            return;
+        }
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadAllFilesInBundle(YJi18n.ins.language, [SpriteAtlas], null, items => {
+            no.assetBundleManager.loadAllFilesInBundle(lan, [SpriteAtlas], null, items => {
                 if (items) {
                     items.forEach(item => {
-                        if (item instanceof JsonAsset && !atlasUuids.includes(item.uuid)) {
+                        if (item instanceof JsonAsset) {
                             this.atlases[this.atlases.length] = item.json;
-                            // no.assetBundleManager.decRef(item);
-                        } else if (item instanceof Texture2D && !textureUuids.includes(item.uuid)) {
+                            no.assetBundleManager.decRef(item);
+                        } else if (item instanceof Texture2D) {
                             this.textures[this.textures.length] = item;
-                            item['_yj_ref'] = (item['_yj_ref'] || 0) + 1;
                         }
                     });
+                    this.addLanguage(lan, this.textures[this.textures.length - 1], this.atlases[this.atlases.length - 1]);
                 }
                 resolve();
             });
@@ -427,15 +460,15 @@ export class YJLoadAssets extends Component {
     private async loadBundles(bundles: string[]) {
         no.log('YJLoadAssets loadBundles', bundles);
         return new Promise<void>(resolve => {
-            // no.assetBundleManager.loadBundles(bundles, p => {
-            //     if (p >= 1) resolve();
-            // });
-
-            YJRemotePackageDownloader.new.loadBundles(bundles, p => {
-                if (p >= 1) {
-                    resolve();
-                }
+            no.assetBundleManager.loadBundles(bundles, p => {
+                if (p >= 1) resolve();
             });
+
+            // YJRemotePackageDownloader.new.loadBundles(bundles, p => {
+            //     if (p >= 1) {
+            //         resolve();
+            //     }
+            // });
         });
     }
 
@@ -474,24 +507,20 @@ export class YJLoadAssets extends Component {
             info.release && info.release(null);
         });
         this.textures.forEach(a => {
-            if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
-                if (this.notRelease)
-                    no.assetBundleManager.decRef(a);
-                else if (--a['_yj_ref'] == 0)
-                    no.assetBundleManager.release(a, true);
-            } else no.assetBundleManager.decRef(a);
+            this.returnTexture(a.uuid);
         });
-        this.materials.forEach(a => {
-            if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
-                if (this.notRelease)
-                    no.assetBundleManager.decRef(a);
-                else if (--a['_yj_ref'] == 0)
-                    no.assetBundleManager.release(a, true);
-            } else no.assetBundleManager.decRef(a);
-        });
+        // this.materials.forEach(a => {
+        //     if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
+        //         if (this.notRelease)
+        //             no.assetBundleManager.decRef(a);
+        //         else if (--a['_yj_ref'] == 0)
+        //             no.assetBundleManager.release(a, true);
+        //     } else no.assetBundleManager.decRef(a);
+        // });
         this.textures.length = 0;
         this.atlases.length = 0;
         this.materials.length = 0;
+        this.spriteFrameMap = {};
     }
 
 
@@ -501,6 +530,8 @@ export class YJLoadAssets extends Component {
      * @returns [所属atlas下标，SpriteFrameInfo]
      */
     public getSpriteFrameInAtlas(name: string): [number, SpriteFrameDataType] {
+        let a = this.spriteFrameMap[name];
+        if (a) return a;
         let info: SpriteFrameDataType, idx: number;
         for (let i = 0, n = this.atlases.length; i < n; i++) {
             const s = this.atlases[i][name];
@@ -510,7 +541,9 @@ export class YJLoadAssets extends Component {
                 break;
             }
         }
-        return [idx, info];
+        a = [idx, info];
+        this.spriteFrameMap[name] = a;
+        return a;
     }
 
     public getSpriteFrame(name: string, cb: (sf: SpriteFrame) => void) {
@@ -536,5 +569,85 @@ export class YJLoadAssets extends Component {
         bs.forEach(b => {
             b.loadAsset = loadAsset;
         });
+    }
+
+    private hasTexture(uuid: string): boolean {
+        if (!TextureMap.has(uuid)) {
+            const t = no.assetBundleManager.createTextureFromCache(uuid);
+            if (t) {
+                this.addTexure(uuid, t);
+                return true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private getTexture(uuid: string): Texture2D | null {
+        const item = TextureMap.get(uuid) || null;
+        if (item)
+            ++item[1];
+        return item[0];
+    }
+
+    private addTexure(uuid: string, tex: Texture2D): void {
+        TextureMap.set(uuid, [tex, 1, no.sysTime.now]);
+        TextureAllSize += tex.getGFXTexture()?.size || 0; // 更新纹理总大小
+        no.err(`当前缓存纹理总大小：${Math.ceil(TextureAllSize / 1048576)}M`)
+        this.releaseTexture();
+    }
+
+    private returnTexture(uuid: string): void {
+        const item = TextureMap.get(uuid) || null;
+        if (item) {
+            --item[1];
+            item[2] = no.sysTime.now; // 更新时间戳，用于判断是否需要释放资源
+        }
+    }
+
+    private hasAtlasJson(uuid: string): boolean {
+        return AssetAtlasJsonMap.has(uuid);
+    }
+
+    private getAtlasJson(uuid: string): any | null {
+        return AssetAtlasJsonMap.get(uuid) || null;
+    }
+
+    private setAtlasJson(uuid: string, json: any): void {
+        AssetAtlasJsonMap.set(uuid, json);
+    }
+
+    private releaseTexture() {
+        if (TextureAllSize < MaxTextureSize) return;
+        no.err('纹理缓存已超过上限，开始释放较早的纹理');
+        const uuids = no.MapKeys2Array(TextureMap);
+        uuids.sort((a, b) => TextureMap.get(a)![2] - TextureMap.get(b)![2]);
+        for (const uuid of uuids) {
+            const item = TextureMap.get(uuid) || null;
+            if (item && item[1] === 0) {
+                const size = item[0].getGFXTexture().size;
+                TextureAllSize -= size; // 更新纹理总大小
+                TextureMap.delete(uuid); // 删除纹理对象
+                no.assetBundleManager.release(item[0], true); // 释放纹理资源
+                no.err(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
+                if (TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
+            }
+        }
+    }
+
+    private hasLanguage(name: string): boolean {
+        return LanguageBundleMap.has(name);
+    }
+
+    private getLanguageTexture(name: string): Texture2D {
+        return LanguageBundleMap.get(name)[0];
+    }
+
+    private getLanguageJson(name: string): any | null {
+        return LanguageBundleMap.get(name)[1];
+    }
+
+    private addLanguage(name: string, texture: Texture2D, json: any): void {
+        LanguageBundleMap.set(name, [texture, json]);
     }
 }

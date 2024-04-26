@@ -152,12 +152,12 @@ export class SetList extends FuckUi {
         this._isSettingData = true;
         if (this.onlyFirstTime) {
             if (this.isFirst) {
-                this.isFirst = false;
                 this.waitTime = this.wait;
             } else this.waitTime = 0;
         } else {
             this.waitTime = this.wait;
         }
+        this.isFirst = false;
         this.unscheduleAllCallbacks();
         if (!this?.node?.isValid) return;
         await no.waitFor(() => { return this._loaded; }, this);

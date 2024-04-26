@@ -68,10 +68,7 @@ export class YJGameState extends Component {
 
     private onLowMemory() {
         YJWindowManager.clearClosedPanel();
-        if (sys.platform == sys.Platform.WECHAT_GAME)
-            window['wx'].triggerGC();
-        else
-            sys.garbageCollect();
+        no.GC();
         no.EventHandlerInfo.execute(this.onLowMemoryCalls);
     }
 

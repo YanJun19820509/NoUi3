@@ -47,7 +47,7 @@ export class SetPage extends FuckUi {
             await this.page.loadPrefab();
             if (!this?.node?.isValid) return;
         }
-        let node = instantiate(this.page.loadedNode);
+        let node = this.page.instantiateNode();
         if (this.dynamicAtlas && !node.getComponent(YJDynamicAtlas)) {
             YJDynamicAtlas.setDynamicAtlas(node, this.dynamicAtlas);
         }

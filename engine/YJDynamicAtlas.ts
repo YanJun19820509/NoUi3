@@ -3,7 +3,8 @@ import {
     EDITOR, ccclass, property, disallowMultiple, SpriteFrame, Label, UIRenderer, Texture2D,
     Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton,
     Graphics,
-    Component
+    Component,
+    sys
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas, DynamicAtlasTexture } from './atlas';
@@ -102,8 +103,8 @@ export class YJDynamicAtlas extends Component {
     }
 
     onDestroy() {
-        for (const uuid in this.spriteFrameMap) {
-            (this.spriteFrameMap[uuid] as SpriteFrame).destroy();
+        for (const key in this.spriteFrameMap) {
+            (this.spriteFrameMap[key] as SpriteFrame).destroy();
         }
         YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
@@ -336,28 +337,39 @@ export class YJDynamicAtlas extends Component {
      * 是否生效，当dynamicAtlasManager.enabled为true时不生效，否则生效。
      */
     public get isWork(): boolean {
+        //ios微信不支持合图
+        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return false;
         let a = !dynamicAtlasManager.enabled && this.enabled && !EDITOR;
         return a;
     }
 
-    public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
-        sprite.spriteFrame = this.getSpriteFrameInSample2D(spriteFrame);
+    public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType, name: string) {
+        const sf = this.createSpriteFrameInSample2D(spriteFrame);
+        sprite.spriteFrame = sf;
         sprite['_updateUVs']();
+        this.spriteFrameMap[name] = sf;
     }
 
-    public getSpriteFrameInSample2D(spriteFrame: SpriteFrameDataType): SpriteFrame {
-        let newSpriteFrame: SpriteFrame = this.spriteFrameMap[spriteFrame.uuid];
-        if (!newSpriteFrame) {
-            newSpriteFrame = new SpriteFrame();
-            newSpriteFrame.texture = this.spriteTexture;
-            newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
-            newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
-            newSpriteFrame.uv = spriteFrame.uv;
-            newSpriteFrame.uvSliced = spriteFrame.uvSliced;
-            newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
-            this.spriteFrameMap[spriteFrame.uuid] = newSpriteFrame;
-            newSpriteFrame['_rotated'] = spriteFrame.rotated;
+    public setCachedSpriteFrameInSample2D(sprite: Sprite, name: string): boolean {
+        const sf = this.spriteFrameMap[name];
+        if (sf) {
+            sprite.spriteFrame = sf;
+            sprite['_updateUVs']();
+            return true;
         }
+        return false;
+    }
+
+    private createSpriteFrameInSample2D(spriteFrame: SpriteFrameDataType): SpriteFrame {
+        let newSpriteFrame: SpriteFrame = new SpriteFrame();
+        newSpriteFrame['_uuid'] = spriteFrame.uuid;
+        newSpriteFrame.texture = this.spriteTexture;
+        newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
+        newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
+        newSpriteFrame.uv = spriteFrame.uv;
+        newSpriteFrame.uvSliced = spriteFrame.uvSliced;
+        newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
+        newSpriteFrame['_rotated'] = spriteFrame.rotated;
         return newSpriteFrame;
     }
 

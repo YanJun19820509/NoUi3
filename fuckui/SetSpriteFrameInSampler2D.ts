@@ -96,6 +96,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDataChange(data: any) {
+        if (!this.multiLan && data.indexOf('/') > -1) {
+            this.setSingleSpriteFrame(data);
+            return;
+        }
         let name = String(data).split('/').pop();
         this.setSpriteFrame(name);
     }
@@ -118,15 +122,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         } else name = spriteName;
 
         const sprite = this.getComponent(Sprite);
-        if (!sprite.customMaterial) {
-            sprite.customMaterial = this.dynamicAtlas.customMaterial;
-        }
-
-        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
-        if (spriteFrame && spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
-            this.setScale(spriteFrame.scale);
-        }
-
         if (!this.loadFromAtlas || sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
                 this.setSpriteFrameByDefaultSpriteFrameUuid();
@@ -134,24 +129,36 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this.setSpriteFrameForNotWeb(name)
             return;
         }
-        if (name != this.defaultName) this._lastName = name;
-        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) {
-        //     this.setSpriteFrameForNotWeb(name)
-        //     return;
-        // }
+
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas.customMaterial;
+        }
+
+        const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.log('setSpriteFrame not get', name);
             this.resetSprite();
             return;
         }
-        let t = `${this.defineIndex}-${i + 1}00`;
+        if (name != this.defaultName) this._lastName = name;
+
+        if (spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+            this.setScale(spriteFrame.scale);
+        }
+
+        if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
+            this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
+        this.setEffect(i);
+    }
+
+    private setEffect(idx: number) {
+        let t = `${this.defineIndex}-${idx + 1}00`;
         const defines: any = {};
         defines[t] = true;
         if (this.lastDefine && this.lastDefine != t) {
             defines[this.lastDefine] = false;
         }
         this.lastDefine = t;
-        this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame);
         this.getComponent(YJVertexColorTransition)?.setEffect(defines);
     }
 
@@ -180,6 +187,18 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                     sprite.spriteFrame = file;
             });
         }
+    }
+
+    private setSingleSpriteFrame(name: string) {
+        const path = `${name}/spriteFrame`;
+        no.assetBundleManager.loadSprite(path, spriteFrame => {
+            if (!spriteFrame) {
+                no.err('setSingleSpriteFrame no file', name);
+            } else {
+                const sprite = this.getComponent(Sprite);
+                sprite.spriteFrame = spriteFrame;
+            }
+        });
     }
 
     public a_setEmpty(): void {

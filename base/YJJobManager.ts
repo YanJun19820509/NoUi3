@@ -16,8 +16,8 @@ import { no } from '../no';
 type YJJob = { func: Function, target: any, args?: any };
 //任务管理器，管理全局任务的调度执行
 @ccclass('YJJobManager')
-export class YJJobManager extends Component {
-    public static ins: YJJobManager;
+export class YJJobManager {
+    private static _ins: YJJobManager;
     private jobs: { [k: string]: YJJob } = {};
     private jobKeys: string[] = [];
     private lastJobKeyIndex: number = 0;
@@ -25,13 +25,12 @@ export class YJJobManager extends Component {
     //是否立刻执行
     private doNow = false;
 
-    onLoad() {
-        YJJobManager.ins = this;
-        this.executePerFrame();
-    }
-
-    onDestroy() {
-        YJJobManager.ins = null;
+    public static get ins(): YJJobManager {
+        if (!this._ins) {
+            this._ins = new YJJobManager();
+            this._ins.executePerFrame();
+        }
+        return this._ins;
     }
 
     /**
@@ -45,7 +44,7 @@ export class YJJobManager extends Component {
         this.jobKeys[this.jobKeys.length] = k;
         return await no.waitFor(() => {
             return this.jobKeys.indexOf(k) == -1;
-        }, this);
+        });
     }
 
     private nowMs(): number {
@@ -69,7 +68,7 @@ export class YJJobManager extends Component {
                         k = this.jobKeys[i];
                         job = this.jobs[k];
                         if (!job || !no.checkValid(job.target) || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
-                        if (this.nowMs() - frameStartTime > 5 && !this.doNow) {
+                        if (!this.doNow && this.nowMs() - frameStartTime > 30) {
                             this.lastJobKeyIndex = i;
                             aa = false;
                             break;

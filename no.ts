@@ -9,7 +9,8 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = false;
+    let _isLogEnabled: boolean = DEBUG;
+    let _isSpineEnable: boolean = true;
 
     export function setLogEnabled(v: boolean) {
         _isLogEnabled = v;
@@ -49,6 +50,14 @@ export namespace no {
      */
     export function setAppVer(v: string) {
         _appVer = v;
+    }
+
+    export function spineEnable(): boolean {
+        return _isSpineEnable;
+    }
+
+    export function setSpineEnable(v: boolean) {
+        _isSpineEnable = v;
     }
 
     /**
@@ -527,8 +536,12 @@ export namespace no {
         _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
+    export function warn(...Evns: any[]): void {
+        console.warn('#NoUi#Warn', Evns);
+    }
+
     export function err(...Evns: any[]): void {
-        console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
+        console.error('#NoUi#Err', Evns);
     }
 
     export function logTimeStart(type?: string) {
@@ -2437,15 +2450,13 @@ export namespace no {
 
     /**资源管理 */
 
-    export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset };
+    export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset | typeof ImageAsset };
     export class AssetBundleManager {
 
-        private needReleaseAssets: Asset[] = [];
         private remoteAssetsCache: any = {};
-        private _cacheNode: { [k: string]: Prefab } = {};
-        private _cacheTexture: { [k: string]: Texture2D } = {};
-        private _assetRef: { [uuid: string]: number } = {};
+        private _cacheAsset: { [k: string]: Asset } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
+        private _loadingAsset: { [k: string]: boolean } = {};
 
         public constructor() {
             //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -2483,17 +2494,48 @@ export namespace no {
         }
 
         public getPrefabNode(k: string): Node {
-            const n = this._cacheNode[k];
-            if (n) return instantiate(n);
-            return null;
+            const n = this.getCachedAsset<Prefab>(k);
+            try {
+                if (n) return instantiate(n);
+                return null;
+            } catch (e) {
+                err('no getPrefabNode', e);
+                return null;
+            }
         }
 
         public setPrefabNode(k: string, prefab: Prefab) {
-            this._cacheNode[k] = prefab;
+            console.log('setPrefabNode', k);
+            this.cacheAsset(k, prefab);
         }
 
-        public clearPrefabNode() {
-            this._cacheNode = {};
+        /**
+         * 当多个并发加载同一个资源时，设置该资源的加载状态
+         * @param k 资源唯一标识uuid|url
+         */
+        public loadingAsset(k: string) {
+            this._loadingAsset[k] = true;
+        }
+
+        /**
+         * 该资源是否在加载中
+         * @param k 资源唯一标识uuid|url
+         * @returns 
+         */
+        public isAssetLoading(k: string): boolean {
+            return this._loadingAsset[k] || false;
+        }
+
+        /**
+         * 标记该资源已经完成加载
+         * @param k 资源唯一标识uuid|url
+         */
+        public assetLoadingEnd(k: string) {
+            this._loadingAsset[k] = false;
+        }
+
+        public clearCachedAssets() {
+            this._cacheAsset = {};
         }
 
         /**
@@ -2524,33 +2566,35 @@ export namespace no {
          * @param filePaths
          * @param onProgress
          */
-        public preloadFiles(bundleName: string, filePaths: string[], onProgress: (progress: number) => void): void {
+        public preloadFiles(bundleName: string, filePaths: string[], onProgress?: (progress: number) => void): void {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle == null) {
                 this.loadBundle(bundleName, () => {
                     this.preloadFiles(bundleName, filePaths, onProgress);
                 });
             } else {
-                log('preloadFiles', filePaths);
-                bundle.preload(filePaths, Asset, (finished, total, requestItem) => {
+                bundle.preload(filePaths, Asset, (finished, total, item) => {
                     onProgress && onProgress(finished / total);
-                }, (err, items) => {
-                    if (items == null || items.length == 0) {
-                        onProgress && onProgress(1);
-                        log('preloadFiles', filePaths, err.message);
-                    }
+                }, (e, items) => {
+                    if (e) err('preloadFiles', e.message);
                 });
             }
         }
 
-        public preloadAny(requests: { 'uuid': string }[], onProgress: (progress: number) => void): void {
-            log('preloadAny', requests);
+        public preloadAny(requests: {
+            uuid?: string,
+            url?: string,
+            path?: string,
+            dir?: string,
+            scene?: string
+        }[], onProgress: (progress: number) => void): void {
+            // log('preloadAny', requests);
             assetManager.preloadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
-            }, (err, items) => {
+            }, (e, items) => {
                 if (items == null || items.length == 0) {
                     onProgress && onProgress(1);
-                    log('preloadAny', requests, err.message);
+                    err('preloadAny', requests, e.message);
                 }
             });
         }
@@ -2618,7 +2662,7 @@ export namespace no {
          * @param type
          * @param callback
          */
-        public loadFile(path: string, type: typeof Asset, callback: (asset: Asset) => void): void {
+        public loadFile(path: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             let p = this.assetPath(path);
             this.load(p.bundle, p.path, type, (asset: Asset) => {
                 callback(asset);
@@ -2631,7 +2675,7 @@ export namespace no {
          * @param type
          * @param callback
          */
-        public load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
+        public load(bundleName: string, fileName: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName }, (err, item) => {
@@ -2649,6 +2693,7 @@ export namespace no {
                     bundle.load(fileName, type, (error, item) => {
                         if (item == null) {
                             err('load', fileName, error.message);
+                            evn.emit('load_file_fail');
                         } else {
                             this.addRef(item);//增加引用计数
                             this.loadDepends(item.uuid);
@@ -2827,7 +2872,7 @@ export namespace no {
             let a: AssetPath = { bundle: bundle, file: fileName };
             p[p.length] = fileName;
             a.path = p.join('/');
-            let s: typeof Asset;
+            let s: typeof Asset | typeof ImageAsset;
             if (fileType != null) {
                 switch (fileType.toLowerCase()) {
                     case 'json':
@@ -2838,7 +2883,7 @@ export namespace no {
                         break;
                     case 'png':
                     case 'jpg':
-                        s = Texture2D;
+                        s = ImageAsset;
                         break;
                     case 'prefab':
                         s = Prefab;
@@ -2871,13 +2916,13 @@ export namespace no {
             }
         }
 
-        public preloadAllFilesInBundle(bundleName: string, onProgress: (progress: number) => void) {
+        public preloadAllFilesInBundle(bundleName: string, onProgress?: (progress: number) => void) {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let paths: string[] = [];
                 for (const uuid in assetInfos) {
-                    if (uuid.includes('@')) continue;
+                    if (!assetInfos[uuid].path || uuid.includes('@')) continue;
                     paths[paths.length] = assetInfos[uuid].path;
                 }
                 this.preloadFiles(bundleName, paths, onProgress);
@@ -2888,7 +2933,7 @@ export namespace no {
             }
         }
 
-        public loadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
+        public loadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void, specialTypes?: typeof Asset[]) {
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
                 err(`${folderName}没有设置ab包`);
@@ -2899,9 +2944,15 @@ export namespace no {
             const assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
             for (const uuid in assetInfos) {
+                const info = assetInfos[uuid];
+                if (specialTypes) {
+                    if (info.path?.indexOf(p.path) == 0 && specialTypes.includes(info.ctor))
+                        requests[requests.length] = { path: info.path, bundle: p.bundle, type: info.ctor };
+                    continue;
+                }
                 if (uuid.includes('@')) continue;
-                if (assetInfos[uuid].path?.indexOf(p.path) == 0) {
-                    requests[requests.length] = { uuid: uuid };
+                if (info.path?.indexOf(p.path) == 0) {
+                    requests[requests.length] = { path: info.path, bundle: p.bundle, type: info.ctor };
                 }
             }
             this.loadAnyFiles(requests, onProgress, onComplete);
@@ -2915,16 +2966,16 @@ export namespace no {
             }
             let bundle = this.getLoadedBundle(p.bundle);
             let infos = bundle.getDirWithPath(p.path);
-            let requests: { uuid: string, type: typeof Asset }[] = [];
+            let requests: { path: string, bundle: string, type: typeof Asset }[] = [];
             infos.forEach(a => {
                 if (a.uuid.indexOf('@') == -1) {
-                    requests[requests.length] = { uuid: a.uuid, type: Asset };
+                    requests[requests.length] = { path: a.path, bundle: p.bundle, type: Asset };
                 }
             });
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
-        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset, callback: (file: T, info: _AssetInfo) => void, onErr?: () => void) {
+        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset | typeof ImageAsset, callback: (file: T, info: _AssetInfo) => void, onErr?: () => void) {
             if (!EDITOR) return;
             let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
             if (!info) {
@@ -3023,7 +3074,7 @@ export namespace no {
             }).catch(e => { err(e); });
         }
 
-        public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset, callback?: (file: T) => void) {
+        public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset | typeof ImageAsset, callback?: (file: T) => void) {
             if (uuid == '') {
                 no.err('uuid 为空')
                 return;
@@ -3044,7 +3095,7 @@ export namespace no {
          * @param request {url:完成路径,path:相对于包的路径,uuid:唯一id,bundle:包名,type:资源类型}
          * @param callback 
          */
-        public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
+        public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }, callback?: (file: T) => void): void {
             if (request.url) {
                 const p = this.assetPath(request.url);
                 this.load(p.bundle, p.path, p.type, callback);
@@ -3067,13 +3118,10 @@ export namespace no {
                 this._ttfFont[asset._fontFamily] = asset;
             }
             asset.addRef();
-            // this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 0) + 1;
-            // log('addRef', asset.uuid, asset.refCount);
         }
 
         public decRef(asset: Asset): void {
             if (!asset) return;
-            // this._assetRef[asset.uuid] = (this._assetRef[asset.uuid] || 1) - 1;
             scheduleOnce(() => {
                 if (asset) {
                     asset.decRef();
@@ -3133,29 +3181,23 @@ export namespace no {
          * @param onProgress 
          * @param onComplete 
          */
-        public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
-            // assetManager.loadAny(requests, (finished, total, requestItem) => {
-            //     onProgress && onProgress(finished / total);
-            // }, (e, items) => {
-            //     if (e) {
-            //         onProgress && onProgress(1);
-            //         onComplete?.([]);
-            //         err('loadAnyFiles', requests, e.stack);
-            //     } else {
-            //         items = [].concat(items);
-            //         items.forEach(item => {
-            //             this.addRef(item);
-            //         });
-            //         onComplete?.(items);
-            //     }
-            // });
-            let n = requests.length, items: any[] = [];
-            for (let i = 0; i < n; i++) {
-                const item = await this._loadAnyFile(requests[i])
-                items[items.length] = item;
-                onProgress?.((i + 1) / n);
-            }
-            onComplete?.(items);
+        public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
+            if (requests.length == 0) return;
+            assetManager.loadAny(requests, (finished, total, requestItem) => {
+                onProgress && onProgress(finished / total);
+            }, (e, items) => {
+                if (e) {
+                    onProgress && onProgress(1);
+                    onComplete?.([]);
+                    err('loadAnyFiles', requests, e.stack);
+                } else {
+                    items = [].concat(items);
+                    items.forEach(item => {
+                        this.addRef(item);
+                    });
+                    onComplete?.(items);
+                }
+            });
         }
 
         private _loadAnyFile(request: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }) {
@@ -3207,6 +3249,20 @@ export namespace no {
                 });
         }
 
+        public getSubBundlesInEditorMode(rootUrl: string, cb: (bundles: string[]) => void) {
+            if (!EDITOR) cb?.([]);
+            else
+                Editor.Message.request('asset-db', 'query-assets', { isBundle: true }).then(infos => {
+                    console.log(infos);
+                    let bundles: string[] = [];
+                    infos.forEach(info => {
+                        if (info.url.indexOf(rootUrl) == 0)
+                            bundles[bundles.length] = info.name;
+                    });
+                    cb?.(bundles);
+                });
+        }
+
         public getBundleVersion(bundleName: string): string {
             return assetManager.downloader.bundleVers[bundleName];
         }
@@ -3231,13 +3287,91 @@ export namespace no {
 
         public getCachedTexture(img: ImageAsset): Texture2D | null {
             const uuid = img.uuid;
-            let texture = this._cacheTexture[uuid];
+            let texture = this.getCachedAsset<Texture2D>(uuid);
             if (!texture) {
                 texture = new Texture2D();
                 texture.image = img;
-                this._cacheTexture[uuid] = texture;
+                this.cacheAsset(uuid, texture);
             }
             return texture;
+        }
+
+        /**
+         * 获取缓存的资源
+         * @param k 资源唯一标识uuid|url
+         * @returns 
+         */
+        public getCachedAsset<T extends Asset>(k: string): T {
+            return this._cacheAsset[k] as T;
+        }
+
+        /**
+         * 缓存资源
+         * @param k 资源唯一标识uuid|url
+         * @param asset 资源
+         */
+        public cacheAsset(k: string, asset: Asset) {
+            this._cacheAsset[k] = asset;
+        }
+
+        public cacheImage(image: ImageAsset) {
+            this.cacheAsset(image.uuid, image);
+        }
+
+        public hasImage(uuid: string): boolean {
+            return !!this.getCachedAsset(uuid);
+        }
+
+        public createTextureFromCache(uuid: string): Texture2D | null {
+            const image = this.getCachedAsset<ImageAsset>(uuid);
+            if (!image) return null;
+            let texture = new Texture2D();
+            texture['_uuid'] = uuid;
+            texture.image = image;
+            return texture;
+        }
+
+        /**
+         * 加载目录下所有资源并放入缓存中，不支持同时加载多个目录，如果有需求，需要在外部根据实际性能情况做延迟加载
+         * @param folder 
+         */
+        public loadFolderFilesToCache(folder: string, onComplete?: () => void) {
+            const p = this.assetPath(folder);
+            if (p.bundle) {
+                const bundle = this.getLoadedBundle(p.bundle),
+                    infos = bundle.getDirWithPath(p.path),
+                    base = 'db://' + bundle.base;
+                let requests: { path: string, bundle: string, type: typeof Asset | typeof ImageAsset }[] = [];
+                infos.forEach(a => {
+                    if (a.uuid.indexOf('@') == -1) {
+                        const assetType = this.getAssetTypeByName(a.ctor.name);
+                        if (!assetType) return;
+                        requests[requests.length] = { path: a.path, bundle: p.bundle, type: assetType };
+                    }
+                });
+                this.loadAnyFiles(requests, null, items => {
+                    items.forEach((item, i) => {
+                        if (item instanceof Prefab) {
+                            const request = requests[i];
+                            this.setPrefabNode(base + request.path + '.prefab', item);
+                        } else if (item instanceof ImageAsset)
+                            this.cacheImage(item);
+                    });
+                    onComplete?.();
+                });;
+            }
+        }
+
+        public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
+            switch (typeName) {
+                case 'ImageAsset':
+                    return ImageAsset;
+                case 'Prefab':
+                    return Prefab;
+                case 'JsonAsset':
+                    return JsonAsset;
+                default: return null;
+            }
         }
     }
 
@@ -4860,6 +4994,16 @@ export namespace no {
             b[b.length] = Number(c);
         });
         return b;
+    }
+
+    /**
+     * 垃圾回收
+     */
+    export function GC() {
+        if (sys.platform == sys.Platform.WECHAT_GAME)
+            window['wx'].triggerGC();
+        else
+            sys.garbageCollect();
     }
 }
 

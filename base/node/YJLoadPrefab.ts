@@ -16,11 +16,7 @@ export default class YJLoadPrefab extends Component {
     @property
     autoLoad: boolean = true;
 
-    private url: string;
     public loaded: boolean = false;
-    public loadedNode: Node = null;
-    private prefUuid: string;
-    private loadedPrefab: Prefab = null;
 
     onLoad() {
         if (EDITOR) return;
@@ -33,36 +29,33 @@ export default class YJLoadPrefab extends Component {
     }
 
     public async loadPrefab(): Promise<Node> {
-        if (this.loadedNode != null && this.loadedNode.isValid) return this.loadedNode;
-        this.url = this.prefabUrl.replace('db://assets/', '').replace('.prefab', '');
-        return new Promise<Node>(resolve => {
-            no.assetBundleManager.loadPrefab(this.url, (p) => {
-                if (p == null) resolve(null);
-                else {
-                    this.loadedPrefab = p;
-                    this.prefUuid = p._uuid;
-                    this.loadedNode = instantiate(p);
-                    this.loaded = true;
-                    resolve(this.loadedNode);
-                }
+        const node = this.instantiateNode();
+        if (node) return node;
+        else if (no.assetBundleManager.isAssetLoading(this.prefabUrl)) {
+            await no.sleep(0);
+            return this.loadPrefab();
+        } else {
+            no.assetBundleManager.loadingAsset(this.prefabUrl);
+            return new Promise<Node>(resolve => {
+                no.assetBundleManager.loadPrefab(this.prefabUrl, (p) => {
+                    if (p == null) resolve(null);
+                    else {
+                        no.assetBundleManager.setPrefabNode(this.prefabUrl, p);
+                        this.loaded = true;
+                        resolve(this.instantiateNode());
+                        no.assetBundleManager.assetLoadingEnd(this.prefabUrl);
+                    }
+                });
             });
-        });
-    }
-
-    public clone(): Node {
-        if (!this.loadedNode) return null;
-        return instantiate(this.loadedNode);
+        }
     }
 
     public instantiateNode(): Node {
-        return instantiate(this.loadedPrefab);
+        return no.assetBundleManager.getPrefabNode(this.prefabUrl);
     }
 
     public clear(): void {
-        this.loadedNode?.destroy();
-        this.loadedNode = null;
         this.loaded = false;
-        // no.assetBundleManager.release(this.prefUuid, false);
     }
 
     ////////////EDITOR MODE//////////////////////

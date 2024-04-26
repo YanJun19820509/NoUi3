@@ -175,11 +175,12 @@ export class YJWindowManager extends Component {
             no.assetBundleManager.loadAny<Prefab>(request, pf => {
                 if (!pf) return;
                 no.assetBundleManager.setPrefabNode(prefabPathOrUuid, pf);
+                const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
                 self.prefabPathOrUuidToNodeName[prefabPathOrUuid] = node.getComponent(YJPanel).panelType;
                 if (!content?.isValid) {
                     return
                 }
-                this.initNode(no.assetBundleManager.getPrefabNode(prefabPathOrUuid), YJPanel, content, beforeInit, afterInit);
+                this.initNode(node, YJPanel, content, beforeInit, afterInit);
             });
         }
     }
@@ -292,7 +293,7 @@ export class YJWindowManager extends Component {
             content?.children.forEach(node => {
                 let panel = node.getComponent(YJPanel);
                 if (panel && !no.visible(panel.node) && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
-                    no.log('YJWindowManager release panel', panel.panelType);
+                    // no.log('YJWindowManager release panel', panel.panelType);
                     panel.clear();
                 }
             });
@@ -315,7 +316,7 @@ export class YJWindowManager extends Component {
 
     public static clearAll() {
         YJWindowManager._ins.clearAll();
-        no.assetBundleManager.clearPrefabNode();
+        no.assetBundleManager.clearCachedAssets();
     }
 
     public static clearClosedPanel() {

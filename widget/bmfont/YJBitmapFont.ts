@@ -88,9 +88,6 @@ export class YJBitmapFont extends Component {
 
     private _font: BitmapFont = null;
 
-    private static fontMap: { [uuid: string]: BitmapFont } = {};
-    private static fontLoading: { [uuid: string]: boolean } = {};
-
     onLoad() {
         if (EDITOR) {
             const label = this.getComponent(Label),
@@ -133,35 +130,41 @@ export class YJBitmapFont extends Component {
     }
 
     private getFontFromCache(fontUuid: string) {
-        return YJBitmapFont.fontMap[fontUuid];
+        return no.assetBundleManager.getCachedAsset<BitmapFont>(fontUuid);
     }
 
     private setFontToCache(fontUuid: string, bf: BitmapFont) {
         if (!this.getFontFromCache(fontUuid))
-            YJBitmapFont.fontMap[fontUuid] = bf;
+            no.assetBundleManager.cacheAsset(fontUuid, bf);
     }
 
-    private async loadFont(fontUuid: string, url?: string): Promise<BitmapFont> {
-        const bf = this.getFontFromCache(fontUuid);
+    private async loadFont(fontUuid: string, url: string): Promise<BitmapFont> {
+        if (!url) {
+            no.err('YJBitmapFont', 'loadFont', 'url is null');
+            return
+        }
+        const bf = this.getFontFromCache(url);
         if (bf) return bf;
-        else if (YJBitmapFont.fontLoading[fontUuid]) {
+        else if (no.assetBundleManager.isAssetLoading(url)) {
             await no.sleep(0);
             return this.loadFont(fontUuid, url);
         }
         else {
-            YJBitmapFont.fontLoading[fontUuid] = true;
+            no.assetBundleManager.loadingAsset(url);
             return new Promise<BitmapFont>(resolve => {
-                if (!url) {
-                    no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
-                        this.setFontToCache(fontUuid, bf);
-                        resolve(bf);
-                    });
-                } else {
-                    no.assetBundleManager.loadFile(url, BitmapFont, (bf: BitmapFont) => {
-                        this.setFontToCache(fontUuid, bf);
-                        resolve(bf);
-                    });
-                }
+                // if (!url) {
+                //     no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
+                //         this.setFontToCache(fontUuid, bf);
+                //         resolve(bf);
+                //         no.assetBundleManager.assetLoadingEnd(fontUuid);
+                //     });
+                // } else {
+                no.assetBundleManager.loadFile(url, BitmapFont, (bf: BitmapFont) => {
+                    this.setFontToCache(url, bf);
+                    resolve(bf);
+                    no.assetBundleManager.assetLoadingEnd(url);
+                });
+                // }
             });
         }
     }

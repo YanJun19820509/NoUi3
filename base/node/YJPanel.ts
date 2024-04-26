@@ -95,7 +95,7 @@ export class YJPanel extends Component {
                     no.evn.emit('show_info___', 'initPanel 5')
                     return Promise.resolve();
                 }).catch(e => {
-                    no.err('yjpanel', this.node.name, e.stack);
+                    no.err('YJPanel initPanel', this.node.name, e.stack);
                     no.evn.emit('show_info___', 'initPanel 4', e.message)
                 });
             }

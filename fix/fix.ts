@@ -1,7 +1,5 @@
-
-import { Toggle } from 'cc';
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, UIRenderer } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform } from '../yj';
 import { YJButton } from './YJButton';
 
 /**

@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate } from '../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate, Texture2D } from '../yj';
 import { no } from '../no';
 import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
@@ -72,6 +72,12 @@ export class YJPreload extends YJComponent {
     prefabFiles: PrefabFileInfo[] = [];
     @property({ displayName: '加了prefab后check一下' })
     needCheck: boolean = false;
+    @property({ displayName: '预加载纹理' })
+    loadTexture: boolean = false;
+    @property({ type: CCString, displayName: '加载单个纹理', visible() { return this.loadTexture; } })
+    texturePaths: string[] = [];
+    @property({ type: CCString, displayName: '加载文件夹下所有纹理', visible() { return this.loadTexture; } })
+    textureFolders: string[] = [];
 
     @property({ displayName: '加载进度占比', min: 0, max: 1 })
     maxProgress: number = 1;
@@ -117,6 +123,7 @@ export class YJPreload extends YJComponent {
         this.addUpdateHandlerByFrame(this.checkState, 1);
         this.init();
         this.loadBundles();
+        if (this.loadTexture) this.loadTextures();
     }
 
     public showScene() {
@@ -376,13 +383,17 @@ export class YJPreload extends YJComponent {
                 this.progress = p / this.total;
             }
         }, items => {
-            items.forEach(item => {
-                if (item instanceof Prefab) {
-                    item.optimizationPolicy = 2;
-                    let a = instantiate(item);
-                    a.getComponent('YJCacheObject')?.['preCreate']();
-                }
-            });
+            // no.err('loadFilesInFolder')
+            // items.forEach(item => {
+            //     no.err(item.uuid);
+            // })
+            // items.forEach(item => {
+            //     if (item instanceof Prefab) {
+            //         item.optimizationPolicy = 2;
+            //         // let a = instantiate(item);
+            //         // a.getComponent('YJCacheObject')?.['preCreate']();
+            //     }
+            // });
         });
     }
 
@@ -406,6 +417,20 @@ export class YJPreload extends YJComponent {
         }, async (items: JsonAsset[]) => {
             await this.delegate?.onJsonLoaded(items);
             this.loadJsonFilesInFolder(index + 1);
+        }, [JsonAsset]);
+    }
+
+    private loadTextures() {
+        let requests: any[] = [];
+        this.texturePaths.forEach(path => {
+            const p = no.assetBundleManager.assetPath(path);
+            requests[requests.length] = { path: p.path + '/texture', bundle: p.bundle, type: Texture2D };
+        });
+        no.assetBundleManager.loadAnyFiles(requests);
+        this.textureFolders.forEach(folder => {
+            no.assetBundleManager.loadAllFilesInFolder(folder, null, (items) =>{
+                console.log(items.length)
+            }, [Texture2D]);
         });
     }
 }

@@ -68,7 +68,7 @@ export class SetCreateNodeByUrl extends FuckUi {
                 this.setNeedDestroyChildren();
                 this.setItems(data).then(() => {
                     this.clear();
-                }).catch(e => { no.err('createnodebyurl', e); });
+                }).catch(e => no.err('createnodebyurl', e.message));
             });
         } else {
             this.setItems(data);

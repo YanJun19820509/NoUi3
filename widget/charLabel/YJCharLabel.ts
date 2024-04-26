@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont, sys } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
@@ -359,6 +359,8 @@ export class YJCharLabel extends Sprite {
 
     @property({ type: YJDynamicAtlas, readonly: true, visible() { return this._packToAtlas; } })
     dynamicAtlas: YJDynamicAtlas = null;
+    @property({ displayName: '使用job管理' })
+    useJob: boolean = true;
 
     @property({ serializable: true })
     protected _string: string = '';
@@ -467,11 +469,15 @@ export class YJCharLabel extends Sprite {
 
     private async toDraw() {
         if (this.richText) {
-            await YJJobManager.ins.execute(this.drawRichString, this, this._string);
-            // this.drawRichString(this._string)
+            // if (!EDITOR && this.useJob)
+            //     await YJJobManager.ins.execute(this.drawRichString, this, this._string);
+            // else
+            this.drawRichString(this._string);
         } else {
-            await YJJobManager.ins.execute(this.drawString, this, this._string);
-            // this.drawString(this._string);
+            // if (!EDITOR && this.useJob)
+            //     await YJJobManager.ins.execute(this.drawString, this, this._string);
+            // else
+            this.drawString(this._string);
         }
         this.updateTexture();
     }
@@ -559,6 +565,7 @@ export class YJCharLabel extends Sprite {
         let w = this._measuredWidth[k];
         if (!w) {
             const mt = ctx.measureText(str);
+            // w = fontSize * str.length;
             w = mt.width;
             this._measuredWidth[k] = w;
         }

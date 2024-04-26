@@ -97,6 +97,7 @@ export class SetCreateSwitchContent extends FuckUi {
             this.contents?.forEach(info => {
                 info.clear();
             });
+            this.container.destroyAllChildren();
         }
     }
 

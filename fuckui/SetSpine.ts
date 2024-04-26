@@ -46,7 +46,6 @@ export class SetSpine extends FuckUi {
     public static disableSpineWhenLowFPS: boolean = false;
 
     curPath: string;
-    private canSetSpine: boolean = true;
     private isFullScreenHide: boolean = false;
     private spineQueue: any[];
     private queueIndex: number = 0;
@@ -54,9 +53,6 @@ export class SetSpine extends FuckUi {
     private loopNum: number = 0;
     private _startIndexes: string[];
     private _endIndexes: string[];
-
-    //不播动效测试
-    private _testNoSpine = false;
 
     protected update(): void {
         if (!EDITOR) return;
@@ -72,17 +68,17 @@ export class SetSpine extends FuckUi {
     }
 
     //性能判断
-    private checkFPS(dt: number) {
-        if (SetSpine.disableSpineWhenLowFPS) {
-            const fps = 1 / dt;
-            if (fps < 45 && this.canSetSpine) {
-                this.canSetSpine = false;
-                this.getComponent(Skeleton).enabled = false;
-            } else if (fps > 55 && !this.canSetSpine) {
-                this.canSetSpine = true;
-            }
-        }
-    }
+    // private checkFPS(dt: number) {
+    //     if (SetSpine.disableSpineWhenLowFPS) {
+    //         const fps = 1 / dt;
+    //         if (fps < 45 && this.canSetSpine) {
+    //             this.canSetSpine = false;
+    //             this.getComponent(Skeleton).enabled = false;
+    //         } else if (fps > 55 && !this.canSetSpine) {
+    //             this.canSetSpine = true;
+    //         }
+    //     }
+    // }
 
     onEnable() {
         if (sys.platform == sys.Platform.WECHAT_GAME)
@@ -108,7 +104,6 @@ export class SetSpine extends FuckUi {
     protected onDataChange(data: any) {
         if (sys.platform == sys.Platform.WECHAT_GAME && this.GlobalScale != .5)
             this.GlobalScale = .5;
-        if (!this.canSetSpine) return;
         if (this.startIndexes)
             this._startIndexes = this.startIndexes.split(',');
         if (this.endIndexes)
@@ -245,7 +240,7 @@ export class SetSpine extends FuckUi {
     }
 
     private _play(spine: Skeleton, animationName: string, loop: boolean) {
-        if (this._testNoSpine) return;
+        if (!no.spineEnable()) return;
         spine?.setAnimation(0, animationName, loop);
     }
 
@@ -275,7 +270,7 @@ export class SetSpine extends FuckUi {
     }
 
     private bindStartCall(spine: Skeleton) {
-        if (!this._testNoSpine) {
+        if (no.spineEnable()) {
             spine?.setStartListener(() => {
                 if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
                     this?.startCall.execute(spine.animation);
@@ -288,7 +283,7 @@ export class SetSpine extends FuckUi {
     }
 
     private bindEndCall(spine: Skeleton) {
-        if (!this._testNoSpine) {
+        if (no.spineEnable()) {
             spine?.setCompleteListener(() => {
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
                     this?.endCall.execute(spine.animation);
@@ -305,7 +300,7 @@ export class SetSpine extends FuckUi {
     }
 
     private bindLoop1EndCall(spine: Skeleton) {
-        if (!this._testNoSpine) {
+        if (no.spineEnable()) {
             spine?.setCompleteListener(() => {
                 spine?.setCompleteListener(() => { });
                 this.playLoopNum(spine.animation);
@@ -320,7 +315,6 @@ export class SetSpine extends FuckUi {
     //todo 对循环播放的动画考虑按需暂停
 
     public setSpineEnable(v: boolean) {
-        if (!this.canSetSpine) return;
         if (!this.canDisable) return;
         const spine = this.getComponent(Skeleton);
         if (!spine.node.activeInHierarchy) return;

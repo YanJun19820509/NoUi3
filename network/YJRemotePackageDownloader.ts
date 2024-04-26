@@ -50,7 +50,10 @@ export class YJRemotePackageDownloader {
         this.wxDownload(configFileUrl, (tempFilePath: string) => {
             const resVer = this.getBundleResVer(tempFilePath);
             this.saveBundleConfig(tempFilePath, bundleName)
-            this.downloadBundleRes(bundleName, resVer);
+            if (resVer)
+                this.downloadBundleRes(bundleName, resVer);
+            else
+                this.loadDownloadedBundle(bundleName);
         });
     }
 
@@ -216,6 +219,15 @@ export class YJRemotePackageDownloader {
             this._bundleLoadCallback.onProgress?.(this._completeNum / this._allNum);
             return;
         }
+        //非zip包加载
+        if (this.isRemoteBundle(bundleName)) {
+            no.assetBundleManager.loadRemoteBundle(this.bundleUrl(bundleName), { version: this.bundleVer(bundleName) }, () => {
+                this._completeNum++;
+                this._bundleLoadCallback.onProgress?.(this._completeNum / this._allNum);
+            });
+        } else this.loadLocalBundle(bundleName);
+        return;
+        //zip包加载
         const wx = this._wx;
         //本地加载
         if (!wx || !this.isRemoteBundle(bundleName)) {
@@ -257,7 +269,7 @@ export class YJRemotePackageDownloader {
         for (let i = 0; i < this._allNum; i++) {
             this.loadRemoteBundle(bundleNames[i]);
             await no.waitFor(() => { return this._completeNum == i + 1; });
-            await no.sleep(2);
+            // await no.sleep(2);
         }
     }
 
@@ -314,6 +326,32 @@ export class YJRemotePackageDownloader {
                 return this._completeNum == this._allNum;
             }).then(() => {
                 onComplete();
+            });
+        }
+    }
+
+    private _allRemoteBundles: string[] = [];
+    private _exceptBundles: string[] = [];
+    /**
+     * 加载所有远程包，适用于非zip包
+     * @param except 排除不用加载的包
+     */
+    public loadAllRemoteBundles(except: string[] = []) {
+        this._allRemoteBundles = this.remoteBundles;
+        this._exceptBundles = except;
+        this.loadRemoteBundleByJob();
+    }
+
+    private loadRemoteBundleByJob() {
+        let bundleName: string = this._allRemoteBundles.shift();
+        if (bundleName == undefined) return;
+        if (this._exceptBundles.includes(bundleName) || assetManager.getBundle(bundleName)) this.loadRemoteBundleByJob();
+        else {
+            const bundleUrl = this.bundleUrl(bundleName);
+            no.assetBundleManager.loadRemoteBundle(bundleUrl, { version: this.bundleVer(bundleName) }, () => {
+                setTimeout(() => {
+                    this.loadRemoteBundleByJob();
+                }, 100);
             });
         }
     }
