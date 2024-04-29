@@ -541,7 +541,7 @@ export namespace no {
     }
 
     export function err(...Evns: any[]): void {
-        console.error('#NoUi#Err', Evns);
+        console.error('#NoUi#这不是报错', Evns);
     }
 
     export function logTimeStart(type?: string) {
@@ -2897,7 +2897,7 @@ export namespace no {
             return a;
         }
 
-        public loadAllFilesInBundle(bundleName: string, exceptAssetTypes: typeof Asset[], onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
+        public loadAllFilesInBundle(bundleName: string, exceptAssetTypes: (typeof Asset | typeof ImageAsset)[], onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;

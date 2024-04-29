@@ -22,7 +22,7 @@ export class TimeWatcher {
 
     public static blink(Evn?: string): void {
         let t = sys.now();
-        no.err('TimeWatcher', Evn || 'blink', t, t - this.t);
+        no.warn('TimeWatcher', Evn || 'blink', t, t - this.t);
         this.t = t;
     }
 

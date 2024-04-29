@@ -338,7 +338,7 @@ export class YJDynamicAtlas extends Component {
      */
     public get isWork(): boolean {
         //ios微信不支持合图
-        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return false;
+        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return false;
         let a = !dynamicAtlasManager.enabled && this.enabled && !EDITOR;
         return a;
     }

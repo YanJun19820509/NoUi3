@@ -6,6 +6,7 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJi18n } from '../base/YJi18n';
+import { CCString } from 'cc';
 
 /**
  * Predefined variables
@@ -31,6 +32,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultSpriteFrameUuid: string = '';
     @property
     defaultName: string = '';
+    @property({ type: CCString, displayName: '散图目录', tooltip: '如果散图目录非空，且参数中包含该目录，则当做散图来加载' })
+    singleFolder: string = 'icons/';
     @property({ displayName: '从图集加载' })
     loadFromAtlas: boolean = true;
     @property({ displayName: '多语言' })
@@ -45,6 +48,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private defineIndex: number = 0;
     private _lastName: string;
     private _oriScale: Vec3;
+    private _singleSpriteFrame: SpriteFrame = null;
 
     onLoad() {
         super.onLoad();
@@ -75,6 +79,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         // this.a_setEmpty();
     }
 
+    onDestroy() {
+        if (this._singleSpriteFrame) {
+            this._singleSpriteFrame.decRef();
+            this._singleSpriteFrame = null;
+        }
+    }
+
     public setDynamicAtlas() {
         if (!this.loadFromAtlas) return;
         if (this.getComponent(Sprite).spriteAtlas)
@@ -95,8 +106,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
     }
 
-    onDataChange(data: any) {
-        if (!this.multiLan && data.indexOf('/') > -1) {
+    onDataChange(data: string) {
+        if (this._singleSpriteFrame) {
+            this._singleSpriteFrame.decRef();
+            this._singleSpriteFrame = null;
+        }
+        if (this.singleFolder && data.indexOf(this.singleFolder) == 0) {
             this.setSingleSpriteFrame(data);
             return;
         }
@@ -195,6 +210,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', name);
             } else {
+                this._singleSpriteFrame = spriteFrame;
                 const sprite = this.getComponent(Sprite);
                 sprite.spriteFrame = spriteFrame;
             }

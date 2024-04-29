@@ -9,7 +9,7 @@ import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
-import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
+// import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
 import { TimeWatcher } from '../TimeWatcher';
 
 /**
@@ -150,7 +150,7 @@ export class PrefabInfo extends LoadAssetsInfo {
  */
 const AssetAtlasJsonMap: Map<string, any> = new Map();
 const TextureMap: Map<string, [Texture2D, number, number]> = new Map();
-const MaxTextureSize: number = 1024 * 1024 * 20; // 200M
+const MaxTextureSize: number = 1024 * 1024 * 50; // 200M
 const LanguageBundleMap: Map<string, [Texture2D, any]> = new Map();
 let TextureAllSize: number = 0;
 
@@ -209,7 +209,7 @@ export class YJLoadAssets extends Component {
                     let uuid = sf.texture.uuid;
                     no.addToArray(textureUuid, uuid);
                 } else {
-                    no.err(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
+                    no.warn(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
                 }
             } else if (a.defaultSpriteFrameUuid)
                 no.addToArray(spriteFrameUuid, a.defaultSpriteFrameUuid);
@@ -305,8 +305,8 @@ export class YJLoadAssets extends Component {
             }
         }
 
-        if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
-        if (bundles.length == 0) return;
+        // if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
+        // if (bundles.length == 0) return;
 
         await this.loadBundles(bundles);
 
@@ -440,7 +440,7 @@ export class YJLoadAssets extends Component {
             return;
         }
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadAllFilesInBundle(lan, [SpriteAtlas], null, items => {
+            no.assetBundleManager.loadAllFilesInBundle(lan, [SpriteAtlas, SpriteFrame, ImageAsset], null, items => {
                 if (items) {
                     items.forEach(item => {
                         if (item instanceof JsonAsset) {
@@ -494,7 +494,7 @@ export class YJLoadAssets extends Component {
             if (no.materialHasProperty(material, 0, 0, key)) {
                 material.setProperty(key, this.textures[i], 0);
             } else {
-                no.err(`YJLoadAssets addTextureToMaterial key(${key}) 不存在！`)
+                no.warn(`YJLoadAssets addTextureToMaterial key(${key}) 不存在！`)
             }
         }
     }
@@ -503,6 +503,15 @@ export class YJLoadAssets extends Component {
      * 释放图集
      */
     public release() {
+        if (no.isDebug()) {
+            if (this._usedAtlasIndexs.length < this.atlases.length) {
+                for (let i = 0, n = this.atlases.length; i < n; i++) {
+                    if (this._usedAtlasIndexs.indexOf(i) == -1) {
+                        no.err(`${this.node.name}可能加载了未被使用的图集 ${this.textureInfos[i]?.assetName || YJi18n.ins.language}，请检查`);
+                    }
+                }
+            }
+        }
         this.spriteFrameInfos.forEach(info => {
             info.release && info.release(null);
         });
@@ -524,6 +533,7 @@ export class YJLoadAssets extends Component {
     }
 
 
+    private _usedAtlasIndexs: number[] = []; // 记录已经使用的图集下标
     /**
      * 从spriteframe的数据文件中获取spriteFrameInfo
      * @param name spriteFrame的名称
@@ -543,6 +553,7 @@ export class YJLoadAssets extends Component {
         }
         a = [idx, info];
         this.spriteFrameMap[name] = a;
+        no.addToArray(this._usedAtlasIndexs, idx);
         return a;
     }
 
@@ -593,7 +604,7 @@ export class YJLoadAssets extends Component {
     private addTexure(uuid: string, tex: Texture2D): void {
         TextureMap.set(uuid, [tex, 1, no.sysTime.now]);
         TextureAllSize += tex.getGFXTexture()?.size || 0; // 更新纹理总大小
-        no.err(`当前缓存纹理总大小：${Math.ceil(TextureAllSize / 1048576)}M`)
+        no.warn(`当前缓存纹理总大小：${Math.ceil(TextureAllSize / 1048576)}M`)
         this.releaseTexture();
     }
 
@@ -619,7 +630,7 @@ export class YJLoadAssets extends Component {
 
     private releaseTexture() {
         if (TextureAllSize < MaxTextureSize) return;
-        no.err('纹理缓存已超过上限，开始释放较早的纹理');
+        no.warn('纹理缓存已超过上限，开始释放较早的纹理');
         const uuids = no.MapKeys2Array(TextureMap);
         uuids.sort((a, b) => TextureMap.get(a)![2] - TextureMap.get(b)![2]);
         for (const uuid of uuids) {
@@ -629,7 +640,7 @@ export class YJLoadAssets extends Component {
                 TextureAllSize -= size; // 更新纹理总大小
                 TextureMap.delete(uuid); // 删除纹理对象
                 no.assetBundleManager.release(item[0], true); // 释放纹理资源
-                no.err(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
+                no.warn(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
                 if (TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
             }
         }
