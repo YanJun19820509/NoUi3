@@ -307,8 +307,8 @@ export class YJLoadAssets extends Component {
 
         // if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
         // if (bundles.length == 0) return;
-
-        await this.loadBundles(bundles);
+        if (bundles.length > 0)
+            await this.loadBundles(bundles);
 
         // if (this.materialInfos.length > 0) {
         //     const r: any[] = [];

@@ -107,10 +107,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDataChange(data: string) {
-        if (this._singleSpriteFrame) {
-            this._singleSpriteFrame.decRef();
-            this._singleSpriteFrame = null;
-        }
         if (this.singleFolder && data.indexOf(this.singleFolder) == 0) {
             this.setSingleSpriteFrame(data);
             return;
@@ -210,8 +206,16 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', name);
             } else {
+                if (this._singleSpriteFrame) {
+                    this._singleSpriteFrame.decRef();
+                    this._singleSpriteFrame = null;
+                }
                 this._singleSpriteFrame = spriteFrame;
                 const sprite = this.getComponent(Sprite);
+                if (sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+                    sprite.trim = false;
+                    sprite.sizeMode = Sprite.SizeMode.RAW;
+                }
                 sprite.spriteFrame = spriteFrame;
             }
         });
