@@ -558,16 +558,27 @@ export class YJCharLabel extends Sprite {
         this.spriteFrame = null;
     }
 
+    private isASCII(c: string) {
+        return c.charCodeAt(0) < 128;
+    }
+
     private getMeasureWidth(ctx: CanvasRenderingContext2D, str: any, fontSize?: number): number {
         if (fontSize == null) fontSize = this.fontSize;
         else fontSize *= this._hdp ? this._hdpScale : 1;
-        const k = str + '::' + fontSize;
-        let w = this._measuredWidth[k];
-        if (!w) {
-            const mt = ctx.measureText(str);
-            // w = fontSize * str.length;
-            w = mt.width;
-            this._measuredWidth[k] = w;
+        let w = 0;
+        for (let i = 0, n = str.length; i < n; i++) {
+            const c = str[i], k = c + '::' + fontSize, w1 = this._measuredWidth[k];
+            if (w1) w += w1;
+            else {
+                const a = this.isASCII(c);
+                if (a) {
+                    const mt = ctx.measureText(c);
+                    w += mt.width;
+                    this._measuredWidth[k] = mt.width;
+                } else {
+                    w += fontSize;
+                }
+            }
         }
         return w;
     }
@@ -598,10 +609,10 @@ export class YJCharLabel extends Sprite {
                 for (let i = 0, n = words.length; i < n; i++) {
                     const c = words[i];
                     let w = this.getMeasureWidth(ctx, c);
-                    if (width + w <= maxWidth - 4 * this.hdpScale) {
+                    if (width + w <= maxWidth - 2 * this.hdpScale) {
                         oneLine += c + blankWork;
                         width += w + blankWidth;
-                        if (i == n - 1) width += 4 * this.hdpScale;
+                        if (i == n - 1) width += 2 * this.hdpScale;
                     } else {
                         lines[lines.length] = oneLine;
                         oneLine = c + blankWork;
@@ -634,7 +645,7 @@ export class YJCharLabel extends Sprite {
         const canvas = this.shareCanvas();
         let x = 2,
             y = 0;
-        width += this.extWidth();
+        width += this.extWidth() + 2;
         height += this.extHeight();
         canvas.width = width;
         canvas.height = height;
@@ -666,7 +677,13 @@ export class YJCharLabel extends Sprite {
             ctx.strokeText(v, x, y);
         }
         // this.setFontStyle(ctx);
-        ctx.fillText(v, x, y);
+        const fontSize = this.fontSize;
+        let x1 = x;
+        for (let i = 0, n = v.length; i < n; i++) {
+            const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+            ctx.fillText(c, x1, y);
+            x1 += w;
+        }
 
         this.drawUnderline(ctx, width, x, height);
 
@@ -686,7 +703,7 @@ export class YJCharLabel extends Sprite {
     private drawLines(lines: string[], width: number, height: number) {
         const canvas = this.shareCanvas(),
             hh = height + this.extHeight();
-
+        width += 2;
         canvas.width = width;
         canvas.height = hh * lines.length;
         const ctx = canvas.getContext("2d");
@@ -731,7 +748,14 @@ export class YJCharLabel extends Sprite {
             if (this.outlineWidth > 0) {
                 ctx.strokeText(v, x, y);
             }
-            ctx.fillText(v, x, y);
+            // ctx.fillText(v, x, y);
+            const fontSize = this.fontSize;
+            let x1 = x;
+            for (let i = 0, n = v.length; i < n; i++) {
+                const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                ctx.fillText(c, x1, y);
+                x1 += w;
+            }
             this.drawUnderline(ctx, w, x, oy);
         });
         this.fixHDP(ctx, width, canvas.height);
@@ -936,7 +960,7 @@ export class YJCharLabel extends Sprite {
 
         let x = 2,
             y = 0;
-        width += this.extWidth();
+        width += this.extWidth() + 2;
         height += this.extHeight();
         canvas.width = width;
         canvas.height = height;
@@ -969,15 +993,25 @@ export class YJCharLabel extends Sprite {
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
             if (style?.outline || this.outlineWidth > 0) {
                 this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
-                ctx.strokeText(text, x, y);
             }
-            ctx.fillText(text, x, y);
-            const w = this.getMeasureWidth(ctx, text, style?.size);
-            x += w;
-            len += w;
+            // ctx.fillText(text, x, y);
+            const fontSize = style?.size * this.hdpScale || this.fontSize;
+            let x2 = x1;
+            for (let i = 0, n = text.length; i < n; i++) {
+                const c = text[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+
+                if (style?.outline || this.outlineWidth > 0) {
+                    ctx.strokeText(c, x2, y);
+                }
+                ctx.fillText(c, x2, y);
+                x2 += w;
+            }
+            // const w = this.getMeasureWidth(ctx, text, style?.size);
+            len += x2 - x1;
+            x1 = x2;
         }
 
-        this.drawUnderline(ctx, len, x1, height);
+        this.drawUnderline(ctx, len, x, height);
 
         let scale = 1;
         if (this.overflow == Label.Overflow.SHRINK) {
@@ -996,6 +1030,7 @@ export class YJCharLabel extends Sprite {
         const canvas = this.shareCanvas(),
             hh = height + this.extHeight();
 
+        width += 2;
         canvas.width = width;
         canvas.height = hh * lines.length;
         const ctx = canvas.getContext("2d");
@@ -1042,10 +1077,17 @@ export class YJCharLabel extends Sprite {
                     this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
                     ctx.strokeText(text, x1, y);
                 }
-                ctx.fillText(text, x1, y);
-                const w = this.getMeasureWidth(ctx, text, style?.size);
-                x1 += w;
-                len += w;
+                // ctx.fillText(text, x1, y);
+                const fontSize = style?.size * this.hdpScale || this.fontSize;
+                let x2 = x1;
+                for (let i = 0, n = text.length; i < n; i++) {
+                    const c = text[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                    ctx.fillText(c, x2, y);
+                    x2 += w;
+                }
+                // const w = this.getMeasureWidth(ctx, text, style?.size);
+                len += x2 - x1;
+                x1 = x2;
             }
 
             this.drawUnderline(ctx, len, x, hh * (i + 1));

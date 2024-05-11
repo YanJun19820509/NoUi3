@@ -21,20 +21,20 @@
         "__id__": 2
       },
       {
-        "__id__": 11
+        "__id__": 9
       }
     ],
     "_active": true,
     "_components": [
       {
-        "__id__": 13
+        "__id__": 11
       },
       {
-        "__id__": 15
+        "__id__": 13
       }
     ],
     "_prefab": {
-      "__id__": 17
+      "__id__": 15
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -80,13 +80,10 @@
       },
       {
         "__id__": 6
-      },
-      {
-        "__id__": 8
       }
     ],
     "_prefab": {
-      "__id__": 10
+      "__id__": 8
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -188,32 +185,6 @@
     "fileId": "adf5oBAppND7f55731iAxu"
   },
   {
-    "__type__": "bdc64W5lW9NaaPI/CZNcgva",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 2
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 9
-    },
-    "registerNode": {
-      "__id__": 1
-    },
-    "bind_keys": "",
-    "once": false,
-    "saveIgnore": true,
-    "showValueLog": false,
-    "defaultName": "",
-    "loadAsset": null,
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "3eG+q/rjtEGau5XxNfMtbZ"
-  },
-  {
     "__type__": "cc.PrefabInfo",
     "root": {
       "__id__": 1
@@ -237,7 +208,7 @@
     "_active": true,
     "_components": [],
     "_prefab": {
-      "__id__": 12
+      "__id__": 10
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -290,7 +261,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 14
+      "__id__": 12
     },
     "autoRegister": false,
     "subFuckUiNodes": [],
@@ -310,10 +281,10 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 16
+      "__id__": 14
     },
     "register": {
-      "__id__": 13
+      "__id__": 11
     },
     "onlyDiff": true,
     "_id": ""

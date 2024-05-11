@@ -305,7 +305,7 @@ export class YJLoadAssets extends Component {
             }
         }
 
-        // if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
+        if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
         // if (bundles.length == 0) return;
         if (bundles.length > 0)
             await this.loadBundles(bundles);
@@ -603,7 +603,9 @@ export class YJLoadAssets extends Component {
 
     private addTexure(uuid: string, tex: Texture2D): void {
         TextureMap.set(uuid, [tex, 1, no.sysTime.now]);
-        TextureAllSize += tex.getGFXTexture()?.size || 0; // 更新纹理总大小
+        const size = tex.getGFXTexture()?.size || 0;
+        TextureAllSize += size; // 更新纹理总大小
+        no.warn(`纹理格式及大小：${uuid} ${tex.getGFXTexture()?.format == 89 ? "astc" : "rgba8"} ${Math.ceil(size / 1024)}K`);
         no.warn(`当前缓存纹理总大小：${Math.ceil(TextureAllSize / 1048576)}M`)
         this.releaseTexture();
     }
@@ -639,7 +641,8 @@ export class YJLoadAssets extends Component {
                 const size = item[0].getGFXTexture().size;
                 TextureAllSize -= size; // 更新纹理总大小
                 TextureMap.delete(uuid); // 删除纹理对象
-                no.assetBundleManager.release(item[0], true); // 释放纹理资源
+                // no.assetBundleManager.release(item[0], true); // 释放纹理资源
+                item[0].destroy(); // 销毁纹理对象
                 no.warn(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
                 if (TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
             }

@@ -1,7 +1,6 @@
 import { no } from "../no";
 import { Component, EDITOR, Prefab, assetManager, ccclass, instantiate, property, Node, Vec2, Vec3, Vec4, Quat, executeInEditMode, js, Color, Size, SpriteFrame, EventHandler, VideoClip, TTFFont, Font, Asset, Camera, RenderTexture, v3, v4, size, quat, color, v2 } from "../yj";
 import { Range, UV } from "../types";
-import { CCClass } from "cc";
 
 const ComponentProperties: { [k: string]: string[] } = {
     'cc.Node': ['position', 'rotation', 'scale', 'mobility', 'layer', 'active', 'name'],

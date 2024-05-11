@@ -147,7 +147,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
-            no.log('setSpriteFrame not get', name);
+            no.err('setSpriteFrame not get', name);
             this.resetSprite();
             return;
         }
@@ -173,6 +173,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.getComponent(YJVertexColorTransition)?.setEffect(defines);
     }
 
+    private clearEffect() {
+        if (this.lastDefine) {
+            const defines: any = {};
+            defines[this.lastDefine] = false;
+            this.getComponent(YJVertexColorTransition)?.setEffect(defines);
+        }
+    }
+
     private setSpriteFrameForNotWeb(name: string) {
         this.loadAsset.getSpriteFrame(name, sf => {
             if (sf)
@@ -193,7 +201,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             }
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 if (!file) {
-                    no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
+                    no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
                 } else
                     sprite.spriteFrame = file;
             });
@@ -206,6 +214,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', name);
             } else {
+                if (!this.isValid) {
+                    return;
+                }
                 if (this._singleSpriteFrame) {
                     this._singleSpriteFrame.decRef();
                     this._singleSpriteFrame = null;
@@ -217,6 +228,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                     sprite.sizeMode = Sprite.SizeMode.RAW;
                 }
                 sprite.spriteFrame = spriteFrame;
+                this.clearEffect();
             }
         });
     }

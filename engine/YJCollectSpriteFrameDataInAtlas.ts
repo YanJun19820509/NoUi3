@@ -1,6 +1,7 @@
 
-import { ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager } from '../yj';
+import { ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager, JsonAsset } from '../yj';
 import { SpriteFrameDataType } from '../types';
+import { no } from '../no';
 
 /**
  * Predefined variables
@@ -31,8 +32,9 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
     }
 
     public set oneAtlas(v: SpriteAtlas) {
-        Editor.Message.request('asset-db', 'query-asset-info', v.uuid).then(info => {
-            const con = YJCollectSpriteFrameDataInAtlas.getSpriteFramesInfo(v),
+        Editor.Message.request('asset-db', 'query-asset-info', v.uuid).then(async info => {
+            const scale = this.scale;//await YJCollectSpriteFrameDataInAtlas.getScale(info.path);
+            const con = YJCollectSpriteFrameDataInAtlas.getSpriteFramesInfo(v, scale),
                 path = info.path;
             YJCollectSpriteFrameDataInAtlas.save(path, con);
         });
@@ -53,13 +55,14 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         this.createAtlasConfig();
     }
 
-    private static getSpriteFramesInfo(atlas: SpriteAtlas): { [k: string]: SpriteFrameDataType } {
+    private static getSpriteFramesInfo(atlas: SpriteAtlas, scale?: number): { [k: string]: SpriteFrameDataType } {
         const aa = atlas.name.split('_');
-        let scale = Number(aa[aa.length - 1]) || YJCollectSpriteFrameDataInAtlas._scale;
+        if (!scale)
+            scale = Number(aa[aa.length - 1]) || YJCollectSpriteFrameDataInAtlas._scale;
         if (scale != 1) scale = Math.floor(1 / scale * 1000) / 1000;
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
         atlas.getSpriteFrames().forEach(sf => {
-            console.log(sf);
+            // console.log(sf);
             infoMap[sf.name] = {
                 uuid: sf.uuid,
                 x: sf.rect.x,
@@ -84,24 +87,28 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
 
     public static async createAtlasConfig(dir?: string) {
         return new Promise<void>(resolve => {
-            Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(assets => {
+            Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.SpriteAtlas' }).then(async assets => {
                 let aa = [];
                 let path = {};
-                assets.forEach(a => {
-                    if (dir && a.path.indexOf(dir) == -1) return;
+                for (let i = 0, n = assets.length; i < n; i++) {
+                    const a = assets[i];
+                    if (dir && a.path.indexOf(dir) == -1) continue;
                     aa[aa.length] = { uuid: a.uuid, type: SpriteAtlas };
                     const name = a.name.replace('.plist', '');
-                    path[name] = a.path;
-                });
+                    const scale = await this.getScale(a.path);
+                    path[name] = { path: a.path, scale: scale };
+                }
                 let infos: { [k: string]: { [t: string]: SpriteFrameDataType } } = {};
                 assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas | SpriteAtlas[]) => {
                     atlases = [].concat(atlases);
                     if (!err) {
                         atlases.forEach(atlas => {
-                            infos[atlas.name] = this.getSpriteFramesInfo(atlas);
+                            infos[atlas.name] = this.getSpriteFramesInfo(atlas, path[atlas.name].scale);
                         });
                         for (const name in infos) {
-                            this.save(path[name], infos[name]);
+                            // console.log(path[name].path, infos[name]);
+                            // return;
+                            this.save(path[name].path, infos[name]);
                             // const file = `${path[name]}_atlas.json`;
                             // console.log(`save ${file}`);
                             // Editor.Message.send('asset-db', 'create-asset', file, JSON.stringify(infos[name]), { overwrite: true });
@@ -110,6 +117,20 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                         console.log(err);
                     resolve();
                 });
+            });
+        });
+    }
+
+    private static async getScale(path: string): Promise<number> {
+        return new Promise<number>(resolve => {
+            no.assetBundleManager.loadFileInEditorMode<JsonAsset>(`${path}_atlas.json`, JsonAsset, (item, info) => {
+                const content = JSON.stringify(item.json);
+                if (content.indexOf('"scale":1.428') == -1)
+                    resolve(1);
+                else
+                    resolve(0.7);
+            }, () => {
+                resolve(1);
             });
         });
     }

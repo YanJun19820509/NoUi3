@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode, v3 } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 
@@ -37,7 +37,17 @@ export class YJBitmapFont extends Component {
             label.fontSize = v.fontSize;
             label.lineHeight = v.fntConfig.commonHeight;
         }
+        this.setSize();
         this.resetFont();
+    }
+    @property
+    public get size(): number {
+        return this._size;
+    }
+
+    public set size(v: number) {
+        this._size = v;
+        this.setSize();
     }
     @property
     public get spacingX(): number {
@@ -85,6 +95,8 @@ export class YJBitmapFont extends Component {
     protected _packToAtlas: boolean = true;
     @property({ serializable: true })
     protected _spacingX: number = 0;
+    @property({ serializable: true })
+    protected _size: number = 22;
 
     private _font: BitmapFont = null;
 
@@ -189,6 +201,15 @@ export class YJBitmapFont extends Component {
         if (!label.customMaterial)
             label.customMaterial = this.dynamicAtlas?.customMaterial;
         label.enabled = true;
+    }
+
+    private setSize() {
+        const label = this.getComponent(Label);
+        if (!label) return;
+        const fontSize = label.fontSize,
+            size = this.size,
+            scale = size / fontSize;
+        no.scale(this.node, v3(scale, scale, 1));
     }
 
     removeFont() {

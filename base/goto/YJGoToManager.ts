@@ -1,4 +1,3 @@
-
 import { no } from '../../no';
 import { ccclass, property, Component, Node, js } from '../../yj';
 import { YJPanel } from '../node/YJPanel';
@@ -48,7 +47,8 @@ export class YJGoToManager extends Component {
     private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
         const clazz = js.getClassByName(info.target);
-        if (typeof clazz['show'] == 'function') {
+        //PopuPanelContent为业务组件，在微信加载分包时，PopuPanelContent还未加载，会报错，需要把PopuPanelContent整合到NoUi3中
+        if (typeof clazz['show'] == 'function' && clazz['$super'].name == 'PopuPanelContent') {
             no.evn.once('PopuPanelContent_create', (panel) => {
                 this._ins.trigger(panel, args, cb);
             }, this);
