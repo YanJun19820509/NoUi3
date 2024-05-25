@@ -75,6 +75,13 @@ export class YJGuideManager extends Component {
         if (!this.isWork) return false;
         return this.saveSteps.length == 0;
     }
+
+    public test(step: string) {
+        if (!this.isWork) return;
+        YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
+            panel.curStep = step;
+        });
+    }
 }
 
 if (DEBUG) {

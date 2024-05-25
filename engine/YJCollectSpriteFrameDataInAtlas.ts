@@ -33,14 +33,14 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
 
     public set oneAtlas(v: SpriteAtlas) {
         Editor.Message.request('asset-db', 'query-asset-info', v.uuid).then(async info => {
-            const scale = this.scale;//await YJCollectSpriteFrameDataInAtlas.getScale(info.path);
+            const scale = this.scale || await YJCollectSpriteFrameDataInAtlas.getScale(info.path);
             const con = YJCollectSpriteFrameDataInAtlas.getSpriteFramesInfo(v, scale),
                 path = info.path;
             YJCollectSpriteFrameDataInAtlas.save(path, con);
         });
     }
 
-    @property
+    @property({ tooltip: '为0则使用上次设置的值' })
     public get scale(): number {
         return YJCollectSpriteFrameDataInAtlas._scale;
     }

@@ -47,7 +47,7 @@ export class SetEffect extends FuckUi {
             this.setVertex(defines, properties);
             this.work();
         }
-        else if (this._renderComp.material && (!path || this._renderComp.material.effectName == `../${path}`)) {
+        else if (!path || this._renderComp.material.effectName == `../${path}`) {
             this.setProperties(this._renderComp.material, defines, properties);
             this.work();
         }

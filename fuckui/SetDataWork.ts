@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu } from '../yj';
+import { ccclass, property, menu, EDITOR } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { FuckUi } from './FuckUi';
 
@@ -21,6 +21,12 @@ export class SetDataWork extends FuckUi {
 
     @property(YJDataWork)
     dataWork: YJDataWork = null;
+
+    onLoad() {
+        if (EDITOR) {
+            if (!this.dataWork) this.dataWork = this.getComponent(YJDataWork);
+        }
+    }
 
     onDisable() {
         this.a_clearData();

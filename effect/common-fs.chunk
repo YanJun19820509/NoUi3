@@ -1,14 +1,11 @@
+#include <sprite-texture>
+
 in vec4 color;
 in vec2 ext;
 in float def;
 in vec2 uv0;  
 in float t1;
 in float t2; 
-
-#if USE_TEXTURE
-  #pragma builtin(local)
-  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
-#endif
 
 uniform ZZ {
   vec4 factRect;//碎图在合图中的相对rect

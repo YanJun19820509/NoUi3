@@ -75,7 +75,7 @@ CCProgram fs %{
       #endif
 
       #if IS_SWITCH
-        vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
+        vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps, cc_time);
         color = blend(color, c2, blendType);
       #endif
     }else{

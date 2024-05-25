@@ -49,7 +49,7 @@ CCProgram unlit-fs %{
     o *= normalTexture(cc_spriteTexture,uv0);
     #endif
 
-    float start = fract(cc_time.x) * 2.0; 
+    float start = fract(cc_time.x/5.)*10. ; 
     float w = width * factRect.z;
 
     #if USE_SHINE

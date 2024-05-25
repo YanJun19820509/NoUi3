@@ -85,8 +85,8 @@ vec4 shine(vec4 _o, vec2 _uv, float _start, float _width, float _strength, bool 
       
   // 斜线控制区域. 其实就是 y = -x+width  y = -x -width 夹着的区域. 还可以乘上斜率,以使扫光的倾斜程度变化. 加上time 时间控制, 可以使区域根据时间推移,平滑的从左往右移动.
 
-  if(_uv.x <= (-_uv.y + _width + _start) && _uv.x >= (-_uv.y - _width + _start)) {
-    _o *= _strength;  // 给颜色增强若干倍. 
+  if (_uv.x <= - _uv.y+_start && _uv.x >= - _uv.y - _width+_start){
+    _o *= _strength;  // 给颜色增强若干倍.
   }
   else if( _reverse ) {  
     // 可以通过参数控制, 是否仅显示扫光区域, 看起来就会变成一道光照亮了一片区域,而其他地方则是虚无. 手电筒的效果.
@@ -94,7 +94,6 @@ vec4 shine(vec4 _o, vec2 _uv, float _start, float _width, float _strength, bool 
   }
   return _o;
 }
-
 
 
 //圆形头像裁剪效果带羽化
@@ -254,16 +253,16 @@ vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVe
   return normalTexture(_texture, uv);
 }
 
-//纹理UV切换
-vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps){
-  float index = ffloor(cc_time.x * _fps);
+//纹理UV切换,可实现序列帧效果
+vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps, vec4 _time){
+  float index = ffloor(_time.x * _fps); 
 
-  float row = _cells.x;
-  float col = _cells.y;
+  float col = _cells.x;
+  float row = _cells.y;
 
-  vec2 offset = vec2(mod(index,col)/col,floor(index/col)/row);
+  vec2 offset = vec2(mod(index,col)/col,floor(mod(index, col*row)/col)/row);
 
-  return texture(_texture, _uv / _cells.yx + offset);
+  return texture(_texture, _uv / _cells.xy + offset);
 }
 
 

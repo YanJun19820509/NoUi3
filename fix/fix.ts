@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset, NATIVE } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -40,13 +40,14 @@ const _a = setInterval(function () {
 const _hitTest = UITransform.prototype.hitTest;
 js.mixin(UITransform.prototype, {
     hitTest(screenPoint, windowId) {
-        if (!no.visible(this.node) && !no.visibleByOpacity(this.node)) {
+        if (!no.visible(this.node) || !no.visibleByOpacity(this.node)) {
             // no.log('hitTest false', this.node.name)
             return false;
         }
         return _hitTest.call(this, screenPoint, windowId);
     }
 });
+
 //layout
 js.mixin(Layout.prototype, {
     _checkUsefulObj() {
@@ -73,6 +74,12 @@ js.mixin(YJButton.prototype, {
             this.needWait = false;
         }, this.delay);
         no.evn.emit('YJButton_a_trigger')
+    }
+});
+
+js.mixin(Asset.prototype, {
+    get uuid() {
+        return this._uuid;
     }
 });
 

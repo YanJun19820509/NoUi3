@@ -133,6 +133,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         } else name = spriteName;
 
         const sprite = this.getComponent(Sprite);
+        // if (sprite.type == Sprite.Type.FILLED) {
+        //     sprite['_assembler'].updateColorLate = function () { };
+        // }
         if (!this.loadFromAtlas || sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
                 this.setSpriteFrameByDefaultSpriteFrameUuid();
@@ -196,9 +199,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (this.defaultSpriteFrameUuid) {
             no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
             const sprite = this.getComponent(Sprite);
-            if (!sprite.customMaterial) {
-                sprite.customMaterial = this.dynamicAtlas?.customMaterial;
-            }
+            // if (!sprite.customMaterial) {
+            //     sprite.customMaterial = this.dynamicAtlas?.customMaterial;
+            // }
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 if (!file) {
                     no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
@@ -224,9 +227,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this._singleSpriteFrame = spriteFrame;
                 const sprite = this.getComponent(Sprite);
                 if (sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
-                    sprite.trim = false;
                     sprite.sizeMode = Sprite.SizeMode.RAW;
                 }
+                sprite.trim = false;
                 sprite.spriteFrame = spriteFrame;
                 this.clearEffect();
             }

@@ -106,6 +106,10 @@ export class YJWindowManager extends Component {
         if (!comp) return;
         const self = YJWindowManager._ins;
         to = to || comp.prototype[YJAddPanelToMetaKey];
+        if (!to) {
+            no.err('windowmanager', comp.name, '没有指定面板的归属节点');
+            return;
+        }
         let content: Node = self.getContent(to);
         const allowMultipleOpen = comp.prototype[YJAllowMultipleOpen] == '1';
         if (!allowMultipleOpen) {
@@ -152,7 +156,11 @@ export class YJWindowManager extends Component {
      * @param beforeInit 
      * @param afterInit 
      */
-    public static createPanelByPrefab(prefabPathOrUuid: string, to?: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
+    public static createPanelByPrefab(prefabPathOrUuid: string, to: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
+        if (!to) {
+            no.err('windowmanager', prefabPathOrUuid, '没有指定面板的归属节点');
+            return;
+        }
         const self = YJWindowManager._ins,
             name = self.prefabPathOrUuidToNodeName[prefabPathOrUuid],
             content: Node = self.getContent(to);
@@ -252,12 +260,16 @@ export class YJWindowManager extends Component {
      * @param to 所属节点
      * @returns 
      */
-    public static opennedPanel<T extends YJPanel>(comp: typeof YJPanel | string, to?: string): T | null {
+    public static opennedPanel<T extends YJPanel>(comp: typeof YJPanel | string, to: string): T | null {
         if (!comp) return null;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
         if (!comp) return null;
         to = to || comp.prototype[YJAddPanelToMetaKey];
+        if (!to) {
+            no.err('windowmanager', comp.name, '没有指定面板的归属节点');
+            return;
+        }
         let content: Node = YJWindowManager._ins.getContent(to);
         let a = content.getComponentInChildren(comp);
         if (!a) return null

@@ -96,7 +96,7 @@ export class YJBitmapFont extends Component {
     @property({ serializable: true })
     protected _spacingX: number = 0;
     @property({ serializable: true })
-    protected _size: number = 22;
+    protected _size: number = 0;
 
     private _font: BitmapFont = null;
 
@@ -204,11 +204,10 @@ export class YJBitmapFont extends Component {
     }
 
     private setSize() {
+        if (!this.size) return;
         const label = this.getComponent(Label);
         if (!label) return;
-        const fontSize = label.fontSize,
-            size = this.size,
-            scale = size / fontSize;
+        const scale = this.size / label.fontSize;
         no.scale(this.node, v3(scale, scale, 1));
     }
 

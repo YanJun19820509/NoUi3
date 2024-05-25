@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR } from '../yj';
+import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -8,6 +8,7 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 
 /**
  * Predefined variables
@@ -37,10 +38,14 @@ export class SetCreateNode extends FuckUi {
     @property({ displayName: '仅新增' })
     onlyAdd: boolean = false;
 
-    @property({ tooltip: '仅第一次创建时有创建间隔' })
-    onlyFirstTime: boolean = false;
-    @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
-    wait: number = 0;
+    // @property({ tooltip: '仅第一次创建时有创建间隔' })
+    // onlyFirstTime: boolean = false;
+    // @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
+    // wait: number = 0;
+
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;
+
     @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
     onComplete: no.EventHandlerInfo[] = [];
 
@@ -56,9 +61,10 @@ export class SetCreateNode extends FuckUi {
     loadAsset: YJLoadAssets = null;
 
     protected needSetDynamicAtlas: boolean = true;
-    private isFirst: boolean = true;
-    private waitTime: number;
+    // private isFirst: boolean = true;
+    // private waitTime: number;
     private _isSettingData: boolean = false;
+    private itemSize: Size;
 
     onDestroy() {
         if (EDITOR) {
@@ -96,14 +102,14 @@ export class SetCreateNode extends FuckUi {
 
     protected onDataChange(data: any) {
         this._isSettingData = true;
-        if (this.onlyFirstTime) {
-            if (this.isFirst) {
-                this.isFirst = false;
-                this.waitTime = this.wait;
-            } else this.waitTime = 0;
-        } else {
-            this.waitTime = this.wait;
-        }
+        // if (this.onlyFirstTime) {
+        //     if (this.isFirst) {
+        //         this.isFirst = false;
+        //         this.waitTime = this.wait;
+        //     } else this.waitTime = 0;
+        // } else {
+        //     this.waitTime = this.wait;
+        // }
         this.setItems([].concat(data));
     }
 
@@ -137,8 +143,16 @@ export class SetCreateNode extends FuckUi {
                             YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
                             YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
                         }
-                        no.visible(cacheItem, false);
-                        cacheItem.parent = this.container;
+                        // if (!this.itemSize) this.itemSize = no.size(cacheItem);
+                        // no.position(cacheItem, v3(0, 0));
+                        // // no.visible(cacheItem, false);
+                        // const box = no.newNode('box');
+                        // no.size(box, this.itemSize);
+                        // const a = no.anchor(cacheItem);
+                        // no.anchor(box, a.x, a.y);
+                        // box.addChild(cacheItem);
+                        // box.parent = this.container;
+                        this.container.addChild(this.initItem(cacheItem));
                     } else return false;
                     if (this.container.children.length >= max) return false;
                     return true;
@@ -158,30 +172,57 @@ export class SetCreateNode extends FuckUi {
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                item.active = true;
                 if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                no.visible(item, false);
-                item.parent = this.container;
+                // if (!this.itemSize) this.itemSize = no.size(item);
+                // no.position(item, v3(0, 0));
+                // // item.active = true;
+                // // no.visible(item, false);
+                // const box = no.newNode('box');
+                // no.size(box, this.itemSize);
+                // const a = no.anchor(item);
+                // no.anchor(box, a.x, a.y);
+                // box.addChild(item);
+                // box.parent = this.container;
+                this.container.addChild(this.initItem(item));
                 if (this.container.children.length >= max) return false;
             }, this, !this.onlyAdd ? n : n + l);
             if (!this.container?.isValid) return;
         }
 
         let start = !this.onlyAdd ? 0 : l;
-        for (let i = 0; i < n; i++) {
-            this.setItem(data, start, i);
-        }
+        this.setItem(data, start);
+        // for (let i = 0; i < n; i++) {
+        //     this.setItem(data, start, i);
+        // }
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }
 
-    private setItem(data: any[], start: number, i: number) {
+    private initItem(item: Node) {
+        if (!this.itemSize) this.itemSize = no.size(item);
+        no.position(item, v3(0, 0));
+        // no.visible(cacheItem, false);
+        if (this.uiAnim) {
+            const box = no.newNode('box');
+            no.size(box, this.itemSize);
+            const a = no.anchor(item);
+            no.anchor(box, a.x, a.y);
+            box.addChild(item);
+            return box;
+        }
+        return item;
+    }
+
+    private setItem(data: any[], start: number, i = 0) {
+        if (i >= data.length) return;
         let item = this.container.children[start + i];
+        if (this.uiAnim) item = item.children[0];
         if (data[i] == null) {
             no.visible(item, false);
+            this.setItem(data, start, ++i);
             return;
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
@@ -190,6 +231,12 @@ export class SetCreateNode extends FuckUi {
             a.init();
         }
         no.visible(item, true);
+        if (this.uiAnim) {
+            this.uiAnim.play(item);
+            this.scheduleOnce(() => {
+                this.setItem(data, start, ++i);
+            }, 0.1);
+        } else this.setItem(data, start, ++i);
     }
 
     protected async setDynamicAtlasNode(data: any) {

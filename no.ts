@@ -1,7 +1,9 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents, JSB
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents, JSB,
+    NATIVE,
+    Layers
 } from "./yj";
 
 
@@ -296,6 +298,7 @@ export namespace no {
             delete this._map[type];
         }
         public emit(type: string, ...args: any[]): void {
+            // log('no.evn emit', type, args);
             let a: { h: Function, t: any, o: boolean }[] = this._map[type];
             if (!a) return;
             args = args || [];
@@ -1755,14 +1758,15 @@ export namespace no {
             }
         }
 
+        public play(endCall?: () => void) {
+            this.start().then(endCall).catch(e => { err(e); });
+        }
+
         public static play(tweenSet: TweenSet | TweenSet[], endCall?: () => void) {
-            if (tweenSet instanceof Array) {
-                tweenSet.forEach((t, i) => {
-                    if (i == 0)
-                        t.start().then(endCall).catch(e => { err(e); });
-                    else t.start();
-                });
-            } else tweenSet.start().then(endCall).catch(e => { err(e); });
+            const arr = [].concat(tweenSet);
+            for (let i = 0, n = arr.length; i < n; i++) {
+                arr[i].play(i == 0 ? endCall : null);
+            }
         }
     }
 
@@ -4757,8 +4761,6 @@ export namespace no {
         }
     }
 
-    let _pos = v3();
-
     /**
      * 设置节点可渲染标志
      * @param node 
@@ -4774,6 +4776,11 @@ export namespace no {
             return node.active;
         }
 
+
+        /**
+         * 因为node设置active的同时还会执行一些生命周期方法，这些方法里会有一些逻辑处理，
+         * 单纯的不渲染而不执行生命周期方法会导致一些逻辑问题，所以不能以这种方案来优化性能
+         */
         if (node['__origin_x__'] == null) {
             node['__origin_x__'] = no.x(node);
         }
@@ -4783,7 +4790,6 @@ export namespace no {
             if (v) {
                 if (!node.active) node.active = true;
             }
-            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
             if (!EDITOR) {
                 no.x(node, !v ? 20000 : node['__origin_x__']);
                 const blockInputEvents = node.getComponent(BlockInputEvents);
@@ -4793,11 +4799,13 @@ export namespace no {
                 if (btn)
                     btn['canClick'] = v;
             }
+            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
         }
         return node['yj_need_render'] !== false;
     }
 
     /**
+     * 该方法适用于不需要调用onEnable，onDisable方法的情况，如在scrollview中不在可显示区域内的节点或是移到屏幕外的节点
      * 设置节点可渲染标志
      * @param node 
      * @param v 
@@ -4805,18 +4813,22 @@ export namespace no {
      */
     export function visibleByOpacity(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
+        // if (NATIVE) {
+        //     if (v != undefined)
+        //         node.active = v;
+        //     return node.active;
+        // }
         if (v != undefined) {
             node['yj_need_render'] = v;
             const uiopacity = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
             if (node['yj_origin_opacity'] == null)
-                node['yj_origin_opacity'] = uiopacity.opacity;
+                node['yj_origin_opacity'] = uiopacity.opacity || 255;
             if (!v) {
                 uiopacity.opacity = 0;
             } else {
                 uiopacity.opacity = node['yj_origin_opacity'];
                 if (!node.active) node.active = true;
             }
-            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
 
             if (!EDITOR) {
                 const blockInputEvents = node.getComponent(BlockInputEvents);
@@ -4827,6 +4839,7 @@ export namespace no {
                 if (btn) btn['canClick'] = v;
                 onVisibleChange(node, v);
             }
+            node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
         }
         return node['yj_need_render'] !== false;
     }
@@ -5004,6 +5017,13 @@ export namespace no {
             window['wx'].triggerGC();
         else
             sys.garbageCollect();
+    }
+
+    export function newNode(name?: string): Node {
+        const n = new Node(name);
+        n.layer = Layers.Enum.UI_2D;
+        n.addComponent(UITransform);
+        return n;
     }
 }
 

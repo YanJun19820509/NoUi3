@@ -136,17 +136,14 @@ CCProgram unlit-fs %{
   }
 
   vec4 frag () {
-    vec4 o = vec4(1, 1, 1, 1);
+    vec4 o = color;
     int tt1 = int(t1) - 1;
     if (tt1 >= 0){
       o *= setTexture(tt1, uv0);
       o = setEffect(t2, o);
     } else {
       o *= normalTexture(cc_spriteTexture, uv0);
-    }
-
-    o*=color;
-    
+    }    
     ALPHA_TEST(o);
     return o;
   }

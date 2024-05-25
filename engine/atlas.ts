@@ -128,7 +128,7 @@ export class Atlas {
         let height = rotate ? canvas.width : canvas.height;
         let p = this._maxRect.find(width, height);
         if (!p) return null;
-        this.setSpriteFrameTextureRect(uuid, p.x, p.y, width, height, false);
+        this.setSpriteFrameTextureRect(uuid, p.x, p.y, width, height, rotate);
         this._setSubImage(canvas, p.x, p.y);
         return {
             x: p.x,
@@ -294,7 +294,7 @@ export class DynamicAtlasTexture extends Texture2D {
      * format    RGBA4444 = 50, RGBA8888 = 35
      * @method initWithSize
      */
-    public initWithSize(width: number, height: number, format: number = 50) {
+    public initWithSize(width: number, height: number, format: number = 35) {
         this.reset({
             width,
             height,

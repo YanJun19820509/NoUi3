@@ -1,4 +1,5 @@
 
+import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { no } from '../no';
 import { ccclass, property, menu, Node, EDITOR, isValid } from '../yj';
 import { FuckUi } from './FuckUi';
@@ -49,22 +50,24 @@ export class SetNodesSwitch extends FuckUi {
 
     @property(SwitchInfo)
     infos: SwitchInfo[] = [];
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;
 
-    // onLoad() {
-    //     super.onLoad();
-    //     if (EDITOR) {
-    //         for (let i = 0, n = this.infos.length; i < n; i++) {
-    //             let info = this.infos[i];
-    //             info.init();
-    //         }
-    //     }
-    // }
-
+    private _data: string;
     protected onDataChange(data: any) {
-        data = String(data);
+        this._data = String(data);
+        if (this.uiAnim) this.uiAnim.a_play();
+        else this.check();
+    }
+
+    public a_AnimationEffectCallback() {
+        this.check();
+    }
+
+    private check() {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
-            info.checkShow(data);
+            info.checkShow(this._data);
         }
     }
 }

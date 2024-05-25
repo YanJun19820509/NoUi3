@@ -47,20 +47,21 @@ export class YJVertexColorTransition extends Component {
         this._updateVB();
     }
 
+    private get opacity(): number {
+        //不要用this.renderComp.renderEntity.localOpacity，在h5和原生下这个返回的值不一致
+        return this.node._uiProps.localOpacity;
+    }
+
     private _setColor() {
         let c = this.renderComp.color;
-        // let opacity = no.getComponentInParents<UIOpacity>(this.node, UIOpacity)?.opacity;
-        // if (opacity == null) opacity = 255;
         if (this._data.x == 0) {
             this._data.x = c.r / 255;
             this._data.y = c.g / 255;
             this._data.z = c.b / 255;
-            // this._data.w = opacity / 255;
         } else {
             let rg = c.r * 1000 + c.g, ba = c.b * 1000;
             this._data.y = rg;
             this._data.z = ba;
-            // this._data.w = opacity / 255;
         }
     }
 
@@ -73,9 +74,9 @@ export class YJVertexColorTransition extends Component {
     private _setBMFontGray(v: boolean) {
         //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
         if (!this._originColor) this._originColor = this.renderComp.color.clone();
-        let opacity = this.getComponent(UIOpacity)?.opacity;
-        if (opacity == null) opacity = 255;
-        this._originColor.a = opacity;
+        let opacity = this.opacity;
+        if (opacity == null) opacity = 1;
+        this._originColor.a = opacity * 255;
         if (v) {
             let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
             this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
@@ -145,20 +146,20 @@ export class YJVertexColorTransition extends Component {
     }
 
     private _updateSimpleVB() {
-        let renderData = this.renderComp.renderData;
+        const renderData = this.renderComp.renderData;
         if (!renderData || !renderData.chunk) return;
-        let vData = renderData.chunk.vb;
+        const vData = renderData.chunk.vb;
         let colorOffset = 5;
-        let color = this._data;
-        let colorR = color.x;
-        let colorG = color.y;
-        let colorB = color.z;
-        // let colorA = color.w;
+        const color = this._data;
+        const colorR = color.x;
+        const colorG = color.y;
+        const colorB = color.z;
+        const colorA = this.opacity;
         for (let i = 0; i < 4; i++, colorOffset += renderData.floatStride) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
         }
     }
 
@@ -172,12 +173,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        // const colorA = this.renderComp.node._uiProps.opacity;
+        const colorA = this.opacity;
         for (let i = 0; i < 16; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
@@ -193,19 +194,19 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        // const colorA = this.renderComp.node._uiProps.opacity;
+        const colorA = this.opacity;
         for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
 
     private _updateRadiaFilledVB() {
         const renderData = this.renderComp.renderData!;
-        const vData = renderData.chunk.vb;
+        const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
         const vertexCount = renderData.vertexCount;
 
@@ -214,31 +215,31 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        // const colorA = this.renderComp.node._uiProps.opacity;
+        const colorA = this.opacity;
         for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
 
     private _updateBarFilledVB() {
         const renderData = this.renderComp.renderData!;
-        const vData = renderData.chunk.vb;
+        const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
         let colorOffset = 5;
         const color = this._data;
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        // const colorA = this.renderComp.node._uiProps.opacity;
+        const colorA = this.opacity;
         for (let i = 0; i < 4; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
@@ -253,12 +254,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        // const colorA = this.renderComp.node._uiProps.opacity;
+        const colorA = this.opacity;
         for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            // vData[colorOffset + 3] = colorA;
+            vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }

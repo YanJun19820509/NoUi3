@@ -17,10 +17,9 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        switchTexture: {value: white}
         cells: {value: [1,1]}
         fps: { value: 1. }
-        blendType: { value: 1., editor: {range:[1.,6.,1.]} }
+        startTime: { value: 0. }
 }%
 
 CCProgram vs %{
@@ -34,28 +33,26 @@ CCProgram unlit-fs %{
   #include <builtin/internal/alpha-test>
   #include <./common-fs>
   #include <./utils>
-
-    uniform sampler2D switchTexture;
      
-    uniform SwitchData{
-      vec2 cells;
-      float fps;
-      float blendType;
-    };
+  uniform SwitchData{
+    vec2 cells;
+    float fps;
+    float startTime;
+  };
 
   vec4 frag () {
-    vec4 o = vec4(1, 1, 1, 1);
-
-    #if USE_TEXTURE
-      o *= normalTexture(cc_spriteTexture, uv0);
-    #endif  
-
-    o *= color;
+    vec4 o = color;
 
     #if IS_SWITCH
-      vec4 c2 = textureSwitch(switchTexture, uv0, cells, fps);
-      o = blend(o, c2, blendType);
+      vec4 time = cc_time;
+      time.x += startTime; 
+      o *= textureSwitch(cc_spriteTexture, uv0, cells, fps, time);
+    #else
+      discard;
+
+      // o *= texture(cc_spriteTexture, uv0);
     #endif
+
     ALPHA_TEST(o);
     return o;
   }

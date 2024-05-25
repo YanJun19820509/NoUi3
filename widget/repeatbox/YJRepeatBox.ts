@@ -1,6 +1,7 @@
 
 import { ccclass, property, Node, instantiate, Sprite } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
+import { no } from '../../no';
 
 /**
  * Predefined variables
@@ -40,6 +41,9 @@ export class YJRepeatBox extends YJDataWork {
         this._max = Math.max(this.data.max, this.node.children.length);
         this._n = this._max;
         let temp = this.templates[this.data.type || 0].tempNode;
+        if (!temp) {
+            no.err('YJRepeatBox tempNode is null!');
+        }
         let fill = this.templates[this.fillType]?.tempNode;
         let n = this._max;
         for (let i = 0; i < n; i++) {

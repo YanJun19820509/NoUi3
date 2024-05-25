@@ -68,11 +68,14 @@ export class FuckUi extends Component {
         if (this.once) this.destroy();
     }
 
+
+    private _keys: string[];
     /**
      * 绑定数据的keys的数组
      */
     public get bindKeys(): string[] {
-        return this.bind_keys.split(',');
+        if (!this._keys) this._keys = this.bind_keys.split(',');
+        return this._keys;
     }
 
     private logValue(data: any): void {

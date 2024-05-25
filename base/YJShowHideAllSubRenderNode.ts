@@ -1,6 +1,7 @@
 
-import { ccclass, property, Component, Layers, Node, sys, disallowMultiple } from '../yj';
+import { ccclass, property, Component, Layers, Node, sys, disallowMultiple, ResolutionPolicy } from '../yj';
 import { no } from '../no';
+import { YJFitScreen } from './YJFitScreen';
 
 /**
  * Predefined variables
@@ -65,6 +66,7 @@ export class YJShowHideAllSubRenderNode extends Component {
     }
 
     private changeLayer(node: Node, v: boolean) {
+        if (v && YJFitScreen.policy == ResolutionPolicy.FIXED_HEIGHT) node.active = false;
         no.visibleByOpacity(node, v);
     }
 }

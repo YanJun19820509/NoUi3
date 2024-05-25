@@ -8,6 +8,7 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
+import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 
 /**
  * Predefined variables
@@ -20,6 +21,7 @@ import { SetCreateNode } from './SetCreateNode';
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
+
 
 @ccclass('SetList')
 @menu('NoUi/ui/SetList(设置列表:array)')
@@ -38,6 +40,9 @@ export class SetList extends FuckUi {
     onlyFirstTime: boolean = false;
     @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     wait: number = 0;
+
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;
 
     @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
     onComplete: no.EventHandlerInfo[] = [];
@@ -219,14 +224,21 @@ export class SetList extends FuckUi {
             len = listItems.length;
         if (this.showNum > len) {
             for (let i = len; i < this.showNum; i++) {
-                let item = instantiate(this.template);
-                // item.active = true;
-                item.parent = this.content;
+                const item = instantiate(this.template);
+                no.position(item, v3(0, 0));
+                item.active = true;
+                // item.parent = this.content;
                 if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                this.setItemPosition(item, i);
+                const box = no.newNode('box');
+                no.size(box, this.itemSize);
+                const a = no.anchor(item);
+                no.anchor(box, a.x, a.y);
+                box.addChild(item);
+                box.parent = this.content;
+                this.setItemPosition(box, i);
             }
         }
     }
@@ -236,14 +248,17 @@ export class SetList extends FuckUi {
         no.sortArray(this.content.children, (a, b) => {
             return a['__dataIndex'] - b['__dataIndex'];
         });
-
-        const n = this.content.children.length;
-        let i = 0;
-        await YJJobManager.ins.execute(() => {
-            if (!this?.node?.isValid) return false;
-            this.setItem(i++);
-            if (i >= n) return false;
-        }, this);
+        if (this.uiAnim) {
+            this.setItem(0);
+        } else {
+            const n = this.content.children.length;
+            let i = 0;
+            await YJJobManager.ins.execute(() => {
+                if (!this?.node?.isValid) return false;
+                this.setItem(i++);
+                if (i >= n) return false;
+            }, this);
+        }
     }
 
     private setItem(i: number) {
@@ -254,16 +269,22 @@ export class SetList extends FuckUi {
             this.setItemData(item, this.listData[data_idx]);
         }
         no.visible(item, i < this.allNum);
+        if (this.uiAnim) {
+            this.uiAnim.play(item.children[0]);
+            this.scheduleOnce(() => {
+                this.setItem(++i);
+            }, 0.1);
+        }
     }
 
     private setItemData(item: Node, data = []) {
-        let b = item.getComponent(YJDataWork);
+        let b = item.children[0].getComponent(YJDataWork);
         if (b) {
             b.data = data;
             b.init();
         }
         else {
-            let a = item.getComponent(SetCreateNode);
+            let a = item.children[0].getComponent(SetCreateNode);
             if (a)
                 a.setData(no.jsonStringify(data));
         }

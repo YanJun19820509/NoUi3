@@ -674,13 +674,15 @@ export class YJCharLabel extends Sprite {
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         if (this.outlineWidth > 0) {
             this.setStrokeStyle(ctx);
-            ctx.strokeText(v, x, y);
         }
         // this.setFontStyle(ctx);
         const fontSize = this.fontSize;
         let x1 = x;
         for (let i = 0, n = v.length; i < n; i++) {
             const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+            if (this.outlineWidth > 0) {
+                ctx.strokeText(c, x1, y);
+            }
             ctx.fillText(c, x1, y);
             x1 += w;
         }
@@ -745,14 +747,13 @@ export class YJCharLabel extends Sprite {
                     x = width - w;
                 }
             }
-            if (this.outlineWidth > 0) {
-                ctx.strokeText(v, x, y);
-            }
             // ctx.fillText(v, x, y);
             const fontSize = this.fontSize;
             let x1 = x;
             for (let i = 0, n = v.length; i < n; i++) {
                 const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                if (this.outlineWidth > 0)
+                    ctx.strokeText(c, x1, y);
                 ctx.fillText(c, x1, y);
                 x1 += w;
             }
