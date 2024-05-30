@@ -105,6 +105,7 @@ export class YJDataWork extends Component {
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
         this._dataChanged = true;
+        return this;//支持链式写法
     }
 
     protected lateUpdate(dt: number): void {

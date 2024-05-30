@@ -32,7 +32,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultSpriteFrameUuid: string = '';
     @property
     defaultName: string = '';
-    @property({ type: CCString, displayName: '散图目录', tooltip: '如果散图目录非空，且参数中包含该目录，则当做散图来加载' })
+    @property({ displayName: '散图目录', tooltip: '如果散图目录非空，且参数中包含该目录，则当做散图来加载' })
     singleFolder: string = 'icons/';
     @property({ displayName: '从图集加载' })
     loadFromAtlas: boolean = true;

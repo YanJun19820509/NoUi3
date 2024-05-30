@@ -1,8 +1,7 @@
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
-    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents, JSB,
-    NATIVE,
+    director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
     Layers
 } from "./yj";
 
@@ -1725,19 +1724,23 @@ export namespace no {
                 if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
                 if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
 
+                const easing = data.easing;// ? (typeof data.easing == 'string' ? data.easing : getEasingFn(data.easing)) : null;
+
                 if (data.by) {
-                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].by(data.duration, np, { easing: data.easing });
-                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.by(data.duration, tp, { easing: data.easing });
-                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.by(data.duration, op, { easing: data.easing });
+                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].by(data.duration, np, { easing: easing });
+                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.by(data.duration, tp, { easing: easing });
+                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.by(data.duration, op, { easing: easing });
                 } else if (data.to) {
-                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].to(data.duration, np, { easing: data.easing });
-                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.to(data.duration, tp, { easing: data.easing });
-                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.to(data.duration, op, { easing: data.easing });
+                    if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].to(data.duration, np, { easing: easing });
+                    if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.to(data.duration, tp, { easing: easing });
+                    if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.to(data.duration, op, { easing: easing });
                 } else if (data.set) {
                     if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].set(np);
                     if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.set(tp);
                     if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.set(op);
                 }
+
+                this.setCallback(data.callback, np ? TweenSetType.Node : (tp ? TweenSetType.Transform : TweenSetType.Opacity));
             }
 
             this.setRepeat(data.repeat);
@@ -1752,21 +1755,46 @@ export namespace no {
 
         private setRepeat(v: number) {
             if (!v) return;
-            if (v < 0) v = 999;
+            if (v < 0) v = 9999;
             for (const key in this.map) {
                 this.map[key] = this.map[key]?.repeat(v, this.map[key]);
             }
+        }
+
+        private setCallback(cb: () => void, key: string) {
+            if (!cb) return;
+            this.map[key] = this.map[key]?.call(cb);
         }
 
         public play(endCall?: () => void) {
             this.start().then(endCall).catch(e => { err(e); });
         }
 
-        public static play(tweenSet: TweenSet | TweenSet[], endCall?: () => void) {
-            const arr = [].concat(tweenSet);
-            for (let i = 0, n = arr.length; i < n; i++) {
-                arr[i].play(i == 0 ? endCall : null);
-            }
+        /**
+         * 播放缓动动画
+         * @param tweenSets 如果tweenSets是Array，则按并行处理
+         * @param endCall 执行完回调
+         * @param target 并行时用于处理目标销毁的情况
+         */
+        public static play(tweenSets: TweenSet | TweenSet[], endCall?: () => void, target?: any) {
+            if (tweenSets instanceof Array) {
+                let all = tweenSets.length,
+                    n = 0;
+                for (let i = 0; i < all; i++) {
+                    tweenSets[i].play(() => {
+                        n++;
+                    });
+                }
+                scheduleUpdateCheck(() => {
+                    return n === all;
+                }, () => {
+                    endCall?.();
+                }, target);
+            } else tweenSets.play(endCall);
+        }
+
+        public static stop(target: any) {
+            Tween.stopAllByTarget(target);
         }
     }
 
@@ -1789,8 +1817,9 @@ export namespace no {
      *          size: [100,100],
      *          anchor: [0, 1]
      *      },
-     *      easing?: "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
+     *      easing?: EasingMethod | "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
      *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
+     *      callback?: () => void
      * }
      * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。
      * 默认属性变化为to
@@ -2277,6 +2306,7 @@ export namespace no {
                 setValue(this._data, path, value);
             }
             this.handleDataChange();
+            return this;
         }
 
         public setKV(k: string, v: any) {
@@ -2284,6 +2314,7 @@ export namespace no {
                 this._data = {};
             }
             setValue(this._data, k, v);
+            return this;
         }
 
 
@@ -2639,7 +2670,7 @@ export namespace no {
                 callback?.(null);
                 return;
             }
-            assetManager.loadBundle(url, (e, b) => {
+            assetManager.loadBundle(url, { scriptAsyncLoading: false }, (e, b) => {
                 log('load bundle end', url, e);
                 if (e != null) {
                     err('loadBundle', url, e.message);
@@ -2655,7 +2686,7 @@ export namespace no {
         public getLoadedBundle(name: string): Bundle {
             const a = assetManager.getBundle(name);
             if (!a) {
-                err(`包${name}未加载`);
+                err(`getLoadedBundle 包${name}未加载`);
             }
             return a;
         }
@@ -2700,7 +2731,7 @@ export namespace no {
                             evn.emit('load_file_fail');
                         } else {
                             this.addRef(item);//增加引用计数
-                            this.loadDepends(item.uuid);
+                            // this.loadDepends(item.uuid);
                         }
                         callback?.(item);
                     });
@@ -2784,7 +2815,7 @@ export namespace no {
                     } else {
                         items.forEach(item => {
                             this.addRef(item);//增加引用计数
-                            this.loadDepends(item.uuid);
+                            // this.loadDepends(item.uuid);
                         });
                         onComplete && onComplete(items);
                     }
@@ -3139,13 +3170,14 @@ export namespace no {
          * @param uuid 依赖资源的uuid数组
          */
         private loadDepends(uuid: string) {
+            return;
             let a: any[] = [];
             let list = assetManager.dependUtil.getDepsRecursively(uuid);
             if (list.length == 0) return;
             list.forEach(uuid => {
                 a.push({ uuid: uuid });
             });
-            log('loadDepends', a);
+            // log('loadDepends', a);
             assetManager.loadAny(a, (e, item) => {
                 if (item == null) err(uuid, e.message);
             });
@@ -3376,6 +3408,21 @@ export namespace no {
                     return JsonAsset;
                 default: return null;
             }
+        }
+
+        /**
+         * 预加载远程包
+         */
+        public preloadRemoteBundles(cb?: () => void) {
+            const bundles = this.remoteBundles.slice();
+            if (!bundles.length) return cb?.();
+            log('开始预加载远程包', bundles);
+            this.loadBundles(bundles, (p) => {
+                if (p >= 1) {
+                    log('预加载远程包完成');
+                    cb?.();
+                }
+            });
         }
     }
 
@@ -5024,6 +5071,54 @@ export namespace no {
         n.layer = Layers.Enum.UI_2D;
         n.addComponent(UITransform);
         return n;
+    }
+
+    /**
+     * 创建敏感词检测库
+     * @param words 
+     * @returns 
+     */
+    export function createSensitiveWordDFA(words: string[]): any {
+        const root: any = {};
+        for (let word of words) {
+            let node = root;
+            for (let char of word) {
+                node[char] = node[char] || {};
+                node = node[char];
+            }
+            node.isEnd = true; // 存储敏感词本身
+        }
+        return root;
+    }
+    /**
+     * 检测敏感词
+     * @param text 需要检测的内容
+     * @param dfa 敏感词库
+     * @returns 检测出的敏感词或空字符串
+     */
+    export function searchSensitiveWordDFA(text: string, dfa: any): string[] {
+        let strs: string[] = [];
+        for (let j = 0, n = text.length; j < n - 1; j++) {
+            const ch1 = text[j];
+            if (!dfa[ch1]) {
+                continue;
+            }
+            let node = dfa[ch1];
+            for (let i = j + 1; i < n; i++) {
+                const ch = text[i];
+                if (!node[ch]) {
+                    continue;
+                }
+                node = node[ch];
+                if (node.isEnd) {
+                    // 找到敏感词结尾的节点
+                    strs[strs.length] = text.substring(j, i + 1);
+                    j = i;
+                    break;
+                }
+            }
+        }
+        return strs;
     }
 }
 

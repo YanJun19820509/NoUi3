@@ -54,6 +54,8 @@ export class PrefabFileInfo {
 @menu('NoUi/base/YJPreload(资源预加载)')
 @executeInEditMode()
 export class YJPreload extends YJComponent {
+    @property({ displayName: '预加载远程包' })
+    preloadRemoteBundles: boolean = false;
     @property({ type: CCString, displayName: '加载包' })
     bundles: string[] = [];
 
@@ -114,7 +116,13 @@ export class YJPreload extends YJComponent {
 
     protected onEnable(): void {
         if (EDITOR) return;
-        this.auto && this.a_startLoad();
+        if (this.preloadRemoteBundles) {
+            no.assetBundleManager.preloadRemoteBundles(() => {
+                this.auto && this.a_startLoad();
+            });
+        } else {
+            this.auto && this.a_startLoad();
+        }
     }
 
     public a_startLoad(): void {
@@ -428,7 +436,7 @@ export class YJPreload extends YJComponent {
         });
         no.assetBundleManager.loadAnyFiles(requests);
         this.textureFolders.forEach(folder => {
-            no.assetBundleManager.loadAllFilesInFolder(folder, null, (items) =>{
+            no.assetBundleManager.loadAllFilesInFolder(folder, null, (items) => {
                 console.log(items.length)
             }, [Texture2D]);
         });
