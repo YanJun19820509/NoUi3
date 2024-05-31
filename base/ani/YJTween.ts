@@ -1,12 +1,29 @@
 import { no } from "../../no";
 import { Node, UIOpacity, UITransform, ccclass, easing, isValid, quat, size, v2, v3 } from "../../yj";
 
-
+/**
+ * 缓动库，用法同cocos的Tween，支持链式写法
+ * 示例：YJTween.tween(this.node).to(1, { position: [100,100] }).call(()=>{log('done!')}).start();
+ * 示例：YJTween.tween(this.node).by(1, { position: [100,100] }).reverse().start();
+ * 示例：YJTween.tween(this.node).set({ position: [200,300,0] }).repeat(10).start();
+ * 示例：YJTween.tween(this.node).parse({
+                                     delay:1,
+                                     duration:1,
+                                     set:{opacity:2},
+                                     to:{opacity:255},
+                                     by:{position:[10,10]},
+                                     reverse:true,
+                                     repeat:2,
+                                     call:()=>{log('done!')}
+                                }).start();
+ * 同时还支持停止stop，暂停pause，继续resume
+ */
 @ccclass('YJTween')
 export class YJTween {
     //缓动目标
     private _target: Node = null;
     private _actions: TweenActionBase[];
+    private _tweens: YJTween[];
     private _actionIndex: number;
     private _started: boolean;
     private _paused: boolean;
@@ -19,6 +36,7 @@ export class YJTween {
     constructor(target: Node) {
         this._target = target;
         this._actions = [];
+        this._tweens = [];
     }
 
     public to(duration: number, props: PropType, easing?: EasingMethod) {
@@ -66,6 +84,16 @@ export class YJTween {
         return this;
     }
 
+    public sequence(...tweens: YJTween[]) {
+        this._actions = this._actions.concat(...tweens.map(t => t._actions));
+        return this;
+    }
+
+    public parallel(...tweens: YJTween[]) {
+        this._tweens = this._tweens.concat(tweens);
+        return this;
+    }
+
     public start() {
         if (this._started) return;
         this._started = true;
@@ -104,7 +132,12 @@ export class YJTween {
     }
 
     public update(dt: number) {
+        if (!isValid(this._target)) {
+            this.clear();
+            return;
+        }
         if (this._paused) return;
+        this._tweens.forEach(t => t.update(dt));
         const a = this._actions[this._actionIndex];
         if (!a) {
             this.stop();
@@ -117,8 +150,53 @@ export class YJTween {
     public clear() {
         no.unscheduleTargetUpdateFunction(this);
         this._actions.length = 0;
+        this._tweens.length = 0;
         this._target = null;
         this._paused = false;
+    }
+
+    /**
+     * 解析缓动动效数据
+     * @param data :TweenDataType | TweenDataType[]
+     * @returns YJTween
+     * @ 如果data为数组，则为串行动作,按数组下标顺序执行；TweenDataType内按并行处理，to by set 将同时执行。
+     * delay最先执行，call最后执行。如果repeat与reverse同时存在，则先处理reverse，再处理repeat。
+     */
+    public parse(data: TweenDataType | TweenDataType[]) {
+        if (this._target) {
+            data = [].concat(data);
+            let arr: YJTween[] = [];
+            data.forEach(d => {
+                arr[arr.length] = this._parse(d);
+            });
+            this.sequence(...arr);
+        }
+        return this;
+    }
+
+    private _parse(data: TweenDataType) {
+        const { delay, duration, to, by, set, easing, repeat, reverse, call }: TweenDataType = data;
+        let a = this._new();
+        if (delay) a.delay(delay);
+        let arr: YJTween[] = [];
+        if (to) {
+            arr[arr.length] = this._new().to(duration, to, easing);
+        }
+        if (by) {
+            arr[arr.length] = this._new().by(duration, by, easing);
+        }
+        if (set) {
+            arr[arr.length] = this._new().set(set);
+        }
+        a = a.parallel(...arr);
+        if (reverse) a = a.reverse();
+        if (repeat != null) a = a.repeat(repeat);
+        if (call) a = a.call(call);
+        return a;
+    }
+
+    private _new() {
+        return YJTween.tween(this._target);
     }
 }
 
@@ -449,6 +527,7 @@ class TweenActionReverse extends TweenActionBase {
 
 export type TargetType = Node | UITransform | UIOpacity;
 export type PropType = { position?: number[], angle?: number[], rotation?: number[], scale?: number[], size?: number[], anchor?: number[], opacity?: number[] };
+export type TweenDataType = { delay?: number, duration?: number, to?: PropType, by?: PropType, set?: PropType, easing?: EasingMethod, repeat?: number, reverse?: boolean, call?: () => void };
 export type ActionProp = { target: TargetType, type: string, start: number[], increment: number[], cur: number[] };
 // export type EasingType = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn";
 

@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3 } from '../yj';
+import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3, Layout } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -202,12 +202,29 @@ export class SetCreateNode extends FuckUi {
     }
 
     private initItem(item: Node) {
-        if (!this.itemSize) this.itemSize = no.size(item);
         no.position(item, v3(0, 0));
         // no.visible(cacheItem, false);
         if (this.uiAnim) {
             const box = no.newNode('box');
-            no.size(box, this.itemSize);
+            const layout = item.getComponent(Layout);
+            if (!layout) {
+                if (!this.itemSize) this.itemSize = no.size(item);
+                no.size(box, this.itemSize);
+            } else {
+                const bLayout = box.addComponent(Layout);
+                bLayout.type = layout.type;
+                bLayout.resizeMode = layout.resizeMode;
+                bLayout.paddingTop = layout.paddingTop;
+                bLayout.paddingBottom = layout.paddingBottom;
+                bLayout.paddingLeft = layout.paddingLeft;
+                bLayout.paddingRight = layout.paddingRight;
+                bLayout.spacingX = layout.spacingX;
+                bLayout.spacingY = layout.spacingY;
+                bLayout.affectedByScale = layout.affectedByScale;
+                bLayout.verticalDirection = layout.verticalDirection;
+                bLayout.horizontalDirection = layout.horizontalDirection;
+                bLayout.constraint = layout.constraint;
+            }
             const a = no.anchor(item);
             no.anchor(box, a.x, a.y);
             box.addChild(item);

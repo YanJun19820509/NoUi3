@@ -14,7 +14,7 @@ import { FuckUi } from './FuckUi';
 export class SetNumberRolling extends FuckUi {
     @property({ displayName: '时长s', min: 0 })
     duration: number = 1;
-    @property({ displayName: '次数', min: 0 })
+    @property({ displayName: '滚动次数', min: 0 })
     num: number = 1;
     @property({ displayName: '保留小数位', min: 0, step: 1 })
     decimal: number = 0;

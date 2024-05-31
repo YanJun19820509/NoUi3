@@ -1,7 +1,7 @@
 import { no } from "../../no";
 import { Range } from "../../types";
 import { Component, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, director, executeInEditMode, isValid, property, v2 } from "../../yj";
-import { EasingMethod } from "./YJTween";
+import { EasingMethod, getEasingFn } from "./YJTween";
 
 
 enum AnimType {
@@ -73,8 +73,9 @@ class AnimationEffect {
             case AnimType.Opacity: a = this.opacity(node); break;
             case AnimType.Rotation: a = this.rotation(node); break;
         }
-        if (a instanceof Array) a[a.length - 1].easing = this.easing;
-        else a.easing = this.easing;
+        const easingFn = getEasingFn(this.easing);
+        if (a instanceof Array) a[a.length - 1].easing = easingFn;
+        else a.easing = easingFn;
         if (this.callbacks.length > 0) {
             if (a instanceof Array) a[a.length - 1].callback = () => { no.EventHandlerInfo.execute(this.callbacks); };
             else a.callback = () => { no.EventHandlerInfo.execute(this.callbacks); };
@@ -366,7 +367,15 @@ export class YJUIAnimationEffect extends Component {
         }
     }
 
+    onLoad() {
+        if (EDITOR) {
+            const a = this.getComponent('SetList') || this.getComponent('SetCreateNode');
+            if (a && !a['uiAnim']) a['uiAnim'] = this;
+        }
+    }
+
     onEnable() {
+        if (EDITOR) return;
         if (this.auto) this.play(this.node);
     }
 
