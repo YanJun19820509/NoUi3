@@ -7,6 +7,7 @@ import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJi18n } from '../base/YJi18n';
 import { CCString } from 'cc';
+import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 
 /**
  * Predefined variables
@@ -38,6 +39,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     loadFromAtlas: boolean = true;
     @property({ displayName: '多语言' })
     multiLan: boolean = false;
+
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;
+
     @property({ type: YJLoadAssets, readonly: true })
     loadAsset: YJLoadAssets = null;
     @property({ type: YJDynamicAtlas, readonly: true })
@@ -76,6 +81,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDisable() {
+        this._lastName = null;
         // this.a_setEmpty();
     }
 
@@ -106,7 +112,19 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
     }
 
+    private _data: any;
     onDataChange(data: string) {
+        this._data = data;
+        if (this.uiAnim) this.uiAnim.a_play();
+        else this.changeData();
+    }
+
+    public a_AnimationEffectCallback() {
+        this.changeData();
+    }
+
+    private changeData() {
+        const data = this._data;
         if (this.singleFolder && data.indexOf(this.singleFolder) == 0) {
             this.setSingleSpriteFrame(data);
             return;
@@ -218,6 +236,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 no.err('setSingleSpriteFrame no file', name);
             } else {
                 if (!this.isValid) {
+                    return;
+                }
+                if (this._data && this._data.indexOf(spriteFrame.name) < 0) {
                     return;
                 }
                 if (this._singleSpriteFrame) {

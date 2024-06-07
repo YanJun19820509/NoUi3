@@ -76,7 +76,7 @@ export class YJSpineManager extends no.SingleObject {
 
 
     private release() {
-        const a = no.sysTime.now - 5;
+        const a = no.sysTime.now - 10;
         let keys: string[] = [];
         for (const key in this._map) {
             if (this._map[key].t <= a) keys[keys.length] = key;

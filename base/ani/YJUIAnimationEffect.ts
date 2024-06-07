@@ -1,7 +1,7 @@
 import { no } from "../../no";
 import { Range } from "../../types";
-import { Component, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, director, executeInEditMode, isValid, property, v2 } from "../../yj";
-import { EasingMethod, getEasingFn } from "./YJTween";
+import { Component, DEBUG, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, director, executeInEditMode, isValid, property, v2 } from "../../yj";
+import { EasingMethod, YJTweenTest, getEasingFn } from "./YJTween";
 
 
 enum AnimType {
@@ -73,14 +73,15 @@ class AnimationEffect {
             case AnimType.Opacity: a = this.opacity(node); break;
             case AnimType.Rotation: a = this.rotation(node); break;
         }
-        const easingFn = getEasingFn(this.easing);
+
+        const easingFn = YJTweenTest ? this.easing : getEasingFn(this.easing);
         if (a instanceof Array) a[a.length - 1].easing = easingFn;
         else a.easing = easingFn;
         if (this.callbacks.length > 0) {
             if (a instanceof Array) a[a.length - 1].callback = () => { no.EventHandlerInfo.execute(this.callbacks); };
             else a.callback = () => { no.EventHandlerInfo.execute(this.callbacks); };
         }
-        return no.parseTweenData(a, node) as no.TweenSet; // 解析动画数据
+        return a;
     }
 
     private delay() {
@@ -327,6 +328,8 @@ export class AnimationEffectArray {
 export class YJUIAnimationEffect extends Component {
     @property({ type: Node, displayName: '目标节点', tooltip: '不设置则使用当前节点' })
     target: Node = null;
+    @property({ displayName: '作用在子节点上' })
+    onChildren: boolean = false;
     @property({ type: AnimationEffect, displayName: "串行动画效果", tooltip: "多个动画效果按顺序依次执行，如果设置了串行动画效果，并行动画效果将不会执行" })
     serialAnimationEffects: AnimationEffect[] = [];
     @property({ type: AnimationEffectArray, displayName: "并行动画效果", tooltip: "多个串行动画效果同时执行" })
@@ -335,48 +338,57 @@ export class YJUIAnimationEffect extends Component {
     repeat: number = 1;
     @property({ displayName: '自动运行' })
     auto: boolean = false;
-    @property
-    public get preview(): boolean {
-        return false;
-    }
-    private tween;
-    private intervalId = null;
-    public set preview(v: boolean) {
-        if (!EDITOR) return;
-        if (this.tween == null) {
-            this.tween = director['_systems'].filter((v) => { return v._id == "TWEEN" })[0];
-            this.tween._executeInEditMode = true;
-        }
-        if (!this.intervalId) {
-            console.log(new Date().getTime())
-            this.intervalId = setInterval(() => { this.tween.update(0.001); });
-            this.a_play();
-        }
-    }
-    @property
-    public get stopPreview(): boolean {
-        return false;
-    }
+    // @property
+    // public get preview(): boolean {
+    //     return false;
+    // }
+    // private tween;
+    // private intervalId = null;
+    // public set preview(v: boolean) {
+    //     if (!EDITOR) return;
+    //     if (this.tween == null) {
+    //         this.tween = director['_systems'].filter((v) => { return v._id == "TWEEN" })[0];
+    //         this.tween._executeInEditMode = true;
+    //     }
+    //     if (!this.intervalId) {
+    //         console.log(new Date().getTime())
+    //         this.intervalId = setInterval(() => { this.tween.update(0.016); });
+    //         this.a_play();
+    //     }
+    // }
+    // @property
+    // public get stopPreview(): boolean {
+    //     return false;
+    // }
 
-    public set stopPreview(v: boolean) {
-        if (this.intervalId != null) {
-            console.log(new Date().getTime())
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-            no.TweenSet.stop(this.node);
-        }
-    }
+    // public set stopPreview(v: boolean) {
+    //     if (this.intervalId != null) {
+    //         console.log(new Date().getTime())
+    //         clearInterval(this.intervalId);
+    //         this.intervalId = null;
+    //         no.TweenSet.stop(this.node);
+    //     }
+    // }
 
     onLoad() {
-        if (EDITOR) {
-            const a = this.getComponent('SetList') || this.getComponent('SetCreateNode');
+        if (EDITOR && !this.target) {
+            const a = this.getComponent('SetList')
+                || this.getComponent('SetCreateNode')
+                || this.getComponent('SetNodesSwitch')
+                || this.getComponent('SetSpriteFrameInSampler2D');
             if (a && !a['uiAnim']) a['uiAnim'] = this;
         }
     }
 
     onEnable() {
         if (EDITOR) return;
-        if (this.auto) this.play(this.node);
+        if (this.auto) {
+            if (this.onChildren) {
+                this.playOnChildren(this.node);
+            } else {
+                this.play(this.node);
+            }
+        }
     }
 
     onDisable() {
@@ -385,7 +397,11 @@ export class YJUIAnimationEffect extends Component {
 
     public a_play() {
         const node = this.target || this.node;
-        this.play(node);
+        if (this.onChildren) {
+            this.playOnChildren(node);
+        } else {
+            this.play(node);
+        }
     }
 
     /**
@@ -399,10 +415,18 @@ export class YJUIAnimationEffect extends Component {
             this.playParallel(node, this.repeat);
     }
 
+    public playOnChildren(node: Node) {
+        const children = node.children;
+        let i = 0;
+        this.schedule(() => {
+            this.play(children[i++]);
+        }, 0.1, children.length - 1);
+    }
+
     private playSerial(node: Node, repeat: number) {
-        this._playSerial(node, this.serialAnimationEffects, 0, () => {
+        this._playSerial(node, this.serialAnimationEffects, () => {
             if (this.repeat == 0 || --repeat > 0) this.playSerial(node, repeat);
-            else this.stopPreview = true;
+            // else this.stopPreview = true;
         });
     }
 
@@ -412,7 +436,7 @@ export class YJUIAnimationEffect extends Component {
             n = 0;
         for (let i = 0; i < all; i++) {
             const a = this.parallelAnimationEffects[i];
-            this._playSerial(node, a.serialAnimationEffects, 0, () => {
+            this._playSerial(node, a.serialAnimationEffects, () => {
                 n++;
             });
         }
@@ -420,21 +444,31 @@ export class YJUIAnimationEffect extends Component {
             return n === all;
         }, () => {
             if (this.repeat == 0 || --repeat > 0) this.playParallel(node, repeat);
-            else this.stopPreview = true;
+            // else this.stopPreview = true;
         }, this);
     }
 
-    private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], idx = 0, onEnd?: () => void) {
+    private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], onEnd?: () => void) {
         if (!isValid(node)) return;
-        const a = serialAnimationEffects[idx];
-        if (!a) {
+        // const a = serialAnimationEffects[idx];
+        // if (!a) {
+        //     onEnd?.();
+        //     return;
+        // }
+        // if (a.type == AnimType.None) {
+        //     return this._playSerial(node, serialAnimationEffects, ++idx, onEnd);
+        // }
+        // no.TweenSet.play(a.getTweenSet(node), () => this._playSerial(node, serialAnimationEffects, ++idx, onEnd));
+
+
+        let a: any[] = [];
+        serialAnimationEffects.forEach(b => {
+            a = a.concat(b.getTweenSet(node));
+        });
+        no.TweenSet.play(no.parseTweenData(a, node), () => {
             onEnd?.();
-            return;
-        }
-        if (a.type == AnimType.None) {
-            return this._playSerial(node, serialAnimationEffects, ++idx, onEnd);
-        }
-        no.TweenSet.play(a.getTweenSet(node), () => this._playSerial(node, serialAnimationEffects, ++idx, onEnd));
+            // else this.stopPreview = true;
+        });
     }
 }
 

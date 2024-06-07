@@ -68,7 +68,6 @@ export class FuckUi extends Component {
         if (this.once) this.destroy();
     }
 
-
     private _keys: string[];
     /**
      * 绑定数据的keys的数组

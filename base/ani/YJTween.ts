@@ -1,21 +1,29 @@
 import { no } from "../../no";
-import { Node, UIOpacity, UITransform, ccclass, easing, isValid, quat, size, v2, v3 } from "../../yj";
+import { DEBUG, Node, UIOpacity, UITransform, ccclass, easing, isValid, js, quat, size, v2, v3 } from "../../yj";
 
 /**
  * 缓动库，用法同cocos的Tween，支持链式写法
- * 示例：YJTween.tween(this.node).to(1, { position: [100,100] }).call(()=>{log('done!')}).start();
- * 示例：YJTween.tween(this.node).by(1, { position: [100,100] }).reverse().start();
- * 示例：YJTween.tween(this.node).set({ position: [200,300,0] }).repeat(10).start();
- * 示例：YJTween.tween(this.node).parse({
+ * 示例：YJTween.tween(this.node).to(1, { pos: [100,100] }).call(()=>{log('done!')}).start();
+ * 示例：YJTween.tween(this.node).by(1, { pos: [100,100] }).reverse().start();
+ * 示例：YJTween.tween(this.node).set({ pos: [200,300,0] }).repeat(10).start();
+ * 示例：YJTween.tween(this.node).parse([{
                                      delay:1,
                                      duration:1,
-                                     set:{opacity:2},
-                                     to:{opacity:255},
-                                     by:{position:[10,10]},
+                                     set:1,
+                                     to:1,
+                                     by:,
+                                     props?: {
+                                        pos: [100,100,0]
+                                        opacity: 100,
+                                        rotation: [1,1,0],
+                                        scale: [0.5,0.5,1],
+                                        size: [100,100],
+                                        anchor: [0, 1]
+                                    },
                                      reverse:true,
                                      repeat:2,
-                                     call:()=>{log('done!')}
-                                }).start();
+                                     callback:()=>{log('done!')}
+                                }]).start();
  * 同时还支持停止stop，暂停pause，继续resume
  */
 @ccclass('YJTween')
@@ -27,16 +35,39 @@ export class YJTween {
     private _actionIndex: number;
     private _started: boolean;
     private _paused: boolean;
-
+    //缓存起来，方便查找和停止
+    private static _tweenMap: { [uuid: string]: YJTween[] } = {};
 
     public static tween(target: Node) {
         return new YJTween(target);
+    }
+
+    public static stopAll() {
+        for (const key in YJTween._tweenMap) {
+            const tweens = YJTween._tweenMap[key];
+            for (const tween of tweens) tween.stop();
+        }
+    }
+
+    public static stopAllByTarget(target: Node) {
+        const uuid = target.uuid;
+        if (YJTween._tweenMap[uuid]) {
+            const tweens = YJTween._tweenMap[uuid];
+            for (const tween of tweens) tween.stop();
+        }
+    }
+
+    private static addToMap(tween: YJTween) {
+        const uuid = tween._target.uuid;
+        if (!YJTween._tweenMap[uuid]) YJTween._tweenMap[uuid] = [];
+        YJTween._tweenMap[uuid].push(tween);
     }
 
     constructor(target: Node) {
         this._target = target;
         this._actions = [];
         this._tweens = [];
+        YJTween.addToMap(this);
     }
 
     public to(duration: number, props: PropType, easing?: EasingMethod) {
@@ -50,7 +81,7 @@ export class YJTween {
     }
 
     public set(props: PropType) {
-        this._actions[this._actions.length] = new TweenActionTo(this._target, 0, props, EasingMethod.LINEAR);
+        this._actions[this._actions.length] = new TweenActionSet(this._target, props);
         return this;
     }
 
@@ -165,33 +196,41 @@ export class YJTween {
     public parse(data: TweenDataType | TweenDataType[]) {
         if (this._target) {
             data = [].concat(data);
-            let arr: YJTween[] = [];
             data.forEach(d => {
-                arr[arr.length] = this._parse(d);
+                this._parse(d);
             });
-            this.sequence(...arr);
         }
         return this;
     }
 
     private _parse(data: TweenDataType) {
-        const { delay, duration, to, by, set, easing, repeat, reverse, call }: TweenDataType = data;
-        let a = this._new();
+        const { delay, duration, to, by, set, props, easing, repeat, reverse, callback }: TweenDataType = data;
+        let a = this;
         if (delay) a.delay(delay);
-        let arr: YJTween[] = [];
-        if (to) {
-            arr[arr.length] = this._new().to(duration, to, easing);
+        if (props) {
+            if (to) {
+                a.to(duration, props, easing);
+            } else if (by) {
+                a.by(duration, props, easing);
+            } else if (set) {
+                a.set(props);
+            }
+        } else {
+            let arr: YJTween[] = [];
+            if (to && typeof to == 'object') {
+                arr[arr.length] = this._new().to(duration, to as PropType, easing);
+            }
+            if (by && typeof by == 'object') {
+                arr[arr.length] = this._new().by(duration, by as PropType, easing);
+            }
+            if (set && typeof set == 'object') {
+                arr[arr.length] = this._new().set(set as PropType);
+            }
+            a.parallel(...arr);
         }
-        if (by) {
-            arr[arr.length] = this._new().by(duration, by, easing);
-        }
-        if (set) {
-            arr[arr.length] = this._new().set(set);
-        }
-        a = a.parallel(...arr);
-        if (reverse) a = a.reverse();
-        if (repeat != null) a = a.repeat(repeat);
-        if (call) a = a.call(call);
+        if (reverse) a.reverse();
+        if (repeat != null) a.repeat(repeat);
+        if (callback) a.call(callback);
         return a;
     }
 
@@ -244,15 +283,18 @@ class TweenActionBase {
 
 class TweenActionTo extends TweenActionBase {
     public readonly easingFn: EasingMethodFn;
+    protected _originProps: PropType;
     protected props: ActionProp[];
 
     constructor(target: Node, duration: number, props?: PropType, easing?: EasingMethod) {
         super(target, duration);
+        this._originProps = props;
         this.easingFn = getEasingFn(easing || EasingMethod.LINEAR);
-        this.initProps(props);
     }
 
     protected onUpdate(dt: number) {
+        if (!this.props)
+            this.initProps(this._originProps);
         this.props.forEach(prop => this.updateProp(prop));
     }
 
@@ -273,7 +315,7 @@ class TweenActionTo extends TweenActionBase {
     }
 
     protected resetProps() {
-        this.props.forEach(prop => {
+        this.props?.forEach(prop => {
             prop.cur = prop.start.slice();
         });
     }
@@ -284,7 +326,7 @@ class TweenActionTo extends TweenActionBase {
             prop.cur[i] = prop.start[i] + (prop.increment[i] || 0) * t;
         }
         switch (prop.type) {
-            case "position":
+            case "pos":
                 (prop.target as Node).setPosition(v3(...prop.cur));
                 break;
             case "angle":
@@ -318,7 +360,7 @@ class TweenActionTo extends TweenActionBase {
                     target: actionTarget,
                     type: type,
                     start: propValue,
-                    increment: this.propValueMinus(props[type], propValue),
+                    increment: this.propValueMinus([].concat(props[type]), propValue),
                     cur: propValue.slice()
                 };
             this.props[this.props.length] = action;
@@ -327,7 +369,7 @@ class TweenActionTo extends TweenActionBase {
 
     protected getPropTargetByType(type: string): TargetType {
         switch (type) {
-            case "position":
+            case "pos":
             case "angle":
             case "rotation":
             case "scale":
@@ -336,7 +378,7 @@ class TweenActionTo extends TweenActionBase {
             case "anchor":
                 return this.target.getComponent(UITransform);
             case "opacity":
-                return this.target.getComponent(UIOpacity);
+                return this.target.getComponent(UIOpacity) || this.target.addComponent(UIOpacity);
             default:
                 return null;
         }
@@ -344,7 +386,7 @@ class TweenActionTo extends TweenActionBase {
 
     protected getPropValueByType(target: TargetType, type: string): number[] {
         switch (type) {
-            case "position": {
+            case "pos": {
                 const p = (target as Node).position;
                 return [p.x, p.y, p.z];
             }
@@ -396,7 +438,7 @@ class TweenActionBy extends TweenActionTo {
                     target: actionTarget,
                     type: type,
                     start: propValue,
-                    increment: props[type].slice(),
+                    increment: (props[type] instanceof Array) ? props[type].slice() : [props[type]],
                     cur: propValue.slice()
                 };
             this.props[this.props.length] = action;
@@ -404,15 +446,22 @@ class TweenActionBy extends TweenActionTo {
     }
 
     protected resetProps() {
-        this.props.forEach(prop => {
-            prop.start = prop.cur.slice();
+        this.props?.forEach(prop => {
+            prop.start = this.propValueMinus(prop.cur, prop.increment);
         });
     }
 
     protected reverseProps() {
-        this.props.forEach(prop => {
-            prop.start = this.propValueMinus(prop.cur, prop.increment);
+        this.props?.forEach(prop => {
+            prop.start = prop.cur.slice();
         });
+    }
+}
+
+class TweenActionSet extends TweenActionTo {
+    constructor(target: Node, props: PropType) {
+        super(target, 0);
+        this._originProps = props;
     }
 }
 
@@ -443,7 +492,7 @@ class TweenActionRepeat extends TweenActionBase {
     }
 
     public update(dt: number) {
-        if (!isValid(this.target) || this.done) return;
+        if (!isValid(this.target) || this.done || this._actions.length == 0) return;
         this.onUpdate(dt);
     }
 
@@ -495,7 +544,7 @@ class TweenActionReverse extends TweenActionBase {
     }
 
     public update(dt: number) {
-        if (!isValid(this.target) || this.done) return;
+        if (!isValid(this.target) || this.done || this._actions.length == 0) return;
         this.onUpdate(dt);
     }
 
@@ -526,8 +575,8 @@ class TweenActionReverse extends TweenActionBase {
 }
 
 export type TargetType = Node | UITransform | UIOpacity;
-export type PropType = { position?: number[], angle?: number[], rotation?: number[], scale?: number[], size?: number[], anchor?: number[], opacity?: number[] };
-export type TweenDataType = { delay?: number, duration?: number, to?: PropType, by?: PropType, set?: PropType, easing?: EasingMethod, repeat?: number, reverse?: boolean, call?: () => void };
+export type PropType = { pos?: number[], angle?: number[], rotation?: number[], scale?: number[], size?: number[], anchor?: number[], opacity?: number[] };
+export type TweenDataType = { delay?: number, duration?: number, to?: number | PropType, by?: number | PropType, set?: number | PropType, props?: PropType, easing?: EasingMethod, repeat?: number, reverse?: boolean, callback?: () => void };
 export type ActionProp = { target: TargetType, type: string, start: number[], increment: number[], cur: number[] };
 // export type EasingType = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn";
 
@@ -628,4 +677,67 @@ export function getEasingFn(easingMethod: EasingMethod): EasingMethodFn {
         case EasingMethod.FADE: return easing.fade;
         default: return easing.linear;
     }
+}
+
+export const YJTweenTest = false;
+
+if (YJTweenTest) {
+    const a = {
+        map: YJTween,
+        init(node: Node) {
+            this.map = YJTween.tween(node);
+        },
+
+        start() {
+            return this.map.start();
+        },
+
+        stop() {
+            return this.map.stop();
+        },
+
+        setTweenData(data: any) {
+            this.map.parse(data);
+        },
+
+        play(endCall?: () => void) {
+            this.map.call(endCall).start();
+        }
+    };
+
+    js.mixin(no.TweenSet.prototype, a);
+    js.mixin(no.TweenSet, {
+        /**
+         * 播放缓动动画
+         * @param tweenSets 如果tweenSets是Array，则按并行处理
+         * @param endCall 执行完回调
+         * @param target 并行时用于处理目标销毁的情况
+         */
+        play(tweenSets: no.TweenSet | no.TweenSet[], endCall?: () => void, target?: any) {
+            if (tweenSets instanceof Array) {
+                let all = tweenSets.length,
+                    n = 0;
+                for (let i = 0; i < all; i++) {
+                    tweenSets[i].play(() => {
+                        n++;
+                    });
+                }
+                no.scheduleUpdateCheck(() => {
+                    return n === all;
+                }, () => {
+                    endCall?.();
+                }, target);
+            } else tweenSets.play(endCall);
+        },
+
+        stop(target: any) {
+            YJTween.stopAllByTarget(target);
+        },
+    });
+
+    no.parseTweenData = function (data: any, node: Node): no.TweenSet | no.TweenSet[] {
+        const _tween = new no.TweenSet(node);
+        _tween.setTweenData(data);
+        return _tween;
+    };
 }

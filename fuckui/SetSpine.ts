@@ -141,7 +141,7 @@ export class SetSpine extends FuckUi {
         if (path && this.curPath != path) {
             YJSpineManager.ins.get(path).then(res => {
                 if (!spine?.isValid) {
-                    no.assetBundleManager.decRef(res);
+                    YJSpineManager.ins.set(path);
                     return;
                 }
                 this.curPath = path;

@@ -38,13 +38,13 @@ export class SetCreateNode extends FuckUi {
     @property({ displayName: '仅新增' })
     onlyAdd: boolean = false;
 
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;
+
     // @property({ tooltip: '仅第一次创建时有创建间隔' })
     // onlyFirstTime: boolean = false;
     // @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     // wait: number = 0;
-
-    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
-    uiAnim: YJUIAnimationEffect = null;
 
     @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
     onComplete: no.EventHandlerInfo[] = [];

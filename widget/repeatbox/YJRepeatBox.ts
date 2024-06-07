@@ -59,6 +59,7 @@ export class YJRepeatBox extends YJDataWork {
                 else {
                     let node = i < this.data.count ? temp : fill;
                     if (node) {
+                        item.active = true;
                         let sf: any = node.getComponent(Sprite).spriteFrame;
                         if (sf) {
                             if (item.getComponent('YJDynamicTexture'))
@@ -70,7 +71,6 @@ export class YJRepeatBox extends YJDataWork {
                             sf = node.getComponent('SetSpriteFrameInSampler2D')['defaultName'];
                             item.getComponent('SetSpriteFrameInSampler2D')['setSpriteFrame'](sf);
                         }
-                        item.active = true;
                     } else item.active = false;
                 }
             }

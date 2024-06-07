@@ -22,7 +22,6 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
  *
  */
 
-
 @ccclass('SetList')
 @menu('NoUi/ui/SetList(设置列表:array)')
 @executeInEditMode()

@@ -38,5 +38,6 @@ export class YJGameData extends no.Data {
     public set(path: string, value: any, recursive = true) {
         super.set(path, value, recursive);
         this.updateStateChange();
+        return this;
     }
 }

@@ -90,7 +90,7 @@ export class YJRemotePackageDownloader {
             success(res: any) {
                 // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
                 if (res.statusCode === 200) {
-                    console.log('下载完成：', res.tempFilePath);
+                    console.log('wxDownload下载完成：', res.tempFilePath);
                     cb(res.tempFilePath);
                 }
             },

@@ -1,7 +1,6 @@
-
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { no } from '../no';
-import { ccclass, property, menu, Node, EDITOR, isValid } from '../yj';
+import { ccclass, property, menu, Node, isValid } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -50,6 +49,7 @@ export class SetNodesSwitch extends FuckUi {
 
     @property(SwitchInfo)
     infos: SwitchInfo[] = [];
+
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
 

@@ -1,3 +1,4 @@
+import { YJTween } from "./base/ani/YJTween";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
@@ -71,7 +72,26 @@ export namespace no {
         return macro.ENABLE_MULTI_TOUCH;
     }
 
-    let _scheduler: Scheduler = director.getScheduler();
+    const _scheduler: Scheduler = director.getScheduler();
+    // type _schedulerTargetCallbackType = { cb: (dt?: number) => void, callback: (dt: number) => void };
+    // const _schedulerTargetCallbackMap: { [uuid: string]: _schedulerTargetCallbackType[] } = {};
+
+    // function getTargetCallback(targetT: { 'uuid': string }, cb: (dt?: number) => void): (dt: number) => void {
+    //     const arr: _schedulerTargetCallbackType[] = _schedulerTargetCallbackMap[targetT.uuid];
+    //     if (arr) {
+    //         const a = itemOfArray<_schedulerTargetCallbackType>(arr, cb, 'cb');
+    //         if (a && _scheduler.isScheduled(a.callback, targetT)) {
+    //             unschedule(targetT, a.callback);
+    //             return a.callback;
+    //         }
+    //     }
+    //     return null;
+    // }
+
+    // function setTargetCallback(targetT: { 'uuid': string }, cb: (dt?: number) => void, callback: (dt: number) => void) {
+    //     _schedulerTargetCallbackMap[targetT.uuid] = _schedulerTargetCallbackMap[targetT.uuid] || [];
+    //     _schedulerTargetCallbackMap[targetT.uuid].push({ cb: cb, callback: callback });
+    // }
     /**
      * 定时器
      * @param cb 
@@ -84,6 +104,14 @@ export namespace no {
     export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
         let targetT = { uuid: target.uuid };
+        // if (repeat > 1) {
+            // const acb = getTargetCallback(targetT, cb);
+            // if (acb) {
+            //     _scheduler.schedule(acb, targetT, interval, repeat, delay, false);
+            //     return;
+            // }
+        // }
+
         let n: number = repeat;
         if (!endCb) {
             repeat--;
@@ -112,6 +140,8 @@ export namespace no {
 
         if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
+        // if (repeat > 1)
+            // setTargetCallback(targetT, cb, callback);
     }
     /**
      * 定时执行一次
@@ -146,6 +176,12 @@ export namespace no {
         }
         if (target && target.uuid == undefined) target.uuid = uuid();
         let targetT = { uuid: target.uuid };
+        // const acb = getTargetCallback(targetT, check);
+        // if (acb) {
+        //     _scheduler.schedule(acb, targetT, .1, maxTry, 0, false);
+        //     return;
+        // }
+
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
         let callback = (dt: number) => {
             if (!checkValid(target)) {
@@ -161,6 +197,7 @@ export namespace no {
         };
         if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
+        // setTargetCallback(targetT, check, callback);
     }
 
     /**
@@ -176,9 +213,15 @@ export namespace no {
             cb?.call(target);
             return;
         }
-        if (!_scheduler) _scheduler = director.getScheduler();
         if (target && target.uuid == undefined) target.uuid = uuid();
         let targetT = { uuid: target.uuid };
+
+        // const acb = getTargetCallback(targetT, cb);
+        // if (acb) {
+        //     _scheduler.schedule(acb, targetT, interval, macro.REPEAT_FOREVER, delay, false);
+        //     return;
+        // }
+
         let callback = (dt: number) => {
             if ((target && !checkValid(target)) || until.call(target)) {
                 unschedule(targetT, callback);
@@ -190,6 +233,7 @@ export namespace no {
         };
         if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
+        // setTargetCallback(targetT, cb, callback);
     }
 
     export function isScheduled(cb: any, target: any): boolean {
@@ -202,10 +246,13 @@ export namespace no {
      */
     export function unschedule(target: any, cb?: any) {
         if (!target || !target.uuid) return;
-        if (!cb)
+        if (!cb) {
             _scheduler?.unscheduleAllForTarget(target);
-        else
-            _scheduler.unschedule(cb, target);
+        } else {
+            // const acb = getTargetCallback({ uuid: target.uuid }, cb);
+            // if (!acb)
+                _scheduler.unschedule(cb, target);
+        }
     }
 
     /**
@@ -222,7 +269,6 @@ export namespace no {
     export function scheduleTargetUpdateFunction(target: any, priority: number) {
         if (!target || !target['update'] || typeof target['update'] != 'function') return;
         if (target.uuid == undefined) target.uuid = uuid();
-        if (!_scheduler) _scheduler = director.getScheduler();
         _scheduler.scheduleUpdate(target, priority, false);
     }
 
@@ -1653,8 +1699,12 @@ export namespace no {
 
     export class TweenSet {
 
-        private map: any;
+        protected map: any;
         constructor(node: Node) {
+            this.init(node);
+        }
+
+        private init(node: Node) {
             this.map = {};
             this.map[TweenSetType.Node] = tween(node);
             this.map[TweenSetType.Transform] = node.getComponent(UITransform) ? tween(node.getComponent(UITransform)) : null;
@@ -1724,7 +1774,7 @@ export namespace no {
                 if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
                 if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
 
-                const easing = data.easing;// ? (typeof data.easing == 'string' ? data.easing : getEasingFn(data.easing)) : null;
+                const easing = data.easing;
 
                 if (data.by) {
                     if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].by(data.duration, np, { easing: easing });
@@ -1761,9 +1811,18 @@ export namespace no {
             }
         }
 
-        private setCallback(cb: () => void, key: string) {
+        private setCallback(cb: any, key: string) {
             if (!cb) return;
-            this.map[key] = this.map[key]?.call(cb);
+            let callFn: any;
+            if (typeof cb == 'function') callFn = cb;
+            else if (typeof cb == 'object') {
+                const type: string = cb.type,
+                    args: any[] = cb.args || [];
+                callFn = () => {
+                    no.evn.emit(type, ...args);
+                }
+            };
+            this.map[key] = this.map[key]?.call(callFn);
         }
 
         public play(endCall?: () => void) {
@@ -1819,7 +1878,7 @@ export namespace no {
      *      },
      *      easing?: EasingMethod | "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
      *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
-     *      callback?: () => void
+     *      callback?: () => void | {type: string, args?:any[]}
      * }
      * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。
      * 默认属性变化为to
@@ -2450,6 +2509,25 @@ export namespace no {
                 return false;
             });
         }
+
+        /**
+         * 将所有配置设置为只读状态
+         */
+        // public unwritableJSON(json?: any) {
+        //     json = json || this._json.data;
+        //     for (const key in json) {
+        //         Object.defineProperty(json, key, {
+        //             writable: false
+        //         });
+        //         if (json[key] instanceof Array) {
+        //             json[key].forEach((a: any) => {
+        //                 this.unwritableJSON(a);
+        //             });
+        //         } else if (json[key] instanceof Object) {
+        //             this.unwritableJSON(json[key]);
+        //         }
+        //     }
+        // }
         /**
          * 获取全局临时数据
          * @param key
