@@ -396,6 +396,7 @@ export class YJUIAnimationEffect extends Component {
     }
 
     public a_play() {
+        if (!this.enabled) return;
         const node = this.target || this.node;
         if (this.onChildren) {
             this.playOnChildren(node);
@@ -404,11 +405,16 @@ export class YJUIAnimationEffect extends Component {
         }
     }
 
+    public a_stop() {
+        no.TweenSet.stop(this.node);
+    }
+
     /**
      * 播放
      * @param node 执行缓动的目标节点
      */
     public play(node: Node) {
+        if (!this.enabled) return;
         if (this.serialAnimationEffects.length > 0)
             this.playSerial(node, this.repeat);
         else
@@ -416,6 +422,7 @@ export class YJUIAnimationEffect extends Component {
     }
 
     public playOnChildren(node: Node) {
+        if (!this.enabled) return;
         const children = node.children;
         let i = 0;
         this.schedule(() => {
@@ -426,7 +433,6 @@ export class YJUIAnimationEffect extends Component {
     private playSerial(node: Node, repeat: number) {
         this._playSerial(node, this.serialAnimationEffects, () => {
             if (this.repeat == 0 || --repeat > 0) this.playSerial(node, repeat);
-            // else this.stopPreview = true;
         });
     }
 
@@ -444,30 +450,17 @@ export class YJUIAnimationEffect extends Component {
             return n === all;
         }, () => {
             if (this.repeat == 0 || --repeat > 0) this.playParallel(node, repeat);
-            // else this.stopPreview = true;
         }, this);
     }
 
     private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], onEnd?: () => void) {
         if (!isValid(node)) return;
-        // const a = serialAnimationEffects[idx];
-        // if (!a) {
-        //     onEnd?.();
-        //     return;
-        // }
-        // if (a.type == AnimType.None) {
-        //     return this._playSerial(node, serialAnimationEffects, ++idx, onEnd);
-        // }
-        // no.TweenSet.play(a.getTweenSet(node), () => this._playSerial(node, serialAnimationEffects, ++idx, onEnd));
-
-
         let a: any[] = [];
         serialAnimationEffects.forEach(b => {
             a = a.concat(b.getTweenSet(node));
         });
         no.TweenSet.play(no.parseTweenData(a, node), () => {
             onEnd?.();
-            // else this.stopPreview = true;
         });
     }
 }

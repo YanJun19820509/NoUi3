@@ -58,7 +58,7 @@ export class YJScrollMessage extends YJPanel {
 
     public setInfo(msgs: string | string[], top: boolean) {
         if (!top)
-            this._list = this._list.concat(msgs);
+            this._list = [].concat(this._list, msgs);
         else {
             this._list = [].concat(msgs, this._list);
         }

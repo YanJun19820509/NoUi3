@@ -28,8 +28,6 @@ import { FuckUi } from './FuckUi';
 @ccclass('SetEffect')
 @menu('NoUi/ui/SetEffect(设置shader:object)')
 export class SetEffect extends FuckUi {
-    @property({ min: 0, step: 1, displayName: '合图属性下标', tooltip: '区分同一材质中多个合图中的纹理需要对应的其在合图中的rect属性，如idx=0，着色器中对应属性为factRect0' })
-    idx: number = 0;
     protected _renderComp: UIRenderer;
 
     protected onDataChange(data: any) {
@@ -44,8 +42,8 @@ export class SetEffect extends FuckUi {
     protected setMaterial(path: string, defines: any, properties: any) {
         const a = this.getComponent(YJVertexColorTransition);
         if (a && a.enabled) {
-            this.setVertex(defines, properties);
-            this.work();
+            a.setEffect(defines, properties);
+            // this.work();
         }
         else if (!path || this._renderComp.material.effectName == `../${path}`) {
             this.setProperties(this._renderComp.material, defines, properties);
@@ -62,10 +60,6 @@ export class SetEffect extends FuckUi {
                 this.work();
             });
         else this.reset();
-    }
-
-    private setVertex(defines: any, properties: any) {
-        this.getComponent(YJVertexColorTransition).setEffect(defines, properties);
     }
 
     protected setProperties(material?: Material, defines?: any, properties?: any) {
@@ -111,11 +105,11 @@ export class SetEffect extends FuckUi {
             texture = f.texture as Texture2D;
         }
 
-        let fr = `factRect${this.idx}`;
+        let fr = `factRect`;
         if (no.materialHasProperty(material, 0, 0, fr))
             material.setProperty(fr, new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
 
-        let r = `ratio${this.idx}`;
+        let r = `ratio`;
         if (no.materialHasProperty(material, 0, 0, r))
             material.setProperty(r, texture.width / texture.height);
     }

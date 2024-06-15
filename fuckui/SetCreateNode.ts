@@ -204,7 +204,7 @@ export class SetCreateNode extends FuckUi {
     private initItem(item: Node) {
         no.position(item, v3(0, 0));
         // no.visible(cacheItem, false);
-        if (this.uiAnim) {
+        if (this.uiAnim?.enabled) {
             const box = no.newNode('box');
             const layout = item.getComponent(Layout);
             if (!layout) {
@@ -236,7 +236,7 @@ export class SetCreateNode extends FuckUi {
     private setItem(data: any[], start: number, i = 0) {
         if (i >= data.length) return;
         let item = this.container.children[start + i];
-        if (this.uiAnim) item = item.children[0];
+        if (this.uiAnim?.enabled) item = item.children[0];
         if (data[i] == null) {
             no.visible(item, false);
             this.setItem(data, start, ++i);
@@ -248,7 +248,7 @@ export class SetCreateNode extends FuckUi {
             a.init();
         }
         no.visible(item, true);
-        if (this.uiAnim) {
+        if (this.uiAnim?.enabled) {
             this.uiAnim.play(item);
             this.scheduleOnce(() => {
                 this.setItem(data, start, ++i);
@@ -274,6 +274,7 @@ export class SetCreateNode extends FuckUi {
         }
         if (!item.parent) item.parent = this.container;
         else a?.init();
+        no.visible(item, true);
     }
 
     ///////////////////////////EDITOR///////////////

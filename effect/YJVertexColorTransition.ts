@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, UIRenderer, Vec4, Sprite, math, UIOpacity, Color, Label } from '../yj';
+import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color } from '../yj';
 import { no } from '../no';
 
 /**
@@ -18,7 +18,7 @@ import { no } from '../no';
 @disallowMultiple()
 export class YJVertexColorTransition extends Component {
 
-    private renderComp: UIRenderer;
+    private renderComp: Sprite;
     /**
      * _data数据说明，
      * x用来存放宏定义的类型，为负值，非负则为正常状态，整数部分为 color相关，小数部分为uv 相关
@@ -27,19 +27,19 @@ export class YJVertexColorTransition extends Component {
     */
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
-    private _originColor: Color;
     private _defineIds: number[][] = [[], []];
+    private _dirtyVersion: number;
 
     onLoad() {
         if (!this.renderComp)
-            this.renderComp = this.getComponent(UIRenderer);
+            this.renderComp = this.getComponent(Sprite);
         if (!this.renderComp) return;
     }
 
     public setEffect(defines: any, properties?: number[]) {
         if (!this.enabled) return;
         if (!this.renderComp)
-            this.renderComp = this.getComponent(UIRenderer);
+            this.renderComp = this.getComponent(Sprite);
         if (!this.renderComp || !defines) return;
         this._needUpdate = true;
         this._setDefines(defines);
@@ -71,18 +71,6 @@ export class YJVertexColorTransition extends Component {
         this._data.z = properties[1] || this._data.z;
     }
 
-    private _setBMFontGray(v: boolean) {
-        //bmfont的顶点数据无法修改，通过改变color来实现bmfont置灰效果
-        if (!this._originColor) this._originColor = this.renderComp.color.clone();
-        let opacity = this.opacity;
-        if (opacity == null) opacity = 1;
-        this._originColor.a = opacity * 255;
-        if (v) {
-            let gray = 0.3 * this._originColor.r + 0.29 * this._originColor.g + 0.07 * this._originColor.b;
-            this.renderComp.color = math.color(gray, gray, gray, this._originColor.a);
-        } else this.renderComp.color = this._originColor;
-    }
-
     private _setDefines(defines: any) {
         for (let key in defines) {
             let v = defines[key];
@@ -96,10 +84,6 @@ export class YJVertexColorTransition extends Component {
                 no.removeFromArray(ids, id);
             }
         }
-        // if (this.renderComp instanceof Label && this.renderComp.font instanceof BitmapFont && offset == 0 && id == 2) {
-        //     this._setBMFontGray(v);
-        //     return;
-        // }
         let type: number[] = [];
         this._defineIds.forEach((ids, i) => {
             let sum = 0;
@@ -116,33 +100,32 @@ export class YJVertexColorTransition extends Component {
         if (!this.renderComp.renderData) {
             return;
         }
-        if (this.renderComp instanceof Sprite) {
-            switch (this.renderComp.type) {
-                case Sprite.Type.SIMPLE:
-                    this._updateSimpleVB();
-                    break;
-                case Sprite.Type.TILED:
-                    this._updateTiledVB();
-                    break;
-                case Sprite.Type.SLICED:
-                    this._updateSlicedVB();
-                    break;
-                case Sprite.Type.FILLED:
-                    if (this.renderComp.fillType === Sprite.FillType.RADIAL) {
-                        this._updateRadiaFilledVB();
-                    } else {
-                        this._updateBarFilledVB();
-                    }
-                    break;
-            }
-        } else if (this.renderComp instanceof Label) {
-            this._updateBMFontUVs();
+        this._dirtyVersion = this.renderComp._dirtyVersion;
+        switch (this.renderComp.type) {
+            case Sprite.Type.SIMPLE:
+                this._updateSimpleVB();
+                break;
+            case Sprite.Type.TILED:
+                this._updateTiledVB();
+                break;
+            case Sprite.Type.SLICED:
+                this._updateSlicedVB();
+                break;
+            case Sprite.Type.FILLED:
+                if (this.renderComp.fillType === Sprite.FillType.RADIAL) {
+                    this._updateRadiaFilledVB();
+                } else {
+                    this._updateBarFilledVB();
+                }
+                break;
         }
     }
 
     lateUpdate() {
         if (!this.renderComp || !this._needUpdate) return;
-        this._updateVB();
+        if (this.renderComp._dirtyVersion !== this._dirtyVersion) {
+            this._updateVB();
+        }
     }
 
     private _updateSimpleVB() {
@@ -236,26 +219,6 @@ export class YJVertexColorTransition extends Component {
         const colorB = color.z;
         const colorA = this.opacity;
         for (let i = 0; i < 4; i++) {
-            vData[colorOffset] = colorR;
-            vData[colorOffset + 1] = colorG;
-            vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
-            colorOffset += stride;
-        }
-    }
-
-    private _updateBMFontUVs() {
-        const renderData = this.renderComp.renderData!;
-        const vData = renderData.chunk.vb;
-        const vertexCount = renderData.vertexCount;
-        const stride = renderData.floatStride;
-        let colorOffset = 5;
-        const color = this._data;
-        const colorR = color.x;
-        const colorG = color.y;
-        const colorB = color.z;
-        const colorA = this.opacity;
-        for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;

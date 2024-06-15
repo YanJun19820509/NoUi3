@@ -65,17 +65,16 @@ export class SetProgress extends FuckUi {
             this.isFirst = false;
         } else {
             this.dir = data > this.progressBar.progress ? 1 : -1;
-            no.scheduleForever(this.setProgressByFrame, 0, this);
         }
         this.lastValue = data;
     }
 
-    private setProgressByFrame(dt: number) {
+    lateUpdate(dt: number) {
+        if (this.targetValue == this.progressBar.progress) return;
         if (this.targetValue >= 0) {
             let p = this.progressBar.progress + this.speed * this.dir * dt;
             if (this.dir > 0 && p >= this.targetValue || this.dir < 0 && p <= this.targetValue) {
                 p = this.targetValue;
-                no.unschedule(this, this.setProgressByFrame);
             }
             this.progressBar.progress = p;
         }

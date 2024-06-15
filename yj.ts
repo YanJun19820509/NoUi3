@@ -3,8 +3,10 @@ import * as env from 'cc/env';
 import { AssetInfo } from './@types/packages/asset-db/@types/public';
 
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
-export let { DEBUG, WECHAT, EDITOR, JSB } = env;
-
+export let { WECHAT, EDITOR, JSB } = env;
+export const DEBUG = env.DEBUG;
+export type CCObject = _cc.CCObject;
+export const CCObject = _cc.CCObject;
 export type _AssetInfo = AssetInfo;
 export interface Component extends _cc.Component { };
 export class Component extends _cc.Component { };

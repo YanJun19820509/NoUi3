@@ -247,7 +247,7 @@ export class SetList extends FuckUi {
         no.sortArray(this.content.children, (a, b) => {
             return a['__dataIndex'] - b['__dataIndex'];
         });
-        if (this.uiAnim) {
+        if (this.uiAnim?.enabled) {
             this.setItem(0);
         } else {
             const n = this.content.children.length;
@@ -268,7 +268,7 @@ export class SetList extends FuckUi {
             this.setItemData(item, this.listData[data_idx]);
         }
         no.visible(item.children[0], i < this.allNum);
-        if (this.uiAnim) {
+        if (this.uiAnim?.enabled) {
             this.uiAnim.play(item.children[0]);
             this.scheduleOnce(() => {
                 this.setItem(++i);

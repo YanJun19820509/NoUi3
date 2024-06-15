@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont, sys } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont, sys, color } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
@@ -66,7 +66,7 @@ export class YJCharLabel extends Sprite {
     }
     @property({ type: Color, visible() { return false; }, override: true })
     public get color(): Color {
-        return Color.WHITE.clone();
+        return color(255, 255, 255, 255);
     }
     public set color(v: Color) {
 
@@ -117,6 +117,14 @@ export class YJCharLabel extends Sprite {
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
         console.log(this._fontUuid)
+    }
+    @property
+    public get useSys(): boolean {
+        return false;
+    }
+
+    public set useSys(v: boolean) {
+        this._foitnFamily = 'Arial';
     }
     //系统字体
     @property({ readonly: true })
@@ -429,8 +437,10 @@ export class YJCharLabel extends Sprite {
     onLoad() {
         super.onLoad();
         if (EDITOR) return;
-        if (this.packToAtlas) {
-            if (this.dynamicAtlas) this.customMaterial = this.dynamicAtlas.customMaterial;
+        if (this.dynamicAtlas) {
+            if (this.packToAtlas || !this.customMaterial) {
+                this.customMaterial = this.dynamicAtlas.customMaterial;
+            }
         }
         if (this._needSet)
             this.setLabel();

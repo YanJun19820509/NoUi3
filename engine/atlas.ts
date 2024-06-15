@@ -491,7 +491,7 @@ js.mixin(dynamicAtlasManager['__proto__'], {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;
         //微信端不合图
-        if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
+        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
         let a: any = comp.getComponent('YJDynamicTexture');
         if (!a) return;
         if (frame?.original) return;

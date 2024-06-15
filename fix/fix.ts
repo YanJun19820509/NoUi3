@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, Asset, NATIVE } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -22,10 +22,10 @@ js.mixin(StencilManager.prototype, {
 });
 
 //渲染
-const _a = setInterval(function () {
+const _a = no.setInterval(function () {
     const batcher2D = director.root['_batcher'];
     if (batcher2D) {
-        clearInterval(_a);
+        no.clearInterval(_a);
         const _walk = batcher2D.walk;
         js.mixin(batcher2D, {
             walk(node: Node, level = 0) {

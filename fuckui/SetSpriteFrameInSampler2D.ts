@@ -6,7 +6,6 @@ import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJi18n } from '../base/YJi18n';
-import { CCString } from 'cc';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 
 /**
@@ -115,7 +114,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private _data: any;
     onDataChange(data: string) {
         this._data = data;
-        if (this.uiAnim) this.uiAnim.a_play();
+        if (this.uiAnim?.enabled) this.uiAnim.a_play();
         else this.changeData();
     }
 
@@ -129,8 +128,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.setSingleSpriteFrame(data);
             return;
         }
-        let name = String(data).split('/').pop();
-        this.setSpriteFrame(name);
+        // let name = String(data).split('/').pop();
+        this.setSpriteFrame(data);
     }
 
     public setSpriteFrame(spriteName: string) {

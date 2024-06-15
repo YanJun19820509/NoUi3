@@ -349,7 +349,7 @@ export class YJRemotePackageDownloader {
         else {
             const bundleUrl = this.bundleUrl(bundleName);
             no.assetBundleManager.loadRemoteBundle(bundleUrl, { version: this.bundleVer(bundleName) }, () => {
-                setTimeout(() => {
+                no.setTimeout(() => {
                     this.loadRemoteBundleByJob();
                 }, 100);
             });

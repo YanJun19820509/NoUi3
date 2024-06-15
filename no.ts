@@ -1,9 +1,9 @@
-import { YJTween } from "./base/ani/YJTween";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
-    Layers
+    Layers,
+    CCObject
 } from "./yj";
 
 
@@ -72,76 +72,86 @@ export namespace no {
         return macro.ENABLE_MULTI_TOUCH;
     }
 
+    /**
+     * 创建唯一标识
+     * @returns 
+     */
+    let _uuidCount = 0;
+    export function uuid(obj?: any): string {
+        if (obj && obj['_uuid']) return obj['_uuid'];
+        // return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        //     var r = floor(random() * 16),
+        //         v = c == 'x' ? r : (r & 0x3 | 0x8);
+        //     return v.toString(16);
+        // });
+        return ++_uuidCount + '';
+    }
+
     const _scheduler: Scheduler = director.getScheduler();
-    // type _schedulerTargetCallbackType = { cb: (dt?: number) => void, callback: (dt: number) => void };
-    // const _schedulerTargetCallbackMap: { [uuid: string]: _schedulerTargetCallbackType[] } = {};
+    type _schedulerTargetCallbackType = { target: any, cb: (dt?: number) => void, callback: (dt: number) => void, repeat?: number, endCall?: () => void };
+    const _schedulerTargetCallbackMap: { [uuid: string]: _schedulerTargetCallbackType[] } = {};
 
-    // function getTargetCallback(targetT: { 'uuid': string }, cb: (dt?: number) => void): (dt: number) => void {
-    //     const arr: _schedulerTargetCallbackType[] = _schedulerTargetCallbackMap[targetT.uuid];
-    //     if (arr) {
-    //         const a = itemOfArray<_schedulerTargetCallbackType>(arr, cb, 'cb');
-    //         if (a && _scheduler.isScheduled(a.callback, targetT)) {
-    //             unschedule(targetT, a.callback);
-    //             return a.callback;
-    //         }
-    //     }
-    //     return null;
-    // }
+    function getTargetCallback(uuid: string, cb: (dt?: number) => void): _schedulerTargetCallbackType {
+        const arr: _schedulerTargetCallbackType[] = _schedulerTargetCallbackMap[uuid];
+        if (arr) {
+            return itemOfArray<_schedulerTargetCallbackType>(arr, cb, 'cb');
+        }
+        return null;
+    }
 
-    // function setTargetCallback(targetT: { 'uuid': string }, cb: (dt?: number) => void, callback: (dt: number) => void) {
-    //     _schedulerTargetCallbackMap[targetT.uuid] = _schedulerTargetCallbackMap[targetT.uuid] || [];
-    //     _schedulerTargetCallbackMap[targetT.uuid].push({ cb: cb, callback: callback });
-    // }
+    function setTargetCallback(uuid: string, target: any, cb: (dt?: number) => void, callback: (dt: number) => void, repeat?: number, endCall?: () => void) {
+        _schedulerTargetCallbackMap[uuid] = _schedulerTargetCallbackMap[uuid] || [];
+        _schedulerTargetCallbackMap[uuid].push({ target: target, cb: cb, callback: callback, repeat: repeat, endCall: endCall });
+    }
+
+    function removeTargetCallback(uuid: string, cb: (dt?: number) => void) {
+        const arr: _schedulerTargetCallbackType[] = _schedulerTargetCallbackMap[uuid];
+        if (arr) {
+            const i = indexOfArray(arr, cb, 'cb');
+            if (i > -1) {
+                const a = arr[i];
+                _scheduler.unschedule(a.callback, { uuid: uuid });
+                arr.splice(i, 1);
+                a.callback = null;
+                return true;
+            }
+        }
+        return false;
+    }
     /**
      * 定时器
      * @param cb 
      * @param interval 秒
-     * @param repeat 
+     * @param repeat 如果为macro.REPEAT_FOREVER，请使用scheduleForever
      * @param delay 秒
      * @param target 
      * @param endCb 定时结束时回调
      */
     export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
-        let targetT = { uuid: target.uuid };
-        // if (repeat > 1) {
-            // const acb = getTargetCallback(targetT, cb);
-            // if (acb) {
-            //     _scheduler.schedule(acb, targetT, interval, repeat, delay, false);
-            //     return;
-            // }
-        // }
-
-        let n: number = repeat;
-        if (!endCb) {
-            repeat--;
-        }
+        const _uuid = target.uuid;
+        unschedule(_uuid, cb);
 
         let callback = (dt: number) => {
-            if (n > 0) {
-                if (!target)
-                    cb?.(dt);
-                else if (checkValid(target)) {
-                    cb?.call(target, dt);
-                } else {
-                    unschedule(targetT, callback);
-                    targetT = null;
-                    callback = null;
-                    n = null;
-                    return;
-                }
+            const a = getTargetCallback(_uuid, cb);
+            if (a.repeat > 0) {
+                --a.repeat;
+            } else {
+                endCb?.call(a.target);
+                unschedule(_uuid, cb);
+                return;
             }
-
-            if (endCb && n == 0) {
-                endCb.call(target);
+            if (!a.target)
+                cb?.(dt);
+            else if (checkValid(a.target)) {
+                cb?.call(a.target, dt);
+            } else {
+                unschedule(_uuid, cb);
+                return;
             }
-            --n;
         };
-
-        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
-        _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
-        // if (repeat > 1)
-            // setTargetCallback(targetT, cb, callback);
+        setTargetCallback(_uuid, target, cb, callback, repeat);
+        _scheduler.schedule(callback, { uuid: _uuid }, interval, repeat, delay, false);
     }
     /**
      * 定时执行一次
@@ -159,7 +169,23 @@ export namespace no {
      * @param target 
      */
     export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
-        schedule(cb, interval, macro.REPEAT_FOREVER, 0, target);
+        if (target && target.uuid == undefined) target.uuid = uuid();
+        const _uuid = target.uuid;
+        unschedule(_uuid, cb);
+
+        let callback = (dt: number) => {
+            const a = getTargetCallback(_uuid, cb);
+            if (!a.target)
+                cb?.(dt);
+            else if (checkValid(a.target)) {
+                cb?.call(a.target, dt);
+            } else {
+                unschedule(_uuid, cb);
+                return;
+            }
+        };
+        setTargetCallback(_uuid, target, cb, callback);
+        _scheduler.schedule(callback, { uuid: _uuid }, interval, macro.REPEAT_FOREVER, 0, false);
     }
     /**
      * 每帧执行target的check方法，当返回true时执行onChecked并停止
@@ -175,29 +201,22 @@ export namespace no {
             return;
         }
         if (target && target.uuid == undefined) target.uuid = uuid();
-        let targetT = { uuid: target.uuid };
-        // const acb = getTargetCallback(targetT, check);
-        // if (acb) {
-        //     _scheduler.schedule(acb, targetT, .1, maxTry, 0, false);
-        //     return;
-        // }
+        let _uuid = target.uuid;
+
+        unschedule(_uuid, check);
 
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
         let callback = (dt: number) => {
-            if (!checkValid(target)) {
-                unschedule(targetT, callback);
-                targetT = null;
-                callback = null;
-            } else if (check.call(target, dt)) {
-                onChecked.call(target);
-                unschedule(targetT, callback);
-                targetT = null;
-                callback = null;
+            const a = getTargetCallback(_uuid, check);
+            if (!checkValid(a.target)) {
+                unschedule(_uuid, check);
+            } else if (check.call(a.target, dt)) {
+                onChecked.call(a.target);
+                unschedule(_uuid, check);
             }
         };
-        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
-        _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
-        // setTargetCallback(targetT, check, callback);
+        setTargetCallback(_uuid, target, check, callback);
+        _scheduler.schedule(callback, { uuid: _uuid }, .1, maxTry, 0, false);
     }
 
     /**
@@ -214,28 +233,28 @@ export namespace no {
             return;
         }
         if (target && target.uuid == undefined) target.uuid = uuid();
-        let targetT = { uuid: target.uuid };
+        const _uuid = target.uuid;
 
-        // const acb = getTargetCallback(targetT, cb);
-        // if (acb) {
-        //     _scheduler.schedule(acb, targetT, interval, macro.REPEAT_FOREVER, delay, false);
-        //     return;
-        // }
+        unschedule(_uuid, cb);
 
         let callback = (dt: number) => {
-            if ((target && !checkValid(target)) || until.call(target)) {
-                unschedule(targetT, callback);
-                targetT = null;
-                callback = null;
+            const a = getTargetCallback(_uuid, cb);
+            if ((a.target && !checkValid(a.target)) || until.call(a.target)) {
+                unschedule(_uuid, cb);
             } else {
-                cb?.call(target, dt);
+                cb?.call(a.target, dt);
             }
         };
-        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
-        _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
-        // setTargetCallback(targetT, cb, callback);
+        setTargetCallback(_uuid, target, cb, callback);
+        _scheduler.schedule(callback, { uuid: _uuid }, interval, macro.REPEAT_FOREVER, delay, false);
     }
 
+    /**
+     * 这个方法比较耗性能，不要频繁使用
+     * @param cb 
+     * @param target 
+     * @returns 
+     */
     export function isScheduled(cb: any, target: any): boolean {
         return _scheduler.isScheduled(cb, target);
     }
@@ -245,13 +264,13 @@ export namespace no {
      * @param target 
      */
     export function unschedule(target: any, cb?: any) {
-        if (!target || !target.uuid) return;
+        const _uuid = target?.uuid || target;
+        if (!_uuid) return;
         if (!cb) {
-            _scheduler?.unscheduleAllForTarget(target);
+            _scheduler?.unscheduleAllForTarget({ uuid: _uuid });
         } else {
-            // const acb = getTargetCallback({ uuid: target.uuid }, cb);
-            // if (!acb)
-                _scheduler.unschedule(cb, target);
+            if (!removeTargetCallback(_uuid, cb))
+                _scheduler.unschedule(cb, { uuid: _uuid });
         }
     }
 
@@ -281,6 +300,73 @@ export namespace no {
         if (!target) return;
         _scheduler?.unscheduleUpdate(target);
     }
+
+    /**
+     * 暂停schedule
+     * @param target 
+     * @returns 
+     */
+    export function pauseSchedule(target: any) {
+        if (!target) return;
+        _scheduler?.pauseTarget(target);
+    }
+
+    /**
+     * 继续schedule
+     * @param target 
+     * @returns 
+     */
+    export function resumeSchedule(target: any) {
+        if (!target) return;
+        _scheduler?.resumeTarget(target);
+    }
+
+    /**
+     * 替代原生setTimeout方法
+     * @param callback 
+     * @param ms 
+     * @param target 如果target为组件，需要注意不要同时调用target的schedule方法，否则在clearInterval时很可能会取消target的schedule
+     * @returns 
+     */
+    export function setTimeout(callback: () => void, ms = 0, target?: any) {
+        const a = target || { uuid: uuid() };
+        scheduleOnce(callback, ms / 1000, a);
+        return a.uuid;
+    }
+
+    /**
+     * 替代原生clearTimeout方法
+     * @param handler 
+     * @returns 
+     */
+    export function clearTimeout(handler: string) {
+        if (!handler) return;
+        unschedule(handler);
+    }
+
+    /**
+     * 替代原生setInterval方法
+     * @param callback 
+     * @param ms 
+     * @param target 如果target为组件，需要注意不要同时调用target的schedule方法，否则在clearInterval时很可能会取消target的schedule
+     * @returns 
+     */
+    export function setInterval(callback: () => void, ms = 0, target?: any) {
+        const a = target || { uuid: uuid() };
+        scheduleForever(callback, ms / 1000, a);
+        return a.uuid;
+    }
+
+    /**
+     * 替代原生clearInterval方法
+     * @param handler 
+     * @returns 
+     */
+    export function clearInterval(handler: string) {
+        if (!handler) return;
+        unschedule(handler);
+    }
+
     class Event {
         private _map: any;
 
@@ -598,21 +684,6 @@ export namespace no {
 
     export function logTimeEnd(type?: string) {
         console.timeEnd(`#NoUi#time-${type ? type : ''}`);
-    }
-
-    /**
-     * 创建唯一标识
-     * @returns 
-     */
-    let _uuidCount = 0;
-    export function uuid(obj?: any): string {
-        if (obj && obj['_uuid']) return obj['_uuid'];
-        // return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        //     var r = floor(random() * 16),
-        //         v = c == 'x' ? r : (r & 0x3 | 0x8);
-        //     return v.toString(16);
-        // });
-        return ++_uuidCount + '';
     }
 
     /**
@@ -2620,6 +2691,7 @@ export namespace no {
         public setPrefabNode(k: string, prefab: Prefab) {
             console.log('setPrefabNode', k);
             this.cacheAsset(k, prefab);
+            this.cacheAsset(prefab.uuid, prefab);
         }
 
         /**
@@ -3296,7 +3368,11 @@ export namespace no {
          * @param onComplete 
          */
         public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
-            if (requests.length == 0) return;
+            if (requests.length == 0) {
+                onProgress?.(1);
+                onComplete?.([]);
+                return;
+            }
             assetManager.loadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
             }, (e, items) => {
@@ -3451,16 +3527,15 @@ export namespace no {
          */
         public loadFolderFilesToCache(folder: string, onComplete?: () => void) {
             const p = this.assetPath(folder);
+            no.log('loadFolderFilesToCache', p);
             if (p.bundle) {
                 const bundle = this.getLoadedBundle(p.bundle),
                     infos = bundle.getDirWithPath(p.path),
-                    base = 'db://' + bundle.base;
-                let requests: { path: string, bundle: string, type: typeof Asset | typeof ImageAsset }[] = [];
+                    base = 'db://' + bundle.base.replace(this.server + 'remote', 'assets');
+                let requests: { path?: string, uuid?: string }[] = [];
                 infos.forEach(a => {
                     if (a.uuid.indexOf('@') == -1) {
-                        const assetType = this.getAssetTypeByName(a.ctor.name);
-                        if (!assetType) return;
-                        requests[requests.length] = { path: a.path, bundle: p.bundle, type: assetType };
+                        requests[requests.length] = { path: a.path, uuid: a.uuid };
                     }
                 });
                 this.loadAnyFiles(requests, null, items => {
@@ -3472,7 +3547,7 @@ export namespace no {
                             this.cacheImage(item);
                     });
                     onComplete?.();
-                });;
+                });
             }
         }
 
@@ -4830,8 +4905,9 @@ export namespace no {
      * @returns 
      */
     export function checkValid(target: any): boolean {
-        if (target instanceof Component || target instanceof Node) return isValid(target, true);
-        return typeof target !== 'undefined' && target !== null;
+        if (target == undefined || target == null) return false;
+        if (target instanceof CCObject) return isValid(target, true);
+        return true;
     }
 
     /**

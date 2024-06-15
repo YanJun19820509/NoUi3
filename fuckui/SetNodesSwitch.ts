@@ -56,7 +56,7 @@ export class SetNodesSwitch extends FuckUi {
     private _data: string;
     protected onDataChange(data: any) {
         this._data = String(data);
-        if (this.uiAnim) this.uiAnim.a_play();
+        if (this.uiAnim?.enabled) this.uiAnim.a_play();
         else this.check();
     }
 

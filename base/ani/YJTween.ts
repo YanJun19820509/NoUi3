@@ -679,7 +679,7 @@ export function getEasingFn(easingMethod: EasingMethod): EasingMethodFn {
     }
 }
 
-export const YJTweenTest = false;
+export const YJTweenTest = true;
 
 if (YJTweenTest) {
     const a = {

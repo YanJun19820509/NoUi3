@@ -358,7 +358,7 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                 case 'Component':
                     if (val[0] instanceof Array) {
                         out = [];
-                        const _a = setInterval(() => {
+                        const _a = no.setInterval(() => {
                             out.length = 0;
                             for (let i = 0, n = val.length; i < n; i++) {
                                 const v = val[i];
@@ -370,16 +370,16 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                             }
                             if (out.length == val.length) {
                                 cb(out);
-                                clearInterval(_a);
+                                no.clearInterval(_a);
                             }
                         }, 1);
                     } else {
                         const node = this._nodes[val[0]];
-                        const _a = setInterval(() => {
+                        const _a = no.setInterval(() => {
                             const comp = node.getComponent(val[1]);
                             if (comp) {
                                 cb(comp);
-                                clearInterval(_a);
+                                no.clearInterval(_a);
                             }
                         }, 1);
                     }
