@@ -2,6 +2,7 @@
 import { ccclass, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from '../yj';
 import { no } from '../no';
 import { Atlas } from './atlas';
+import { YJWindowManager } from '../base/node/YJWindowManager';
 
 /**
  * Predefined variables
@@ -33,7 +34,7 @@ export class YJShowDynamicAtlasDebug {
         this.list = {};
         this.names = [];
         no.evn.on('close_dynamic_atlas_debug_node', () => {
-            this.showDebug();
+            this._clearDebugNode();
         }, this);
     }
 
@@ -51,34 +52,42 @@ export class YJShowDynamicAtlasDebug {
 
     public showDebug(name?: string) {
         if (!no.isDebug()) return;
-        this._clearDebugNode();
-        if (name) {
-            let texture = this.list[name]?._texture;
-            if (!texture) return;
-            if (!this._debugNode || !this._debugNode.isValid) {
+        if (!name) {
+            return;
+        }
+        let texture = this.list[name]?._texture;
+        if (!texture) {
+            no.warn('show atlas not found', name);
+            return;
+        }
+        no.warn('show atlas', name, {
+            width: texture.width,
+            height: texture.height,
+            mem: texture.width * texture.height * 4 / 1024 / 1024 + 'M'
+        });
+        if (!this._debugNode || !this._debugNode.isValid) {
 
-                no.assetBundleManager.loadPrefab('NoUi3/engine/dynamic_atlas_debug_node', item => {
-                    this._debugNode = instantiate(item);
-                    this._debugNode.parent = find('Canvas');
-                    let scrollView = this._debugNode.getComponentInChildren(ScrollView);
+            no.assetBundleManager.loadPrefab('NoUi3/engine/dynamic_atlas_debug_node', item => {
+                this._debugNode = instantiate(item);
+                this._debugNode.parent = find('Canvas');
+                let scrollView = this._debugNode.getComponentInChildren(ScrollView);
 
-                    no.width(scrollView.content, texture.width);
-                    no.height(scrollView.content, texture.height);
+                no.width(scrollView.content, texture.width);
+                no.height(scrollView.content, texture.height);
 
-                    let node = new Node('ATLAS');
-                    node.addComponent(UITransform).setAnchorPoint(0, 1);
-                    node.layer = Layers.Enum.UI_2D;
-                    no.width(node, texture.width);
-                    no.height(node, texture.height);
-                    let spriteFrame = new SpriteFrame();
-                    spriteFrame.texture = texture;
+                let node = new Node('ATLAS');
+                node.addComponent(UITransform).setAnchorPoint(0, 1);
+                node.layer = Layers.Enum.UI_2D;
+                no.width(node, texture.width);
+                no.height(node, texture.height);
+                let spriteFrame = new SpriteFrame();
+                spriteFrame.texture = texture;
 
-                    let sprite = node.addComponent(Sprite);
-                    sprite.spriteFrame = spriteFrame;
+                let sprite = node.addComponent(Sprite);
+                sprite.spriteFrame = spriteFrame;
 
-                    node.parent = scrollView.content;
-                });
-            }
+                node.parent = scrollView.content;
+            });
         }
     }
 
@@ -105,6 +114,14 @@ export class YJShowDynamicAtlasDebug {
     }
 
     public showNewestAtlas(): any {
+        const topPanel = YJWindowManager.getTopPanel(3);
+        if (topPanel) {
+            const name = no.getPrototype(topPanel.getComponentInChildren('PopuPanelContent') || topPanel.getComponent('YJPanel')).name || topPanel.name;
+            if (this.names.includes(name)) {
+                this.showDebug(name);
+                return;
+            }
+        }
         this.showDebug(this.names[this.names.length - 1]);
     }
 }

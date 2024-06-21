@@ -38,7 +38,7 @@ export class YJBitmapFont extends Component {
             label.lineHeight = v.fntConfig.commonHeight;
         }
         this.setSize();
-        this.resetFont();
+        this.setFont(v);
     }
     @property
     public get size(): number {
@@ -196,6 +196,7 @@ export class YJBitmapFont extends Component {
     private setFont(font: BitmapFont) {
         const label = this.getComponent(Label);
         if (font) {
+            label.useSystemFont = false;
             label.font = font;
         }
         if (!label.customMaterial)

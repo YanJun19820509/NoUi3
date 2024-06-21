@@ -66,11 +66,9 @@ export class SetVisibility extends FuckUi {
         if (data instanceof Object) {
             let a = true;
             for (const key in data) {
-                if (Object.prototype.hasOwnProperty.call(data, key)) {
-                    if (!data[key]) {
-                        a = false;
-                        break;
-                    }
+                if (!data[key]) {
+                    a = false;
+                    break;
                 }
             }
             this.show(a);

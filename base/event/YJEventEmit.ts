@@ -19,6 +19,6 @@ import { no } from '../../no';
 export class YJEventEmit extends Component {
     public a_emit(e: any, v?: string) {
         let args = (v || e).split(':');
-        no.evn.emit.call(no.evn, args[0], args);
+        no.evn.emit(args[0], args);
     }
 }

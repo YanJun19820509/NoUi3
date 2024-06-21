@@ -105,13 +105,13 @@ export class YJWindowManager extends Component {
             comp = js.getClassByName(comp) as (typeof YJPanel);
         if (!comp) return;
         const self = YJWindowManager._ins;
-        to = to || comp.prototype[YJAddPanelToMetaKey];
+        to = to || no.getPrototype(comp, YJAddPanelToMetaKey);
         if (!to) {
             no.err('windowmanager', comp.name, '没有指定面板的归属节点');
             return;
         }
         let content: Node = self.getContent(to);
-        const allowMultipleOpen = comp.prototype[YJAllowMultipleOpen] == '1';
+        const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
         if (!allowMultipleOpen) {
             let a = content.getComponentInChildren(comp);
             if (a != null) {
@@ -125,18 +125,20 @@ export class YJWindowManager extends Component {
             }
         }
         if (!allowMultipleOpen) {
-            if (comp.prototype[YJPanelCreated] == '1') return;
-            else comp.prototype[YJPanelCreated] = '1';
+            if (no.isPrototypeEquals(comp, YJPanelCreated, '1')) return;
+            else no.setPrototype(comp, { [YJPanelCreated]: '1' });
         }
         let node = YJPreinstantiatePanel.ins?.getPanelNodeAndRemove(comp.name);
         if (node) {
             this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
         } else {
-            const k = comp.prototype[YJPanelPrefabMetaKey] || comp.prototype[YJPanelPrefabUuidMetaKey];
+            const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
+                uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey),
+                k = url || uuid;
             const node = no.assetBundleManager.getPrefabNode(k);
             if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
             else {
-                const request = { type: Prefab, url: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
+                const request = { type: Prefab, url: url, uuid: uuid };
                 no.assetBundleManager.loadAny<Prefab>(request, pf => {
                     if (!pf) return;
                     no.assetBundleManager.setPrefabNode(k, pf);
@@ -265,7 +267,7 @@ export class YJWindowManager extends Component {
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof YJPanel);
         if (!comp) return null;
-        to = to || comp.prototype[YJAddPanelToMetaKey];
+        to = to || no.getPrototype(comp, YJAddPanelToMetaKey);
         if (!to) {
             no.err('windowmanager', comp.name, '没有指定面板的归属节点');
             return;
@@ -333,5 +335,22 @@ export class YJWindowManager extends Component {
 
     public static clearClosedPanel() {
         YJWindowManager._ins.clearClosedPanel();
+    }
+
+    /**
+     * 当前可见最上层面板
+     * @param from 开始查找的层级索引
+     */
+    public static getTopPanel(from?: number) {
+        const me = this._ins;
+        for (let i = from || me.infos.length - 1; i >= 0; i--) {
+            let content = me.getContent(me.infos[i].type);
+            for (let j = content.children.length - 1; j >= 0; j--) {
+                const child = content.children[j];
+                if (no.visible(child)) {
+                    return child;
+                }
+            }
+        }
     }
 }

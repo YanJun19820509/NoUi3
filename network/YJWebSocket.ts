@@ -154,9 +154,10 @@ export class YJWebSocket implements YJSocketInterface {
 
     }
 
-    public connect() {
+    public async connect() {
         if (this.ws?.readyState != WebSocket.OPEN)
             this.initWebSocket();
+        await no.waitFor(() => { return !this.isClosed; })
     }
 
     private reInit() {

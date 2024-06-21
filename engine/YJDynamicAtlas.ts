@@ -99,7 +99,7 @@ export class YJDynamicAtlas extends Component {
     private _spriteTexture: DynamicAtlasTexture;
 
     onLoad() {
-        this.thisNodeName = this.node.name;
+        this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel')).name || this.node.name;
     }
 
     onDestroy() {
@@ -237,19 +237,20 @@ export class YJDynamicAtlas extends Component {
             return;
         }
 
-        let font = new BitmapFont();
-        font.name = bf.name;
-        font.fntConfig = bf.fntConfig;
-        font.fontDefDictionary = bf.fontDefDictionary;
-        font.fontSize = bf.fontSize;
         const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
         if (packedFrame) {
             let ff = frame.clone();
             ff._uuid = frame.uuid;
             ff.rotated = packedFrame.rotate;
             ff._setDynamicAtlasFrame(packedFrame);
-            font.spriteFrame = ff;
             no.setValueSafely(this.spriteFrameMap, { [frame.uuid]: ff });
+
+            let font = new BitmapFont();
+            font.name = bf.name;
+            font.fntConfig = bf.fntConfig;
+            font.fontDefDictionary = bf.fontDefDictionary;
+            font.fontSize = bf.fontSize;
+            font.spriteFrame = ff;
             onSuccess?.(font);
         } else onFail?.();
     }
@@ -320,10 +321,10 @@ export class YJDynamicAtlas extends Component {
         if (!spriteFrame || spriteFrame.texture._uuid == this.atlas?._texture._uuid) return null;
 
         // hack for pixel game,should pack to different sampler atlas
-        const sampler = spriteFrame.texture.getSamplerInfo();
-        if (sampler.minFilter !== 2 || sampler.magFilter !== 2 || sampler.mipFilter !== 0) {
-            return null;
-        }
+        // const sampler = spriteFrame.texture.getSamplerInfo();
+        // if (sampler.minFilter !== 2 || sampler.magFilter !== 2 || sampler.mipFilter !== 0) {
+        //     return null;
+        // }
 
         this.initAtlas();
 

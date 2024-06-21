@@ -128,7 +128,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.setSingleSpriteFrame(data);
             return;
         }
-        // let name = String(data).split('/').pop();
+        if (!this.loadFromAtlas) {
+            this.setSingleSpriteFrame(this.singleFolder + data);
+            return;
+        }
         this.setSpriteFrame(data);
     }
 

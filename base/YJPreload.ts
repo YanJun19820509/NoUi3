@@ -17,7 +17,7 @@ import { YJPreloadDelegate } from './YJPreloadDelegate';
  *
  */
 
-enum PreloadState {
+const enum PreloadState {
     End = -1,
     LoadingBundles = 0,
     LoadingFiles,

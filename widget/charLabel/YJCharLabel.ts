@@ -116,7 +116,6 @@ export class YJCharLabel extends Sprite {
         this._fontUuid = v ? v.uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
-        console.log(this._fontUuid)
     }
     @property
     public get useSys(): boolean {
@@ -370,6 +369,8 @@ export class YJCharLabel extends Sprite {
     @property({ displayName: '使用job管理' })
     useJob: boolean = true;
 
+
+
     @property({ serializable: true })
     protected _string: string = '';
     @property({ serializable: true })
@@ -451,6 +452,7 @@ export class YJCharLabel extends Sprite {
         this.unscheduleAllCallbacks();
         this.node.targetOff(this);
         this._texture?.destroy();
+        this.clearCanvas();
     }
 
     onEnable() {
@@ -479,14 +481,8 @@ export class YJCharLabel extends Sprite {
 
     private async toDraw() {
         if (this.richText) {
-            // if (!EDITOR && this.useJob)
-            //     await YJJobManager.ins.execute(this.drawRichString, this, this._string);
-            // else
             this.drawRichString(this._string);
         } else {
-            // if (!EDITOR && this.useJob)
-            //     await YJJobManager.ins.execute(this.drawString, this, this._string);
-            // else
             this.drawString(this._string);
         }
         this.updateTexture();
@@ -837,23 +833,36 @@ export class YJCharLabel extends Sprite {
     private updateTexture() {
         const canvas = this.shareCanvas();
         if (!canvas.width || !canvas.height) return;
+
+        const image = new ImageAsset(canvas);
+        this._texture = new Texture2D();
+        this._texture.image = image;
+        this._texture['_uuid'] = this.getUuid();
+        let spriteFrame = new SpriteFrame();
+        spriteFrame['_uuid'] = this.getUuid();
+        spriteFrame.texture = this._texture;
+        this.spriteFrame = spriteFrame;
+
         if (this.packToAtlas && this.dynamicAtlas) {
-            this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
-                const image = new ImageAsset(canvas);
-                this._texture = new Texture2D();
-                this._texture.image = image;
-                let spriteFrame = new SpriteFrame();
-                spriteFrame.texture = this._texture;
-                this.spriteFrame = spriteFrame;
-            });
-        } else {
-            const image = new ImageAsset(canvas);
-            this._texture = new Texture2D();
-            this._texture.image = image;
-            let spriteFrame = new SpriteFrame();
-            spriteFrame.texture = this._texture;
-            this.spriteFrame = spriteFrame;
+            // this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
+            //     const image = new ImageAsset(canvas);
+            //     this._texture = new Texture2D();
+            //     this._texture.image = image;
+            //     let spriteFrame = new SpriteFrame();
+            //     spriteFrame.texture = this._texture;
+            //     this.spriteFrame = spriteFrame;
+            // });
+            if (this.useJob)
+                YJJobManager.ins.execute(this.packSpriteFrame, this);
+            else
+                this.packSpriteFrame();
         }
+    }
+
+    private packSpriteFrame() {
+        const s = this.dynamicAtlas.packSpriteFrame(this.spriteFrame, true);
+        if (s) this.spriteFrame = s;
+        return false;
     }
 
     private drawRichString(v: string) {

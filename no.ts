@@ -19,6 +19,7 @@ export namespace no {
     }
 
     export function isDebug(): boolean {
+        log('isDebug', _debug);
         return _debug;
     }
     export function setDebug(v: boolean) {
@@ -1048,6 +1049,22 @@ export namespace no {
         return array[i];
     }
 
+
+    export function isArrayIncludeOther(array: any[], other: any[]): boolean {
+        for (let i = 0, n = other.length; i < n; i++) {
+            if (array.indexOf(other[i]) > -1) return true;
+        }
+        return false;
+    }
+
+    export function arrayIncludeOther(array: any[], other: any[]): any[] {
+        let arr: any[] = [];
+        for (let i = 0, n = other.length; i < n; i++) {
+            if (array.indexOf(other[i]) > -1) arr[arr.length] = other[i];
+        }
+        return arr;
+    }
+
     export function addToArray(array: any[], value: any, key?: string): boolean {
         if (!array) return false;
         if (key == null && array.indexOf(value) == -1) {
@@ -1133,8 +1150,7 @@ export namespace no {
      */
     export function forEachKV(d: any, func: (k: any, v: any) => boolean) {
         if (d == null) return;
-        let keys = Object.keys(d);
-        for (const key of keys) {
+        for (const key in d) {
             if (func(key, d[key]) === true) break;
         }
     }
@@ -5273,6 +5289,75 @@ export namespace no {
             }
         }
         return strs;
+    }
+
+    /**
+     * 获取原型对象
+     * @param target 可以是实例或对象
+     * @param propertyKey 属性key
+     * @returns 
+     */
+    export function getPrototype(target: any, propertyKey?: string) {
+        let a: any;
+        if (target) {
+            if (target instanceof Function) {
+                a = getClassPrototype(target);
+            } else {
+                a = Object.getPrototypeOf(target);
+            }
+        }
+        if (propertyKey != null) return a?.[propertyKey];
+        return a;
+    }
+
+    /**
+     * 在原型上添加自定义属性
+     * @param target 
+     * @param properties 
+     */
+    export function setPrototype(target: any, properties: { [k: string]: any }) {
+        if (target) {
+            if (target instanceof Function) {
+                setClassPrototype(target, properties);
+            } else {
+                const a = Object.getPrototypeOf(target);
+                js.mixin(a, properties);
+            }
+        }
+    }
+
+    /**
+     * 获取class的原型对象
+     * @param clazz 
+     * @param propertyKey 属性key
+     * @returns 
+     */
+    export function getClassPrototype(clazz: any, propertyKey?: string) {
+        const a = clazz?.prototype;
+        if (propertyKey != null) return a?.[propertyKey];
+        return a;
+    }
+
+    /**
+     * 在class的原型上添加自定义属性
+     * @param clazz 
+     * @param properties 
+     */
+    export function setClassPrototype(clazz: any, properties: { [k: string]: any }) {
+        if (clazz) {
+            js.mixin(clazz.prototype, properties);
+        }
+    }
+
+    /**
+     * 检测target的原型属性propertyKey的值是否等于val
+     * @param target 
+     * @param propertyKey 
+     * @param val 
+     * @returns 
+     */
+    export function isPrototypeEquals(target: any, propertyKey: string, val: any) {
+        return getPrototype(target, propertyKey) == val;
     }
 }
 
