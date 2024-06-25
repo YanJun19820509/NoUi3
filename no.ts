@@ -329,7 +329,7 @@ export namespace no {
      * @param target 如果target为组件，需要注意不要同时调用target的schedule方法，否则在clearInterval时很可能会取消target的schedule
      * @returns 
      */
-    export function setTimeout(callback: () => void, ms = 0, target?: any) {
+    export function setTimeoutF(callback: () => void, ms = 0, target?: any) {
         const a = target || { uuid: uuid() };
         scheduleOnce(callback, ms / 1000, a);
         return a.uuid;
@@ -340,7 +340,7 @@ export namespace no {
      * @param handler 
      * @returns 
      */
-    export function clearTimeout(handler: string) {
+    export function clearTimeoutF(handler: string) {
         if (!handler) return;
         unschedule(handler);
     }
@@ -352,7 +352,7 @@ export namespace no {
      * @param target 如果target为组件，需要注意不要同时调用target的schedule方法，否则在clearInterval时很可能会取消target的schedule
      * @returns 
      */
-    export function setInterval(callback: () => void, ms = 0, target?: any) {
+    export function setIntervalF(callback: () => void, ms = 0, target?: any) {
         const a = target || { uuid: uuid() };
         scheduleForever(callback, ms / 1000, a);
         return a.uuid;
@@ -363,7 +363,7 @@ export namespace no {
      * @param handler 
      * @returns 
      */
-    export function clearInterval(handler: string) {
+    export function clearIntervalF(handler: string) {
         if (!handler) return;
         unschedule(handler);
     }
@@ -787,9 +787,9 @@ export namespace no {
 
     export async function checkUntil(express: () => boolean) {
         return new Promise<void>(resolve => {
-            const a = setInterval(() => {
+            const a = setIntervalF(() => {
                 if (express()) {
-                    clearInterval(a);
+                    clearIntervalF(a);
                     resolve();
                 }
             });

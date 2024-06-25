@@ -31,10 +31,10 @@ export class YJSpineManager extends no.SingleObject {
         super();
 
         if (this._timer) {
-            no.clearInterval(this._timer);
+            no.clearIntervalF(this._timer);
             this._timer = null;
         }
-        this._timer = no.setInterval(() => {
+        this._timer = no.setIntervalF(() => {
             this.release();
         }, 2000);
     }
@@ -92,7 +92,7 @@ export class YJSpineManager extends no.SingleObject {
 
     private clear() {
         if (this._timer) {
-            no.clearInterval(this._timer);
+            no.clearIntervalF(this._timer);
             this._timer = null;
         }
     }

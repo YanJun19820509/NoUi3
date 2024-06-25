@@ -22,6 +22,8 @@ export const Size = _cc.Size;
 export type Size = _cc.Size;
 export const Quat = _cc.Quat;
 export type Quat = _cc.Quat;
+export type Mat4 = _cc.Mat4;
+export const Mat4 = _cc.Mat4;
 export const EventHandler = _cc.EventHandler;
 export type EventHandler = _cc.EventHandler;
 export const Color = _cc.Color;
@@ -67,6 +69,8 @@ export const TTFFont = _cc.TTFFont;
 export type TTFFont = _cc.TTFFont;
 export const UIRenderer = _cc.UIRenderer;
 export type UIRenderer = _cc.UIRenderer;
+export const RenderData = _cc.RenderData;
+export type RenderData = _cc.RenderData;
 export const Sprite = _cc.Sprite;
 export type Sprite = _cc.Sprite;
 export const BitmapFont = _cc.BitmapFont;
@@ -213,6 +217,8 @@ export function isDisplayStats() {
 }
 
 export const AttributeName = _cc.gfx.AttributeName;
+export const Attribute = _cc.gfx.Attribute;
+export type Attribute = _cc.gfx.Attribute;
 
 //3d
 export const Ray = _cc.geometry.Ray;
@@ -221,3 +227,4 @@ export const Input = _cc.Input;
 export const input = _cc.input;
 export const PhysicsSystem = _cc.PhysicsSystem;
 export const primitives = _cc.primitives;
+export const UIVertexFormat = _cc.UIVertexFormat;

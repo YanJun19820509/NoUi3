@@ -22,10 +22,10 @@ js.mixin(StencilManager.prototype, {
 });
 
 //渲染
-const _a = no.setInterval(function () {
+const _a = no.setIntervalF(function () {
     const batcher2D = director.root['_batcher'];
     if (batcher2D) {
-        no.clearInterval(_a);
+        no.clearIntervalF(_a);
         const _walk = batcher2D.walk;
         js.mixin(batcher2D, {
             walk(node: Node, level = 0) {
