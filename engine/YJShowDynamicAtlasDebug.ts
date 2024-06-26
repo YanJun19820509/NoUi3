@@ -116,7 +116,7 @@ export class YJShowDynamicAtlasDebug {
     public showNewestAtlas(): any {
         const topPanel = YJWindowManager.getTopPanel(3);
         if (topPanel) {
-            const name = no.getPrototype(topPanel.getComponentInChildren('PopuPanelContent') || topPanel.getComponent('YJPanel')).name || topPanel.name;
+            const name = no.getPrototype(topPanel.getComponentInChildren('PopuPanelContent') || topPanel.getComponent('YJPanel'))?.name || topPanel.name;
             if (this.names.includes(name)) {
                 this.showDebug(name);
                 return;

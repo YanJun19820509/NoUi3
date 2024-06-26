@@ -26,11 +26,21 @@ export class YJCharLabel extends Sprite {
         return super.spriteAtlas;
     }
     @property({ visible() { return false; }, override: true })
-    set spriteFrame(v: SpriteFrame) {
-        super.spriteFrame = v;
+    set spriteFrame(value: SpriteFrame) {
+        if (this._spriteFrame === value) {
+            return;
+        }
+
+        const lastSprite = this._spriteFrame;
+        this._spriteFrame = value;
+        this.markForUpdateRenderData();
+        this['_applySpriteFrame'](lastSprite);
+        if (EDITOR) {
+            this.node.emit(Sprite.EventType.SPRITE_FRAME_CHANGED, this);
+        }
     }
     get spriteFrame(): SpriteFrame {
-        return super.spriteFrame;
+        return this._spriteFrame;
     }
 
     @property({ visible() { return false; }, override: true })

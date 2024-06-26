@@ -99,7 +99,7 @@ export class YJDynamicAtlas extends Component {
     private _spriteTexture: DynamicAtlasTexture;
 
     onLoad() {
-        this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel')).name || this.node.name;
+        this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
     }
 
     onDestroy() {
