@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, Asset } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -80,6 +80,15 @@ js.mixin(YJButton.prototype, {
 js.mixin(Asset.prototype, {
     get uuid() {
         return this._uuid;
+    }
+});
+
+js.mixin(SpriteFrame.prototype, {
+    get width() {
+        return this._w || this._texture.width;
+    },
+    get height() {
+        return this._h || this._texture.height;
     }
 });
 

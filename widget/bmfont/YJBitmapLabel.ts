@@ -1,11 +1,10 @@
+import { YJRenderBase } from '../../base/render/YJRenderBase';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { Color, EDITOR, RenderData, Node, Texture2D, UIRenderer, ccclass, isValid, math, property, Mat4, Vec3, size, v3 } from '../../yj';
+import { EDITOR, ccclass, isValid, math, property, size, JsonAsset, Attribute, UIVertexFormat, color } from '../../yj';
 
 @ccclass('YJBitmapLabel')
-export class YJBitmapLabel extends UIRenderer {
-    @property({ type: Texture2D })
-    texture: Texture2D | null = null;
+export class YJBitmapLabel extends YJRenderBase {
     @property
     public get atlasJson(): string {
         return this._atlasJson;
@@ -82,8 +81,11 @@ export class YJBitmapLabel extends UIRenderer {
     private _atlasConfig: any;
 
     onLoad() {
-        if (EDITOR) return;
         this.loadJson();
+    }
+
+    public a_text(v: any) {
+        this.string = v.string;
     }
 
     private loadJson() {
@@ -91,10 +93,17 @@ export class YJBitmapLabel extends UIRenderer {
             this.setLabel();
             return;
         }
-        no.assetBundleManager.loadJSON(this.atlasJson, item => {
-            this._atlasConfig = item.json;
-            this.setLabel();
-        });
+        if (EDITOR) {
+            no.assetBundleManager.loadFileInEditorMode(this.atlasJson, JsonAsset, (file: JsonAsset, info) => {
+                this._atlasConfig = file.json;
+                this.setLabel();
+            })
+        } else {
+            no.assetBundleManager.loadJSON(this.atlasJson, item => {
+                this._atlasConfig = item.json;
+                this.setLabel();
+            });
+        }
     }
 
     public resetLabel() {
@@ -102,7 +111,6 @@ export class YJBitmapLabel extends UIRenderer {
     }
 
     private clearString() {
-        this.destroyRenderData();
         no.size(this.node, math.size(0, this._lineHeight));
     }
 
@@ -111,49 +119,30 @@ export class YJBitmapLabel extends UIRenderer {
             return;
         }
         if (this._string == '') {
+            this.renderable = false;
             this.clearString();
             return;
         } else {
+            this.renderable = true;
+            this.initRenderData(this._string.length, 4);
             this.toDraw();
-        }
-    }
-
-    protected _render(render: any) {
-        render.commitComp(this, this.renderData, this.texture, this._assembler!, null);
-    }
-
-    protected _flushAssembler() {
-        if (this._assembler !== YJBitmapAssembler) {
-            this.destroyRenderData();
-            this._assembler = YJBitmapAssembler;
-        }
-
-        if (!this._renderData) {
-            if (this._assembler && this._assembler.createData) {
-                this._renderData = this._assembler.createData(this);
-                this._renderData!.material = this.material;
-            }
+            this._assembler.updateRenderData(this); // 更新渲染数据，以显示文本内容。
         }
     }
 
     private toDraw() {
-        const renderData = this.renderData!;
-        renderData.vertDirty = true;
-        renderData.dataLength = 0;
-        renderData.resize(0, 0);
         const arr = this.getCharConfigs();
         const anchorPoint = no.anchor(this.node);
         let width = 0, height = 0;
         for (let i = 0, n = arr.length; i < n; i++) {
             const letterInfo = arr[i];
+            if (!letterInfo) continue;
             width += letterInfo.width + this.spacingX;
             if (letterInfo.height > height) height = letterInfo.height;
         }
         width -= this.spacingX;
-        const s = no.scale(this.node).x * (this.size || height) / height;
         height = Math.max(height, this.lineHeight);
         no.size(this.node, size(width, height));
-        no.scale(this.node, v3(s, s, 1))
         let appX = -anchorPoint.x * width;
         let appY = height * anchorPoint.y;
         for (let i = 0, n = arr.length; i < n; i++) {
@@ -176,170 +165,16 @@ export class YJBitmapLabel extends UIRenderer {
     }
 
     private appendQuad(uv: number[], rotated: boolean, x: number, y: number, width: number, height: number) {
-        const renderData = this.renderData;
-        if (!renderData) {
-            return;
-        }
+        this.setRenderData({
+            uv: uv,
+            xy: this.getXY(x, y, width, height),
+            rotated: rotated,
+            // colors: [color(255, 255, 255, 255)],
+            // colors2: [color(255, 255, 255, 255)]
+        })
+    }
 
-        const dataOffset = renderData.dataLength;
-
-        renderData.dataLength += 4;
-        renderData.resize(renderData.dataLength, renderData.dataLength / 2 * 3);
-
-        const dataList = renderData.data;
-
-        if (!rotated) {
-            dataList[dataOffset].u = uv[0];
-            dataList[dataOffset].v = uv[1];
-            dataList[dataOffset + 1].u = uv[2];
-            dataList[dataOffset + 1].v = uv[3];
-            dataList[dataOffset + 2].u = uv[4];
-            dataList[dataOffset + 2].v = uv[5];
-            dataList[dataOffset + 3].u = uv[6];
-            dataList[dataOffset + 3].v = uv[7];
-        } else {
-            dataList[dataOffset].u = uv[4];
-            dataList[dataOffset].v = uv[5];
-            dataList[dataOffset + 1].u = uv[0];
-            dataList[dataOffset + 1].v = uv[1];
-            dataList[dataOffset + 2].u = uv[6];
-            dataList[dataOffset + 2].v = uv[7];
-            dataList[dataOffset + 3].u = uv[2];
-            dataList[dataOffset + 3].v = uv[3];
-        }
-
-        dataList[dataOffset].x = x;
-        dataList[dataOffset].y = y - height;
-        dataList[dataOffset + 1].x = x + width;
-        dataList[dataOffset + 1].y = y - height;
-        dataList[dataOffset + 2].x = x;
-        dataList[dataOffset + 2].y = y;
-        dataList[dataOffset + 3].x = x + width;
-        dataList[dataOffset + 3].y = y;
+    protected vertexFormat(): Attribute[] {
+        return UIVertexFormat.vfmtPosUvTwoColor;
     }
 }
-
-const vec3_temp = new Vec3();
-const _worldMatrix = new Mat4();
-const YJBitmapAssembler = {
-    createData(comp: UIRenderer) {
-        const renderData = comp.requestRenderData();
-        renderData.dataLength = 0;
-        renderData.resize(0, 0);
-        return renderData;
-    },
-
-    updateRenderData(comp: UIRenderer) {
-        const texture: Texture2D = comp['texture'];
-
-        this.updateUVs(comp);// dirty need
-        this.updateColor(comp);// dirty need
-
-        const renderData = comp.renderData;
-        if (renderData && texture) {
-            if (renderData.vertDirty) {
-                this.updateVertexData(comp);
-            }
-            renderData.updateRenderData(comp, texture);
-        }
-    },
-    //更新顶点的世界坐标
-    updateWorldVerts(comp: UIRenderer) {
-        const renderData = comp.renderData!;
-        const dataList = renderData.data;
-        const chunk = renderData.chunk;
-        const vData = chunk.vb;
-        const vertexCount = renderData.vertexCount;
-
-        comp.node.getWorldMatrix(_worldMatrix);
-
-        let vertexOffset = 0;
-        for (let i = 0; i < vertexCount; i++) {
-            const vert = dataList[i];
-            Vec3.set(vec3_temp, vert.x, vert.y, 0);
-            Vec3.transformMat4(vec3_temp, vec3_temp, _worldMatrix);
-            vData[vertexOffset++] = vec3_temp.x;
-            vData[vertexOffset++] = vec3_temp.y;
-            vData[vertexOffset++] = vec3_temp.z;
-            vertexOffset += 6;
-        }
-    },
-
-    fillBuffers(comp: UIRenderer, renderer: any) {
-        if (comp === null) {
-            return;
-        }
-
-        const renderData = comp.renderData!;
-        if (comp.node.hasChangedFlags || renderData.vertDirty) {
-            this.updateWorldVerts(comp);
-        }
-
-        if (renderData.vertDirty) {
-            this.updateUVs(comp);
-            this.updateColor(comp);
-            renderData.vertDirty = false;
-        }
-        this.updateIndexes(comp);
-    },
-
-    updateVertexData(comp: UIRenderer) {
-
-    },
-
-    updateUVs(comp: UIRenderer) {
-        const renderData = comp.renderData!;
-        const vData = renderData.chunk.vb;
-        const vertexCount = renderData.vertexCount;
-        const dataList = renderData.data;
-
-        let vertexOffset = 3;
-        for (let i = 0; i < vertexCount; i++) {
-            const vert = dataList[i];
-            vData[vertexOffset++] = vert.u;
-            vData[vertexOffset++] = vert.v;
-            vertexOffset += 7;
-        }
-    },
-
-    updateIndexes(comp: UIRenderer) {
-        const renderData = comp.renderData!;
-        const chunk = renderData.chunk;
-        const bid = chunk.bufferId;
-        const vid = chunk.vertexOffset;
-        const meshBuffer = chunk.vertexAccessor.getMeshBuffer(chunk.bufferId);
-        const ib = chunk.vertexAccessor.getIndexBuffer(bid);
-        const vertexCount = renderData.vertexCount;
-        let indexOffset = meshBuffer.indexOffset;
-        for (let i = 0, count = vertexCount / 4; i < count; i++) {
-            const start = vid + i * 4;
-            ib[indexOffset++] = start;
-            ib[indexOffset++] = start + 1;
-            ib[indexOffset++] = start + 2;
-            ib[indexOffset++] = start + 1;
-            ib[indexOffset++] = start + 3;
-            ib[indexOffset++] = start + 2;
-        }
-        meshBuffer.indexOffset += renderData.indexCount;
-    },
-
-    updateColor(comp: UIRenderer) {
-        const renderData = comp.renderData!;
-        const vData = renderData.chunk.vb;
-        const vertexCount = renderData.vertexCount;
-        const floatStride = renderData.floatStride;
-        let colorOffset = 5;
-        const color = comp.color;
-        const colorR = color.r / 255;
-        const colorG = color.g / 255;
-        const colorB = color.b / 255;
-        const colorA = color.a / 255;
-        for (let i = 0; i < vertexCount; i++) {
-            vData[colorOffset] = colorR;
-            vData[colorOffset + 1] = colorG;
-            vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
-            colorOffset += floatStride;
-        }
-    },
-};

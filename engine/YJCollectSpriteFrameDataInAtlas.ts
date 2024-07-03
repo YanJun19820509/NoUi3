@@ -1,5 +1,5 @@
 
-import { ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager, JsonAsset } from '../yj';
+import { ccclass, property, executeInEditMode, Component, Node, SpriteAtlas, assetManager, JsonAsset, SpriteFrame } from '../yj';
 import { SpriteFrameDataType } from '../types';
 import { no } from '../no';
 
@@ -62,21 +62,31 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
         if (scale != 1) scale = Math.floor(1 / scale * 1000) / 1000;
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
         atlas.getSpriteFrames().forEach(sf => {
-            // console.log(sf);
-            infoMap[sf.name] = {
+            console.log(sf);
+            let a: SpriteFrameDataType = {
                 uuid: sf.uuid,
                 x: sf.rect.x,
                 y: sf.rect.y,
                 width: sf.rect.width,
                 height: sf.rect.height,
                 uv: sf.uv,
-                uvSliced: sf.uvSliced,
-                capInsets: sf['_capInsets'],
                 rotated: sf.rotated,
-                scale: scale
+                scale: scale,
+                w: sf.width,
+                h: sf.height
             };
+            if (this.isSliced(sf)) {
+                a.uvSliced = sf.uvSliced;
+                a.capInsets = sf['_capInsets'];
+            }
+            infoMap[sf.name] = a;
         });
         return infoMap;
+    }
+
+    private static isSliced(sf: SpriteFrame) {
+        const capInsets = sf['_capInsets'];
+        return capInsets[0] != 0 || capInsets[1] != 0 || capInsets[2] != 0 || capInsets[3] != 0;
     }
 
     private static save(path: string, info: any) {

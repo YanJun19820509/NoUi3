@@ -30,10 +30,16 @@ export class YJVertexColorTransition extends Component {
     private _defineIds: number[][] = [[], []];
     private _dirtyVersion: number;
 
+    private _updateColorLate: Function;
+
     onLoad() {
+        if (!this.enabled) return;
         if (!this.renderComp)
             this.renderComp = this.getComponent(Sprite);
         if (!this.renderComp) return;
+        //hack tiled 的updateColorLate方法
+        this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
+        this.renderComp['_assembler'].updateColorLate = function () { };
     }
 
     public setEffect(defines: any, properties?: number[]) {
@@ -113,7 +119,7 @@ export class YJVertexColorTransition extends Component {
                 break;
             case Sprite.Type.FILLED:
                 if (this.renderComp.fillType === Sprite.FillType.RADIAL) {
-                    this._updateRadiaFilledVB();
+                    this._updateRadialFilledVB();
                 } else {
                     this._updateBarFilledVB();
                 }
@@ -122,7 +128,7 @@ export class YJVertexColorTransition extends Component {
     }
 
     lateUpdate() {
-        if (!this.renderComp || !this._needUpdate) return;
+        if (!this.enabled || !this.renderComp || !this._needUpdate) return;
         if (this.renderComp._dirtyVersion !== this._dirtyVersion) {
             this._updateVB();
         }
@@ -131,7 +137,7 @@ export class YJVertexColorTransition extends Component {
     private _updateSimpleVB() {
         const renderData = this.renderComp.renderData;
         if (!renderData || !renderData.chunk) return;
-        const vData = renderData.chunk.vb;
+        const vData = renderData.chunk?.vb || [];
         let colorOffset = 5;
         const color = this._data;
         const colorR = color.x;
@@ -148,7 +154,7 @@ export class YJVertexColorTransition extends Component {
 
     private _updateSlicedVB() {
         const renderData = this.renderComp.renderData!;
-        const vData = renderData.chunk.vb;
+        const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
 
         let colorOffset = 5;
@@ -168,6 +174,11 @@ export class YJVertexColorTransition extends Component {
 
     private _updateTiledVB() {
         const renderData = this.renderComp.renderData!;
+        if (!renderData.chunk) {
+            this.scheduleOnce(this._updateTiledVB);
+            return;
+        }
+        this._updateColorLate?.call(renderData['_assembler'], this.renderComp);
         const vData = renderData.chunk.vb;
         const stride = renderData.floatStride;
         const vertexCount = renderData.vertexCount;
@@ -187,7 +198,7 @@ export class YJVertexColorTransition extends Component {
         }
     }
 
-    private _updateRadiaFilledVB() {
+    private _updateRadialFilledVB() {
         const renderData = this.renderComp.renderData!;
         const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;

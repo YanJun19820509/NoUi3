@@ -347,7 +347,7 @@ export class YJDynamicAtlas extends Component {
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType, name: string) {
         const sf = this.createSpriteFrameInSample2D(spriteFrame);
         sprite.spriteFrame = sf;
-        sprite['_updateUVs']();
+        sprite['_assembler']?.updateRenderData(sprite);
         this.spriteFrameMap[name] = sf;
     }
 
@@ -355,7 +355,8 @@ export class YJDynamicAtlas extends Component {
         const sf = this.spriteFrameMap[name];
         if (sf) {
             sprite.spriteFrame = sf;
-            sprite['_updateUVs']();
+            sprite['_assembler']?.updateRenderData(sprite);
+            // sprite['_updateUVs']();
             return true;
         }
         return false;
@@ -368,10 +369,59 @@ export class YJDynamicAtlas extends Component {
         newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
         newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
         newSpriteFrame.uv = spriteFrame.uv;
-        newSpriteFrame.uvSliced = spriteFrame.uvSliced;
-        newSpriteFrame['_capInsets'] = spriteFrame.capInsets;
         newSpriteFrame['_rotated'] = spriteFrame.rotated;
+        newSpriteFrame['_w'] = spriteFrame.w;
+        newSpriteFrame['_h'] = spriteFrame.h;
+        if (spriteFrame.uvSliced) {
+            newSpriteFrame.uvSliced = spriteFrame.uvSliced;
+            newSpriteFrame['_capInsets'] = spriteFrame.capInsets || [0, 0, 0, 0];
+        } else {
+            newSpriteFrame.uvSliced = this.defaultUVSliced(spriteFrame.uv, spriteFrame.rotated);
+            newSpriteFrame['_capInsets'] = [0, 0, 0, 0];
+        }
         return newSpriteFrame;
+    }
+
+    private defaultUVSliced(uv: number[], rotated: boolean) {
+        if (!rotated) {
+            return [
+                { u: uv[0], v: uv[1] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[6], v: uv[7] }
+            ];
+        } else {
+            return [
+                { u: uv[4], v: uv[5] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[4], v: uv[5] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[0], v: uv[1] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[6], v: uv[7] },
+                { u: uv[2], v: uv[3] },
+                { u: uv[2], v: uv[3] }
+            ];
+        }
     }
 
     public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {

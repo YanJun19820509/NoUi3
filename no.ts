@@ -2183,7 +2183,7 @@ export namespace no {
     export function anchor(node: Node, ...args: number[]): Vec2 {
         if (!node) return;
         let t = node.getComponent(UITransform);
-        if (args != undefined && args.length > 0) t.setAnchorPoint(args[0], args[1] || args[0]);
+        if (args != undefined && args.length > 0) t.setAnchorPoint(args[0], args[1] == null ? args[0] : args[1]);
         return t.anchorPoint.clone();
     }
 

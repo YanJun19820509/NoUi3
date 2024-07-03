@@ -265,8 +265,22 @@ export class SetCreateNode extends FuckUi {
                 if (!this?.node?.isValid) return;
             }
             item = instantiate(this.template);
+            item = this.initItem(item);
+
             await item.getComponent(YJLoadAssets)?.load();
             if (!this?.node?.isValid) return;
+            no.visible(item, true);
+            if (this.uiAnim?.enabled) {
+                this._aniEnd = false;
+                this.uiAnim.play(item);
+                await no.waitFor(() => { return this._aniEnd; });
+            }
+        } else {
+            if (this.uiAnim?.enabled) {
+                this._aniEnd = false;
+                this.uiAnim.play(item);
+                await no.waitFor(() => { return this._aniEnd; });
+            }
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
@@ -274,7 +288,11 @@ export class SetCreateNode extends FuckUi {
         }
         if (!item.parent) item.parent = this.container;
         else a?.init();
-        no.visible(item, true);
+    }
+
+    private _aniEnd = false;
+    public a_AnimationEffectCallback() {
+        this._aniEnd = true;
     }
 
     ///////////////////////////EDITOR///////////////

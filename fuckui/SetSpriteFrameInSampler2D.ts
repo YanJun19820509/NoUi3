@@ -59,15 +59,23 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.setDynamicAtlas();
         //运行时update方法置空
         if (!EDITOR) this.update = null;
+        // if (EDITOR) {
+        //     if (!this.loadFromAtlas && this.loadAsset) {
+        //         this.loadAsset = null;
+        //         this.dynamicAtlas = null;
+        //     }
+        // }
+    }
+
+    update() {
         if (EDITOR) {
-            if (!this.loadFromAtlas && this.loadAsset) {
+            if (this.loadFromAtlas && !this.loadAsset) {
+                this.setDynamicAtlas();
+            } else if (!this.loadFromAtlas && this.loadAsset) {
                 this.loadAsset = null;
                 this.dynamicAtlas = null;
             }
         }
-    }
-
-    update() {
         this.initSpriteFrameInfo();
     }
 
@@ -146,17 +154,17 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.a_setEmpty();
             return;
         }
+        if (this.loadFromAtlas && !this.dynamicAtlas?.customMaterial) {
+            this.scheduleOnce(this.setSpriteFrame.bind(this, spriteName));
+            return;
+        }
         let name: string;
         if (this.multiLan) {
             const a = spriteName.split('/');
             name = YJi18n.ins.language + '/' + (a[1] || a[0]);
         } else name = spriteName;
 
-        const sprite = this.getComponent(Sprite);
-        // if (sprite.type == Sprite.Type.FILLED) {
-        //     sprite['_assembler'].updateColorLate = function () { };
-        // }
-        if (!this.loadFromAtlas || sprite.type == Sprite.Type.FILLED || !this.dynamicAtlas?.customMaterial) {
+        if (!this.loadFromAtlas || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
                 this.setSpriteFrameByDefaultSpriteFrameUuid();
             else
@@ -164,6 +172,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
 
+        const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas.customMaterial;
         }
@@ -225,8 +234,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                 if (!file) {
                     no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
-                } else
+                } else {
                     sprite.spriteFrame = file;
+                }
             });
         }
     }
