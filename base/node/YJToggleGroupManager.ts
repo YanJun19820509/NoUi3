@@ -120,6 +120,10 @@ export class YJToggleGroupManager extends Component {
             if (items[idx].isChecked) this.setCheckByUuid(items[idx].uuid);
             else
                 this.a_onCheck(items[idx]);
+        } else {
+            items.forEach(item => {
+                item.isChecked = false;
+            });
         }
     }
 

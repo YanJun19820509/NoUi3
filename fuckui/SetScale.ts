@@ -1,5 +1,5 @@
 
-import { ccclass, menu, property } from '../yj';
+import { Vec3, ccclass, menu, property } from '../yj';
 import { FuckUi } from './FuckUi';
 
 /**
@@ -21,8 +21,12 @@ export class SetScale extends FuckUi {
     @property({ tooltip: '乘以节点原有缩放' })
     isMultiply: boolean = false;
 
+    private oldScale: Vec3 = null;
+
     protected onDataChange(data: any) {
-        let temp = this.node.getScale();
+        if (!this.oldScale)
+            this.oldScale = this.node.getScale();
+        let temp = this.oldScale.clone();
         if (data instanceof Array)
             if (this.isMultiply) {
                 this.node.setScale(temp.multiply3f(data[0], data[1] || data[0], data[2] || 1));

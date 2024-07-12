@@ -19,6 +19,7 @@ import { no } from '../../no';
  *      count: number//需要重复创建个数
  *      max: number//最大重复创建个数
  *      type?: number,//需要创建的模板下标，默认0
+ *      fillType?: number//填充的模板下标
  * }
  */
 
@@ -38,13 +39,14 @@ export class YJRepeatBox extends YJDataWork {
     private _n: number = 0;
     private _max: number;
     protected afterDataInit() {
+        const fillType = (this.data.fillType == null) ? this.fillType : this.data.fillType;
         this._max = Math.max(this.data.max, this.node.children.length);
         this._n = this._max;
         let temp = this.templates[this.data.type || 0].tempNode;
         if (!temp) {
             no.err('YJRepeatBox tempNode is null!');
         }
-        let fill = this.templates[this.fillType]?.tempNode;
+        let fill = this.templates[fillType]?.tempNode;
         let n = this._max;
         for (let i = 0; i < n; i++) {
             let item = this.node.children[i];
@@ -77,27 +79,27 @@ export class YJRepeatBox extends YJDataWork {
         }
     }
 
-    private _set() {
-        let temp = this.templates[this.data.type || 0].tempNode;
-        let fill = this.templates[this.fillType]?.tempNode;
-        let i = this._max - this._n;
-        --this._n;
-        let item = this.node.children[i];
-        if (!item) {
-            item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
-            if (item) {
-                item.active = false;
-                item.parent = this.node;
-            }
-        } else {
-            if (i >= this.data.max) item.active = false;
-            else {
-                let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
-                item.getComponent('YJDynamicTexture')?.['packSpriteFrame'](sf);
-                item.active = true;
-            }
-        }
-    }
+    // private _set() {
+    //     let temp = this.templates[this.data.type || 0].tempNode;
+    //     let fill = this.templates[this.fillType]?.tempNode;
+    //     let i = this._max - this._n;
+    //     --this._n;
+    //     let item = this.node.children[i];
+    //     if (!item) {
+    //         item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);
+    //         if (item) {
+    //             item.active = false;
+    //             item.parent = this.node;
+    //         }
+    //     } else {
+    //         if (i >= this.data.max) item.active = false;
+    //         else {
+    //             let sf = i < this.data.count ? temp.getComponent(Sprite).spriteFrame : fill?.getComponent(Sprite).spriteFrame;
+    //             item.getComponent('YJDynamicTexture')?.['packSpriteFrame'](sf);
+    //             item.active = true;
+    //         }
+    //     }
+    // }
 
     // lateUpdate() {
     //     if (this._n == 0) return;

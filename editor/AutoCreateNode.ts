@@ -115,7 +115,6 @@ export class AutoCreateNode extends Component {
             // console.log(f.json);
             this.deleteConfigFile(dest + `/${name}.json`);
             this.createNodes(f.json);
-        }, () => {
             this.enabled = false;
         });
     }
@@ -584,8 +583,8 @@ export class AutoCreateNode extends Component {
         const a = name.split('_')[1];
         if (!a || a.indexOf('%') != 0) return;
         const b = a.replace('%', '');
-        if (b == 'x') no.scale(node, v3(-1, 1));
-        else if (b == 'y') no.scale(node, v3(1, -1));
+        if (b == 'x') no.scale(node, v3(-1, 1, 1));
+        else if (b == 'y') no.scale(node, v3(1, -1, 1));
     }
 
     /**
@@ -605,6 +604,6 @@ export class AutoCreateNode extends Component {
         const a = name.split('_')[1];
         if (a != 'scale') return;
         const b = Number(a[2]);
-        no.scale(node, v3(b, b));
+        no.scale(node, v3(b, b, 1));
     }
 }

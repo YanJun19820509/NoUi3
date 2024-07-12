@@ -71,9 +71,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (EDITOR) {
             if (this.loadFromAtlas && !this.loadAsset) {
                 this.setDynamicAtlas();
+                this.getComponent(YJVertexColorTransition).enabled = true;
             } else if (!this.loadFromAtlas && this.loadAsset) {
                 this.loadAsset = null;
                 this.dynamicAtlas = null;
+                this.getComponent(YJVertexColorTransition).enabled = false;
             }
         }
         this.initSpriteFrameInfo();

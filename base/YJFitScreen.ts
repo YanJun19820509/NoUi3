@@ -30,7 +30,6 @@ export class YJFitScreen extends Component {
 
     onLoad() {
         this.adapt();
-        no.log('YJFitScreen');
         view.on("canvas-resize", () => {
             no.log('window resize');
             this.adapt();
