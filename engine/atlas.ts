@@ -7,13 +7,14 @@ export class Atlas {
     public _texture: DynamicAtlasTexture;
     private _maxRect: MaxRects;
     private _dynamicTextureRect: any;
-    public readonly uuid: number;
+    public readonly uuid: string;
     // private _innerSpriteFrames: SpriteFrame[];
 
-    constructor(width: number, height: number) {
-        this.uuid = no.sysTime.now;
+    constructor(width: number, height: number, uuid?: string) {
+        uuid = (uuid || no.sysTime.now) + '@';
+        this.uuid = uuid + 'a';
         const texture = new DynamicAtlasTexture();
-        texture._uuid = `${no.sysTime.now}`;
+        texture._uuid = uuid + 't';
         texture.initWithSize(width, height);
         this._maxRect = new MaxRects(width, height);
         this._texture = texture;
@@ -491,7 +492,7 @@ js.mixin(dynamicAtlasManager['__proto__'], {
         if (EDITOR) return;
         if (!isValid(comp?.node)) return;
         //微信端不合图
-        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
+        if (no.notUseDynamicAtlas) return false;
         let a: any = comp.getComponent('YJDynamicTexture');
         if (!a) return;
         if (frame?.original) return;

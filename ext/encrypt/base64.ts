@@ -1,4 +1,4 @@
-import { no } from "../no";
+import { no } from "../../no";
 
 export namespace base64 {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

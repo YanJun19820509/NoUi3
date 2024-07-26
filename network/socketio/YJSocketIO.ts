@@ -4,7 +4,7 @@ import { ccclass } from '../../yj';
 // import * as socket from './socket.io.min.js';
 import { no } from '../../no';
 import { YJSocketInterface } from '../YJSocketInterface';
-import { encode, EncryptType } from '../../encrypt/encrypt';
+import { encode, EncryptType } from '../../../NoUi3/ext/encrypt/encrypt';
 
 /**
  * Predefined variables

@@ -1,4 +1,5 @@
-import { no } from "../../no";
+import { no } from "../../../no";
+
 // import CryptoJS from "./crypto-js.min.js"
 export namespace YJCrypto {
     // const CryptoJS = window['CryptoJS'];
@@ -82,8 +83,8 @@ export namespace YJCrypto {
     }
 
     export function aesWxDecode(encryptedData, sessionKey, iv) {
-        let iKey = window['CryptoJS'].enc.Base64.parse(sessionKey) ;
-        let iIv =  window['CryptoJS'].enc.Base64.parse(iv);
+        let iKey = window['CryptoJS'].enc.Base64.parse(sessionKey);
+        let iIv = window['CryptoJS'].enc.Base64.parse(iv);
         let decrypted = window['CryptoJS'].AES.decrypt(encryptedData, iKey, {
             iv: iIv,
             mode: window['CryptoJS'].mode.CBC,

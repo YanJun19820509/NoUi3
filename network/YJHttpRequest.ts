@@ -1,6 +1,6 @@
 
 import { ccclass, native, JSB, sys } from '../yj';
-import { decode, encode, EncryptType } from '../encrypt/encrypt';
+import { decode, encode, EncryptType } from '../../NoUi3/ext/encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 

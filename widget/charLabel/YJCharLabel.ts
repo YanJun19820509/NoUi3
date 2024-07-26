@@ -439,11 +439,11 @@ export class YJCharLabel extends Sprite {
     //已测量文字最大最小宽
     private _measuredWidth: { [k: string]: number } = {};
 
-    private _texture: Texture2D;
     private _needSet: boolean = true;
 
     private static fontMap: { [uuid: string]: TTFFont } = {};
     private static fontLoading: { [uuid: string]: boolean } = {};
+    private _packSucc: boolean = false;
 
     onLoad() {
         super.onLoad();
@@ -458,10 +458,11 @@ export class YJCharLabel extends Sprite {
     }
 
     onDestroy() {
+        if (!this.packToAtlas || !this.dynamicAtlas || !this._packSucc)
+            this.spriteFrame?.texture?.destroy();
         super.onDestroy();
         this.unscheduleAllCallbacks();
         this.node.targetOff(this);
-        this._texture?.destroy();
         this.clearCanvas();
     }
 
@@ -473,7 +474,8 @@ export class YJCharLabel extends Sprite {
 
     private setLabel(): void {
         if (EDITOR && !this._needSetLabel) return;
-        if (!isValid(this.node)) {
+        if (!this.enabledInHierarchy || !isValid(this.node)) {
+            this._needSet = true;
             return;
         }
         this._needSet = false;
@@ -843,25 +845,19 @@ export class YJCharLabel extends Sprite {
     private updateTexture() {
         const canvas = this.shareCanvas();
         if (!canvas.width || !canvas.height) return;
-
+        if (!this.packToAtlas || !this.dynamicAtlas)
+            this.spriteFrame?.texture?.destroy();
         const image = new ImageAsset(canvas);
-        this._texture = new Texture2D();
-        this._texture.image = image;
-        this._texture['_uuid'] = this.getUuid();
+        const texture = new Texture2D();
+        texture['_uuid'] = this.getUuid();
+        texture.image = image;
         let spriteFrame = new SpriteFrame();
         spriteFrame['_uuid'] = this.getUuid();
-        spriteFrame.texture = this._texture;
+        spriteFrame.texture = texture;
         this.spriteFrame = spriteFrame;
 
         if (this.packToAtlas && this.dynamicAtlas) {
-            // this.dynamicAtlas.packCanvasToDynamicAtlas(this, this.getUuid(), canvas, () => {
-            //     const image = new ImageAsset(canvas);
-            //     this._texture = new Texture2D();
-            //     this._texture.image = image;
-            //     let spriteFrame = new SpriteFrame();
-            //     spriteFrame.texture = this._texture;
-            //     this.spriteFrame = spriteFrame;
-            // });
+            this._packSucc = false;
             if (this.useJob)
                 YJJobManager.ins.execute(this.packSpriteFrame, this);
             else
@@ -871,7 +867,12 @@ export class YJCharLabel extends Sprite {
 
     private packSpriteFrame() {
         const s = this.dynamicAtlas.packSpriteFrame(this.spriteFrame, true);
-        if (s) this.spriteFrame = s;
+        if (s) {
+            this._packSucc = true;
+            this.spriteFrame.texture.destroy();
+            this.spriteFrame.destroy();
+            this.spriteFrame = s;
+        }
         return false;
     }
 

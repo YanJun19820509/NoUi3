@@ -36,19 +36,16 @@ export class YJRepeatBox extends YJDataWork {
     @property({ step: 1, tooltip: '填充类型，当重复个数不足最大个数时，用来填充的templates下标，如果找不到则不填充' })
     fillType: number = 0;
 
-    private _n: number = 0;
     private _max: number;
     protected afterDataInit() {
         const fillType = (this.data.fillType == null) ? this.fillType : this.data.fillType;
-        this._max = Math.max(this.data.max, this.node.children.length);
-        this._n = this._max;
         let temp = this.templates[this.data.type || 0].tempNode;
         if (!temp) {
             no.err('YJRepeatBox tempNode is null!');
         }
         let fill = this.templates[fillType]?.tempNode;
-        let n = this._max;
-        for (let i = 0; i < n; i++) {
+        let max = Math.max(this.data.max, this.node.children.length);
+        for (let i = 0; i < max; i++) {
             let item = this.node.children[i];
             if (!item) {
                 item = i < this.data.count ? instantiate(temp) : (fill ? instantiate(fill) : null);

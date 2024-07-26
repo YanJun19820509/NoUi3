@@ -101,7 +101,8 @@ export class YJToggleGroupManager extends Component {
         //onToggleChecked回调方法只有1个，则所有toggle checked共用。
         //否则按下标调用对应的回调方法
         let i = no.indexOfArray(this.getComponentsInChildren(Toggle), toggle, 'uuid');
-        (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
+        no.EventHandlerInfo.execute(this.onToggleChecked, i);
+        // (this.onToggleChecked[i] || this.onToggleChecked[0])?.execute(i);
     }
 
 

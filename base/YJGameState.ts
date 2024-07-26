@@ -67,6 +67,7 @@ export class YJGameState extends Component {
     }
 
     private onLowMemory() {
+        no.warn('内存不足警告');
         YJWindowManager.clearClosedPanel();
         no.GC();
         no.EventHandlerInfo.execute(this.onLowMemoryCalls);

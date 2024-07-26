@@ -31,6 +31,10 @@ export class YJRenderBase extends UIRenderer {
     private dataOffset: number = 0;
     private indexOffset: number = 0;
 
+    onDestroy() {
+        this._texture?.destroy();
+    }
+
     /**
      * 返回顶点数据结构，子类可根据需要重写此方法，返回自定义的顶点数据结构。
      * @returns {Attribute[]} 顶点数据结构。

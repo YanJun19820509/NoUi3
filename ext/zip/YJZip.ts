@@ -1,8 +1,6 @@
-
-import { ccclass, assetManager, BufferAsset } from '../yj';
-import { no } from '../../NoUi3/no';
+import { no } from '../../no';
+import { assetManager, BufferAsset, ccclass } from '../../yj';
 // import pako from './pako.min.js';
-
 /**
  * Predefined variables
  * Name = YJZip

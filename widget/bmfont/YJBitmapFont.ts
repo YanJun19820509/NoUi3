@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode, v3 } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode, v3, isValid } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 
@@ -194,6 +194,7 @@ export class YJBitmapFont extends Component {
     }
 
     private setFont(font: BitmapFont) {
+        if (!isValid(this)) return;
         const label = this.getComponent(Label);
         if (font) {
             label.useSystemFont = false;

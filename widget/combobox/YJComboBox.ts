@@ -90,7 +90,8 @@ export class YJComboBox extends YJDataWork {
                 }
             },
             dir: v ? -1 : 1,
-            x: v ? 0 : -10000
+            x: v ? 0 : -10000,
+            isShow: v
         };
         v ? no.EventHandlerInfo.execute(this.onShow) : no.EventHandlerInfo.execute(this.onHide);
 

@@ -44,6 +44,10 @@ export class SetSpriteFrame extends FuckUi {
         this.clearOnDisable && this.a_setEmpty();
     }
 
+    onDestroy() {
+        this.a_setEmpty();
+    }
+
     protected onDataChange(data: any) {
         this.lateSet(data);
     }
@@ -108,7 +112,8 @@ export class SetSpriteFrame extends FuckUi {
 
     public a_setEmpty(): void {
         if (this.sprite == null) return;
-        this.sprite.spriteFrame = null;
+        if (!this.getComponent(YJDynamicTexture))
+            no.assetBundleManager.release(this.sprite.spriteFrame);
     }
 
     public resetSprite() {

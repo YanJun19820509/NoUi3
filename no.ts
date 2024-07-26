@@ -14,6 +14,11 @@ export namespace no {
     let _isLogEnabled: boolean = DEBUG;
     let _isSpineEnable: boolean = true;
 
+    /**
+     * 不支持动态合图
+     */
+    export const notUseDynamicAtlas = sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS;
+
     export function setLogEnabled(v: boolean) {
         _isLogEnabled = v;
     }
@@ -802,6 +807,7 @@ export namespace no {
      * @param data 需要替换的数据，如{'a':1,'b':2,'c':3}，返回1:2:3  [1,2,3] 1:2:3
      */
     export function formatString(formatter: string, data: any[] | object): string {
+        if (data == null) return '';
         var s = String(formatter);
         let keys = Object.keys(data);
         keys.forEach(k => {
@@ -2515,7 +2521,7 @@ export namespace no {
     /**
      * 数据缓存类，包括localstorage、json配置、全局临时数据
      */
-    class DataCache extends EventTarget {
+    export class DataCache extends EventTarget {
         private _json: Data;
         private _tmp: Data;
         private _localPreKey: string = '';
@@ -2654,7 +2660,7 @@ export namespace no {
     export class AssetBundleManager {
 
         private remoteAssetsCache: any = {};
-        private _cacheAsset: { [k: string]: Asset } = {};
+        private _cacheAsset: { [k: string]: any } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
         private _loadingAsset: { [k: string]: boolean } = {};
 
@@ -2696,7 +2702,7 @@ export namespace no {
         public getPrefabNode(k: string): Node {
             const n = this.getCachedAsset<Prefab>(k);
             try {
-                if (n) return instantiate(n);
+                if (n && n.isValid) return instantiate(n);
                 return null;
             } catch (e) {
                 err('no getPrefabNode', e);
@@ -2705,7 +2711,7 @@ export namespace no {
         }
 
         public setPrefabNode(k: string, prefab: Prefab) {
-            console.log('setPrefabNode', k);
+            // console.log('setPrefabNode', k);
             this.cacheAsset(k, prefab);
             this.cacheAsset(prefab.uuid, prefab);
         }
@@ -3123,10 +3129,17 @@ export namespace no {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let paths: string[] = [];
                 for (const uuid in assetInfos) {
-                    if (!assetInfos[uuid].path || uuid.includes('@')) continue;
-                    paths[paths.length] = assetInfos[uuid].path;
+                    const a = assetInfos[uuid];
+                    if (a.path && !uuid.includes('@') && this.loadTypes.includes(a.ctor.name)) {
+                        paths[paths.length] = a.path;
+                    }
                 }
-                this.preloadFiles(bundleName, paths, onProgress);
+                // this.preloadFiles(bundleName, paths, onProgress);
+                bundle.preload(paths, Asset, (finished, total, item: any) => {
+                    onProgress && onProgress(finished / total);
+                }, (e, items) => {
+                    if (e) err('preloadFiles', e.message);
+                });
             } else {
                 this.loadBundle(bundleName, () => {
                     this.preloadAllFilesInBundle(bundleName, onProgress);
@@ -3324,7 +3337,7 @@ export namespace no {
         public decRef(asset: Asset): void {
             if (!asset) return;
             scheduleOnce(() => {
-                if (asset) {
+                if (asset.refCount > 0) {
                     asset.decRef();
                     // log('decRef', asset.uuid, asset.refCount);
                 }
@@ -3507,7 +3520,7 @@ export namespace no {
          * @param k 资源唯一标识uuid|url
          * @returns 
          */
-        public getCachedAsset<T extends Asset>(k: string): T {
+        public getCachedAsset<T>(k: string): T {
             return this._cacheAsset[k] as T;
         }
 
@@ -3516,7 +3529,7 @@ export namespace no {
          * @param k 资源唯一标识uuid|url
          * @param asset 资源
          */
-        public cacheAsset(k: string, asset: Asset) {
+        public cacheAsset(k: string, asset: any) {
             this._cacheAsset[k] = asset;
         }
 
@@ -3528,14 +3541,29 @@ export namespace no {
             return !!this.getCachedAsset(uuid);
         }
 
+        public getCachedAtlasJson(uuid: string) {
+            return this.getCachedAsset(uuid);
+        }
+
         public createTextureFromCache(uuid: string): Texture2D | null {
-            const image = this.getCachedAsset<ImageAsset>(uuid);
+            const image = this.getCachedAsset<ImageAsset>(uuid.split('@')[0]);
             if (!image) return null;
             let texture = new Texture2D();
             texture['_uuid'] = uuid;
             texture.image = image;
             return texture;
         }
+
+        public createSpriteFrameFromCache(uuid: string): SpriteFrame | null {
+            const t = this.createTextureFromCache(uuid);
+            if (!t) return null;
+            const s = new SpriteFrame();
+            s._uuid = uuid;
+            s.texture = t;
+            return s;
+        }
+
+        private loadTypes: string[] = ['ImageAsset', 'Prefab', 'JsonAsset'];
 
         /**
          * 加载目录下所有资源并放入缓存中，不支持同时加载多个目录，如果有需求，需要在外部根据实际性能情况做延迟加载
@@ -3550,7 +3578,7 @@ export namespace no {
                     base = 'db://' + bundle.base.replace(this.server + 'remote', 'assets');
                 let requests: { path?: string, uuid?: string }[] = [];
                 infos.forEach(a => {
-                    if (a.uuid.indexOf('@') == -1) {
+                    if (a.uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
                         requests[requests.length] = { path: a.path, uuid: a.uuid };
                     }
                 });
@@ -3559,12 +3587,39 @@ export namespace no {
                         if (item instanceof Prefab) {
                             const request = requests[i];
                             this.setPrefabNode(base + request.path + '.prefab', item);
-                        } else if (item instanceof ImageAsset)
+                        } else if (item instanceof ImageAsset) {
                             this.cacheImage(item);
+                        } else if (item instanceof JsonAsset) {
+                            this.cacheAsset(item.uuid, item.json);
+                        }
                     });
                     onComplete?.();
                 });
             }
+        }
+
+        public loadAllPrefabsInBundle(bundleName: string) {
+            const bundle = this.getLoadedBundle(bundleName),
+                assetInfos = bundle['_config'].assetInfos._map,
+                base = 'db://' + bundle.base.replace(this.server + 'remote', 'assets');
+            let requests: any[] = [];
+            for (const uuid in assetInfos) {
+                const info = assetInfos[uuid];
+                if (info.ctor.name == 'Prefab')
+                    requests[requests.length] = { path: info.path, uuid: info.uuid };
+            }
+            this.loadAnyFiles(requests, null, items => {
+                items.forEach((item, i) => {
+                    if (item instanceof Prefab) {
+                        const request = requests[i];
+                        this.setPrefabNode(base + request.path + '.prefab', item);
+                    } else if (item instanceof ImageAsset) {
+                        this.cacheImage(item);
+                    } else if (item instanceof JsonAsset) {
+                        this.cacheAsset(item.uuid, item.json);
+                    }
+                });
+            });
         }
 
         public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
@@ -5230,6 +5285,7 @@ export namespace no {
      * 垃圾回收
      */
     export function GC() {
+        warn('触发GC，进行垃圾回收');
         if (sys.platform == sys.Platform.WECHAT_GAME)
             window['wx'].triggerGC();
         else

@@ -53,10 +53,10 @@ export class YJVertexColorTransition extends Component {
         this._updateVB();
     }
 
-    private get opacity(): number {
-        //不要用this.renderComp.renderEntity.localOpacity，在h5和原生下这个返回的值不一致
-        return this.node._uiProps.localOpacity;
-    }
+    // private get opacity(): number {
+    //     //不要用this.renderComp.renderEntity.localOpacity，在h5和原生下这个返回的值不一致
+    //     return this.node._uiProps.localOpacity / 255;
+    // }
 
     private _setColor() {
         let c = this.renderComp.color;
@@ -143,12 +143,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        const colorA = this.opacity;
+        // const colorA = this.opacity;
         for (let i = 0; i < 4; i++, colorOffset += renderData.floatStride) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
+            // vData[colorOffset + 3] = colorA;
         }
     }
 
@@ -162,12 +162,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        const colorA = this.opacity;
+        // const colorA = this.opacity;
         for (let i = 0; i < 16; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
+            // vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
@@ -188,12 +188,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        const colorA = this.opacity;
+        // const colorA = this.opacity;
         for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
+            // vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
@@ -209,12 +209,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        const colorA = this.opacity;
+        // const colorA = this.opacity;
         for (let i = 0; i < vertexCount; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
+            // vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }
@@ -228,12 +228,12 @@ export class YJVertexColorTransition extends Component {
         const colorR = color.x;
         const colorG = color.y;
         const colorB = color.z;
-        const colorA = this.opacity;
+        // const colorA = this.opacity;
         for (let i = 0; i < 4; i++) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
-            vData[colorOffset + 3] = colorA;
+            // vData[colorOffset + 3] = colorA;
             colorOffset += stride;
         }
     }

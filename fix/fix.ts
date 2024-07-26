@@ -29,8 +29,9 @@ const _a = no.setIntervalF(function () {
         const _walk = batcher2D.walk;
         js.mixin(batcher2D, {
             walk(node: Node, level = 0) {
-                if (no.visible(node))
+                if (no.visible(node)) {
                     _walk.call(this, node, level);
+                }
             }
         });
     }

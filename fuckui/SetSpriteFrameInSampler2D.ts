@@ -95,13 +95,16 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDestroy() {
-        if (this._singleSpriteFrame) {
-            this._singleSpriteFrame.decRef();
+        this.getComponent(Sprite).spriteFrame = null;
+        if (this._singleSpriteFrame && !this.loadFromAtlas) {
+            no.assetBundleManager.decRef(this._singleSpriteFrame);
+            // this._singleSpriteFrame.decRef();
             this._singleSpriteFrame = null;
         }
     }
 
     public setDynamicAtlas() {
+        this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
         if (!this.loadFromAtlas) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -117,8 +120,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!!name && this.defaultName != name) {
             this.defaultName = name;
         }
-        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid))
+        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid)) {
             this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
+            //如果是散图则不从图集加载，散图uuid以@f9941结尾
+            this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+        }
     }
 
     private _data: any;
@@ -181,7 +187,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
-            no.err('setSpriteFrame not get', name);
+            no.err('这里需要检查下资源使用问题', this.dynamicAtlas?.node.name, this.node.name, name);
             this.resetSprite();
             return;
         }
@@ -230,16 +236,20 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (this.defaultSpriteFrameUuid) {
             no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
             const sprite = this.getComponent(Sprite);
-            // if (!sprite.customMaterial) {
-            //     sprite.customMaterial = this.dynamicAtlas?.customMaterial;
-            // }
-            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
-                if (!file) {
-                    no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
-                } else {
-                    sprite.spriteFrame = file;
-                }
-            });
+            const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
+            if (s) {
+                sprite.spriteFrame = s;
+                this._singleSpriteFrame = s;
+            } else {
+                no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                    if (!file) {
+                        no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
+                    } else {
+                        sprite.spriteFrame = file;
+                        this._singleSpriteFrame = file;
+                    }
+                });
+            }
         }
     }
 

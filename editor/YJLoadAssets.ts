@@ -1,6 +1,6 @@
 import {
     ccclass, property, menu, Component, Node,
-    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, sys, Sprite,
+    Asset, SpriteFrame, Material, Prefab, JsonAsset, Texture2D, SpriteAtlas, Sprite,
     ImageAsset
 } from '../yj';
 import { no } from '../no';
@@ -145,14 +145,9 @@ export class PrefabInfo extends LoadAssetsInfo {
     }
 }
 
-/**
- * 缓存atlas.json文件
- */
-const AssetAtlasJsonMap: Map<string, any> = new Map();
-const TextureMap: Map<string, [Texture2D, number, number]> = new Map();
+const TextureMap: Map<string, [Texture2D, number, number, number]> = new Map();
 const MaxTextureSize: number = 1024 * 1024 * 50; // 200M
 const LanguageBundleMap: Map<string, [Texture2D, any]> = new Map();
-let TextureAllSize: number = 0;
 
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
@@ -256,6 +251,9 @@ export class YJLoadAssets extends Component {
         }
     }
 
+
+    private static TextureAllSize: number = 0;
+
     private atlases: any[] = [];
     private textures: Texture2D[] = [];
     private materials: Material[] = [];
@@ -337,8 +335,9 @@ export class YJLoadAssets extends Component {
                 this.textures[this.textures.length] = null;
                 textureIdx[assetUuid] = this.textures.length - 1;
             }
-            if (this.hasAtlasJson(textureInfo.atlasJsonUuid)) {
-                this.atlases[this.atlases.length] = this.getAtlasJson(textureInfo.atlasJsonUuid);
+            const atlasJson = this.getAtlasJson(textureInfo.atlasJsonUuid);
+            if (atlasJson != null) {
+                this.atlases[this.atlases.length] = atlasJson;
             } else {
                 if (textureInfo.path) {
                     const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
@@ -479,7 +478,6 @@ export class YJLoadAssets extends Component {
     }
 
     private createMaterial() {
-        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return;
         const ssm = this.getComponent(YJSetSample2DMaterial);
         if (ssm && ssm.enabled && this.textures.length) {
             ssm.setAtlases(this.textures);
@@ -583,30 +581,28 @@ export class YJLoadAssets extends Component {
     }
 
     private hasTexture(uuid: string): boolean {
-        if (!TextureMap.has(uuid)) {
-            const t = no.assetBundleManager.createTextureFromCache(uuid);
-            if (t) {
-                this.addTexure(uuid, t);
-                return true;
-            }
-            return false;
-        }
-        return true;
+        return TextureMap.has(uuid) || no.assetBundleManager.hasImage(uuid);
     }
 
     private getTexture(uuid: string): Texture2D | null {
-        const item = TextureMap.get(uuid) || null;
-        if (item)
+        const item = TextureMap.get(uuid);
+        if (item) {
             ++item[1];
-        return item[0];
+            return item[0];
+        } else {
+            const t = no.assetBundleManager.createTextureFromCache(uuid);
+            this.addTexure(uuid, t);
+            return t;
+        }
     }
 
     private addTexure(uuid: string, tex: Texture2D): void {
-        TextureMap.set(uuid, [tex, 1, no.sysTime.now]);
-        const size = tex.getGFXTexture()?.size || 0;
-        TextureAllSize += size; // 更新纹理总大小
-        no.warn(`纹理格式及大小：${uuid} ${tex.getGFXTexture()?.format == 89 ? "astc" : "rgba8"} ${Math.ceil(size / 1024)}K`);
-        no.warn(`当前缓存纹理总大小：${Math.ceil(TextureAllSize / 1048576)}M`)
+        const format = tex.getGFXTexture()?.format == 89 ? "astc" : "rgba8",
+            size = (tex.getGFXTexture()?.size || 0) * (format == "astc" ? 1 : 2);
+        TextureMap.set(uuid, [tex, 1, no.sysTime.now, size]);
+        YJLoadAssets.TextureAllSize += size; // 更新纹理总大小
+        no.warn(`纹理格式及大小：${uuid} ${format} ${Math.ceil(size / 1024)}K`);
+        no.warn(`当前缓存纹理总大小：${Math.ceil(YJLoadAssets.TextureAllSize / 1048576)}M`)
         this.releaseTexture();
     }
 
@@ -618,33 +614,29 @@ export class YJLoadAssets extends Component {
         }
     }
 
-    private hasAtlasJson(uuid: string): boolean {
-        return AssetAtlasJsonMap.has(uuid);
-    }
-
     private getAtlasJson(uuid: string): any | null {
-        return AssetAtlasJsonMap.get(uuid) || null;
+        return no.assetBundleManager.getCachedAtlasJson(uuid) || null;
     }
 
     private setAtlasJson(uuid: string, json: any): void {
-        AssetAtlasJsonMap.set(uuid, json);
+        no.assetBundleManager.cacheAsset(uuid, json)
     }
 
     private releaseTexture() {
-        if (TextureAllSize < MaxTextureSize) return;
+        if (YJLoadAssets.TextureAllSize < MaxTextureSize) return;
         no.warn('纹理缓存已超过上限，开始释放较早的纹理');
         const uuids = no.MapKeys2Array(TextureMap);
         uuids.sort((a, b) => TextureMap.get(a)![2] - TextureMap.get(b)![2]);
         for (const uuid of uuids) {
             const item = TextureMap.get(uuid) || null;
             if (item && item[1] === 0) {
-                const size = item[0].getGFXTexture().size;
-                TextureAllSize -= size; // 更新纹理总大小
-                TextureMap.delete(uuid); // 删除纹理对象
+                const size = item[3];
+                YJLoadAssets.TextureAllSize -= size; // 更新纹理总大小
                 // no.assetBundleManager.release(item[0], true); // 释放纹理资源
                 item[0].destroy(); // 销毁纹理对象
+                TextureMap.delete(uuid); // 删除纹理对象
                 no.warn(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
-                if (TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
+                if (YJLoadAssets.TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
             }
         }
     }

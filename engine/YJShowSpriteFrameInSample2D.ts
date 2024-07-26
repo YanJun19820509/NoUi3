@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component } from '../yj';
+import { ccclass, property, Component, Button } from '../yj';
 
 /**
  * Predefined variables
@@ -36,7 +36,9 @@ export class YJShowSpriteFrameInSample2D extends Component {
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
         list.forEach(a => {
             if (v) a.resetSprite();
-            else a.removeSprite();
+            else {
+                a.removeSprite();
+            }
         });
         list = this.getComponentsInChildren('YJBitmapFont');
         list.forEach(a => {
@@ -61,7 +63,20 @@ export class YJShowSpriteFrameInSample2D extends Component {
         list = this.getComponentsInChildren('SetSpriteFrame');
         list.forEach(a => {
             if (v) a.resetSprite();
-            else a.removeSprite();
+            else {
+                a.removeSprite();
+            }
         });
+        if (!v) {
+            list = this.getComponentsInChildren(Button);
+            list.forEach((a: Button) => {
+                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame') || !a.getComponent('Sprite')) {
+                    a.normalSprite = null;
+                    a.hoverSprite = null;
+                    a.pressedSprite = null;
+                    a.disabledSprite = null;
+                }
+            });
+        }
     }
 }

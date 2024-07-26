@@ -3,8 +3,7 @@ import {
     EDITOR, ccclass, property, disallowMultiple, SpriteFrame, Label, UIRenderer, Texture2D,
     Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton,
     Graphics,
-    Component,
-    sys
+    Component
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas, DynamicAtlasTexture } from './atlas';
@@ -109,7 +108,7 @@ export class YJDynamicAtlas extends Component {
         YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
         this.atlas = null;
-        this._spriteTexture?.destroy();
+        this._spriteTexture = null;
     }
 
     public get texture() {
@@ -124,7 +123,7 @@ export class YJDynamicAtlas extends Component {
 
     private initAtlas() {
         if (!this.atlas) {
-            this.atlas = new Atlas(this.width, this.height);
+            this.atlas = new Atlas(this.width, this.height, this.node.name);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
             this._spriteTexture = this.atlas._texture;
             // this._spriteTexture = new DynamicAtlasTexture();
@@ -339,7 +338,7 @@ export class YJDynamicAtlas extends Component {
      */
     public get isWork(): boolean {
         //ios微信不支持合图
-        // if (sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS) return false;
+        if (no.notUseDynamicAtlas) return false;
         let a = !dynamicAtlasManager.enabled && this.enabled && !EDITOR;
         return a;
     }
@@ -376,7 +375,7 @@ export class YJDynamicAtlas extends Component {
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets || [0, 0, 0, 0];
         } else {
-            newSpriteFrame.uvSliced = this.defaultUVSliced(spriteFrame.uv, spriteFrame.rotated);
+            newSpriteFrame.uvSliced = this.defaultUVSliced(spriteFrame.uv, false);
             newSpriteFrame['_capInsets'] = [0, 0, 0, 0];
         }
         return newSpriteFrame;

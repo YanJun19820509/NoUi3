@@ -35,6 +35,7 @@ export class YJi18n extends no.Data {
     public loadProperties(fileUrl: string, cb?: () => void) {
         no.assetBundleManager.loadJSON(fileUrl, item => {
             this.data = item.json;
+            item.decRef();
             cb?.();
         });
     }

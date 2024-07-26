@@ -202,7 +202,7 @@ export class AutoCreateNode extends Component {
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
         let sf = this.getSpriteFrame(c.name);
         let is9 = false;
-        if (sf?.insetTop != 0 || sf?.insetBottom != 0 || sf?.insetRight != 0 || sf?.insetLeft != 0) {
+        if (sf && (sf.insetTop != 0 || sf.insetBottom != 0 || sf.insetRight != 0 || sf.insetLeft != 0)) {
             is9 = true;
         }
         if (c.name.indexOf('_scale_') > 0) {
@@ -210,10 +210,11 @@ export class AutoCreateNode extends Component {
             n.name = aa[0];
             no.scale(n, new Vec3(aa[1], aa[1], 1));
         }
-        s.sizeMode = Sprite.SizeMode.CUSTOM;
         if (c['9'] || is9) {
+            s.sizeMode = Sprite.SizeMode.CUSTOM;
             s.type = Sprite.Type.SLICED;
         } else {
+            s.sizeMode = Sprite.SizeMode.RAW;
             s.type = Sprite.Type.SIMPLE;
         }
 
