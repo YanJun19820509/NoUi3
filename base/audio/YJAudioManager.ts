@@ -157,6 +157,15 @@ export class YJAudioManager extends Component {
     }
 
     /**
+     *设置音量
+     *
+     * @param {number} n
+     */
+    public setVolume(n: number) {
+        this.audioSource.volume = n;
+    }
+
+    /**
      * 恢复音效
      */
     public resumeEffect() {
@@ -195,7 +204,7 @@ export class YJAudioManager extends Component {
     private _playClip(clip: AudioClip, path?: string, loop = true): void {
         this.setClip(path, clip);
         if (loop) {
-            this.audioSource.stop()
+            this.audioSource.stop();
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
             this.audioSource.play();

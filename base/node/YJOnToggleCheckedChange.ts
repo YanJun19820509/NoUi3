@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, Toggle } from 'cc';
+import { _decorator, Component, isValid, Node, Toggle } from 'cc';
 import { no } from '../../no';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, requireComponent } = _decorator;
 
 /**
@@ -31,11 +32,18 @@ export class YJOnToggleCheckedChange extends Component {
             this.lastState = this.getComponent(Toggle).isChecked;
     }
 
-    update() {
+    protected start(): void {
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (!isValid(this?.node)) return false;
         let isChecked = this.getComponent(Toggle).isChecked;
-        if (isChecked == this.lastState) return;
-        this.lastState = isChecked;
-        if (isChecked) no.EventHandlerInfo.execute(this.onChecked);
-        else no.EventHandlerInfo.execute(this.onNotChecked);
+        if (isChecked != this.lastState) {
+            this.lastState = isChecked;
+            if (isChecked) no.EventHandlerInfo.execute(this.onChecked);
+            else no.EventHandlerInfo.execute(this.onNotChecked);
+        }
+        return true;
     }
 }

@@ -1,8 +1,10 @@
 
-import { _decorator, sp, assetManager } from 'cc';
+import { _decorator, sp } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-const { ccclass, property, menu, requireComponent } = _decorator;
+import { EDITOR } from 'cc/env';
+import { YJSpineManager } from '../base/YJSpineManager';
+const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
  * Predefined variables
@@ -18,59 +20,108 @@ const { ccclass, property, menu, requireComponent } = _decorator;
 
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画:{path, skin, animation, loop, timeScale})')
+@executeInEditMode()
 @requireComponent(sp.Skeleton)
 export class SetSpine extends FuckUi {
 
     @property
     autoPlayOnEnable: boolean = false;
+    @property
+    spineUrl: string = '';
     @property({ visible() { return this.autoPlayOnEnable; } })
     animationName: string = '';
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
+    @property({ tooltip: '当显示全屏界面时，是否支持disable' })
+    canDisable: boolean = true;
+
+    /**当帧率较低时禁止播放spine */
+    public static disableSpineWhenLowFPS: boolean = false;
 
     curPath: string;
-    cacheSke: sp.SkeletonData;
+    private canSetSpine: boolean = true;
+    private isFullScreenHide: boolean = false;
+
+    protected update(): void {
+        if (!EDITOR) return;
+        const spine = this.getComponent(sp.Skeleton);
+        if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
+            no.getAssetUrlInEditorMode(spine.skeletonData._uuid, url => {
+                if (!url) return;
+                this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
+                this.animationName = spine.animation;
+                spine.skeletonData = null;
+            });
+        }
+    }
+
+    //性能判断
+    private checkFPS(dt: number) {
+        if (SetSpine.disableSpineWhenLowFPS) {
+            const fps = 1 / dt;
+            if (fps < 45 && this.canSetSpine) {
+                this.canSetSpine = false;
+                this.getComponent(sp.Skeleton).enabled = false;
+            } else if (fps > 55 && !this.canSetSpine) {
+                this.canSetSpine = true;
+            }
+        }
+    }
 
     onEnable() {
         if (this.autoPlayOnEnable) {
             let spine = this.getComponent(sp.Skeleton);
-            if (spine.loop) this.a_playLoop(null, this.animationName);
-            else this.a_playOnce(null, this.animationName);
+            this.onDataChange({ animation: this.animationName, loop: spine.loop });
         }
     }
 
+    onDisable() {
+        this.a_clearData();
+        let spine = this.getComponent(sp.Skeleton);
+        spine?.clearTracks();
+    }
+
     onDestroy() {
-        this.cacheSke && no.assetBundleManager.decRef(this.cacheSke);
+        YJSpineManager.ins.set(this.curPath);
     }
 
     protected onDataChange(data: any) {
-        let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number } = data;
+        if (!this.canSetSpine) return;
+        let { path, skin, animation, loop, timeScale }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number; } = data;
         const spine = this.getComponent(sp.Skeleton);
+
+        if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
+            path = this.spineUrl;
+        }
 
         /**
          * 如果传入路径和之前的资源路径不一致   释放之前的
          */
         if (path && this.curPath && this.curPath != path) {
-            spine?.skeletonData?.decRef();
+            no.assetBundleManager.decRef(spine?.skeletonData);
         }
 
+        if (timeScale)
+            spine.timeScale = timeScale;
+
         if (path && this.curPath != path) {
-            no.assetBundleManager.loadSpine(path, res => {
-                if (!spine?.isValid) return;
+            YJSpineManager.ins.get(path).then(res => {
+                if (!spine?.isValid) {
+                    no.assetBundleManager.decRef(res);
+                    return;
+                }
                 this.curPath = path;
-
+                //在设置新SkeletonData 之前清理下RenderData
+                spine.destroyRenderData();
                 spine.skeletonData = res;
-                this.cacheSke = res;
 
-                spine.timeScale = timeScale || 1;
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (loop) this.a_playLoop(tempStr);
                 else this.a_playOnce(tempStr);
             });
         } else if (animation != null) {
-            spine.timeScale = timeScale || 1;
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (loop) this.a_playLoop(tempStr);
             else this.a_playOnce(tempStr);
@@ -129,5 +180,28 @@ export class SetSpine extends FuckUi {
             this?.endCall?.execute();
             spine?.setCompleteListener(() => { });
         });
+    }
+
+    //todo 对循环播放的动画考虑按需暂停
+
+    public setSpineEnable(v: boolean) {
+        if (!this.canSetSpine) return;
+        if (!this.canDisable) return;
+        const spine = this.getComponent(sp.Skeleton);
+        if (!spine.node.activeInHierarchy) return;
+        if (v && !this.isFullScreenHide) {
+            return;
+        }
+        if (!v && !spine.enabled) {
+            this.isFullScreenHide = false;
+            return;
+        }
+        if (v) {
+            spine.enabled = true;
+            this.isFullScreenHide = false;
+        } else {
+            this.isFullScreenHide = true;
+            spine.enabled = false;
+        }
     }
 }

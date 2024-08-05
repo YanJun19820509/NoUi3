@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, v3, Vec2, Vec3, math } from 'cc';
+import { _decorator, Component, Node, v3, Vec2, Vec3, math, game } from 'cc';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJMoveAlongWithPathDelegate } from './YJMoveAlongWithPathDelegate';
@@ -68,6 +68,7 @@ export class SetMoveAlongWithPath extends FuckUi {
         this.moveDuration = Vec3.distance(p1, p2) / this.speed;
         this.moveVector = p2.clone().subtract(p1).divide3f(this.moveDuration, this.moveDuration, this.moveDuration);
         this.delegate?.onChangeDirection(p1, p2, this.moveVector);
+        this.requestAnimationFrameMove();
     }
 
     private startMove() {
@@ -85,6 +86,7 @@ export class SetMoveAlongWithPath extends FuckUi {
 
     public a_resumeMove(): void {
         this.paused = false;
+        this.requestAnimationFrameMove();
         this.delegate?.onResume();
     }
 
@@ -125,19 +127,6 @@ export class SetMoveAlongWithPath extends FuckUi {
         this.speedChanged = false;
     }
 
-    update(dt: number) {
-        this.checkSpeedChangeEnd(dt);
-        if (this.paused || this.moveDuration <= 0) return;
-        this.node.position = this.node.position.clone().add(this.moveVector.clone().multiplyScalar(dt));
-        this.delegate?.onMoving(this);
-        this.moveDuration -= dt;
-        if (this.moveDuration <= 0) {
-            this.delegate?.onReach(this.paths[this.step]);
-            this.step++;
-            this.move();
-        }
-    }
-
     public a_clear() {
         this.moveDuration = 0;
         this.moveVector = null;
@@ -147,5 +136,27 @@ export class SetMoveAlongWithPath extends FuckUi {
 
     public a_toNextStep() {
         this.step++;
+    }
+
+    private moveByFrame(dt: number) {
+        if (!no.checkValid(this.node)) return;
+        this.checkSpeedChangeEnd(dt);
+        if (this.paused || this.moveDuration <= 0) return;
+        this.node.position = this.node.position.clone().add(this.moveVector.clone().multiplyScalar(dt));
+        this.delegate?.onMoving(this);
+        this.moveDuration -= dt;
+        if (this.moveDuration <= 0) {
+            this.delegate?.onReach(this.paths[this.step]);
+            this.step++;
+            this.move();
+        } else {
+            this.requestAnimationFrameMove();
+        }
+    }
+
+    private requestAnimationFrameMove(){
+        requestAnimationFrame(() => {
+            this.moveByFrame(game.frameTime * .001);
+        });
     }
 }

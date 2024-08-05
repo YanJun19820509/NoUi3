@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, view } from 'cc';
+import { _decorator, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers } from 'cc';
 import { EDITOR } from 'cc/env';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';
@@ -59,7 +59,6 @@ export class YJScrollPanel extends Component {
     private doubleClickScaleToMax: boolean;
     private needCheckCheckRange: boolean = true;
     private startMove: boolean = false;
-    private findNum: number = 0;
 
     onLoad() {
         if (EDITOR) {
@@ -92,7 +91,6 @@ export class YJScrollPanel extends Component {
         this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this, true);
         this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this, true);
         this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);
-        this.findNum = 0;
         // this.node.on(Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this, true);
     }
 
@@ -146,35 +144,31 @@ export class YJScrollPanel extends Component {
     }
 
     public scrollToTarget(targetType: string, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
-        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
-        this.findNum++;
-        if (!target) {
-            if (this.findNum >= 100) return;
-            this.scheduleOnce(() => {
-                this.scrollToTarget(targetType, offset, duration, cb);
-            }, 1 / 30);
-            console.error('scrollToTargetAndScale找不到target：', targetType);
-            return;
-        }
-        this.findNum = 0;
-        cb?.(target);
-        this.scrollTo(this.fitTargetToCenter(target), offset, duration);
+        const f = () => {
+            let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            if (!target) {
+                console.error('scrollToTargetAndScale找不到target：', targetType);
+                return;
+            }
+            this.unschedule(f);
+            cb?.(target);
+            this.scrollTo(this.fitTargetToCenter(target), offset, duration);
+        };
+        this.schedule(f, .1, 100);
     }
 
     public scrollToTargetAndScale(targetType: string, scale: number, offset?: math.Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
-        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
-        this.findNum++;
-        if (!target) {
-            if (this.findNum >= 100) return;
-            this.scheduleOnce(() => {
-                this.scrollToTargetAndScale(targetType, scale, offset, duration, cb);
-            }, 1 / 30);
-            console.error('scrollToTargetAndScale找不到target：', targetType);
-            return;
-        }
-        this.findNum = 0;
-        cb?.(target);
-        this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, offset, duration);
+        const f = () => {
+            let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            if (!target) {
+                console.error('scrollToTargetAndScale找不到target：', targetType);
+                return;
+            }
+            this.unschedule(f);
+            cb?.(target);
+            this.scrollToAndScale(this.fitTargetToCenter(target, scale), scale, offset, duration);
+        };
+        this.schedule(f, .1, 100);
     }
 
     public scaleTo(scale: number, duration?: number): void {
@@ -207,6 +201,7 @@ export class YJScrollPanel extends Component {
             e.preventSwallow = true;
             return;
         }
+        no.setMultiTouch(true);
         this.startTouchPos = this.touchUILocationAR(e);
         let touches = e.getAllTouches();
         this.startDis = null;

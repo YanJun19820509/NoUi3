@@ -1,11 +1,10 @@
 
-import { _decorator, Component, Node, macro } from 'cc';
+import { _decorator, Component, Node, macro, isValid } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
 import { YJFuckUiRegister } from './YJFuckUiRegister';
 import { YJJobManager } from './YJJobManager';
-import { YJComponent } from './YJComponent';
 const { ccclass, property, menu, requireComponent, executeInEditMode } = _decorator;
 
 /**
@@ -24,7 +23,7 @@ const { ccclass, property, menu, requireComponent, executeInEditMode } = _decora
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @requireComponent(YJFuckUiRegister)
 @executeInEditMode()
-export class YJDataWork extends YJComponent {
+export class YJDataWork extends Component {
     @property(YJFuckUiRegister)
     register: YJFuckUiRegister = null;
 
@@ -34,11 +33,11 @@ export class YJDataWork extends YJComponent {
     protected _data: no.Data = new no.Data();
 
     private changedDataKeys: string[] = [];
+    private _dataChanged: boolean = false;
 
     private _loaded: boolean = false;
 
     protected onDestroy(): void {
-
     }
 
     onLoad() {
@@ -54,31 +53,29 @@ export class YJDataWork extends YJComponent {
         this.register.init();
     }
 
-    lateUpdate(dt: number) {
-        super.lateUpdate(dt);
-        this.setChangedDataToUi();
-    }
-
     /**
      * 初始化，可手动执行，或在onLoad时自动执行，若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      * @returns
      */
     public init() {
-        this._setting = false;
         if (!this._loaded) return;
         this.afterInit();
-        this.clearUpdateHandlers();
-        let n = 180;
-        this.addUpdateHandlerByFrame(() => {
-            n--;
-            if (!!this.data) {
-                this.afterDataInit();
-                return false;
-            }
-            if (n <= 0)
-                return false;
-            return true;
-        })
+        const afterDataInit = this['afterDataInit'];
+        if (typeof afterDataInit == 'function') {
+            this.unschedule(this._checkData);
+            if (!this.data)
+                this.schedule(this._checkData, 0, 180);
+            else afterDataInit.call(this);
+        }
+    }
+
+    private _checkData() {
+        if (!!this.data) {
+            this.unschedule(this._checkData);
+            const afterDataInit = this['afterDataInit'];
+            if (typeof afterDataInit == 'function')
+                afterDataInit.call(this);
+        }
     }
 
     public get data(): any {
@@ -99,31 +96,39 @@ export class YJDataWork extends YJComponent {
         this._data.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
+        this._dataChanged = true;
+    }
+
+    protected lateUpdate(dt: number): void {
+        if (this._dataChanged) {
+            this.setChangedDataToUi();
+            this._dataChanged = false;
+        }
     }
 
     public clear(): void {
         this._data.clear();
     }
 
-    private _setting: boolean = false;
     private setChangedDataToUi() {
         if (!this?.node?.isValid) return;
-        if (this._setting) return;
+        if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-        this._setting = true;
+
         let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
-        let k = keys.shift();
-        while (k) {
-            this.onValueChange(k);
-            k = keys.shift();
-        }
-        this._setting = false;
+        this.changedDataKeys.length = 0;
+        // keys.forEach(k => {
+        //     this.onValueChange(k);
+        // });
+        // keys = null;
+        YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
 
-    private iterateChangedData() {
-        let k = this.changedDataKeys.shift();
-        if (k == undefined) return false;
+    private iterateChangedData(keys: string[]) {
+        if (!isValid(this?.node) || !keys?.length) return false;
+        let k = keys.shift();
         this.onValueChange(k);
+        return true;
     }
 
     private onValueChange(key: string, value?: any) {
@@ -167,10 +172,10 @@ export class YJDataWork extends YJComponent {
     protected afterInit() {
 
     }
-    /**此时data一定有值 */
-    protected afterDataInit() {
+    /**此时data一定有值，子类按需实现该方法 */
+    // protected afterDataInit() {
 
-    }
+    // }
 
 
 }

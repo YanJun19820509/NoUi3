@@ -1,8 +1,9 @@
 
-import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Component, SpriteFrame, LabelOutline, UITransform } from 'cc';
+import { _decorator, Label, CacheMode, Sprite, RichText, BitmapFont, RenderComponent, Component, SpriteFrame, LabelOutline, UITransform, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
+import { YJJobManager } from '../base/YJJobManager';
 const { ccclass, property, disallowMultiple, executeInEditMode } = _decorator;
 
 /**
@@ -74,12 +75,6 @@ export class YJDynamicTexture extends Component {
         }
         frame = frame || sprite?.spriteFrame;
         if (!frame) return;
-        if (this.dynamicAtlas?.needWait()) {
-            this.scheduleOnce(() => {
-                this.packSpriteFrame(frame);
-            });
-            return;
-        }
         this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, this.canRotate, () => {
             sprite.spriteFrame = frame;
         });
@@ -98,16 +93,7 @@ export class YJDynamicTexture extends Component {
             label.string = text;
             return;
         }
-        if (this.dynamicAtlas?.needWait()) {
-            this.scheduleOnce(() => {
-                this.packLabelFrame(text);
-            });
-            return;
-        }
-
-        // if (this.needClear)
-        //     this.dynamicAtlas?.removeFromDynamicAtlas(label.ttfSpriteFrame);
-        else if (label.ttfSpriteFrame) {
+        if (label.ttfSpriteFrame) {
             label.ttfSpriteFrame?._resetDynamicAtlasFrame();
             label.ttfSpriteFrame._uuid = '';
         }
@@ -131,7 +117,13 @@ export class YJDynamicTexture extends Component {
         frame._uuid = this.createLabelFrameUuid(label);
         frame.rotated = false;
 
-        this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
+        this.scheduleOnce(() => {
+            YJJobManager.ins.execute(() => {
+                if (!isValid(this?.node) || !this?.node?.activeInHierarchy) return false;
+                this.dynamicAtlas?.packToDynamicAtlas(label, frame, this.canRotate);
+                return false;
+            }, this);
+        }, 1);
     }
 
     public createLabelFrameUuid(label: Label, str?: string): string {

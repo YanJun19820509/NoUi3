@@ -1,5 +1,5 @@
 
-import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math, Skeleton } from 'cc';
+import { _decorator, Component, SpriteFrame, Label, Renderable2D, dynamicAtlasManager, Texture2D, Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, RenderComponent, size, math,  director, sp } from 'cc';
 import { EDITOR } from 'cc/env';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -40,8 +40,6 @@ export class YJDynamicAtlas extends Component {
     public atlas: Atlas;
 
     private spriteFrameMap: any = {};
-
-    private waitToPackCompNum: number = 0;
 
     //控制合图是否旋转的总开关
     private canRotate = false;
@@ -149,7 +147,6 @@ export class YJDynamicAtlas extends Component {
         }
 
         if (frame && frame.texture && frame.texture.width > 0 && frame.texture.height > 0) {
-            this.waitToPackCompNum++;
             const packedFrame = this.insertSpriteFrame(frame, this.canRotate && canRotate);
             if (packedFrame)
                 this.setPackedFrame(comp, frame, packedFrame);
@@ -174,12 +171,26 @@ export class YJDynamicAtlas extends Component {
                     ff._setDynamicAtlasFrame(packedFrame);
                     (comp.font as BitmapFont).spriteFrame = ff;
                     comp['_texture'] = ff;
-                    // this.spriteFrameMap[uuid] = ff;
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
                 } else {
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    // this.spriteFrameMap[uuid] = frame;
+                    const renderData = comp.renderData;
+                    const vData = renderData.chunk.vb;
+                    const uv = comp.ttfSpriteFrame.uv;
+                    vData[3] = uv[0];
+                    vData[4] = uv[1];
+                    vData[12] = uv[2];
+                    vData[13] = uv[3];
+                    vData[21] = uv[4];
+                    vData[22] = uv[5];
+                    vData[30] = uv[6];
+                    vData[31] = uv[7];
+                    renderData.textureDirty = true;
+                    comp.markForUpdateRenderData(false);
+                    renderData.updateRenderData(comp, comp.spriteFrame);
+                    director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
+
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
             } else if (comp instanceof Sprite) {
@@ -188,10 +199,6 @@ export class YJDynamicAtlas extends Component {
                 ff.rotated = packedFrame.rotate;
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                // if (!frame.original && frame.name.indexOf('default_') == -1)
-                //     no.assetBundleManager.release(frame);
-                
-                // this.spriteFrameMap[uuid] = ff;
                 no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }
         }
@@ -220,10 +227,6 @@ export class YJDynamicAtlas extends Component {
     public get isWork(): boolean {
         let a = !dynamicAtlasManager.enabled && this.enabled;
         return a;
-    }
-
-    public needWait(): boolean {
-        return this.waitToPackCompNum == 1000;
     }
 
     public setSpriteFrameInSample2D(sprite: Sprite, spriteFrame: SpriteFrameDataType) {
@@ -273,14 +276,13 @@ export class YJDynamicAtlas extends Component {
     //////////////EDITOR/////////////
     update() {
         if (!EDITOR) {
-            this.waitToPackCompNum = 0;
             return;
         }
         if (!this.autoSetSubMaterial) return;
         this.autoSetSubMaterial = false;
         let renderComps = this.getComponentsInChildren(RenderComponent);
         renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
+            if (comp instanceof sp.Skeleton) return;
             if (this.commonMaterial != comp.customMaterial)
                 comp.customMaterial = this.commonMaterial;
         });

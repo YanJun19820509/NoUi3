@@ -1,11 +1,13 @@
 
-import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
+import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid, random } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
+import { AssetInfo } from './@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
 
 export namespace no {
     let _debug: boolean = DEBUG;
+    let _version: string;
 
     export function isDebug(): boolean {
         return _debug;
@@ -14,7 +16,24 @@ export namespace no {
         _debug = v;
     }
 
-    let _scheduler: Scheduler = null;
+    export function gameVersion(): string {
+        return _version;
+    }
+
+    export function setGameVersion(v: string) {
+        _version = v;
+    }
+
+    /**
+     * 是否支持多点触摸
+     * @param v 
+     * @returns 
+     */
+    export function setMultiTouch(v?: boolean) {
+        macro.ENABLE_MULTI_TOUCH = v;
+    }
+
+    let _scheduler: Scheduler = director.getScheduler();
     /**
      * 定时器
      * @param cb 
@@ -24,22 +43,27 @@ export namespace no {
      * @param target 
      * @param endCb 定时结束时回调
      */
-    export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
+    export function schedule(cb: (dt?: number, n?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
+        let targetT = { uuid: target.uuid };
         let n: number = repeat;
         if (!endCb) {
             repeat--;
         }
-        if (!_scheduler) _scheduler = director.getScheduler();
 
-        const callback = (dt: number) => {
+        let callback = (dt: number) => {
             if (n > 0) {
                 if (!target)
-                    cb?.(dt);
+                    cb?.(dt, n);
                 else if (checkValid(target)) {
-                    cb?.call(target, dt);
-                } else unschedule(targetT, callback);
+                    cb?.call(target, dt, n);
+                } else {
+                    unschedule(targetT, callback);
+                    targetT = null;
+                    callback = null;
+                    n = null;
+                    return;
+                }
             }
 
             if (endCb && n == 0) {
@@ -48,6 +72,7 @@ export namespace no {
             --n;
         };
 
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, repeat, delay, false);
     }
     /**
@@ -82,17 +107,22 @@ export namespace no {
             return;
         }
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
+        let targetT = { uuid: target.uuid };
         if (maxTry == null) maxTry = macro.REPEAT_FOREVER;
-        if (!_scheduler) _scheduler = director.getScheduler();
-        const callback = (dt: number) => {
-            if (!checkValid(target)) unschedule(targetT, callback);
-            else if (check.call(target, dt)) {
+        let callback = (dt: number) => {
+            if (!checkValid(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else if (check.call(target, dt)) {
                 onChecked.call(target);
                 unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
             }
         };
-        _scheduler.schedule(callback, targetT, 0, maxTry, 0, false);
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
+        _scheduler.schedule(callback, targetT, .1, maxTry, 0, false);
     }
 
     /**
@@ -107,21 +137,30 @@ export namespace no {
         if (until.call(target)) return;
         if (!_scheduler) _scheduler = director.getScheduler();
         if (target && target.uuid == undefined) target.uuid = uuid();
-        const targetT = { uuid: target.uuid };
-        const callback = (dt: number) => {
-            if (!checkValid(target) || until.call(target)) unschedule(targetT, callback);
-            else {
+        let targetT = { uuid: target.uuid };
+        let callback = (dt: number) => {
+            if ((target && !checkValid(target)) || until.call(target)) {
+                unschedule(targetT, callback);
+                targetT = null;
+                callback = null;
+            } else {
                 cb?.call(target, dt);
             }
         };
+        if (_scheduler.isScheduled(callback, targetT)) unschedule(targetT, callback);
         _scheduler.schedule(callback, targetT, interval, macro.REPEAT_FOREVER, delay, false);
     }
+
+    export function isScheduled(cb: any, target: any): boolean {
+        return _scheduler.isScheduled(cb, target);
+    }
+
     /**
      * 取消target所有定时回调
      * @param target 
      */
     export function unschedule(target: any, cb?: any) {
-        if (!target) return;
+        if (!target || !target.uuid) return;
         if (!cb)
             _scheduler?.unscheduleAllForTarget(target);
         else
@@ -271,13 +310,15 @@ export namespace no {
             this._states[type] = { v: value, t: sys.now() };
         }
 
-        public on(type: string, target: Component) {
+        public on(type: string, target: any) {
+            if (!target.uuid) target.uuid = uuid();
             this._watchers[type] = this._watchers[type] || {};
             this._watchers[type][target.uuid] = sys.now();
         }
 
 
-        public off(type: string, target: Component) {
+        public off(type: string, target: any) {
+            if (!target.uuid) return;
             if (this._watchers[type])
                 delete this._watchers[type][target.uuid];
         }
@@ -292,10 +333,11 @@ export namespace no {
             this._watchers = {};
         }
 
-        public check(type: string, target: Component): { state: boolean, value?: any } {
+        public check(type: string, target: any): { state: boolean, value?: any } {
             let c = { state: false, value: null };
             let b: { v: any, t: number } = this._states[type];
             if (!b) return c;
+            if (!target.uuid) target.uuid = uuid();
             let a = this._watchers[type];
             if (!a) {
                 this._watchers[type] = {};
@@ -306,7 +348,7 @@ export namespace no {
             return c;
         }
 
-        public async checkTrue(type: string, target: Component): Promise<any> {
+        public async checkTrue(type: string, target: any): Promise<any> {
             if (!target?.isValid) return Promise.resolve(null);
             let a = this.check(type, target);
             if (a.state) return Promise.resolve(a.value);
@@ -333,6 +375,11 @@ export namespace no {
 
         public set now(v: number) {
             this._time = v;
+        }
+
+        /**返回当时区时间戳ms */
+        public get locationNow(): number {
+            return Date.now();
         }
 
         constructor() {
@@ -414,7 +461,8 @@ export namespace no {
         }
 
         public execute(...args: any[]): void {
-            this.handler.emit(args);
+            if (isValid(this.handler?.target, true))
+                this.handler.emit(args);
         }
     }
 
@@ -426,13 +474,21 @@ export namespace no {
         console.error.call(console, '#NoUi#Err', jsonStringify(Evns));
     }
 
+    export function logTimeStart(type?: string) {
+        console.time(`#NoUi#time-${type ? type : ''}`);
+    }
+
+    export function logTimeEnd(type?: string) {
+        console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+    }
+
     /**
      * 创建唯一标识
      * @returns 
      */
     export function uuid(): string {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = floor(Math.random() * 16),
+            var r = floor(random() * 16),
                 v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
@@ -468,8 +524,9 @@ export namespace no {
      */
     export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
         return new Promise<any>(resolve => {
-            evn.once(type, () => {
-                resolve(arg);
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') resolve(null);
+                else resolve(arg);
             }, target);
         });
     }
@@ -492,8 +549,11 @@ export namespace no {
      * @returns 
      */
     export function waiForEventValue(type: string, target?: any): Promise<any> {
-        return new Promise<any>(resolve => {
-            evn.once(type, resolve, target);
+        return new Promise<any>((resolve, reject) => {
+            evn.once(type, (v: any) => {
+                if (v == '__clear_Wait_For_Event__') reject(null);
+                else resolve(v);
+            }, target);
         });
     }
 
@@ -506,15 +566,27 @@ export namespace no {
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         let e = evn;
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve, reject) => {
             e.on(type, (v: any) => {
-                log('waiForEventValueEqual', type, v);
-                if (v == equalValue) {
-                    e.offAfterTrigger(type, target);
-                    resolve();
+                if (v == '__clear_Wait_For_Event__') resolve();
+                else {
+                    log('waiForEventValueEqual', type, v);
+                    if (v == equalValue) {
+                        e.offAfterTrigger(type, target);
+                        resolve();
+                    }
                 }
             }, target);
         });
+    }
+
+    /**
+     * 取消
+     * @param type 
+     */
+    export function clearWaitForEvent(type: string) {
+        evn.emit(type, '__clear_Wait_For_Event__');
+        evn.typeOff(type);
     }
 
     /**
@@ -604,7 +676,7 @@ export namespace no {
         for (var i = 0; i < n; i++) {
             let al = a.length;
             if (al == 0) break;
-            let b = floor(Math.random() * al);
+            let b = floor(random() * al);
             if (!repeatable)
                 c = [].concat(c, a.splice(b, 1));
             else
@@ -754,7 +826,7 @@ export namespace no {
      * @param key
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
-        if (array == null) return -1;
+        if (array == null || item == null) return -1;
         let len = array.length;
         for (let i = 0; i < len; i++) {
             if (array[i][key] == item || (array[i][key] == item[key] && item[key] != undefined)) {
@@ -765,18 +837,22 @@ export namespace no {
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
+        if (value == null) return null;
         let i = indexOfArray(array, value, key);
         if (i == -1) return null;
         return array[i];
     }
 
-    export function addToArray(array: any[], value: any, key?: string): void {
-        if (!array) return;
+    export function addToArray(array: any[], value: any, key?: string): boolean {
+        if (!array) return false;
         if (key == null && array.indexOf(value) == -1) {
             array[array.length] = value;
+            return true;
         } else if (key != null && indexOfArray(array, value, key) == -1) {
             array[array.length] = value;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -906,13 +982,13 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array)
-            try {
-                return parse2Json(jsonStringify(d));
-            } catch (e) {
-                no.err('JSON.parse', 'clone');
-            }
-        else if (d instanceof Object) return instantiate(d);
+        if (d instanceof Array) {
+            let a: any[] = [];
+            d.forEach(b => {
+                a.push(clone(b));
+            });
+            return a;
+        } else if (d instanceof Object) return instantiate(d);
         return d;
     }
 
@@ -950,7 +1026,7 @@ export namespace no {
     export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        const a = Math.random() * (max - min);
+        const a = random() * (max - min + 1);
         return (isInt ? floor(a) : a) + min;
     }
 
@@ -1075,8 +1151,8 @@ export namespace no {
         s = seconds % 60;
         let a = '';
         if (h > 0) a = `${h}`;
-        if (m > 0) a = `${a}`;
-        if (s > 0) a = `${a}`;
+        if (m > 0) a = `${m}`;
+        if (s > 0) a = `${s}`;
         return a;
     }
 
@@ -1330,7 +1406,7 @@ export namespace no {
             if (except.indexOf(i) == -1)
                 sum += Number(w);
         });
-        let r = Math.random() * sum;
+        let r = random() * sum;
         let n = weight.length;
         let a = 0;
         for (let i = 0; i < n; i++) {
@@ -1401,9 +1477,16 @@ export namespace no {
         return v;
     }
 
+    function eIndex(n: number): number {
+        let s = n.toString().toLowerCase();
+        let a = s.split('e');
+        if (!a[1]) return 0;
+        return Number(a[1]);
+    }
+
     function decimalDigits(n: number): number {
-        let a = n.toString().split('.');
-        return !!a[1] ? a[1].length : 0;
+        let a = n.toString().toLowerCase().split('e')[0].split('.');
+        return (!!a[1] ? a[1].length : 0) - eIndex(n);
     }
 
     /**加 */
@@ -1424,16 +1507,16 @@ export namespace no {
     /**乘 */
     export function mutiply(n1: number, n2: number): number {
         let m: number = decimalDigits(n1) + decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return Number(s1) * Number(s2) / Math.pow(10, m);
     }
     /**除 */
     export function divide(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
-            s1 = n1.toString().replace('.', ''),
-            s2 = n2.toString().replace('.', '');
+            s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
+            s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return (Number(s1) / Number(s2)) * Math.pow(10, r2 - r1);
     }
 
@@ -1691,6 +1774,19 @@ export namespace no {
     }
 
     /**
+     * 获取或设置节点size
+     * @param node 节点
+     * @param size 为空时则返回当前size；否则修改当前size
+     * @returns
+     */
+    export function size(node: Node, size?: Size): Size {
+        if (!node || !node.getComponent(UITransform)) return;
+        if (size != undefined)
+            node.getComponent(UITransform).contentSize = size;
+        return node.getComponent(UITransform).contentSize.clone();
+    }
+
+    /**
      * 获取或设置节点透明度
      * @param node 节点
      * @param opacity 为空时则返回当前opacity；否则修改当前opacity
@@ -1727,6 +1823,19 @@ export namespace no {
         let t = node.getComponent(UITransform);
         if (y != undefined) t.anchorY = y;
         return t.anchorY;
+    }
+
+    /**
+     * 获取或设置节点scale
+     * @param node 节点
+     * @param scale 为空时则返回当前scale；否则修改当前scale
+     * @returns
+     */
+    export function scale(node: Node, scale?: Vec3): Vec3 {
+        if (!node) return;
+        if (scale != undefined)
+            node.scale = scale;
+        return node.scale.clone();
     }
 
     /**
@@ -1776,10 +1885,12 @@ export namespace no {
 
     }
 
-    export async function getAssetUrlInEditorMode(uuid: string): Promise<string> {
-        if (!EDITOR) return null;
-        let info = await Editor.Message.request('asset-db', 'query-asset-info', uuid);
-        return info.url;
+    export function getAssetUrlInEditorMode(uuid: string, cb: (url: string) => void) {
+        if (!EDITOR) cb?.(null);
+        else
+            Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
+                cb?.(info?.url);
+            })
     }
 
     /**
@@ -2386,6 +2497,13 @@ export namespace no {
 
         public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
             this.loadRemoteFile<TextAsset>(url, callback);
+        }
+
+        public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: AssetManager.Bundle) => void) {
+            assetManager.loadBundle(url, opts, (e, bundle) => {
+                if (e) err(e.stack);
+                callback?.(bundle);
+            });
         }
 
         /**
@@ -3139,7 +3257,7 @@ export namespace no {
             } else {
                 u = this.getUnit(a - 3);
             }
-            return `${mutiply(this._coefficient, Math.pow(10, b + 2)) / 100}${u}`;
+            return `${floor(mutiply(this._coefficient, Math.pow(10, b + 2))) / 100}${u}`;
         }
 
         public getUnit(a: number): string {
@@ -3946,6 +4064,10 @@ export namespace no {
         return result;
     }
 
+    export function getFileName(path: string): string {
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
     export class SingleObject {
         private static _ins: any;
 
@@ -3976,6 +4098,56 @@ export namespace no {
         for (const key in data) {
             target[key] = data[key];
         }
+    }
+
+    /**网速计算类 */
+    export class NetworkSpeed {
+        private _lastLoaded: number[];
+        constructor() {
+            this._lastLoaded = [0];
+        }
+
+        public calculateNetworkSpeedAndRemainSeconds(loaded: number, total: number): number[] {
+            const now = sys.now();
+            if (this._lastLoaded[0] == 0) {
+                this._lastLoaded[0] = loaded;
+                this._lastLoaded[1] = now;
+                return null;
+            }
+            const t = (now - this._lastLoaded[1]) / 1000;
+            if (t < 1) return null;
+            let a: number[] = [];
+            const sub = (loaded - this._lastLoaded[0]) / t;
+            a[0] = sub;
+            a[1] = Math.ceil((total - loaded) / sub);
+            this._lastLoaded[0] = loaded;
+            this._lastLoaded[1] = now;
+            return a;
+        }
+
+        public static formatNetworkSpeed(v: number, unit = ['B', 'KB', 'MB']): string {
+            let i = 0, s: string = '';
+            while (1) {
+                if (v < 1024 || i == (unit.length - 1)) {
+                    s = Math.floor(v * 100) / 100 + unit[i];
+                    break;
+                }
+                v /= 1024;
+                i++;
+            }
+            return s;
+        }
+    }
+
+    /**
+     * 设置节点可渲染标志
+     * @param node 
+     * @param v 
+     * @returns 
+     */
+    export function visible(node: Node, v?: boolean): boolean {
+        if (v != undefined) node['__need_render__'] = v;
+        return node['__need_render__'] !== false;
     }
 }
 

@@ -62,9 +62,11 @@ export class YJLoadAudioClip extends Component {
     }
 
     private async setClipUrl() {
-        let url = await no.getAssetUrlInEditorMode(this.clip._uuid);
-        this.clipUrl = url;
-        this.clipUuid = this.clip._uuid;
-        this.clip = null;
+        no.getAssetUrlInEditorMode(this.clip._uuid, url => {
+            if (!url) return;
+            this.clipUrl = url;
+            this.clipUuid = this.clip._uuid;
+            this.clip = null;
+        });
     }
 }

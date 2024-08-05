@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, sys } from 'cc';
 import { JSB } from 'cc/env';
 const { ccclass, property } = _decorator;
 
@@ -17,8 +17,17 @@ const { ccclass, property } = _decorator;
 
 @ccclass('YJShowForJSB')
 export class YJShowForJSB extends Component {
+    @property({ displayName: '支持Apple' })
+    ios: boolean = true;
+    @property({ displayName: '支持Android' })
+    android: boolean = true;
+
     onLoad() {
         if (!this.enabled) return;
-        !JSB && this.node.destroy();
+        let a = true;
+        if (!JSB) a = false;
+        else if (sys.platform == sys.Platform.IOS && !this.ios) a = false;
+        else if (sys.platform == sys.Platform.ANDROID && !this.android) a = false;
+        !a && this.node.destroy();
     }
 }

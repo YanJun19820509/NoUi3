@@ -33,7 +33,7 @@ export class TimeWatcher {
      */
     public static start(): TimeWatcher {
         const a = new TimeWatcher();
-        a.t1 = new Date().getTime();
+        a.t1 = no.sysTime.locationNow;
         return a;
     }
 
@@ -41,7 +41,7 @@ export class TimeWatcher {
      * 输出时间间隔
      */
     public checkLag(): number {
-        const t2 = new Date().getTime();
+        const t2 = no.sysTime.locationNow;
         const a = t2 - this.t1;
         this.t1 = t2;
         return a;

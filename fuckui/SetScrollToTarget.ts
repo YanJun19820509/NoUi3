@@ -1,5 +1,5 @@
 
-import { math, UITransform, v2, _decorator } from 'cc';
+import { math, UITransform, v2, _decorator, game } from 'cc';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';
@@ -26,7 +26,6 @@ export class SetScrollToTarget extends SetScrollToPercent {
     affectedByScale: boolean = false;
 
     private triedNum: number = 0;
-    private scrollByFrame: boolean = false;
     private scrollTime: number;
     private _target: YJNodeTarget;
 
@@ -68,9 +67,9 @@ export class SetScrollToTarget extends SetScrollToPercent {
     }
 
     private scrollToTargetByFrame(target: YJNodeTarget) {
-        this.scrollByFrame = true;
         this.scrollTime = this.duration;
         this._target = target;
+        this.requestAnimationFrameScroll();
     }
 
     private getOffset(target: YJNodeTarget): math.Vec2 {
@@ -94,8 +93,8 @@ export class SetScrollToTarget extends SetScrollToPercent {
         return offset;
     }
 
-    update(dt: number) {
-        if (!this.scrollByFrame) return;
+    private scrollByFrame(dt: number) {
+        if (!no.checkValid(this.node)) return;
         let curOffset = this.scrollView.getScrollOffset();
         let offset = this.getOffset(this._target);
         offset.x += curOffset.x;
@@ -105,6 +104,12 @@ export class SetScrollToTarget extends SetScrollToPercent {
         offset.y += curOffset.y;
         this.scrollToOffset(offset);
         this.scrollTime -= dt;
-        if (this.scrollTime <= 0) this.scrollByFrame = false;
+        if (this.scrollTime > 0) this.requestAnimationFrameScroll();
+    }
+
+    private requestAnimationFrameScroll() {
+        requestAnimationFrame(() => {
+            this.scrollByFrame(game.frameTime * .001);
+        })
     }
 }

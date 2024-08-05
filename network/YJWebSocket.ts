@@ -150,7 +150,7 @@ export class YJWebSocket implements YJSocketInterface {
             let v: string | ArrayBuffer = encode(data, encryptType);
             // no.log('sendDataToServer', this.ws['_uuid']);
             this.ws?.send(v);
-            return true;
+            return true; 
         }
         return false;
     }

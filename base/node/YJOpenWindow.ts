@@ -44,7 +44,7 @@ export class YJOpenWindow extends Component {
         let n = this.infos.length, i = 0;
         this.schedule(() => {
             this.openAt(i++);
-        }, 0, n - 1);
+        }, .2, n - 1);
     }
 
     public a_openAt(event: EventTouch, idx: string): void {

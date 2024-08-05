@@ -53,6 +53,7 @@ export class SetVisibility extends FuckUi {
     }
 
     private show(v: boolean) {
+        if (!this.enabled) return;
         this.reverse && (v = !v);
         if (this.isOpacity) {
             no.opacity(this.node, v ? 255 : 0);
@@ -70,7 +71,6 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_changeVisible(): void {
-        this.setData(this.oldData == 'false' ? 'true' : 'false');
+        this.setData(this.node.active ? 'false' : 'true');
     }
-
 }

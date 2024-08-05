@@ -3,3 +3,4 @@ svn.bat
 temp/
 tsconfig.json
 doc/
+.svn

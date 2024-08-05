@@ -44,8 +44,8 @@ export class YJPreCreateNodeInfo {
 
     public preCreateNodes() {
         no.assetBundleManager.loadByUuid<Prefab>(this.prefabUuid, Prefab, item => {
-            item.optimizationPolicy = 2;
             if (item) {
+                item.optimizationPolicy = 2;
                 let n = this.createNum - this._createdNodes.length;
                 for (let i = 0; i < n; i++) {
                     const a = instantiate(item);

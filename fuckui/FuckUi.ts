@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, isValid, Node } from 'cc';
 import { DEBUG, EDITOR } from 'cc/env';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 import { no } from '../no';
@@ -42,10 +42,13 @@ export class FuckUi extends Component {
     onLoad() {
         if (EDITOR) {
             if (!this.register) this.register = no.getComponentInParents(this.node, YJFuckUiRegister);
+        } else {
+            this.update = function () { };
         }
     }
 
     public setData(d: string) {
+        if (!isValid(this?.node)) return;
         if (d == 'null') {
             this.a_setEmpty();
             this._oldData = null;
@@ -63,8 +66,7 @@ export class FuckUi extends Component {
         }
 
         this.logValue(d);
-        if (this.enabled)
-            this.onDataChange(d);
+        this.onDataChange(d);
         if (this.once) this.destroy();
     }
 

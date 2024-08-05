@@ -1,5 +1,6 @@
 
-import { _decorator, Component, Node, Sprite } from 'cc';
+import { _decorator, Component, isValid, Node, Sprite } from 'cc';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property, requireComponent } = _decorator;
 
 /**
@@ -20,9 +21,25 @@ export class YJSyncSpriteFrameToTarget extends Component {
     @property(Sprite)
     target: Sprite = null;
 
-    update() {
-        if (!this.target || !this.target.spriteFrame) return;
+
+    private _checkNum = 10;
+    private _checkedNum = 0;
+
+    protected start(): void {
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (!isValid(this.target?.node) || !isValid(this?.node)) return false;
+        if (!this.target.spriteFrame) return true;
+        if (this._checkedNum == this._checkNum) {
+            this._checkedNum = 0;
+        } else {
+            this._checkedNum++;
+            return true;
+        }
         if (this.getComponent(Sprite).spriteFrame?._uuid != this.target.spriteFrame._uuid)
             this.getComponent(Sprite).spriteFrame = this.target.spriteFrame;
+        return true;
     }
 }

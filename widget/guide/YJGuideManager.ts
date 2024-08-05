@@ -57,8 +57,8 @@ export class YJGuideManager extends Component {
         YJGuideManager._ins = null;
     }
 
-    public save(steps: string | string[]) {
-        this.saveSteps = [].concat(this.saveSteps, steps || []);
+    public save(steps: string) {
+        no.addToArray(this.saveSteps, steps);
     }
 
     public getGuideInfo(path: string): any {
@@ -74,6 +74,10 @@ export class YJGuideManager extends Component {
         return true;
     }
 
+    public get isFirst(): boolean {
+        if (!this.isWork) return false;
+        return this.saveSteps.length == 0;
+    }
 }
 
 if (DEBUG) {

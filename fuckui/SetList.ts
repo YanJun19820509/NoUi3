@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size } from 'cc';
+import { _decorator, Component, Node, instantiate, ScrollView, Size, UITransform, Layout, js, size, isValid } from 'cc';
 import { EDITOR } from 'cc/env';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
@@ -112,12 +112,16 @@ export class SetList extends FuckUi {
         // }
         this._loaded = true;
 
-        this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
-            this.touched = true;
-        }, this);
+        // this.scrollView.node.on(ScrollView.EventType.SCROLL_BEGAN, () => {
+        //     this.touched = true;
+        // }, this);
 
-        this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
-            this.touched = false;
+        // this.scrollView.node.on(ScrollView.EventType.SCROLL_ENDED, () => {
+        //     this.touched = false;
+        // }, this);
+
+        this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
+            this.updatePos();
         }, this);
     }
 
@@ -284,7 +288,11 @@ export class SetList extends FuckUi {
             }
             return;
         }
-        if (!this.touched) return;
+    }
+
+    private updatePos() {
+        // if (!this.touched) return;
+        if (!isValid(this?.node)) return;
         let listItems = this.content.children;
         if (this.listData == null || listItems == null || listItems.length == 0) return;
         let curPos = 0;

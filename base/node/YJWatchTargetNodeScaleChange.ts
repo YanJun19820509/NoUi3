@@ -1,7 +1,8 @@
 
-import { _decorator, Component, Node, math, v3 } from 'cc';
+import { _decorator, Component, Node, math, v3, isValid } from 'cc';
 import { no } from '../../no';
 import { YJNodeTarget } from './YJNodeTarget';
+import { YJJobManager } from '../YJJobManager';
 const { ccclass, property } = _decorator;
 
 /**
@@ -25,19 +26,32 @@ export class YJWatchTargetNodeScaleChange extends Component {
 
     private _targetScale: math.Vec3;
 
-    update() {
+    private _checkNum = 10;
+    private _checkedNum = 0;
+
+    protected start(): void {
+        YJJobManager.ins.execute(this.check, this);
+    }
+
+    private check() {
+        if (this._checkedNum == this._checkNum) {
+            this._checkedNum = 0;
+        } else {
+            this._checkedNum++;
+            return true;
+        }
         let target = no.nodeTargetManager.get<YJNodeTarget>(this.targetType);
-        if (target && target.isValid && target.node && target.node.isValid) {
-            if (!this._targetScale) {
-                this._targetScale = v3();
-                target.node.getScale(this._targetScale);
-            } else {
-                let scale = target.node.getScale();
-                if (!this._targetScale.equals(scale)) {
-                    this._targetScale = scale;
-                    no.EventHandlerInfo.execute(this.onChange, this._targetScale);
-                }
+        if (!target || !isValid(target?.node) || !isValid(this?.node)) return false;
+        if (!this._targetScale) {
+            this._targetScale = v3();
+            target.node.getScale(this._targetScale);
+        } else {
+            let scale = target.node.getScale();
+            if (!this._targetScale.equals(scale)) {
+                this._targetScale = scale;
+                no.EventHandlerInfo.execute(this.onChange, this._targetScale);
             }
         }
+        return true;
     }
 }

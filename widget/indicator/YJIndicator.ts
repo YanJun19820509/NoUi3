@@ -1,6 +1,7 @@
 
-import { _decorator, Component, Node, instantiate, Toggle } from 'cc';
+import { _decorator, Component, Node, instantiate, Toggle, Layout } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
+import { no } from '../../no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -25,6 +26,8 @@ export class YJIndicator extends YJDataWork {
     template: Node = null;
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+    @property({ displayName: '自动间距' })
+    autoSpace: boolean = false;
 
     //子类实现
     protected afterDataInit() {
@@ -35,6 +38,16 @@ export class YJIndicator extends YJDataWork {
     }
 
     private createItem(n: number) {
+        if (this.autoSpace) {
+            const layout = this.container.getComponent(Layout);
+            if (layout) {
+                const width = no.width(this.container),
+                    tw = no.width(this.template),
+                    spaceX = (width - tw * n) / (n + 1);
+                layout.paddingLeft = spaceX;
+                layout.spacingX = spaceX;
+            }
+        }
         let l = this.container.children.length;
         for (let i = l; i < n; i++) {
             let c = instantiate(this.template);

@@ -1,5 +1,5 @@
 
-import { _decorator, Component, Node, CCString } from 'cc';
+import { _decorator, Component, Node, CCString, isValid, macro } from 'cc';
 import { no } from '../no';
 const { ccclass, property } = _decorator;
 
@@ -24,12 +24,14 @@ export class StateValueInfo {
 }
 @ccclass('StateInfo')
 export class StateInfo {
-    @property
-    key: string = '';
+    @property({ tooltip: '多个key用,分隔，当其中某一个key的状态发生变化就会触发，不要用在多个key的状态会同时发生变化的情况' })
+    keys: string = '';
     @property({ type: StateValueInfo })
     values: StateValueInfo[] = [];
 
-    public onStateChange(value: any) {
+    private _keys: string[];
+
+    private onStateChange(value: any) {
         for (let i = 0, n = this.values.length; i < n; i++) {
             let svi = this.values[i];
             if (svi.value == String(value)) {
@@ -38,16 +40,38 @@ export class StateInfo {
             }
         }
     }
+
+    public check() {
+        if (!this._keys) {
+            this._keys = this.keys.split(',');
+        }
+        for (let i = 0, n = this._keys.length; i < n; i++) {
+            const key = this._keys[i];
+            const a = no.state.check(key, this);
+            if (a.state) this.onStateChange(a.value == undefined ? '' : a.value);
+        }
+    }
 }
 @ccclass('YJOnStateChange')
 export class YJOnStateChange extends Component {
     @property({ type: StateInfo })
     states: StateInfo[] = [];
 
-    update() {
-        this.states.forEach(state => {
-            let a = no.state.check(state.key, this);
-            if (a.state) state.onStateChange(a.value == undefined ? '' : a.value);
-        });
+    private _idx: number = 0;
+
+    protected onLoad(): void {
+        this.schedule(this.check, .1, macro.REPEAT_FOREVER);
+    }
+
+    protected onDestroy(): void {
+        this.unschedule(this.check);
+    }
+
+    private check() {
+        if (!isValid(this?.node)) return;
+        if (this._idx >= this.states.length) this._idx = 0;
+        const state = this.states[this._idx];
+        state.check();
+        this._idx++;
     }
 }

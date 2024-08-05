@@ -83,16 +83,19 @@ export class YJTiledMapData {
             for (let j = 0, len1 = tileset.tiles.length; j < len1; j++) {
                 let tile = tileset.tiles[j];
                 const imgpath: string[] = tile.image.replace(new RegExp('\\.\\./|\\.png', 'g'), '').replace('\\', '/').split('/');
-                let a = {
+                let a: any = {
                     image: imgpath.pop(),
                     width: tile.imagewidth,
                     height: tile.imageheight,
                     offset: offset
                 };
-                if (tile.properties != null)
+                if (tile.properties != null) {
+                    let prop: any = {};
                     tile.properties.forEach((p: any) => {
-                        a[p.name] = p.value;
+                        prop[p.name] = p.value;
                     });
+                    a.prop = prop;
+                }
                 this.tilesets.set(firstgid + tile.id, a);
             }
         }
@@ -144,8 +147,11 @@ export class YJTiledMapData {
                 if (!tileInfo) continue;
                 arr[arr.length] = {
                     image: tileInfo.image,
+                    width: tileInfo.width,
+                    height: tileInfo.height,
                     x: this.tileSize.width * (0.5 + j + (1 - this.gridScale) * (i % 2)) + tileInfo.offset.x,
-                    y: this.tileSize.height * (0.5 + i * this.gridScale) + tileInfo.offset.y
+                    y: this.tileSize.height * (0.5 + i * this.gridScale) + tileInfo.offset.y,
+                    prop: tileInfo.prop
                 };
             }
         }

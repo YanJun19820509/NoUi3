@@ -24,6 +24,7 @@ export class YJZip {
      * @param onErr 
      */
     public static unzip(url: string, cb?: (relativePath: string, isDir: boolean, totalFilesNum?: number, data?: Uint8Array) => void, onErr?: () => void) {
+        no.log('unzip path', url);
         if (url.indexOf('http://') > -1 || url.indexOf('https://') > -1)
             assetManager.loadRemote(url, (err, file: BufferAsset) => {
                 if (err) {
