@@ -1,7 +1,6 @@
 
 import { _decorator, Component, Node, EventHandler, Scheduler, game, color, Color, Vec2, AnimationClip, Asset, assetManager, AssetManager, AudioClip, director, instantiate, JsonAsset, Material, Prefab, Rect, Size, sp, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, TiledMapAsset, Tween, v2, v3, Vec3, UITransform, tween, UIOpacity, Quat, EventTarget, EffectAsset, view, __private, js, Font, Button, sys, BufferAsset, macro, isValid } from 'cc';
 import { DEBUG, EDITOR, WECHAT } from 'cc/env';
-import { AssetInfo } from '../../extensions/auto-create-prefab/@types/packages/asset-db/@types/public';
 
 const { ccclass, property } = _decorator;
 
@@ -953,6 +952,15 @@ export namespace no {
         if (min == null || max == null) return min || max;
         const a = Math.random() * (max - min);
         return (isInt ? floor(a) : a) + min;
+    }
+
+    /**
+     * 将UTC时区时间戳转化为本地系统所在时区时间戳
+     */
+    export function localDateSeconds(utcSeconds: number): number {
+        const t = new Date(utcSeconds * 1000);
+        t.setMinutes(t.getMinutes() + t.getTimezoneOffset());
+        return Math.floor(t.getTime() * .001);
     }
 
     /**
@@ -2570,9 +2578,9 @@ export namespace no {
             }).catch(e => { err(e); });
         }
 
-        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: AssetInfo[]) => void) {
+        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: any[]) => void) {
             Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((infos: any[]) => {
-                let a: AssetInfo[] = [];
+                let a: any[] = [];
                 infos.forEach(info => {
                     if (info.url.indexOf(url) > -1) a[a.length] = info;
                 });
