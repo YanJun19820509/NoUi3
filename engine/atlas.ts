@@ -11,6 +11,10 @@ export class Atlas {
     // private _innerSpriteFrames: SpriteFrame[];
 
     constructor(width: number, height: number, uuid?: string) {
+        if (no.notUseDynamicAtlas) {
+            width = 2;
+            height = 2;
+        }
         uuid = (uuid || no.sysTime.now) + '@';
         this.uuid = uuid + 'a';
         const texture = new DynamicAtlasTexture();
@@ -172,6 +176,7 @@ export class Atlas {
     */
     public destroy() {
         this._texture.destroy();
+        this._texture = null;
     }
 
     private drawImageAt(spriteFrame: SpriteFrame, x: number, y: number, needRotate: boolean) {

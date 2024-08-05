@@ -3,6 +3,8 @@ import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, 
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
+import { TextureInfoInGPU } from '../../engine/TextureInfoInGPU';
+import { DynamicAtlasTexture } from '../../engine/atlas';
 
 /**
  * Predefined variables
@@ -443,7 +445,8 @@ export class YJCharLabel extends Sprite {
 
     private static fontMap: { [uuid: string]: TTFFont } = {};
     private static fontLoading: { [uuid: string]: boolean } = {};
-    private _packSucc: boolean = false;
+
+    public panelName: string;
 
     onLoad() {
         super.onLoad();
@@ -458,8 +461,9 @@ export class YJCharLabel extends Sprite {
     }
 
     onDestroy() {
-        if (!this.packToAtlas || !this.dynamicAtlas || !this._packSucc)
+        if (!(this.spriteFrame?.texture instanceof DynamicAtlasTexture)) {
             this.spriteFrame?.texture?.destroy();
+        }
         super.onDestroy();
         this.unscheduleAllCallbacks();
         this.node.targetOff(this);
@@ -472,7 +476,8 @@ export class YJCharLabel extends Sprite {
             this.setLabel();
     }
 
-    private setLabel(): void {
+    private async setLabel() {
+        if (!await no.Throttling.ins(this).wait(.1, true)) return;
         if (EDITOR && !this._needSetLabel) return;
         if (!this.enabledInHierarchy || !isValid(this.node)) {
             this._needSet = true;
@@ -845,19 +850,20 @@ export class YJCharLabel extends Sprite {
     private updateTexture() {
         const canvas = this.shareCanvas();
         if (!canvas.width || !canvas.height) return;
-        if (!this.packToAtlas || !this.dynamicAtlas)
+        if (!(this.spriteFrame?.texture instanceof DynamicAtlasTexture)) {
             this.spriteFrame?.texture?.destroy();
+        }
         const image = new ImageAsset(canvas);
         const texture = new Texture2D();
         texture['_uuid'] = this.getUuid();
         texture.image = image;
+        TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
         let spriteFrame = new SpriteFrame();
         spriteFrame['_uuid'] = this.getUuid();
         spriteFrame.texture = texture;
         this.spriteFrame = spriteFrame;
 
         if (this.packToAtlas && this.dynamicAtlas) {
-            this._packSucc = false;
             if (this.useJob)
                 YJJobManager.ins.execute(this.packSpriteFrame, this);
             else
@@ -868,7 +874,6 @@ export class YJCharLabel extends Sprite {
     private packSpriteFrame() {
         const s = this.dynamicAtlas.packSpriteFrame(this.spriteFrame, true);
         if (s) {
-            this._packSucc = true;
             this.spriteFrame.texture.destroy();
             this.spriteFrame.destroy();
             this.spriteFrame = s;

@@ -25,7 +25,7 @@ export class YJBitmapFont extends Component {
     }
 
     public set font(v: BitmapFont) {
-        if (v == this._font) return;
+        if (v == this._font || !v) return;
         this._font = v;
         this.fontName = v.name;
         this.fontUuid = v.uuid;

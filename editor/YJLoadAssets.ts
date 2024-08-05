@@ -11,6 +11,8 @@ import { YJi18n } from '../base/YJi18n';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 // import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
 import { TimeWatcher } from '../TimeWatcher';
+import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
+import { YJTextureManager } from '../base/YJTextureManager';
 
 /**
  * Predefined variables
@@ -98,6 +100,14 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
         return null;
     }
 
+    public set spriteFrame(v: SpriteFrame) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
+            this.setPath();
+        }
+    }
+
     public setPath() {
         if (!this.assetUuid) {
             this.path = '';
@@ -109,14 +119,6 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
                 this.assetName = a[a.length - 2];
                 this.path = info?.path;
             });
-        }
-    }
-
-    public set spriteFrame(v: SpriteFrame) {
-        if (v) {
-            this.assetUuid = v.uuid;
-            this.assetName = v.name;
-            this.setPath();
         }
     }
 
@@ -145,8 +147,6 @@ export class PrefabInfo extends LoadAssetsInfo {
     }
 }
 
-const TextureMap: Map<string, [Texture2D, number, number, number]> = new Map();
-const MaxTextureSize: number = 1024 * 1024 * 50; // 200M
 const LanguageBundleMap: Map<string, [Texture2D, any]> = new Map();
 
 @ccclass('YJLoadAssets')
@@ -260,6 +260,7 @@ export class YJLoadAssets extends Component {
     private spriteFrameMap: any = {};
 
     onLoad() {
+        this.setPanelNameToSubNode();
         this.autoLoad &&
             this.load().then(() => {
                 no.EventHandlerInfo.execute(this.onLoaded);
@@ -322,8 +323,8 @@ export class YJLoadAssets extends Component {
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
             const textureInfo = this.textureInfos[i];
             const assetUuid = textureInfo.assetUuid.split('@')[0];
-            if (this.hasTexture(assetUuid)) {
-                this.textures[this.textures.length] = this.getTexture(assetUuid);
+            if (YJTextureManager.hasTexture(assetUuid)) {
+                this.textures[this.textures.length] = YJTextureManager.getTexture(assetUuid);
             } else {
                 if (textureInfo.path) {
                     const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
@@ -417,13 +418,13 @@ export class YJLoadAssets extends Component {
                         no.assetBundleManager.decRef(item);
                     } else if (item instanceof ImageAsset) {
                         no.assetBundleManager.cacheImage(item);
-                        const t = no.assetBundleManager.createTextureFromCache(item.uuid);
-                        this.addTexure(item.uuid, t);
+                        const t = YJTextureManager.getTexture(item.uuid);
                         const i = textureIdx[item.uuid];
                         if (i != null)
                             this.textures[i] = t;
                         else
                             this.textures[this.textures.length] = t;
+                        TextureInfoInGPU.addTextureUuidToPanel(item.uuid, this.node.name);
                     }
                 });
                 resolve();
@@ -514,7 +515,7 @@ export class YJLoadAssets extends Component {
             info.release && info.release(null);
         });
         this.textures.forEach(a => {
-            this.returnTexture(a.uuid);
+            YJTextureManager.returnTexture(a.uuid);
         });
         // this.materials.forEach(a => {
         //     if (sys.platform == sys.Platform.DESKTOP_BROWSER) {
@@ -528,6 +529,11 @@ export class YJLoadAssets extends Component {
         this.atlases.length = 0;
         this.materials.length = 0;
         this.spriteFrameMap = {};
+        const name = this.node.name;
+        no.setTimeoutF(() => {
+            TextureInfoInGPU.showTextureWhenPanelDestroy(name);
+        }, 500);
+
     }
 
 
@@ -580,65 +586,12 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    private hasTexture(uuid: string): boolean {
-        return TextureMap.has(uuid) || no.assetBundleManager.hasImage(uuid);
-    }
-
-    private getTexture(uuid: string): Texture2D | null {
-        const item = TextureMap.get(uuid);
-        if (item) {
-            ++item[1];
-            return item[0];
-        } else {
-            const t = no.assetBundleManager.createTextureFromCache(uuid);
-            this.addTexure(uuid, t);
-            return t;
-        }
-    }
-
-    private addTexure(uuid: string, tex: Texture2D): void {
-        const format = tex.getGFXTexture()?.format == 89 ? "astc" : "rgba8",
-            size = (tex.getGFXTexture()?.size || 0) * (format == "astc" ? 1 : 2);
-        TextureMap.set(uuid, [tex, 1, no.sysTime.now, size]);
-        YJLoadAssets.TextureAllSize += size; // 更新纹理总大小
-        no.warn(`纹理格式及大小：${uuid} ${format} ${Math.ceil(size / 1024)}K`);
-        no.warn(`当前缓存纹理总大小：${Math.ceil(YJLoadAssets.TextureAllSize / 1048576)}M`)
-        this.releaseTexture();
-    }
-
-    private returnTexture(uuid: string): void {
-        const item = TextureMap.get(uuid) || null;
-        if (item) {
-            --item[1];
-            item[2] = no.sysTime.now; // 更新时间戳，用于判断是否需要释放资源
-        }
-    }
-
     private getAtlasJson(uuid: string): any | null {
         return no.assetBundleManager.getCachedAtlasJson(uuid) || null;
     }
 
     private setAtlasJson(uuid: string, json: any): void {
         no.assetBundleManager.cacheAsset(uuid, json)
-    }
-
-    private releaseTexture() {
-        if (YJLoadAssets.TextureAllSize < MaxTextureSize) return;
-        no.warn('纹理缓存已超过上限，开始释放较早的纹理');
-        const uuids = no.MapKeys2Array(TextureMap);
-        uuids.sort((a, b) => TextureMap.get(a)![2] - TextureMap.get(b)![2]);
-        for (const uuid of uuids) {
-            const item = TextureMap.get(uuid) || null;
-            if (item && item[1] === 0) {
-                const size = item[3];
-                YJLoadAssets.TextureAllSize -= size; // 更新纹理总大小
-                // no.assetBundleManager.release(item[0], true); // 释放纹理资源
-                item[0].destroy(); // 销毁纹理对象
-                TextureMap.delete(uuid); // 删除纹理对象
-                no.warn(`释放纹理: ${uuid} 大小: ${size}`); // 输出日志信息
-                if (YJLoadAssets.TextureAllSize < MaxTextureSize) break; // 释放到小于等于最大纹理大小后退出循环
-            }
-        }
     }
 
     private hasLanguage(name: string): boolean {
@@ -655,5 +608,13 @@ export class YJLoadAssets extends Component {
 
     private addLanguage(name: string, texture: Texture2D, json: any): void {
         LanguageBundleMap.set(name, [texture, json]);
+    }
+
+    private setPanelNameToSubNode() {
+        if (TextureInfoInGPU.isWork) {
+            const arr = [].concat(this.getComponentsInChildren('SetSpriteFrameInSampler2D'), this.getComponentsInChildren('YJCharLabel')),
+                name = this.node.name;
+            arr.forEach(item => item.panelName = name);
+        }
     }
 }

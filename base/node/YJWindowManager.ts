@@ -302,11 +302,12 @@ export class YJWindowManager extends Component {
 
     public clearClosedPanel() {
         let t = no.sysTime.now;
+        const duration = no.isDebug() ? 5 : this.duration;
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
             content?.children.forEach(node => {
                 let panel = node.getComponent(YJPanel);
-                if (panel && !no.visible(panel.node) && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= this.duration) {
+                if (panel && !no.visible(panel.node) && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= duration) {
                     // no.log('YJWindowManager release panel', panel.panelType);
                     panel.clear();
                 }

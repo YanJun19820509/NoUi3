@@ -17,18 +17,18 @@ export namespace no {
     /**
      * 不支持动态合图
      */
-    export const notUseDynamicAtlas = sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS;
+    export const notUseDynamicAtlas = false;//sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS;
 
     export function setLogEnabled(v: boolean) {
         _isLogEnabled = v;
     }
 
     export function isDebug(): boolean {
-        log('isDebug', _debug);
         return _debug;
     }
     export function setDebug(v: boolean) {
         _debug = v;
+        log('isDebug', _debug);
     }
 
     /**
@@ -2661,6 +2661,7 @@ export namespace no {
 
         private remoteAssetsCache: any = {};
         private _cacheAsset: { [k: string]: any } = {};
+        private _cacheAssetRef: { [k: string]: { ref: number, time: number } } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
         private _loadingAsset: { [k: string]: boolean } = {};
 
@@ -3535,6 +3536,8 @@ export namespace no {
 
         public cacheImage(image: ImageAsset) {
             this.cacheAsset(image.uuid, image);
+            this._cacheAssetRef[image.uuid] = { ref: 0, time: sysTime.now };
+            this.releaseUnuseImage();
         }
 
         public hasImage(uuid: string): boolean {
@@ -3551,6 +3554,9 @@ export namespace no {
             let texture = new Texture2D();
             texture['_uuid'] = uuid;
             texture.image = image;
+            let a = this._cacheAssetRef[image.uuid];
+            a.ref++;
+            a.time = sysTime.now;
             return texture;
         }
 
@@ -3561,6 +3567,50 @@ export namespace no {
             s._uuid = uuid;
             s.texture = t;
             return s;
+        }
+
+        public deRefCachedImage(uuid: string) {
+            let a = this._cacheAssetRef[uuid];
+            if (!a) return;
+            a.ref--;
+            a.time = sysTime.now;
+            this.releaseUnuseImage();
+        }
+
+        public getCachedImageInfo(uuid: string) {
+            return this._cacheAssetRef[uuid];
+        }
+
+        public showCachedImage() {
+            const now = sysTime.now;
+            for (const uuid in this._cacheAssetRef) {
+                const a = this._cacheAssetRef[uuid];
+                console.log(`
+                    <<<<<<<<缓存的Image
+                        uuid: ${uuid},
+                        ref: ${a.ref},
+                        time: ${now - a.time}
+                    >>>>>>>>
+                    `);
+            }
+        }
+
+        private releaseUnuseImage() {
+            const now = sysTime.now;
+            for (const k in this._cacheAssetRef) {
+                const a = this._cacheAssetRef[k];
+                if (a.ref < 1 && now - a.time > 60) {
+                    warn('释放未使用的图片资源', k);
+                    this.removeCachedImage(k);
+                }
+            }
+        }
+
+        public removeCachedImage(uuid: string) {
+            // this._cacheAsset[uuid]?.destroy();
+            delete this._cacheAsset[uuid];
+            delete this._cacheAssetRef[uuid];
+            this.release(uuid, true);
         }
 
         private loadTypes: string[] = ['ImageAsset', 'Prefab', 'JsonAsset'];
@@ -4952,6 +5002,9 @@ export namespace no {
             if (!this._ins) this._ins = new this();
             return this._ins;
         }
+
+        /**由SingleObjectManager调用，清理对象中缓存的数据 */
+        public clear() { }
     }
 
     /**
@@ -5415,6 +5468,7 @@ export namespace no {
     export function isPrototypeEquals(target: any, propertyKey: string, val: any) {
         return getPrototype(target, propertyKey) == val;
     }
+
 }
 
 no.addToWindowForDebug('no', no);

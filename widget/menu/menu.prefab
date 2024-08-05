@@ -353,10 +353,7 @@
       "b": 255,
       "a": 255
     },
-    "_spriteFrame": {
-      "__uuid__": "158e7e52-3220-4cd7-9694-713e0e6e8278@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
+    "_spriteFrame": null,
     "_type": 0,
     "_fillType": 0,
     "_sizeMode": 0,
@@ -570,10 +567,7 @@
       "b": 255,
       "a": 255
     },
-    "_spriteFrame": {
-      "__uuid__": "11bdc4b0-64a8-4eb7-a2a7-9fb9e233e977@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
+    "_spriteFrame": null,
     "_type": 0,
     "_fillType": 0,
     "_sizeMode": 1,
@@ -785,7 +779,9 @@
     "container": {
       "__id__": 2
     },
+    "defaultChecked": 0,
     "autoCreate": true,
+    "clearOnDisable": true,
     "_id": ""
   },
   {
@@ -809,10 +805,13 @@
     "saveIgnore": true,
     "showValueLog": false,
     "contents": [],
-    "container": null,
+    "container": {
+      "__id__": 1
+    },
     "noCache": false,
     "dynamicAtlas": null,
     "loadAsset": null,
+    "clearOnDisable": false,
     "_id": ""
   },
   {

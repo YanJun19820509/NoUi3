@@ -95,8 +95,6 @@ export class YJDynamicAtlas extends Component {
 
     private thisNodeName: string;
 
-    private _spriteTexture: DynamicAtlasTexture;
-
     onLoad() {
         this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
     }
@@ -108,26 +106,22 @@ export class YJDynamicAtlas extends Component {
         YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         this.atlas?.destroy();
         this.atlas = null;
-        this._spriteTexture = null;
     }
 
-    public get texture() {
-        this.initAtlas();
-        return this.atlas._texture;
-    }
+    // public get texture() {
+    //     this.initAtlas();
+    //     return this.atlas._texture;
+    // }
 
     public get spriteTexture() {
         this.initAtlas();
-        return this._spriteTexture;
+        return this.atlas._texture;
     }
 
     private initAtlas() {
         if (!this.atlas) {
             this.atlas = new Atlas(this.width, this.height, this.node.name);
             YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
-            this._spriteTexture = this.atlas._texture;
-            // this._spriteTexture = new DynamicAtlasTexture();
-            // this._spriteTexture.initWithSize(1, 1);
         }
     }
 

@@ -7,6 +7,7 @@ import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJi18n } from '../base/YJi18n';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
+import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 
 /**
  * Predefined variables
@@ -54,6 +55,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private _oriScale: Vec3;
     private _singleSpriteFrame: SpriteFrame = null;
 
+    public panelName: string;
+
     onLoad() {
         super.onLoad();
         this.setDynamicAtlas();
@@ -95,16 +98,17 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     onDestroy() {
-        this.getComponent(Sprite).spriteFrame = null;
-        if (this._singleSpriteFrame && !this.loadFromAtlas) {
-            no.assetBundleManager.decRef(this._singleSpriteFrame);
-            // this._singleSpriteFrame.decRef();
+        if (this._singleSpriteFrame) {
+            // no.assetBundleManager.decRef(this._singleSpriteFrame);
+            this._singleSpriteFrame.decRef();
             this._singleSpriteFrame = null;
         }
+        this.getComponent(Sprite).spriteFrame = null;
     }
 
     public setDynamicAtlas() {
-        this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+        if (this.defaultSpriteFrameUuid)
+            this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
         if (!this.loadFromAtlas) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -119,11 +123,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         let name = this.getComponent(Sprite).spriteFrame?.name;
         if (!!name && this.defaultName != name) {
             this.defaultName = name;
+            this.multiLan = name.indexOf('chinese/') == 0;
         }
         if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid)) {
             this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
             //如果是散图则不从图集加载，散图uuid以@f9941结尾
-            this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+            if (this.defaultSpriteFrameUuid)
+                this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
         }
     }
 
@@ -187,7 +193,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
         const [i, spriteFrame] = this.loadAsset.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
-            no.err('这里需要检查下资源使用问题', this.dynamicAtlas?.node.name, this.node.name, name);
+            no.err('这里需要检查下资源使用问题，设置的从合图加载，但未找到资源', this.dynamicAtlas?.node.name, this.node.name, name);
             this.resetSprite();
             return;
         }
@@ -240,6 +246,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (s) {
                 sprite.spriteFrame = s;
                 this._singleSpriteFrame = s;
+                if (TextureInfoInGPU.isWork) {
+                    TextureInfoInGPU.addTextureUuidToPanel(s.uuid, this.panelName);
+                }
             } else {
                 no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
                     if (!file) {
@@ -247,6 +256,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                     } else {
                         sprite.spriteFrame = file;
                         this._singleSpriteFrame = file;
+
+                        if (TextureInfoInGPU.isWork) {
+                            TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                        }
                     }
                 });
             }
@@ -277,6 +290,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 sprite.trim = false;
                 sprite.spriteFrame = spriteFrame;
                 this.clearEffect();
+
+                if (TextureInfoInGPU.isWork) {
+                    TextureInfoInGPU.addTextureUuidToPanel(spriteFrame.uuid, this.panelName);
+                }
             }
         });
     }
