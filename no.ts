@@ -5345,10 +5345,21 @@ export namespace no {
             sys.garbageCollect();
     }
 
-    export function newNode(name?: string): Node {
+    /**
+     * 创建一个基础节点
+     * @param name 节点名
+     * @param components 需要添加的组件
+     * @returns 
+     */
+    export function newNode(name?: string, components?: typeof Component[] | string[]): Node {
         const n = new Node(name);
         n.layer = Layers.Enum.UI_2D;
         n.addComponent(UITransform);
+        if (components) {
+            components.forEach(c => {
+                n.addComponent(c);
+            });
+        };
         return n;
     }
 

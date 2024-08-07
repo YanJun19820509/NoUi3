@@ -127,17 +127,7 @@ export class YJPanel extends Component {
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
         no.multiTouch(this._lastMultiTouchState);
-        this.cache();
-        // if (YJPanel.cacheOpened && this.needCache) {
-        //     this.cache();
-        // } else this.clear();
-    }
-
-    private cache() {
         this.hide();
-        // this.getComponentsInChildren(Component).forEach(c => {
-        //     if (c.enabledInHierarchy) c['onDisable']?.();
-        // });
     }
 
     public clear(force = false) {
@@ -149,24 +139,14 @@ export class YJPanel extends Component {
     public hide() {
         this.status = 'close';
         no.visible(this.node, false);
-        // no.x(this.node, 10000);
         no.siblingIndex(this.node, 0);
-        // const arr: Component[] = this.getComponentsInChildren(Component);
-        // arr.forEach(c => {
-        //     c.node.active && c['onDisable']?.();
-        // });
     }
 
     public show() {
         this.status = 'open';
         if (this.node.active) this.onEnable();
         no.visible(this.node, true);
-        // no.x(this.node, this._originX);
-        no.siblingIndex(this.node, 9999);
-        // const arr: Component[] = this.getComponentsInChildren(Component);
-        // arr.forEach(c => {
-        //     c.node.active && c['onEnable']?.();
-        // });
+        no.siblingIndex(this.node, this.node.parent.children.length - 1);
     }
 
     //////由子类实现

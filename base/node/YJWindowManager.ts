@@ -1,11 +1,12 @@
 
-import { ccclass, property, menu, Component, Node, instantiate, Prefab, js } from '../../yj';
+import { ccclass, property, menu, Component, Node, instantiate, Prefab, js, EDITOR, Widget } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
+import { LayerType, LayerTypeDesc } from '../../../script/common/LayerType';
 
 /**
  * Predefined variables
@@ -32,14 +33,86 @@ export class LayerInfo {
 @ccclass('YJWindowManager')
 @menu('NoUi/node/YJWindowManager')
 export class YJWindowManager extends Component {
-    @property(LayerInfo)
-    infos: LayerInfo[] = [];
-    // @property({displayName:'路径根目录',tooltip:'有些bundle在该目录下，需要从路径中移除'})
-    // pathPres:string[] = [];
+    @property({ group: { name: '需要创建的层列表' }, displayName: '1.地图层', })
+    public get addLayer1(): boolean {
+        return this.layer_1;
+    }
+
+    public set addLayer1(v: boolean) {
+        this.layer_1 = v;
+        if (v) this.createLayerNode(1);
+        else this.removeLayerNode(1);
+    }
+    @property({ group: { name: '需要创建的层列表' }, displayName: '2.导航层' })
+    public get addLayer2(): boolean {
+        return this.layer_2;
+    }
+
+    public set addLayer2(v: boolean) {
+        this.layer_2 = v;
+        if (v) this.createLayerNode(2);
+        else this.removeLayerNode(2);
+    }
+    @property({ group: { name: '需要创建的层列表' }, displayName: '3.全屏窗口层' })
+    public get addLayer3(): boolean {
+        return this.layer_3;
+    }
+
+    public set addLayer3(v: boolean) {
+        this.layer_3 = v;
+        if (v) this.createLayerNode(3);
+        else this.removeLayerNode(3);
+    }
+    @property({ group: { name: '需要创建的层列表' }, displayName: '4.弹窗层' })
+    public get addLayer4(): boolean {
+        return this.layer_4;
+    }
+
+    public set addLayer4(v: boolean) {
+        this.layer_4 = v;
+        if (v) this.createLayerNode(4);
+        else this.removeLayerNode(4);
+    }
+    @property({ group: { name: '需要创建的层列表' }, displayName: '5.引导层' })
+    public get addLayer5(): boolean {
+        return this.layer_5;
+    }
+
+    public set addLayer5(v: boolean) {
+        this.layer_5 = v;
+        if (v) this.createLayerNode(5);
+        else this.removeLayerNode(5);
+    }
+    @property({ group: { name: '需要创建的层列表' }, displayName: '6.消息层' })
+    public get addLayer6(): boolean {
+        return this.layer_6;
+    }
+
+    public set addLayer6(v: boolean) {
+        this.layer_6 = v;
+        if (v) this.createLayerNode(6);
+        else this.removeLayerNode(6);
+    }
     @property({ displayName: '自动清理缓存的panel' })
     autoClear: boolean = false;
     @property({ displayName: '清理间隔时长(s)', min: 3, step: 1, visible() { return this.autoClear; } })
     duration: number = 10;
+    @property({ type: LayerInfo, group: { name: '层列表详情' } })
+    infos: LayerInfo[] = [];
+
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_1: boolean = false;
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_2: boolean = false;
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_3: boolean = false;
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_4: boolean = false;
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_5: boolean = false;
+    @property({ editorOnly: true, serializable: true, visible: false })
+    layer_6: boolean = false;
+
 
     private createdPanel: string[] = [];
     private prefabPathOrUuidToNodeName: any = {};
@@ -353,5 +426,39 @@ export class YJWindowManager extends Component {
                 }
             }
         }
+    }
+
+    private createLayerNode(type: number) {
+        const node = no.newNode('layer_' + type, [Widget]);
+        node['yj_layerType'] = type;
+        node.parent = this.node;
+        const widget = node.getComponent(Widget);
+        widget.isAlignTop = true;
+        widget.isAlignBottom = true;
+        widget.isAlignLeft = true;
+        widget.isAlignRight = true;
+        widget.top = 0;
+        widget.bottom = 0;
+        widget.left = 0;
+        widget.right = 0;
+        const info = new LayerInfo();
+        info.type = LayerType[type];
+        info.content = node;
+        info.desc = LayerTypeDesc[type];
+        let i = 0;
+        for (let n = this.node.children.length; i < n; i++) {
+            if (this.node.children[i]['yj_layerType'] == type) continue;
+            if (this.node.children[i]['yj_layerType'] > type) {
+                node.setSiblingIndex(i);
+                break;
+            }
+        }
+        this.infos.splice(i, 0, info);
+    }
+
+    private removeLayerNode(type: number) {
+        const i = no.indexOfArray(this.node.children, type, 'yj_layerType');
+        this.infos.splice(i, 1);
+        this.node.getChildByName('layer_' + type)?.destroy();
     }
 }

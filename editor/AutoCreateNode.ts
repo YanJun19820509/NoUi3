@@ -62,7 +62,7 @@ export class AutoCreateNode extends Component {
             this.nameMap = {};
             let name = this.node.name;
             let a = await Editor.Dialog.select({
-                path: Editor.Project.path + '\\assets',
+                path: Editor.Project.path + '/assets/res',
                 multi: false,
                 type: 'directory'
             });
@@ -452,9 +452,7 @@ export class AutoCreateNode extends Component {
         }
         // console.log(cname);
         if (!n) {
-            n = new Node(name);
-            n.layer = Layers.Enum.UI_2D;
-            n.addComponent(UITransform);
+            n = no.newNode(name);
         }
         n.parent = parent;
         n.setPosition(x, y);

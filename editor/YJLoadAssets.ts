@@ -172,14 +172,14 @@ export class YJLoadAssets extends Component {
             info.setPath();
         });
     }
-    @property(SpriteFrameInfo)
-    spriteFrameInfos: SpriteFrameInfo[] = [];
-    @property(PrefabInfo)
-    prefabInfos: PrefabInfo[] = [];
-    @property({ type: LoadAssetsInfo, tooltip: '可在panel创建完成后加载的资源' })
-    backgroundLoadInfos: LoadAssetsInfo[] = [];
-    @property(MaterialInfo)
-    materialInfos: MaterialInfo[] = [];
+    // @property(SpriteFrameInfo)
+    // spriteFrameInfos: SpriteFrameInfo[] = [];
+    // @property(PrefabInfo)
+    // prefabInfos: PrefabInfo[] = [];
+    // @property({ type: LoadAssetsInfo, tooltip: '可在panel创建完成后加载的资源' })
+    // backgroundLoadInfos: LoadAssetsInfo[] = [];
+    // @property(MaterialInfo)
+    // materialInfos: MaterialInfo[] = [];
     @property
     public get autoSetSubLoadAsset(): boolean {
         return false;
@@ -215,44 +215,41 @@ export class YJLoadAssets extends Component {
             info.addTexture(uuid);
             this.textureInfos[this.textureInfos.length] = info;
         });
-        this.spriteFrameInfos.length = 0;
-        spriteFrameUuid.forEach(uuid => {
-            const info = new SpriteFrameInfo();
-            info.addSpriteFrame(uuid);
-            this.spriteFrameInfos[this.spriteFrameInfos.length] = info;
-        });
+        // this.spriteFrameInfos.length = 0;
+        // spriteFrameUuid.forEach(uuid => {
+        //     const info = new SpriteFrameInfo();
+        //     info.addSpriteFrame(uuid);
+        //     this.spriteFrameInfos[this.spriteFrameInfos.length] = info;
+        // });
 
-        const list1 = this.getComponentsInChildren(YJLoadPrefab);
-        this.prefabInfos.length = 0;
-        list1.forEach(a => {
-            const info = new PrefabInfo();
-            info.addPrefab(a.prefabUrl);
-            this.prefabInfos[this.prefabInfos.length] = info;
-        });
+        // const list1 = this.getComponentsInChildren(YJLoadPrefab);
+        // this.prefabInfos.length = 0;
+        // list1.forEach(a => {
+        //     const info = new PrefabInfo();
+        //     info.addPrefab(a.prefabUrl);
+        //     this.prefabInfos[this.prefabInfos.length] = info;
+        // });
     }
 
-    @property({ visible() { return false; } })
-    public get setMaterial(): boolean {
-        return false;
-    }
+    // @property({ visible() { return false; } })
+    // public get setMaterial(): boolean {
+    //     return false;
+    // }
 
-    public set setMaterial(v: boolean) {
-        let uuids: string[] = [];
-        this.textureInfos.forEach(info => {
-            uuids[uuids.length] = info.assetUuid;
-        })
-        this.getComponent(YJDynamicAtlas).setMaterialTextures(uuids);
+    // public set setMaterial(v: boolean) {
+    //     let uuids: string[] = [];
+    //     this.textureInfos.forEach(info => {
+    //         uuids[uuids.length] = info.assetUuid;
+    //     })
+    //     this.getComponent(YJDynamicAtlas).setMaterialTextures(uuids);
 
-        const dynamicAtlas = this.getComponent(YJDynamicAtlas);
-        if (dynamicAtlas.customMaterial) {
-            const info = new MaterialInfo();
-            info.addMaterial(dynamicAtlas.customMaterial.uuid);
-            this.materialInfos[0] = info;
-        }
-    }
-
-
-    private static TextureAllSize: number = 0;
+    //     const dynamicAtlas = this.getComponent(YJDynamicAtlas);
+    //     if (dynamicAtlas.customMaterial) {
+    //         const info = new MaterialInfo();
+    //         info.addMaterial(dynamicAtlas.customMaterial.uuid);
+    //         this.materialInfos[0] = info;
+    //     }
+    // }
 
     private atlases: any[] = [];
     private textures: Texture2D[] = [];
@@ -277,12 +274,12 @@ export class YJLoadAssets extends Component {
     public async load() {
         let bundles: string[] = [],
             requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }[] = [];
-        for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            if (this.spriteFrameInfos[i].path) {
-                const b = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
-                no.addToArray(bundles, b);
-            }
-        }
+        // for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
+        //     if (this.spriteFrameInfos[i].path) {
+        //         const b = no.assetBundleManager.assetPath(this.spriteFrameInfos[i].path).bundle;
+        //         no.addToArray(bundles, b);
+        //     }
+        // }
         for (let i = 0, n = this.textureInfos.length; i < n; i++) {
             const textureInfo = this.textureInfos[i];
             if (textureInfo.path) {
@@ -290,19 +287,19 @@ export class YJLoadAssets extends Component {
                 no.addToArray(bundles, b);
             }
         }
-        for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            const prefabInfo = this.prefabInfos[i];
-            if (prefabInfo.path) {
-                const b = no.assetBundleManager.assetPath(prefabInfo.path).bundle;
-                no.addToArray(bundles, b);
-            }
-        }
-        for (let i = 0, n = this.materialInfos.length; i < n; i++) {
-            if (this.materialInfos[i].path) {
-                const b = no.assetBundleManager.assetPath(this.materialInfos[i].path).bundle;
-                no.addToArray(bundles, b);
-            }
-        }
+        // for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
+        //     const prefabInfo = this.prefabInfos[i];
+        //     if (prefabInfo.path) {
+        //         const b = no.assetBundleManager.assetPath(prefabInfo.path).bundle;
+        //         no.addToArray(bundles, b);
+        //     }
+        // }
+        // for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+        //     if (this.materialInfos[i].path) {
+        //         const b = no.assetBundleManager.assetPath(this.materialInfos[i].path).bundle;
+        //         no.addToArray(bundles, b);
+        //     }
+        // }
 
         if (this.loadLanguageBundle) no.addToArray(bundles, YJi18n.ins.language);
         // if (bundles.length == 0) return;
@@ -364,30 +361,30 @@ export class YJLoadAssets extends Component {
 
         requests.length = 0; // clear requests
 
-        for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
-            const spriteFrameInfo = this.spriteFrameInfos[i];
-            if (spriteFrameInfo.path) {
-                const bundle = no.assetBundleManager.assetPath(spriteFrameInfo.path).bundle,
-                    info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(spriteFrameInfo.assetUuid);
-                requests[requests.length] = { path: info.path, bundle: bundle, type: SpriteFrame };
-            } else
-                requests[requests.length] = { uuid: spriteFrameInfo.assetUuid, type: SpriteFrame };
-        }
+        // for (let i = 0, n = this.spriteFrameInfos.length; i < n; i++) {
+        //     const spriteFrameInfo = this.spriteFrameInfos[i];
+        //     if (spriteFrameInfo.path) {
+        //         const bundle = no.assetBundleManager.assetPath(spriteFrameInfo.path).bundle,
+        //             info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(spriteFrameInfo.assetUuid);
+        //         requests[requests.length] = { path: info.path, bundle: bundle, type: SpriteFrame };
+        //     } else
+        //         requests[requests.length] = { uuid: spriteFrameInfo.assetUuid, type: SpriteFrame };
+        // }
 
-        for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
-            const prefabInfo = this.prefabInfos[i];
-            if (prefabInfo.path) {
-                const bundle = no.assetBundleManager.assetPath(prefabInfo.path).bundle,
-                    info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(prefabInfo.assetUuid);
-                requests[requests.length] = { path: info.path, bundle: bundle, type: Prefab };
-            } else
-                requests[requests.length] = { uuid: prefabInfo.assetUuid, type: Prefab };
-        }
+        // for (let i = 0, n = this.prefabInfos.length; i < n; i++) {
+        //     const prefabInfo = this.prefabInfos[i];
+        //     if (prefabInfo.path) {
+        //         const bundle = no.assetBundleManager.assetPath(prefabInfo.path).bundle,
+        //             info: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(prefabInfo.assetUuid);
+        //         requests[requests.length] = { path: info.path, bundle: bundle, type: Prefab };
+        //     } else
+        //         requests[requests.length] = { uuid: prefabInfo.assetUuid, type: Prefab };
+        // }
         if (requests.length > 0)
             no.assetBundleManager.preloadAny(requests, null);
-        this.backgroundLoadInfos.forEach(info => {
-            info.load();
-        });
+        // this.backgroundLoadInfos.forEach(info => {
+        //     info.load();
+        // });
     }
 
     private async _loadMaterial(requests: any[]) {
@@ -511,9 +508,9 @@ export class YJLoadAssets extends Component {
                 }
             }
         }
-        this.spriteFrameInfos.forEach(info => {
-            info.release && info.release(null);
-        });
+        // this.spriteFrameInfos.forEach(info => {
+        //     info.release && info.release(null);
+        // });
         this.textures.forEach(a => {
             YJTextureManager.returnTexture(a.uuid);
         });
