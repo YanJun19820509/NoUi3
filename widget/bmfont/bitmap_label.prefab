@@ -81,7 +81,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 0,
-      "height": 26
+      "height": 32.76
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -101,10 +101,11 @@
     "node": {
       "__id__": 1
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": {
       "__id__": 5
     },
+    "_customMaterial": null,
     "_srcBlendFactor": 2,
     "_dstBlendFactor": 4,
     "_color": {
@@ -117,17 +118,14 @@
     "_string": "",
     "_horizontalAlign": 1,
     "_verticalAlign": 1,
-    "_actualFontSize": 24,
-    "_fontSize": 24,
+    "_actualFontSize": -1,
+    "_fontSize": -1,
     "_fontFamily": "Arial",
     "_lineHeight": 26,
     "_overflow": 0,
     "_enableWrapText": true,
-    "_font": {
-      "__uuid__": "27ced602-1bc1-4f01-817a-e7f7effe733a",
-      "__expectedType__": "cc.BitmapFont"
-    },
-    "_isSystemFontUsed": false,
+    "_font": null,
+    "_isSystemFontUsed": true,
     "_spacingX": 0,
     "_isItalic": false,
     "_isBold": false,
@@ -151,11 +149,12 @@
     "__prefab": {
       "__id__": 7
     },
-    "fontName": "number1-24",
-    "fontUuid": "27ced602-1bc1-4f01-817a-e7f7effe733a",
+    "fontName": "",
+    "fontUuid": "",
     "dynamicAtlas": null,
     "_packToAtlas": true,
     "_spacingX": 0,
+    "_size": 0,
     "_id": ""
   },
   {
