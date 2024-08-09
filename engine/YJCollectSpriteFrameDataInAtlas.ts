@@ -130,7 +130,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
 
     private static async getScale(path: string): Promise<number> {
         return new Promise<number>(resolve => {
-            no.assetBundleManager.loadFileInEditorMode<JsonAsset>(`${path}_atlas.json`, JsonAsset, (item, info) => {
+            no.EditorMode.loadAnyFile<JsonAsset>(`${path}_atlas.json`).then(item => {
                 const content = JSON.stringify(item.json);
                 if (content.indexOf('"scale":1.428') == -1)
                     resolve(1);

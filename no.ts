@@ -2263,14 +2263,6 @@ export namespace no {
 
     }
 
-    export function getAssetUrlInEditorMode(uuid: string, cb: (url: string) => void) {
-        if (!EDITOR) cb?.(null);
-        else
-            Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
-                cb?.(info?.url);
-            })
-    }
-
     /**
      * 阶乘
      * @param n 阶
@@ -3190,106 +3182,7 @@ export namespace no {
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
-        public async loadFileInEditorMode<T extends Asset>(url: string, type: typeof Asset | typeof ImageAsset, callback: (file: T, info: _AssetInfo) => void, onErr?: () => void) {
-            if (!EDITOR) return;
-            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
-            if (!info) {
-                onErr?.();
-                return;
-            }
-            assetManager.loadAny({ 'uuid': info.uuid }, (err, item: T) => {
-                if (err) {
-                    log(url, err);
-                    onErr?.();
-                }
-                else
-                    callback(item, info);
-            });
-        }
-
-        public async loadSpriteFrameInEditorMode(url: string, callback: (file: SpriteFrame, info: any) => void, onErr?: () => void) {
-            if (!EDITOR) return;
-            let info = await Editor.Message.request('asset-db', 'query-asset-info', url);
-            if (!info) {
-                onErr?.();
-                return;
-            }
-            for (const key in info.subAssets) {
-                let sub = info.subAssets[key];
-                if (sub.type == 'cc.SpriteFrame') {
-                    assetManager.loadAny({ 'uuid': sub.uuid }, (err, item: SpriteFrame) => {
-                        if (err) {
-                            log(url, err);
-                            onErr?.();
-                        }
-                        else {
-                            callback(item, sub);
-                        }
-                    });
-                    break;
-                }
-            }
-        }
-
-        public async loadSpriteAtlasInEditorMode(urls: string | string[], callback: (atlases: SpriteAtlas[], infos?: any[]) => void) {
-            if (!EDITOR) return;
-            let requests: any[] = [];
-            let infos: any[] = [];
-            urls = [].concat(urls);
-            for (let i = 0, n = urls.length; i < n; i++) {
-                let info = await Editor.Message.request('asset-db', 'query-asset-info', urls[i]);
-                if (!info)
-                    log('query-asset-info url无效', urls[i]);
-                else {
-                    requests[requests.length] = { 'uuid': info.uuid };
-                    infos[infos.length] = info;
-                }
-            }
-            if (!requests.length) {
-                callback?.([]);
-                return;
-            }
-            assetManager.loadAny(requests, (err: any, items: SpriteAtlas[]) => {
-                if (err) {
-                    callback?.([]);
-                }
-                else {
-                    callback(items, infos);
-                }
-            });
-        }
-
-        public async loadAssetsInEditorModeUnderFolder<T extends Asset>(url: string, ccType: string, callback: (assets: T | T[]) => void) {
-            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: any[]) => {
-                let aa = [];
-                assets.forEach(a => {
-                    if (a['url'].indexOf(url) > -1) {
-                        aa[aa.length] = { uuid: a.uuid };
-                    }
-                });
-                if (!aa.length) {
-                    callback?.([]);
-                    return;
-                }
-                assetManager.loadAny(aa, (err, items: T | T[]) => {
-                    if (!err) {
-                        callback?.(items);
-                    } else callback?.([]);
-                });
-            }).catch(e => { err(e); });
-        }
-
-        public async loadAssetInfosInEditorModeUnderFolder(url: string, ccType: string, callback: (infos: _AssetInfo[]) => void) {
-            Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((infos: any[]) => {
-                let a: _AssetInfo[] = [];
-                infos.forEach(info => {
-                    if (info.url.indexOf(url) > -1) a[a.length] = info;
-                });
-                callback?.(a);
-            }).catch(e => { err(e); });
-        }
-
-        public loadByUuid<T extends Asset>(uuid: string, type: typeof Asset | typeof ImageAsset, callback?: (file: T) => void) {
+        public loadByUuid<T extends Asset>(uuid: string, callback?: (file: T) => void) {
             if (uuid == '') {
                 no.err('uuid 为空')
                 return;
@@ -3444,43 +3337,6 @@ export namespace no {
                 if (bundle.getAssetInfo(uuid)) name = bundle.name;
             });
             return name;
-        }
-
-        public async getAssetInfoWithNameInEditorMode(name: string, type: typeof Asset): Promise<_AssetInfo | null> {
-            let ccType: string = `cc.${type.name}`;
-            return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType }).then((assets: _AssetInfo[]) => {
-                let info: _AssetInfo;
-                for (let i = 0, n = assets.length; i < n; i++) {
-                    const asset = assets[i];
-                    if (asset.name == name) {
-                        info = asset;
-                        break;
-                    }
-                }
-                return info;
-            }).catch(e => { err(e.stack); return null; });
-        }
-
-        public getAssetInfoWithUuidInEditorMode(uuid: string, cb: (info: _AssetInfo) => void) {
-            if (!EDITOR) cb?.(null);
-            else
-                Editor.Message.request('asset-db', 'query-asset-info', uuid).then(info => {
-                    cb?.(info);
-                });
-        }
-
-        public getSubBundlesInEditorMode(rootUrl: string, cb: (bundles: string[]) => void) {
-            if (!EDITOR) cb?.([]);
-            else
-                Editor.Message.request('asset-db', 'query-assets', { isBundle: true }).then(infos => {
-                    console.log(infos);
-                    let bundles: string[] = [];
-                    infos.forEach(info => {
-                        if (info.url.indexOf(rootUrl) == 0)
-                            bundles[bundles.length] = info.name;
-                    });
-                    cb?.(bundles);
-                });
         }
 
         public getBundleVersion(bundleName: string): string {
@@ -5480,6 +5336,182 @@ export namespace no {
         return getPrototype(target, propertyKey) == val;
     }
 
+    /**
+     * 在编辑器模式下获取资源
+     */
+    export namespace EditorMode {
+
+        /**
+         * 获取资源信息
+         * @param param 可以是uuid/url/path
+         * @returns AssetInfo
+         */
+        export async function getAssetInfo(param: string) {
+            return Editor.Message.request('asset-db', 'query-asset-info', param);
+        }
+
+        /**
+         * 获取资源元数据
+         * @param param 可以是uuid/url/path
+         * @returns IAssetMeta
+         */
+        export async function getAssetMeta(param: string) {
+            return Editor.Message.request('asset-db', 'query-asset-meta', param);
+        }
+
+        /**
+         * 获取所有ccType类型的资源信息
+         * @param ccType 如：'cc.SpriteFrame'
+         * @returns AssetInfo[]
+         */
+        export async function getAssetInfosByCCType(ccType: string) {
+            return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType });
+        }
+
+        /**
+         * 获取所有包信息
+         * @returns AssetInfo[]
+         */
+        export async function getBundleInfos() {
+            return Editor.Message.request('asset-db', 'query-assets', { isBundle: true });
+        }
+
+        /**
+         * 根据uuid获取资源url
+         * @param uuid 
+         * @returns 
+         */
+        export async function getAssetUrlByUuid(uuid: string) {
+            return getAssetInfo(uuid).then(info => {
+                return info?.url;
+            });
+        }
+
+        /**
+         * 根据url获取资源uuid
+         * @param url 
+         * @returns 
+         */
+        export async function getAssetUuidByUrl(url: string) {
+            return getAssetInfo(url).then(info => {
+                return info?.uuid;
+            });
+        }
+
+        /**
+         * 获取资源
+         * @param url 资源url
+         * @param type 资源类型
+         * @returns Asset
+         */
+        export async function loadAnyFile<T extends Asset>(url: string) {
+            const uuid = await getAssetUuidByUrl(url);
+            if (!uuid) {
+                return null;
+            }
+            return new Promise<T>(resolve =>
+                assetBundleManager.loadByUuid<T>(uuid, asset => resolve(asset))
+            );
+        }
+
+        /**
+         * 加载图集资源
+         * @param urls 资源url数组
+         * @returns 
+         */
+        export async function loadSpriteAtlas(urls: string | string[]) {
+            let requests: any[] = [];
+            urls = [].concat(urls);
+            for (let i = 0, n = urls.length; i < n; i++) {
+                let info = await getAssetInfo(urls[i]);
+                if (!info)
+                    log('query-asset-info url无效', urls[i]);
+                else {
+                    requests[requests.length] = { 'uuid': info.uuid };
+                }
+            }
+            if (!requests.length) {
+                return [];
+            }
+
+            return new Promise<any>(resolve => {
+                assetBundleManager.loadAnyFiles(requests, null, items => {
+                    resolve(items);
+                });
+            });
+        }
+
+        export async function loadAssetInfosOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
+            return getAssetInfosByCCType(ccType).then((infos: any[]) => {
+                let a: _AssetInfo[] = [];
+                infos.forEach(info => {
+                    if (info.url.indexOf(folderUrl) > -1) a[a.length] = info;
+                });
+                return a;
+            });
+        }
+
+        /**
+         * 获取指定文件夹下的所有指定类型的资源
+         * @param folderUrl 文件夹路径
+         * @param ccType 资源类型如：'cc.SpriteAtlas'
+         * @returns 
+         */
+        export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
+            return getAssetInfosByCCType(ccType).then((infos: any[]) => {
+                let aa = [];
+                infos.forEach(a => {
+                    if (a['url'].indexOf(folderUrl) > -1) {
+                        aa[aa.length] = { uuid: a.uuid };
+                    }
+                });
+                if (!aa.length) {
+                    return [];
+                }
+                return new Promise<any>(resolve => {
+                    assetBundleManager.loadAnyFiles(aa, null, items => {
+                        resolve(items);
+                    });
+                });
+            });
+        }
+
+        /**
+         * 根据资源名称和类型获取资源信息
+         * @param name 资源名称
+         * @param ccType 资源类型如：'cc.SpriteAtlas'
+         * @returns AssetInfo
+         */
+        export async function getAssetInfoOfCCTypeWithName(name: string, ccType: string) {
+            return getAssetInfosByCCType(ccType).then((infos: _AssetInfo[]) => {
+                let info: _AssetInfo;
+                for (let i = 0, n = infos.length; i < n; i++) {
+                    const asset = infos[i];
+                    if (asset.name == name) {
+                        info = asset;
+                        break;
+                    }
+                }
+                return info;
+            });
+        }
+
+        /**
+         * 获取指定文件夹下的所有包名
+         * @param folderUrl 文件夹路径
+         * @returns string[]
+         */
+        export async function getBundlesUnderFolder(folderUrl: string) {
+            return getBundleInfos().then(infos => {
+                let bundles: string[] = [];
+                infos.forEach(info => {
+                    if (info.url.indexOf(folderUrl) == 0)
+                        bundles[bundles.length] = info.name;
+                });
+                return bundles;
+            });
+        }
+    }
 }
 
 no.addToWindowForDebug('no', no);

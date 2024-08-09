@@ -101,7 +101,7 @@ export class SetSpriteFrame extends FuckUi {
         if (this.defaultSpriteFrameUuid) {
             no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
             const sprite = this.getComponent(Sprite);
-            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
                 if (!file) {
                     no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
                 } else

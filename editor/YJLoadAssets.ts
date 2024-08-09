@@ -55,12 +55,12 @@ export class TextureInfo extends LoadAssetsInfo {
 
     public addTexture(uuid: string) {
         this.assetUuid = uuid;
-        no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+        no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
             this.path = info.path;
             this.assetName = info?.displayName;
             let path = info?.path.replace('/texture', '_atlas.json');
             if (path) {
-                no.assetBundleManager.loadFileInEditorMode<JsonAsset>(path, JsonAsset, (file, info) => {
+                no.EditorMode.getAssetInfo(path).then(info => {
                     this.atlasJsonName = info.name;
                     this.atlasJsonUuid = info.uuid;
                 });
@@ -114,7 +114,7 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
             this.assetName = '';
             this.assetUuid = '';
         } else {
-            no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+            no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
                 const a = info.path.split('/');
                 this.assetName = a[a.length - 2];
                 this.path = info?.path;
@@ -568,7 +568,7 @@ export class YJLoadAssets extends Component {
             }
         }
         if (info)
-            no.assetBundleManager.loadByUuid(info.uuid, SpriteFrame, cb);
+            no.assetBundleManager.loadByUuid<SpriteFrame>(info.uuid, cb);
         else cb?.(null);
     }
 

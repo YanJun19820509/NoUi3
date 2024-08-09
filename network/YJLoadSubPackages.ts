@@ -15,7 +15,7 @@ export class YJLoadSubPackages extends Component {
 
     public set checkSub(v: boolean) {
         if (!this.root) return;
-        no.assetBundleManager.getSubBundlesInEditorMode(this.root, bundles => {
+        no.EditorMode.getBundlesUnderFolder(this.root).then(bundles => {
             this.subBundles = bundles;
         });
     }

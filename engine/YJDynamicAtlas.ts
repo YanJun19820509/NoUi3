@@ -39,10 +39,10 @@ export class YJDynamicAtlas extends Component {
         const material = this.customMaterial;
         if (!material) {
             const prefab = this.node['_prefab'].asset;
-            no.getAssetUrlInEditorMode(prefab.uuid, url => {
+            no.EditorMode.getAssetUrlByUuid(prefab.uuid).then(url => {
                 const path = url.replace('.prefab', '.mtl');
                 Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
-                    no.assetBundleManager.loadFileInEditorMode<Material>(path, Material, m => {
+                    no.EditorMode.loadAnyFile<Material>(path).then(m => {
                         this.customMaterial = m;
                         this.setSubMaterial = true;
                     });

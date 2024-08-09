@@ -29,7 +29,7 @@ export class YJBitmapFont extends Component {
         this._font = v;
         this.fontName = v.name;
         this.fontUuid = v.uuid;
-        no.getAssetUrlInEditorMode(v.uuid, url => {
+        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
             this.fontUrl = url;
         });
         const label = this.getComponent(Label);
@@ -126,11 +126,11 @@ export class YJBitmapFont extends Component {
 
     public resetFont() {
         if (this.fontUuid == '') return;
-        no.assetBundleManager.loadByUuid<BitmapFont>(this.fontUuid, BitmapFont, bf => {
+        no.assetBundleManager.loadByUuid<BitmapFont>(this.fontUuid, bf => {
             this.setFont(bf);
         });
         if (!this.fontUrl) {
-            no.getAssetUrlInEditorMode(this.fontUuid, url => {
+            no.EditorMode.getAssetUrlByUuid(this.fontUuid).then(url => {
                 this.fontUrl = url;
             });
         }

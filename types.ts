@@ -275,12 +275,12 @@ export class LoadAssetsInfo {
             return new Promise<Asset>(resolve => {
                 if (this.path)
                     no.assetBundleManager.loadBundle(no.assetBundleManager.assetPath(this.path).bundle, () => {
-                        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
                             resolve(file);
                         });
                     });
                 else
-                    no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, Asset, file => {
+                    no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
                         resolve(file);
                     });
             });
@@ -298,7 +298,7 @@ export class LoadAssetsInfo {
         if (!this.assetUuid) {
             this.path = '';
         } else {
-            no.assetBundleManager.getAssetInfoWithUuidInEditorMode(this.assetUuid, info => {
+            no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
                 this.assetName = info.name;
                 this.path = info?.path;
             });
@@ -309,8 +309,8 @@ export class LoadAssetsInfo {
         if (!this.path) {
             this.assetUuid = '';
         } else {
-            no.assetBundleManager.loadFileInEditorMode(this.path, Prefab, (file, info) => {
-                this.assetUuid = info?.uuid;
+            no.EditorMode.getAssetUuidByUrl(this.path).then(uuid => {
+                this.assetUuid = uuid;
             });
         }
     }

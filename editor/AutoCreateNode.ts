@@ -75,20 +75,17 @@ export class AutoCreateNode extends Component {
             // let dest = path.replace(root + '/', 'db://');
             this.rootPath = dest;
             await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-            // no.assetBundleManager.loadSpriteAtlasInEditorMode(['db://assets/i18n/chinese/chinese.plist'], (fs, infos) => {
-            //     this.atlases = this.atlases.concat(fs);
-            no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
+            
+            no.EditorMode.loadAnyFile<SpriteAtlas>(dest).then(assets => {
                 this.atlases = this.atlases.concat(assets);
-                no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/res/atlas', 'cc.SpriteAtlas', assets => {
+                no.EditorMode.loadAnyFile<SpriteAtlas>('assets/res/atlas').then(assets => {
                     this.atlases = this.atlases.concat(assets);
-                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/res/common/font', 'cc.TTFFont', assets => {
+                    no.EditorMode.loadAnyFile<TTFFont>('assets/res/common/font').then(assets => {
                         this.fonts = this.fonts.concat(assets);
                         this.loadJson(dest, name);
                     });
                 });
             });
-            // });
-            // }
         } catch (e) {
             console.log(e);
         }
@@ -113,7 +110,7 @@ export class AutoCreateNode extends Component {
 
     private loadJson(dest: string, name: string) {
         // console.log('loadjson');
-        no.assetBundleManager.loadFileInEditorMode<JsonAsset>(dest + `/${name}.json`, JsonAsset, f => {
+        no.EditorMode.loadAnyFile<JsonAsset>(dest + `/${name}.json`).then(f => {
             // console.log(f.json);
             this.deleteConfigFile(dest + `/${name}.json`);
             this.createNodes(f.json);
@@ -222,9 +219,9 @@ export class AutoCreateNode extends Component {
 
         s.spriteFrame = sf;
         if (!s.spriteFrame) {
-            no.assetBundleManager.loadSpriteFrameInEditorMode(`${this.rootPath}/${c.name}.png`, (f, info) => {
+            no.EditorMode.loadAnyFile<SpriteFrame>(`${this.rootPath}/${c.name}.png`).then(f => {
                 s.spriteFrame = f;
-            }, () => { });
+            });
         }
         if (!n.getComponent(SetSpriteFrameInSampler2D)) n.addComponent(SetSpriteFrameInSampler2D);
         return n;

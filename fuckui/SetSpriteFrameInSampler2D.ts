@@ -250,7 +250,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                     TextureInfoInGPU.addTextureUuidToPanel(s.uuid, this.panelName);
                 }
             } else {
-                no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, SpriteFrame, (file) => {
+                no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
                     if (!file) {
                         no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
                     } else {

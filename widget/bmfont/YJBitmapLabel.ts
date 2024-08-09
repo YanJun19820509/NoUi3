@@ -94,7 +94,7 @@ export class YJBitmapLabel extends YJRenderBase {
             return;
         }
         if (EDITOR) {
-            no.assetBundleManager.loadFileInEditorMode(this.atlasJson, JsonAsset, (file: JsonAsset, info) => {
+            no.EditorMode.loadAnyFile<JsonAsset>(this.atlasJson).then(file => {
                 this._atlasConfig = file.json;
                 this.setLabel();
             })

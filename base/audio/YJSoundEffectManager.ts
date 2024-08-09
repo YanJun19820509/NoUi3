@@ -114,7 +114,7 @@ export class YJSoundEffectManager extends Component {
     private async parse() {
         if (!EDITOR || !this.folder) return;
         console.log(this.folder);
-        no.assetBundleManager.loadAssetInfosInEditorModeUnderFolder(this.folder, 'cc.AudioClip', infos => {
+        no.EditorMode.loadAssetsOfCCTypeUnderFolder(this.folder, 'cc.AudioClip').then(infos => {
             console.log(infos);
             if (!infos.length) {
                 return;

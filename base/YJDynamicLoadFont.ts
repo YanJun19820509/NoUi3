@@ -38,7 +38,7 @@ export class YJDynamicLoadFont extends Component {
             const label = this.getComponent(Label) || this.getComponent(RichText);
             if (label.font) return;
             let a = false;
-            no.assetBundleManager.loadByUuid<Font>(this.fontUuid, Font, (file) => {
+            no.assetBundleManager.loadByUuid<Font>(this.fontUuid, (file) => {
                 if (file) {
                     label.useSystemFont = false;
                     label.font = file;
