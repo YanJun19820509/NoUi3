@@ -67,7 +67,7 @@ export type CreateSpritemFrameData = {
 export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
 export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
-export type SpriteFrameDataType = { uuid: string, x: number, y: number, width: number, height: number, uv: number[], uvSliced?: IUV[], capInsets?: number[], rotated: boolean, scale: number, w: number, h: number };
+export type SpriteFrameDataType = { uuid: string, rect: number[], originalSize: number[], textureSize: number[], uv: number[], uvSliced?: IUV[], capInsets?: number[], rotated: boolean, scale: number };
 
 @ccclass('Range')
 export class Range {

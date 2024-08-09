@@ -6,7 +6,7 @@ import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
-import { LayerType, LayerTypeDesc } from '../../../script/common/LayerType';
+import { LayerType, LayerTypeDesc } from './LayerType';
 
 /**
  * Predefined variables

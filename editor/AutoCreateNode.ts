@@ -51,6 +51,7 @@ export class AutoCreateNode extends Component {
     }
 
     onEnable() {
+        console.log(this.node.name)
         if (EDITOR) {
             this.loadConfigFile();
         }
@@ -61,32 +62,33 @@ export class AutoCreateNode extends Component {
         try {
             this.nameMap = {};
             let name = this.node.name;
-            let a = await Editor.Dialog.select({
-                path: Editor.Project.path + '/assets/res',
-                multi: false,
-                type: 'directory'
-            });
-            if (!a.canceled) {
-                let path = a.filePaths[0];
-                path = path.replace(/\\/g, '/');
-                let root = Editor.Project.path.replace(/\\/g, '/');
-                let dest = path.replace(root + '/', 'db://');
-                this.rootPath = dest;
-                await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-                no.assetBundleManager.loadSpriteAtlasInEditorMode(['db://assets/i18n/chinese/chinese.plist'], (fs, infos) => {
-                    this.atlases = this.atlases.concat(fs);
-                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
-                        this.atlases = this.atlases.concat(assets);
-                        no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/res/atlas', 'cc.SpriteAtlas', assets => {
-                            this.atlases = this.atlases.concat(assets);
-                            no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/res/common/font', 'cc.TTFFont', assets => {
-                                this.fonts = this.fonts.concat(assets);
-                                this.loadJson(dest, name);
-                            });
-                        });
+            // let a = await Editor.Dialog.select({
+            //     path: Editor.Project.path,
+            //     multi: false,
+            //     type: 'directory'
+            // });
+            let dest = Editor.Clipboard.read('cur_prefab_path');
+            // if (!a.canceled) {
+            // let path = a.filePaths[0];
+            // path = path.replace(/\\/g, '/');
+            // let root = Editor.Project.path.replace(/\\/g, '/');
+            // let dest = path.replace(root + '/', 'db://');
+            this.rootPath = dest;
+            await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
+            // no.assetBundleManager.loadSpriteAtlasInEditorMode(['db://assets/i18n/chinese/chinese.plist'], (fs, infos) => {
+            //     this.atlases = this.atlases.concat(fs);
+            no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>(dest, 'cc.SpriteAtlas', assets => {
+                this.atlases = this.atlases.concat(assets);
+                no.assetBundleManager.loadAssetsInEditorModeUnderFolder<SpriteAtlas>('assets/res/atlas', 'cc.SpriteAtlas', assets => {
+                    this.atlases = this.atlases.concat(assets);
+                    no.assetBundleManager.loadAssetsInEditorModeUnderFolder<TTFFont>('assets/res/common/font', 'cc.TTFFont', assets => {
+                        this.fonts = this.fonts.concat(assets);
+                        this.loadJson(dest, name);
                     });
                 });
-            }
+            });
+            // });
+            // }
         } catch (e) {
             console.log(e);
         }

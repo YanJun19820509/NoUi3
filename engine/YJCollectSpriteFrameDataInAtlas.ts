@@ -65,15 +65,12 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
             console.log(sf);
             let a: SpriteFrameDataType = {
                 uuid: sf.uuid,
-                x: sf.rect.x,
-                y: sf.rect.y,
-                width: sf.rect.width,
-                height: sf.rect.height,
+                rect: [sf.rect.x, sf.rect.y, sf.rect.width, sf.rect.height],
+                originalSize: [sf.originalSize.width, sf.originalSize.height],
+                textureSize: [sf.width, sf.height],
                 uv: sf.uv,
                 rotated: sf.rotated,
-                scale: scale,
-                w: sf.width,
-                h: sf.height
+                scale: scale
             };
             if (this.isSliced(sf)) {
                 a.uvSliced = sf.uvSliced;

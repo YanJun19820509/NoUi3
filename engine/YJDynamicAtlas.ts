@@ -359,12 +359,12 @@ export class YJDynamicAtlas extends Component {
         let newSpriteFrame: SpriteFrame = new SpriteFrame();
         newSpriteFrame['_uuid'] = spriteFrame.uuid;
         newSpriteFrame.texture = this.spriteTexture;
-        newSpriteFrame.originalSize = size(spriteFrame.width, spriteFrame.height);
-        newSpriteFrame.rect = rect(spriteFrame.x, spriteFrame.y, spriteFrame.width, spriteFrame.height);
+        newSpriteFrame.originalSize = size(spriteFrame.originalSize[0], spriteFrame.originalSize[1]);
+        newSpriteFrame.rect = rect(spriteFrame.rect[0], spriteFrame.rect[1], spriteFrame.rect[2], spriteFrame.rect[3]);
         newSpriteFrame.uv = spriteFrame.uv;
         newSpriteFrame['_rotated'] = spriteFrame.rotated;
-        newSpriteFrame['_w'] = spriteFrame.w;
-        newSpriteFrame['_h'] = spriteFrame.h;
+        newSpriteFrame['_w'] = spriteFrame.textureSize[0];
+        newSpriteFrame['_h'] = spriteFrame.textureSize[1];
         if (spriteFrame.uvSliced) {
             newSpriteFrame.uvSliced = spriteFrame.uvSliced;
             newSpriteFrame['_capInsets'] = spriteFrame.capInsets || [0, 0, 0, 0];
