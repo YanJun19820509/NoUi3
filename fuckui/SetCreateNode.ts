@@ -3,7 +3,6 @@ import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, 
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
-import { YJPreCreateNode } from '../base/YJPreCreateNode';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -131,41 +130,9 @@ export class SetCreateNode extends FuckUi {
         let n = data.length;
         if (!n) return;
 
-        const prefabUrl = this.loadPrefab?.prefabUrl;
-        if (prefabUrl && YJPreCreateNode.ins?.has(prefabUrl)) {
-            let nn = !this.onlyAdd ? n - l : n;
-            if (nn > 0) {
-                await YJJobManager.ins.execute((max: number) => {
-                    if (!this?.node?.isValid) false;
-                    let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
-                    if (cacheItem) {
-                        if (this.dynamicAtlas && !cacheItem.getComponent(YJDynamicAtlas)) {
-                            YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
-                            YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
-                        }
-                        // if (!this.itemSize) this.itemSize = no.size(cacheItem);
-                        // no.position(cacheItem, v3(0, 0));
-                        // // no.visible(cacheItem, false);
-                        // const box = no.newNode('box');
-                        // no.size(box, this.itemSize);
-                        // const a = no.anchor(cacheItem);
-                        // no.anchor(box, a.x, a.y);
-                        // box.addChild(cacheItem);
-                        // box.parent = this.container;
-                        this.container.addChild(this.initItem(cacheItem));
-                    } else return false;
-                    if (this.container.children.length >= max) return false;
-                    return true;
-                }, this, n);
-
-                l = this.container.children.length;
-                YJPreCreateNode.ins.fillNode(prefabUrl);
-            }
-        } else {
-            if (!this.template) {
-                this.template = await this.loadPrefab.loadPrefab();
-                if (!this?.node?.isValid) return;
-            }
+        if (!this.template) {
+            this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
         }
 
         if (!this.onlyAdd && n - l >= 1 || (this.onlyAdd && n >= 1)) {
@@ -176,16 +143,6 @@ export class SetCreateNode extends FuckUi {
                     YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
                     YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                // if (!this.itemSize) this.itemSize = no.size(item);
-                // no.position(item, v3(0, 0));
-                // // item.active = true;
-                // // no.visible(item, false);
-                // const box = no.newNode('box');
-                // no.size(box, this.itemSize);
-                // const a = no.anchor(item);
-                // no.anchor(box, a.x, a.y);
-                // box.addChild(item);
-                // box.parent = this.container;
                 this.container.addChild(this.initItem(item));
                 if (this.container.children.length >= max) return false;
             }, this, !this.onlyAdd ? n : n + l);
@@ -194,9 +151,6 @@ export class SetCreateNode extends FuckUi {
 
         let start = !this.onlyAdd ? 0 : l;
         this.setItem(data, start);
-        // for (let i = 0; i < n; i++) {
-        //     this.setItem(data, start, i);
-        // }
         no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }

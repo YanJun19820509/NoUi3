@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Component, Node } from '../yj';
+import { ccclass, property, disallowMultiple, Component, Node } from '../yj';
 import { no } from '../no';
 import { FuckUi } from '../fuckui/FuckUi';
 
@@ -16,10 +16,30 @@ import { FuckUi } from '../fuckui/FuckUi';
  */
 @ccclass('YJFuckUiRegister')
 @disallowMultiple()
-@executeInEditMode()
 export class YJFuckUiRegister extends Component {
     @property
-    autoRegister: boolean = false;
+    public get autoRegister(): boolean {
+        return false;
+    }
+
+    public set autoRegister(v: boolean) {
+        let list = this.getComponentsInChildren(FuckUi);
+        this.subFuckUiNodes.forEach(sub => {
+            list = list.concat(sub.getComponentsInChildren(FuckUi));
+        });
+        list.forEach((a: FuckUi) => {
+            if (!a.registerNode) {
+                a.registerNode = this.node;
+            }
+        });
+
+        this.subFuckUis = [];
+        list.forEach((a: FuckUi) => {
+            if (a.registerNode == this.node && a.bind_keys != '') {
+                this.subFuckUis[this.subFuckUis.length] = a;
+            }
+        });
+    }
 
     @property(Node)
     subFuckUiNodes: Node[] = [];
@@ -55,11 +75,6 @@ export class YJFuckUiRegister extends Component {
     }
 
     private bindSubFuckUis() {
-        // let list: FuckUi[] = this.getComponentsInChildren('FuckUi') as FuckUi[];
-        // this.subFuckUiNodes.forEach(sub => {
-        //     if (sub)
-        //         list = list.concat(sub.getComponentsInChildren('FuckUi') as FuckUi[]);
-        // });
         let list = this.subFuckUis;
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];
@@ -73,36 +88,5 @@ export class YJFuckUiRegister extends Component {
                 });
             }
         }
-    }
-
-    /////////IN EDITOR/////
-    update() {
-        if (!EDITOR) {
-            return;
-        }
-        if (this.autoRegister) {
-            this.autoRegister = false;
-            this.autoSetSubRegister();
-        }
-    }
-
-    public autoSetSubRegister() {
-        if (!EDITOR) return;
-        let list = this.getComponentsInChildren(FuckUi);
-        this.subFuckUiNodes.forEach(sub => {
-            list = list.concat(sub.getComponentsInChildren(FuckUi));
-        });
-        list.forEach((a: FuckUi) => {
-            if (!a.registerNode) {
-                a.registerNode = this.node;
-            }
-        });
-
-        this.subFuckUis = [];
-        list.forEach((a: FuckUi) => {
-            if (a.registerNode == this.node && a.bind_keys != '') {
-                this.subFuckUis[this.subFuckUis.length] = a;
-            }
-        });
     }
 }

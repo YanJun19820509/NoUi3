@@ -1,7 +1,6 @@
 
 import { no } from '../no';
 import { ccclass, property, executeInEditMode, Component, Node, js } from '../yj';
-import { EDITOR } from 'cc/env';
 
 /**
  * Predefined variables

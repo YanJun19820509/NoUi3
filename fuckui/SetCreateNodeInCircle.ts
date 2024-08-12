@@ -2,7 +2,6 @@
 import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJPreCreateNode } from '../base/YJPreCreateNode';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -43,11 +42,42 @@ export class SetCreateNodeInCircle extends FuckUi {
     @property({ displayName: '创建数量', min: 1, step: 1 })
     num: number = 1;
     @property({ displayName: '计算' })
-    run: boolean = false;
+    public get run(): boolean {
+        return false;
+    }
+
+    public set run(v: boolean) {
+        if (!this.container) return;
+        const size = this.container.getComponent(UITransform).contentSize;
+        const anchor = this.container.getComponent(UITransform).anchorPoint;
+        this.posInfos.length = 0;
+        const a = 360 / this.num, b = Math.PI / 180;
+        const center = math.v2(size.width * (0.5 - anchor.x), size.height * (0.5 - anchor.y));
+        for (let i = 0; i < this.num; i++) {
+            let pi = new CirclePositionInfo();
+            let ro = this.startRotation + a * i;
+            pi.pos.x = this.radius * Math.sin(b * ro) + center.x;
+            pi.pos.y = this.radius * Math.cos(b * ro) + center.y;
+            pi.rotation = - ro;
+            this.posInfos[this.posInfos.length] = pi;
+        }
+    }
     @property({ type: CirclePositionInfo, readonly: true })
     posInfos: CirclePositionInfo[] = [];
     @property({ displayName: '预览' })
-    preview: boolean = false;
+    public get preview(): boolean {
+        return false;
+    }
+
+    public set preview(v: boolean) {
+        if (!this.template) return;
+        for (let i = 0; i < this.num; i++) {
+            let item = instantiate(this.template);
+            this.setPos(item, i);
+            item.parent = this.container;
+            item.active = true;
+        }
+    }
     @property(YJDynamicAtlas)
     dynamicAtlas: YJDynamicAtlas = null;
     @property(YJLoadAssets)
@@ -65,37 +95,6 @@ export class SetCreateNodeInCircle extends FuckUi {
         if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 
-    update() {
-        if (!EDITOR) return;
-        if (this.run) {
-            this.run = false;
-            if (!this.container) return;
-            const size = this.container.getComponent(UITransform).contentSize;
-            const anchor = this.container.getComponent(UITransform).anchorPoint;
-            this.posInfos.length = 0;
-            const a = 360 / this.num, b = Math.PI / 180;
-            const center = math.v2(size.width * (0.5 - anchor.x), size.height * (0.5 - anchor.y));
-            for (let i = 0; i < this.num; i++) {
-                let pi = new CirclePositionInfo();
-                let ro = this.startRotation + a * i;
-                pi.pos.x = this.radius * Math.sin(b * ro) + center.x;
-                pi.pos.y = this.radius * Math.cos(b * ro) + center.y;
-                pi.rotation = - ro;
-                this.posInfos[this.posInfos.length] = pi;
-            }
-        }
-        if (this.preview) {
-            this.preview = false;
-            if (!this.template) return;
-            for (let i = 0; i < this.num; i++) {
-                let item = instantiate(this.template);
-                this.setPos(item, i);
-                item.parent = this.container;
-                item.active = true;
-            }
-        }
-    }
-
     onDestroy() {
         if (EDITOR) {
             return;
@@ -111,34 +110,16 @@ export class SetCreateNodeInCircle extends FuckUi {
     protected async setItems(data: any[]) {
         let l = this.container.children.length;
         if (l == 0) {
-            const prefabUrl = this.loadPrefab?.prefabUrl;
-            if (prefabUrl && YJPreCreateNode.ins.has(prefabUrl)) {
-                for (let i = 0; i < this.num; i++) {
-                    let cacheItem = YJPreCreateNode.ins.useNode(prefabUrl);
-                    if (cacheItem) {
-                        if (this.dynamicAtlas && !cacheItem.getComponent(YJDynamicAtlas)) {
-                            YJDynamicAtlas.setDynamicAtlas(cacheItem, this.dynamicAtlas);
-                            YJLoadAssets.setLoadAsset(cacheItem, this.loadAsset);
-                        }
-                        // cacheItem.active = false;
-                        no.visible(cacheItem, false);
-                        this.setPos(cacheItem, i);
-                        cacheItem.parent = this.container;
-                    } else break;
+            for (let i = 0; i < this.num; i++) {
+                let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
+                item.active = true;
+                no.visible(item, false);
+                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
+                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
+                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
                 }
-                YJPreCreateNode.ins.fillNode(prefabUrl);
-            } else {
-                for (let i = 0; i < this.num; i++) {
-                    let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                    item.active = true;
-                    no.visible(item, false);
-                    if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                        YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                        YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                    }
-                    this.setPos(item, i);
-                    item.parent = this.container;
-                }
+                this.setPos(item, i);
+                item.parent = this.container;
             }
 
             l = this.num;
@@ -146,7 +127,6 @@ export class SetCreateNodeInCircle extends FuckUi {
         for (let i = 0; i < l; i++) {
             let item = this.container.children[i];
             if (data[i] == null) {
-                // item.active = false;
                 no.visible(item, false);
             } else {
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
@@ -154,7 +134,6 @@ export class SetCreateNodeInCircle extends FuckUi {
                     a.data = data[i];
                     a.init();
                 }
-                // item.active = true;
                 no.visible(item, true);
             }
         }
