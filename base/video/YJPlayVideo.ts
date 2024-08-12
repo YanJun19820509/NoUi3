@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, requireComponent, executeInEditMode, Component, Node, VideoPlayer, EventHandler, js } from '../../yj';
+import { EDITOR, ccclass, property, requireComponent, executeInEditMode, Component, VideoPlayer } from '../../yj';
 import { no } from '../../no';
 
 /**

@@ -2864,9 +2864,17 @@ export namespace no {
          */
         public loadFile(path: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             let p = this.assetPath(path);
-            this.load(p.bundle, p.path, type, (asset: Asset) => {
-                callback(asset);
-            });
+            if (p.bundle) {
+                this.load(p.bundle, p.path, type, (asset: Asset) => {
+                    callback(asset);
+                });
+            }
+            else {
+                assetManager.loadAny({ 'url': path }, (e, item) => {
+                    if (err) err('loadFile', path, e.message);
+                    callback(item);
+                });
+            }
         }
         /**
          * 加载bundle中的文件

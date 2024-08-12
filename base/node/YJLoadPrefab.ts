@@ -68,7 +68,7 @@ export default class YJLoadPrefab extends Component {
     }
 
     private setPrefabUrl() {
-        no.getAssetUrlInEditorMode(this.prefab._uuid, url => {
+        no.EditorMode.getAssetUrlByUuid(this.prefab.uuid).then(url => {
             if (!url) return;
             this.prefabUrl = url;
             this.prefab = null;

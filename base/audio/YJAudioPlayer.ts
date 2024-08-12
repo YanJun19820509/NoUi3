@@ -18,7 +18,7 @@ import { YJAudioManager } from './YJAudioManager';
 @ccclass('YJAudioPlayer')
 @menu('NoUi/audio/YJAudioPlayer(音频播放)')
 export class YJAudioPlayer extends Component {
-    @property({ type: AudioClip, editorOnly: true })
+    @property({ type: AudioClip })
     public get clip(): AudioClip {
         return null;
     }

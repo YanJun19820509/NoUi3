@@ -66,7 +66,6 @@ export class YJCreateNode extends Component {
             this._recycleType = a.getComponent(YJCacheObject)?.recycleType;
         }
         a.parent = this.target;
-        a.active = true;
         no.visible(a, true);
         return a;
     }
