@@ -126,8 +126,6 @@ export class AutoCreateNode extends Component {
             da.width = 512;
             da.height = 512;
             this.node.getComponent(UITransform).setContentSize(size);
-            // if (!this.node.getComponent(YJReleasePrefab))
-            //     this.node.addComponent(YJReleasePrefab);
             if (!this.node.getComponent(YJDataWork))
                 this.node.addComponent(YJDataWork);
             if (!this.node.getComponent(YJShowSpriteFrameInSample2D))

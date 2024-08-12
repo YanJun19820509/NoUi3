@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, isValid } from '../../yj';
+import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, isValid, Vec3 } from '../../yj';
 
 /**
  * Predefined variables
@@ -10,7 +10,7 @@ import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransf
  * FileBasenameNoExtension = YJScaleNodeInTarget
  * URL = db://assets/NoUi3/base/node/YJScaleNodeInTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
- *
+ * 自动缩放节点，使其不超过目标节点
  */
 
 @ccclass('YJScaleNodeInTarget')

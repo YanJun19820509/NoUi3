@@ -44,9 +44,9 @@ export class YJPanel extends Component {
 
     /**是否缓存，默认缓存，特殊情况下不需要缓存的则手动设置为false */
     @property
-    needCache: boolean = false;
+    needCache: boolean = true;
     @property({ visible() { return this.needCache; } })
-    needClear: boolean = false;
+    needClear: boolean = true;
     @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
     isFullScreen: boolean = false;
     @property({ displayName: '多点触摸' })

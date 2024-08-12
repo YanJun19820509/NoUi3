@@ -12,7 +12,7 @@ import { YJJobManager } from '../YJJobManager';
  * FileBasenameNoExtension = YJSetChildrenShieldByY
  * URL = db://assets/Script/NoUi3/base/node/YJSetChildrenShieldByY.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
- *
+ * 设置子节点之间的遮挡关系
  */
 
 @ccclass('YJSetChildrenShieldByY')
