@@ -16,10 +16,10 @@ import { no } from '../../no';
 
 @ccclass('ListenerInfo')
 export class ListenerInfo {
-    @property
+    @property({ displayName: '消息类型(不可重名)' })
     type: string = '';
-    @property({ tooltip: '' })
-    value: string = '';
+    @property({ displayName: '仅监听一次' })
+    once: boolean = false;
     @property(no.EventHandlerInfo)
     calls: no.EventHandlerInfo[] = [];
 }
@@ -30,26 +30,12 @@ export class YJEventOn extends Component {
     @property(ListenerInfo)
     infos: ListenerInfo[] = [];
 
-    @property({ displayName: '受节点active影响' })
-    nodeActiveEffect: boolean = true;
-
-    @property({ displayName: '仅监听一次' })
-    once: boolean = false;
-
-    onLoad() {
-        if (!this.nodeActiveEffect) this.init();
-    }
-
     onEnable() {
-        if (this.nodeActiveEffect) this.init();
+        this.init();
     }
 
     onDisable() {
         no.evn.targetOff(this);
-    }
-
-    onDestroy() {
-        this.onDisable();
     }
 
     public a_trigger(e: any, type?: string) {
@@ -59,7 +45,7 @@ export class YJEventOn extends Component {
     private init() {
         this.infos.forEach(info => {
             if (info.type == '') return;
-            if (this.once) {
+            if (info.once) {
                 no.evn.once(info.type, this._on, this);
             } else {
                 no.evn.on(info.type, this._on, this);
@@ -77,21 +63,8 @@ export class YJEventOn extends Component {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let info = this.infos[i];
             if (info.type == type) {
-                if (info.value == '')
-                    no.EventHandlerInfo.execute(info.calls, type, args.length == 1 ? args[0] : args);
-                else if (String(args[0]) == info.value) {
-                    args.shift();
-                    no.EventHandlerInfo.execute(info.calls, type, args);
-                }
-                // break;
+                no.EventHandlerInfo.execute(info.calls, type, args);
             }
         }
-    }
-
-    public setEventValue(v: string) {
-        const a = String(v).split(',');
-        this.infos.forEach((info, i) => {
-            info.value = a[i];
-        });
     }
 }
