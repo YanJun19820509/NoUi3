@@ -1,7 +1,7 @@
 
-import { ccclass, property, menu, requireComponent, Component, Node } from '../../yj';
+import { no } from '../../no';
+import { ccclass, property, menu, Component, AudioClip } from '../../yj';
 import { YJAudioManager } from './YJAudioManager';
-import { YJLoadAudioClip } from './YJLoadAudioClip';
 
 /**
  * Predefined variables
@@ -16,13 +16,27 @@ import { YJLoadAudioClip } from './YJLoadAudioClip';
  */
 
 @ccclass('YJAudioPlayer')
-@requireComponent(YJLoadAudioClip)
 @menu('NoUi/audio/YJAudioPlayer(音频播放)')
 export class YJAudioPlayer extends Component {
+    @property({ type: AudioClip, editorOnly: true })
+    public get clip(): AudioClip {
+        return null;
+    }
 
-    @property
-    once: boolean = false;
-    @property
+    public set clip(v: AudioClip) {
+        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+            if (!url) return;
+            this.clipUrl = url;
+            this.clipUuid = v.uuid;
+        });
+    }
+    @property({ readonly: true })
+    clipUrl: string = '';
+    @property({ readonly: true })
+    clipUuid: string = '';
+    @property({ displayName: '是否循环播放' })
+    loop: boolean = true;
+    @property({ displayName: '是否自动播放' })
     autoPlay: boolean = true;
 
     onLoad() {
@@ -30,13 +44,12 @@ export class YJAudioPlayer extends Component {
     }
 
     public async a_play() {
-        let a = this.getComponent(YJLoadAudioClip);
-        let clip = await a.loadClip();
-        if (!this?.node?.isValid) return;
-        let b = YJAudioManager.ins;
-        b.setClip(a.clipUrl, clip);
-        if (this.once) YJAudioManager.ins.playClip(clip, false);
-        else YJAudioManager.ins.playBGM(a.clipUrl);
+        const b = YJAudioManager.ins;
+        if (!this.loop) {
+            b.playEffect(this.clipUrl);
+        } else {
+            b.playBGM(this.clipUrl);
+        }
     }
 
     public a_stop() {

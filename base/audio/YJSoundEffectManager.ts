@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node } from '../../yj';
+import { EDITOR, ccclass, property, Component } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from './YJAudioManager';
 
@@ -17,7 +17,7 @@ import { YJAudioManager } from './YJAudioManager';
 
 @ccclass('SoundEffectInfo')
 export class SoundEffectInfo {
-    @property({ displayName: '别名' })
+    @property({ displayName: '别名', tooltip: '默认为文件名，可自定义，播放时指定别名即可，不用关心实际播放的是哪个文件' })
     alias: string = '';
     @property({ readonly: true })
     assetUrl: string = '';
@@ -26,12 +26,31 @@ export class SoundEffectInfo {
 }
 
 @ccclass('YJSoundEffectManager')
-@executeInEditMode()
 export class YJSoundEffectManager extends Component {
-    @property({ displayName: '音效目录', editorOnly: true })
-    folder: string = '';
     @property({ displayName: '开始解析' })
-    isParse: boolean = false;
+    public get parse(): boolean {
+        return false;
+    }
+
+    public set parse(v: boolean) {
+        no.EditorMode.getAssetInfosByCCType('cc.AudioClip').then(infos => {
+            if (!infos.length) {
+                return;
+            }
+            infos.forEach(info => {
+                let effectInfo = new SoundEffectInfo();
+                let name = info.name.split('.')[0];
+                effectInfo.alias = name;
+                effectInfo.assetUrl = info.url;
+                effectInfo.assetUuid = info.uuid;
+                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
+                if (i > -1) {
+                    effectInfo.alias = this.soundEffects[i].alias;
+                    this.soundEffects.splice(i, 1, effectInfo);
+                } else this.soundEffects[this.soundEffects.length] = effectInfo;
+            });
+        });
+    }
     @property(SoundEffectInfo)
     soundEffects: SoundEffectInfo[] = [];
 
@@ -99,39 +118,5 @@ export class YJSoundEffectManager extends Component {
      */
     public playCloseSoundEffect(): void {
         if (this.closeAtlas) this.playEffectByAlias(this.closeAtlas);
-    }
-
-
-    //////////EDITOR//////////
-    update() {
-        if (!EDITOR) return;
-        if (this.isParse) {
-            this.isParse = false;
-            this.parse();
-        }
-    }
-
-    private async parse() {
-        if (!EDITOR || !this.folder) return;
-        console.log(this.folder);
-        no.EditorMode.loadAssetsOfCCTypeUnderFolder(this.folder, 'cc.AudioClip').then(infos => {
-            console.log(infos);
-            if (!infos.length) {
-                return;
-            }
-            infos.forEach(info => {
-                let effectInfo = new SoundEffectInfo();
-                let name = info.name.split('.')[0];
-                effectInfo.alias = name;
-                effectInfo.assetUrl = info.url;
-                effectInfo.assetUuid = info.uuid;
-                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
-                if (i > -1) {
-                    effectInfo.alias = this.soundEffects[i].alias;
-                    this.soundEffects.splice(i, 1, effectInfo);
-                } else this.soundEffects[this.soundEffects.length] = effectInfo;
-            });
-            console.log('YJSoundEffectManager解析完成，请刷新组件！')
-        });
     }
 }

@@ -96,7 +96,7 @@ export class YJAudioManager extends Component {
         if (!this.isBGMOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
-            this._playClip(c, path);
+            this._playClip(c);
         } else {
             this.loadAndPlay(path, true);
         }
@@ -110,7 +110,7 @@ export class YJAudioManager extends Component {
         if (!this.isEffectOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
-            this._playClip(c, path, false);
+            this._playClip(c, false);
         } else {
             this.loadAndPlay(path, false);
         }
@@ -177,7 +177,7 @@ export class YJAudioManager extends Component {
     public playClip(clip: AudioClip, loop = true): void {
         if (loop && !this.isBGMOn) return;
         if (!loop && !this.isEffectOn) return;
-        this._playClip(clip, null, loop);
+        this._playClip(clip, loop);
     }
 
     /**
@@ -197,9 +197,7 @@ export class YJAudioManager extends Component {
             this.clips.set(path, clip);
     }
 
-
-    private _playClip(clip: AudioClip, path?: string, loop = true): void {
-        this.setClip(path, clip);
+    private _playClip(clip: AudioClip, loop = true): void {
         if (loop) {
             this.audioSource.stop();
             this.audioSource.clip = clip;
@@ -212,12 +210,13 @@ export class YJAudioManager extends Component {
 
     private loadAndPlay(path: string, loop: boolean): void {
         this.loadAudioClip(path, clip => {
-            this._playClip(clip, path, loop);
+            this._playClip(clip, loop);
         });
     }
 
     private loadAudioClip(path: string, callback: (clip: AudioClip) => void) {
         no.assetBundleManager.loadAudio(path, (clip) => {
+            this.setClip(path, clip);
             callback && callback(clip);
         });
     }
