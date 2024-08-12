@@ -1,17 +1,23 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, instantiate, Prefab } from '../../yj';
+import { EDITOR, ccclass, property, menu, Component, Node, Prefab } from '../../yj';
 import { no } from '../../no';
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
-@executeInEditMode()
 export default class YJLoadPrefab extends Component {
     @property({ type: Prefab, editorOnly: true })
-    prefab: Prefab = null;
+    public get prefab(): Prefab {
+        return null;
+    }
+
+    public set prefab(v: Prefab) {
+        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+            if (!url) return;
+            this.prefabUrl = url;
+        });
+    }
     @property({ readonly: true })
     prefabUrl: string = '';
-    // @property({ readonly: true })
-    // prefabUuid: string = '';
 
     @property
     autoLoad: boolean = true;
@@ -56,22 +62,5 @@ export default class YJLoadPrefab extends Component {
 
     public clear(): void {
         this.loaded = false;
-    }
-
-    ////////////EDITOR MODE//////////////////////
-    update() {
-        if (EDITOR) {
-            if (this.prefab != null) {
-                this.setPrefabUrl();
-            }
-        }
-    }
-
-    private setPrefabUrl() {
-        no.EditorMode.getAssetUrlByUuid(this.prefab.uuid).then(url => {
-            if (!url) return;
-            this.prefabUrl = url;
-            this.prefab = null;
-        });
     }
 }

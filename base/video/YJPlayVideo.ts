@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, requireComponent, executeInEditMode, Component, VideoPlayer } from '../../yj';
+import { ccclass, property, requireComponent, executeInEditMode, Component, VideoPlayer } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -36,11 +36,13 @@ export class YJPlayVideo extends Component {
     onError: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, tooltip: '视频被用户点击了。（只支持 Web 平台）' })
     onClicked: no.EventHandlerInfo[] = [];
+    @property
+    public get bind(): boolean {
+        return false;
+    }
 
-    onLoad() {
-        if (EDITOR) {
-            this.getComponent(VideoPlayer).videoPlayerEvent = [no.createClickEvent(this.node, YJPlayVideo, 'onEvent')];
-        }
+    public set bind(v: boolean) {
+        this.getComponent(VideoPlayer).videoPlayerEvent = [no.createClickEvent(this.node, YJPlayVideo, 'onEvent')];
     }
 
     private onEvent(player: VideoPlayer, type: string, customEventData: string) {

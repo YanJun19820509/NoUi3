@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, Node, EffectAsset } from '../../yj';
+import { ccclass, property, menu, requireComponent, Component, EffectAsset } from '../../yj';
 import { SetEffect } from '../../fuckui/SetEffect';
 import { no } from '../../no';
 
@@ -34,11 +34,19 @@ export class PropertyInfo {
 @ccclass('YJSetShaderProperties')
 @menu('NoUi/shader/YJSetShaderProperties(设置shader属性)')
 @requireComponent(SetEffect)
-@executeInEditMode()
 export class YJSetShaderProperties extends Component {
 
-    @property({ type: EffectAsset, editorOnly: true })
-    effectAsset: EffectAsset = null;
+    @property({ type: EffectAsset })
+    public get effectAsset(): EffectAsset {
+        return null;
+    }
+
+    public set effectAsset(v: EffectAsset) {
+        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+            if (!url) return;
+            this.path = url;
+        });
+    }
     @property({ readonly: true })
     path: string = '';
 
@@ -68,24 +76,6 @@ export class YJSetShaderProperties extends Component {
             properties: properties,
             defines: defines
         };
-        no.log(d);
         ss.setData(no.jsonStringify(d));
-    }
-
-    ////////////EDITOR MODE//////////////////////
-    update() {
-        if (EDITOR) {
-            if (this.effectAsset != null) {
-                this.setUrl();
-            }
-        }
-    }
-
-    private setUrl() {
-        no.getAssetUrlInEditorMode(this.effectAsset._uuid, url => {
-            if (!url) return;
-            this.path = url.replace('db://assets/', '').replace('.effect', '');
-            this.effectAsset = null;
-        });
     }
 }

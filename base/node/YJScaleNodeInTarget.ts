@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransform, isValid, Vec3 } from '../../yj';
+import { ccclass, property, Component, Node, UITransform, isValid } from '../../yj';
 
 /**
  * Predefined variables
@@ -14,23 +14,16 @@ import { EDITOR, ccclass, property, executeInEditMode, Component, Node, UITransf
  */
 
 @ccclass('YJScaleNodeInTarget')
-@executeInEditMode()
 export class YJScaleNodeInTarget extends Component {
-    @property(Node)
+    @property({ type: Node, tooltip: '如果不设置，默认为父节点' })
     target: Node = null;
 
-    update() {
-        if (!EDITOR) return;
-        if (!this.target) this.target = this.node.parent;
-    }
-
     onLoad() {
-        if (EDITOR) return;
+        if (!this.target) this.target = this.node.parent;
         this.node.on(Node.EventType.SIZE_CHANGED, this.onResize, this);
     }
 
     onDestroy() {
-        if (EDITOR) return;
         this.node.targetOff(this);
     }
 

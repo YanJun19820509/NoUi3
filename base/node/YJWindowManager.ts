@@ -1,8 +1,7 @@
 
-import { ccclass, property, menu, Component, Node, instantiate, Prefab, js, EDITOR, Widget } from '../../yj';
+import { ccclass, property, menu, Component, Node, Prefab, js, Widget } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
-import { YJPreinstantiatePanel } from './YJPreinstantiatePanel';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
@@ -201,26 +200,22 @@ export class YJWindowManager extends Component {
             if (no.isPrototypeEquals(comp, YJPanelCreated, '1')) return;
             else no.setPrototype(comp, { [YJPanelCreated]: '1' });
         }
-        let node = YJPreinstantiatePanel.ins?.getPanelNodeAndRemove(comp.name);
-        if (node) {
-            this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-        } else {
-            const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
-                uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey),
-                k = url || uuid;
-            const node = no.assetBundleManager.getPrefabNode(k);
-            if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-            else {
-                const request = { type: Prefab, url: url, uuid: uuid };
-                no.assetBundleManager.loadAny<Prefab>(request, pf => {
-                    if (!pf) return;
-                    no.assetBundleManager.setPrefabNode(k, pf);
-                    if (!content?.isValid) {
-                        return
-                    }
-                    this.initNode(no.assetBundleManager.getPrefabNode(k), comp as (typeof YJPanel), content, beforeInit, afterInit);
-                });
-            }
+
+        const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
+            uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey),
+            k = url || uuid;
+        const node = no.assetBundleManager.getPrefabNode(k);
+        if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
+        else {
+            const request = { type: Prefab, url: url, uuid: uuid };
+            no.assetBundleManager.loadAny<Prefab>(request, pf => {
+                if (!pf) return;
+                no.assetBundleManager.setPrefabNode(k, pf);
+                if (!content?.isValid) {
+                    return
+                }
+                this.initNode(no.assetBundleManager.getPrefabNode(k), comp as (typeof YJPanel), content, beforeInit, afterInit);
+            });
         }
     }
 

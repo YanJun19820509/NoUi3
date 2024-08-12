@@ -1,14 +1,13 @@
 
 /**
- * scrollview的scrollEvents扩展
+ * scrollview的scrollEvents扩展，运行时自动添加滚动事件
  * Author mqsy_yj
  * DateTime Mon Aug 14 2023 12:13:53 GMT+0800 (中国标准时间)
  *
  */
 
-import { Vec2 } from "cc";
 import { no } from "../../no";
-import { Component, EDITOR, ScrollView, ccclass, executeInEditMode, property, requireComponent } from "../../yj";
+import { Component, ScrollView, Vec2, ccclass, property, requireComponent } from "../../yj";
 
 const eventTypeMap = {
     0: 'scroll-to-top',
@@ -28,7 +27,6 @@ const eventTypeMap = {
 
 @ccclass('YJScrollViewEvent')
 @requireComponent(ScrollView)
-@executeInEditMode()
 export class YJScrollViewEvent extends Component {
     @property({ type: no.EventHandlerInfo })
     onScroll: no.EventHandlerInfo[] = [];
@@ -40,14 +38,17 @@ export class YJScrollViewEvent extends Component {
     onToLeft: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo })
     onToRight: no.EventHandlerInfo[] = [];
+    @property
+    public get bind(): boolean {
+        return false;
+    }
+
+    public set bind(v: boolean) {
+        this.getComponent(ScrollView).scrollEvents = [no.createClickEvent(this.node, 'YJScrollViewEvent', 'onScrollEvent')];
+    }
 
     private _maxOffset: Vec2;
     private _lastOffset: Vec2;
-
-    onLoad() {
-        if (EDITOR)
-            this.getComponent(ScrollView).scrollEvents = [no.createClickEvent(this.node, 'YJScrollViewEvent', 'onScrollEvent')];
-    }
 
     private onScrollEvent(sv: ScrollView, type: number) {
         if (!this._maxOffset) this._maxOffset = sv.getMaxScrollOffset();
