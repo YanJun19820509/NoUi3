@@ -8,8 +8,6 @@ import { LoadAssetsInfo, SpriteFrameDataType } from '../types';
 import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { YJi18n } from '../base/YJi18n';
-import YJLoadPrefab from '../base/node/YJLoadPrefab';
-// import { YJRemotePackageDownloader } from '../network/YJRemotePackageDownloader';
 import { TimeWatcher } from '../TimeWatcher';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJTextureManager } from '../base/YJTextureManager';
