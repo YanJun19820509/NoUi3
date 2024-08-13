@@ -40,7 +40,7 @@ export class SetMaterial extends FuckUi {
             const material = this.getComponent(UIRenderer)?.customMaterial;
             if (material && !this.defaultMaterialUrl) {
                 this._defaultMateriaUuid = material.uuid;
-                no.getAssetUrlInEditorMode(material.uuid, url => {
+                no.EditorMode.getAssetUrlByUuid(material.uuid).then(url => {
                     this.defaultMaterialUrl = url;
                 });
             }

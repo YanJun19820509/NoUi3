@@ -24,7 +24,7 @@ export class SetBitmapFontWithStateInfo extends LoadAssetsInfo {
         if (v) {
             this.assetName = v.name;
             this.assetUuid = v.uuid;
-            no.getAssetUrlInEditorMode(this.assetUuid, url => {
+            no.EditorMode.getAssetUrlByUuid(this.assetUuid).then(url => {
                 this.path = url;
             });
         }

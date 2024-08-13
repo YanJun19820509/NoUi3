@@ -66,7 +66,13 @@ export class SetList extends FuckUi {
     recreateOnEnable: boolean = false;
 
     @property({ displayName: '设置元素模板相关数据' })
-    setTemplateInfo: boolean = false;
+    public get setTemplateInfo(): boolean {
+        return false;
+    }
+    
+    public set setTemplateInfo(v: boolean) {
+        this.preInitItems();
+    }
     @property({ displayName: '所需元素节点个数', readonly: true })
     showMax: number = 0;
     @property({ visible() { return false; } })
@@ -305,10 +311,6 @@ export class SetList extends FuckUi {
     update() {
         if (EDITOR) {
             this.getComponent(Layout)?.destroy();
-            if (this.setTemplateInfo) {
-                this.setTemplateInfo = false;
-                this.preInitItems();
-            }
             return;
         }
     }

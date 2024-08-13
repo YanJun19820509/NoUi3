@@ -28,22 +28,19 @@ export class SetToggleCheck extends FuckUi {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
     @property
-    bindCheckEvents: boolean = false;
+    public get bindCheckEvents(): boolean {
+        return false;
+    }
+    
+    public set bindCheckEvents(v: boolean) {
+        this.getComponent(Toggle).checkEvents = [no.createEventHandler(this.node, SetToggleCheck, 'onCheckChange')];
+    }
 
     onLoad() {
         super.onLoad();
         if (EDITOR) {
             this.dataWork = no.getComponentInParents(this.node, YJDataWork);
             return;
-        }
-    }
-
-    update() {
-        if (EDITOR) {
-            if (this.bindCheckEvents) {
-                this.bindCheckEvents = false;
-                this.getComponent(Toggle).checkEvents = [no.createEventHandler(this.node, SetToggleCheck, 'onCheckChange')];
-            }
         }
     }
 

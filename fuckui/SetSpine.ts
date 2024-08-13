@@ -58,7 +58,7 @@ export class SetSpine extends FuckUi {
         if (!EDITOR) return;
         const spine = this.getComponent(Skeleton);
         if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
-            no.getAssetUrlInEditorMode(spine.skeletonData._uuid, url => {
+            no.EditorMode.getAssetUrlByUuid(spine.skeletonData.uuid).then(url => {
                 if (!url) return;
                 this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
                 this.animationName = spine.animation;
