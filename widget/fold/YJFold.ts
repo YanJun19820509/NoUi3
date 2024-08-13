@@ -1,5 +1,5 @@
 
-import { _decorator, Component, isValid, math, Node, Sprite, UITransform } from 'cc';
+import { _decorator, Component, isValid, math, Node } from 'cc';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
 const { ccclass, property } = _decorator;

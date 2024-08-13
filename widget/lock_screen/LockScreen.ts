@@ -13,7 +13,7 @@ const { ccclass, property } = _decorator;
  */
 
 @ccclass('LockScreen')
-@panelPrefabPath('db://assets/res/ui-temp/lock_screen/lock_screen.prefab')
+@panelPrefabPath('db://assets/NoUi3/widget/lock_screen/lock_screen.prefab')
 export class LockScreen extends YJPanel {
     private static _ins: LockScreen;
     private static _showing = 0;
