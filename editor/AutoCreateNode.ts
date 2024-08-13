@@ -4,7 +4,7 @@ import {
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
     Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents
 } from '../yj';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
+// import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
@@ -459,7 +459,7 @@ export class AutoCreateNode extends Component {
         this.setOpacity(n, cname);
         this.setScale(n, cname);
         this.setWidget(n);
-        if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
+        // if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         return n;
     }
 

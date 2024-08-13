@@ -38,9 +38,9 @@ class AnimationEffect {
     expandWidthArgs: Range = new Range(0, 50); // 默认扩宽参数为0.5，即宽度扩大50%
     @property({ displayName: "ExpandHeight参数", type: Range, visible() { return this.type === AnimType.ExpandHeight; } })
     expandHeightArgs: Range = new Range(0, 50); // 默认扩宽参数为0.5，即宽度扩大50%
-    @property({ type: Vec2, displayName: "MoveBy参数", visible() { return this.type === AnimType.MoveBy; } })
+    @property({ displayName: "MoveBy参数", visible() { return this.type === AnimType.MoveBy; } })
     moveByArgs: Vec2 = v2(0, 0); // 默认移动参数为(0, 0)，即不移动
-    @property({ type: Vec2, displayName: "MoveTo参数", visible() { return this.type === AnimType.MoveTo; } })
+    @property({ displayName: "MoveTo参数", visible() { return this.type === AnimType.MoveTo; } })
     moveToArgs: Vec2 = v2(0, 0);
     @property({ displayName: "ScaleTo参数", visible() { return this.type === AnimType.ScaleTo; } })
     scaleToArgs: number = .5;

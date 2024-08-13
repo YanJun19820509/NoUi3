@@ -5,7 +5,7 @@ import { no } from '../../no';
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
 export default class YJLoadPrefab extends Component {
-    @property({ type: Prefab, editorOnly: true })
+    @property({ type: Prefab })
     public get prefab(): Prefab {
         return null;
     }

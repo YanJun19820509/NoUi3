@@ -141,22 +141,4 @@ export class YJDynamicTexture extends Component {
         if (this.dynamicAtlas?.customMaterial && this.dynamicAtlas?.customMaterial != renderComp.customMaterial)
             renderComp.customMaterial = this.dynamicAtlas?.customMaterial;
     }
-
-    public setSpriteFrameWithUuid(uuid: string, comp: Sprite | Label): boolean {
-        if (!this.enabled) return false;
-        if (!this.dynamicAtlas?.isWork) return false;
-        let spriteFrame = this.dynamicAtlas.getSpriteFrameInstance(uuid);
-        if (!spriteFrame) return false;
-        if (comp instanceof Sprite)
-            comp.spriteFrame = spriteFrame;
-        else {
-            if (comp.font instanceof BitmapFont) {
-                (comp.font as BitmapFont).spriteFrame = spriteFrame;
-                comp['_texture'] = spriteFrame;
-            } else {
-                comp['_ttfSpriteFrame'] = spriteFrame;
-            }
-        }
-        return true;
-    }
 }

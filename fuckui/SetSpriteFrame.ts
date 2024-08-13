@@ -1,7 +1,6 @@
 
 import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR, SpriteFrame } from '../yj';
 import { YJJobManager } from '../base/YJJobManager';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetEffect } from './SetEffect';
@@ -52,19 +51,6 @@ export class SetSpriteFrame extends FuckUi {
         this.lateSet(data);
     }
 
-    private packSpriteFrame() {
-        YJJobManager.ins.execute(() => {
-            if (!this.getComponent(YJDynamicTexture)) return false;
-            this.getComponent(YJDynamicTexture).packSpriteFrame();
-            this.checkShader();
-            return false;
-        }, this)
-    }
-
-    private checkShader() {
-        this.getComponent(SetEffect)?.work();
-    }
-
     private lateSet(data: any): void {
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
@@ -75,11 +61,10 @@ export class SetSpriteFrame extends FuckUi {
             let uuid = no.assetBundleManager.getUuidFromPath(path);
             if (this.sprite.spriteFrame?._uuid == uuid) return;
 
-            if (!uuid || !this.getComponent(YJDynamicTexture)?.setSpriteFrameWithUuid(uuid, this.sprite))
+            if (!uuid)
                 no.assetBundleManager.loadSprite(path, spriteFrame => {
                     if (this.sprite?.isValid) {
                         this.sprite.spriteFrame = spriteFrame;
-                        this.packSpriteFrame();
                     }
                 });
         } else {
@@ -87,12 +72,10 @@ export class SetSpriteFrame extends FuckUi {
                 no.assetBundleManager.loadAtlas(data.atlas, item => {
                     this.sprite.spriteAtlas = item;
                     this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(data.frame);
-                    this.packSpriteFrame();
                 });
             } else if (this.sprite.spriteAtlas?.spriteFrames) {
                 let name = String(data).split('/').pop();
                 this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(name);
-                this.packSpriteFrame();
             }
         }
     }
@@ -111,8 +94,7 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     public a_setEmpty(): void {
-        if (this.sprite == null) return;
-        if (!this.getComponent(YJDynamicTexture))
+        if (this.sprite)
             no.assetBundleManager.release(this.sprite.spriteFrame);
     }
 
