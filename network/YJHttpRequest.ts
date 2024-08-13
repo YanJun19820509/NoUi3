@@ -1,6 +1,5 @@
 
 import { ccclass, native, JSB, sys } from '../yj';
-import { decode, encode, EncryptType } from '../../NoUi3/ext/encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 
@@ -25,16 +24,14 @@ export class YJHttpRequest implements YJSocketInterface {
         this.url = url;
     }
 
-    sendDataToServer(encryptType: EncryptType, code: string, args?: any): void {
-        this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null);
+    sendDataToServer(code: string, args?: any): void {
+        this.httpRequest('POST', this.url + '/' + code, args);
     }
 
-    getDataFromServer(encryptType: EncryptType, code: string, args?: any, contentType?: string): Promise<any | null> {
+    getDataFromServer(code: string, args?: any, contentType?: string): Promise<any | null> {
         return new Promise<any>(resolve => {
-            this.httpRequest('POST', this.url + '/' + code, args ? encode(args, encryptType) : null, contentType, v => {
-                let a = decode(v, encryptType);
-                no.log('getDataFromServer', a);
-                resolve(this.parseData(a));
+            this.httpRequest('POST', this.url + '/' + code, args, contentType, v => {
+                resolve(this.parseData(v));
             }, v => {
                 no.err('getDataFromServer', v);
                 resolve(null);

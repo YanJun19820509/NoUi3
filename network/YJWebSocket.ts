@@ -1,6 +1,5 @@
 
 import { ccclass, native, JSB, sys } from '../yj';
-import { encode, EncryptType } from '../../NoUi3/ext/encrypt/encrypt';
 import { no } from '../no';
 import { YJSocketInterface } from './YJSocketInterface';
 
@@ -204,10 +203,9 @@ export class YJWebSocket implements YJSocketInterface {
      * @param encryptType 加密方式
      * @param data 
      */
-    public async sendDataToServer(encryptType: EncryptType, data: any) {
+    public async sendDataToServer(data: any) {
         if (await this.isOk()) {
-            let v: string | ArrayBuffer | Uint8Array = encode(data, encryptType);
-            this.sendData(v);
+            this.sendData(data);
             return true;
         }
         return false;
