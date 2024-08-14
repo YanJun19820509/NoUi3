@@ -12,10 +12,6 @@ export class YJNotBatchItem extends Component {
     private index: number;
     private opacity: number;
 
-    protected onLoad(): void {
-        this.node.children.forEach(child => child.addComponent(YJNotBatchItem));
-    }
-
     public saveProperties() {
         this.parent = this.node.parent;
         this.index = this.node.getSiblingIndex();

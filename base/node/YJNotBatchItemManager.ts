@@ -63,7 +63,7 @@ export class YJNotBatchItemManager extends Component {
         for (let i = 0; i < n; i++) {
             let children = this._subNodes[i]['_children'];
             children.forEach((child) => {
-                const notBatchItem = child.getComponent(YJNotBatchItem);
+                const notBatchItem = child.getComponent(YJNotBatchItem) || child.addComponent(YJNotBatchItem);
                 notBatchItem.saveProperties();
                 this._layer['_children'].push(child);
                 if (child['_children'].length > 0) nodes.push(child);
