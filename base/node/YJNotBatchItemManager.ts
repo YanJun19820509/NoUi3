@@ -1,6 +1,5 @@
-import { _decorator, Component, director, Director, isValid, Label, Node, UITransform, Vec3 } from 'cc';
+import { ccclass, Component, director, isValid, UITransform, Node, Director } from '../../yj';
 import { YJNotBatchItem } from './YJNotBatchItem';
-const { ccclass, property } = _decorator;
 /**
  * YJNotBatchItem管理器，会自动搜索当前节点下所有子节点的YJNotBatchItem
  * 在开始渲染前，将YJNotBatchItem所属的节点移出其父节点，不打断同级节点的渲染合批，渲染结束后再移回父节点。

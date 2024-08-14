@@ -5,6 +5,7 @@ import { AssetInfo } from './@types/packages/asset-db/@types/public';
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
 export let { WECHAT, EDITOR, JSB } = env;
 export const DEBUG = env.DEBUG;
+export const Director = _cc.Director;
 export type CCObject = _cc.CCObject;
 export const CCObject = _cc.CCObject;
 export type _AssetInfo = AssetInfo;

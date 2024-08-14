@@ -1,5 +1,5 @@
-import { _decorator, Component, Node } from 'cc';
-const { ccclass, property, disallowMultiple } = _decorator;
+import { ccclass, disallowMultiple, Component, Node } from "../../yj";
+
 
 /**
  * 标记会打断合批的节点，由YJNotBatchItemManager管理
