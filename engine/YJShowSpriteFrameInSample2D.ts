@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Button } from '../yj';
+import { ccclass, property, Component, Button, executeInEditMode, EDITOR } from '../yj';
 
 /**
  * Predefined variables
@@ -14,23 +14,19 @@ import { ccclass, property, Component, Button } from '../yj';
  */
 //用来控制使用SetSpriteFrameInSample2D的Sprite显示/隐藏默认spriteFrame
 @ccclass('YJShowSpriteFrameInSample2D')
+@executeInEditMode()
 export class YJShowSpriteFrameInSample2D extends Component {
-    @property
+    @property({ displayName: '显示SpriteFrame' })
     public get showSpriteFrame(): boolean {
-        return false;
+        return this._show;
     }
 
     public set showSpriteFrame(v: boolean) {
-        this.showSubSpriteFrame(true);
+        this._show = v;
+        this.showSubSpriteFrame(v);
     }
-    @property
-    public get hideSpriteFrame(): boolean {
-        return false;
-    }
-
-    public set hideSpriteFrame(v: boolean) {
-        this.showSubSpriteFrame(false);
-    }
+    @property({ serializable: true })
+    _show: boolean = false;
 
     private showSubSpriteFrame(v: boolean) {
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
@@ -77,6 +73,12 @@ export class YJShowSpriteFrameInSample2D extends Component {
                     a.disabledSprite = null;
                 }
             });
+        }
+    }
+
+    onLoad() {
+        if (EDITOR) {
+            this.showSpriteFrame = true;
         }
     }
 }

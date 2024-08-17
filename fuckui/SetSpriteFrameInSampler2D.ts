@@ -30,15 +30,19 @@ import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 @disallowMultiple()
 export class SetSpriteFrameInSampler2D extends FuckUi {
     @property
-    defaultSpriteFrameUuid: string = '';
-    @property
     defaultName: string = '';
-    @property({ displayName: '散图目录', tooltip: '如果散图目录非空，且参数中包含该目录，则当做散图来加载' })
-    singleFolder: string = 'icons/';
-    @property({ displayName: '从图集加载' })
+    @property({ readonly: true })
+    defaultSpriteFrameUuid: string = '';
+    @property({ readonly: true })
+    defaultUrl: string = '';
+    @property({ readonly: true })
+    bundleName: string = '';
+    @property({ displayName: '从图集加载', readonly: true })
     loadFromAtlas: boolean = true;
-    @property({ displayName: '多语言' })
-    multiLan: boolean = false;
+    @property({ displayName: '可动态合图', visible() { return !this.loadFromAtlas; } })
+    canPack: boolean = true;
+    // @property({ displayName: '多语言', readonly: true })
+    // multiLan: boolean = false;
 
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
@@ -59,27 +63,19 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     onLoad() {
         super.onLoad();
-        this.setDynamicAtlas();
+        // this.setDynamicAtlas();
         //运行时update方法置空
         if (!EDITOR) this.update = null;
-        // if (EDITOR) {
-        //     if (!this.loadFromAtlas && this.loadAsset) {
-        //         this.loadAsset = null;
-        //         this.dynamicAtlas = null;
-        //     }
-        // }
     }
 
     update() {
-        if (EDITOR) {
-            if (this.loadFromAtlas && !this.loadAsset) {
-                this.setDynamicAtlas();
-                this.getComponent(YJVertexColorTransition).enabled = true;
-            } else if (!this.loadFromAtlas && this.loadAsset) {
-                this.loadAsset = null;
-                this.dynamicAtlas = null;
-                this.getComponent(YJVertexColorTransition).enabled = false;
-            }
+        if ((this.loadFromAtlas || this.canPack) && !this.loadAsset) {
+            this.setDynamicAtlas();
+            this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
+        } else if ((!this.loadFromAtlas && !this.canPack) && this.loadAsset) {
+            this.loadAsset = null;
+            this.dynamicAtlas = null;
+            this.getComponent(YJVertexColorTransition).enabled = false;
         }
         this.initSpriteFrameInfo();
     }
@@ -87,7 +83,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     onEnable() {
         if (EDITOR) return;
         if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
-            this.setSpriteFrameByDefaultSpriteFrameUuid();
+            this.setDefaultSpriteFrame();
         else
             this.setSpriteFrame(this._lastName || this.defaultName);
     }
@@ -109,7 +105,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setDynamicAtlas() {
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
-        if (!this.loadFromAtlas) return;
+        if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
         if (!this.loadAsset)
@@ -120,16 +116,21 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public initSpriteFrameInfo() {
         if (!EDITOR) return;
-        let name = this.getComponent(Sprite).spriteFrame?.name;
-        if (!!name && this.defaultName != name) {
+        const spriteFrame = this.getComponent(Sprite).spriteFrame;
+        if (!spriteFrame) return;
+        let name = spriteFrame.name;
+        if (this.defaultName != name) {
             this.defaultName = name;
-            this.multiLan = name.indexOf('chinese/') == 0;
-        }
-        if (this.getComponent(Sprite).spriteFrame && (!this.defaultSpriteFrameUuid || this.getComponent(Sprite).spriteFrame.uuid != this.defaultSpriteFrameUuid)) {
-            this.defaultSpriteFrameUuid = this.getComponent(Sprite).spriteFrame.uuid;
+            this.defaultSpriteFrameUuid = spriteFrame.uuid;
             //如果是散图则不从图集加载，散图uuid以@f9941结尾
             if (this.defaultSpriteFrameUuid)
                 this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+            no.EditorMode.getAssetInfo(this.defaultSpriteFrameUuid).then(info => {
+                this.defaultUrl = info.url.replace(/.png|.jpg/, '');
+                no.EditorMode.getBundleName(info.url).then(bundleName => {
+                    this.bundleName = bundleName;
+                });
+            });
         }
     }
 
@@ -146,43 +147,34 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private changeData() {
         const data = this._data;
-        if (this.singleFolder && data.indexOf(this.singleFolder) == 0) {
-            this.setSingleSpriteFrame(data);
-            return;
-        }
         if (!this.loadFromAtlas) {
-            this.setSingleSpriteFrame(this.singleFolder + data);
+            this.setSingleSpriteFrame(data);
             return;
         }
         this.setSpriteFrame(data);
     }
 
-    public setSpriteFrame(spriteName: string) {
-        this.setDynamicAtlas();
-        if (!this.enabled || !spriteName) return;
+    public setSpriteFrame(name: string) {
+        // this.setDynamicAtlas();
+        if (!this.enabled || !name) return;
         if (!this.loadAsset) {
             this.resetSprite();
             return;
         }
-        if (spriteName == 'null') {
+        if (name == 'null') {
             this.a_setEmpty();
             return;
         }
         if (this.loadFromAtlas && !this.dynamicAtlas?.customMaterial) {
-            this.scheduleOnce(this.setSpriteFrame.bind(this, spriteName));
+            this.scheduleOnce(this.setSpriteFrame.bind(this, name));
             return;
         }
-        let name: string;
-        if (this.multiLan) {
-            const a = spriteName.split('/');
-            name = YJi18n.ins.language + '/' + (a[1] || a[0]);
-        } else name = spriteName;
 
         if (!this.loadFromAtlas || !this.dynamicAtlas?.customMaterial) {
             if (name == this.defaultName)
-                this.setSpriteFrameByDefaultSpriteFrameUuid();
-            else
-                this.setSpriteFrameForNotWeb(name)
+                this.setDefaultSpriteFrame();
+            // else
+            //     this.setSpriteFrameForNotWeb(name)
             return;
         }
 
@@ -199,9 +191,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if (name != this.defaultName) this._lastName = name;
 
-        if (spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
-            this.setScale(spriteFrame.scale);
-        }
+        // if (spriteFrame.scale && sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
+        //     this.setScale(spriteFrame.scale);
+        // }
 
         if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
             this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
@@ -227,47 +219,85 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
     }
 
-    private setSpriteFrameForNotWeb(name: string) {
-        this.loadAsset.getSpriteFrame(name, sf => {
-            if (sf)
-                this.getComponent(Sprite).spriteFrame = sf;
-            else {
-                no.err('setSpriteFrameForNotWeb not get', name);
-                this.setSpriteFrameByDefaultSpriteFrameUuid();
-            }
-        });
-    }
+    // private setSpriteFrameForNotWeb(name: string) {
+    //     this.loadAsset.getSpriteFrame(name, sf => {
+    //         if (sf)
+    //             this.getComponent(Sprite).spriteFrame = sf;
+    //         else {
+    //             no.err('setSpriteFrameForNotWeb not get', name);
+    //             this.setDefaultSpriteFrame();
+    //         }
+    //     });
+    // }
 
-    private setSpriteFrameByDefaultSpriteFrameUuid() {
-        if (this.defaultSpriteFrameUuid) {
-            no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
+    private setDefaultSpriteFrame() {
+        if (!this.loadFromAtlas && this.canPack) {
+            if (!this.dynamicAtlas?.customMaterial) {
+                this.scheduleOnce(this.setDefaultSpriteFrame);
+                return;
+            }
             const sprite = this.getComponent(Sprite);
+            if (!sprite.customMaterial) {
+                sprite.customMaterial = this.dynamicAtlas.customMaterial;
+            }
+        }
+        if (this.defaultSpriteFrameUuid) {
             const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
             if (s) {
-                sprite.spriteFrame = s;
                 this._singleSpriteFrame = s;
+                this.packSpriteFrame(s);
                 if (TextureInfoInGPU.isWork) {
                     TextureInfoInGPU.addTextureUuidToPanel(s.uuid, this.panelName);
                 }
             } else {
-                no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
-                    if (!file) {
-                        no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.node.name, this.defaultSpriteFrameUuid)
-                    } else {
-                        sprite.spriteFrame = file;
-                        this._singleSpriteFrame = file;
-
-                        if (TextureInfoInGPU.isWork) {
-                            TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
-                        }
-                    }
-                });
+                this.loadByUrl();
             }
         }
     }
 
+    private loadByUrl() {
+        no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
+            if (!file) {
+                no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl)
+                this.loadByUuid();
+            } else {
+                this._singleSpriteFrame = file;
+                this.packSpriteFrame(file);
+
+                if (TextureInfoInGPU.isWork) {
+                    TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                }
+            }
+        });
+    }
+
+    private loadByUuid() {
+        no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
+            if (!file) {
+                no.err('setDefaultSpriteFrame by uuid no file', this.node.name, this.defaultSpriteFrameUuid)
+            } else {
+                this._singleSpriteFrame = file;
+                this.packSpriteFrame(file);
+
+                if (TextureInfoInGPU.isWork) {
+                    TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                }
+            }
+        });
+    }
+
     private setSingleSpriteFrame(name: string) {
-        const path = `${name}/spriteFrame`;
+        if (this.canPack) {
+            if (!this.dynamicAtlas?.customMaterial) {
+                this.scheduleOnce(this.setSingleSpriteFrame.bind(this, name));
+                return;
+            }
+            const sprite = this.getComponent(Sprite);
+            if (!sprite.customMaterial) {
+                sprite.customMaterial = this.dynamicAtlas.customMaterial;
+            }
+        }
+        const path = `${this.bundleName}/${name}/spriteFrame`;
         no.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', name);
@@ -288,13 +318,25 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                     sprite.sizeMode = Sprite.SizeMode.RAW;
                 }
                 sprite.trim = false;
-                sprite.spriteFrame = spriteFrame;
                 this.clearEffect();
+                this.packSpriteFrame(spriteFrame);
 
                 if (TextureInfoInGPU.isWork) {
                     TextureInfoInGPU.addTextureUuidToPanel(spriteFrame.uuid, this.panelName);
                 }
             }
+        });
+    }
+
+    private packSpriteFrame(frame: SpriteFrame) {
+        let sprite = this.getComponent(Sprite);
+        if (!frame) return;
+        if (no.notUseDynamicAtlas || !this.canPack) {
+            sprite.spriteFrame = frame;
+            return;
+        }
+        this.dynamicAtlas?.packToDynamicAtlas(sprite, frame, true, () => {
+            sprite.spriteFrame = frame;
         });
     }
 
@@ -304,7 +346,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     public resetSprite() {
         if (this.defaultSpriteFrameUuid)
-            this.setSpriteFrameByDefaultSpriteFrameUuid();
+            this.loadByUuid();
         else this.removeSprite();
     }
 
@@ -315,6 +357,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (EDITOR && this.bind_keys) {
             this.defaultName = '';
             this.defaultSpriteFrameUuid = '';
+            this.defaultUrl = '';
         }
     }
 
@@ -327,17 +370,17 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.getComponent(Sprite).customMaterial = material;
     }
 
-    private setScale(scale: number) {
-        if (!this._oriScale)
-            this._oriScale = no.scale(this.node);
-        let s = no.scale(this.node);
-        if (s.x == scale) return;
-        no.scale(this.node, v3(this._oriScale.x * scale, this._oriScale.y * scale, 1));
-        const ss = 1 / scale;
-        this.node.children.forEach(c => {
-            // if (c.getComponent('Label') || c.getComponent("YJCharLabel") || c.getComponent('RichText')) {
-            no.scale(c, v3(ss, ss, 1));
-            // }
-        });
-    }
+    // private setScale(scale: number) {
+    //     if (!this._oriScale)
+    //         this._oriScale = no.scale(this.node);
+    //     let s = no.scale(this.node);
+    //     if (s.x == scale) return;
+    //     no.scale(this.node, v3(this._oriScale.x * scale, this._oriScale.y * scale, 1));
+    //     const ss = 1 / scale;
+    //     this.node.children.forEach(c => {
+    //         // if (c.getComponent('Label') || c.getComponent("YJCharLabel") || c.getComponent('RichText')) {
+    //         no.scale(c, v3(ss, ss, 1));
+    //         // }
+    //     });
+    // }
 }

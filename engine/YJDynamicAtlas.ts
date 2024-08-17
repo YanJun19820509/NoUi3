@@ -6,8 +6,8 @@ import {
     Component
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
-import { Atlas, DynamicAtlasTexture } from './atlas';
-import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
+import { Atlas } from './atlas';
+// import { YJShowDynamicAtlasDebug } from './YJShowDynamicAtlasDebug';
 import { no } from '../no';
 
 /**
@@ -28,8 +28,24 @@ import { no } from '../no';
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
 export class YJDynamicAtlas extends Component {
-    @property({ type: Material })
-    customMaterial: Material = null;
+    // @property({ type: Material })
+    public get customMaterial(): Material {
+        return this._customMaterial;
+    }
+
+    public set customMaterial(v: Material) {
+        this._customMaterial = v;
+        let renderComps = this.getComponentsInChildren(UIRenderer);
+        renderComps.forEach(comp => {
+            if (comp instanceof Skeleton) return;
+            if (comp instanceof Graphics) return;
+            if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
+                comp.customMaterial = v;
+        });
+    }
+    // @property({ serializable: true })
+    _customMaterial: Material = null;
+
     @property({ visible() { return false; } })
     public get createMaterial(): boolean {
         return false;
@@ -44,31 +60,16 @@ export class YJDynamicAtlas extends Component {
                 Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
                     no.EditorMode.loadAnyFile<Material>(path).then(m => {
                         this.customMaterial = m;
-                        this.setSubMaterial = true;
                     });
                 });
             });
         }
     }
-    @property({ min: 1, max: 2048, step: 1 })
-    width: number = 512;
-    @property({ min: 1, max: 2048, step: 1 })
-    height: number = 512;
-    @property
-    public get setSubMaterial(): boolean {
-        return false;
-    }
-
-    public set setSubMaterial(v: boolean) {
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (comp instanceof Graphics) return;
-            if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
-                comp.customMaterial = this.customMaterial;
-        });
-    }
-    @property
+    // @property({ min: 1, max: 2048, step: 1 })
+    // width: number = 512;
+    // @property({ min: 1, max: 2048, step: 1 })
+    // height: number = 512;
+    @property({ visible() { return false; } })
     public get clearSubMaterial(): boolean {
         return false;
     }
@@ -83,8 +84,7 @@ export class YJDynamicAtlas extends Component {
         });
         this.customMaterial = null;
     }
-    @property({ tooltip: '文本是否合图' })
-    packLabel: boolean = true;
+
 
     public atlas: Atlas;
 
@@ -103,9 +103,9 @@ export class YJDynamicAtlas extends Component {
         for (const key in this.spriteFrameMap) {
             (this.spriteFrameMap[key] as SpriteFrame).destroy();
         }
-        YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
-        this.atlas?.destroy();
-        this.atlas = null;
+        // YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
+        // this.atlas?.destroy();
+        // this.atlas = null;
     }
 
     // public get texture() {
@@ -114,16 +114,16 @@ export class YJDynamicAtlas extends Component {
     // }
 
     public get spriteTexture() {
-        this.initAtlas();
+        // this.initAtlas();
         return this.atlas._texture;
     }
 
-    private initAtlas() {
-        if (!this.atlas) {
-            this.atlas = new Atlas(this.width, this.height, this.node.name);
-            YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
-        }
-    }
+    // private initAtlas() {
+    //     if (!this.atlas) {
+    //         this.atlas = new Atlas(this.width, this.height, this.node.name);
+    //         YJShowDynamicAtlasDebug.ins.add(this.atlas, this.thisNodeName);
+    //     }
+    // }
 
     private createSpriteFrame(uuid: string, packedFrame: PackedFrameData): SpriteFrame {
         let spriteFrame = new SpriteFrame();
@@ -154,13 +154,13 @@ export class YJDynamicAtlas extends Component {
 
     public getPackedFrame(uuid: string): PackedFrameData | null {
         if (!this.isWork) return null;
-        this.initAtlas();
+        // this.initAtlas();
         return this.atlas.getPackedFrame(uuid);
     }
 
     public packAtlasToDynamicAtlas(atlas: SpriteAtlas) {
         if (!this.isWork) return;
-        this.initAtlas();
+        // this.initAtlas();
         let frames = atlas.getSpriteFrames();
         if (frames[0].original) return;
         let texture = frames[0].texture as Texture2D;
@@ -189,7 +189,7 @@ export class YJDynamicAtlas extends Component {
      * @param frame  the sprite frame that will be packed in the dynamic atlas.
      */
     public packToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
-        if (!this.isWork || (comp instanceof Label && !this.packLabel)) {
+        if (!this.isWork || comp instanceof Label) {
             onFail?.();
             return;
         }
@@ -212,7 +212,7 @@ export class YJDynamicAtlas extends Component {
             onFail?.();
             return;
         }
-        this.initAtlas();
+        // this.initAtlas();
         const p = this.atlas.drawCanvas(canvas, uuid);
         if (p) {
             this.setPackedFrame(comp, null, p, uuid);
@@ -319,7 +319,7 @@ export class YJDynamicAtlas extends Component {
         //     return null;
         // }
 
-        this.initAtlas();
+        // this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
             no.err(`${this.thisNodeName}动态图集无空间！`);
@@ -455,7 +455,6 @@ export class YJDynamicAtlas extends Component {
                     "__expectedType__": "cc.Texture2D"
                 };
             });
-            this.setSubMaterial = true;
 
             const fs = require('fs');
             Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {

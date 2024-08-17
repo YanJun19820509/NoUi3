@@ -21,7 +21,7 @@ import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameDataInAtlas';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
-import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
+// import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 
 /**
  * Predefined variables
@@ -75,7 +75,7 @@ export class AutoCreateNode extends Component {
             // let dest = path.replace(root + '/', 'db://');
             this.rootPath = dest;
             await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-            
+
             no.EditorMode.loadAnyFile<SpriteAtlas>(dest).then(assets => {
                 this.atlases = this.atlases.concat(assets);
                 no.EditorMode.loadAnyFile<SpriteAtlas>('assets/res/atlas').then(assets => {
@@ -92,7 +92,7 @@ export class AutoCreateNode extends Component {
     }
 
     private addComponents() {
-        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJSetSample2DMaterial, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
+        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
         comps.forEach(comp => {
             if (!this.getComponent(comp)) this.addComponent(comp);
         })
@@ -122,9 +122,9 @@ export class AutoCreateNode extends Component {
         try {
             // console.log('createNodes', config);
             let size = new Size(config.width, config.height);
-            let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
-            da.width = 512;
-            da.height = 512;
+            // let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
+            // da.width = 512;
+            // da.height = 512;
             this.node.getComponent(UITransform).setContentSize(size);
             if (!this.node.getComponent(YJDataWork))
                 this.node.addComponent(YJDataWork);

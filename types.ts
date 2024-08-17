@@ -1,7 +1,7 @@
 
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-import { Asset, Prefab, Texture2D, ccclass, property } from './yj';
+import { Asset, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
 
 /**
  * Predefined variables
@@ -259,11 +259,11 @@ export function singleObject() {
 
 @ccclass("LoadAssetsInfo")
 export class LoadAssetsInfo {
-    @property
+    @property({ readonly: true, displayName: '资源uuid' })
     assetUuid: string = '';
-    @property({ readonly: true })
+    @property({ readonly: true, displayName: '资源名称' })
     assetName: string = '';
-    @property({ readonly: true })
+    @property({ readonly: true, displayName: '资源路径' })
     path: string = '';
 
     public async load(): Promise<Asset> {
@@ -313,5 +313,126 @@ export class LoadAssetsInfo {
                 this.assetUuid = uuid;
             });
         }
+    }
+}
+
+@ccclass('JsonInfo')
+export class JsonInfo extends LoadAssetsInfo {
+    @property({ type: JsonAsset })
+    public get json(): JsonAsset {
+        return null;
+    }
+
+    public set json(v: JsonAsset) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
+        }
+    }
+}
+@ccclass('TextureInfo')
+export class TextureInfo extends LoadAssetsInfo {
+    @property({ readonly: true, displayName: '图集配置文件uuid' })
+    atlasJsonUuid: string = '';
+    @property({ readonly: true, displayName: '图集配置文件名称' })
+    atlasJsonName: string = '';
+    @property({ type: Texture2D })
+    public get texture(): Texture2D {
+        return null;
+    }
+
+    public set texture(v: Texture2D) {
+        if (v) {
+            this.addTexture(v.uuid);
+        }
+    }
+
+    public addTexture(uuid: string) {
+        this.assetUuid = uuid;
+        no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
+            this.path = info.path;
+            this.assetName = info?.displayName;
+            let path = info?.path.replace('/texture', '_atlas.json');
+            if (path) {
+                no.EditorMode.getAssetInfo(path).then(info => {
+                    this.atlasJsonName = info.name;
+                    this.atlasJsonUuid = info.uuid;
+                });
+            }
+        });
+    }
+
+}
+@ccclass('MaterialInfo')
+export class MaterialInfo extends LoadAssetsInfo {
+    @property({ type: Material })
+    public get material(): Material {
+        return null;
+    }
+
+    public set material(v: Material) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
+            this.setPath();
+        }
+    }
+
+    public addMaterial(uuid: string) {
+        this.assetUuid = uuid;
+        this.setPath();
+    }
+}
+@ccclass('SpriteFrameInfo')
+export class SpriteFrameInfo extends LoadAssetsInfo {
+    @property({ type: SpriteFrame })
+    public get spriteFrame(): SpriteFrame {
+        return null;
+    }
+
+    public set spriteFrame(v: SpriteFrame) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
+            this.setPath();
+        }
+    }
+
+    public setPath() {
+        if (!this.assetUuid) {
+            this.path = '';
+            this.assetName = '';
+            this.assetUuid = '';
+        } else {
+            no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
+                const a = info.path.split('/');
+                this.assetName = a[a.length - 2];
+                this.path = info?.path;
+            });
+        }
+    }
+
+    public addSpriteFrame(uuid: string) {
+        this.assetUuid = uuid;
+        this.setPath();
+    }
+}
+@ccclass('PrefabInfo')
+export class PrefabInfo extends LoadAssetsInfo {
+    @property({ type: Prefab })
+    public get prefab(): Prefab {
+        return null;
+    }
+
+    public set prefab(v: Prefab) {
+        if (v) {
+            this.assetUuid = v.uuid;
+            this.assetName = v.name;
+        }
+    }
+
+    public addPrefab(url: string) {
+        this.path = url;
+        this.setUuid();
     }
 }
