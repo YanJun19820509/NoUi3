@@ -369,6 +369,6 @@ export class SetList extends FuckUi {
         } else {
             showMax = no.ceil(viewSize.width / this.itemSize.width);
         }
-        this.showMax = showMax + 2;
+        this.showMax = showMax + 1;
     }
 }

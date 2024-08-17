@@ -162,7 +162,7 @@ export class YJWindowManager extends Component {
             content.addChild(node);
             YJSoundEffectManager.ins.playOpenSoundEffect();
             afterInit?.(a as T);
-        }).catch(e => { no.err('windowmanager', e.message); });
+        }).catch(e => { no.err('windowmanager', e.stack); });
     }
 
     /**

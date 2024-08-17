@@ -17,13 +17,13 @@ CCEffect %{
       rasterizerState:
         cullMode: none
       properties:
-        atlas0: {value: black}
-        atlas1: {value: black}
-        atlas2: {value: black}
-        atlas3: {value: black}
-        atlas4: {value: black}
-        atlas5: {value: black}
-        atlas6: {value: black}
+        atlas0: {value: default}
+        atlas1: {value: default}
+        atlas2: {value: default}
+        atlas3: {value: default}
+        atlas4: {value: default}
+        atlas5: {value: default}
+        atlas6: {value: default}
 }%
 
 CCProgram vs %{

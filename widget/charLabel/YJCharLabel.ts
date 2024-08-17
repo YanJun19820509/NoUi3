@@ -135,6 +135,8 @@ export class YJCharLabel extends Sprite {
     }
 
     public set useSys(v: boolean) {
+        this._font = null;
+        this._fontUuid = '';
         this._foitnFamily = 'Arial';
     }
     //系统字体
@@ -445,6 +447,7 @@ export class YJCharLabel extends Sprite {
 
     private static fontMap: { [uuid: string]: TTFFont } = {};
     private static fontLoading: { [uuid: string]: boolean } = {};
+    private _uid: string = '';
 
     public panelName: string;
 
@@ -489,6 +492,7 @@ export class YJCharLabel extends Sprite {
             this.clearString();
             return;
         } else {
+            this.updateUuid();
             if (this.packToAtlas && this.setPackedTexture()) return;
             this.loadFont().then(() => {
                 this.toDraw();
@@ -509,9 +513,9 @@ export class YJCharLabel extends Sprite {
         return this._hdp ? this._hdpScale : 1;
     }
 
-    private getUuid(): string {
+    private updateUuid() {
         let a = this.string + "_" + this._fontColor + "_" + this.fontSize + "_" + this.fontFamily + "_" + this.outlineColor + '_' + this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + (this.italic ? '1' : '0');
-        return a;
+        this._uid = no.Hash(a).toString();
     }
 
     private _canvas: HTMLCanvasElement;
@@ -823,7 +827,7 @@ export class YJCharLabel extends Sprite {
 
     private setPackedTexture() {
         if (EDITOR) return false;
-        const p = this.dynamicAtlas?.getSpriteFrameInstance(this.getUuid());
+        const p = this.dynamicAtlas?.getSpriteFrameInstance(this._uid);
         if (p) {
             let width = p.rect.width,
                 height = p.rect.height;
@@ -855,11 +859,11 @@ export class YJCharLabel extends Sprite {
         }
         const image = new ImageAsset(canvas);
         const texture = new Texture2D();
-        texture['_uuid'] = this.getUuid();
+        texture['_uuid'] = 'yjchar@' + this._uid;
         texture.image = image;
         TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
         let spriteFrame = new SpriteFrame();
-        spriteFrame['_uuid'] = this.getUuid();
+        spriteFrame['_uuid'] = this._uid;
         spriteFrame.texture = texture;
         this.spriteFrame = spriteFrame;
 
@@ -869,6 +873,7 @@ export class YJCharLabel extends Sprite {
             else
                 this.packSpriteFrame();
         }
+        this.clearCanvas();
     }
 
     private packSpriteFrame() {

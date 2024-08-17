@@ -2820,7 +2820,7 @@ export namespace no {
          * @param name
          * @param callback
          */
-        public loadBundle(name: string, callback: (bundle: Bundle) => void, force = false): void {
+        public loadBundle(name: string, callback?: (bundle: Bundle) => void, force = false): void {
             let bundle = this.getLoadedBundle(name);
             if (bundle != null) {
                 if (force) assetManager.removeBundle(bundle);
@@ -5519,6 +5519,35 @@ export namespace no {
                 return bundles;
             });
         }
+
+        /**
+         * 通过资源的url获取包名
+         * @param url 任意资源的url
+         * @returns string[]
+         */
+        export async function getBundleName(url: string) {
+            return getBundleInfos().then(infos => {
+                for (let i = 0, n = infos.length; i < n; i++) {
+                    if (url.indexOf(infos[i].url) == 0)
+                        return infos[i].name;
+                }
+                return null;
+            });
+        }
+    }
+
+    /**
+     *  hash算法
+     * @param str 
+     */
+    export function Hash(str: string): number {
+        const seed = 31;  
+        let hash = 0, i = 0;
+        while (i < str.length) {
+            let num = ((hash * seed) & 0xFFFFFFFF) >>> 0;
+            hash = parseFloat(num + "") + str.charCodeAt(i++);
+        }
+        return (hash & 0x7FFFFFFF);
     }
 }
 

@@ -48,7 +48,7 @@ export class YJi18n extends no.Data {
     }
 
     public get language(): string {
-        return this._lan;
+        return this._lan || this._defLan;
     }
 
     /**

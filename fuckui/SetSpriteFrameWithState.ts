@@ -1,6 +1,6 @@
 import { ccclass, property } from '../../NoUi3/yj';
-import { SpriteFrameInfo } from '../editor/YJLoadAssets';
 import { no } from '../no';
+import { SpriteFrameInfo } from '../types';
 import { FuckUi } from './FuckUi';
 
 /**
