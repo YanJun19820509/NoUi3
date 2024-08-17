@@ -61,6 +61,8 @@ export class YJLoadAssets extends Component {
     // public set autoSetSubLoadAsset(v: boolean) {
     //     if (v) YJLoadAssets.setLoadAsset(this.node, this);
     // }
+    @property({ displayName: '共享材质' })
+    share: boolean = true;
     @property({ displayName: '搜索需要加载的纹理' })
     public get getAllAssets(): boolean {
         return false;
@@ -151,7 +153,7 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
-        this.materialInfo = await YJSample2DMaterialManager.ins.getMaterial(name, this.textureInfos);
+        this.materialInfo = await YJSample2DMaterialManager.ins.getMaterial(name, this.textureInfos, this.share);
         const dynamic = this.getComponent(YJDynamicAtlas);
         dynamic.atlas = this.materialInfo.atlas;
         dynamic.customMaterial = this.materialInfo.material;

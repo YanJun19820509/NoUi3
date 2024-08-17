@@ -37,25 +37,23 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         return super.instance();
     }
 
+    private createMaterialInfo(name: string, reuse: boolean) {
+        const materialInfo = new YJSample2DMaterialInfo(name, reuse);
 
-
-    private createMaterialInfo(name: string) {
-        const materialInfo = new YJSample2DMaterialInfo(name);
-
-        if (REUSE_MATERIAL)
+        if (reuse)
             this.materialInfos.push(materialInfo);
         return materialInfo;
     }
 
-    public async getMaterial(name: string, textureInfos: TextureInfo[]): Promise<YJSample2DMaterialInfo> {
+    public async getMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<YJSample2DMaterialInfo> {
         let uuids: string[] = [];
         textureInfos.forEach(a => {
             uuids.push(a.assetUuid);
         });
         let materialInfo = this.materialInfos[this.materialInfos.length - 1];
         let needLoadIdxes = materialInfo?.getNeedLoadIdxes(uuids);
-        if (!materialInfo || !needLoadIdxes) {
-            materialInfo = this.createMaterialInfo(name);
+        if (!share || !materialInfo || !needLoadIdxes) {
+            materialInfo = this.createMaterialInfo(name, share && REUSE_MATERIAL);
             await this.loadTextures(materialInfo, textureInfos);
         } else {
             materialInfo.refCount++;
@@ -161,13 +159,13 @@ export class YJSample2DMaterialInfo {
     private textures: Texture2D[] = [];
     private name: string;
 
-    constructor(name: string) {
+    constructor(name: string, reuse: boolean) {
         this.uuid = no.uuid();
         this.refCount++;
         this.name = name;
 
         this.material = createMaterial();
-        const size = REUSE_MATERIAL ? 2048 : 1024;
+        const size = reuse ? 2048 : 1024;
         this.atlas = new Atlas(size, size, name);
 
         YJShowDynamicAtlasDebug.ins.add(this.atlas, name);
