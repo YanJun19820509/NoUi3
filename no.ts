@@ -5210,7 +5210,7 @@ export namespace no {
     }
 
     /**
-     * 创建一个基础节点
+     * 创建一个基础节点,Layers.Enum.UI_2D,添加了UITransform组件
      * @param name 节点名
      * @param components 需要添加的组件
      * @returns 
@@ -5541,7 +5541,7 @@ export namespace no {
      * @param str 
      */
     export function Hash(str: string): number {
-        const seed = 31;  
+        const seed = 31;
         let hash = 0, i = 0;
         while (i < str.length) {
             let num = ((hash * seed) & 0xFFFFFFFF) >>> 0;
