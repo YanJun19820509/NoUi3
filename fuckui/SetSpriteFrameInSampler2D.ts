@@ -1,7 +1,7 @@
 
 import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager, v3, Vec3 } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
+import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';

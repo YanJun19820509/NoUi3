@@ -1,6 +1,6 @@
 
 import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
-import { YJVertexColorTransition } from '../effect/YJVertexColorTransition';
+import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
