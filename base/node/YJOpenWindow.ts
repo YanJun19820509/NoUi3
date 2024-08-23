@@ -1,6 +1,7 @@
 
 import { no } from '../../no';
-import { ccclass, property, menu, Component, Node, EventTouch, js } from '../../yj';
+import { ccclass, property, menu, Component, Node, EventTouch, js, Enum } from '../../yj';
+import { LayerType, LayerTypeEnum } from './LayerType';
 import { YJPanel } from './YJPanel';
 import { YJWindowManager } from './YJWindowManager';
 
@@ -22,8 +23,8 @@ export class OpenWindowInfo {
     windowName: string = '';
     @property
     prefabPathOrUuid: string = '';
-    @property
-    to: string = '';
+    @property({ type: Enum(LayerTypeEnum) })
+    to: LayerTypeEnum = LayerTypeEnum.Popup;
     @property({ tooltip: '传参，仅用于show' })
     args: string = '';
 
@@ -32,9 +33,9 @@ export class OpenWindowInfo {
             const clazz = js.getClassByName(this.windowName);
             if (typeof clazz['show'] == 'function') clazz['show'](!!this.args ? this.args : null);
             else if (clazz['$super'] == YJPanel)
-                YJWindowManager.createPanel(this.windowName, this.to);
+                YJWindowManager.createPanel(this.windowName, LayerType[this.to]);
         } else if (this.prefabPathOrUuid != '') {
-            YJWindowManager.createPanelByPrefab(this.prefabPathOrUuid, this.to);
+            YJWindowManager.createPanelByPrefab(this.prefabPathOrUuid, LayerType[this.to]);
         }
     }
 }

@@ -78,7 +78,7 @@ export class YJShowSpriteFrameInSample2D extends Component {
 
     onLoad() {
         if (EDITOR) {
-            this.showSpriteFrame = true;
+            this.showSpriteFrame = this._show;
         }
     }
 }

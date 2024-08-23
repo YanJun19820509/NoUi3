@@ -112,6 +112,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
         if (!this.dynamicAtlas)
             this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
+        if (!this.dynamicAtlas) this.canPack = false; //没有动态图集则不能打包
     }
 
     public initSpriteFrameInfo() {
@@ -256,9 +257,13 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private loadByUrl() {
+        if (this.defaultUrl.indexOf('db://internal/') == 0) {
+            this.loadByUuid();
+            return;
+        }
         no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
             if (!file) {
-                no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl)
+                no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl);
                 this.loadByUuid();
             } else {
                 this._singleSpriteFrame = file;

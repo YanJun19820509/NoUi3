@@ -52,3 +52,15 @@ export const LayerTypeDesc = {
     // 8: '操作层',
     // 9: '顶部层',
 };
+
+export enum LayerTypeEnum {
+    Base = 1,
+    Navigation = 2,
+    Window = 3,
+    Popup = 4,
+    Guide = 5,
+    Message = 6,
+    // Menu = 'menu',
+    // Oper = 'oper',
+    // Top = 'top',
+}

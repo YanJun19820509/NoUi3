@@ -1,5 +1,5 @@
 
-import { ccclass, menu } from '../yj';
+import { ccclass, menu, requireComponent, UIOpacity } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -17,6 +17,7 @@ import { FuckUi } from './FuckUi';
 
 @ccclass('SetOpacity')
 @menu('NoUi/ui/SetOpacity(设置透明度:number)')
+@requireComponent(UIOpacity)
 export class SetOpacity extends FuckUi {
 
     protected onDataChange(data: any) {

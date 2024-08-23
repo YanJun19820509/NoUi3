@@ -1261,13 +1261,13 @@ export namespace no {
     /**
      * 取两值之间的随机值
      * @param min
-     * @param max
-     * @param isInt 是否取整
+     * @param max 
+     * @param isInt 是否取整，默认true
      */
     export function randomBetween(min: number, max: number, isInt = true): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
-        const a = random() * (max - min + (min > 1 ? 1 : 0));
+        const a = random() * (max - min + 1);
         return (isInt ? floor(a) : a) + min;
     }
 

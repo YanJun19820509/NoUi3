@@ -20,8 +20,8 @@ import { FuckUi } from './FuckUi';
 export class SetClickEvent extends FuckUi {
     @property({ displayName: '事件类型' })
     type: string = '';
-    @property(no.EventHandlerInfo)
-    onClick: no.EventHandlerInfo[] = [];
+    // @property(no.EventHandlerInfo)
+    // onClick: no.EventHandlerInfo[] = [];
     @property
     public get bind(): boolean {
         return false;
@@ -40,6 +40,6 @@ export class SetClickEvent extends FuckUi {
     public a_onClick(e: any, v: any) {
         if (this.type != '')
             no.evn.emit(this.type, this._v == null ? v : this._v);
-        no.EventHandlerInfo.execute(this.onClick, this._v == null ? v : this._v);
+        // no.EventHandlerInfo.execute(this.onClick, this._v == null ? v : this._v);
     }
 }
