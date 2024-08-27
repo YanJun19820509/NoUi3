@@ -16,7 +16,14 @@ const REUSE_MATERIAL = true; //是否复用材质
 const createMaterial = function () {
     const material = new Material();
     material._uuid = no.uuid();
-    const effectAsset = EffectAsset.get('../NoUi3/effect/sample2d');
+    const all = EffectAsset.getAll();
+    let effectAsset: EffectAsset;
+    for (const key in all) {
+        if (key.endsWith('NoUi3/effect/sample2d')) {
+            effectAsset = all[key];
+            break;
+        }
+    }
     if (effectAsset) {
         material.initialize({
             effectAsset: effectAsset,

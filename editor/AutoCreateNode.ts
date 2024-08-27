@@ -60,6 +60,7 @@ export class AutoCreateNode extends Component {
     private async loadConfigFile() {
         this.addComponents();
         try {
+            const projectName = Editor.Project.name;
             this.nameMap = {};
             let name = this.node.name;
             // let a = await Editor.Dialog.select({
@@ -74,14 +75,16 @@ export class AutoCreateNode extends Component {
             // let root = Editor.Project.path.replace(/\\/g, '/');
             // let dest = path.replace(root + '/', 'db://');
             this.rootPath = dest;
-            await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-
-            no.EditorMode.loadAnyFile<SpriteAtlas>(dest).then(assets => {
+            // await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
+            console.log(dest);
+            no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAltas').then(assets => {
                 this.atlases = this.atlases.concat(assets);
-                no.EditorMode.loadAnyFile<SpriteAtlas>('assets/res/atlas').then(assets => {
-                    this.atlases = this.atlases.concat(assets);
-                    no.EditorMode.loadAnyFile<TTFFont>('assets/res/common/font').then(assets => {
-                        this.fonts = this.fonts.concat(assets);
+                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/atlas`, 'cc.SpriteAltas').then(assets => {
+                    if (assets?.length > 0)
+                        this.atlases = this.atlases.concat(assets);
+                    no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/font`, 'cc.TTFFont').then(assets => {
+                        if (assets?.length > 0)
+                            this.fonts = this.fonts.concat(assets);
                         this.loadJson(dest, name);
                     });
                 });
@@ -111,7 +114,7 @@ export class AutoCreateNode extends Component {
     private loadJson(dest: string, name: string) {
         // console.log('loadjson');
         no.EditorMode.loadAnyFile<JsonAsset>(dest + `/${name}.json`).then(f => {
-            // console.log(f.json);
+            console.log(f.json);
             this.deleteConfigFile(dest + `/${name}.json`);
             this.createNodes(f.json);
             this.enabled = false;
@@ -245,7 +248,7 @@ export class AutoCreateNode extends Component {
             let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             l.string = c.text;
             l.fontSize = Math.ceil(Number(c.size));
-            l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
+            // l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
             l.lineHeight = l.fontSize + 2;
             l.fontColor = no.str2Color(c.textColor);
             l.bold = c.bold;
@@ -269,7 +272,7 @@ export class AutoCreateNode extends Component {
             let l = n.getComponent(Label) || n.addComponent(Label);
             l.string = c.text;
             l.fontSize = Number(c.size);
-            l.font = this.getFont(c.name);
+            // l.font = this.getFont(c.name);
             l.lineHeight = l.fontSize;
             l.color = no.str2Color(c.textColor);
             l.isBold = c.bold;
@@ -294,7 +297,7 @@ export class AutoCreateNode extends Component {
         } else {
             let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             char.string = c.text;
-            char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
+            // char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
             char.fontSize = Math.ceil(Number(c.size));
             char.lineHeight = char.fontSize;
             char.color = no.str2Color(c.textColor);
