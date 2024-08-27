@@ -1,6 +1,6 @@
 import * as _cc from 'cc';
 import * as env from 'cc/env';
-import { AssetInfo } from '../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
+import { AssetInfo } from '../../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
 
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
 export let { WECHAT, EDITOR, JSB } = env;
@@ -62,6 +62,10 @@ export const RenderTexture = _cc.RenderTexture;
 export type RenderTexture = _cc.RenderTexture;
 export const SkeletonData = _cc.sp.SkeletonData;
 export type SkeletonData = _cc.sp.SkeletonData;
+export const SpineSocket = _cc.sp.SpineSocket;
+export type SpineSocket = _cc.sp.SpineSocket;
+export const Bone = _cc.sp.spine.Bone;
+export type Bone = _cc.sp.spine.Bone;
 export const SpriteFrame = _cc.SpriteFrame;
 export type SpriteFrame = _cc.SpriteFrame;
 export const Font = _cc.Font;
