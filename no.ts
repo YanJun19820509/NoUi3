@@ -5549,6 +5549,110 @@ export namespace no {
         }
         return (hash & 0x7FFFFFFF);
     }
-}
 
+    /**
+     * 公式计算
+     */
+    export function evalFormula(formula: string) {
+        //去掉formula内所有空格
+        formula = formula.replace(/\s/g, '');
+        let a = splitFormula(formula);
+        if (typeof a == 'string') {
+            return -Number(a.replace('_', ''));
+        }
+        return a;
+    }
+
+    /**
+     * 获取字符串中两个字符串之间的内容
+     */
+    export function getStringBetween(str: string, start: string, end: string, begin = 0) {
+        const i1 = str.indexOf(start, begin);
+        if (i1 > -1) {
+            let l = 0;
+            for (let i = i1 + 1, n = str.length; i < n; i++) {
+                if (str[i] == start) l++;
+                if (str[i] == end) {
+                    if (l == 0)
+                        return str.substring(i1 + 1, i);
+                    else l--;
+                }
+            }
+        }
+        return null;
+    }
+
+    function splitFormula(formula: string) {
+        const r = Number(formula);
+        if (!isNaN(r)) return r;
+        //检测有没有math函数，函数名被<>包围
+        const mathFuncs = ['sin', 'cos', 'tan', 'sqrt', 'log', 'abs', 'ceil', 'floor', 'round', 'max', 'min', 'random', 'pow'];
+        for (let i = 0, n = mathFuncs.length; i < n; i++) {
+            const func = mathFuncs[i];
+            const idx = formula.indexOf(func);
+            if (idx > -1) {
+                const sss = getStringBetween(formula, '(', ')', idx);
+                const args: any[] = sss.split(',');
+                args.forEach((a, i) => {
+                    const b = splitFormula(a);
+                    if (typeof b == 'string' && b.startsWith('_'))
+                        args[i] = b.replace('_', '-');
+                    else
+                        args[i] = b;
+                });
+                const a = Math[func](...args);
+                return splitFormula(formula.replace(`${func}(${sss})`, `${a}`));
+            }
+        }
+
+        //检测有没有括号
+        const s = getStringBetween(formula, '(', ')');
+        if (s) {
+            const n = splitFormula(s);
+            formula = formula.replace(`(${s})`, `${n}`);
+            return splitFormula(formula);
+        }
+        const ops = ['+', '-', '*', '/'];
+        for (let i = 0; i < ops.length; i++) {
+            const op = ops[i];
+            let j = formula.indexOf(op);
+            if (j > -1) {
+                let n1: any = formula.substring(0, j);
+                let n2: any = formula.substring(j + 1);
+                if (isNaN(Number(n1))) {
+                    //如果_开头，则替换为-
+                    if (n1.startsWith('_')) {
+                        n1 = n1.replace('_', '-');
+                    } else
+                        n1 = splitFormula(n1);
+                }
+                if (isNaN(Number(n2))) {
+                    //如果_开头，则替换为-
+                    if (n2.startsWith('_')) {
+                        n2 = n2.replace('_', '-');
+                    } else
+                        n2 = splitFormula(n2);
+                }
+                let a: number;
+                switch (op) {
+                    case '+':
+                        a = Number(n1) + Number(n2);
+                        break;
+                    case '-':
+                        a = Number(n1) - Number(n2);
+                        break;
+                    case '*':
+                        a = Number(n1) * Number(n2);
+                        break;
+                    case '/':
+                        a = Number(n1) / Number(n2);
+                        break;
+                }
+                //如果a是负数，则加上_，如-1变成_1
+                if (a < 0) return '_' + (-a);
+                return a;
+            }
+        }
+    }
+}
 no.addToWindowForDebug('no', no);
