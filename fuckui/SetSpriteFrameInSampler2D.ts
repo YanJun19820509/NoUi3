@@ -1,11 +1,10 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager, v3, Vec3 } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, Vec3 } from '../yj';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { YJi18n } from '../base/YJi18n';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 
@@ -71,7 +70,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     update() {
         if ((this.loadFromAtlas || this.canPack) && !this.loadAsset) {
             this.setDynamicAtlas();
-            this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         } else if ((!this.loadFromAtlas && !this.canPack) && this.loadAsset) {
             this.loadAsset = null;
             this.dynamicAtlas = null;
@@ -105,6 +103,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setDynamicAtlas() {
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+        this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -131,6 +130,20 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 no.EditorMode.getBundleName(info.url).then(bundleName => {
                     this.bundleName = bundleName;
                 });
+                if (!this.loadFromAtlas) {
+                    const metaUrl = info.url.replace('/spriteFrame', '');
+                    no.EditorMode.getAssetMeta(metaUrl).then(info => {
+                        //如果散图有压缩设置，则不能打包
+                        if (info.userData.compressSettings?.useCompressTexture) {
+                            this.canPack = false;
+                            this.loadAsset = null;
+                            this.dynamicAtlas = null;
+                            this.getComponent(YJVertexColorTransition).enabled = false;
+                        }
+                    });
+                } else {
+                    this.setDynamicAtlas();
+                }
             });
         }
     }

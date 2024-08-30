@@ -5360,11 +5360,11 @@ export namespace no {
 
         /**
          * 获取资源元数据
-         * @param param 可以是uuid/url/path
+         * @param url 资源url
          * @returns IAssetMeta
          */
-        export async function getAssetMeta(param: string) {
-            return Editor.Message.request('asset-db', 'query-asset-meta', param);
+        export async function getAssetMeta(url: string) {
+            return Editor.Message.request('asset-db', 'query-asset-meta', url);
         }
 
         /**
