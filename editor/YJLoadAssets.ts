@@ -387,9 +387,11 @@ export class YJLoadAssets extends Component {
     public release() {
         this.materialInfo.destroy();
         const name = this.node.name;
-        no.setTimeoutF(() => {
-            TextureInfoInGPU.showTextureWhenPanelDestroy(name);
-        }, 500);
+        if (TextureInfoInGPU.isWork) {
+            no.setTimeoutF(() => {
+                TextureInfoInGPU.showTextureWhenPanelDestroy(name);
+            }, 500);
+        }
     }
     // public release() {
     //     if (no.isDebug()) {

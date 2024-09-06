@@ -52,6 +52,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         return materialInfo;
     }
 
+    public newestMaterialInfo() {
+        return this.materialInfos[this.materialInfos.length - 1];
+    }
+
     public async getMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<YJSample2DMaterialInfo> {
         let uuids: string[] = [];
         textureInfos.forEach(a => {

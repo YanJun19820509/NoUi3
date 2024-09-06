@@ -35,55 +35,55 @@ export class YJDynamicAtlas extends Component {
 
     public set customMaterial(v: Material) {
         this._customMaterial = v;
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (comp instanceof Graphics) return;
-            if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
-                comp.customMaterial = v;
-        });
+        // let renderComps = this.getComponentsInChildren(UIRenderer);
+        // renderComps.forEach(comp => {
+        //     if (comp instanceof Skeleton) return;
+        //     if (comp instanceof Graphics) return;
+        //     if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
+        //         comp.customMaterial = v;
+        // });
     }
     // @property({ serializable: true })
     _customMaterial: Material = null;
 
-    @property({ visible() { return false; } })
-    public get createMaterial(): boolean {
-        return false;
-    }
+    // @property({ visible() { return false; } })
+    // public get createMaterial(): boolean {
+    //     return false;
+    // }
 
-    public set createMaterial(v: boolean) {
-        const material = this.customMaterial;
-        if (!material) {
-            const prefab = this.node['_prefab'].asset;
-            no.EditorMode.getAssetUrlByUuid(prefab.uuid).then(url => {
-                const path = url.replace('.prefab', '.mtl');
-                Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
-                    no.EditorMode.loadAnyFile<Material>(path).then(m => {
-                        this.customMaterial = m;
-                    });
-                });
-            });
-        }
-    }
+    // public set createMaterial(v: boolean) {
+    //     const material = this.customMaterial;
+    //     if (!material) {
+    //         const prefab = this.node['_prefab'].asset;
+    //         no.EditorMode.getAssetUrlByUuid(prefab.uuid).then(url => {
+    //             const path = url.replace('.prefab', '.mtl');
+    //             Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
+    //                 no.EditorMode.loadAnyFile<Material>(path).then(m => {
+    //                     this.customMaterial = m;
+    //                 });
+    //             });
+    //         });
+    //     }
+    // }
     // @property({ min: 1, max: 2048, step: 1 })
     // width: number = 512;
     // @property({ min: 1, max: 2048, step: 1 })
     // height: number = 512;
-    @property({ visible() { return false; } })
-    public get clearSubMaterial(): boolean {
-        return false;
-    }
+    // @property({ visible() { return false; } })
+    // public get clearSubMaterial(): boolean {
+    //     return false;
+    // }
 
-    public set clearSubMaterial(v: boolean) {
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (comp instanceof Graphics) return;
-            if (this.customMaterial == comp.customMaterial)
-                comp.customMaterial = null;
-        });
-        this.customMaterial = null;
-    }
+    // public set clearSubMaterial(v: boolean) {
+    //     let renderComps = this.getComponentsInChildren(UIRenderer);
+    //     renderComps.forEach(comp => {
+    //         if (comp instanceof Skeleton) return;
+    //         if (comp instanceof Graphics) return;
+    //         if (this.customMaterial == comp.customMaterial)
+    //             comp.customMaterial = null;
+    //     });
+    //     this.customMaterial = null;
+    // }
 
 
     public atlas: Atlas;

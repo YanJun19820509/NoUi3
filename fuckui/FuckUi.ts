@@ -20,7 +20,7 @@ import { no } from '../no';
 @ccclass('FuckUi')
 @executeInEditMode()
 export class FuckUi extends Component {
-    @property(Node)
+    @property({ type: Node, editorOnly: true })
     registerNode: Node = null;
 
     @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系，用,分隔多个key' })
