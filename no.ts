@@ -2,8 +2,10 @@ import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
-    Layers,
-    CCObject
+    Layers, CCObject,
+    rendererCamera,
+    Camera,
+    Mesh
 } from "./yj";
 
 
@@ -586,7 +588,7 @@ export namespace no {
          * 当前时区时间戳s
          */
         public get locationTimeZoneNow(): number {
-            return no.localDateSeconds(this._time);
+            return localDateSeconds(this._time);
         }
 
         constructor() {
@@ -879,7 +881,7 @@ export namespace no {
      * 从数组里随机n个元素
      * @param arr
      * @param n
-     * @param repeatable 随机的元素能否重复
+     * @param repeatable 随机的元素能否重复，默认false
      */
     export function arrayRandom(arr: any, n = 1, repeatable = false): any {
         if (!arr || arr.length == 0) return null;
@@ -1497,8 +1499,7 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = out || v3();
-        node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
+        out = node.worldPosition.clone();
         return out;
     }
 
@@ -1520,8 +1521,52 @@ export namespace no {
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
-        nodeWorldPosition(node, out);
+        out = nodeWorldPosition(node, out);
         otherNode.getComponent(UITransform).convertToNodeSpaceAR(out, out);
+        return out;
+    }
+
+    /**
+     * 某3d节点坐标转换到另一个3d节点内
+     * @param node
+     * @param otherNode
+     */
+    export function nodePositionInOtherNode3D(node: Node, otherNode: Node, out?: Vec3): Vec3 {
+        out = out || v3();
+        let worldToLocalMatrix = otherNode.getWorldMatrix().invert();
+        Vec3.transformMat4(out, node.worldPosition, worldToLocalMatrix);
+        return out;
+    }
+
+    /**
+     * 2d坐标转3d坐标
+     * @param node2D 2d节点
+     * @param node3D 3d节点
+     * @param out 
+     * @returns 
+     */
+    export function convert2DPositionTo3D(node2D: Node, node3D: Node, out?: Vec3): Vec3 {
+        out = nodeWorldPosition(node2D, out);
+        const camera2d = getCamera(node2D.layer),
+            camera3d = getCamera(node3D.layer);
+        //2D相机负责把2D物体的世界坐标转换成屏幕空间坐标
+        camera2d.worldToScreen(out, out);
+        //3D相机负责把屏幕空间坐标转换成3D相机观察中的世界坐标
+        camera3d.screenToWorld(out, out);
+        return out;
+    }
+
+    /**
+     * 3d坐标转2d坐标
+     * @param node3D 3d节点
+     * @param node2D 2d节点
+     * @param out 
+     * @returns 
+     */
+    export function convert3DPositionTo2D(node3D: Node, node2D: Node, out?: Vec3): Vec3 {
+        const camera = getCamera(node3D.layer);
+        out = worldPosition(node3D);
+        camera.node.getComponent(Camera).convertToUINode(out, node2D, out);
         return out;
     }
 
@@ -1575,17 +1620,33 @@ export namespace no {
      * 节点在world中的rect
      * @param node
      */
-    export function nodeBoundingBox(node: Node, offset?: Vec2, subSize?: Size): Rect {
+    export function nodeBoundingBox(node: Node, offset?: Vec2, subSize?: Size | Vec3): Rect {
         offset = offset || v2();
         subSize = subSize || Size.ZERO;
         let origin = v3();
         origin = nodeWorldPosition(node, origin);
-        let anchor = node.getComponent(UITransform).anchorPoint;
-        let size = node.getComponent(UITransform).contentSize;
         let rect = new Rect();
-        rect.height = size.height + subSize.height;
-        rect.width = size.width + subSize.width;
-        rect.center = v2(origin.x + (0.5 - anchor.x) * size.width + offset.x, origin.y + (0.5 - anchor.y) * size.height + offset.y);
+        const ut = node.getComponent(UITransform);
+        let height: number = 0, width: number = 0;
+        if (subSize instanceof Size) {
+            height = subSize.height;
+            width = subSize.width;
+        } else {
+            height = subSize.y;
+            width = subSize.x;
+        }
+        if (ut) {
+            let anchor = ut.anchorPoint;
+            let size = ut.contentSize;
+            rect.height = size.height + height;
+            rect.width = size.width + width;
+            rect.center = v2(origin.x + (0.5 - anchor.x) * size.width + offset.x, origin.y + (0.5 - anchor.y) * size.height + offset.y);
+        } else {
+            //3d节点
+            rect.height = height;
+            rect.width = width;
+            rect.center = v2(origin.x + offset.x, origin.y + offset.y);
+        }
         return rect;
     }
 
@@ -1836,6 +1897,10 @@ export namespace no {
                             np = np || {};
                             np['position'] = new Vec3(v[0], v[1], v[2]);
                             break;
+                        case 'wpos':
+                            np = np || {};
+                            np['worldPosition'] = new Vec3(v[0], v[1], v[2]);
+                            break;
                         case 'rotation':
                             np = np || {};
                             np['rotation'] = new Quat(v[0], v[1], v[2]);
@@ -1912,7 +1977,7 @@ export namespace no {
                 const type: string = cb.type,
                     args: any[] = cb.args || [];
                 callFn = () => {
-                    no.evn.emit(type, ...args);
+                    evn.emit(type, ...args);
                 }
             };
             this.map[key] = this.map[key]?.call(callFn);
@@ -1962,7 +2027,8 @@ export namespace no {
      *      by?:1,
      *      set?:1,
      *      props?: {
-     *          pos: [100,100,0]
+     *          pos: [100,100,0],
+     *          wpos: [100,100,0],
      *          opacity: 100,
      *          rotation: [1,1,0],
      *          scale: [0.5,0.5,1],
@@ -1971,7 +2037,7 @@ export namespace no {
      *      },
      *      easing?: EasingMethod | "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
      *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
-     *      callback?: () => void | {type: string, args?:any[]}
+     *      callback?: {type: string, args?:any[]}
      * }
      * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。
      * 默认属性变化为to
@@ -2084,8 +2150,26 @@ export namespace no {
         if (!node) return;
         if (pos != undefined) {
             node.setPosition(pos);
+        } else {
+            pos = node.position.clone();;
         }
-        return node.getPosition().clone();
+        return pos;
+    }
+
+    /**
+     * 获取或设置节点worldPosition
+     * @param node 节点
+     * @param wpos 为空时则返回当前worldPosition；否则修改当前worldPosition
+     * @returns 
+     */
+    export function worldPosition(node: Node, wpos?: Vec3): Vec3 {
+        if (!node) return;
+        if (wpos != undefined) {
+            node.setWorldPosition(wpos);
+        } else {
+            wpos = nodeWorldPosition(node, wpos);
+        }
+        return wpos;
     }
 
     /**
@@ -2303,7 +2387,7 @@ export namespace no {
                 dataCache.setLocal('reset_data_check_time', jsonStringify(lastResetTime));
             }
         } catch (e) {
-            no.err('JSON.parse', 'resetValueCheck');
+            err('JSON.parse', 'resetValueCheck');
         }
     }
 
@@ -2405,7 +2489,7 @@ export namespace no {
                     else this._data = v;
                     this.emit(Data.DataChangeEvent, this);
                 } catch (e) {
-                    no.err('JSON.parse', 'Data.json', js.getClassName(this), v);
+                    err('JSON.parse', 'Data.json', js.getClassName(this), v);
                 }
             }
         }
@@ -2547,7 +2631,7 @@ export namespace no {
             try {
                 return parse2Json(a);
             } catch (e) {
-                no.err('JSON.parse', 'getLocal', key, a);
+                err('JSON.parse', 'getLocal', key, a);
                 return null;
             }
         }
@@ -2945,6 +3029,7 @@ export namespace no {
         }
 
         public loadPrefab(path: string, callback: (item: Prefab) => void): void {
+            path = path.replace('.fbx', '');
             this.loadFile(path, Prefab, callback);
         }
 
@@ -2966,6 +3051,11 @@ export namespace no {
 
         public loadBuffer(path: string, callback: (item: BufferAsset) => void): void {
             this.loadFile(path, BufferAsset, callback);
+        }
+
+        public loadMesh(path: string, callback: (item: Mesh) => void): void {
+            path = path.replace('.fbx', '');
+            this.loadFile(path, Mesh, callback);
         }
 
         // public loadDragonBonesAtlasAsset(path: string, callback: (item: dragonBones.DragonBonesAtlasAsset) => void): void {
@@ -3192,7 +3282,7 @@ export namespace no {
 
         public loadByUuid<T extends Asset>(uuid: string, callback?: (file: T) => void) {
             if (uuid == '') {
-                no.err('uuid 为空')
+                err('uuid 为空')
                 return;
             }
             assetManager.loadAny({ 'uuid': uuid }, (e: Error, f: T) => {
@@ -3485,7 +3575,7 @@ export namespace no {
          */
         public loadFolderFilesToCache(folder: string, onComplete?: () => void) {
             const p = this.assetPath(folder);
-            no.log('loadFolderFilesToCache', p);
+            log('loadFolderFilesToCache', p);
             if (p.bundle) {
                 const bundle = this.getLoadedBundle(p.bundle),
                     infos = bundle.getDirWithPath(p.path),
@@ -4392,7 +4482,7 @@ export namespace no {
                         let a = parse2Json(response);
                         cb?.(a);
                     } catch (e) {
-                        no.err('JSON.parse', 'httpRequest', response);
+                        err('JSON.parse', 'httpRequest', response);
                         cb?.(null);
                     }
                 } else if (xhr.readyState == 4 && xhr.status == 0) {
@@ -4751,18 +4841,18 @@ export namespace no {
 
             if (props) {
                 if (typeof props == 'number' || typeof props == 'string') {
-                    return no.formatString(tagFormat, { tag: tags, props: `=${props}`, content: text });
+                    return formatString(tagFormat, { tag: tags, props: `=${props}`, content: text });
                 }
 
                 let ps: string[] = [''];
                 props = [].concat(props);
                 props.forEach(p => {
-                    ps[ps.length] = no.formatString(propFormat, p);
+                    ps[ps.length] = formatString(propFormat, p);
                 });
 
-                return no.formatString(tagFormat, { tag: tags, props: ps.join(' '), content: text });
+                return formatString(tagFormat, { tag: tags, props: ps.join(' '), content: text });
             } else
-                return no.formatString(tagFormat, { tag: tags, props: '', content: text });
+                return formatString(tagFormat, { tag: tags, props: '', content: text });
         }
     }
     ////////////////////////////////////给richtext添加bbcode end///////////////////////
@@ -4971,7 +5061,7 @@ export namespace no {
          * 单纯的不渲染而不执行生命周期方法会导致一些逻辑问题，所以不能以这种方案来优化性能
          */
         if (node['__origin_x__'] == null) {
-            node['__origin_x__'] = no.x(node);
+            node['__origin_x__'] = x(node);
         }
         //原生不支持，小游戏支持
         if (v != undefined) {
@@ -4980,7 +5070,7 @@ export namespace no {
                 if (!node.active) node.active = true;
             }
             if (!EDITOR) {
-                no.x(node, !v ? 20000 : node['__origin_x__']);
+                x(node, !v ? 20000 : node['__origin_x__']);
                 const blockInputEvents = node.getComponent(BlockInputEvents);
                 if (blockInputEvents)
                     blockInputEvents.enabled = v;
@@ -5059,7 +5149,7 @@ export namespace no {
         }
 
         public onAddChild(child: Node) {
-            this.updateRect(no.size(child), no.position(child));
+            this.updateRect(size(child), position(child));
         }
 
         public getOriginRect(): Rect {
@@ -5072,7 +5162,7 @@ export namespace no {
          */
         public getRect(): Rect {
             let r = this._rect.clone(),
-                pos = no.position(this._targetNode);
+                pos = position(this._targetNode);
             r.x += pos.x;
             r.y += pos.y;
             return r;
@@ -5085,7 +5175,7 @@ export namespace no {
          */
         public getRectToWorld(): Rect {
             let r = this._rect.clone();
-            const pos = no.nodeWorldPosition(this._targetNode);
+            const pos = nodeWorldPosition(this._targetNode);
             r.x += pos.x;
             r.y += pos.y;
             return r;
@@ -5110,10 +5200,10 @@ export namespace no {
         public static getRect(targetNode: Node): Rect {
             const children = targetNode.children;
             let rect = targetNode.getComponent(UITransform).getBoundingBox(),
-                targetNodePos = no.position(targetNode);
+                targetNodePos = position(targetNode);
             rect.center = v2();
             children.forEach(child => {
-                const size = no.size(child), pos = no.position(child);
+                const size = no.size(child), pos = position(child);
                 const xMin = pos.x - size.width / 2,
                     xMax = xMin + size.width,
                     yMin = pos.y - size.height / 2,
@@ -5135,8 +5225,7 @@ export namespace no {
          */
         public static getRectToWorld(targetNode: Node): Rect {
             let rect = this.getRect(targetNode),
-                pos = v3(rect.center.x, rect.center.y);
-            targetNode.parent.getComponent(UITransform).convertToWorldSpaceAR(pos, pos);
+                pos = targetNode.worldPosition;
             rect.center.x = pos.x;
             rect.center.y = pos.y;
             return rect;
@@ -5450,6 +5539,7 @@ export namespace no {
         }
 
         export async function loadAssetInfosOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
+            if (ccType.indexOf('cc.') == -1) ccType = 'cc.' + ccType;
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
                 let a: _AssetInfo[] = [];
                 infos.forEach(info => {
@@ -5466,6 +5556,7 @@ export namespace no {
          * @returns 
          */
         export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
+            if (ccType.indexOf('cc.') == -1) ccType = 'cc.' + ccType;
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
                 let aa = [];
                 infos.forEach(a => {
@@ -5665,6 +5756,44 @@ export namespace no {
                 return a;
             }
         }
+    }
+
+    /**
+     * 设置节点layer
+     * @param node 节点
+     * @param affectChildren 是否影响子节点，默认为true
+     */
+    export function setLayer(node: Node, layer: number, affectChildren = true) {
+        if (affectChildren) {
+            node.children.forEach((c) => {
+                setLayer(c, layer, affectChildren);
+            });
+        }
+        node.layer = layer;
+    }
+
+    /**
+     * 获取指定layer的相机
+     * @param layer 对应node.layer
+     */
+    export function getCamera(layer: number): rendererCamera {
+        const cameras = director.getScene().scene.renderScene.cameras;
+        for (let i = 0; i < cameras.length; i++) {
+            const camera = cameras[i];
+            if (camera.visibility & layer) {
+                return camera;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 是否是3D节点
+     * @param node 
+     * @returns 
+     */
+    export function is3DNode(node: Node) {
+        return node.getComponent(UITransform) == null;
     }
 }
 no.addToWindowForDebug('no', no);

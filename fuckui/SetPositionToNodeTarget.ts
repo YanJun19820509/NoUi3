@@ -1,8 +1,8 @@
 
-import { ccclass, property, Component, Node, UITransform, math, Vec2 } from '../yj';
+import { ccclass, property, Component, Node, UITransform, math, Vec2, Camera } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
-import { SetPosition } from './SetPosition';
+import { FuckUi } from './FuckUi';
 
 /**
  * Predefined variables
@@ -17,9 +17,16 @@ import { SetPosition } from './SetPosition';
  */
 
 @ccclass('SetPositionToNodeTarget')
-export class SetPositionToNodeTarget extends SetPosition {
+export class SetPositionToNodeTarget extends FuckUi {
     @property
     offset: Vec2 = math.v2();
+
+    private _is3d = false;
+
+    onLoad() {
+        super.onLoad();
+        this._is3d = no.is3DNode(this.node);
+    }
 
     protected onDataChange(data: any) {
         this.setPosition(data);
@@ -33,10 +40,17 @@ export class SetPositionToNodeTarget extends SetPosition {
             });
             return;
         }
-
-        let pos = target.nodeWorldPosition;
-        this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
-        super.onDataChange([pos.x + this.offset.x, pos.y + this.offset.y]);
+        const isTarget3d = no.is3DNode(target.node);
+        if (isTarget3d == this._is3d) {
+            no.worldPosition(this.node, target.nodeWorldPosition);
+        } else {
+            //target是2d
+            if (!isTarget3d) {
+                no.worldPosition(this.node, no.convert2DPositionTo3D(target.node, this.node));
+            } else {
+                no.position(this.node, no.convert3DPositionTo2D(target.node, this.node.parent));
+            }
+        }
     }
 
 }

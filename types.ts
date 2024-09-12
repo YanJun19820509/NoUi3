@@ -1,7 +1,7 @@
 
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-import { Asset, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
+import { Asset, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, Vec3, ccclass, property, v3 } from './yj';
 
 /**
  * Predefined variables
@@ -434,5 +434,44 @@ export class PrefabInfo extends LoadAssetsInfo {
     public addPrefab(url: string) {
         this.path = url;
         this.setUuid();
+    }
+}
+
+export class RayHitInfo {
+    private _startHitPoint: Vec3 = v3();
+    private _hitPoint: Vec3 = v3();
+
+    /**
+     * 起始点到当前点的偏移量
+     */
+    public deltaPoint: Vec3 = v3();
+
+    /**
+     * 上一个事件点到当前事件点的偏移量
+     */
+    public subPoint: Vec3 = v3();
+
+    /**
+     * 起始点
+     */
+    public get startHitPoint(): Vec3 {
+        return this._startHitPoint;
+    }
+
+    public set startHitPoint(p: Vec3) {
+        this._startHitPoint = p.clone();
+    }
+
+    /**
+     * 当前点
+     */
+    public get hitPoint(): Vec3 {
+        return this._hitPoint;
+    }
+
+    public set hitPoint(p: Vec3) {
+        this.subPoint = p.clone().subtract(this._hitPoint);
+        this._hitPoint = p.clone();
+        this.deltaPoint = p.clone().subtract(this._startHitPoint);
     }
 }

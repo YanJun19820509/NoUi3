@@ -89,9 +89,7 @@ export class YJNodeTarget extends Component {
      * 目标节点的世界坐标
      */
     public get nodeWorldPosition(): Vec3 {
-        let p = v3();
-        this.node.parent?.getComponent(UITransform).convertToWorldSpaceAR(this.node.position, p);
-        return p;
+        return no.nodeWorldPosition(this.node);
     }
 
     public boundingBox(inOtherNode?: Node): Rect {

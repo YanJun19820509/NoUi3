@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, Component, Node, Prefab } from '../../yj';
+import { EDITOR, ccclass, property, menu, Component, Node, Prefab, instantiate } from '../../yj';
 import { no } from '../../no';
 
 @ccclass
@@ -35,6 +35,10 @@ export default class YJLoadPrefab extends Component {
     }
 
     public async loadPrefab(): Promise<Node> {
+        if (EDITOR) {
+            const p = await no.EditorMode.loadAnyFile<Prefab>(this.prefabUrl);
+            return instantiate(p);
+        }
         const node = this.instantiateNode();
         if (node) return node;
         else if (no.assetBundleManager.isAssetLoading(this.prefabUrl)) {

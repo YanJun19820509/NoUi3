@@ -1,5 +1,5 @@
 
-import { ccclass, menu } from '../yj';
+import { ccclass, menu, v3 } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -20,11 +20,19 @@ import { FuckUi } from './FuckUi';
 export class SetPosition extends FuckUi {
 
     protected onDataChange(data: any) {
+        const oldPos = no.position(this.node),
+            posKeys = ['x', 'y', 'z'];
         let a = [];
-        for (const key in data) {
-            a[a.length] = data[key];
+        if (data instanceof Array) {
+            for (let i = 0; i < 3; i++) {
+                a[i] = data[i] != null ? data[i] : oldPos[posKeys[i]];
+            }
+        } else {
+            for (let i = 0; i < 3; i++) {
+                const k = posKeys[i];
+                a[i] = data[k] != null ? data[k] : oldPos[k];
+            }
         }
-        no.x(this.node, a[0]);
-        no.y(this.node, a[1]);
+        no.position(this.node, v3(...a));
     }
 }

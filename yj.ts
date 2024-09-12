@@ -1,6 +1,6 @@
 import * as _cc from 'cc';
 import * as env from 'cc/env';
-import { AssetInfo } from '../../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
+import { AssetInfo } from '../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
 
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
 export let { WECHAT, EDITOR, JSB } = env;
@@ -233,3 +233,11 @@ export const input = _cc.input;
 export const PhysicsSystem = _cc.PhysicsSystem;
 export const primitives = _cc.primitives;
 export const UIVertexFormat = _cc.UIVertexFormat;
+export const rendererCamera = _cc.renderer.scene.Camera;
+export type rendererCamera = _cc.renderer.scene.Camera;
+export const Collider = _cc.Collider;
+export type Collider = _cc.Collider;
+export const BoxCollider = _cc.BoxCollider;
+export type BoxCollider = _cc.BoxCollider;
+export const MeshCollider = _cc.MeshCollider;
+export type MeshCollider = _cc.MeshCollider;

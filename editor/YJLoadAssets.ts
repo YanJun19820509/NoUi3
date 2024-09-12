@@ -27,8 +27,8 @@ import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from '../engine/YJS
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
 export class YJLoadAssets extends Component {
-    // @property({ displayName: '自动加载资源', tooltip: '如果预制体没有YJPanel组件则需要自动加载' })
-    // autoLoad: boolean = false;
+    @property({ displayName: '自动加载资源', tooltip: '如果预制体没有YJPanel组件则需要自动加载' })
+    autoLoad: boolean = false;
     // @property({ displayName: '加载语言包', tooltip: '语言包需要以YJi18n中的语言标志命名' })
     // loadLanguageBundle: boolean = true;
     // @property({ type: no.EventHandlerInfo, visible() { return this.autoLoad; } })
@@ -138,10 +138,7 @@ export class YJLoadAssets extends Component {
 
     onLoad() {
         this.setPanelNameToSubNode();
-        // this.autoLoad &&
-        //     this.load().then(() => {
-        //         no.EventHandlerInfo.execute(this.onLoaded);
-        //     });
+        this.autoLoad && this.load();
     }
 
     onDestroy() {

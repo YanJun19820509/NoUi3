@@ -21,7 +21,7 @@ export class SetComponentPropertyValue extends FuckUi {
     private _component: number;
 
     protected onDataChange(data: any) {
-        this.setPropertyValue(data);
+        this.setComponentProperty(data);
     }
 
     update() {
@@ -83,12 +83,13 @@ export class SetComponentPropertyValue extends FuckUi {
         this.setEnum(a, 'property');
     }
 
-
-    public setPropertyValue(data: any) {
-        let name = this.componentNames[this.component];
-        if (!name) return;
-        if (this.getComponent(name))
-            this.getComponent(name).enabled = Boolean(data);
+    protected setComponentProperty(data: any) {
+        const name = this.componentNames[this.component],
+            property = this.propertyNames[this.property];
+        if (!name || !property) return;
+        const c = this.getComponent(name);
+        if (c)
+            c[property] = data;
     }
 }
 
