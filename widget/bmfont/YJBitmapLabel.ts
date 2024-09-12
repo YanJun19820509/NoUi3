@@ -1,5 +1,4 @@
 import { YJRenderBase } from '../../base/render/YJRenderBase';
-import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { EDITOR, ccclass, isValid, math, property, size, JsonAsset, Attribute, UIVertexFormat, color } from '../../yj';
 

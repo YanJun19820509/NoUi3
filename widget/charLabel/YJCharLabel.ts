@@ -5,6 +5,7 @@ import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
 import { TextureInfoInGPU } from '../../engine/TextureInfoInGPU';
 import { DynamicAtlasTexture } from '../../engine/atlas';
+import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
 
 /**
  * Predefined variables
@@ -374,12 +375,8 @@ export class YJCharLabel extends Sprite {
     public set packToAtlas(v: boolean) {
         if (v == this._packToAtlas) return;
         this._packToAtlas = v;
-        if (v && !this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        else if (!v) this.dynamicAtlas = null;
     }
 
-    @property({ type: YJDynamicAtlas, readonly: true, visible() { return this._packToAtlas; } })
-    dynamicAtlas: YJDynamicAtlas = null;
     @property({ displayName: '使用job管理' })
     useJob: boolean = true;
 
@@ -438,6 +435,11 @@ export class YJCharLabel extends Sprite {
 
     @property({ serializable: true })
     private _needSetLabel: boolean = false;
+    @property({ visible() { return false; } })
+    panelName: string;
+    @property({ visible() { return false; } })
+    materialInfoUuid: string;
+
     //高清模式系数
     private _hdpScale = 2;
     //已测量文字最大最小宽
@@ -448,16 +450,15 @@ export class YJCharLabel extends Sprite {
     private static fontMap: { [uuid: string]: TTFFont } = {};
     private static fontLoading: { [uuid: string]: boolean } = {};
     private _uid: string = '';
+    private dynamicAtlas: YJDynamicAtlas = null;
 
-    public panelName: string;
 
     onLoad() {
         super.onLoad();
         if (EDITOR) return;
-        if (this.dynamicAtlas) {
-            if (this.packToAtlas || !this.customMaterial) {
-                this.customMaterial = this.dynamicAtlas.customMaterial;
-            }
+        if (this.packToAtlas || !this.customMaterial) {
+            this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).dynamicAtlas;
+            this.customMaterial = this.dynamicAtlas.customMaterial;
         }
         if (this._needSet)
             this.setLabel();

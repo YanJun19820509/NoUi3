@@ -5,7 +5,6 @@ import {
     Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents
 } from '../yj';
 // import { YJDynamicTexture } from '../engine/YJDynamicTexture';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
 import { YJButton } from '../fix/YJButton';
@@ -18,10 +17,8 @@ import { SetSliderProgress } from '../fuckui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
 import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
 import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
-import { YJCollectSpriteFrameDataInAtlas } from '../engine/YJCollectSpriteFrameDataInAtlas';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
-// import { YJSetSample2DMaterial } from '../effect/YJSetSample2DMaterial';
 
 /**
  * Predefined variables
@@ -95,7 +92,7 @@ export class AutoCreateNode extends Component {
     }
 
     private addComponents() {
-        const comps: typeof Component[] = [YJLoadAssets, YJDynamicAtlas, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
+        const comps: typeof Component[] = [YJLoadAssets, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
         comps.forEach(comp => {
             if (!this.getComponent(comp)) this.addComponent(comp);
         })
@@ -351,7 +348,6 @@ export class AutoCreateNode extends Component {
         n.children[0].active = false;
         if (!n.getComponent(YJCharLabel)) {
             let cl = n.addComponent(YJCharLabel);
-            cl.dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
             cl.string = c.text;
             n.addComponent(SetText);
         }
@@ -388,7 +384,6 @@ export class AutoCreateNode extends Component {
             let sv = n.getComponent(ScrollView);
             let sl = sv.content.addComponent(SetList);
             sl.scrollView = sv;
-            sl.dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         }
         return n;
     }

@@ -2,7 +2,6 @@
 import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, Prefab, UITransform, math } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -35,10 +34,6 @@ export class SetCreateNodeByUrl extends FuckUi {
     resize: boolean = false;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     private url: string;
     private needDestroyChildrenUuid: string[] = [];
@@ -84,10 +79,6 @@ export class SetCreateNodeByUrl extends FuckUi {
         if (l < n) {
             for (let i = l; i < n; i++) {
                 let item = instantiate(this.prefab);
-                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                }
                 if (item.getComponent(YJLoadAssets)) {
                     await item.getComponent(YJLoadAssets).load();
                     if (!this?.node?.isValid) return;
@@ -154,7 +145,5 @@ export class SetCreateNodeByUrl extends FuckUi {
             return;
         }
         if (!this.container) this.container = this.node;
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }

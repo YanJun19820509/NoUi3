@@ -4,7 +4,6 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJCacheObject } from '../base/YJCacheObject';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -31,10 +30,6 @@ export class SetCreateCacheNode extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     private recycleType: string;
 
@@ -73,10 +68,6 @@ export class SetCreateCacheNode extends FuckUi {
             item.active = true;
             needWait = true;
         }
-        if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-            YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-            YJLoadAssets.setLoadAsset(item, this.loadAsset);
-        }
         item.parent = this.container;
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
@@ -98,7 +89,5 @@ export class SetCreateCacheNode extends FuckUi {
         }
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }

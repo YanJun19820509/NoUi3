@@ -27,7 +27,12 @@ import { no } from '../no';
  */
 @ccclass('YJDynamicAtlas')
 @disallowMultiple()
-export class YJDynamicAtlas extends Component {
+export class YJDynamicAtlas {
+
+    constructor(atlas: Atlas, material: Material) {
+        this.atlas = atlas;
+        this._customMaterial = material;
+    }
     // @property({ type: Material })
     public get customMaterial(): Material {
         return this._customMaterial;
@@ -95,14 +100,19 @@ export class YJDynamicAtlas extends Component {
 
     private thisNodeName: string;
 
-    onLoad() {
-        this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
-    }
+    // onLoad() {
+    //     this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
+    // }
 
     onDestroy() {
         for (const key in this.spriteFrameMap) {
             (this.spriteFrameMap[key] as SpriteFrame).destroy();
         }
+
+        this._customMaterial?.destroy();
+        this._customMaterial = null;
+        this.atlas?.destroy();
+        this.atlas = null;
         // YJShowDynamicAtlasDebug.ins.remove(this.thisNodeName);
         // this.atlas?.destroy();
         // this.atlas = null;
@@ -333,7 +343,7 @@ export class YJDynamicAtlas extends Component {
     public get isWork(): boolean {
         //ios微信不支持合图
         if (no.notUseDynamicAtlas) return false;
-        let a = !dynamicAtlasManager.enabled && this.enabled && !EDITOR;
+        let a = !dynamicAtlasManager.enabled && !EDITOR;
         return a;
     }
 

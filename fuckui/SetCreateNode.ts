@@ -4,7 +4,6 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
@@ -54,10 +53,6 @@ export class SetCreateNode extends FuckUi {
     clearOnDisable: boolean = false;
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
     recreateOnEnable: boolean = false;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     protected needSetDynamicAtlas: boolean = true;
     // private isFirst: boolean = true;
@@ -139,10 +134,6 @@ export class SetCreateNode extends FuckUi {
             await YJJobManager.ins.execute((max: number) => {
                 if (!this?.node?.isValid) false;
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                }
                 this.container.addChild(this.initItem(item));
                 if (this.container.children.length >= max) return false;
             }, this, !this.onlyAdd ? n : n + l);
@@ -257,7 +248,5 @@ export class SetCreateNode extends FuckUi {
         }
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }

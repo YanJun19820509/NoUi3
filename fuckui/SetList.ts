@@ -3,8 +3,6 @@ import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, 
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
-import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
@@ -52,10 +50,6 @@ export class SetList extends FuckUi {
     content: Node = null;
     @property({ displayName: 'content扩展' })
     offset: Size = size();
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     @property({ displayName: '数据更新时自动回滚到第1个' })
     autoScrollBack: boolean = false;
@@ -102,8 +96,6 @@ export class SetList extends FuckUi {
         super.onLoad();
         if (EDITOR) {
             if (!this.itemPanel) this.itemPanel = this.getComponent(YJLoadPrefab);
-            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-            if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
             return;
         }
         if (!this.template) {
@@ -233,10 +225,6 @@ export class SetList extends FuckUi {
                 no.position(item, v3(0, 0));
                 // item.active = true;
                 // item.parent = this.content;
-                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                }
                 const box = no.newNode('box');
                 no.size(box, this.itemSize);
                 const a = no.anchor(item);

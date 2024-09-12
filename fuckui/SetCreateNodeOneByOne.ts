@@ -1,7 +1,6 @@
 
 import { ccclass, property, Component, Node, instantiate } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { SetCreateNode } from './SetCreateNode';
 import { SetCreateNodeOneByOneDelegate } from './SetCreateNodeOneByOneDelegate';
@@ -29,11 +28,6 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
             if (!this?.node?.isValid) return;
-        }
-        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
-            this.needSetDynamicAtlas = false;
-            if (!this.template.getComponent(YJDynamicAtlas))
-                YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
         }
         if (!this.container) this.container = this.node;
 

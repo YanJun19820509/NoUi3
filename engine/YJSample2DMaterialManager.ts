@@ -3,6 +3,7 @@ import { no } from "../no";
 import { singleObject, SpriteFrameDataType, TextureInfo } from "../types";
 import { Asset, ccclass, EffectAsset, ImageAsset, JsonAsset, Material, Texture2D } from "../yj";
 import { Atlas } from "./atlas";
+import { YJDynamicAtlas } from "./YJDynamicAtlas";
 import { YJShowDynamicAtlasDebug } from "./YJShowDynamicAtlasDebug";
 /**
  * 
@@ -39,6 +40,8 @@ const createMaterial = function () {
 @singleObject()
 export class YJSample2DMaterialManager extends no.SingleObject {
     private materialInfos: YJSample2DMaterialInfo[] = [];
+    private noShareMaterialInfos: YJSample2DMaterialInfo[] = [];
+
 
     public static get ins(): YJSample2DMaterialManager {
         return super.instance();
@@ -49,17 +52,25 @@ export class YJSample2DMaterialManager extends no.SingleObject {
 
         if (reuse)
             this.materialInfos.push(materialInfo);
+        else
+            this.noShareMaterialInfos.push(materialInfo);
         return materialInfo;
     }
 
-    public newestMaterialInfo() {
-        return this.materialInfos[this.materialInfos.length - 1];
+    public getMaterialInfo(uuid: string): YJSample2DMaterialInfo {
+        let i = no.indexOfArray(this.materialInfos, uuid, 'uuid');
+        if (i > -1)
+            return this.materialInfos[i];
+        else {
+            i = no.indexOfArray(this.noShareMaterialInfos, uuid, 'uuid');
+            return this.noShareMaterialInfos[i];
+        }
     }
 
-    public async getMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<YJSample2DMaterialInfo> {
+    public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
         let uuids: string[] = [];
         textureInfos.forEach(a => {
-            uuids.push(a.assetUuid);
+            uuids.push(a.assetUuid.split('@')[0]);
         });
         let materialInfo = this.materialInfos[this.materialInfos.length - 1];
         let needLoadIdxes = materialInfo?.getNeedLoadIdxes(uuids);
@@ -72,13 +83,14 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                 await this.loadTextures(materialInfo, textureInfos, needLoadIdxes);
             }
         }
-        return materialInfo;
+        return materialInfo.uuid;
     }
 
     public deleteMaterial(materialInfo: YJSample2DMaterialInfo) {
         if (REUSE_MATERIAL) {
             no.removeFromArray(this.materialInfos, materialInfo, 'uuid');
         }
+        no.removeFromArray(this.noShareMaterialInfos, materialInfo, 'uuid');
     }
 
     private async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[], idxes?: number[]) {
@@ -160,8 +172,9 @@ export class YJSample2DMaterialManager extends no.SingleObject {
 
 @ccclass('YJSample2DMaterialInfo')
 export class YJSample2DMaterialInfo {
-    public material: Material;
-    public atlas: Atlas;
+    // public material: Material;
+    // public atlas: Atlas;
+    public dynamicAtlas: YJDynamicAtlas;
     public uuid: string;
     public refCount: number = 0;
     private textureUuids: string[] = [];
@@ -175,12 +188,11 @@ export class YJSample2DMaterialInfo {
         this.refCount++;
         this.name = name;
 
-        this.material = createMaterial();
+        const material = createMaterial();
         const size = reuse ? 2048 : 1024;
-        this.atlas = new Atlas(size, size, name);
-
-        YJShowDynamicAtlasDebug.ins.add(this.atlas, name);
-
+        const atlas = new Atlas(size, size, name);
+        this.dynamicAtlas = new YJDynamicAtlas(atlas, material);
+        YJShowDynamicAtlasDebug.ins.add(atlas, name);
     }
 
     public destroy() {
@@ -191,14 +203,11 @@ export class YJSample2DMaterialInfo {
         this.textures.forEach(a => {
             YJTextureManager.returnTexture(a.uuid);
         });
+        this.dynamicAtlas.onDestroy();
         this.textures.length = 0;
         this.atlasJsons.length = 0;
         this.textureUuids.length = 0;
         this.spriteFrameMap = {};
-        this.material?.destroy();
-        this.material = null;
-        this.atlas?.destroy();
-        this.atlas = null;
         YJSample2DMaterialManager.ins.deleteMaterial(this);
     }
 
@@ -214,13 +223,16 @@ export class YJSample2DMaterialInfo {
 
     //设置材质的贴图
     public setAtlases(textures: Texture2D[], jsons: any[]) {
+        const material = this.dynamicAtlas.customMaterial;
         for (let i = 0, n = textures.length; i < n; i++) {
+            const t = textures[i];
             const key = `atlas${this.textures.length}`;
-            this.textures.push(textures[i]);
-            if (no.materialHasProperty(this.material, 0, 0, key)) {
-                this.material.setProperty(key, textures[i], 0);
+            this.textures.push(t);
+            this.textureUuids.push(t.uuid);
+            if (no.materialHasProperty(material, 0, 0, key)) {
+                material.setProperty(key, t, 0);
             } else {
-                no.err(`YJSetSample2DMaterial setAtlases key(${key}) 不存在！`)
+                no.err(`YJSample2DMaterialManager setAtlases key(${key}) 不存在！`)
             }
         }
         this.atlasJsons = this.atlasJsons.concat(jsons);
