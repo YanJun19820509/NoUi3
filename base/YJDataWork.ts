@@ -109,7 +109,7 @@ export class YJDataWork extends Component {
     }
 
     protected lateUpdate(dt: number): void {
-        if (EDITOR) return;
+        if (EDITOR || !this._loaded) return;
         if (this._dataChanged) {
             this.setChangedDataToUi();
             this._dataChanged = false;

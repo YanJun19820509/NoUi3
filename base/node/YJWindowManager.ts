@@ -1,6 +1,5 @@
 
 import { ccclass, property, menu, Component, Node, Prefab, js, Widget } from '../../yj';
-import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
@@ -155,10 +154,6 @@ export class YJWindowManager extends Component {
         let a = node.getComponent(comp);
         beforeInit?.(a as T);
         a.initPanel().then(() => {
-            let dynamicAtlas = content.getComponent(YJDynamicAtlas);
-            if (dynamicAtlas) {
-                YJDynamicAtlas.setDynamicAtlas(node, dynamicAtlas);
-            }
             content.addChild(node);
             YJSoundEffectManager.ins.playOpenSoundEffect();
             afterInit?.(a as T);

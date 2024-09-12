@@ -2,6 +2,7 @@
 import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode, v3, isValid } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
+import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
 
 /**
  * Predefined variables
@@ -84,12 +85,7 @@ export class YJBitmapFont extends Component {
     public set packToAtlas(v: boolean) {
         if (v == this._packToAtlas) return;
         this._packToAtlas = v;
-        if (v && !this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        else if (!v) this.dynamicAtlas = null;
     }
-
-    @property({ type: YJDynamicAtlas, readonly: true, visible() { return this._packToAtlas; } })
-    dynamicAtlas: YJDynamicAtlas = null;
 
     @property({ serializable: true })
     protected _packToAtlas: boolean = true;
@@ -97,8 +93,12 @@ export class YJBitmapFont extends Component {
     protected _spacingX: number = 0;
     @property({ serializable: true })
     protected _size: number = 0;
+    @property({ visible() { return false; } })
+    materialInfoUuid: string;
+
 
     private _font: BitmapFont = null;
+    private dynamicAtlas: YJDynamicAtlas = null;
 
     onLoad() {
         if (EDITOR) {
@@ -116,6 +116,8 @@ export class YJBitmapFont extends Component {
                 this.getComponent(Label).spacingX = this._spacingX;
             if (this.fontUuid)
                 this.setBitmapFont(this.fontUuid, this.fontUrl);
+            if (this.packToAtlas)
+                this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).dynamicAtlas;
         }
     }
 

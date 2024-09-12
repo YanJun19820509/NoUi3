@@ -2,8 +2,6 @@
 import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -78,10 +76,6 @@ export class SetCreateNodeInCircle extends FuckUi {
             item.active = true;
         }
     }
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     ///////////////////////////EDITOR///////////////
     onLoad() {
@@ -91,8 +85,6 @@ export class SetCreateNodeInCircle extends FuckUi {
         }
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 
     onDestroy() {
@@ -114,10 +106,6 @@ export class SetCreateNodeInCircle extends FuckUi {
                 let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
                 item.active = true;
                 no.visible(item, false);
-                if (this.dynamicAtlas && !item.getComponent(YJDynamicAtlas)) {
-                    YJDynamicAtlas.setDynamicAtlas(item, this.dynamicAtlas);
-                    YJLoadAssets.setLoadAsset(item, this.loadAsset);
-                }
                 this.setPos(item, i);
                 item.parent = this.container;
             }

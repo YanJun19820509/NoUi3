@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, disallowMultiple, executeInEditMode, Label, 
 import { no } from '../no';
 import { YJDynamicAtlas } from './YJDynamicAtlas';
 import { YJJobManager } from '../base/YJJobManager';
+import { YJSample2DMaterialManager } from './YJSample2DMaterialManager';
 
 /**
  * Predefined variables
@@ -27,25 +28,26 @@ import { YJJobManager } from '../base/YJJobManager';
 @disallowMultiple()
 @executeInEditMode()
 export class YJDynamicTexture extends Component {
-    @property({ type: YJDynamicAtlas })
-    dynamicAtlas: YJDynamicAtlas = null;
     @property
     needClear: boolean = false;
     @property
     canRotate: boolean = true;
+    @property({ visible() { return false; } })
+    materialInfoUuid: string;
 
-    // private _needInit: boolean = true;
+
+    private dynamicAtlas: YJDynamicAtlas;
 
     onLoad() {
         if (!this.enabled) return;
         if (EDITOR) {
-            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
 
             let label = this.getComponent(Label) || this.getComponent(RichText);
             if (label && label.cacheMode != CacheMode.BITMAP) {
                 label.cacheMode = CacheMode.BITMAP;
             }
-            this.setCommonMaterial();
+        } else {
+            this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).dynamicAtlas;
         }
     }
 
@@ -133,12 +135,5 @@ export class YJDynamicTexture extends Component {
         }
         a += '_' + label.node.getComponent(UITransform).width + '_' + (label.isBold ? '1' : '0') + '_' + (label.isItalic ? '1' : '0');
         return a;
-    }
-
-    public setCommonMaterial(): void {
-        let renderComp = this.getComponent(UIRenderer);
-        if (!renderComp) return;
-        if (this.dynamicAtlas?.customMaterial && this.dynamicAtlas?.customMaterial != renderComp.customMaterial)
-            renderComp.customMaterial = this.dynamicAtlas?.customMaterial;
     }
 }

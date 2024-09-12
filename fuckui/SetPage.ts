@@ -2,8 +2,6 @@
 import { EDITOR, ccclass, property, executeInEditMode, instantiate, PageView } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
-import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
 
@@ -28,8 +26,6 @@ export class SetPage extends FuckUi {
 
     @property(PageView)
     view: PageView = null;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
 
     protected onDataChange(data: any) {
         data = [].concat(data);
@@ -48,9 +44,6 @@ export class SetPage extends FuckUi {
             if (!this?.node?.isValid) return;
         }
         let node = this.page.instantiateNode();
-        if (this.dynamicAtlas && !node.getComponent(YJDynamicAtlas)) {
-            YJDynamicAtlas.setDynamicAtlas(node, this.dynamicAtlas);
-        }
         await node.getComponent(YJLoadAssets)?.load();
         if (!this?.node?.isValid) return;
         this.view.addPage(node);
@@ -73,6 +66,5 @@ export class SetPage extends FuckUi {
         }
         if (!this.page) this.page = this.getComponent(YJLoadPrefab);
         if (!this.view) this.view = this.getComponent(PageView);
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
     }
 }

@@ -2,7 +2,6 @@
 import { ccclass, property, executeInEditMode, EDITOR, Node, isValid } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 
@@ -26,15 +25,11 @@ class ContentInfo {
 
     private loadedNode: Node;
 
-    public async loadTo(parent: Node, dynamicAtlas: YJDynamicAtlas, loadAsset: YJLoadAssets) {
+    public async loadTo(parent: Node) {
         this.loadedNode = await this.prefab.loadPrefab();
         if (!no.checkValid(parent)) return;
-        if (!this.loadedNode.getComponent(YJDynamicAtlas) && dynamicAtlas)
-            YJDynamicAtlas.setDynamicAtlas(this.loadedNode, dynamicAtlas);
         if (this.loadedNode.getComponent(YJLoadAssets))
             await this.loadedNode.getComponent(YJLoadAssets).load();
-        else
-            YJLoadAssets.setLoadAsset(this.loadedNode, loadAsset);
         this.loadedNode.parent = parent;
     }
 
@@ -72,10 +67,6 @@ export class SetCreateSwitchContent extends FuckUi {
     container: Node = null;
     @property
     noCache: boolean = false;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
@@ -109,7 +100,7 @@ export class SetCreateSwitchContent extends FuckUi {
     private async showContent(info: ContentInfo) {
         if (!info) return;
         if (!info.isLoaded) {
-            await info.loadTo(this.container, this.dynamicAtlas, this.loadAsset);
+            await info.loadTo(this.container);
             if (!this?.node?.isValid) return;
         }
         this.scheduleOnce(() => {

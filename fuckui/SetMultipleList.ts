@@ -1,7 +1,5 @@
 import { EDITOR, Node, ScrollView, Size, Vec2, ccclass, instantiate, isValid, property, size } from '../../NoUi3/yj';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJLoadAssets } from '../editor/YJLoadAssets';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
@@ -54,10 +52,6 @@ export class SetMultipleList extends FuckUi {
     content: Node = null;
     @property({ displayName: 'content扩展' })
     offset: Size = size();
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     @property({ displayName: '数据更新时自动回滚到第1个' })
     autoScrollBack: boolean = false;
@@ -118,15 +112,6 @@ export class SetMultipleList extends FuckUi {
     private positionMap: number[] = [];
     //记录对应类型节点初始化时已使用的下标
     private typeDataIndexMap: { [type: string]: number[] } = {};
-
-    async onLoad() {
-        super.onLoad();
-        if (EDITOR) {
-            if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-            if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
-            return;
-        }
-    }
 
     onEnable() {
         if (EDITOR) return;

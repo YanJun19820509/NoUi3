@@ -3,10 +3,8 @@ import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, 
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
-import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
-import { YJLoadAssets } from '../editor/YJLoadAssets';
 
 /**
  * Predefined variables
@@ -37,10 +35,6 @@ export class SetCreateNodeWithPosition extends FuckUi {
     clearOnDisable: boolean = false;
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
     recreateOnEnable: boolean = false;
-    @property(YJDynamicAtlas)
-    dynamicAtlas: YJDynamicAtlas = null;
-    @property(YJLoadAssets)
-    loadAsset: YJLoadAssets = null;
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
@@ -55,8 +49,6 @@ export class SetCreateNodeWithPosition extends FuckUi {
     @property({ type: no.EventHandlerInfo })
     afterCreated: no.EventHandlerInfo[] = [];
 
-
-    protected needSetDynamicAtlas: boolean = true;
     private _isSettingData: boolean = false;
 
     update() {
@@ -105,7 +97,6 @@ export class SetCreateNodeWithPosition extends FuckUi {
     onEnable() {
         if (this._isSettingData) return;
         if (this.clearOnDisable && this.recreateOnEnable) {
-            this.needSetDynamicAtlas = true;
             this.resetData();
         }
     }
@@ -130,14 +121,6 @@ export class SetCreateNodeWithPosition extends FuckUi {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
             if (!this?.node?.isValid) return;
-        }
-
-        if (this.dynamicAtlas && this.needSetDynamicAtlas) {
-            this.needSetDynamicAtlas = false;
-            if (!this.template.getComponent(YJDynamicAtlas)) {
-                YJDynamicAtlas.setDynamicAtlas(this.template, this.dynamicAtlas);
-                YJLoadAssets.setLoadAsset(this.template, this.loadAsset);
-            }
         }
         if (!this.container) this.container = this.node;
 
@@ -202,7 +185,5 @@ export class SetCreateNodeWithPosition extends FuckUi {
         }
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node;
-        if (!this.dynamicAtlas) this.dynamicAtlas = no.getComponentInParents(this.node, YJDynamicAtlas);
-        if (!this.loadAsset) this.loadAsset = no.getComponentInParents(this.node, YJLoadAssets);
     }
 }
