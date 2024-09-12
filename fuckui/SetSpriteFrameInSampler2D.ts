@@ -106,6 +106,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setDynamicAtlas() {
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
+        this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -128,6 +129,19 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 no.EditorMode.getBundleName(info.url).then(bundleName => {
                     this.bundleName = bundleName;
                 });
+                if (!this.loadFromAtlas) {
+                    const metaUrl = info.url.replace('/spriteFrame', '');
+                    no.EditorMode.getAssetMeta(metaUrl).then(info => {
+                        //如果散图有压缩设置，则不能打包
+                        if (info.userData.compressSettings?.useCompressTexture) {
+                            this.canPack = false;
+                            this.dynamicAtlas = null;
+                            this.getComponent(YJVertexColorTransition).enabled = false;
+                        }
+                    });
+                } else {
+                    this.setDynamicAtlas();
+                }
             });
         }
     }

@@ -5360,11 +5360,11 @@ export namespace no {
 
         /**
          * 获取资源元数据
-         * @param param 可以是uuid/url/path
+         * @param url 资源url
          * @returns IAssetMeta
          */
-        export async function getAssetMeta(param: string) {
-            return Editor.Message.request('asset-db', 'query-asset-meta', param);
+        export async function getAssetMeta(url: string) {
+            return Editor.Message.request('asset-db', 'query-asset-meta', url);
         }
 
         /**
@@ -5551,7 +5551,8 @@ export namespace no {
     }
 
     /**
-     * 公式计算
+     * 公式计算，如：evalFormula('sin(1.57) + 1'), evalFormula('1 + 2 * 3'), evalFormula('180/PI')
+     * 其中数学函数或常量不需要加Math前缀，如：PI, sin, cos, tan, sqrt, log, abs, ceil, floor, round, max, min, random, pow
      */
     export function evalFormula(formula: string) {
         //去掉formula内所有空格
@@ -5585,7 +5586,7 @@ export namespace no {
     function splitFormula(formula: string) {
         const r = Number(formula);
         if (!isNaN(r)) return r;
-        //检测有没有math函数，函数名被<>包围
+        //检测有没有math函数，需要支持什么函数可在mathFuncs中添加
         const mathFuncs = ['sin', 'cos', 'tan', 'sqrt', 'log', 'abs', 'ceil', 'floor', 'round', 'max', 'min', 'random', 'pow'];
         for (let i = 0, n = mathFuncs.length; i < n; i++) {
             const func = mathFuncs[i];
@@ -5602,6 +5603,17 @@ export namespace no {
                 });
                 const a = Math[func](...args);
                 return splitFormula(formula.replace(`${func}(${sss})`, `${a}`));
+            }
+        }
+
+        //检测有没有数学常量，需要支持什么常量可在mathConsts中添加
+        const mathConsts = ['PI', 'E'];
+        for (let i = 0, n = mathConsts.length; i < n; i++) {
+            const c = mathConsts[i];
+            const idx = formula.indexOf(c);
+            if (idx > -1) {
+                const a = Math[c];
+                return splitFormula(formula.replace(c, `${a}`));
             }
         }
 
