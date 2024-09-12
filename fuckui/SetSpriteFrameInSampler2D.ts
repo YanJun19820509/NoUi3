@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, UITransform, JSB, sys, size, rect, assetManager, v3, Vec3 } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, Vec3 } from '../yj';
 import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
