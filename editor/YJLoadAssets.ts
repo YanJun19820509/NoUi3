@@ -28,8 +28,7 @@ export class YJLoadAssets extends Component {
 
     public set getAllAssets(v: boolean) {
         const list: any = this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
-            textureUuid: string[] = [],
-            spriteFrameUuid: string[] = [];
+            textureUuid: string[] = [];
         list.forEach(a => {
             if (a.loadFromAtlas) {
                 const sf = a.getComponent(Sprite).spriteFrame;
@@ -39,8 +38,7 @@ export class YJLoadAssets extends Component {
                 } else {
                     no.warn(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
                 }
-            } else if (a.defaultSpriteFrameUuid)
-                no.addToArray(spriteFrameUuid, a.defaultSpriteFrameUuid);
+            }
         });
         this.textureInfos.length = 0;
         textureUuid.forEach(uuid => {
@@ -89,17 +87,6 @@ export class YJLoadAssets extends Component {
                 TextureInfoInGPU.showTextureWhenPanelDestroy(name);
             }, 500);
         }
-    }
-
-    public static setLoadAsset(node: Node, loadAsset: YJLoadAssets): void {
-        let bs: any[] = [].concat(node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
-            node.getComponentsInChildren('SetCreateNode'),
-            node.getComponentsInChildren('SetList'),
-            node.getComponentsInChildren('SetCreateNodeByUrl')
-        );
-        bs.forEach(b => {
-            b.loadAsset = loadAsset;
-        });
     }
 
     private setPanelNameToSubNode() {
