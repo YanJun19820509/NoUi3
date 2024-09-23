@@ -2,10 +2,7 @@ import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
-    Layers, CCObject,
-    rendererCamera,
-    Camera,
-    Mesh
+    Layers, CCObject, screen, rendererCamera, Camera, Mesh
 } from "./yj";
 
 
@@ -1949,6 +1946,9 @@ export namespace no {
                 }
 
                 this.setCallback(data.callback, np ? TweenSetType.Node : (tp ? TweenSetType.Transform : TweenSetType.Opacity));
+            } else {
+                if (data.callback)
+                    this.setCallback(data.callback, TweenSetType.Node);
             }
 
             this.setRepeat(data.repeat);
@@ -3188,6 +3188,9 @@ export namespace no {
                         break;
                     case 'atlas':
                         s = SpriteAtlas;
+                        break;
+                    case 'effect':
+                        s = EffectAsset;
                         break;
                 }
                 a.type = s;
@@ -5788,12 +5791,22 @@ export namespace no {
     }
 
     /**
-     * 是否是3D节点
+     * 是否是3D节点, layer不是UI_2D的为3D节点
      * @param node 
      * @returns 
      */
     export function is3DNode(node: Node) {
-        return node.getComponent(UITransform) == null;
+        return node.layer != Layers.Enum.UI_2D;
+    }
+
+    /**
+     * 获取设备方向，1为竖屏，0为横屏
+     * @returns 
+     */
+    export function deviceOrientaton() {
+        const size = screen.windowSize;
+        if (size.width > size.height) return 0;
+        else return 1;
     }
 }
 no.addToWindowForDebug('no', no);

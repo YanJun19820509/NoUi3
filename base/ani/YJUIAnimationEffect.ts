@@ -372,11 +372,8 @@ export class YJUIAnimationEffect extends Component {
 
     onLoad() {
         if (EDITOR && !this.target) {
-            const a = this.getComponent('SetList')
-                || this.getComponent('SetCreateNode')
-                || this.getComponent('SetNodesSwitch')
-                || this.getComponent('SetSpriteFrameInSampler2D');
-            if (a && !a['uiAnim']) a['uiAnim'] = this;
+            const a = this.getComponent('FuckUi');
+            if (a && a['uiAnim'] === null) a['uiAnim'] = this;
         }
     }
 

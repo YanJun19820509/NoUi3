@@ -210,11 +210,12 @@ export class SetCreateNode extends FuckUi {
                 if (!this?.node?.isValid) return;
             }
             item = instantiate(this.template);
-            item = this.initItem(item);
-
             await item.getComponent(YJLoadAssets)?.load();
+
             if (!this?.node?.isValid) return;
             no.visible(item, true);
+            item = this.initItem(item);
+            this.container.addChild(item);
             if (this.uiAnim?.enabled) {
                 this._aniEnd = false;
                 this.uiAnim.play(item);
@@ -231,7 +232,6 @@ export class SetCreateNode extends FuckUi {
         if (a) {
             a.data = data;
         }
-        if (!item.parent) item.parent = this.container;
         else a?.init();
     }
 

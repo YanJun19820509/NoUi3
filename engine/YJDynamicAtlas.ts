@@ -1,9 +1,7 @@
 
 import {
-    EDITOR, ccclass, property, disallowMultiple, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton,
-    Graphics,
-    Component
+    ccclass, SpriteFrame, Label, UIRenderer, Texture2D,
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -26,7 +24,6 @@ import { no } from '../no';
  * 【不能与原生动态合图同时使用】。
  */
 @ccclass('YJDynamicAtlas')
-@disallowMultiple()
 export class YJDynamicAtlas {
 
     constructor(atlas: Atlas, material: Material) {
@@ -40,55 +37,55 @@ export class YJDynamicAtlas {
 
     public set customMaterial(v: Material) {
         this._customMaterial = v;
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (comp instanceof Graphics) return;
-            if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
-                comp.customMaterial = v;
-        });
+        // let renderComps = this.getComponentsInChildren(UIRenderer);
+        // renderComps.forEach(comp => {
+        //     if (comp instanceof Skeleton) return;
+        //     if (comp instanceof Graphics) return;
+        //     if (!comp.customMaterial && comp.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas'])
+        //         comp.customMaterial = v;
+        // });
     }
     // @property({ serializable: true })
     _customMaterial: Material = null;
 
-    @property({ visible() { return false; } })
-    public get createMaterial(): boolean {
-        return false;
-    }
+    // @property({ visible() { return false; } })
+    // public get createMaterial(): boolean {
+    //     return false;
+    // }
 
-    public set createMaterial(v: boolean) {
-        const material = this.customMaterial;
-        if (!material) {
-            const prefab = this.node['_prefab'].asset;
-            no.EditorMode.getAssetUrlByUuid(prefab.uuid).then(url => {
-                const path = url.replace('.prefab', '.mtl');
-                Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
-                    no.EditorMode.loadAnyFile<Material>(path).then(m => {
-                        this.customMaterial = m;
-                    });
-                });
-            });
-        }
-    }
+    // public set createMaterial(v: boolean) {
+    //     const material = this.customMaterial;
+    //     if (!material) {
+    //         const prefab = this.node['_prefab'].asset;
+    //         no.EditorMode.getAssetUrlByUuid(prefab.uuid).then(url => {
+    //             const path = url.replace('.prefab', '.mtl');
+    //             Editor.Message.request('asset-db', 'copy-asset', 'db://assets/NoUi3/effect/_temp_material.mtl', path).then(info => {
+    //                 no.EditorMode.loadAnyFile<Material>(path).then(m => {
+    //                     this.customMaterial = m;
+    //                 });
+    //             });
+    //         });
+    //     }
+    // }
     // @property({ min: 1, max: 2048, step: 1 })
     // width: number = 512;
     // @property({ min: 1, max: 2048, step: 1 })
     // height: number = 512;
-    @property({ visible() { return false; } })
-    public get clearSubMaterial(): boolean {
-        return false;
-    }
+    // @property({ visible() { return false; } })
+    // public get clearSubMaterial(): boolean {
+    //     return false;
+    // }
 
-    public set clearSubMaterial(v: boolean) {
-        let renderComps = this.getComponentsInChildren(UIRenderer);
-        renderComps.forEach(comp => {
-            if (comp instanceof Skeleton) return;
-            if (comp instanceof Graphics) return;
-            if (this.customMaterial == comp.customMaterial)
-                comp.customMaterial = null;
-        });
-        this.customMaterial = null;
-    }
+    // public set clearSubMaterial(v: boolean) {
+    //     let renderComps = this.getComponentsInChildren(UIRenderer);
+    //     renderComps.forEach(comp => {
+    //         if (comp instanceof Skeleton) return;
+    //         if (comp instanceof Graphics) return;
+    //         if (this.customMaterial == comp.customMaterial)
+    //             comp.customMaterial = null;
+    //     });
+    //     this.customMaterial = null;
+    // }
 
 
     public atlas: Atlas;
@@ -343,7 +340,7 @@ export class YJDynamicAtlas {
     public get isWork(): boolean {
         //ios微信不支持合图
         if (no.notUseDynamicAtlas) return false;
-        let a = !dynamicAtlasManager.enabled && !EDITOR;
+        let a = !dynamicAtlasManager.enabled;
         return a;
     }
 
@@ -453,26 +450,25 @@ export class YJDynamicAtlas {
         // });
     }
 
-    public setMaterialTextures(textureUuids: string[]) {
-        if (!EDITOR) return;
-        const material = this.customMaterial;
-        if (material) {
-            let props: any = {};
-            textureUuids.forEach((uuid, i) => {
-                const key = `atlas${i}`;//空出atlas0，用于放多语言
-                props[key] = {
-                    "__uuid__": uuid,
-                    "__expectedType__": "cc.Texture2D"
-                };
-            });
+    // public setMaterialTextures(textureUuids: string[]) {
+    //     const material = this.customMaterial;
+    //     if (material) {
+    //         let props: any = {};
+    //         textureUuids.forEach((uuid, i) => {
+    //             const key = `atlas${i}`;//空出atlas0，用于放多语言
+    //             props[key] = {
+    //                 "__uuid__": uuid,
+    //                 "__expectedType__": "cc.Texture2D"
+    //             };
+    //         });
 
-            const fs = require('fs');
-            Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {
-                console.log(info);
-                let json = JSON.parse(fs.readFileSync(info.file));
-                json['_props'] = [props];
-                fs.writeFileSync(info.file, JSON.stringify(json, null, 2));
-            });
-        }
-    }
+    //         const fs = require('fs');
+    //         Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {
+    //             console.log(info);
+    //             let json = JSON.parse(fs.readFileSync(info.file));
+    //             json['_props'] = [props];
+    //             fs.writeFileSync(info.file, JSON.stringify(json, null, 2));
+    //         });
+    //     }
+    // }
 }
