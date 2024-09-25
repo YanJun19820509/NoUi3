@@ -1326,10 +1326,7 @@
       "b": 124,
       "a": 255
     },
-    "_normalSprite": {
-      "__uuid__": "544e49d6-3f05-4fa8-9a9e-091f98fc2ce8@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
+    "_normalSprite": null,
     "_hoverSprite": null,
     "_pressedSprite": null,
     "_disabledSprite": null,

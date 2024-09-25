@@ -178,7 +178,7 @@ export class SetList extends FuckUi {
         }
         if (listItems.length == 0) {
             this.allNum = a.length;
-            this.showNum = this.showMax;
+            this.showNum = this.showMax - 1;
             await this.initItems();
             if (!this?.node?.isValid) return;
         } else if (this.autoScrollBack || this.allNum != a.length) {

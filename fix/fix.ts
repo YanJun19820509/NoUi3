@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -90,6 +90,35 @@ js.mixin(SpriteFrame.prototype, {
     },
     get height() {
         return this._h || this._texture.height;
+    }
+});
+
+js.mixin(Skeleton.prototype, {
+    _render(batcher) {
+        let indicesCount = 0;
+        if (this.renderData && this._drawList) {
+            const rd = this.renderData;
+            const chunk = rd.chunk;
+            const accessor = chunk.vertexAccessor;
+            const meshBuffer = rd.getMeshBuffer()!;
+            const origin = meshBuffer.indexOffset;
+            // Fill index buffer
+            for (let i = 0; i < this._drawList.length; i++) {
+                this._drawIdx = i;
+                const dc = this._drawList.data[i];
+                if (dc.texture) {
+                    if (dc.texture.isValid) {
+                        batcher.commitMiddleware(this, meshBuffer, origin + dc.indexOffset,
+                            dc.indexCount, dc.texture, dc.material!, this._enableBatch);
+                    } else {
+                        console.error('Invalid texture in skeleton');
+                    }
+                }
+                indicesCount += dc.indexCount;
+            }
+            const subIndices = rd.indices!.subarray(0, indicesCount);
+            accessor.appendIndices(chunk.bufferId, subIndices);
+        }
     }
 });
 
