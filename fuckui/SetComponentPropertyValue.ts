@@ -29,6 +29,7 @@ export class SetComponentPropertyValue extends FuckUi {
         if (this.target != this._target) {
             this._target = this.target;
             this.setComonentEnum();
+            this.setPropertyEnum();
         }
         if (this.component != this._component) {
             this._component = this.component;
@@ -66,7 +67,7 @@ export class SetComponentPropertyValue extends FuckUi {
         }
         const clazz = js.getClassByName(this.componentNames[this.component]);
         const attrs = CCClass.Attr.getClassAttrs(clazz);
-        console.log(attrs);
+        console.log('setPropertyEnum', attrs);
         const aa = '$_$type';
         let a: any = {}, i = 0;
         for (const key in attrs) {

@@ -55,7 +55,7 @@ export class YJCreateNodeByOrientation extends Component {
         }
 
         if (a == null) {
-            if (no.deviceOrientaton() == 0) {
+            if (no.deviceOrientation() == 0) {
                 a = this.tempNode || await this.loadPrefab.loadPrefab();
             } else {
                 a = this.tempNode1 || await this.loadPrefab1.loadPrefab();

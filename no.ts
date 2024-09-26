@@ -5805,7 +5805,7 @@ export namespace no {
      * 获取设备方向，1为竖屏，0为横屏
      * @returns 
      */
-    export function deviceOrientaton() {
+    export function deviceOrientation() {
         const size = screen.windowSize;
         if (size.width > size.height) return 0;
         else return 1;
