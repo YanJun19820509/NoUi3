@@ -1528,10 +1528,10 @@ export namespace no {
      * @param node
      * @param otherNode
      */
-    export function nodePositionInOtherNode3D(node: Node, otherNode: Node, out?: Vec3): Vec3 {
+    export function nodePositionInOtherNode3D(node: Node | Vec3, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
         let worldToLocalMatrix = otherNode.getWorldMatrix().invert();
-        Vec3.transformMat4(out, node.worldPosition, worldToLocalMatrix);
+        Vec3.transformMat4(out, node['worldPosition'] || node, worldToLocalMatrix);
         return out;
     }
 
@@ -1900,7 +1900,9 @@ export namespace no {
                             break;
                         case 'rotation':
                             np = np || {};
-                            np['rotation'] = new Quat(v[0], v[1], v[2]);
+                            let quat: Quat = new Quat();
+                            Quat.fromEuler(quat, v[0], v[1], v[2]);
+                            np['rotation'] = quat;
                             break;
                         case 'scale':
                             np = np || {};
