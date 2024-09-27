@@ -31,7 +31,7 @@ export class YJFitScreen extends Component {
             no.log('window resize');
             this.adapt();
         }, this);
-        this.scheduleOnce(this.adapt, 1);
+        this.adapt();
     }
 
     private adapt() {
@@ -45,15 +45,15 @@ export class YJFitScreen extends Component {
         else policyType = ResolutionPolicy.FIXED_WIDTH;
         YJFitScreen.policy = policyType;
         view.setResolutionPolicy(policyType)
-        if (policyType == ResolutionPolicy.FIXED_HEIGHT) {
-            no.size(this.canvas.node, dsize);
-            no.size(this.node, dsize);
-            //canvas  锚点虽然是0.5,0.5  但实际是0,0   需要重新设置坐标定位
-            no.position(this.canvas.node, v3(dsize.width / 2, dsize.height / 2));
-        } else if (policyType == ResolutionPolicy.FIXED_WIDTH) {
-            no.size(this.node, no.size(this.canvas.node));
-            this.canvas.alignCanvasWithScreen = true;
-        }
+        // if (policyType == ResolutionPolicy.FIXED_HEIGHT) {
+        //     no.size(this.canvas.node, dsize);
+        //     // no.size(this.node, dsize);
+        //     //canvas  锚点虽然是0.5,0.5  但实际是0,0   需要重新设置坐标定位
+        //     no.position(this.canvas.node, v3(dsize.width / 2, dsize.height / 2));
+        // } else if (policyType == ResolutionPolicy.FIXED_WIDTH) {
+        //     no.size(this.node, no.size(this.canvas.node));
+        // }
+        this.canvas.alignCanvasWithScreen = true;
     }
 
     public static fitTouchPoint(touch: Touch): Vec2 {
