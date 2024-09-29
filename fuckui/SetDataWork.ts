@@ -23,6 +23,7 @@ export class SetDataWork extends FuckUi {
     dataWork: YJDataWork = null;
 
     onLoad() {
+        super.onLoad();
         if (EDITOR) {
             if (!this.dataWork) this.dataWork = this.getComponent(YJDataWork);
         }

@@ -108,6 +108,17 @@ export class YJDataWork extends Component {
         return this;//支持链式写法
     }
 
+    /**
+     * 通过ui设置/修改值，会调用onUIValueChange方法，需要重写
+     * @param key 
+     * @param value 
+     */
+    public changeValueByUi(key: string, value: any) {
+        this.setValue(key, value);
+        this['onUIValueChange']?.(key, value);
+        this.getComponent('YJUpdatePreDataWork')?.['updateData'](this.data);
+    }
+
     protected lateUpdate(dt: number): void {
         if (EDITOR || !this._loaded) return;
         if (this._dataChanged) {

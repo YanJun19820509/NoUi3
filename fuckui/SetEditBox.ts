@@ -22,6 +22,8 @@ import { FuckUi } from './FuckUi';
 export class SetEditBox extends FuckUi {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
+    @property({ displayName: '是否是数字' })
+    isNumber: boolean = false;
     @property({ serializable: true })
     _maxLen: number = 50;
     @property({ displayName: '字节最大长度', step: 1, min: 0 })
@@ -74,6 +76,6 @@ export class SetEditBox extends FuckUi {
                 });
             }
         }
-        this.dataWork?.setValue(this.bind_keys, v);
+        this.dataWork?.changeValueByUi(this.bind_keys, this.isNumber ? Number(v) : v);
     }
 }

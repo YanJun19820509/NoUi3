@@ -880,11 +880,19 @@ export namespace no {
      * @param arr
      * @param n
      * @param repeatable 随机的元素能否重复
+     * @param except 排除的元素
      */
-    export function arrayRandom(arr: any, n = 1, repeatable = false): any {
+    export function arrayRandom(arr: any[], n = 1, repeatable = false, except?: any[]): any {
         if (!arr || arr.length == 0) return null;
         if (arr.length == 1) return arr[0];
-        let a = [].concat(arr);
+        let a: any[] = [];
+        if (except) {
+            a = arr.filter((v, i) => {
+                return !except.includes(v);
+            });
+        } else {
+            a = arr.slice();
+        }
         let c = [];
         for (var i = 0; i < n; i++) {
             let al = a.length;
@@ -1223,13 +1231,21 @@ export namespace no {
 
     /**克隆 */
     export function clone(d: any): any {
-        if (d instanceof Array) {
-            let a: any[] = [];
-            d.forEach(b => {
-                a.push(clone(b));
-            });
-            return a;
-        } else if (d instanceof Object) return instantiate(d);
+        // if (Array.isArray(d)) {
+        //     let a: any[] = [];
+        //     d.forEach(b => {
+        //         a.push(clone(b));
+        //     });
+        //     return a;
+        // } else if (typeof d == 'object')
+        //     return instantiate(d);
+        if (typeof d == 'object') {
+            if (structuredClone) return structuredClone(d);
+            else {
+                let a = JSON.stringify(d);
+                return JSON.parse(a);
+            }
+        }
         return d;
     }
 
@@ -1264,11 +1280,17 @@ export namespace no {
      * @param max 
      * @param isInt 是否取整，默认true
      */
-    export function randomBetween(min: number, max: number, isInt = true): number {
+    export function randomBetween(min: number, max: number, except?: number[]): number;
+    export function randomBetween(min: number, max: number, isInt?: boolean): number;
+    export function randomBetween(min: number, max: number, except?: number[] | boolean): number {
         if (min == max) return min;
         if (min == null || max == null) return min || max;
+        let isInt = true;
+        if (except === false) isInt = false;
         const a = random() * (max - min + 1);
-        return (isInt ? floor(a) : a) + min;
+        const b = (isInt ? floor(a) : a) + min;
+        if (Array.isArray(except) && except.includes(b)) return randomBetween(min, max, except);
+        return b;
     }
 
     /**
@@ -1497,8 +1519,7 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = out || v3();
-        node.parent.getComponent(UITransform).convertToWorldSpaceAR(node.position, out);
+        out = node.worldPosition.clone();
         return out;
     }
 
@@ -1585,7 +1606,24 @@ export namespace no {
         let rect = new Rect();
         rect.height = size.height + subSize.height;
         rect.width = size.width + subSize.width;
-        rect.center = v2(origin.x + (0.5 - anchor.x) * size.width + offset.x, origin.y + (0.5 - anchor.y) * size.height + offset.y);
+        rect.x = origin.x - anchor.x * size.width;
+        rect.y = origin.y - anchor.y * size.height
+        return rect;
+    }
+
+    /**
+     * 节点在父节点中的rect
+     * @param node 
+     */
+    export function nodeRect(node: Node): Rect {
+        const pos = position(node),
+            contentSize = size(node);
+        let anchor = node.getComponent(UITransform).anchorPoint;
+        const rect = new Rect();
+        rect.x = pos.x - anchor.x * contentSize.width;
+        rect.y = pos.y - anchor.y * contentSize.height
+        rect.height = contentSize.height;
+        rect.width = contentSize.width;
         return rect;
     }
 
@@ -4489,6 +4527,9 @@ export namespace no {
         lineWidth?: number,//线条宽度
         fillColor?: string,//填充绘画的颜色#000000
         strokeColor?: string,//笔触的颜色
+        fill?: boolean,//是否填充
+        stroke?: boolean,//是否描边
+        close?: boolean,//是否闭合
     };
 
     /**
@@ -5665,6 +5706,15 @@ export namespace no {
                 return a;
             }
         }
+    }
+
+    /**
+     * 数组之和
+     * @param arr 
+     * @returns 
+     */
+    export function sumOfArray(arr: number[]) {
+        return arr.reduce((a, b) => a + b, 0);
     }
 }
 no.addToWindowForDebug('no', no);

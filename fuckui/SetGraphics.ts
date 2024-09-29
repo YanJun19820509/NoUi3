@@ -63,8 +63,11 @@ export class SetGraphics extends FuckUi {
         data.forEach(d => {
             this._moveLineTo(g, d.points);
             if (d.lineWidth) g.lineWidth = d.lineWidth;
-            if (d.fillColor) g.fillColor.fromHEX(d.fillColor) && g.fill();
-            if (d.strokeColor) g.strokeColor.fromHEX(d.strokeColor) && g.stroke();
+            if (d.fillColor) g.fillColor.fromHEX(d.fillColor);
+            if (d.strokeColor) g.strokeColor.fromHEX(d.strokeColor);
+            if (d.close) g.close();
+            if (d.strokeColor || d.stroke) g.stroke();
+            if (d.fillColor || d.fill) g.fill();
         });
     }
 
@@ -121,9 +124,12 @@ export class SetGraphics extends FuckUi {
         }
     }
 
-    private _fillWidthColor(g: Graphics, d: { lineWidth?: number, strokeColor?: string, fillColor?: string }) {
+    private _fillWidthColor(g: Graphics, d: { lineWidth?: number, strokeColor?: string, fillColor?: string, close?: boolean, stroke?: boolean, fill?: boolean }) {
         if (d.lineWidth) g.lineWidth = d.lineWidth;
-        if (d.strokeColor) g.strokeColor.fromHEX(d.strokeColor) && g.stroke();
-        if (d.fillColor) g.fillColor.fromHEX(d.fillColor) && g.fill();
+        if (d.strokeColor) g.strokeColor.fromHEX(d.strokeColor);
+        if (d.fillColor) g.fillColor.fromHEX(d.fillColor);
+        if (d.close) g.close();
+        if (d.strokeColor || d.stroke) g.stroke();
+        if (d.fillColor || d.fill) g.fill();
     }
 }
