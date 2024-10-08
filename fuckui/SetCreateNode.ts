@@ -211,7 +211,8 @@ export class SetCreateNode extends FuckUi {
             }
             item = instantiate(this.template);
             item = this.initItem(item);
-
+            item.parent = this.container;
+            if (this.uiAnim?.enabled) item = item.children[0];
             await item.getComponent(YJLoadAssets)?.load();
             if (!this?.node?.isValid) return;
             no.visible(item, true);
@@ -223,6 +224,7 @@ export class SetCreateNode extends FuckUi {
         } else {
             if (this.uiAnim?.enabled) {
                 this._aniEnd = false;
+                item = item.children[0];
                 this.uiAnim.play(item);
                 await no.waitFor(() => { return this._aniEnd; });
             }
@@ -231,7 +233,6 @@ export class SetCreateNode extends FuckUi {
         if (a) {
             a.data = data;
         }
-        if (!item.parent) item.parent = this.container;
         else a?.init();
     }
 

@@ -395,6 +395,14 @@ export class YJUIAnimationEffect extends Component {
         no.TweenSet.stop(this.node);
     }
 
+    public a_playOrStop(v: boolean) {
+        if (v) {
+            this.a_play();
+        } else {
+            this.a_stop();
+        }
+    }
+
     public a_play() {
         if (!this.enabled) return;
         const node = this.target || this.node;
