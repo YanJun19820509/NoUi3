@@ -29,7 +29,7 @@ export class YJTouchDispatcher extends Component {
     }
 
     onDestroy() {
-        if (this.addToManager) YJTouchManager.ins.unregister(this);
+        if (this.addToManager) YJTouchManager.ins?.unregister(this);
     }
 
     private listeners: YJTouchListener[] = [];

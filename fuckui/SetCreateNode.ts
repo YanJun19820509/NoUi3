@@ -49,6 +49,8 @@ export class SetCreateNode extends FuckUi {
 
     @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
     onlyOne: boolean = false;
+    @property({ displayName: '批量创建数量', min: 1, step: 1, tooltip: '当onlyOne为true而且需要播放动效时有效', visible() { return !this.onlyOne && this.uiAnim; } })
+    batchNum: number = 1;
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
@@ -141,8 +143,8 @@ export class SetCreateNode extends FuckUi {
         }
 
         let start = !this.onlyAdd ? 0 : l;
+        this._n = 0;
         this.setItem(data, start);
-        no.EventHandlerInfo.execute(this.onComplete);
         this._isSettingData = false;
     }
 
@@ -178,8 +180,12 @@ export class SetCreateNode extends FuckUi {
         return item;
     }
 
+    private _n: number = 0;
     private setItem(data: any[], start: number, i = 0) {
-        if (i >= data.length) return;
+        if (i >= data.length) {
+            no.EventHandlerInfo.execute(this.onComplete);
+            return;
+        }
         let item = this.container.children[start + i];
         if (this.uiAnim?.enabled) item = item.children[0];
         if (data[i] == null) {
@@ -195,9 +201,12 @@ export class SetCreateNode extends FuckUi {
         no.visible(item, true);
         if (this.uiAnim?.enabled) {
             this.uiAnim.play(item);
-            this.scheduleOnce(() => {
-                this.setItem(data, start, ++i);
-            }, 0.1);
+            if (++this._n >= this.batchNum) {
+                this._n = 0;
+                this.scheduleOnce(() => {
+                    this.setItem(data, start, ++i);
+                }, 0.1);
+            } else this.setItem(data, start, ++i);
         } else this.setItem(data, start, ++i);
     }
 
