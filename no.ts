@@ -1876,7 +1876,9 @@ export namespace no {
                             break;
                         case 'rotation':
                             np = np || {};
-                            np['rotation'] = new Quat(v[0], v[1], v[2]);
+                            let quat: Quat = new Quat();
+                            Quat.fromEuler(quat, v[0], v[1], v[2]);
+                            np['rotation'] = quat;
                             break;
                         case 'scale':
                             np = np || {};
