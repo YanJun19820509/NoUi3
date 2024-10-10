@@ -1,7 +1,7 @@
 
-import { ccclass, property, menu, Component, isValid, Node } from '../../yj';
+import { ccclass, property, menu, Component, isValid, Node, macro } from '../../yj';
 import { no } from '../../no';
-import { YJJobManager } from '../YJJobManager';
+// import { YJJobManager } from '../YJJobManager';
 
 /**
  * Predefined variables
@@ -21,25 +21,23 @@ export class YJSetChildrenShieldByY extends Component {
     @property({ displayName: '更新频率(帧)' })
     frameNum: number = 10;
 
-    private _num = 0;
-
     private resort() {
-        if (!isValid(this?.node)) return false;
-        if (this._num == 0) {
-            this._num = this.frameNum;
-        } else {
-            this._num--;
-            return true;
-        }
-        let children = this.node.children;
+        if (!isValid(this?.node)) return;
+        // if (this._num == 0) {
+        //     this._num = this.frameNum;
+        // } else {
+        //     this._num--;
+        //     return true;
+        // }
+        let children = this.node['_children'];
         no.sortArray(children, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
-        this.node._updateSiblingIndex();
-        return true;
+        // this.node._updateSiblingIndex();
     }
 
     start() {
-        YJJobManager.ins.execute(this.resort, this);
+        // YJJobManager.ins.execute(this.resort, this);
+        this.schedule(this.resort, this.frameNum / 60, macro.REPEAT_FOREVER);
     }
 }

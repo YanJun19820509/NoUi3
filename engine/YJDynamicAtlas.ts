@@ -1,9 +1,7 @@
 
 import {
-    EDITOR, ccclass, property, disallowMultiple, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager, Skeleton,
-    Graphics,
-    Component
+    EDITOR, ccclass, SpriteFrame, Label, UIRenderer, Texture2D,
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -26,7 +24,6 @@ import { no } from '../no';
  * 【不能与原生动态合图同时使用】。
  */
 @ccclass('YJDynamicAtlas')
-@disallowMultiple()
 export class YJDynamicAtlas {
 
     constructor(atlas: Atlas, material: Material) {
