@@ -92,6 +92,7 @@ export class YJLoadAssets extends Component {
     }
 
     public static setMaterialInfoUuidToSubNode(node: Node, materialInfoUuid: string) {
+        if (!node) return;
         const arr = [].concat(
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             node.getComponentsInChildren('YJCharLabel'),

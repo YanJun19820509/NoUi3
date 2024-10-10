@@ -61,7 +61,8 @@ export default class YJLoadPrefab extends Component {
 
     public instantiateNode(): Node {
         const node = no.assetBundleManager.getPrefabNode(this.prefabUrl);
-        YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
+        if (node)
+            YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
         return node;
     }
 
