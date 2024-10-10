@@ -67,13 +67,7 @@ export class YJLoadAssets extends Component {
         const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
         const materialInfoUuid = await YJSample2DMaterialManager.ins.createAtlasMaterial(name, this.textureInfos, this.share);
         this.materialInfoUuid = materialInfoUuid;
-        const arr = [].concat(
-            this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
-            this.getComponentsInChildren('YJCharLabel'),
-            this.getComponentsInChildren('YJDynamicTexture'),
-            this.getComponentsInChildren('YJBitmapFont')
-        );
-        arr.forEach(item => item.materialInfoUuid = materialInfoUuid);
+        YJLoadAssets.setMaterialInfoUuidToSubNode(this.node, materialInfoUuid);
     }
 
     /**
@@ -95,5 +89,16 @@ export class YJLoadAssets extends Component {
                 name = this.node.name;
             arr.forEach(item => item.panelName = name);
         }
+    }
+
+    public static setMaterialInfoUuidToSubNode(node: Node, materialInfoUuid: string) {
+        const arr = [].concat(
+            node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+            node.getComponentsInChildren('YJCharLabel'),
+            node.getComponentsInChildren('YJDynamicTexture'),
+            node.getComponentsInChildren('YJBitmapFont'),
+            node.getComponentsInChildren('YJLoadPrefab')
+        );
+        arr.forEach(item => item.materialInfoUuid = materialInfoUuid);
     }
 }

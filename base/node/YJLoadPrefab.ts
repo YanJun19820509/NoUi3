@@ -1,6 +1,7 @@
 
 import { EDITOR, ccclass, property, menu, Component, Node, Prefab } from '../../yj';
 import { no } from '../../no';
+import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
@@ -21,6 +22,8 @@ export default class YJLoadPrefab extends Component {
 
     @property
     autoLoad: boolean = true;
+    @property({ visible() { return false; } })
+    materialInfoUuid: string;
 
     public loaded: boolean = false;
 
@@ -57,7 +60,9 @@ export default class YJLoadPrefab extends Component {
     }
 
     public instantiateNode(): Node {
-        return no.assetBundleManager.getPrefabNode(this.prefabUrl);
+        const node = no.assetBundleManager.getPrefabNode(this.prefabUrl);
+        YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
+        return node;
     }
 
     public clear(): void {
