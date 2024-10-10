@@ -21,10 +21,8 @@ export class YJSetChildrenShieldByY extends Component {
     @property({ displayName: '更新频率(帧)' })
     frameNum: number = 10;
 
-    private _num = 0;
-
     private resort() {
-        if (!isValid(this?.node)) return false;
+        if (!isValid(this?.node)) return;
         // if (this._num == 0) {
         //     this._num = this.frameNum;
         // } else {
@@ -36,7 +34,6 @@ export class YJSetChildrenShieldByY extends Component {
             return b.position.y - a.position.y;
         }, true);
         // this.node._updateSiblingIndex();
-        return true;
     }
 
     start() {
