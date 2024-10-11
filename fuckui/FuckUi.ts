@@ -52,16 +52,8 @@ export class FuckUi extends Component {
             this._oldData = null;
             return;
         }
-        if (!disignore && this.saveIgnore && d === this._oldData) return;
+        if (!disignore && this.saveIgnore && no.objectEquals(d, this._oldData)) return;
         this._oldData = d;
-
-        // if (d != '') {
-        //     try {
-        //         d = no.parse2Json(d);
-        //     } catch (e) {
-        //         no.err('no.parse2Json', 'FuckUi.setData', d);
-        //     }
-        // }
 
         this.logValue(d);
         this.onDataChange(d);

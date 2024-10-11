@@ -2284,6 +2284,7 @@ export namespace no {
      * @returns 
      */
     export function jsonStringify(json: any): string {
+        if (json == null) return '';
         let cache: any[] = [];
         return JSON.stringify(json, function (key, val) {
             if (!WECHAT)//微信小游戏平台不支持
@@ -5717,6 +5718,25 @@ export namespace no {
      */
     export function sumOfArray(arr: number[]) {
         return arr.reduce((a, b) => a + b, 0);
+    }
+
+    /**
+     * 判断两个对象是否相等
+     */
+    export function objectEquals(a: any, b: any) {
+        if (Array.isArray(a) && Array.isArray(b)) {
+            return a.length === b.length && a.every((v, i) => objectEquals(v, b[i]));
+        }
+        if (typeof a === 'object' && typeof b === 'object') {
+            const keysA = Object.keys(a);
+            const keysB = Object.keys(b);
+            if (keysA.length !== keysB.length) return false;
+            for (const key of keysA) {
+                if (!keysB.includes(key) || !objectEquals(a[key], b[key])) return false;
+            }
+            return true;
+        }
+        return a === b;
     }
 }
 no.addToWindowForDebug('no', no);
