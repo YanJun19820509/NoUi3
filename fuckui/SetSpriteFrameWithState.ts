@@ -23,7 +23,7 @@ export class SetSpriteFrameWithStateInfo {
         if (!this.conditions) this.conditions = this.condition.split(',');
         let a = this.conditions.indexOf(v) != -1;
         if (a) {
-            comp.setData(no.jsonStringify(this.spriteFrame.assetName));
+            comp.setData(this.spriteFrame.assetName);
         }
     }
 }

@@ -69,7 +69,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     update() {
         if ((this.loadFromAtlas || this.canPack)) {
             this.setDynamicAtlas();
-            this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         } else if (!this.loadFromAtlas && !this.canPack) {
             this.getComponent(YJVertexColorTransition).enabled = false;
         }
@@ -104,7 +103,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
-        if (!this.dynamicAtlas) this.canPack = false; //没有动态图集则不能打包
     }
 
     public initSpriteFrameInfo() {
@@ -129,7 +127,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                         //如果散图有压缩设置，则不能打包
                         if (info.userData.compressSettings?.useCompressTexture) {
                             this.canPack = false;
-                            this.dynamicAtlas = null;
                             this.getComponent(YJVertexColorTransition).enabled = false;
                         }
                     });
@@ -179,8 +176,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
-            if (!this.dynamicAtlas) console.log('aa')
-            sprite.customMaterial = this.dynamicAtlas.customMaterial;
+            if (this.dynamicAtlas)
+                sprite.customMaterial = this.dynamicAtlas.customMaterial;
         }
 
         const [i, spriteFrame] = this.materialInfo.getSpriteFrameInAtlas(name);
