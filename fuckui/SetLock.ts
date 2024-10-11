@@ -110,7 +110,7 @@ export class SetLock extends FuckUi {
     private setGray(v: boolean) {
         no.visible(this.lockNode, v);
         let a = this.target.getComponent(SetGray) || this.target.addComponent(SetGray);
-        a.setData(no.jsonStringify(v));
+        a.setData(v);
     }
 
     private createLockNode() {

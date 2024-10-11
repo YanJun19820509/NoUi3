@@ -35,7 +35,7 @@ export class FuckUi extends Component {
     @property({ displayName: '输出赋值日志' })
     private showValueLog: boolean = false;
 
-    private _oldData: string;
+    private _oldData: any;
 
     onLoad() {
         if (EDITOR) {
@@ -45,23 +45,23 @@ export class FuckUi extends Component {
         }
     }
 
-    public setData(d: string, disignore = false) {
+    public setData(d: any, disignore = false) {
         if (!isValid(this?.node)) return;
-        if (d == 'null') {
+        if (d == null) {
             this.a_setEmpty();
             this._oldData = null;
             return;
         }
-        if (!disignore && this.saveIgnore && d == this._oldData) return;
+        if (!disignore && this.saveIgnore && d === this._oldData) return;
         this._oldData = d;
 
-        if (d != '') {
-            try {
-                d = no.parse2Json(d);
-            } catch (e) {
-                no.err('no.parse2Json', 'FuckUi.setData', d);
-            }
-        }
+        // if (d != '') {
+        //     try {
+        //         d = no.parse2Json(d);
+        //     } catch (e) {
+        //         no.err('no.parse2Json', 'FuckUi.setData', d);
+        //     }
+        // }
 
         this.logValue(d);
         this.onDataChange(d);
@@ -93,7 +93,7 @@ export class FuckUi extends Component {
 
     public a_setData(e: any, v: any) {
         v = v || e;
-        this.setData(no.jsonStringify(v));
+        this.setData(v);
     }
 
     public a_clearData() {

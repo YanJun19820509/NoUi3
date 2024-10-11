@@ -60,19 +60,19 @@ export class SetGray extends FuckUi {
                 this.setGrayNoEffect(v);
             } else {
                 let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-                setEffect.setData(no.jsonStringify(
+                setEffect.setData(
                     {
                         defines: {
                             [this.isMask ? '0-5' : '0-2']: v
                         }
                     }
-                ));
+                );
             }
         }
         if (this.recursive) {
             this.getComponentsInChildren(UIRenderer).forEach(child => {
                 if (a?.uuid == child.uuid) return;
-                child.getComponent(SetGray)?.setData(no.jsonStringify(v));
+                child.getComponent(SetGray)?.setData(v);
             });
         }
     }

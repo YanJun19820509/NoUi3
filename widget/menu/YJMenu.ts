@@ -56,7 +56,7 @@ export class YJMenu extends Component {
                 if (list.length == 0)
                     list = item.getComponentsInChildren(YJCharLabel);
                 list.forEach(a => {
-                    a.getComponent(FuckUi)?.setData(no.jsonStringify(info.title));
+                    a.getComponent(FuckUi)?.setData(info.title);
                 });
             }
             if (info.redHintKeys)

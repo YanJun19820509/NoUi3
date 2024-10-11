@@ -360,7 +360,7 @@ export class SetMultipleList extends FuckUi {
         else {
             let a = item.getComponent(SetCreateNode);
             if (a)
-                a.setData(no.jsonStringify(data));
+                a.setData(data);
         }
     }
 

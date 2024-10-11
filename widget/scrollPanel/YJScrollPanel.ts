@@ -330,11 +330,11 @@ export class YJScrollPanel extends Component {
 
     private setTween(props: any, duration?: number) {
         if (duration == null) duration = this.duration;
-        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData(no.jsonStringify({
+        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData({
             duration: duration,
             to: 1,
             props: props
-        }));
+        });
     }
 
     private touchesDistance(touches: Touch[]): number {

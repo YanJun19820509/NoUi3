@@ -51,12 +51,12 @@ export class SetMoveTweenToNodeTarget extends FuckUi {
         let p = this.node.position;
         let dis = Vec3.distance(p, pos);
         let duration = this.fixSpeed ? dis / this.speed : this.time;
-        this.getComponent(SetNodeTweenAction).setData(no.jsonStringify({
+        this.getComponent(SetNodeTweenAction).setData({
             duration: duration,
             to: 1,
             props: {
                 pos: [pos.x + this.offset.x, pos.y + this.offset.y]
             }
-        }));
+        });
     }
 }

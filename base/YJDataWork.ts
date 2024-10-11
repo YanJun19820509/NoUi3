@@ -136,21 +136,21 @@ export class YJDataWork extends Component {
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
 
-        let keys = this.changedDataKeys.splice(0, this.changedDataKeys.length);
+        const keys = this.changedDataKeys.slice();
         this.changedDataKeys.length = 0;
-        // keys.forEach(k => {
-        //     this.onValueChange(k);
-        // });
+        keys.forEach(k => {
+            this.onValueChange(k);
+        });
         // keys = null;
-        YJJobManager.ins.execute(this.iterateChangedData, this, keys);
+        // YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
 
-    private iterateChangedData(keys: string[]) {
-        if (!isValid(this?.node) || !keys?.length) return false;
-        let k = keys.shift();
-        this.onValueChange(k);
-        return true;
-    }
+    // private iterateChangedData(keys: string[]) {
+    //     if (!isValid(this?.node) || !keys?.length) return false;
+    //     let k = keys.shift();
+    //     this.onValueChange(k);
+    //     return true;
+    // }
 
     private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];
@@ -176,15 +176,16 @@ export class YJDataWork extends Component {
         if (uis == null) return;
         uis.forEach(ui => {
             let keys = ui.bindKeys;
+            let a: any;
             if (keys.length == 1) {
-                ui.setData(no.jsonStringify(data));
+                a = data;
             } else {
-                let a = {};
+                a = {};
                 keys.forEach(key => {
                     a[key] = this._data.get(key);
                 });
-                ui.setData(no.jsonStringify(a));
             }
+            ui.setData(a);
         });
     }
 
