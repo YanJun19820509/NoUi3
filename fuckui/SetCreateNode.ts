@@ -33,6 +33,11 @@ export class SetCreateNode extends FuckUi {
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
 
+    @property({ displayName: '仅创建部分' })
+    createPart: boolean = false;
+    @property({ displayName: '创建数量', min: 1, step: 1, visible() { return this.createPart; } })
+    createNum: number = 1;
+
     @property({ displayName: '仅新增' })
     onlyAdd: boolean = false;
 
@@ -106,7 +111,11 @@ export class SetCreateNode extends FuckUi {
         // } else {
         //     this.waitTime = this.wait;
         // }
-        this.setItems([].concat(data));
+        data = [].concat(data);
+        if (this.createPart) {
+            data = (data as any[]).slice(0, this.createNum);
+        }
+        this.setItems(data);
     }
 
     protected async setItems(data: any[]) {

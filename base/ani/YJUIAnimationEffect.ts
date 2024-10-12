@@ -1,7 +1,7 @@
 import { no } from "../../no";
-import { Range } from "../../types";
+import { EasingType, Range } from "../../types";
 import { Component, DEBUG, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, director, executeInEditMode, isValid, property, v2 } from "../../yj";
-import { EasingMethod, YJTweenTest, getEasingFn } from "./YJTween";
+import { YJTweenTest, getEasingFn } from "./YJTween";
 
 
 enum AnimType {
@@ -32,8 +32,8 @@ class AnimationEffect {
     type: AnimType = AnimType.None; // 默认动画类型为SlideIn
     @property({ displayName: "动画持续时长(秒)", min: 0, tooltip: '为0时做为set处理，仅对带参类型有效' })
     duration: number = 0.1; // 默认动画持续时间为0.1秒
-    @property({ displayName: "动画缓动函数", type: Enum(EasingMethod) })
-    easing: EasingMethod = EasingMethod.LINEAR;
+    @property({ displayName: "动画缓动函数", type: Enum(EasingType) })
+    easing: EasingType = EasingType.LINEAR;
     @property({ displayName: "ExpandWidth参数", type: Range, visible() { return this.type === AnimType.ExpandWidth; } })
     expandWidthArgs: Range = new Range(0, 50); // 默认扩宽参数为0.5，即宽度扩大50%
     @property({ displayName: "ExpandHeight参数", type: Range, visible() { return this.type === AnimType.ExpandHeight; } })

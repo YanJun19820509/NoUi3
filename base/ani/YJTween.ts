@@ -1,3 +1,4 @@
+import { EasingType } from "NoUi3/types";
 import { no } from "../../no";
 import { DEBUG, Node, UIOpacity, UITransform, ccclass, easing, isValid, js, quat, size, v2, v3 } from "../../yj";
 
@@ -70,12 +71,12 @@ export class YJTween {
         YJTween.addToMap(this);
     }
 
-    public to(duration: number, props: PropType, easing?: EasingMethod) {
+    public to(duration: number, props: PropType, easing?: EasingType) {
         this._actions[this._actions.length] = new TweenActionTo(this._target, duration, props, easing);
         return this;
     }
 
-    public by(duration: number, props: PropType, easing?: EasingMethod) {
+    public by(duration: number, props: PropType, easing?: EasingType) {
         this._actions[this._actions.length] = new TweenActionBy(this._target, duration, props, easing);
         return this;
     }
@@ -286,10 +287,10 @@ class TweenActionTo extends TweenActionBase {
     protected _originProps: PropType;
     protected props: ActionProp[];
 
-    constructor(target: Node, duration: number, props?: PropType, easing?: EasingMethod) {
+    constructor(target: Node, duration: number, props?: PropType, easing?: EasingType) {
         super(target, duration);
         this._originProps = props;
-        this.easingFn = getEasingFn(easing || EasingMethod.LINEAR);
+        this.easingFn = getEasingFn(easing || EasingType.LINEAR);
     }
 
     protected onUpdate(dt: number) {
@@ -576,105 +577,59 @@ class TweenActionReverse extends TweenActionBase {
 
 export type TargetType = Node | UITransform | UIOpacity;
 export type PropType = { pos?: number[], angle?: number[], rotation?: number[], scale?: number[], size?: number[], anchor?: number[], opacity?: number[] };
-export type TweenDataType = { delay?: number, duration?: number, to?: number | PropType, by?: number | PropType, set?: number | PropType, props?: PropType, easing?: EasingMethod, repeat?: number, reverse?: boolean, callback?: () => void };
+export type TweenDataType = { delay?: number, duration?: number, to?: number | PropType, by?: number | PropType, set?: number | PropType, props?: PropType, easing?: EasingType, repeat?: number, reverse?: boolean, callback?: () => void };
 export type ActionProp = { target: TargetType, type: string, start: number[], increment: number[], cur: number[] };
 // export type EasingType = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn";
 
-export enum EasingMethod {
-    LINEAR,
-    CONSTANT,
-    QUAD_IN,
-    QUAD_OUT,
-    QUAD_IN_OUT,
-    QUAD_OUT_IN,
-    CUBIC_IN,
-    CUBIC_OUT,
-    CUBIC_IN_OUT,
-    CUBIC_OUT_IN,
-    QUART_IN,
-    QUART_OUT,
-    QUART_IN_OUT,
-    QUART_OUT_IN,
-    QUINT_IN,
-    QUINT_OUT,
-    QUINT_IN_OUT,
-    QUINT_OUT_IN,
-    SINE_IN,
-    SINE_OUT,
-    SINE_IN_OUT,
-    SINE_OUT_IN,
-    EXPO_IN,
-    EXPO_OUT,
-    EXPO_IN_OUT,
-    EXPO_OUT_IN,
-    CIRC_IN,
-    CIRC_OUT,
-    CIRC_IN_OUT,
-    CIRC_OUT_IN,
-    ELASTIC_IN,
-    ELASTIC_OUT,
-    ELASTIC_IN_OUT,
-    ELASTIC_OUT_IN,
-    BACK_IN,
-    BACK_OUT,
-    BACK_IN_OUT,
-    BACK_OUT_IN,
-    BOUNCE_IN,
-    BOUNCE_OUT,
-    BOUNCE_IN_OUT,
-    BOUNCE_OUT_IN,
-    SMOOTH,
-    FADE,
-};
 
 export type EasingMethodFn = (k: number) => number;
 
-export function getEasingFn(easingMethod: EasingMethod): EasingMethodFn {
+export function getEasingFn(easingMethod: EasingType): EasingMethodFn {
     switch (easingMethod) {
-        case EasingMethod.LINEAR: return easing.linear;
-        case EasingMethod.CONSTANT: return easing.constant;
-        case EasingMethod.QUAD_IN: return easing.quadIn;
-        case EasingMethod.QUAD_OUT: return easing.quadOut;
-        case EasingMethod.QUAD_IN_OUT: return easing.quadInOut;
-        case EasingMethod.QUAD_OUT_IN: return easing.quadOutIn;
-        case EasingMethod.CUBIC_IN: return easing.cubicIn;
-        case EasingMethod.CUBIC_OUT: return easing.cubicOut;
-        case EasingMethod.CUBIC_IN_OUT: return easing.cubicInOut;
-        case EasingMethod.CUBIC_OUT_IN: return easing.cubicOutIn;
-        case EasingMethod.QUART_IN: return easing.quartIn;
-        case EasingMethod.QUART_OUT: return easing.quartOut;
-        case EasingMethod.QUART_IN_OUT: return easing.quartInOut;
-        case EasingMethod.QUART_OUT_IN: return easing.quartOutIn;
-        case EasingMethod.QUINT_IN: return easing.quintIn;
-        case EasingMethod.QUINT_OUT: return easing.quintOut;
-        case EasingMethod.QUINT_IN_OUT: return easing.quintInOut;
-        case EasingMethod.QUINT_OUT_IN: return easing.quintOutIn;
-        case EasingMethod.SINE_IN: return easing.sineIn;
-        case EasingMethod.SINE_OUT: return easing.sineOut;
-        case EasingMethod.SINE_IN_OUT: return easing.sineInOut;
-        case EasingMethod.SINE_OUT_IN: return easing.sineOutIn;
-        case EasingMethod.EXPO_IN: return easing.expoIn;
-        case EasingMethod.EXPO_OUT: return easing.expoOut;
-        case EasingMethod.EXPO_IN_OUT: return easing.expoInOut;
-        case EasingMethod.EXPO_OUT_IN: return easing.expoOutIn;
-        case EasingMethod.CIRC_IN: return easing.circIn;
-        case EasingMethod.CIRC_OUT: return easing.circOut;
-        case EasingMethod.CIRC_IN_OUT: return easing.circInOut;
-        case EasingMethod.CIRC_OUT_IN: return easing.circOutIn;
-        case EasingMethod.BOUNCE_OUT: return easing.bounceOut;
-        case EasingMethod.BOUNCE_IN: return easing.bounceIn;
-        case EasingMethod.BOUNCE_IN_OUT: return easing.bounceInOut;
-        case EasingMethod.BOUNCE_OUT_IN: return easing.bounceOutIn;
-        case EasingMethod.ELASTIC_IN: return easing.elasticIn;
-        case EasingMethod.ELASTIC_OUT: return easing.elasticOut;
-        case EasingMethod.ELASTIC_IN_OUT: return easing.elasticInOut;
-        case EasingMethod.ELASTIC_OUT_IN: return easing.elasticOutIn;
-        case EasingMethod.BACK_IN: return easing.backIn;
-        case EasingMethod.BACK_OUT: return easing.backOut;
-        case EasingMethod.BACK_IN_OUT: return easing.backInOut;
-        case EasingMethod.BACK_OUT_IN: return easing.backOutIn;
-        case EasingMethod.SMOOTH: return easing.smooth;
-        case EasingMethod.FADE: return easing.fade;
+        case EasingType.LINEAR: return easing.linear;
+        case EasingType.CONSTANT: return easing.constant;
+        case EasingType.QUAD_IN: return easing.quadIn;
+        case EasingType.QUAD_OUT: return easing.quadOut;
+        case EasingType.QUAD_IN_OUT: return easing.quadInOut;
+        case EasingType.QUAD_OUT_IN: return easing.quadOutIn;
+        case EasingType.CUBIC_IN: return easing.cubicIn;
+        case EasingType.CUBIC_OUT: return easing.cubicOut;
+        case EasingType.CUBIC_IN_OUT: return easing.cubicInOut;
+        case EasingType.CUBIC_OUT_IN: return easing.cubicOutIn;
+        case EasingType.QUART_IN: return easing.quartIn;
+        case EasingType.QUART_OUT: return easing.quartOut;
+        case EasingType.QUART_IN_OUT: return easing.quartInOut;
+        case EasingType.QUART_OUT_IN: return easing.quartOutIn;
+        case EasingType.QUINT_IN: return easing.quintIn;
+        case EasingType.QUINT_OUT: return easing.quintOut;
+        case EasingType.QUINT_IN_OUT: return easing.quintInOut;
+        case EasingType.QUINT_OUT_IN: return easing.quintOutIn;
+        case EasingType.SINE_IN: return easing.sineIn;
+        case EasingType.SINE_OUT: return easing.sineOut;
+        case EasingType.SINE_IN_OUT: return easing.sineInOut;
+        case EasingType.SINE_OUT_IN: return easing.sineOutIn;
+        case EasingType.EXPO_IN: return easing.expoIn;
+        case EasingType.EXPO_OUT: return easing.expoOut;
+        case EasingType.EXPO_IN_OUT: return easing.expoInOut;
+        case EasingType.EXPO_OUT_IN: return easing.expoOutIn;
+        case EasingType.CIRC_IN: return easing.circIn;
+        case EasingType.CIRC_OUT: return easing.circOut;
+        case EasingType.CIRC_IN_OUT: return easing.circInOut;
+        case EasingType.CIRC_OUT_IN: return easing.circOutIn;
+        case EasingType.BOUNCE_OUT: return easing.bounceOut;
+        case EasingType.BOUNCE_IN: return easing.bounceIn;
+        case EasingType.BOUNCE_IN_OUT: return easing.bounceInOut;
+        case EasingType.BOUNCE_OUT_IN: return easing.bounceOutIn;
+        case EasingType.ELASTIC_IN: return easing.elasticIn;
+        case EasingType.ELASTIC_OUT: return easing.elasticOut;
+        case EasingType.ELASTIC_IN_OUT: return easing.elasticInOut;
+        case EasingType.ELASTIC_OUT_IN: return easing.elasticOutIn;
+        case EasingType.BACK_IN: return easing.backIn;
+        case EasingType.BACK_OUT: return easing.backOut;
+        case EasingType.BACK_IN_OUT: return easing.backInOut;
+        case EasingType.BACK_OUT_IN: return easing.backOutIn;
+        case EasingType.SMOOTH: return easing.smooth;
+        case EasingType.FADE: return easing.fade;
         default: return easing.linear;
     }
 }

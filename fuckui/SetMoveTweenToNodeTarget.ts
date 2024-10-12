@@ -1,9 +1,10 @@
 
-import { ccclass, property, requireComponent, UITransform, Vec3, math, Vec2 } from '../yj';
+import { ccclass, property, requireComponent, UITransform, Vec3, math, Vec2, Enum } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { SetNodeTweenAction } from './SetNodeTweenAction';
+import { EasingType, EasingTypeName } from 'NoUi3/types';
 
 /**
  * Predefined variables
@@ -14,7 +15,7 @@ import { SetNodeTweenAction } from './SetNodeTweenAction';
  * FileBasenameNoExtension = SetMoveTweenToNodeTarget
  * URL = db://assets/NoUi3/fuckui/SetMoveTweenToNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
- *
+ * 将当前节点移动到指定节点位置
  */
 
 @ccclass('SetMoveTweenToNodeTarget')
@@ -32,12 +33,14 @@ export class SetMoveTweenToNodeTarget extends FuckUi {
 
     @property
     offset: Vec2 = math.v2();
+    @property({ type: Enum(EasingType) })
+    easing: EasingType = EasingType.LINEAR;
 
     protected onDataChange(data: any) {
         this.setTween(data);
     }
 
-    private setTween(targetType: string) {
+    protected setTween(targetType: string) {
         let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
         if (!target) {
             this.scheduleOnce(() => {
@@ -56,7 +59,8 @@ export class SetMoveTweenToNodeTarget extends FuckUi {
             to: 1,
             props: {
                 pos: [pos.x + this.offset.x, pos.y + this.offset.y]
-            }
+            },
+            easing: EasingTypeName[this.easing]
         });
     }
 }

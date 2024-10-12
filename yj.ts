@@ -3,6 +3,7 @@ import * as env from 'cc/env';
 import { AssetInfo } from '../../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
 
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
+export const __private = _cc.__private;
 export let { WECHAT, EDITOR, JSB } = env;
 export const DEBUG = env.DEBUG;
 export const Director = _cc.Director;

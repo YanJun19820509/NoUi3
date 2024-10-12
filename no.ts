@@ -5724,6 +5724,7 @@ export namespace no {
      * 判断两个对象是否相等
      */
     export function objectEquals(a: any, b: any) {
+        if (a == null || b == null) return false;
         if (Array.isArray(a) && Array.isArray(b)) {
             return a.length === b.length && a.every((v, i) => objectEquals(v, b[i]));
         }

@@ -109,6 +109,17 @@ export class YJDataWork extends Component {
     }
 
     /**
+     * 仅更新某个key的值，不同步到ui
+     * @param key 
+     * @param value 
+     * @returns 
+     */
+    public onlyUpdateValue(key: string, value: any) {
+        this._data?.set(key, value, false);
+        return this;//支持链式写法
+    }
+
+    /**
      * 通过ui设置/修改值，会调用onUIValueChange方法，需要重写
      * @param key 
      * @param value 
