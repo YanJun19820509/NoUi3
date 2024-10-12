@@ -36,6 +36,15 @@ export class YJLayout extends Component {
         this._space = v;
         this.updateLayout();
     }
+    @property
+    public get padding(): number {
+        return this._padding;
+    }
+
+    public set padding(v: number) {
+        this._padding = v;
+        this.updateLayout();
+    }
     @property({ type: Enum(LayoutDirection), tooltip: '子节点在x轴上的排列方向，ASC为从左到右，DESC为从右到左', visible() { return (this.type + '').includes('1'); } })
     public get xDirection(): LayoutDirection {
         return this._xDirection
@@ -102,6 +111,8 @@ export class YJLayout extends Component {
     _type: LayoutType = LayoutType.X;
     @property({ serializable: true })
     _space: Vec2 = v2();
+    @property({ serializable: true })
+    _padding: number = 0;
     @property({ serializable: true })
     _xDirection: LayoutDirection = LayoutDirection.ASC;
     @property({ serializable: true })
@@ -219,7 +230,7 @@ export class YJLayout extends Component {
         for (let i = 0, n = children.length; i < n; i++) {
             poses[i] = this.autoAlign ? v3(0, 0, 0) : no.position(children[i]);
         }
-        let x = 0;
+        let x = this.padding;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const size = this.getChildSize(child);
@@ -245,7 +256,7 @@ export class YJLayout extends Component {
         for (let i = 0, n = children.length; i < n; i++) {
             poses[i] = this.autoAlign ? v3(0, 0, 0) : no.position(children[i]);
         }
-        let y = 0;
+        let y = this.padding;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const size = this.getChildSize(child);
