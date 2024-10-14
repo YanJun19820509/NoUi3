@@ -130,6 +130,21 @@ export class YJPanel extends Component {
         this.hide();
     }
 
+    /**
+     * 立即关闭面板，不缓存
+     */
+    public closePanelImmmediately() {
+        this.status = 'close';
+        no.log('panel close', this.panelType);
+        no.EventHandlerInfo.execute(this.onClose);
+        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
+        this.onClosePanel();
+        if (this.isFullScreen)
+            no.evn.emit('_full_screen_panel_close', this.panelType);
+        no.multiTouch(this._lastMultiTouchState);
+        this.clear(true);
+    }
+
     public clear(force = false) {
         if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         no.setPrototype(this, { [YJPanelCreated]: '0' });
