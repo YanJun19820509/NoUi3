@@ -44,11 +44,12 @@ export class YJNodeTarget extends Component {
         this.lastTriggerTouchTime = 0;
         let btn = this.getComponent(Button);
         if (btn) {
-            let a = new EventHandler();
-            a.target = this.node;
-            a.component = 'YJNodeTarget';
-            a.handler = 'setTriggerTouchTime';
-            btn.clickEvents.push(a);
+            // let a = new EventHandler();
+            // a.target = this.node;
+            // a.component = 'YJNodeTarget';
+            // a.handler = 'setTriggerTouchTime';
+            // btn.clickEvents.push(a);
+            no.addClickEventsToButton(btn, this.node, 'YJNodeTarget', 'setTriggerTouchTime');
         }
     }
 

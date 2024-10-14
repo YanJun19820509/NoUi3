@@ -24,6 +24,8 @@ enum AnimType {
     ScaleXIn = 12,//x轴放大
     ScaleYOut = 13,//y轴缩小
     ScaleYIn = 14,//y轴放大
+    ScaleX = 19,//x轴缩放
+    ScaleY = 20,//y轴缩放
 }
 
 @ccclass('AnimationEffect')
@@ -42,7 +44,7 @@ class AnimationEffect {
     moveByArgs: Vec2 = v2(0, 0); // 默认移动参数为(0, 0)，即不移动
     @property({ displayName: "MoveTo参数", visible() { return this.type === AnimType.MoveTo; } })
     moveToArgs: Vec2 = v2(0, 0);
-    @property({ displayName: "ScaleTo参数", visible() { return this.type === AnimType.ScaleTo; } })
+    @property({ displayName: "ScaleTo参数", visible() { return this.type === AnimType.ScaleTo || this.type === AnimType.ScaleX || this.type === AnimType.ScaleY; } })
     scaleToArgs: number = .5;
     @property({ displayName: "Opacity参数", visible() { return this.type === AnimType.Opacity; }, min: 2, max: 255 })
     opacityArgs: number = 255;
@@ -72,6 +74,8 @@ class AnimationEffect {
             case AnimType.ScaleYIn: a = this.scaleYIn(node); break;
             case AnimType.Opacity: a = this.opacity(node); break;
             case AnimType.Rotation: a = this.rotation(node); break;
+            case AnimType.ScaleX: a = this.scaleX(node); break;
+            case AnimType.ScaleY: a = this.scaleY(node); break;
         }
 
         const easingFn = YJTweenTest ? this.easing : getEasingFn(this.easing);
@@ -216,6 +220,28 @@ class AnimationEffect {
             to: 1,
             props: {
                 scale: [s.x, 0]
+            }
+        }];
+    }
+
+    private scaleX(node: Node) {
+        const s = no.scale(node);
+        return [{
+            duration: this.duration,
+            [this.duration == 0 ? 'set' : 'to']: 1,
+            props: {
+                scale: [this.scaleToArgs, s.y]
+            }
+        }];
+    }
+
+    private scaleY(node: Node) {
+        const s = no.scale(node);
+        return [{
+            duration: this.duration,
+            [this.duration == 0 ? 'set' : 'to']: 1,
+            props: {
+                scale: [s.x, this.scaleToArgs]
             }
         }];
     }

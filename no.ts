@@ -4821,9 +4821,9 @@ export namespace no {
         let a = new EventHandler();
         a.target = target;
         if (typeof comp == 'string')
-            a._componentName = comp;
+            a.component = comp;
         else
-            a._componentId = js._getClassId(comp);
+            a.component = js.getClassName(comp);
         a.handler = handler;
         return a;
     }
