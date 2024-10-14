@@ -6,6 +6,7 @@ import { YJJobManager } from '../../base/YJJobManager';
 import { TextureInfoInGPU } from '../../engine/TextureInfoInGPU';
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
+import { YJMacroConfig } from 'NoUi3/macro';
 
 /**
  * Predefined variables
@@ -118,7 +119,7 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
     //自定义字体
-    @property(Font)
+    @property({ type: Font, tooltip: '如果没有设置自定义字体，则优先使用YJTTFLoader中加载的字体，如果不存在则使用系统字体' })
     public get font(): Font {
         return this._font;
     }
@@ -151,9 +152,6 @@ export class YJCharLabel extends Sprite {
         this._foitnFamily = v;
     }
 
-    private getFont(): TTFFont {
-        return no.assetBundleManager['_ttfFont'][this._foitnFamily];
-    }
     //行高
     @property
     public get lineHeight(): number {
@@ -455,7 +453,17 @@ export class YJCharLabel extends Sprite {
 
     onLoad() {
         super.onLoad();
-        if (EDITOR) return;
+        if (EDITOR) {
+            if (!this._fontUuid) {
+                const font = YJMacroConfig.TTF_FONT; //默认字体
+                if (font) {
+                    no.EditorMode.getAssetByFileName<TTFFont>(font).then(ttf => {
+                        this.font = ttf;
+                    });
+                }
+            }
+            return;
+        }
         if (this.packToAtlas || !this.customMaterial) {
             this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).dynamicAtlas;
             this.customMaterial = this.dynamicAtlas.customMaterial;

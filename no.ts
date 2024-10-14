@@ -5530,7 +5530,7 @@ export namespace no {
 
         /**
          * 根据资源名称和类型获取资源信息
-         * @param name 资源名称
+         * @param name 资源名称，包含后缀
          * @param ccType 资源类型如：'cc.SpriteAtlas'
          * @returns AssetInfo
          */
@@ -5574,6 +5574,64 @@ export namespace no {
                 for (let i = 0, n = infos.length; i < n; i++) {
                     if (url.indexOf(infos[i].url) == 0)
                         return infos[i].name;
+                }
+                return null;
+            });
+        }
+
+        /**
+         * 获取指定文件名的资源信息
+         * @param fileName 文件名，包含后缀
+         * @returns AssetInfo
+         */
+        export async function getAssetInfoByFileName(fileName: string) {
+            const p = fileName.split('.'),
+                ext = p[p.length - 1];
+            let ccType: string;
+            switch (ext) {
+                case 'png':
+                case 'jpg':
+                case 'jpeg':
+                case 'bmp':
+                case 'gif':
+                    ccType = 'cc.SpriteFrame';
+                    break;
+                case 'plist':
+                    ccType = 'cc.SpriteAtlas';
+                    break;
+                case 'json':
+                    ccType = 'cc.JsonAsset';
+                    break;
+                case 'txt': //文本文件
+                    ccType = 'cc.TextAsset';
+                    break;
+                case 'ttf':
+                    ccType = 'cc.TTFFont';
+                    break;
+                case 'mp3':
+                case 'wav':
+                case 'ogg':
+                    ccType = 'cc.AudioClip';
+                    break;
+                case 'prefab':
+                    ccType = 'cc.Prefab';
+                    break;
+                default:
+            }
+            return getAssetInfoOfCCTypeWithName(fileName, ccType);
+        }
+
+        /**
+         * 根据指定文件名获取资源
+         * @param fileName 文件名，包含后缀
+         * @returns 
+         */
+        export async function getAssetByFileName<T extends Asset>(fileName: string) {
+            return getAssetInfoByFileName(fileName).then(info => {
+                if (info) {
+                    return new Promise<T>(resolve =>
+                        assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
+                    );
                 }
                 return null;
             });
