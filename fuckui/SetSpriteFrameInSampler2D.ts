@@ -257,11 +257,15 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (!file) {
                 no.err('setDefaultSpriteFrame by uuid no file', this.node.name, this.defaultSpriteFrameUuid)
             } else {
-                this._singleSpriteFrame = file;
-                this.packSpriteFrame(file);
+                if (EDITOR) {
+                    this.getComponent(Sprite).spriteFrame = file;
+                } else {
+                    this._singleSpriteFrame = file;
+                    this.packSpriteFrame(file);
 
-                if (TextureInfoInGPU.isWork) {
-                    TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                    if (TextureInfoInGPU.isWork) {
+                        TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                    }
                 }
             }
         });
