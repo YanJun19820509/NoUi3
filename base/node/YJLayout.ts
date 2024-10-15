@@ -5,6 +5,8 @@ import { Node, ccclass, executeInEditMode, property, Component, Enum, Vec2, v2, 
 enum LayoutType {
     X = 1,
     Y = 2,
+    XY = 12,
+    YX = 21
 }
 
 enum LayoutDirection {
@@ -37,11 +39,11 @@ export class YJLayout extends Component {
         this.updateLayout();
     }
     @property
-    public get padding(): number {
+    public get padding(): Vec2 {
         return this._padding;
     }
 
-    public set padding(v: number) {
+    public set padding(v: Vec2) {
         this._padding = v;
         this.updateLayout();
     }
@@ -112,7 +114,7 @@ export class YJLayout extends Component {
     @property({ serializable: true })
     _space: Vec2 = v2();
     @property({ serializable: true })
-    _padding: number = 0;
+    _padding: Vec2 = v2();
     @property({ serializable: true })
     _xDirection: LayoutDirection = LayoutDirection.ASC;
     @property({ serializable: true })
@@ -177,28 +179,61 @@ export class YJLayout extends Component {
             case LayoutType.Y:
                 this.layoutY();
                 break;
+            case LayoutType.XY:
+                this.layoutXY();
+                break;
+            case LayoutType.YX:
+                this.layoutYX();
+                break;
         }
     }
 
     private updatePosition(poses: Vec3[], size: Vec2) {
+        size.add(this.padding).add(this.padding);
         no.size(this.container, new Size(size.x, size.y)); //设置容器大小
         if (this.type == LayoutType.X) {
             const ancharX = no.anchorX(this.container),
                 sizeX = size.x * ancharX;
             for (let i = 0; i < poses.length; i++) {
-                poses[i].x -= sizeX;
+                poses[i].x -= sizeX - this.padding.x;
             }
-            if (this.xDirection == LayoutDirection.DESC)
-                no.sortArray(poses, (a, b) => b.x - a.x);
+            if (this.xDirection == LayoutDirection.DESC) {
+                for (let i = 0; i < poses.length; i++) {
+                    poses[i].x = -poses[i].x;
+                }
+            }
         }
         else if (this.type == LayoutType.Y) {
             const ancharY = no.anchorY(this.container),
                 sizeY = size.y * ancharY;
             for (let i = 0; i < poses.length; i++) {
-                poses[i].y -= sizeY;
+                poses[i].y -= sizeY - this.padding.y;
             }
-            if (this.yDirection == LayoutDirection.DESC)
-                no.sortArray(poses, (a, b) => b.y - a.y);
+            if (this.yDirection == LayoutDirection.DESC) {
+                for (let i = 0; i < poses.length; i++) {
+                    poses[i].y = -poses[i].y;
+                }
+            }
+        }
+        else if (this.type == LayoutType.XY || this.type == LayoutType.YX) {
+            const ancharX = no.anchorX(this.container),
+                ancharY = no.anchorY(this.container),
+                sizeX = size.x * ancharX,
+                sizeY = size.y * ancharY;
+            for (let i = 0; i < poses.length; i++) {
+                poses[i].x -= sizeX - this.padding.x;
+                poses[i].y -= sizeY - this.padding.y;
+            }
+            if (this.xDirection == LayoutDirection.DESC) {
+                for (let i = 0; i < poses.length; i++) {
+                    poses[i].x = -poses[i].x;
+                }
+            }
+            if (this.yDirection == LayoutDirection.DESC) {
+                for (let i = 0; i < poses.length; i++) {
+                    poses[i].y = -poses[i].y;
+                }
+            }
         }
 
         const children = this.container.children;
@@ -226,11 +261,11 @@ export class YJLayout extends Component {
     private layoutX() {
         const children = this.container.children;
         const poses: Vec3[] = [];
-        const s: Vec2 = v2();
+        const s: Vec2 = v2(0, 0);
         for (let i = 0, n = children.length; i < n; i++) {
             poses[i] = this.autoAlign ? v3(0, 0, 0) : no.position(children[i]);
         }
-        let x = this.padding;
+        let x = 0;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const size = this.getChildSize(child);
@@ -252,11 +287,11 @@ export class YJLayout extends Component {
     private layoutY() {
         const children = this.container.children;
         const poses: Vec3[] = [];
-        const s: Vec2 = v2();
+        const s: Vec2 = v2(0, 0);
         for (let i = 0, n = children.length; i < n; i++) {
             poses[i] = this.autoAlign ? v3(0, 0, 0) : no.position(children[i]);
         }
-        let y = this.padding;
+        let y = 0;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
             const size = this.getChildSize(child);
@@ -273,6 +308,105 @@ export class YJLayout extends Component {
             }
         }
         this.updatePosition(poses, s);
+    }
+
+    private layoutXY() {
+        const children = this.container.children;
+        const poses: Vec3[] = [];
+        const s: Vec2 = v2();
+        for (let i = 0, n = children.length; i < n; i++) {
+            poses[i] = no.position(children[i]);
+            poses[i].x = 0;
+            poses[i].y = 0;
+        }
+        let x = 0, w = 0, h = 0;
+        for (let i = 0; ; i++) {
+            x = 0;
+            w = 0;
+            h = 0;
+            if (i > 0) s.y += this.space.y;
+            for (let j = 0; j < this.fixedX; j++) {
+                const idx = i * this.fixedX + j;
+                if (!poses[idx]) {
+                    s.y += h;
+                    return this.updatePosition(poses, s);
+                }
+                const child = children[idx];
+                const size = this.getChildSize(child);
+                if (size) {
+                    if (j > 0) {
+                        w += this.space.x;
+                        x += this.space.x;
+                    }
+                    if (i > 0) {
+                        poses[idx].y += this.space.y;
+                    }
+                    x += size.x / 2;
+                    poses[idx].x = x;
+                    poses[idx].y += size.y / 2;
+                    if (poses[idx + this.fixedX])
+                        poses[idx + this.fixedX].y += poses[idx].y + size.y / 2;
+                    x += size.x / 2;
+                    w += size.x;
+                    if (size.y > h) {
+                        h = size.y;
+                    }
+                }
+            }
+            if (w > s.x) {
+                s.x = w;
+            }
+            s.y += h;
+        }
+    }
+
+    private layoutYX() {
+        const children = this.container.children;
+        const poses: Vec3[] = [];
+        const s: Vec2 = v2();
+        for (let i = 0, n = children.length; i < n; i++) {
+            poses[i] = no.position(children[i]);
+            poses[i].x = 0;
+            poses[i].y = 0;
+        }
+        let y = 0, w = 0, h = 0;
+        for (let i = 0; ; i++) {
+            y = 0;
+            w = 0;
+            h = 0
+            for (let j = 0; j < this.fixedY; j++) {
+                const idx = i * this.fixedY + j;
+                if (!poses[idx]) {
+                    s.x += h;
+                    return this.updatePosition(poses, s);
+                }
+                const child = children[idx];
+                const size = this.getChildSize(child);
+                if (size) {
+                    if (j > 0) {
+                        w += this.space.y;
+                        y += this.space.y;
+                    }
+                    if (i > 0) {
+                        poses[idx].x += this.space.x;
+                    }
+                    y += size.y / 2;
+                    poses[idx].y = y;
+                    poses[idx].x += size.x / 2;
+                    if (poses[idx + this.fixedY])
+                        poses[idx + this.fixedY].x += poses[idx].x + size.x / 2;
+                    y += size.y / 2;
+                    w += size.y;
+                    if (size.x > h) {
+                        h = size.x;
+                    }
+                }
+            }
+            if (w > s.y) {
+                s.y = w;
+            }
+            s.x += h;
+        }
     }
 
     private getChildSize(child: Node) {

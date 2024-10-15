@@ -74,7 +74,7 @@ export class YJLoadAssets extends Component {
      * 释放图集
      */
     public release() {
-        YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).destroy();
+        YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid)?.destroy();
         if (TextureInfoInGPU.isWork) {
             const name = this.node.name;
             no.setTimeoutF(() => {
