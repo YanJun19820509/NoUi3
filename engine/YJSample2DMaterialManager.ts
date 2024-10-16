@@ -255,6 +255,7 @@ export class YJSample2DMaterialInfo {
                 break;
             }
         }
+        if (!info) return [null, null];
         a = [idx, info];
         this.spriteFrameMap[name] = a;
         return a;

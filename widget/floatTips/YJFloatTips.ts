@@ -2,6 +2,7 @@
 import { ccclass, property, easing } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
+import { EasingTypeName } from 'NoUi3/types';
 
 /**
  * Predefined variables
@@ -68,7 +69,7 @@ export class YJFloatTips extends YJDataWork {
                         pos: [0, this.maxHeight, 0],
                         opacity: 0
                     },
-                    easing: easing.backIn
+                    easing: EasingTypeName.BackIn
                 }
             ]
         });

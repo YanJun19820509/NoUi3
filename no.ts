@@ -4822,8 +4822,10 @@ export namespace no {
         a.target = target;
         if (typeof comp == 'string')
             a.component = comp;
-        else
+        else {
             a.component = js.getClassName(comp);
+            a._componentId = js.getClassId(comp);
+        }
         a.handler = handler;
         return a;
     }
