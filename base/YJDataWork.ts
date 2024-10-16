@@ -147,11 +147,15 @@ export class YJDataWork extends Component {
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
 
-        const keys = this.changedDataKeys.slice();
-        this.changedDataKeys.length = 0;
-        keys.forEach(k => {
-            this.onValueChange(k);
-        });
+        // const keys = this.changedDataKeys.slice();
+        // this.changedDataKeys.length = 0;
+        // keys.forEach(k => {
+        //     this.onValueChange(k);
+        // });
+        for (let i = this.changedDataKeys.length - 1; i >= 0; i--) {
+            this.onValueChange(this.changedDataKeys[i]);
+            this.changedDataKeys.splice(i, 1);
+        }
         // keys = null;
         // YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
