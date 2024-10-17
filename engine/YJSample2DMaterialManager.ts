@@ -170,6 +170,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     }
 }
 
+no.addToWindowForDebug('YJSample2DMaterialManager', YJSample2DMaterialManager);
+
 @ccclass('YJSample2DMaterialInfo')
 export class YJSample2DMaterialInfo {
     // public material: Material;
