@@ -322,7 +322,7 @@ export class SetMultipleList extends FuckUi {
                     this.setItemPosition(item, nIndex);
                     no.visible(item, true);
                 } else {
-                    no.log(index);
+                    // no.log(index);
                 }
             }
         } else {

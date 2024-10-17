@@ -22,20 +22,22 @@ export class OpenWindowInfo {
     @property
     windowName: string = '';
     @property
-    prefabPathOrUuid: string = '';
+    prefabPath: string = '';
     @property({ type: Enum(LayerTypeEnum) })
     to: LayerTypeEnum = LayerTypeEnum.Popup;
     @property({ tooltip: '传参，仅用于show' })
     args: string = '';
 
-    public open() {
+    public panelType: string = '';
+
+    public open(onOpended?: (panel: YJPanel) => void) {
         if (this.windowName != '') {
             const clazz = js.getClassByName(this.windowName);
             if (typeof clazz['show'] == 'function') clazz['show'](!!this.args ? this.args : null);
             else if (clazz['$super'] == YJPanel)
-                YJWindowManager.createPanel(this.windowName, LayerType[this.to]);
-        } else if (this.prefabPathOrUuid != '') {
-            YJWindowManager.createPanelByPrefab(this.prefabPathOrUuid, LayerType[this.to]);
+                YJWindowManager.createPanel(this.windowName, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
+        } else if (this.prefabPath != '') {
+            YJWindowManager.createPanelByPrefab(this.prefabPath, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
         }
     }
 }
@@ -69,8 +71,12 @@ export class YJOpenWindow extends Component {
         this.openAt(idx);
     }
 
-    private openAt(i: number) {
+    public openAt(i: number, onOpended?: (panel: YJPanel) => void) {
         let info = this.infos[i];
-        info?.open();
+        info?.open(onOpended);
+    }
+
+    public getWindowInfoAt(i: number) {
+        return this.infos[i];
     }
 }

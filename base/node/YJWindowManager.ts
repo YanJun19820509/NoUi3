@@ -113,7 +113,7 @@ export class YJWindowManager extends Component {
 
 
     private createdPanel: string[] = [];
-    private prefabPathOrUuidToNodeName: any = {};
+    private prefabPathToNodeName: any = {};
 
     private static _ins: YJWindowManager;
 
@@ -216,18 +216,18 @@ export class YJWindowManager extends Component {
 
     /**
      * 通过prefab的path或uuid创建，通常用于无逻辑面板加载
-     * @param prefabPathOrUuid 
+     * @param prefabPath 
      * @param to 
      * @param beforeInit 
      * @param afterInit 
      */
-    public static createPanelByPrefab(prefabPathOrUuid: string, to: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
+    public static createPanelByPrefab(prefabPath: string, to: string, beforeInit?: (panel: YJPanel) => void, afterInit?: (panel: YJPanel) => void) {
         if (!to) {
-            no.err('windowmanager', prefabPathOrUuid, '没有指定面板的归属节点');
+            no.err('windowmanager', prefabPath, '没有指定面板的归属节点');
             return;
         }
         const self = YJWindowManager._ins,
-            name = self.prefabPathOrUuidToNodeName[prefabPathOrUuid],
+            name = self.prefabPathToNodeName[prefabPath],
             content: Node = self.getContent(to);
         if (name) {
             const a = this.opennedPanelByType(name, to);
@@ -241,15 +241,15 @@ export class YJWindowManager extends Component {
                 return;
             }
         }
-        const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
+        const node = no.assetBundleManager.getPrefabNode(prefabPath);
         if (node) this.initNode(node, YJPanel, content, beforeInit, afterInit);
         else {
-            const request = { type: Prefab, url: prefabPathOrUuid, uuid: prefabPathOrUuid };
+            const request = { type: Prefab, url: prefabPath, uuid: prefabPath };
             no.assetBundleManager.loadAny<Prefab>(request, pf => {
                 if (!pf) return;
-                no.assetBundleManager.setPrefabNode(prefabPathOrUuid, pf);
-                const node = no.assetBundleManager.getPrefabNode(prefabPathOrUuid);
-                self.prefabPathOrUuidToNodeName[prefabPathOrUuid] = node.getComponent(YJPanel).panelType;
+                no.assetBundleManager.setPrefabNode(prefabPath, pf);
+                const node = no.assetBundleManager.getPrefabNode(prefabPath);
+                self.prefabPathToNodeName[prefabPath] = node.getComponent(YJPanel).panelType;
                 if (!content?.isValid) {
                     return
                 }
@@ -419,7 +419,7 @@ export class YJWindowManager extends Component {
     }
 
     private createLayerNode(type: number) {
-        const node = no.newNode('layer_' + type, [Widget]);
+        const node = no.newNode(LayerType[type], [Widget]);
         node['yj_layerType'] = type;
         node.parent = this.node;
         const widget = node.getComponent(Widget);
@@ -449,6 +449,6 @@ export class YJWindowManager extends Component {
     private removeLayerNode(type: number) {
         const i = no.indexOfArray(this.node.children, type, 'yj_layerType');
         this.infos.splice(i, 1);
-        this.node.getChildByName('layer_' + type)?.destroy();
+        this.node.getChildByName(LayerType[type])?.destroy();
     }
 }
