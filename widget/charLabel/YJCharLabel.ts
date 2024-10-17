@@ -7,6 +7,7 @@ import { TextureInfoInGPU } from '../../engine/TextureInfoInGPU';
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
 import { YJMacroConfig } from 'NoUi3/macro';
+import { YJGradientColor } from './YJGradientColor';
 
 /**
  * Predefined variables
@@ -105,6 +106,17 @@ export class YJCharLabel extends Sprite {
     public set fontColor(v: Color) {
         if (v.equals(this._fontColor)) return;
         this._fontColor = v;
+        this.setLabel();
+    }
+    @property({ serializable: true })
+    _gradientColor: YJGradientColor = null;
+    @property({ type: YJGradientColor })
+    public get gradientColor(): YJGradientColor {
+        return this._gradientColor;
+    }
+    public set gradientColor(v: YJGradientColor) {
+        if (v == this._gradientColor) return;
+        this._gradientColor = v;
         this.setLabel();
     }
     //文本尺寸
@@ -707,6 +719,9 @@ export class YJCharLabel extends Sprite {
         }
         let ctx = canvas.getContext("2d");
         this.setFontStyle(ctx);
+        if (this.gradientColor) {
+            ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width, height });
+        }
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         if (this.outlineWidth > 0) {
             this.setStrokeStyle(ctx);
@@ -783,7 +798,9 @@ export class YJCharLabel extends Sprite {
                     x = width - w;
                 }
             }
-            // ctx.fillText(v, x, y);
+            if (this.gradientColor) {
+                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
+            }
             const fontSize = this.fontSize;
             let x1 = x;
             for (let i = 0, n = v.length; i < n; i++) {
@@ -892,6 +909,7 @@ export class YJCharLabel extends Sprite {
             this.spriteFrame.destroy();
             this.spriteFrame = s;
         }
+        no.size(this.node, size(this.spriteFrame.rect.width, this.spriteFrame.rect.height));
         return false;
     }
 
@@ -1044,7 +1062,9 @@ export class YJCharLabel extends Sprite {
             if (style?.outline || this.outlineWidth > 0) {
                 this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
             }
-            // ctx.fillText(text, x, y);
+            if (this.gradientColor) {
+                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
+            }
             const fontSize = style?.size * this.hdpScale || this.fontSize;
             let x2 = x1;
             for (let i = 0, n = text.length; i < n; i++) {
@@ -1127,7 +1147,9 @@ export class YJCharLabel extends Sprite {
                     this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
                     ctx.strokeText(text, x1, y);
                 }
-                // ctx.fillText(text, x1, y);
+                if (this.gradientColor) {
+                    ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
+                }
                 const fontSize = style?.size * this.hdpScale || this.fontSize;
                 let x2 = x1;
                 for (let i = 0, n = text.length; i < n; i++) {
