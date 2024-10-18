@@ -48,7 +48,7 @@ class Database {
 
     private initData(data: string) {
         const arr: any[] = data.split(String.fromCharCode(this.cCode));
-        return arr.map(a => isNaN(a) ? a : Number(a));
+        return arr.map(a => a == '' || isNaN(a) ? a : Number(a));
     }
 
     /**
