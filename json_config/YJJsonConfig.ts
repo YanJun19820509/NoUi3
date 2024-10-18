@@ -22,7 +22,7 @@ class Database {
         this.name = file.name;
         this.tables = {};
         this.tableNames = [];
-        this.data = file.json.data.split(String.fromCharCode(this.cCode));
+        this.data = this.initData(file.json.data);
         for (const name in file.json.tables) {
             const a = file.json.tables[name];
             this.tables[name] = { ids: a.ids.split(String.fromCharCode(this.cCode)), properties: a.properties.split(String.fromCharCode(this.cCode)), offset: a.offset };
@@ -44,6 +44,11 @@ class Database {
             d[tn] = this.read(tn);
         });
         return d;
+    }
+
+    private initData(data: string) {
+        const arr: any[] = data.split(String.fromCharCode(this.cCode));
+        return arr.map(a => isNaN(a) ? a : Number(a));
     }
 
     /**
