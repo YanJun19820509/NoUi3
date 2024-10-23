@@ -1519,7 +1519,8 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = node.worldPosition.clone();
+        out = out || v3();
+        out.set(node.worldPosition.clone());
         return out;
     }
 
@@ -5798,6 +5799,18 @@ export namespace no {
             return true;
         }
         return a === b;
+    }
+
+    /**
+     * 根据分隔符获取字符串的某个参数
+     */
+    export function getParamByIndex(str: any, split: string, index: number): string {
+        if (typeof str !== 'string') return str;
+        const a = str.split(split);
+        if (a.length > index) {
+            return a[index];
+        }
+        return a[a.length - 1];
     }
 }
 no.addToWindowForDebug('no', no);

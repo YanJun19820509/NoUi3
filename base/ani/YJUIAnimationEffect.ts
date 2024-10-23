@@ -26,6 +26,8 @@ enum AnimType {
     ScaleYIn = 14,//y轴放大
     ScaleX = 19,//x轴缩放
     ScaleY = 20,//y轴缩放
+    Jump = 21,//跳跃
+    Shake = 22,//抖动
 }
 
 @ccclass('AnimationEffect')
@@ -76,6 +78,8 @@ class AnimationEffect {
             case AnimType.Rotation: a = this.rotation(node); break;
             case AnimType.ScaleX: a = this.scaleX(node); break;
             case AnimType.ScaleY: a = this.scaleY(node); break;
+            case AnimType.Jump: a = this.jump(node); break;
+            case AnimType.Shake: a = this.shake(node); break;
         }
 
         const easingFn = YJTweenTest ? this.easing : getEasingFn(this.easing);
@@ -339,6 +343,44 @@ class AnimationEffect {
             props: {
                 angle: this.rotationArgs
             }
+        }];
+    }
+
+    private jump(node: Node) {
+        const pos = no.position(node);
+        return [{
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                pos: [pos.x, pos.y + 10]
+            }
+        }, {
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                pos: [pos.x, pos.y]
+            }
+        }, {
+            repeat: 1
+        }];
+    }
+
+    private shake(node: Node) {
+        const pos = no.position(node);
+        return [{
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                pos: [pos.x + 5, pos.y]
+            }
+        }, {
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                pos: [pos.x, pos.y]
+            }
+        }, {
+            repeat: 1
         }];
     }
 }
