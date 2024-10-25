@@ -1520,7 +1520,8 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = node.worldPosition.clone();
+        out = out || v3();
+        out.set(node.worldPosition.clone());
         return out;
     }
 
@@ -5888,6 +5889,18 @@ export namespace no {
             a_p1_pMax = no.angleTo(p1, pMax).angle,
             a_p1_p2 = no.angleTo(p1, p2).angle;
         return a_p1_p2 >= a_p1_pMin && a_p1_p2 <= a_p1_pMax || a_p1_p2 >= a_p1_pMax && a_p1_p2 <= a_p1_pMin;
+    }
+    
+    /**
+     * 根据分隔符获取字符串的某个参数
+     */
+    export function getParamByIndex(str: any, split: string, index: number): string {
+        if (typeof str !== 'string') return str;
+        const a = str.split(split);
+        if (a.length > index) {
+            return a[index];
+        }
+        return a[a.length - 1];
     }
 }
 no.addToWindowForDebug('no', no);

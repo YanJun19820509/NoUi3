@@ -347,19 +347,20 @@ export class TextureInfo extends LoadAssetsInfo {
         }
     }
 
-    public addTexture(uuid: string) {
+    public async addTexture(uuid: string) {
+        const info = await no.EditorMode.getAssetInfo(uuid);
+        if (!info) return false;
         this.assetUuid = uuid;
-        no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
-            this.path = info.path;
-            this.assetName = info?.displayName;
-            let path = info?.path.replace('/texture', '_atlas.json');
-            if (path) {
-                no.EditorMode.getAssetInfo(path).then(info => {
-                    this.atlasJsonName = info.name;
-                    this.atlasJsonUuid = info.uuid;
-                });
-            }
-        });
+        this.path = info.path;
+        this.assetName = info?.displayName;
+        let path = info?.path.replace('/texture', '_atlas.json');
+        if (path) {
+            no.EditorMode.getAssetInfo(path).then(info_1 => {
+                this.atlasJsonName = info_1.name;
+                this.atlasJsonUuid = info_1.uuid;
+            });
+        }
+        return true;
     }
 
 }

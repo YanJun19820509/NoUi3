@@ -43,12 +43,30 @@ export class YJLoadAssets extends Component {
         this.textureInfos.length = 0;
         textureUuid.forEach(uuid => {
             const info = new TextureInfo();
-            info.addTexture(uuid);
-            this.textureInfos[this.textureInfos.length] = info;
+            info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
         });
     }
     @property({ type: TextureInfo, displayName: '纹理信息' })
     textureInfos: TextureInfo[] = [];
+    @property({ displayName: '更新纹理信息' })
+    public get updateAllAssets(): boolean {
+        return false;
+    }
+
+    public set updateAllAssets(v: boolean) {
+        if (this.textureInfos.length == 0) {
+            return;
+        }
+        const textureUuid: string[] = [];
+        this.textureInfos.forEach(a => {
+            textureUuid.push(a.assetUuid);
+        });
+        this.textureInfos.length = 0;
+        textureUuid.forEach(uuid => {
+            const info = new TextureInfo();
+            info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+        });
+    }
 
     private materialInfoUuid: string;
 
