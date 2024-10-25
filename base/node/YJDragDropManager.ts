@@ -23,7 +23,7 @@ export class YJDragDropManager extends YJTouchListener {
     onAwayFromTarget: no.EventHandlerInfo[] = [];
     @property({ type: no.EventHandlerInfo, displayName: '放入目标时', visible() { return this.dragDrop; } })
     onAchieveTarget: no.EventHandlerInfo[] = [];
-    @property({ type: no.EventHandlerInfo, displayName: '点击时', visible() { return !this.dragDrop; } })
+    @property({ type: no.EventHandlerInfo, displayName: '点击时' })
     onClick: no.EventHandlerInfo[] = [];
     @property({ displayName: '设置拖动节点的父节点为本节点', tooltip: '开启后，拖动时，拖动节点将作为本节点的子节点', visible() { return this.dragDrop; } })
     changeParent: boolean = false;
@@ -172,6 +172,7 @@ export class YJDragDropManager extends YJTouchListener {
             const pos = no.worldPositionInNode(v3(p.x, p.y), this.node),
                 arr = this.getComponentsInChildren(YJDragDropItemNode);
             for (let i = 0, n = arr.length; i < n; i++) {
+                arr[i].updateNodeRect();
                 const rect = arr[i].nodeRect();
                 if (rect.contains(v2(pos.x, pos.y))) {
                     this.dragNode = arr[i].node;
@@ -186,6 +187,7 @@ export class YJDragDropManager extends YJTouchListener {
             const pos = event.getUILocation(),
                 arr = this.getComponentsInChildren(YJDragDropTargetNode);
             for (let i = 0, n = arr.length; i < n; i++) {
+                arr[i].updateNodeRect();
                 const rect = arr[i].nodeRect();
                 if (rect.contains(pos)) {
                     this.dragNode = arr[i].node;

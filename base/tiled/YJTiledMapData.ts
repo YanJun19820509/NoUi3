@@ -26,15 +26,19 @@ export class YJTiledMapData {
     /**图集数据 */
     private tilesets: Map<number, any>;
     private uv: Size;
-    private gridScale: number;
+    private gridScale: Vec2;
 
     public layerTypes: string[];
 
     constructor(mapJson: any) {
-        this.gridScale = mapJson.orientation == 'orthogonal' ? 1 : 0.5;
+        this.gridScale = mapJson.orientation == 'orthogonal' ? v2(1, 1) : (mapJson.orientation == 'hexagonal' ? v2(0.5, .75) : v2(.5, .5));
         this.tileSize = new Size(mapJson.tilewidth, mapJson.tileheight);
         this.uv = new Size(mapJson.width, mapJson.height);
-        this.mapSize = new Size(this.uv.width * this.tileSize.width, this.uv.height * this.tileSize.height * this.gridScale);
+        if (this.gridScale.y == 1 || this.gridScale.y == 0.5) {
+            this.mapSize = new Size(this.uv.width * this.tileSize.width, this.uv.height * this.tileSize.height * this.gridScale.y);
+        } else {
+            this.mapSize = new Size((this.uv.width + this.gridScale.x) * this.tileSize.width, (this.uv.height - 1) * this.tileSize.height * this.gridScale.y + this.tileSize.height);
+        }
         this.setAnchor(mapJson.renderorder);
         this.setTilesets(mapJson.tilesets);
         this.setLayers(mapJson.layers);
@@ -149,8 +153,8 @@ export class YJTiledMapData {
                     image: tileInfo.image,
                     width: tileInfo.width,
                     height: tileInfo.height,
-                    x: this.tileSize.width * (0.5 + j + (1 - this.gridScale) * (i % 2)) + tileInfo.offset.x,
-                    y: this.tileSize.height * (0.5 + i * this.gridScale) + tileInfo.offset.y,
+                    x: this.tileSize.width * (.5 + j + (1 - this.gridScale.x) * (i % 2)) + tileInfo.offset.x,
+                    y: this.tileSize.height * ((1 - this.gridScale.y) + i * this.gridScale.y) + tileInfo.offset.y,
                     prop: tileInfo.prop
                 };
             }

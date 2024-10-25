@@ -12,7 +12,7 @@ export class YJDragDropTargetNode extends Component {
     private _rect: Rect;
 
     /**
-     * 当前节点在world的rect
+     * 当前节点在父节点中的rect
      * @returns 
      */
     public nodeRect() {

@@ -3,7 +3,8 @@ import {
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
     Layers,
-    CCObject
+    CCObject,
+    EventTouch
 } from "./yj";
 
 
@@ -2548,6 +2549,35 @@ export namespace no {
 
         public onChange(handler: (d?: Data) => void, target?: any): void {
             this.on(Data.DataChangeEvent, handler, target);
+        }
+    }
+
+    /**
+     * 状态数据类，用于存储和处理一些状态数据，这些状态数据的值会因其他数据变化而变化，
+     * 
+     */
+    export class StatusData {
+        private _map: any = {};
+        private _data: any = {};
+
+        public static new() {
+            return new StatusData();
+        }
+
+        public add(dataKey: string, valueFunc: Function) {
+            this._map[dataKey] = valueFunc;
+            this._data[dataKey] = valueFunc();
+        }
+
+        public get(key: string) {
+            return this._data[key];
+        }
+
+        public update(keys: string | string[]) {
+            keys = [].concat(keys);
+            keys.forEach(key => {
+                this._data[key] = this._map[key]();
+            });
         }
     }
 
@@ -5798,6 +5828,66 @@ export namespace no {
             return true;
         }
         return a === b;
+    }
+
+    /**
+     * 将touch起始点转换为节点内坐标
+     * @param touch
+     * @param node 
+     * @returns 
+     */
+    export function touchStartPosInNode(touch: EventTouch, node: Node) {
+        const p = touch.getUIStartLocation();
+        return no.worldPositionInNode(v3(p.x, p.y), node);
+    }
+
+    /**
+     * 将touch当前点转换为节点内坐标
+     * @param touch 
+     * @param node 
+     * @returns 
+     */
+    export function touchPosInNode(touch: EventTouch, node: Node) {
+        const p = touch.getUILocation();
+        return no.worldPositionInNode(v3(p.x, p.y), node);
+    }
+
+    /**
+     * 判断直线是否与矩形相交
+     */
+    export function lineIntersetsRect(line: { p1: Vec2, p2: Vec2 }, rect: Rect): boolean {
+        const { p1, p2 } = line;
+        if (rect.contains(p1) || rect.contains(p2)) return true;
+        if (p1.x < rect.xMin && p2.x < rect.xMin) return false;
+        if (p1.x > rect.xMax && p2.x > rect.xMax) return false;
+        if (p1.y < rect.yMin && p2.y < rect.yMin) return false;
+        if (p1.y > rect.yMax && p2.y > rect.yMax) return false;
+        const pMin = v2(), pMax = v2();
+        if (p1.x < rect.xMin) {
+            pMin.x = rect.xMin;
+            pMin.y = rect.yMin;
+            pMax.x = rect.xMin;
+            pMax.y = rect.yMax;
+        } else if (p1.x > rect.xMax) {
+            pMin.x = rect.xMax;
+            pMin.y = rect.yMin;
+            pMax.x = rect.xMax;
+            pMax.y = rect.yMax;
+        } else if (p1.y < rect.yMin) {
+            pMin.x = rect.xMin;
+            pMin.y = rect.yMin;
+            pMax.x = rect.xMax;
+            pMax.y = rect.yMin;
+        } else if (p1.y > rect.yMax) {
+            pMin.x = rect.xMin;
+            pMin.y = rect.yMax;
+            pMax.x = rect.xMax;
+            pMax.y = rect.yMax;
+        }
+        const a_p1_pMin = no.angleTo(p1, pMin).angle,
+            a_p1_pMax = no.angleTo(p1, pMax).angle,
+            a_p1_p2 = no.angleTo(p1, p2).angle;
+        return a_p1_p2 >= a_p1_pMin && a_p1_p2 <= a_p1_pMax || a_p1_p2 >= a_p1_pMax && a_p1_p2 <= a_p1_pMin;
     }
 }
 no.addToWindowForDebug('no', no);
