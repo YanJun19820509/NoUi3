@@ -28,6 +28,8 @@ enum AnimType {
     ScaleY = 20,//y轴缩放
     Jump = 21,//跳跃
     Shake = 22,//抖动
+    RotationX = 23,//x轴旋转
+    RotationY = 24,//y轴旋转
 }
 
 @ccclass('AnimationEffect')
@@ -80,6 +82,8 @@ class AnimationEffect {
             case AnimType.ScaleY: a = this.scaleY(node); break;
             case AnimType.Jump: a = this.jump(node); break;
             case AnimType.Shake: a = this.shake(node); break;
+            case AnimType.RotationX: a = this.rotationX(node); break;
+            case AnimType.RotationY: a = this.rotationY(node); break;
         }
 
         const easingFn = YJTweenTest ? this.easing : getEasingFn(this.easing);
@@ -381,6 +385,86 @@ class AnimationEffect {
             }
         }, {
             repeat: 1
+        }];
+    }
+
+    private rotationX(node: Node) {
+        const scale = no.scale(node);
+        const t = this.duration / 4;
+        return [{
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y * .2]
+            }
+        }, {
+            set: 1,
+            props: {
+                scale: [scale.x, scale.y * -.2]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y * -1]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y * -.2]
+            }
+        }, {
+            set: 1,
+            props: {
+                scale: [scale.x, scale.y * .2]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y]
+            }
+        }];
+    }
+
+    private rotationY(node: Node) {
+        const scale = no.scale(node);
+        const t = this.duration / 4;
+        return [{
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * .2, scale.y]
+            }
+        }, {
+            set: 1,
+            props: {
+                scale: [scale.x * -.2, scale.y]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * -1, scale.y]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * -.2, scale.y]
+            }
+        }, {
+            set: 1,
+            props: {
+                scale: [scale.x * .2, scale.y]
+            }
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y]
+            }
         }];
     }
 }
