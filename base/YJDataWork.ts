@@ -201,6 +201,9 @@ export class YJDataWork extends Component {
                 });
             }
             ui.setData(a);
+            if (ui.once){
+                this.register.remove(ui);
+            }
         });
     }
 

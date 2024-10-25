@@ -27,13 +27,13 @@ export class FuckUi extends Component {
     bind_keys: string = '';
 
     @property({ displayName: '只赋值一次' })
-    private once: boolean = false;
+    once: boolean = false;
 
     @property({ displayName: '重值忽略', tooltip: '如果输入的数据与上一次相同则忽略' })
     saveIgnore: boolean = true;
 
     @property({ displayName: '输出赋值日志' })
-    private showValueLog: boolean = false;
+    showValueLog: boolean = false;
 
     private _oldData: any;
 
@@ -62,7 +62,6 @@ export class FuckUi extends Component {
         this.logValue(d);
         this.onDataChange(d);
         if (this.once) {
-            this.registerNode.getComponent('YJFuckUiRegister')?.['remove'](this);
             this.destroy();
         }
     }

@@ -49,7 +49,7 @@ export class YJNodeTarget extends Component {
             // a.component = 'YJNodeTarget';
             // a.handler = 'setTriggerTouchTime';
             // btn.clickEvents.push(a);
-            no.addClickEventsToButton(btn, this.node, 'YJNodeTarget', 'setTriggerTouchTime');
+            no.addClickEventsToButton(btn, this.node, 'YJNodeTarget', 'setTriggerTouchTime', false);
         }
     }
 
