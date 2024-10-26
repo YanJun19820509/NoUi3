@@ -74,9 +74,9 @@ export class AutoCreateNode extends Component {
             this.rootPath = dest;
             // await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
             console.log(dest);
-            no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAltas').then(assets => {
+            no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAtlas').then(assets => {
                 this.atlases = this.atlases.concat(assets);
-                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/atlas`, 'cc.SpriteAltas').then(assets => {
+                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/ui`, 'cc.SpriteAtlas').then(assets => {
                     if (assets?.length > 0)
                         this.atlases = this.atlases.concat(assets);
                     no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/font`, 'cc.TTFFont').then(assets => {

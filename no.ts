@@ -3746,6 +3746,8 @@ export namespace no {
     /**红点管理类 */
     class HintCenter extends Event {
         private data: Map<string, number> = new Map<string, number>();
+        private sub2Main: { [subType: string]: string } = {};
+        private main2Subs: { [mainType: string]: string[] } = {};
         private timestampHit: object = new Object();
 
         constructor() {
@@ -3763,7 +3765,8 @@ export namespace no {
         public setHint(type: string, v: number) {
             v = float(v, 0);
             this.data.set(type, v);
-            this.emit(type, v, type);
+            // this.emit(type, v, type);
+            this.checkHintType(type);
         }
 
         public changeHint(type: string, v: number): void {
@@ -3772,6 +3775,29 @@ export namespace no {
             a += v;
             if (a < 0) a = 0;
             this.setHint(type, a);
+        }
+
+        /**
+         * 当添加子类型时，主类型的红点计算只会以子类型数量为准
+         * @param type 红点类型
+         * @param subType 子类型
+         */
+        public addSubType(type: string, subTypes: string | string[]): void {
+            subTypes = [].concat(subTypes);
+            for (let i = 0, n = subTypes.length; i < n; i++) {
+                const subType = subTypes[i];
+                if (this.sub2Main[subType] == type) return;
+                if (!this.data.has(type))
+                    this.data.set(type, 0);
+                this.sub2Main[subType] = type;
+                if (this.main2Subs[type] == null) this.main2Subs[type] = [];
+                no.addToArray(this.main2Subs[type], subType);
+            }
+        }
+
+        public removeSubType(type: string, subType: string): void {
+            delete this.sub2Main[subType];
+            no.removeFromArray(this.main2Subs[type], subType);
         }
 
         /**
@@ -3784,7 +3810,8 @@ export namespace no {
         public onHint(type: string, func: Function, target: any): void {
             this.on(type, func, target);
             if (this.data.has(type)) {
-                this.emit(type, this.data.get(type), type);
+                this.checkHintType(type);
+                // this.emit(type, this.data.get(type), type);
             }
         }
 
@@ -3825,6 +3852,20 @@ export namespace no {
                 return false;
             });
             return true;
+        }
+
+        private checkHintType(type: string) {
+            const mainType = this.sub2Main[type] || type,
+                subTypes = this.main2Subs[mainType];
+            let n = 0;
+            if (!subTypes) {
+                n = this.getHintValue(type);
+            } else {
+                for (let i = 0, m = subTypes.length; i < m; i++) {
+                    n += this.getHintValue(subTypes[i]);
+                }
+            }
+            this.emit(mainType, n, mainType);
         }
 
         public clear() {
@@ -5890,7 +5931,7 @@ export namespace no {
             a_p1_p2 = no.angleTo(p1, p2).angle;
         return a_p1_p2 >= a_p1_pMin && a_p1_p2 <= a_p1_pMax || a_p1_p2 >= a_p1_pMax && a_p1_p2 <= a_p1_pMin;
     }
-    
+
     /**
      * 根据分隔符获取字符串的某个参数
      */
