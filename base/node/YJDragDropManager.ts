@@ -4,6 +4,7 @@ import { Range } from "NoUi3/types";
 import { YJTouchListener } from "../touch/YJTouchListener";
 import { YJDragDropItemNode } from "./YJDragDropItemNode";
 import { YJDragDropTargetNode } from "./YJDragDropTargetNode";
+import { YJFitScreen } from "../YJFitScreen";
 /**
  * 拖拽管理器，需要将可拖拽的节点和拖拽放入的目标节点都作为该节点的子节点
  * Author mqsy_yj
@@ -33,7 +34,7 @@ export class YJDragDropManager extends YJTouchListener {
     moveY: boolean = true;
     @property({ displayName: '开启拖动范围限制', visible() { return this.dragDrop; } })
     isRange: boolean = false;
-    @property({ displayName: '拖动范围', visible() { return this.dragDrop && this.isRange; } })
+    @property({ displayName: '拖动范围', tooltip: '开启拖动范围限制后，如果范围为默认值，将会根据屏幕宽高和拖动节点尺寸自动计算', visible() { return this.dragDrop && this.isRange; } })
     range: Vec4 = v4();
     @property({ displayName: '开启左右翻转', tooltip: '拖动到指定x坐标时进行左右翻转', visible() { return this.dragDrop; } })
     isTurnX: boolean = false;
@@ -45,6 +46,7 @@ export class YJDragDropManager extends YJTouchListener {
     yTurnPos: Range = Range.new();
 
 
+    protected lastDragNode: Node = null;
     //拖拽节点
     protected dragNode: Node = null;
     //放置目标
@@ -61,8 +63,11 @@ export class YJDragDropManager extends YJTouchListener {
 
         if (this.dragNode) {
             const ddn = this.dragNode.getComponent(YJDragDropItemNode);
-            if (this.changeParent && ddn.canDrag())
-                this.dragNode.parent = this.node;
+            if (ddn.canDrag()) {
+                this.updateRange();
+                if (this.changeParent)
+                    this.dragNode.parent = this.node;
+            }
             ddn.onStart(event)
         }
         return true;
@@ -194,6 +199,17 @@ export class YJDragDropManager extends YJTouchListener {
                     break;
                 }
             }
+        }
+    }
+
+    private updateRange() {
+        if (this.isRange && this.range.equals(v4()) && this.dragNode != this.lastDragNode) {
+            this.lastDragNode = this.dragNode;
+            const nodeSize = no.size(this.dragNode);
+            const anchor = no.anchor(this.dragNode);
+            const viewSize = YJFitScreen.getVisibleSize();
+            const range = v4(-nodeSize.width * (1 - anchor.x) + viewSize.width, -nodeSize.height * (1 - anchor.y) + viewSize.height, nodeSize.width * (1 - anchor.x) - viewSize.width, nodeSize.height * (1 - anchor.y) - viewSize.height);
+            this.range = range;
         }
     }
 }

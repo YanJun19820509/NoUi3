@@ -67,6 +67,16 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     update() {
+        if (EDITOR) {
+            if (this.defaultName == '' && this.defaultSpriteFrameUuid != '') {
+                this.defaultSpriteFrameUuid = '';
+                this.defaultUrl = '';
+                this.bundleName = '';
+                this.loadFromAtlas = false;
+                this.canPack = false;
+                return;
+            }
+        }
         if ((this.loadFromAtlas || this.canPack)) {
             this.setDynamicAtlas();
         } else if (!this.loadFromAtlas && !this.canPack) {
@@ -255,7 +265,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private loadByUuid() {
         no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
             if (!file) {
-                no.err('setDefaultSpriteFrame by uuid no file', this.node.name, this.defaultSpriteFrameUuid)
+                no.err('setDefaultSpriteFrame by uuid no file', this.node?.name, this.defaultSpriteFrameUuid)
             } else {
                 if (EDITOR) {
                     this.getComponent(Sprite).spriteFrame = file;

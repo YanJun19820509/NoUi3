@@ -407,12 +407,12 @@ export namespace no {
             };
             this._map[type] = a;
         }
-        public off(type: string, handler: Function): void {
+        public off(type: string, handler: Function, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map[type];
             if (!a) return;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
-                if (b.h == handler) {
+                if (b.h == handler && b.t == target) {
                     a.splice(i, 1);
                     break;
                 }
@@ -489,6 +489,14 @@ export namespace no {
 
         public clear() {
             this._map = {};
+        }
+
+        /**
+         * 创建一个新的事件对象
+         * @returns 
+         */
+        public new() {
+            return new Event();
         }
     }
     /**
