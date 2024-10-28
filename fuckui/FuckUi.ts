@@ -101,13 +101,13 @@ export class FuckUi extends Component {
     public resetData(): void {
         if (!this._oldData) return;
         let d = this._oldData;
-        if (d != '') {
-            try {
-                d = no.parse2Json(d);
-            } catch (e) {
-                no.err('no.parse2Json', 'FuckUi.resetData', d);
-            }
-        }
+        // if (d != '') {
+        //     try {
+        //         d = no.parse2Json(d);
+        //     } catch (e) {
+        //         no.err('no.parse2Json', 'FuckUi.resetData', d);
+        //     }
+        // }
         this.logValue(d);
         if (this.enabled)
             this.onDataChange(d);

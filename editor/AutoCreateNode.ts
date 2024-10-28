@@ -194,10 +194,21 @@ export class AutoCreateNode extends Component {
         });
     }
 
+    public getSpriteFrameName(name: string) {
+        let check = ['_scale_', '_9_', '_%', '_^', '_@'];
+        for (let i = 0; i < check.length; i++) {
+            if (name.indexOf(check[i]) > 0) {
+                return name.split(check[i])[0];
+            }
+        }
+        return name;
+    }
+
     private createSpriteNode(c: any, parent: Node): Node {
         let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
-        let sf = this.getSpriteFrame(c.name);
+        let sf_name = this.getSpriteFrameName(c.name);
+        let sf = this.getSpriteFrame(sf_name);
         let is9 = false;
         if (sf && (sf.insetTop != 0 || sf.insetBottom != 0 || sf.insetRight != 0 || sf.insetLeft != 0)) {
             is9 = true;
@@ -206,6 +217,7 @@ export class AutoCreateNode extends Component {
             var aa = c.name.split('_scale_');
             n.name = aa[0];
             no.scale(n, new Vec3(aa[1], aa[1], 1));
+            is9 = false;
         }
         if (c['9'] || is9) {
             s.sizeMode = Sprite.SizeMode.CUSTOM;
@@ -231,17 +243,17 @@ export class AutoCreateNode extends Component {
             n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         else
             n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
-        if (!n.getComponent('fixedLab')) {
+        if (!n.getComponent('YJLanguageLabel')) {
             let t: string = c.text;
             for (let i = 0, m = t.length; i < m; i++) {
                 let code = t.charCodeAt(i);
                 if (code >= 0x4e00 && code <= 0x29fa5) {
-                    n.addComponent('fixedLab')['textId'] = c.text;
+                    n.addComponent('YJLanguageLabel')['textId'] = c.text;
                     break;
                 }
             }
         }
-        if (n.getComponent('fixedLab')) {
+        if (n.getComponent('YJLanguageLabel')) {
             let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
             l.string = c.text;
             l.fontSize = Math.ceil(Number(c.size));

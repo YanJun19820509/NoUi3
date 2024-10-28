@@ -28,6 +28,7 @@ export class YJBubble extends YJDataWork {
     offset: Vec3 = v3();
 
     protected afterDataInit() {
+        const offset = this.data.offset || this.offset;
         let pos = v3();
         if (this.data.position) {
             pos.x = this.data.position[0];
@@ -43,7 +44,7 @@ export class YJBubble extends YJDataWork {
         } else return;
         if (!isValid(this.node)) return;
         this.node.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
-        this.setValue('pos', [pos.x + this.offset.x, pos.y + this.offset.y]);
+        this.setValue('pos', [pos.x + offset.x, pos.y + offset.y]);
         this.setValue('show', true);
     }
 

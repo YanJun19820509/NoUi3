@@ -113,6 +113,7 @@ export class YJLoadAssets extends Component {
         if (!node) return;
         const arr = [].concat(
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+            node.getComponentsInChildren('YJLanguageSprite'),
             node.getComponentsInChildren('YJCharLabel'),
             node.getComponentsInChildren('YJDynamicTexture'),
             node.getComponentsInChildren('YJBitmapFont'),

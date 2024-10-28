@@ -7,6 +7,7 @@ import { FuckUi } from './FuckUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
+import { i18nG } from 'scripts/common/i18nG';
 
 /**
  * Predefined variables
@@ -46,6 +47,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     panelName: string;
     @property({ visible() { return false; } })
     materialInfoUuid: string;
+    @property({ displayName: '多语言' })
+    multiLan: boolean = false;
 
     private lastDefine: string;
 
@@ -87,10 +90,19 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     onEnable() {
         if (EDITOR) return;
+        if (this.multiLan && this.defaultName) {
+            this.setSingleSpriteFrame(this.defaultName);
+            i18nG.onLanguagechange(this.checkLanguageChange, this);
+            return
+        }
         if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
             this.setDefaultSpriteFrame();
         else
             this.setSpriteFrame(this._lastName || this.defaultName);
+    }
+
+    private checkLanguageChange() {
+        this.setSingleSpriteFrame(this.defaultName);
     }
 
     onDisable() {
@@ -128,6 +140,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
             no.EditorMode.getAssetInfo(this.defaultSpriteFrameUuid).then(info => {
                 this.defaultUrl = info.url.replace(/.png|.jpg/, '');
+                this.multiLan = this.defaultUrl.indexOf('/language/') > -1;
                 no.EditorMode.getBundleName(info.url).then(bundleName => {
                     this.bundleName = bundleName;
                 });
@@ -288,7 +301,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 sprite.customMaterial = this.dynamicAtlas.customMaterial;
             }
         }
-        const path = `${this.bundleName}/${name}/spriteFrame`;
+        let path: string;
+        if (this.multiLan) {
+            path = `${i18nG.getLNG()}/${name}/spriteFrame`;
+        } else path = `${this.bundleName}/${name}/spriteFrame`;
         no.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', name);

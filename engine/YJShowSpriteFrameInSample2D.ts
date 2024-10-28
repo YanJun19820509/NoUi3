@@ -41,7 +41,7 @@ export class YJShowSpriteFrameInSample2D extends Component {
             if (v) a.resetFont();
             else a.removeFont();
         });
-        list = this.getComponentsInChildren('fixedLab');
+        list = this.getComponentsInChildren('YJLanguageLabel');
         list.forEach(a => {
             if (v) a.resetLabel();
             else a.removeLabel();
