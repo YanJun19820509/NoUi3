@@ -4900,9 +4900,10 @@ export namespace no {
     export function createClickEvent(target: Node, comp: typeof Component | string, handler: string): EventHandler {
         let a = new EventHandler();
         a.target = target;
-        if (typeof comp == 'string')
+        if (typeof comp == 'string') {
             a.component = comp;
-        else {
+            a._componentId = js.getClassId(js.getClassByName(comp));
+        } else {
             a.component = js.getClassName(comp);
             a._componentId = js.getClassId(comp);
         }

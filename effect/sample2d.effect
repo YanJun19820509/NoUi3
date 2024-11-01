@@ -132,6 +132,16 @@ CCProgram unlit-fs %{
       else if(type == 7.){
         _color.a *= (1. - step(ext.x, uv0.x)) * (1. - step(ext.y, uv0.y));
       }
+
+      else if(type == 8.){
+          vec3 result = mix(vec3(1.).rgb, _color.rgb, ext.x);
+          _color = vec4(result.rgb, _color.a);
+      }
+
+        else if(type == 9.){
+          vec3 result = mix(vec3(236./255.,102./255.,88./255.).rgb, _color.rgb, ext.x);
+          _color = vec4(result.rgb, _color.a);
+      }
       return _color;
   }
 
