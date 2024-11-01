@@ -58,6 +58,11 @@ export class YJDataWork extends Component {
         this.afterInit();
     }
 
+    public initWithData(d: any) {
+        this.data = d;
+        this.init();
+    }
+
     /**
      * 初始化，可手动执行，或在onLoad时自动执行，若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      * @returns
@@ -201,7 +206,7 @@ export class YJDataWork extends Component {
                 });
             }
             ui.setData(a);
-            if (ui.once){
+            if (ui.once) {
                 this.register.remove(ui);
             }
         });

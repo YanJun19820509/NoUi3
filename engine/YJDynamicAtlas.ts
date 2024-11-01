@@ -95,8 +95,6 @@ export class YJDynamicAtlas {
     //控制合图是否旋转的总开关
     private canRotate = false;
 
-    private thisNodeName: string;
-
     // onLoad() {
     //     this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
     // }
@@ -329,7 +327,7 @@ export class YJDynamicAtlas {
         // this.initAtlas();
 
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            no.err(`${this.thisNodeName}动态图集无空间！`);
+            no.err(`${this.atlas.uuid}动态图集无空间！`);
         });
         return frame;
     }
