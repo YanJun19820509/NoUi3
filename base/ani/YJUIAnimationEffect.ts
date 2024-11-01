@@ -30,6 +30,7 @@ enum AnimType {
     Shake = 22,//抖动
     RotationX = 23,//x轴旋转
     RotationY = 24,//y轴旋转
+    HeartBit = 25,//心跳
 }
 
 @ccclass('AnimationEffect')
@@ -84,6 +85,7 @@ class AnimationEffect {
             case AnimType.Shake: a = this.shake(node); break;
             case AnimType.RotationX: a = this.rotationX(node); break;
             case AnimType.RotationY: a = this.rotationY(node); break;
+            case AnimType.HeartBit: a = this.heartBit(node); break;
         }
 
         const easingFn = YJTweenTest ? this.easing : getEasingFn(this.easing);
@@ -259,7 +261,7 @@ class AnimationEffect {
             node["__yj_ui_opacity"] = no.opacity(node);
         return [{
             duration: this.duration,
-            to: 1,
+            [this.duration == 0 ? 'set' : 'to']: 1,
             props: {
                 opacity: 2
             }
@@ -269,7 +271,7 @@ class AnimationEffect {
     private fadeIn(node: Node) {
         return [{
             duration: this.duration,
-            to: 1,
+            [this.duration == 0 ? 'set' : 'to']: 1,
             props: {
                 opacity: node["__yj_ui_opacity"] || 255
             }
@@ -465,6 +467,40 @@ class AnimationEffect {
             props: {
                 scale: [scale.x, scale.y]
             }
+        }];
+    }
+
+    private heartBit(node: Node) {
+        const scale = node["__yj_ui_scale"] || no.scale(node);
+        if (!node["__yj_ui_scale"])
+            node["__yj_ui_scale"] = scale;
+        const t = this.duration / 4;
+        return [{
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * 1.3, scale.y * 1.3]
+            },
+            easing: 'quadOut'
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * .9, scale.y * .9]
+            }, easing: 'quadIn'
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x * 1.1, scale.y * 1.1]
+            },
+            easing: 'quadOut'
+        }, {
+            duration: t,
+            to: 1,
+            props: {
+                scale: [scale.x, scale.y]
+            }, easing: 'quadIn'
         }];
     }
 }

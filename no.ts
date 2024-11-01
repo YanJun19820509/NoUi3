@@ -1523,7 +1523,7 @@ export namespace no {
     }
 
     /**
-     * 节点的世界坐标
+     * 节点的世界坐标,相对于屏幕左下为(0,0)的坐标
      * @param node
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
@@ -2257,6 +2257,15 @@ export namespace no {
     }
 
     /**
+     * 获取节点在父节点下的缩放值，
+     * @param node 节点
+     * @returns 
+     */
+    export function scaleInHierarchy(node: Node) {
+        return node['_scale'];
+    }
+
+    /**
      * 获取节点在世界坐标系中的包围盒rect,包含自身和已激活的子节点的世界边框
      * @param node 
      */
@@ -2558,6 +2567,10 @@ export namespace no {
 
         public onChange(handler: (d?: Data) => void, target?: any): void {
             this.on(Data.DataChangeEvent, handler, target);
+        }
+
+        public offChange(handler: (d?: Data) => void, target?: any): void {
+            this.off(Data.DataChangeEvent, handler, target);
         }
     }
 
@@ -3648,7 +3661,7 @@ export namespace no {
     export const assetBundleManager = new AssetBundleManager();
 
     /**缓存池 */
-    class CachePool {
+    export class CachePool {
         private cacheMap: Map<string, { o: any, t: number }[]>;
         private checkDuration = 60000;
         constructor() {
@@ -3673,8 +3686,10 @@ export namespace no {
          * 回收缓存对象
          * @param type
          * @param object
+         * @param canRelease 是否可以立即释放
+         * @param changeParent 是否改变父节点，如果是固定父节点，建议设置为false，否则会导致dc增加
          */
-        public recycle(type: string, object: any, canRelease = true): void {
+        public recycle(type: string, object: any, canRelease = true, changeParent = true): void {
             if (type == null || type == '') {
                 log(`${object.name}未指定回收类型，不做回收处理，直接销毁`);
                 this._clear(object);
@@ -3682,7 +3697,8 @@ export namespace no {
             }
             if (!this.cacheMap.has(type)) this.cacheMap.set(type, []);
             if (object instanceof Node) {
-                object.parent = null;
+                if (changeParent)
+                    object.parent = null;
                 // object.active = false;
                 visible(object, false);
             }
@@ -3748,7 +3764,7 @@ export namespace no {
             });
         }
     }
-    /**全局缓存池 */
+    /**全局缓存池,适用于非节点数据或节点的父节点不固定的情况，如果是节点且其父节点固定，用全局缓存池会导致dc增加 */
     export const cachePool = new CachePool();
 
     /**红点管理类 */

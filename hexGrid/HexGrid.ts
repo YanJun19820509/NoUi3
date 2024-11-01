@@ -79,6 +79,14 @@ export class Hex {
         return this.add(Hex.direction(direction));
     }
 
+    public allNeighbors(): Hex[] {
+        const results: Hex[] = [];
+        for (var i = 0; i < 6; i++) {
+            results.push(this.neighbor(i));
+        }
+        return results;
+    }
+
     public static diagonals: Hex[] = [new Hex(2, -1, -1), new Hex(1, -2, 1), new Hex(-1, -1, 2), new Hex(-2, 1, 1), new Hex(-1, 2, -1), new Hex(1, 1, -2)];
 
     public diagonalNeighbor(direction: number): Hex {

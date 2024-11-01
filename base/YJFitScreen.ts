@@ -26,7 +26,7 @@ export class YJFitScreen extends Component {
     /**显示区域，相对于屏幕 */
     public static rect: Rect = new Rect();
 
-    public static policy: number = ResolutionPolicy.NO_BORDER;
+    public static policy: number = ResolutionPolicy.FIXED_WIDTH;
 
     onLoad() {
         this.adapt();

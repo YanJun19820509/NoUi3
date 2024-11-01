@@ -145,8 +145,9 @@ export class YJDragDropManager extends YJTouchListener {
 
     protected setPosition(node: Node, deltaPos: Vec2) {
         if (!node) return;
+        const scale1 = no.scaleInHierarchy(node);
         let pos = no.position(node);
-        pos.add3f(this.moveX ? deltaPos.x : 0, this.moveY ? deltaPos.y : 0, 0);
+        pos.add3f(this.moveX ? (deltaPos.x / scale1.x) : 0, this.moveY ? (deltaPos.y / scale1.y) : 0, 0);
         if (this.isRange) {
             if (pos.x < this.range.x) pos.x = this.range.x;
             if (pos.x > this.range.z) pos.x = this.range.z;
