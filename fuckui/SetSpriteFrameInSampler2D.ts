@@ -35,7 +35,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultSpriteFrameUuid: string = '';
     @property({ readonly: true })
     defaultUrl: string = '';
-    @property({ readonly: true })
+    @property
     bundleName: string = '';
     @property({ displayName: '从图集加载', readonly: true })
     loadFromAtlas: boolean = true;
@@ -74,7 +74,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (this.defaultName == '' && this.defaultSpriteFrameUuid != '') {
                 this.defaultSpriteFrameUuid = '';
                 this.defaultUrl = '';
-                this.bundleName = '';
                 this.loadFromAtlas = false;
                 this.canPack = false;
                 return;
@@ -162,7 +161,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private _data: any;
     onDataChange(data: string) {
-        this._data = data;
+        this._data = data + '';
         if (this.uiAnim?.enabled) this.uiAnim.a_play();
         else this.changeData();
     }
