@@ -35,7 +35,7 @@ export class YJOutOfViewManager extends Component {
     }
 
     public addOutOfViewNode(node: YJOutOfViewNode) {
-        const key = this.posToAreaKey(no.position(node.node));
+        const key = this.posToAreaKey(node.position());
         const area = this._areas[key];
         if (area) {
             area.subNodes[area.subNodes.length] = node;
@@ -84,6 +84,7 @@ export class YJOutOfViewManager extends Component {
                 for (let j = col - this._subc; j <= col + this._subc; j++) {
                     const key = `${i}-${j}`;
                     this.setSubNodesVisibleOfArea(key, true);
+                    // console.log('show area', key);
                 }
             }
             if (centerKey) {
@@ -97,6 +98,7 @@ export class YJOutOfViewManager extends Component {
                         for (let j1 = oldCol - this._subc; j1 <= oldCol + this._subc; j1++) {
                             const key = `${rr}-${j1}`;
                             this.setSubNodesVisibleOfArea(key, false);
+                            // console.log('hide area', key);
                         }
                     }
                 }
@@ -107,6 +109,7 @@ export class YJOutOfViewManager extends Component {
                         for (let j1 = oldRow - this._subr; j1 <= oldRow + this._subr; j1++) {
                             const key = `${j1}-${cc}`;
                             this.setSubNodesVisibleOfArea(key, false);
+                            // console.log('hide area', key);
                         }
                     }
                 }

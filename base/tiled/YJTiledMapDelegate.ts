@@ -1,4 +1,5 @@
 
+import { no } from 'NoUi3/no';
 import { ccclass, menu, Component, Node } from '../../yj';
 import { YJTiledMapData } from './YJTiledMapData';
 
@@ -42,4 +43,18 @@ export class YJTiledMapDelegate extends Component {
      * 初始化完成时
      */
     public onInitComplete(): void { }
+
+    // /**
+    //  * 
+    //  * @param tilePos 
+    //  * @param node 
+    //  * @returns 
+    //  */
+    // public static convertTilePosInNode(tilePos: { x: number, y: number }, node: Node) {
+    //     const anchor = no.anchor(node),
+    //         size = no.size(node),
+    //         w = size.width * anchor.x,
+    //         h = size.height * anchor.y;
+    //     return [tilePos.x - w, h - tilePos.y];
+    // }
 }

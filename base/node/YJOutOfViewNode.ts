@@ -1,5 +1,7 @@
-import { ccclass, Component, Node, property } from "NoUi3/yj";
+import { ccclass, Component, Node, property, v3 } from "NoUi3/yj";
 import { YJOutOfViewManager } from "./YJOutOfViewManager";
+import { YJDataWork } from "../YJDataWork";
+import { no } from "NoUi3/no";
 /**
  * 
  * Author mqsy_yj
@@ -24,5 +26,14 @@ export class YJOutOfViewNode extends Component {
 
     public setVisible(visible: boolean) {
         this.node['_activeInHierarchy'] = visible;
+    }
+
+    public position() {
+        const data = this.getComponent(YJDataWork)?.data,
+            pos = data?.pos || data?.position;
+        if (pos) {
+            return v3(pos[0], pos[1]);
+        }
+        return no.position(this.node);
     }
 }
