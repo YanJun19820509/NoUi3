@@ -46,7 +46,9 @@ export class YJGuideManager extends Component {
         this._config = no.dataCache.getJSON(path);
         if (!this._config)
             no.assetBundleManager.loadJSON(path, item => {
-                this._config = item.json;
+                // this._config = item.json;
+                no.dataCache.setJSON({ [item.name]: item.json });
+                this._config = no.dataCache.getJSON(item.name);
                 item.decRef();
             });
     }
