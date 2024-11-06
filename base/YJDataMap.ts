@@ -52,12 +52,16 @@ export class YJDataMap extends YJDataWork {
             const c = js.getClassByName(this.dataSourceClassName) as (typeof YJGameData);
             this._dataSource = c.instance();
             if (this._dataSource) {
-                no.scheduleForever(() => {
-                    this._dataSource.checkStateChange(this) && this.syncWithDataSource();
-                }, .5, this);
+                this._dataSource.onChange(this.syncWithDataSource, this);
             }
         }
         this.syncWithDataSource();
+    }
+
+    onDestroy() {
+        if (this._dataSource) {
+            this._dataSource.offChange(this.syncWithDataSource, this);
+        }
     }
 
     protected syncWithDataSource() {

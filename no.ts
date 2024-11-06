@@ -4,7 +4,8 @@ import {
     director, game, instantiate, isValid, js, macro, property, random, sys, tween, v2, v3, view, Node, Tween, EventTarget, ImageAsset, _AssetInfo, Button, Bundle, SkeletonData, NodeEventType, TTFFont, BlockInputEvents,
     Layers,
     CCObject,
-    EventTouch
+    EventTouch,
+    Toggle
 } from "./yj";
 
 
@@ -445,7 +446,10 @@ export namespace no {
                 for (let i = a.length - 1; i >= 0; i--) {
                     const b = a[i];
                     try {
-                        b.h.apply(b.t, args);
+                        if (b.t && !checkValid(b.t)) {
+                            b.o = true;
+                        } else
+                            b.h.apply(b.t, args);
                     } catch (e) { console.error(e); }
                 }
             } else {
@@ -4950,6 +4954,32 @@ export namespace no {
                 }
             }
             b && (btn.clickEvents[btn.clickEvents.length] = a);
+        }
+    }
+
+    /**
+     * 给toggle添加选中事件
+     * @param toggle 需要添加选中事件的toggle
+     * @param target 事件响应组件和函数所在节点
+     * @param comp 事件响应组件
+     * @param handler 响应事件函数名
+     * @param exclusive 独占，默认true，即toggle中只有当前添加的事件
+     */
+    export function addCheckEventsToToggle(toggle: Toggle, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
+        if (!toggle?.checkEvents) return;
+        let a = createClickEvent(target, comp, handler);
+        if (exclusive)
+            toggle.checkEvents = [a];
+        else {
+            let b = true;
+            for (let i = 0, n = toggle.checkEvents.length; i < n; i++) {
+                let ce = toggle.checkEvents[i];
+                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                    b = false;
+                    break;
+                }
+            }
+            b && (toggle.checkEvents[toggle.checkEvents.length] = a);
         }
     }
 

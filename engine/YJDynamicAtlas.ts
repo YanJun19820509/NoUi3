@@ -426,6 +426,7 @@ export class YJDynamicAtlas {
         let bs = [].concat(
             node.getComponentsInChildren('YJCreateNode'),
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+            node.getComponentsInChildren('YJLanguageSprite'),
             node.getComponentsInChildren('SetCreateCacheNode'),
             node.getComponentsInChildren('SetCreateNode'),
             node.getComponentsInChildren('SetCreateNodeByUrl'),

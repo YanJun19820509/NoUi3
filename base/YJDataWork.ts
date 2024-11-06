@@ -32,9 +32,9 @@ export class YJDataWork extends Component {
     protected _data: no.Data = new no.Data();
 
     private changedDataKeys: string[] = [];
-    private _dataChanged: boolean = false;
 
     private _loaded: boolean = false;
+    private _neecChangeData: boolean = false;
 
     protected onDestroy(): void {
     }
@@ -109,7 +109,10 @@ export class YJDataWork extends Component {
         this._data?.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
-        this._dataChanged = true;
+        if (!this._neecChangeData) {
+            this._neecChangeData = true;
+            no.scheduleOnce(this.setChangedDataToUi, 0, this);
+        }
         return this;//支持链式写法
     }
 
@@ -135,14 +138,6 @@ export class YJDataWork extends Component {
         this.getComponent('YJUpdatePreDataWork')?.['updateData'](this.data);
     }
 
-    protected lateUpdate(dt: number): void {
-        if (EDITOR || !this._loaded) return;
-        if (this._dataChanged) {
-            this.setChangedDataToUi();
-            this._dataChanged = false;
-        }
-    }
-
     public clear(): void {
         this._data.clear();
     }
@@ -151,26 +146,13 @@ export class YJDataWork extends Component {
         if (!this?.node?.isValid) return;
         if (!this?.changedDataKeys?.length) return;
         if (!this.register.isInit) this.register.init();
-
-        // const keys = this.changedDataKeys.slice();
-        // this.changedDataKeys.length = 0;
-        // keys.forEach(k => {
-        //     this.onValueChange(k);
-        // });
-        for (let i = this.changedDataKeys.length - 1; i >= 0; i--) {
-            this.onValueChange(this.changedDataKeys[i]);
-            this.changedDataKeys.splice(i, 1);
+        const keys = this.changedDataKeys.slice();
+        this.changedDataKeys.length = 0;
+        this._neecChangeData = false;
+        for (let i = 0, n = keys.length; i < n; i++) {
+            this.onValueChange(keys[i]);
         }
-        // keys = null;
-        // YJJobManager.ins.execute(this.iterateChangedData, this, keys);
     }
-
-    // private iterateChangedData(keys: string[]) {
-    //     if (!isValid(this?.node) || !keys?.length) return false;
-    //     let k = keys.shift();
-    //     this.onValueChange(k);
-    //     return true;
-    // }
 
     private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.register?.getUis(key) || [];

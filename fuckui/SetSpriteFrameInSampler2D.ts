@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid } from '../yj';
 import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -35,7 +35,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultSpriteFrameUuid: string = '';
     @property({ readonly: true })
     defaultUrl: string = '';
-    @property({ readonly: true })
+    @property
     bundleName: string = '';
     @property({ displayName: '从图集加载', readonly: true })
     loadFromAtlas: boolean = true;
@@ -64,8 +64,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         //运行时update方法置空
         if (!EDITOR) {
             this.update = null;
-            this.materialInfo = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid);
-            this.dynamicAtlas = this.materialInfo.dynamicAtlas;
         }
     }
 
@@ -74,7 +72,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             if (this.defaultName == '' && this.defaultSpriteFrameUuid != '') {
                 this.defaultSpriteFrameUuid = '';
                 this.defaultUrl = '';
-                this.bundleName = '';
                 this.loadFromAtlas = false;
                 this.canPack = false;
                 return;
@@ -99,6 +96,12 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.setDefaultSpriteFrame();
         else
             this.setSpriteFrame(this._lastName || this.defaultName);
+    }
+
+    private initMaterialInfo() {
+        if (!this.materialInfoUuid || this.materialInfo) return;
+        this.materialInfo = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid);
+        this.dynamicAtlas = this.materialInfo.dynamicAtlas;
     }
 
     private checkLanguageChange() {
@@ -162,7 +165,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private _data: any;
     onDataChange(data: string) {
-        this._data = data;
+        this._data = data + '';
         if (this.uiAnim?.enabled) this.uiAnim.a_play();
         else this.changeData();
     }
@@ -196,7 +199,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this.setDefaultSpriteFrame();
             return;
         }
-
+        this.initMaterialInfo();
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
             if (this.dynamicAtlas)
@@ -235,6 +238,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setDefaultSpriteFrame() {
+        this.initMaterialInfo();
         if (!this.loadFromAtlas && this.canPack) {
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
@@ -260,6 +264,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.loadByUuid();
             return;
         }
+        this.initMaterialInfo();
         no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
             if (!file) {
                 no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl);
@@ -276,6 +281,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private loadByUuid() {
+        this.initMaterialInfo();
         no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
             if (!file) {
                 no.err('setDefaultSpriteFrame by uuid no file', this.node?.name, this.defaultSpriteFrameUuid)
@@ -295,6 +301,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setSingleSpriteFrame(name: string) {
+        if (!isValid(this)) return;
+        this.initMaterialInfo();
         if (this.canPack) {
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {

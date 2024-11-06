@@ -26,8 +26,6 @@ export class YJMenu extends Component {
     itemTemp: Node = null;
     @property({ type: Node })
     container: Node = null;
-    @property({ step: 1, min: -1 })
-    defaultChecked: number = 0;
     @property
     autoCreate: boolean = true;
     @property
@@ -50,7 +48,6 @@ export class YJMenu extends Component {
         menuItems.forEach((info, i) => {
             if (!no.isDebug() && info.DEBUG) return;
             const item = instantiate(this.itemTemp);
-            item.getComponent(Toggle).isChecked = this.defaultChecked == i;
             if (info.title) {
                 let list: any[] = item.getComponentsInChildren(Label);
                 if (list.length == 0)
@@ -64,8 +61,5 @@ export class YJMenu extends Component {
             item.active = true;
             item.parent = this.container || this.node;
         });
-        this.scheduleOnce(() => {
-            this.getComponent(YJToggleGroupManager).initToggles();
-        })
     }
 }

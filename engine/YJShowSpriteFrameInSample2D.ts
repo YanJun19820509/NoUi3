@@ -36,6 +36,13 @@ export class YJShowSpriteFrameInSample2D extends Component {
                 a.removeSprite();
             }
         });
+        list =  this.getComponentsInChildren('YJLanguageSprite');
+        list.forEach(a => {
+            if (v) a.resetSprite();
+            else {
+                a.removeSprite();
+            }
+        });
         list = this.getComponentsInChildren('YJBitmapFont');
         list.forEach(a => {
             if (v) a.resetFont();
