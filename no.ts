@@ -3797,9 +3797,15 @@ export namespace no {
             this.checkHintType(type);
         }
 
+        public setMainHint(type: string, v: number): void {
+            v = float(v, 0);
+            this.data.set(type, v);
+            this.emit(type, v, type);
+        }
+
         public changeHint(type: string, v: number): void {
             v = float(v, 0);
-            let a = this.getHintValue(type);
+            let a = this.getHintValue(type) || 0;
             a += v;
             if (a < 0) a = 0;
             this.setHint(type, a);
@@ -3866,9 +3872,8 @@ export namespace no {
         }
 
         public getHintValue(type: string): number {
-            let n = 0;
-            if (this.data.has(type)) n = this.data.get(type);
-            return n;
+            if (this.data.has(type)) return this.data.get(type);
+            return null;
         }
 
         private checkHint(): boolean {
@@ -3883,14 +3888,25 @@ export namespace no {
         }
 
         private checkHintType(type: string) {
-            const mainType = this.sub2Main[type] || type,
-                subTypes = this.main2Subs[mainType];
+            const mainType = this.sub2Main[type];
+            if (!mainType || mainType != type) {
+                this.emit(type, this.getHintValue(type) || 0, type);
+            }
+            if (!mainType) return;
+
+            const subTypes = this.main2Subs[mainType];
             let n = 0;
-            if (!subTypes) {
-                n = this.getHintValue(type);
-            } else {
+            if (subTypes) {
+                let b: number[] = [];
                 for (let i = 0, m = subTypes.length; i < m; i++) {
-                    n += this.getHintValue(subTypes[i]);
+                    const a = this.getHintValue(subTypes[i]);
+                    if (a != null) b.push(a);
+                }
+                if (b.length > 0) {
+                    n = b.reduce((a, b) => a + b);
+                    this.data.set(mainType, n);
+                } else {
+                    n = this.data.get(mainType) || 0;
                 }
             }
             this.emit(mainType, n, mainType);
