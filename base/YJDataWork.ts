@@ -45,6 +45,7 @@ export class YJDataWork extends Component {
             return;
         }
         this._loaded = true;
+        this._neecChangeData = false;
         this.init();
     }
 
@@ -111,7 +112,10 @@ export class YJDataWork extends Component {
         no.addToArray(this.changedDataKeys, key);
         if (!this._neecChangeData) {
             this._neecChangeData = true;
-            no.scheduleOnce(this.setChangedDataToUi, 0, this);
+            no.scheduleOnce(() => {
+                this.setChangedDataToUi();
+                this._neecChangeData = false;
+            }, 0);
         }
         return this;//支持链式写法
     }
@@ -148,7 +152,6 @@ export class YJDataWork extends Component {
         if (!this.register.isInit) this.register.init();
         const keys = this.changedDataKeys.slice();
         this.changedDataKeys.length = 0;
-        this._neecChangeData = false;
         for (let i = 0, n = keys.length; i < n; i++) {
             this.onValueChange(keys[i]);
         }
