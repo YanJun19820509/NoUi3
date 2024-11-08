@@ -1253,7 +1253,7 @@ export namespace no {
         // } else if (typeof d == 'object')
         //     return instantiate(d);
         if (typeof d == 'object') {
-            if (structuredClone) return structuredClone(d);
+            if (typeof structuredClone == "function") return structuredClone(d);
             else {
                 let a = JSON.stringify(d);
                 return JSON.parse(a);
@@ -5997,6 +5997,30 @@ export namespace no {
             return a[index];
         }
         return a[a.length - 1];
+    }
+
+    /**定义回调和调用次数 调用次数到达后调用回调*/
+    export function countCall(callback: Function, count: number): any {
+        let currentCount = 0;
+        if (callback.constructor.name === 'AsyncFunction') {
+            // async回调
+            return (async function () {
+                currentCount++;
+                if (currentCount >= count) {
+                    await (callback)();
+                    currentCount = 0;
+                }
+            }) as any;
+        } else {
+            // 普通回调
+            return (function () {
+                currentCount++;
+                if (currentCount >= count) {
+                    (callback)();
+                    currentCount = 0;
+                }
+            }) as any;
+        }
     }
 }
 no.addToWindowForDebug('no', no);

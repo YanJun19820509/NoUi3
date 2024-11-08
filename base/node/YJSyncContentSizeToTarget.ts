@@ -24,6 +24,8 @@ export class YJSyncContentSizeToTarget extends Component {
     checkSelf: boolean = false;
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
+    @property({ displayName: '是否同步scale' })
+    syncScale: boolean = true;
 
     @property({ displayName: '测试' })
     public get test(): boolean {
@@ -63,8 +65,10 @@ export class YJSyncContentSizeToTarget extends Component {
     private syncSize(from: Node, to: Node) {
         let size = no.size(from);
         let scale = no.scale(from);
-        size.width *= scale.x;
-        size.height *= scale.y;
+        if (this.syncScale) {
+            size.width *= scale.x;
+            size.height *= scale.y;
+        }
         size.width += this.offset.width;
         size.height += this.offset.height;
         no.size(to, size);

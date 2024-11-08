@@ -35,7 +35,7 @@ export class YJGoToManager extends Component {
 
     public static goTo(alias: string, args?: any, before?: () => void, after?: () => void): void {
         let info = YJGoToManager._ins?.delegate?.getInfoByAlias(alias);
-        if (!info) return;
+        if (!info || !info.target) return;
         before?.();
         if (info.accompany != '') {
             this.goTo(info.accompany, null, null, () => {
