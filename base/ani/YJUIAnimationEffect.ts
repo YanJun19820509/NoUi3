@@ -4,6 +4,9 @@ import { Component, DEBUG, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, directo
 import { YJTweenTest, getEasingFn } from "./YJTween";
 
 
+/**
+ * 动画类型枚举
+ */
 enum AnimType {
     None = 0,
     Delay = 1,//延迟执行
@@ -33,6 +36,9 @@ enum AnimType {
     HeartBit = 25,//心跳
 }
 
+/**
+ * 单个动画效果类
+ */
 @ccclass('AnimationEffect')
 class AnimationEffect {
     @property({ type: Enum(AnimType), displayName: "动画类型" })
@@ -58,6 +64,11 @@ class AnimationEffect {
     @property({ type: no.EventHandlerInfo, displayName: '回调' })
     callbacks: no.EventHandlerInfo[] = []; // 默认回调函数为空函数，即不执行任何操作
 
+    /**
+     * 获取动画配置
+     * @param node 目标节点
+     * @returns 动画配置数组
+     */
     public getTweenSet(node: Node) {
         let a: any;
         switch (this.type) {
@@ -98,10 +109,17 @@ class AnimationEffect {
         return a;
     }
 
+    /**
+     * 延迟动画
+     */
     private delay() {
         return [{ delay: this.duration }];
     }
 
+    /**
+     * 从左侧滑入动画
+     * @param node 目标节点
+     */
     private leftSlideIn(node: Node) {
         return [{
             set: 1,
@@ -117,6 +135,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 从右侧滑入动画
+     * @param node 目标节点
+     */
     private rightSlideIn(node: Node) {
         return [{
             set: 1,
@@ -132,6 +154,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 缩放进入动画
+     * @param node 目标节点
+     */
     private scaleIn(node: Node) {
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = no.scale(node);
@@ -150,6 +176,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 缩放到指定大小动画
+     * @param node 目标节点
+     */
     private scaleTo(node: Node) {
         return [{
             duration: this.duration,
@@ -160,6 +190,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 缩放消失动画
+     * @param node 目标节点
+     */
     private scaleOut(node: Node) {
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = no.scale(node);
@@ -172,6 +206,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * X轴缩放进入动画
+     * @param node 目标节点
+     */
     private scaleXIn(node: Node) {
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = no.scale(node);
@@ -190,6 +228,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * X轴缩放消失动画
+     * @param node 目标节点
+     */
     private scaleXOut(node: Node) {
         const s = no.scale(node);
         if (!node["__yj_ui_scale"])
@@ -203,6 +245,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * Y轴缩放进入动画
+     * @param node 目标节点
+     */
     private scaleYIn(node: Node) {
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = no.scale(node);
@@ -221,6 +267,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * Y轴缩放消失动画
+     * @param node 目标节点
+     */
     private scaleYOut(node: Node) {
         const s = no.scale(node);
         if (!node["__yj_ui_scale"])
@@ -234,6 +284,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * X轴缩放动画
+     * @param node 目标节点
+     */
     private scaleX(node: Node) {
         const s = no.scale(node);
         return [{
@@ -245,6 +299,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * Y轴缩放动画
+     * @param node 目标节点
+     */
     private scaleY(node: Node) {
         const s = no.scale(node);
         return [{
@@ -256,6 +314,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 淡出动画
+     * @param node 目标节点
+     */
     private fadeOut(node: Node) {
         if (node["__yj_ui_opacity"] === undefined)
             node["__yj_ui_opacity"] = no.opacity(node);
@@ -268,6 +330,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 淡入动画
+     * @param node 目标节点
+     */
     private fadeIn(node: Node) {
         return [{
             duration: this.duration,
@@ -278,6 +344,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 移动指定距离动画
+     * @param node 目标节点
+     */
     private moveBy(node: Node) {
         const pos = no.position(node);
         return [{
@@ -289,6 +359,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 移动到指定位置动画
+     * @param node 目标节点
+     */
     private moveTo(node: Node) {
         return [{
             duration: this.duration,
@@ -299,6 +373,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 宽度扩展动画
+     * @param node 目标节点
+     */
     private expandWidth(node: Node) {
         const size = no.size(node);
         return [{
@@ -315,6 +393,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 高度扩展动画
+     * @param node 目标节点
+     */
     private expandHeight(node: Node) {
         const size = no.size(node);
         return [{
@@ -331,6 +413,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 透明度变化动画
+     * @param node 目标节点
+     */
     private opacity(node: Node) {
         !node.getComponent(UIOpacity) && node.addComponent(UIOpacity);
         return [{
@@ -342,6 +428,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 旋转动画
+     * @param node 目标节点
+     */
     private rotation(node: Node) {
         return [{
             duration: this.duration,
@@ -352,6 +442,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 跳跃动画
+     * @param node 目标节点
+     */
     private jump(node: Node) {
         const pos = no.position(node);
         return [{
@@ -371,6 +465,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 抖动动画
+     * @param node 目标节点
+     */
     private shake(node: Node) {
         const pos = no.position(node);
         return [{
@@ -390,6 +488,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * X轴旋转动画
+     * @param node 目标节点
+     */
     private rotationX(node: Node) {
         const scale = no.scale(node);
         const t = this.duration / 4;
@@ -430,6 +532,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * Y轴旋转动画
+     * @param node 目标节点
+     */
     private rotationY(node: Node) {
         const scale = no.scale(node);
         const t = this.duration / 4;
@@ -470,6 +576,10 @@ class AnimationEffect {
         }];
     }
 
+    /**
+     * 心跳动画
+     * @param node 目标节点
+     */
     private heartBit(node: Node) {
         const scale = node["__yj_ui_scale"] || no.scale(node);
         if (!node["__yj_ui_scale"])
@@ -505,12 +615,18 @@ class AnimationEffect {
     }
 }
 
+/**
+ * 串行动画效果数组类
+ */
 @ccclass('AnimationEffectArray')
 export class AnimationEffectArray {
     @property({ type: AnimationEffect, displayName: "串行动画效果", tooltip: "多个动画效果按顺序依次执行，如果设置了串行动画效果，并行动画效果将不会执行" })
     serialAnimationEffects: AnimationEffect[] = [];
 }
 
+/**
+ * UI动画效果组件
+ */
 @ccclass('YJUIAnimationEffect')
 @executeInEditMode()
 export class YJUIAnimationEffect extends Component {
@@ -583,6 +699,10 @@ export class YJUIAnimationEffect extends Component {
         no.TweenSet.stop(this.node);
     }
 
+    /**
+     * 播放或停止动画
+     * @param v true表示播放，false表示停止
+     */
     public a_playOrStop(v: boolean) {
         if (v) {
             this.a_play();
@@ -591,6 +711,9 @@ export class YJUIAnimationEffect extends Component {
         }
     }
 
+    /**
+     * 播放动画
+     */
     public a_play() {
         if (!this.enabled) return;
         const node = this.target || this.node;
@@ -601,12 +724,15 @@ export class YJUIAnimationEffect extends Component {
         }
     }
 
+    /**
+     * 停止动画
+     */
     public a_stop() {
         no.TweenSet.stop(this.node);
     }
 
     /**
-     * 播放
+     * 播放动画
      * @param node 执行缓动的目标节点
      */
     public play(node: Node) {
@@ -617,6 +743,10 @@ export class YJUIAnimationEffect extends Component {
             this.playParallel(node, this.repeat);
     }
 
+    /**
+     * 在子节点上播放动画
+     * @param node 父节点
+     */
     public playOnChildren(node: Node) {
         if (!this.enabled) return;
         const children = node.children;
@@ -626,12 +756,22 @@ export class YJUIAnimationEffect extends Component {
         }, 0.1, children.length - 1);
     }
 
+    /**
+     * 播放串行动画
+     * @param node 目标节点
+     * @param repeat 重复次数
+     */
     private playSerial(node: Node, repeat: number) {
         this._playSerial(node, this.serialAnimationEffects, () => {
             if (this.repeat == 0 || --repeat > 0) this.playSerial(node, repeat);
         });
     }
 
+    /**
+     * 播放并行动画
+     * @param node 目标节点
+     * @param repeat 重复次数
+     */
     private playParallel(node: Node, repeat: number) {
         if (!isValid(node)) return;
         let all = this.parallelAnimationEffects.length,
@@ -649,6 +789,12 @@ export class YJUIAnimationEffect extends Component {
         }, this);
     }
 
+    /**
+     * 播放串行动画
+     * @param node 目标节点
+     * @param serialAnimationEffects 串行动画效果数组
+     * @param onEnd 结束回调
+     */
     private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], onEnd?: () => void) {
         if (!isValid(node)) return;
         let a: any[] = [];

@@ -164,7 +164,12 @@ export class YJPanel extends Component {
         no.siblingIndex(this.node, this.node.parent.children.length - 1);
     }
 
-    //////由子类实现
+    protected onClosePanel() {
+        no.evn.targetOff(this);
+        this.unscheduleAllCallbacks();
+    }
+
+    //////以下方法需要子类实现
     /**
      * 初始化预制体内已有的数据节点逻辑放在这里
      */
@@ -176,10 +181,5 @@ export class YJPanel extends Component {
      */
     protected onLoadPanel() {
 
-    }
-
-    protected onClosePanel() {
-        no.evn.targetOff(this);
-        this.unscheduleAllCallbacks();
     }
 }

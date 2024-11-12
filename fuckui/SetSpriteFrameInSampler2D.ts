@@ -7,7 +7,7 @@ import { FuckUi } from './FuckUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
-import { i18nG } from 'scripts/common/i18nG';
+import { YJi18n } from 'NoUi3/base/YJi18n';
 
 /**
  * Predefined variables
@@ -89,7 +89,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (EDITOR) return;
         if (this.multiLan && this.defaultName) {
             this.setSingleSpriteFrame(this.defaultName);
-            i18nG.onLanguagechange(this.checkLanguageChange, this);
+            YJi18n.ins.onLanguagechange(this.checkLanguageChange, this);
             return
         }
         if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
@@ -311,7 +311,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         let path: string;
         if (this.multiLan) {
-            path = `${i18nG.getLNG()}/${name}/spriteFrame`;
+            path = `${YJi18n.ins.language}/${name}/spriteFrame`;
         } else path = `${this.bundleName}/${name}/spriteFrame`;
         no.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {

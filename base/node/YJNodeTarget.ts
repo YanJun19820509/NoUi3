@@ -20,11 +20,20 @@ import { YJTouchListener } from '../touch/YJTouchListener';
 @ccclass('YJNodeTarget')
 @menu('NoUi/node/YJNodeTarget(节点目标)')
 @disallowMultiple()
+/**
+ * 节点目标组件
+ * 用于标记和管理可交互的节点目标,提供节点位置、触摸检测等功能
+ */
 export class YJNodeTarget extends Component {
+    /** 在no.nodeTargetManager中注册的标识 */
     @property({ tooltip: '在no.nodeTargetManager中注册的标识' })
     type: string = '';
+
+    /** 用于区分在一个节点的子节点中不同的YJNodeTarget */
     @property({ tooltip: '用于区分在一个节点的子节点中不同的YJNodeTarget' })
     subType: string = '';
+
+    /** 是否自动设置type,如果为true且type为空,则将父节点名称和当前节点名称拼接作为type */
     @property
     public get autoSet(): boolean {
         return false;
@@ -37,26 +46,27 @@ export class YJNodeTarget extends Component {
         this.type = name.join('.');
     }
 
+    /** 节点位置 */
     private pos: Vec3;
+    /** 最后一次触发触摸的时间戳 */
     private lastTriggerTouchTime: number = 0;
 
+    /** 组件加载时初始化 */
     onLoad() {
         this.lastTriggerTouchTime = 0;
         let btn = this.getComponent(Button);
         if (btn) {
-            // let a = new EventHandler();
-            // a.target = this.node;
-            // a.component = 'YJNodeTarget';
-            // a.handler = 'setTriggerTouchTime';
-            // btn.clickEvents.push(a);
+            // 为按钮添加点击事件,用于记录触发时间
             no.addClickEventsToButton(btn, this.node, 'YJNodeTarget', 'setTriggerTouchTime', false);
         }
     }
 
+    /** 组件启动时执行位置检查 */
     protected start(): void {
         YJJobManager.ins.execute(this.check, this);
     }
 
+    /** 检查节点位置是否变化,变化时更新位置并在nodeTargetManager中注册 */
     private check() {
         if (this.pos.equals(this.node.worldPosition)) {
             no.nodeTargetManager.register(this.type, this);
@@ -67,34 +77,43 @@ export class YJNodeTarget extends Component {
         }
     }
 
+    /** 组件启用时记录位置 */
     onEnable() {
         this.pos = this.node.worldPosition;
     }
 
+    /** 组件销毁时从nodeTargetManager中移除 */
     onDestroy() {
         no.nodeTargetManager.remove(this.type, this);
     }
 
+    /**
+     * 设置节点标识并重新注册
+     * @param type 节点标识
+     */
     public setType(type: string): void {
         if (this.type != '') no.nodeTargetManager.remove(this.type, this);
         this.type = type;
         no.nodeTargetManager.register(this.type, this);
     }
 
+    /** 获取节点本地坐标 */
     public get nodePosition(): Vec3 {
         return no.position(this.node);
     }
 
-
-    /**
-     * 目标节点的世界坐标
-     */
+    /** 获取节点世界坐标 */
     public get nodeWorldPosition(): Vec3 {
         let p = v3();
         this.node.parent?.getComponent(UITransform).convertToWorldSpaceAR(this.node.position, p);
         return p;
     }
 
+    /**
+     * 获取节点包围盒
+     * @param inOtherNode 相对于其他节点的坐标系
+     * @returns 包围盒
+     */
     public boundingBox(inOtherNode?: Node): Rect {
         const size = no.size(this.node);
         let pos = this.nodeWorldPosition;
@@ -108,7 +127,7 @@ export class YJNodeTarget extends Component {
      * 触摸检测
      * @param e 触摸事件
      * @param trigger 是否触发touch事件，默认true
-     * @returns boolean
+     * @returns 是否触摸到节点
      */
     public checkTouch(e: EventTouch, trigger = true): boolean {
         if (!no.checkValid(this.node)) return false;
@@ -132,8 +151,8 @@ export class YJNodeTarget extends Component {
 
     /**
      * 获取子节点中的目标节点
-     * @param subType 
-     * @returns 
+     * @param subType 子节点标识
+     * @returns 目标节点组件
      */
     public getSubTarget(subType: string): YJNodeTarget {
         let arr = this.getComponentsInChildren(YJNodeTarget);
@@ -143,8 +162,8 @@ export class YJNodeTarget extends Component {
     }
 
     /**
-     * 判断是否已经触发点击，将最近一次点击的时间戳a与输入时间戳time进行比较，如果time>a，那么可以认为在比较之前没有触发点击，否则为已触发
-     * @param time (ms)默认为当前时间戳
+     * 判断是否已经触发点击
+     * @param time 比较时间戳(ms),默认为当前时间戳
      * @returns true：未触发，false：已触发
      */
     public compareLastTriggerTouchTime(time?: number): boolean {
@@ -152,7 +171,7 @@ export class YJNodeTarget extends Component {
         return time - this.lastTriggerTouchTime > 0;
     }
 
-
+    /** 设置最后触发时间为当前时间 */
     private setTriggerTouchTime() {
         this.lastTriggerTouchTime = sys.now();
     }

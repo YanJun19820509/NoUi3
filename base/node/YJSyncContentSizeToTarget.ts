@@ -16,17 +16,30 @@ import { no } from '../../no';
 //同步目标节点的contentSize，受scale影响
 @ccclass('YJSyncContentSizeToTarget')
 export class YJSyncContentSizeToTarget extends Component {
+    /** 目标节点 */
     @property(Node)
     target: Node = null;
+
+    /** 尺寸偏移量 */
     @property
     offset: Size = math.size();
+
+    /** 是否检测自己的尺寸变化
+     * 为true时将自己的size同步到target
+     * 为false时将target的size同步到自己
+     */
     @property({ displayName: '检测自己', tooltip: '为勾选后将自己的size同步到target，否则将target的size同步到自己' })
     checkSelf: boolean = false;
+
+    /** 尺寸变化时触发的事件列表 */
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
+
+    /** 是否同步缩放 */
     @property({ displayName: '是否同步scale' })
     syncScale: boolean = true;
 
+    /** 测试属性，设置为true时触发check */
     @property({ displayName: '测试' })
     public get test(): boolean {
         return false;
@@ -38,20 +51,22 @@ export class YJSyncContentSizeToTarget extends Component {
         }
     }
 
+    /** 组件启用时注册尺寸变化监听 */
     protected onEnable(): void {
         if (this.checkSelf)
             this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
         else this.target?.on(Node.EventType.SIZE_CHANGED, this.check, this);
     }
 
+    /** 组件禁用时移除尺寸变化监听 */
     protected onDisable(): void {
         if (this.checkSelf)
             this.node.targetOff(this);
         else this.target?.targetOff(this);
     }
 
+    /** 检查并同步尺寸 */
     private check() {
-
         if (!this.target || !isValid(this?.node)) {
             return;
         }
@@ -62,6 +77,11 @@ export class YJSyncContentSizeToTarget extends Component {
         }
     }
 
+    /**
+     * 同步节点尺寸
+     * @param from 源节点
+     * @param to 目标节点
+     */
     private syncSize(from: Node, to: Node) {
         let size = no.size(from);
         let scale = no.scale(from);
@@ -75,6 +95,10 @@ export class YJSyncContentSizeToTarget extends Component {
         no.EventHandlerInfo.execute(this.onChange);
     }
 
+    /**
+     * 设置节点尺寸并触发同步
+     * @param size 要设置的尺寸
+     */
     public setSize(size: Size) {
         no.size(this.node, size);
         this.check();

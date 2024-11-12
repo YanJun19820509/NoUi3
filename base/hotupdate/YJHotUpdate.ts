@@ -33,18 +33,30 @@ export class UpdateProgressInfo {
 
 @ccclass('YJHotUpdate')
 @menu('NoUi/hotupdate/YJHotUpdate(热更组件)')
+/**
+ * 热更新组件
+ * 用于管理游戏资源的热更新功能
+ */
 export class YJHotUpdate extends Component {
+    /** 单例实例 */
     private static _instance: YJHotUpdate;
+    /** AssetsManager实例,用于管理资源更新 */
     private _am: AssetsManager;
+    /** 本地存储路径 */
     private _storagePath: string;
+    /** 检查更新状态 -99:初始化完成, 0:检查中, 1:检查完成 */
     public checkState: number;
+    /** 需要更新的文件总大小(字节) */
     public needUpdateFilesSize: number;
+    /** 更新进度信息 */
     public updateProgressInfo: UpdateProgressInfo;
 
+    /** 获取单例实例 */
     public static get ins(): YJHotUpdate {
         return this._instance;
     }
 
+    /** 组件加载时初始化 */
     onLoad() {
         if (!JSB) return;
         YJHotUpdate._instance = this;
@@ -58,11 +70,15 @@ export class YJHotUpdate extends Component {
         // this.copyFiles();
     }
 
+    /** 组件销毁时清理 */
     protected onDestroy(): void {
         YJHotUpdate._instance = null;
         this._am?.setEventCallback(null!);
     }
 
+    // /**
+    //  * 复制初始资源文件到本地存储
+    //  */
     // public copyFiles() {
     //     if (localStorage.getItem('init_game') == null) {
     //         let jf = native.fileUtils;
@@ -103,6 +119,7 @@ export class YJHotUpdate extends Component {
 
     /**
      * 检查更新
+     * @returns 是否成功开始检查更新
      */
     public checkUpdate(): boolean {
         this.checkState = 0;
@@ -110,7 +127,6 @@ export class YJHotUpdate extends Component {
         if (this._am.getState() === native.AssetsManager.State.UNINITED) {
             let localVersionManifest = this.getLocalManifest('version.manifest');
             this._am.loadLocalManifest(localVersionManifest, this._storagePath);
-            // no.log('本地version.manifest：：', localVersionManifest);
         }
         if (!this._am.getLocalManifest() || !this._am.getLocalManifest().isLoaded()) {
             no.log('Failed to load local manifest ...');
@@ -141,6 +157,11 @@ export class YJHotUpdate extends Component {
         }
     }
 
+    /**
+     * 获取本地manifest文件
+     * @param name manifest文件名
+     * @returns Manifest实例
+     */
     private getLocalManifest(name: string): Manifest {
         let path = this._storagePath + '/' + name;
         if (!native.fileUtils.isFileExist(path)) {
@@ -155,6 +176,10 @@ export class YJHotUpdate extends Component {
         return a;
     }
 
+    /**
+     * 检查更新回调
+     * @param event 更新事件
+     */
     private checkUpdateCallback(event) {
         switch (event.getEventCode()) {
             case native.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
@@ -178,6 +203,10 @@ export class YJHotUpdate extends Component {
         this.checkState = 1;
     }
 
+    /**
+     * 更新文件回调
+     * @param event 更新事件
+     */
     private updateFilesCallback(event) {
         switch (event.getEventCode()) {
             case native.EventAssetsManager.ERROR_NO_LOCAL_MANIFEST:
@@ -189,7 +218,6 @@ export class YJHotUpdate extends Component {
                 this.updateProgressInfo.downloadedFiles = event.getDownloadedFiles();
                 this.updateProgressInfo.bytesPer = event.getPercent();
                 this.updateProgressInfo.filesPer = event.getPercentByFile();
-                // no.log(no.jsonStringify(this.updateProgressInfo));
                 break;
             case native.EventAssetsManager.ERROR_DOWNLOAD_MANIFEST:
             case native.EventAssetsManager.ERROR_PARSE_MANIFEST:
@@ -223,7 +251,7 @@ export class YJHotUpdate extends Component {
         }
 
         if (this.updateProgressInfo.state == 1) {
-            // Prepend the manifest's search path
+            // 更新搜索路径
             var searchPaths = native.fileUtils.getSearchPaths();
             var newPaths = this._am.getLocalManifest().getSearchPaths();
             newPaths.forEach(path => {
@@ -233,12 +261,10 @@ export class YJHotUpdate extends Component {
             });
             let a = no.jsonStringify(searchPaths);
             no.log(a);
-            // This value will be retrieved and appended to the default search path during game startup,
-            // please refer to samples/js-tests/main.js for detailed usage.
-            // !!! Re-add the search paths in main.js is very important, otherwise, new scripts won't take effect.
             localStorage.setItem('HotUpdateSearchPaths', a);
             native.fileUtils.setSearchPaths(searchPaths);
 
+            // 停止背景音乐并重启游戏
             YJAudioManager.ins?.stopBGM();
             this.scheduleOnce(() => {
                 game.restart();
@@ -246,6 +272,12 @@ export class YJHotUpdate extends Component {
         }
     }
 
+    /**
+     * 版本比较处理
+     * @param versionA 版本A
+     * @param versionB 版本B
+     * @returns 比较结果 0:相等 正数:A大 负数:B大
+     */
     private versionCompareHandle(versionA, versionB): number {
         no.log("JS Custom Version Compare: version A is " + versionA + ', version B is ' + versionB);
         if (versionA == versionB) return 0;

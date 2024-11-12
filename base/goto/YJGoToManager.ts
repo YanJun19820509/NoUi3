@@ -19,20 +19,34 @@ import { YJGoToTarget } from './YJGoToTarget';
 
 
 @ccclass('YJGoToManager')
+/**
+ * 跳转管理类,用于管理游戏中的功能跳转
+ */
 export class YJGoToManager extends Component {
+    /** 跳转配置代理 */
     @property(YJGoToConfigDelegate)
     delegate: YJGoToConfigDelegate = null;
 
+    /** 单例实例 */
     private static _ins: YJGoToManager;
 
+    /** 组件加载时初始化单例实例 */
     onLoad() {
         YJGoToManager._ins = this;
     }
 
+    /** 组件销毁时清空单例实例 */
     onDestroy() {
         YJGoToManager._ins = null;
     }
 
+    /**
+     * 执行跳转
+     * @param alias 跳转别名
+     * @param args 跳转参数
+     * @param before 跳转前回调
+     * @param after 跳转后回调
+     */
     public static goTo(alias: string, args?: any, before?: () => void, after?: () => void): void {
         let info = YJGoToManager._ins?.delegate?.getInfoByAlias(alias);
         if (!info || !info.target) return;
@@ -44,6 +58,12 @@ export class YJGoToManager extends Component {
         } else this.show(info, args, after);
     }
 
+    /**
+     * 显示目标界面
+     * @param info 跳转信息
+     * @param args 跳转参数
+     * @param cb 显示完成回调
+     */
     private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
         const clazz = js.getClassByName(info.target);
@@ -67,6 +87,12 @@ export class YJGoToManager extends Component {
         }
     }
 
+    /**
+     * 触发目标界面的跳转行为
+     * @param panel 目标界面
+     * @param args 跳转参数
+     * @param cb 触发完成回调
+     */
     private trigger(panel: Component, args: any, cb: () => void) {
         if (args == null) {
             cb?.();

@@ -18,25 +18,32 @@ import { no } from '../../no';
 @ccclass('YJToggleGroupManager')
 @menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
 export class YJToggleGroupManager extends ToggleContainer {
+    /** 默认选中的toggle索引,当为-1时都不选中 */
     @property({ displayName: '默认选中项', min: -1, step: 1, tooltip: '当为-1时都不选中' })
     defaultCheckedIdx: number = 0;
+    /** toggle选中时触发的事件列表 */
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
 
+    /** 当前选中的toggle的uuid */
     private checkedToggleUuid: string = null;
 
+    /** 组件加载时注册toggle选中事件 */
     onLoad() {
         if (EDITOR) return;
         this.checkEvents.push(no.createEventHandler(this.node, YJToggleGroupManager, 'a_onCheck'));
     }
 
+    /** 组件禁用时重置选中状态 */
     onDisable() {
         super.onDisable();
         this.checkedToggleUuid = null;
     }
 
+    /** 确保toggle组的状态有效 */
     public ensureValidState() {
         const toggles = this.toggleItems;
+        // 如果不允许全部关闭且有toggle时,确保默认选中项被选中
         if (!this._allowSwitchOff && toggles.length !== 0) {
             const toggle = toggles[this.defaultCheckedIdx];
             if (toggle && !toggle.isChecked) {
@@ -47,6 +54,7 @@ export class YJToggleGroupManager extends ToggleContainer {
             }
         }
 
+        // 确保只有一个toggle被选中
         const activeToggles = this.activeToggles();
         if (activeToggles.length > 1) {
             const firstToggle = activeToggles[this.defaultCheckedIdx];
@@ -60,6 +68,10 @@ export class YJToggleGroupManager extends ToggleContainer {
         }
     }
 
+    /** 
+     * toggle选中时的回调
+     * @param d Toggle组件或触摸事件
+     */
     public a_onCheck(d: any): void {
         let toggle: Toggle;
         if (d instanceof Toggle) toggle = d;
@@ -72,6 +84,10 @@ export class YJToggleGroupManager extends ToggleContainer {
         no.EventHandlerInfo.execute(this.onToggleChecked, i);
     }
 
+    /**
+     * 选中指定索引的toggle
+     * @param idx toggle索引
+     */
     public a_check(idx: number): void {
         idx = Number(idx);
         let items = this.getComponentsInChildren(Toggle);
@@ -83,6 +99,10 @@ export class YJToggleGroupManager extends ToggleContainer {
         else items[idx].isChecked = true;
     }
 
+    /**
+     * 选中指定索引的toggle但不触发事件
+     * @param idx toggle索引
+     */
     public a_checkWithoutEvent(idx: number) {
         idx = Number(idx);
         let items = this.getComponentsInChildren(Toggle);

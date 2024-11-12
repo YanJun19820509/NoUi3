@@ -12,16 +12,23 @@ import { YJDataWork } from "../YJDataWork";
 
 @ccclass('YJOutOfViewManager')
 export class YJOutOfViewManager extends Component {
+    /** 每个分区的大小 */
     @property({ displayName: '分区大小' })
     areaSize: Size = size(400, 400);
+    /** 分区节点模板,仅用于测试时查看分区分布 */
     @property({ type: Node })
     areaTemp: Node;
 
-    private _areas: { [key: string]: { x: number, y: number, subNodes: YJOutOfViewNode[] } } = {};//分区数据
+    /** 分区数据,key为分区坐标(row-col),value包含分区位置和子节点列表 */
+    private _areas: { [key: string]: { x: number, y: number, subNodes: YJOutOfViewNode[] } } = {};
+    /** 当前中心分区的坐标 */
     private _centerArea: string;
+    /** 可见区域向上下扩展的分区数量 */
     private _subr: number = 1;
+    /** 可见区域向左右扩展的分区数量 */
     private _subc: number = 1;
 
+    /** 组件启用时注册事件监听 */
     onEnable() {
         //当节点大小改变时，重新设置分区
         this.node.on(Node.EventType.SIZE_CHANGED, this.setAreas, this);
@@ -29,11 +36,16 @@ export class YJOutOfViewManager extends Component {
         this.setAreas();
     }
 
+    /** 组件禁用时注销事件监听 */
     onDisable() {
         this.node.off(Node.EventType.SIZE_CHANGED, this.setAreas, this);
         this.node.off(Node.EventType.TRANSFORM_CHANGED, this.onTransformChanged, this);
     }
 
+    /**
+     * 添加需要管理的节点
+     * @param node 需要管理的节点
+     */
     public addOutOfViewNode(node: YJOutOfViewNode) {
         const key = this.posToAreaKey(node.position());
         const area = this._areas[key];
@@ -43,6 +55,10 @@ export class YJOutOfViewManager extends Component {
         }
     }
 
+    /**
+     * 移除管理的节点
+     * @param node 需要移除的节点
+     */
     public removeOutOfViewNode(node: YJOutOfViewNode) {
         const key = this.posToAreaKey(no.position(node.node));
         const area = this._areas[key];
@@ -51,7 +67,9 @@ export class YJOutOfViewManager extends Component {
         }
     }
 
+    /** 节点在层级中的缩放 */
     private _scale: Vec3;
+    /** 初始化可见区域的扩展范围 */
     private initSubRC() {
         const scale = no.scaleInHierarchy(this.node);
         if (this._scale?.x == scale.x && this._scale?.y == scale.y) return;
@@ -61,6 +79,10 @@ export class YJOutOfViewManager extends Component {
         this._subc = Math.floor(Math.ceil(viewSize.width / (this.areaSize.width * scale.x)) / 2) + 1;
     }
 
+    /**
+     * 节点变换时的回调
+     * @param d 变换类型
+     */
     private onTransformChanged(d: any) {
         switch (d) {
             case Node.TransformBit.POSITION:
@@ -69,6 +91,7 @@ export class YJOutOfViewManager extends Component {
         }
     }
 
+    /** 检查中心分区是否改变,更新各分区节点的可见性 */
     private check() {
         const viewSize = YJFitScreen.getVisibleSize();
         const centerPos = v3(viewSize.width / 2, viewSize.height / 2, 0);
@@ -117,6 +140,11 @@ export class YJOutOfViewManager extends Component {
         }
     }
 
+    /**
+     * 设置指定分区内所有节点的可见性
+     * @param key 分区坐标
+     * @param visible 是否可见
+     */
     private setSubNodesVisibleOfArea(key: string, visible: boolean) {
         const area = this._areas[key];
         if (area) {
@@ -126,6 +154,7 @@ export class YJOutOfViewManager extends Component {
         }
     }
 
+    /** 初始化分区数据 */
     private setAreas() {
         const { width, height } = no.size(this.node);
         const anchor = no.anchor(this.node);
@@ -155,6 +184,11 @@ export class YJOutOfViewManager extends Component {
         this.check();
     }
 
+    /**
+     * 将世界坐标转换为分区坐标
+     * @param pos 世界坐标
+     * @returns 分区坐标(row-col)
+     */
     private posToAreaKey(pos: Vec3) {
         const { width, height } = no.size(this.node);
         const anchor = no.anchor(this.node);
@@ -167,6 +201,11 @@ export class YJOutOfViewManager extends Component {
         return `${row}-${col}`;
     }
 
+    /**
+     * 判断指定分区是否在可见范围内
+     * @param key 分区坐标
+     * @returns 是否可见
+     */
     private isVisibleArea(key: string) {
         if (!this._centerArea) return false;
         const [row, col] = no.stringToNumberArray(key, '-');
@@ -174,6 +213,13 @@ export class YJOutOfViewManager extends Component {
         return Math.abs(row - crow) <= this._subr && Math.abs(col - ccol) <= this._subc;
     }
 
+    /**
+     * 创建分区节点(仅用于测试)
+     * @param i 行号
+     * @param j 列号  
+     * @param x x坐标
+     * @param y y坐标
+     */
     private createAreaNode(i: number, j: number, x: number, y: number) {
         if (!this.areaTemp) return;
         //仅在测试时查看区域分布使用

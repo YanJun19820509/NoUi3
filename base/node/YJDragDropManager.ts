@@ -14,46 +14,81 @@ import { YJFitScreen } from "../YJFitScreen";
 
 @ccclass('YJDragDropManager')
 export class YJDragDropManager extends YJTouchListener {
+    /** 是否开启拖拽功能 */
     @property({ displayName: '是否开启拖拽' })
     dragDrop: boolean = true;
+
+    /** 是否返回原点,选中后,当释放时,未到达拖放目标位置或未设置拖放目标时返回初始位置 */
     @property({ displayName: '是否返回原点', tooltip: '选中后，当释放时，未到达拖放目标位置或未设置拖放目标时返回初始位置', visible() { return this.dragDrop; } })
     canBack: boolean = false;
+
+    /** 接近目标时触发的事件 */
     @property({ type: no.EventHandlerInfo, displayName: '接近目标时', visible() { return this.dragDrop; } })
     onApproachTarget: no.EventHandlerInfo[] = [];
+
+    /** 离开目标时触发的事件,当已接近目标后又离开时触发 */
     @property({ type: no.EventHandlerInfo, displayName: '离开目标时', tooltip: '当已接近目标后又离开时触发', visible() { return this.dragDrop; } })
     onAwayFromTarget: no.EventHandlerInfo[] = [];
+
+    /** 放入目标时触发的事件 */
     @property({ type: no.EventHandlerInfo, displayName: '放入目标时', visible() { return this.dragDrop; } })
     onAchieveTarget: no.EventHandlerInfo[] = [];
+
+    /** 点击时触发的事件 */
     @property({ type: no.EventHandlerInfo, displayName: '点击时' })
     onClick: no.EventHandlerInfo[] = [];
+
+    /** 是否设置拖动节点的父节点为本节点,开启后,拖动时,拖动节点将作为本节点的子节点 */
     @property({ displayName: '设置拖动节点的父节点为本节点', tooltip: '开启后，拖动时，拖动节点将作为本节点的子节点', visible() { return this.dragDrop; } })
     changeParent: boolean = false;
+
+    /** 是否开启左右拖动 */
     @property({ displayName: '开启左右拖动', visible() { return this.dragDrop; } })
     moveX: boolean = true;
+
+    /** 是否开启上下拖动 */
     @property({ displayName: '开启上下拖动', visible() { return this.dragDrop; } })
     moveY: boolean = true;
+
+    /** 是否开启拖动范围限制 */
     @property({ displayName: '开启拖动范围限制', visible() { return this.dragDrop; } })
     isRange: boolean = false;
+
+    /** 拖动范围,开启拖动范围限制后,如果范围为默认值,将会根据屏幕宽高和拖动节点尺寸自动计算 */
     @property({ displayName: '拖动范围', tooltip: '开启拖动范围限制后，如果范围为默认值，将会根据屏幕宽高和拖动节点尺寸自动计算', visible() { return this.dragDrop && this.isRange; } })
     range: Vec4 = v4();
+
+    /** 是否开启左右翻转,拖动到指定x坐标时进行左右翻转 */
     @property({ displayName: '开启左右翻转', tooltip: '拖动到指定x坐标时进行左右翻转', visible() { return this.dragDrop; } })
     isTurnX: boolean = false;
+
+    /** 左右翻转点x,拖动时x小于该值scaleX为-1,否则为1 */
     @property({ type: Range, displayName: '左右翻转点x', tooltip: '拖动时x小于该值scaleX为-1，否则为1', visible() { return this.isTurnX; } })
     xTurnPos: Range = Range.new();
+
+    /** 是否开启上下翻转,拖动到指定y坐标时进行上下翻转 */
     @property({ displayName: '开启上下翻转', tooltip: '拖动到指定y坐标时进行上下翻转', visible() { return this.dragDrop; } })
     isTurnY: boolean = false;
+
+    /** 上下翻转点y,拖动时y小于该值scaleY为-1,否则为1 */
     @property({ type: Range, displayName: '上下翻转点y', tooltip: '拖动时x小于该值scaleY为-1，否则为1', visible() { return this.isTurnY; } })
     yTurnPos: Range = Range.new();
 
-
+    /** 上一次拖拽的节点 */
     protected lastDragNode: Node = null;
-    //拖拽节点
+    /** 当前拖拽的节点 */
     protected dragNode: Node = null;
-    //放置目标
+    /** 当前放置的目标节点 */
     protected dropTarget: Node = null;
 
+    /** 是否已接近目标 */
     private _isApproached: boolean = false;
 
+    /**
+     * 触摸开始回调
+     * @param event 触摸事件
+     * @returns 是否处理成功
+     */
     public onStart(event: EventTouch) {
         super.onStart(event);
         this.dragNode = null;
@@ -73,6 +108,11 @@ export class YJDragDropManager extends YJTouchListener {
         return true;
     }
 
+    /**
+     * 触摸移动回调
+     * @param event 触摸事件
+     * @returns 是否处理成功
+     */
     public onMove(event: EventTouch) {
         super.onMove(event);
         if (!this.dragDrop) return false;
@@ -102,6 +142,11 @@ export class YJDragDropManager extends YJTouchListener {
         return true;
     }
 
+    /**
+     * 触摸结束回调
+     * @param event 触摸事件
+     * @returns 是否处理成功
+     */
     public onEnd(event: EventTouch) {
         super.onEnd(event);
         //点击效果
@@ -122,6 +167,11 @@ export class YJDragDropManager extends YJTouchListener {
         return true;
     }
 
+    /**
+     * 触摸取消回调
+     * @param event 触摸事件
+     * @returns 是否处理成功
+     */
     public onCancel(event: EventTouch) {
         super.onCancel(event);
         if (!this.dragDrop) return false;
@@ -138,11 +188,20 @@ export class YJDragDropManager extends YJTouchListener {
         return true;
     }
 
+    /**
+     * 返回原点
+     * @param event 触摸事件
+     */
     protected moveBack(event: EventTouch) {
         if (!this.canBack || !this.dragNode) return;
         this.dragNode.getComponent(YJDragDropItemNode).onMoveBack(event);
     }
 
+    /**
+     * 设置节点位置
+     * @param node 目标节点
+     * @param deltaPos 位置偏移量
+     */
     protected setPosition(node: Node, deltaPos: Vec2) {
         if (!node) return;
         const scale1 = no.scaleInHierarchy(node);
@@ -171,7 +230,10 @@ export class YJDragDropManager extends YJTouchListener {
         no.scale(node, scale);
     }
 
-    //设置拖拽节点
+    /**
+     * 设置拖拽节点
+     * @param event 触摸事件
+     */
     protected setDragNode(event: EventTouch) {
         if (!this.dragNode) {
             const p = event.getUILocation();
@@ -187,7 +249,11 @@ export class YJDragDropManager extends YJTouchListener {
             }
         }
     }
-    //设置放置节点
+
+    /**
+     * 设置放置节点
+     * @param event 触摸事件
+     */
     protected setDropTarget(event: EventTouch) {
         if (!this.dropTarget) {
             const pos = event.getUILocation(),
@@ -203,6 +269,9 @@ export class YJDragDropManager extends YJTouchListener {
         }
     }
 
+    /**
+     * 更新拖动范围
+     */
     private updateRange() {
         if (this.isRange && this.range.equals(v4()) && this.dragNode != this.lastDragNode) {
             this.lastDragNode = this.dragNode;
