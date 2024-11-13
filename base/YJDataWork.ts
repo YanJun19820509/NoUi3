@@ -145,6 +145,7 @@ export class YJDataWork extends Component {
      * @param d 要设置的数据
      */
     public set data(d: any) {
+        if (typeof d != 'object') return;
         for (let key in d) {
             this.setValue(key, d[key]);
         }
@@ -286,7 +287,7 @@ export class YJDataWork extends Component {
     protected afterInit() {
 
     }
-    
+
     /**
      * 数据初始化后调用,此时data一定有值
      * 子类按需实现该方法

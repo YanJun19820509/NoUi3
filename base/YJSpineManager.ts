@@ -40,6 +40,8 @@ export class YJSpineManager extends no.SingleObject {
     }
 
     public set(path: string, data?: SkeletonData) {
+        if (!path) return;
+        path = path.replace('db://assets/', '').split('.')[0];
         if (YJSpineManager._map[path]) {
             YJSpineManager._map[path].ref--;
             YJSpineManager._map[path].t = no.sysTime.now;
@@ -47,9 +49,13 @@ export class YJSpineManager extends no.SingleObject {
             YJSpineManager._map[path] = { data: data, t: no.sysTime.now, ref: 0, size: this.getSize(data) };
         } else {
         }
+
+        // console.log(`set spine: ${path} ref: ${YJSpineManager._map[path]?.ref}`);
     }
 
     public async get(path: string): Promise<SkeletonData> {
+        if (!path) return null;
+        path = path.replace('db://assets/', '').split('.')[0];
         // 如果资源已经在加载中，则等待它完成
         if (YJSpineManager._loading[path]) {
             await YJSpineManager._loading[path];
@@ -58,6 +64,7 @@ export class YJSpineManager extends no.SingleObject {
 
         if (YJSpineManager._map[path]) {
             YJSpineManager._map[path].ref++;
+            // console.log(`get spine: ${path} ref: ${YJSpineManager._map[path].ref}`);
             return YJSpineManager._map[path].data;
         } else {
             // 在检查完成后，将要加载该路径的请求记录下来
@@ -67,6 +74,7 @@ export class YJSpineManager extends no.SingleObject {
                     delete YJSpineManager._loading[path];
                     // 将资源添加到管理器中
                     YJSpineManager._map[path] = { data: res, t: no.sysTime.now + 86400, ref: 1, size: this.getSize(res) };
+                    // console.log(`get spine: ${path} ref: ${YJSpineManager._map[path].ref}`);
                     resolve(res);
                 });
             });
@@ -91,6 +99,7 @@ export class YJSpineManager extends no.SingleObject {
         keys.forEach(k => {
             if (YJSpineManager._map[k].ref == 0) {
                 size -= YJSpineManager._map[k].size;
+                // console.log(`release spine: ${k} ref: ${YJSpineManager._map[k].ref}`);
                 no.assetBundleManager.release(YJSpineManager._map[k].data, true);
                 delete YJSpineManager._map[k];
             }

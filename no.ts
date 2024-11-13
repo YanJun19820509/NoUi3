@@ -2530,10 +2530,14 @@ export namespace no {
         private handleDataChange() {
             if (this.aa) return;
             this.aa = true;
-            scheduleOnce(dt => {
+            // scheduleOnce(dt => {
+            //     this.emit(Data.DataChangeEvent, this);
+            //     this.aa = false;
+            // }, 0, this);
+            setTimeout(() => {
                 this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 0, this);
+            }, 20);
         }
 
         /**
