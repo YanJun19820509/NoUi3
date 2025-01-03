@@ -1,4 +1,3 @@
-
 import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont, sys, color } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
@@ -21,6 +20,10 @@ import { YJGradientColor } from './YJGradientColor';
  * 自定义文本组件,使用时替换掉Label组件
  */
 
+/**
+ * 自定义文本渲染组件
+ * 继承自Sprite组件，支持富文本、描边、渐变色等特性
+ */
 @ccclass('YJCharLabel')
 export class YJCharLabel extends Sprite {
     @property({ visible() { return false; }, override: true })
@@ -87,8 +90,7 @@ export class YJCharLabel extends Sprite {
 
     }
 
-
-    //文本内容
+    /** 文本内容 */
     @property({ type: CCString, multiline: true })
     set string(v: string) {
         if (v == this._string) return;
@@ -98,7 +100,8 @@ export class YJCharLabel extends Sprite {
     get string() {
         return this._string;
     }
-    //文本颜色
+
+    /** 文本颜色 */
     @property({ type: Color, override: true })
     public get fontColor(): Color {
         return this._fontColor;
@@ -108,6 +111,8 @@ export class YJCharLabel extends Sprite {
         this._fontColor = v;
         this.setLabel();
     }
+
+    /** 渐变色配置 */
     @property({ serializable: true })
     _gradientColor: YJGradientColor = null;
     @property({ type: YJGradientColor })
@@ -130,7 +135,11 @@ export class YJCharLabel extends Sprite {
         this._fontSize = v;
         this.setLabel();
     }
-    //自定义字体
+
+    /** 
+     * 自定义字体
+     * 如果没有设置自定义字体，则优先使用YJTTFLoader中加载的字体，如果不存在则使用系统字体
+     */
     @property({ type: Font, tooltip: '如果没有设置自定义字体，则优先使用YJTTFLoader中加载的字体，如果不存在则使用系统字体' })
     public get font(): Font {
         return this._font;
@@ -164,7 +173,7 @@ export class YJCharLabel extends Sprite {
         this._foitnFamily = v;
     }
 
-    //行高
+    /** 行高 */
     @property
     public get lineHeight(): number {
         return this._lineHeight * this.hdpScale;
@@ -175,7 +184,7 @@ export class YJCharLabel extends Sprite {
         this._lineHeight = v;
         this.setLabel();
     }
-    //水平对齐
+    /** 水平对齐方式 */
     @property({ type: Enum(HorizontalTextAlignment) })
     public get horizontalAlign(): number {
         return this._horizontalAlign;
@@ -186,7 +195,7 @@ export class YJCharLabel extends Sprite {
         this._horizontalAlign = v;
         this.setLabel();
     }
-    //垂直对齐
+    /** 垂直对齐方式 */
     @property({ type: Enum(VerticalTextAlignment), visible() { return false; } })
     public get verticalAlign(): number {
         return 1;
@@ -197,7 +206,13 @@ export class YJCharLabel extends Sprite {
         this._verticalAlign = v;
         this.setLabel();
     }
-    //文字排版
+    /** 
+     * 文字排版模式
+     * NONE: 不限制大小
+     * CLAMP: 超出部分裁剪
+     * SHRINK: 自动缩小以适应宽度
+     * RESIZE_HEIGHT: 固定宽度，自动调整高度
+     */
     @property({ type: Enum(Label.Overflow) })
     public get overflow(): number {
         return this._overflow;
@@ -214,7 +229,7 @@ export class YJCharLabel extends Sprite {
         }
         this.setLabel();
     }
-    //最大宽
+    /** 最大宽度限制 */
     @property({ visible() { return this.overflow != Label.Overflow.NONE; } })
     public get maxWidth(): number {
         return this._maxWidth * this.hdpScale;
@@ -500,8 +515,12 @@ export class YJCharLabel extends Sprite {
             this.setLabel();
     }
 
+    /**
+     * 更新文本渲染
+     * 处理文本的样式设置和渲染逻辑
+     */
     private async setLabel() {
-        if (!await no.Throttling.ins(this).wait(.1, true)) return;
+        if (!await no.Throttling.ins(this).wait(.2, true)) return;
         if (EDITOR && !this._needSetLabel) return;
         if (!this.enabledInHierarchy || !isValid(this.node)) {
             this._needSet = true;
@@ -539,16 +558,19 @@ export class YJCharLabel extends Sprite {
         this._uid = no.Hash(a).toString();
     }
 
-    private _canvas: HTMLCanvasElement;
+    private _canvas: { canvas: HTMLCanvasElement, context: CanvasRenderingContext2D };
     private shareCanvas() {
         if (!this._canvas) {
-            this._canvas = document.createElement('canvas');
+            this._canvas = no.canvasPool.get();
         }
         return this._canvas;
     }
 
     private clearCanvas() {
-        this._canvas = null;
+        if (this._canvas) {
+            no.canvasPool.put(this._canvas);
+            this._canvas = null;
+        }
     }
 
     private setFontStyle(ctx: CanvasRenderingContext2D, color?: string, fontSize?: number, bold?: boolean, italic?: boolean) {
@@ -600,8 +622,8 @@ export class YJCharLabel extends Sprite {
 
     private clearString() {
         const canvas = this.shareCanvas();
-        canvas.width = 0;
-        canvas.height = this._lineHeight;
+        canvas.canvas.width = 0;
+        canvas.canvas.height = this._lineHeight;
         no.size(this.node, math.size(0, this._lineHeight));
         this.spriteFrame = null;
     }
@@ -631,48 +653,95 @@ export class YJCharLabel extends Sprite {
         return w;
     }
 
+    /**
+     * 绘制普通文本
+     * @param v 要绘制的文本内容
+     */
     private drawString(v: string) {
-        const ctx = this.shareCanvas().getContext("2d");
+        const ctx = this.shareCanvas().context;
         this.setFontStyle(ctx);
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
         const maxWidth = this.maxWidth;
         if (this.overflow == Label.Overflow.RESIZE_HEIGHT) {
             const extWidth = this.extWidth();
-            const wordsArr: string[] = v.split('\\n');
+            // 处理换行符
+            const lines = v.split('\\n');
+            let resultLines: string[] = [];
+            let lineHeight = this.lineHeight;
+            let width = extWidth;
 
-            let lines: string[] = [],
-                oneLine = '',
-                width: number,
-                lineHeight = this.lineHeight;
-            for (let jj = 0, nn = wordsArr.length; jj < nn; jj++) {
-                let words: string | string[], blankWork = '', blankWidth = 0;
-                if (this.blankBreakWord) {
-                    blankWork = ' ';
-                    words = wordsArr[jj].split(blankWork);
-                    blankWidth = this.getMeasureWidth(ctx, blankWork);
-                } else words = wordsArr[jj];
+            lines.forEach(line => {
+                // 如果是空行，直接添加
+                if (line.length === 0) {
+                    resultLines.push('');
+                    return;
+                }
 
-                width = extWidth;
+                // 分词处理
+                const words = this.splitIntoWords(line);
+                let currentLine = '';
+                let currentWidth = extWidth;
 
-                for (let i = 0, n = words.length; i < n; i++) {
-                    const c = words[i];
-                    let w = this.getMeasureWidth(ctx, c);
-                    if (width + w <= maxWidth - 2 * this.hdpScale) {
-                        oneLine += c + blankWork;
-                        width += w + blankWidth;
-                        if (i == n - 1) width += 2 * this.hdpScale;
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i];
+                    const wordWidth = this.getMeasureWidth(ctx, word);
+
+                    // 检查是否需要换行
+                    if (currentWidth + wordWidth <= maxWidth - 2 * this.hdpScale) {
+                        currentLine += word;
+                        currentWidth += wordWidth;
                     } else {
-                        lines[lines.length] = oneLine;
-                        oneLine = c + blankWork;
-                        width = extWidth + w + blankWidth;
+                        // 如果当前行不为空，先保存当前行
+                        if (currentLine) {
+                            resultLines.push(currentLine);
+                            currentLine = '';
+                            currentWidth = extWidth;
+                        }
+
+                        // 处理单个词超过最大宽度的情况
+                        if (wordWidth > maxWidth - extWidth - 2 * this.hdpScale) {
+                            // 逐字符添加
+                            let tempLine = '';
+                            let tempWidth = extWidth;
+
+                            for (let j = 0; j < word.length; j++) {
+                                const char = word[j];
+                                const charWidth = this.getMeasureWidth(ctx, char);
+
+                                if (tempWidth + charWidth <= maxWidth - 2 * this.hdpScale) {
+                                    tempLine += char;
+                                    tempWidth += charWidth;
+                                } else {
+                                    if (tempLine) {
+                                        resultLines.push(tempLine);
+                                    }
+                                    tempLine = char;
+                                    tempWidth = extWidth + charWidth;
+                                }
+                            }
+
+                            if (tempLine) {
+                                currentLine = tempLine;
+                                currentWidth = tempWidth;
+                            }
+                        } else {
+                            currentLine = word;
+                            currentWidth = extWidth + wordWidth;
+                        }
                     }
                 }
 
-                lines[lines.length] = oneLine;
-                oneLine = '';
-            }
-            if (oneLine != '') lines[lines.length] = oneLine;
-            this.drawLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
+                // 添加最后一行
+                if (currentLine) {
+                    resultLines.push(currentLine);
+                }
+            });
+
+            width = resultLines.length == 1 && !this.fixWidth ?
+                this.getMeasureWidth(ctx, resultLines[0]) + extWidth :
+                maxWidth;
+
+            this.drawLines(resultLines, width, lineHeight);
         } else {
             let w = this.getMeasureWidth(ctx, v),
                 ww: number = 0,
@@ -695,8 +764,8 @@ export class YJCharLabel extends Sprite {
             y = 0;
         width += this.extWidth() + 2;
         height += this.extHeight();
-        canvas.width = width;
-        canvas.height = height;
+        canvas.canvas.width = width;
+        canvas.canvas.height = height;
 
         if (this.verticalAlign == VerticalTextAlignment.CENTER) {
             y = height / 2 - (this.underline ? this.underlineWidth : 0);
@@ -717,7 +786,7 @@ export class YJCharLabel extends Sprite {
         if (this.shadowBlur > 0) {
             x += this.shadowBlur + (this.shadowOffset.x < 0 ? -this.shadowOffset.x : 0);
         }
-        let ctx = canvas.getContext("2d");
+        let ctx = canvas.context;
         this.setFontStyle(ctx);
         if (this.gradientColor) {
             ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width, height });
@@ -757,9 +826,9 @@ export class YJCharLabel extends Sprite {
         const canvas = this.shareCanvas(),
             hh = height + this.extHeight();
         width += 2;
-        canvas.width = width;
-        canvas.height = hh * lines.length;
-        const ctx = canvas.getContext("2d");
+        canvas.canvas.width = width;
+        canvas.canvas.height = hh * lines.length;
+        const ctx = canvas.context;
 
         lines.forEach((v, i) => {
             this.setFontStyle(ctx);
@@ -799,7 +868,7 @@ export class YJCharLabel extends Sprite {
                 }
             }
             if (this.gradientColor) {
-                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
+                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.canvas.width, height: 0 });
             }
             const fontSize = this.fontSize;
             let x1 = x;
@@ -812,7 +881,7 @@ export class YJCharLabel extends Sprite {
             }
             this.drawUnderline(ctx, w, x, oy);
         });
-        this.fixHDP(ctx, width, canvas.height);
+        this.fixHDP(ctx, width, canvas.canvas.height);
     }
 
     private extWidth(): number {
@@ -879,11 +948,11 @@ export class YJCharLabel extends Sprite {
 
     private updateTexture() {
         const canvas = this.shareCanvas();
-        if (!canvas.width || !canvas.height) return;
+        if (!canvas.canvas.width || !canvas.canvas.height) return;
         if (!(this.spriteFrame?.texture instanceof DynamicAtlasTexture)) {
             this.spriteFrame?.texture?.destroy();
         }
-        const image = new ImageAsset(canvas);
+        const image = new ImageAsset(canvas.canvas);
         const texture = new Texture2D();
         texture['_uuid'] = 'yjchar@' + this._uid;
         texture.image = image;
@@ -909,10 +978,15 @@ export class YJCharLabel extends Sprite {
             this.spriteFrame.destroy();
             this.spriteFrame = s;
         }
-        no.size(this.node, size(this.spriteFrame.rect.width, this.spriteFrame.rect.height));
+        // no.size(this.node, size(this.spriteFrame.rect.width, this.spriteFrame.rect.height));
         return false;
     }
 
+    /**
+     * 绘制富文本
+     * 支持HTML标签和样式
+     * @param v 富文本内容
+     */
     private drawRichString(v: string) {
         if (this.overflow != Label.Overflow.RESIZE_HEIGHT) this.drawRichStringNotResizeHeight(v);
         else this.drawRichStringWithResizeHeight(v);
@@ -921,7 +995,7 @@ export class YJCharLabel extends Sprite {
 
     private drawRichStringNotResizeHeight(v: string) {
         const maxWidth = this.maxWidth;
-        const ctx = this.shareCanvas().getContext("2d");
+        const ctx = this.shareCanvas().context;
         let a = new HtmlTextParser().parse(v),
             ww = 0,
             lineHeight = this.lineHeight,
@@ -942,85 +1016,125 @@ export class YJCharLabel extends Sprite {
         this.drawHtmlTexts(a, !this.fixWidth ? ww : maxWidth, lineHeight, maxSize);
     }
 
+    /**
+     * 处理自适应高度的富文本渲染
+     * 根据容器宽度自动换行并调整高度
+     * @param v 富文本内容
+     */
     private drawRichStringWithResizeHeight(v: string) {
         const maxWidth = this.maxWidth;
-        const ctx = this.shareCanvas().getContext("2d");
+        const ctx = this.shareCanvas().context;
         const extWidth = this.extWidth();
-        let blankWork = '', blankWidth = 0;
-        if (this.blankBreakWord) {
-            blankWork = ' ';
-            blankWidth = this.getMeasureWidth(ctx, blankWork);
-        }
 
-        let a = new HtmlTextParser().parse(v),
-            lines: any[] = [],
-            oneLine: any = { htmls: [], width: 0 },
-            width = extWidth,
-            lineHeight = this.lineHeight;
+        // 解析富文本
+        let htmlElements = new HtmlTextParser().parse(v);
+        let lines: any[] = [];
+        let currentLine: any = { htmls: [], width: extWidth };
+        let currentHtml: IHtmlTextParserResultObj = null;
 
-        for (let i = 0, n = a.length; i < n; i++) {
-            const aa = a[i], style = aa.style, text = aa.text;
+        // 处理每个富文本元素
+        for (let i = 0; i < htmlElements.length; i++) {
+            const element = htmlElements[i];
+            const style = element.style;
 
-            if (style?.isNewLine && text == '') {
-                oneLine.width = width;
-                lines[lines.length] = no.clone(oneLine);
-                oneLine.htmls.length = 0;
-                width = extWidth;
-                continue;
-            }
-
-            let html: IHtmlTextParserResultObj = { style: style, text: '' };
-
-            if (this.blankBreakWord && text == blankWork) {
-                if (width + blankWidth <= maxWidth) {
-                    html.text += blankWork;
-                    width += blankWidth;
-                    oneLine.htmls[oneLine.htmls.length] = html;
-                    oneLine.width = width;
-                } else {
-                    lines[lines.length] = no.clone(oneLine);
-                    oneLine.htmls.length = 0;
-                    width = extWidth;
+            // 处理换行符
+            if (style?.isNewLine && element.text === '') {
+                if (currentHtml && currentHtml.text) {
+                    currentLine.htmls.push(currentHtml);
                 }
+                lines.push(no.clone(currentLine));
+                currentLine = { htmls: [], width: extWidth };
+                currentHtml = null;
                 continue;
             }
 
+            // 设置当前样式
             this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
-            if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
-            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+            if (style?.outline || this.outlineWidth > 0) {
+                this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+            }
+            if (this.shadowBlur > 0) {
+                this.setShadowStyle(ctx);
+            }
 
-            let words: string | string[];
-            if (this.blankBreakWord)
-                words = text.split(blankWork);
-            else words = text;
+            // 分词处理
+            const words = this.splitIntoWords(element.text);
 
-            for (let i = 0, n = words.length; i < n; i++) {
-                const c = words[i];
-                let w = this.getMeasureWidth(ctx, c, style?.size);
-                if (width + w <= maxWidth - 4 * this.hdpScale) {
-                    html.text += c + (i < n - 1 ? blankWork : '');
-                    width += w + (i < n - 1 ? blankWidth : 0);
-                    if (i == n - 1) width += 4 * this.hdpScale;
-                } else {
-                    if (html.text != '') {
-                        oneLine.htmls[oneLine.htmls.length] = html;
+            for (let j = 0; j < words.length; j++) {
+                const word = words[j];
+                const wordWidth = this.getMeasureWidth(ctx, word, style?.size);
+
+                // 检查是否需要换行
+                if (currentLine.width + wordWidth > maxWidth - 4 * this.hdpScale) {
+                    // 当前行还有内容，保存当前行
+                    if (currentHtml && currentHtml.text) {
+                        currentLine.htmls.push(currentHtml);
                     }
-                    oneLine.width = width;
-                    lines[lines.length] = no.clone(oneLine);
-                    html.text = c + (i < n - 1 ? blankWork : '');
-                    width = extWidth + w + (i < n - 1 ? blankWidth : 0);
-                    oneLine.htmls.length = 0;
+                    lines.push(no.clone(currentLine));
+
+                    // 创建新行
+                    currentLine = { htmls: [], width: extWidth };
+                    currentHtml = { style: style, text: '' };
+
+                    // 处理单个词超过最大宽度的情况
+                    if (wordWidth > maxWidth - extWidth - 4 * this.hdpScale) {
+                        // 逐字符添加
+                        for (let k = 0; k < word.length; k++) {
+                            const char = word[k];
+                            const charWidth = this.getMeasureWidth(ctx, char, style?.size);
+
+                            if (currentLine.width + charWidth > maxWidth - 4 * this.hdpScale) {
+                                if (currentHtml.text) {
+                                    currentLine.htmls.push(currentHtml);
+                                    lines.push(no.clone(currentLine));
+                                    currentLine = { htmls: [], width: extWidth };
+                                    currentHtml = { style: style, text: '' };
+                                }
+                            }
+                            currentHtml.text += char;
+                            currentLine.width += charWidth;
+                        }
+                    } else {
+                        currentHtml.text = word;
+                        currentLine.width += wordWidth;
+                    }
+                } else {
+                    // 可以添加到当前行
+                    if (!currentHtml) {
+                        currentHtml = { style: style, text: '' };
+                    }
+                    currentHtml.text += word;
+                    currentLine.width += wordWidth;
+                }
+
+                // 添加空格（如果不是最后一个词）
+                if (j < words.length - 1 && this.blankBreakWord) {
+                    const spaceWidth = this.getMeasureWidth(ctx, ' ', style?.size);
+                    if (currentLine.width + spaceWidth <= maxWidth - 4 * this.hdpScale) {
+                        currentHtml.text += ' ';
+                        currentLine.width += spaceWidth;
+                    } else {
+                        if (currentHtml && currentHtml.text) {
+                            currentLine.htmls.push(currentHtml);
+                        }
+                        lines.push(no.clone(currentLine));
+                        currentLine = { htmls: [], width: extWidth };
+                        currentHtml = { style: style, text: '' };
+                    }
                 }
             }
-            if (html.text != '') {
-                oneLine.htmls[oneLine.htmls.length] = html;
-            }
         }
-        if (oneLine.htmls.length > 0) {
-            oneLine.width = width;
-            lines[lines.length] = oneLine;
+
+        // 添加最后一行
+        if (currentHtml && currentHtml.text) {
+            currentLine.htmls.push(currentHtml);
         }
-        this.drawHtmlLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
+        if (currentLine.htmls.length > 0) {
+            lines.push(currentLine);
+        }
+
+        // 绘制所有行
+        this.drawHtmlLines(lines, lines.length == 1 && !this.fixWidth ? currentLine.width : maxWidth, this.lineHeight);
     }
 
     private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
@@ -1030,9 +1144,9 @@ export class YJCharLabel extends Sprite {
             y = 0;
         width += this.extWidth() + 2;
         height += this.extHeight();
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
+        canvas.canvas.width = width;
+        canvas.canvas.height = height;
+        const ctx = canvas.context;
 
         if (this.verticalAlign == VerticalTextAlignment.CENTER) {
             y = height / 2 - (this.underline ? this.underlineWidth : 0);
@@ -1063,7 +1177,7 @@ export class YJCharLabel extends Sprite {
                 this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
             }
             if (this.gradientColor) {
-                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
+                ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.canvas.width, height: 0 });
             }
             const fontSize = style?.size * this.hdpScale || this.fontSize;
             let x2 = x1;
@@ -1096,14 +1210,20 @@ export class YJCharLabel extends Sprite {
         this.fixHDP(ctx, width, height);
     }
 
+    /**
+     * 绘制HTML文本行
+     * @param lines HTML文本行数组
+     * @param width 容器宽度
+     * @param height 行高
+     */
     private drawHtmlLines(lines: any[], width: number, height: number) {
         const canvas = this.shareCanvas(),
             hh = height + this.extHeight();
 
         width += 2;
-        canvas.width = width;
-        canvas.height = hh * lines.length;
-        const ctx = canvas.getContext("2d");
+        canvas.canvas.width = width;
+        canvas.canvas.height = hh * lines.length;
+        const ctx = canvas.context;
 
         lines.forEach((line, i) => {
             let y = hh * i;
@@ -1143,21 +1263,33 @@ export class YJCharLabel extends Sprite {
                 const html = line.htmls[j], style = html.style, text = html.text;
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
                 if (this.shadowBlur > 0) this.setShadowStyle(ctx);
-                if (style?.outline || this.outlineWidth > 0) {
-                    this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
-                    ctx.strokeText(text, x1, y);
-                }
-                if (this.gradientColor) {
-                    ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.width, height: 0 });
-                }
+
                 const fontSize = style?.size * this.hdpScale || this.fontSize;
                 let x2 = x1;
+
+                // 先绘制描边
+                if (style?.outline || this.outlineWidth > 0) {
+                    this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+                    for (let i = 0, n = text.length; i < n; i++) {
+                        const c = text[i], k = c + '::' + fontSize;
+                        const w = this._measuredWidth[k] || fontSize;
+                        ctx.strokeText(c, x2, y);
+                        x2 += w;
+                    }
+                    x2 = x1; // 重置x2以便绘制填充文字
+                }
+
+                // 再绘制填充文字
+                if (this.gradientColor) {
+                    ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.canvas.width, height: 0 });
+                }
                 for (let i = 0, n = text.length; i < n; i++) {
-                    const c = text[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                    const c = text[i], k = c + '::' + fontSize;
+                    const w = this._measuredWidth[k] || fontSize;
                     ctx.fillText(c, x2, y);
                     x2 += w;
                 }
-                // const w = this.getMeasureWidth(ctx, text, style?.size);
+
                 len += x2 - x1;
                 x1 = x2;
             }
@@ -1165,15 +1297,23 @@ export class YJCharLabel extends Sprite {
             this.drawUnderline(ctx, len, x, hh * (i + 1));
         });
 
-        this.fixHDP(ctx, width, canvas.height);
+        this.fixHDP(ctx, width, canvas.canvas.height);
     }
 
+    /**
+     * 移除文本标签
+     * 清理相关资源
+     */
     public removeLabel() {
         this.spriteFrame = null;
         this._font = null;
         this._needSetLabel = false;
     }
 
+    /**
+     * 重置文本标签
+     * 重新加载字体并更新渲染
+     */
     public resetLabel() {
         this._needSetLabel = true;
         if (this._fontUuid) {
@@ -1195,6 +1335,10 @@ export class YJCharLabel extends Sprite {
     }
 
 
+    /**
+     * 加载自定义字体
+     * 支持字体缓存以提高性能
+     */
     public async loadFont() {
         if (!this._font && this._fontUuid) {
             const bf = this.getFontFromCache(this._fontUuid);
@@ -1220,4 +1364,70 @@ export class YJCharLabel extends Sprite {
             }
         }
     }
+
+    /**
+     * 检查字符是否为CJK字符
+     * @param char 要检查的字符
+     * @returns 是否为CJK字符
+     */
+    private isCJK(char: string): boolean {
+        const code = char.charCodeAt(0);
+        return (
+            (code >= 0x4E00 && code <= 0x9FFF) ||   // CJK统一汉字
+            (code >= 0x3040 && code <= 0x309F) ||   // 平假名
+            (code >= 0x30A0 && code <= 0x30FF) ||   // 片假名
+            (code >= 0xAC00 && code <= 0xD7AF) ||   // 韩文谚文
+            (code >= 0x3100 && code <= 0x312F) ||   // 音符号
+            (code >= 0x31C0 && code <= 0x31EF) ||   // CJK笔画
+            (code >= 0xFF00 && code <= 0xFFEF)      // 全角ASCII、全角标点
+        );
+    }
+
+    /**
+     * 文本分词处理
+     * 根据语言特性进行智能分词
+     * @param text 要分词的文本
+     * @returns 分词结果数组
+     */
+    private splitIntoWords(text: string): string[] {
+        if (this.blankBreakWord) {
+            // 如果启用空格断词，留空格
+            return text.split(/(?= )|(?<= )/);
+        }
+
+        let words = [];
+        let currentWord = '';
+
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+
+            if (this.isCJK(char)) {
+                // 保存当前英文单词
+                if (currentWord) {
+                    words.push(currentWord);
+                    currentWord = '';
+                }
+                // CJK字符单独成词
+                words.push(char);
+            } else if (char === ' ') {
+                // 保存当前英文单词和空格
+                if (currentWord) {
+                    words.push(currentWord);
+                    currentWord = '';
+                }
+                words.push(char);
+            } else {
+                // 拼接英文单词
+                currentWord += char;
+            }
+        }
+
+        // 保存最后的英文单词
+        if (currentWord) {
+            words.push(currentWord);
+        }
+
+        return words;
+    }
 }
+

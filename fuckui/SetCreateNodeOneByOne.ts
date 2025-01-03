@@ -25,15 +25,15 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
     delegate: SetCreateNodeOneByOneDelegate = null;
 
     protected async setItems(data: any[]) {
-        if (!this.template) {
-            this.template = await this.loadPrefab.loadPrefab();
-            if (!this?.node?.isValid) return;
-        }
         if (!this.container) this.container = this.node;
 
         if (this.onlyOne) {
             this.setDynamicAtlasNode(data[0]);
             return;
+        }
+        if (!this.template) {
+            this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
         }
 
         let l = this.container.children.length;
@@ -61,7 +61,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
         if (!item || data[idx] == null) {
             this.delegate?.afterAllCreated();
         } else {
-            await this.delegate?.beforeCreateOneNode(idx, data[idx]);
+            this.delegate?.beforeCreateOneNode(idx, data[idx]);
             if (!this?.node?.isValid) return;
             let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
             // item.active = !!data[idx];
@@ -70,7 +70,7 @@ export class SetCreateNodeOneByOne extends SetCreateNode {
                 a.data = data[idx];
                 a.init();
             }
-            await this.delegate?.afterCreateOneNode(idx, data[idx], item);
+            this.delegate?.afterCreateOneNode(idx, data[idx], item);
             if (!this?.node?.isValid) return;
             await no.sleep(this.duration, this);
             this.showItemsOneByOne(data, ++idx);

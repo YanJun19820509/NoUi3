@@ -159,7 +159,7 @@ export class YJPreload extends YJComponent {
                 i.push(f);
             }
         });
-        this.total = 1 + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length + (this.scene != '' ? 1 : 0);
+        this.total = this.bundles.length + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length + (this.scene != '' ? 1 : 0);
     }
 
     protected loadBundles() {
@@ -423,7 +423,7 @@ export class YJPreload extends YJComponent {
                 this.progress = p / this.total;
             }
         }, async (items: JsonAsset[]) => {
-            await this.delegate?.onJsonLoaded(items);
+            this.delegate?.onJsonLoaded(items);
             this.loadJsonFilesInFolder(index + 1);
         }, [JsonAsset]);
     }

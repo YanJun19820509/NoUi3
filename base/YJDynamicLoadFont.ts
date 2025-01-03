@@ -34,19 +34,27 @@ export class YJDynamicLoadFont extends Component {
     }
 
     public async loadFont() {
+        const label = this.getComponent(Label) || this.getComponent(RichText);
+        if (label.font) return; //已经加载过字体了
         if (this.fontUuid) {
-            const label = this.getComponent(Label) || this.getComponent(RichText);
-            if (label.font) return;
-            let a = false;
-            no.assetBundleManager.loadByUuid<Font>(this.fontUuid, (file) => {
-                if (file) {
+            try {
+                const font = await new Promise<Font>((resolve) => {
+                    no.assetBundleManager.loadByUuid<Font>(this.fontUuid, (file) => {
+                        resolve(file);
+                    });
+                });
+
+                // 检查组件是否还有效
+                if (!this.isValid || !label?.isValid) return;
+                
+                if (font) {
                     label.useSystemFont = false;
-                    label.font = file;
-                    this._font = file;
+                    label.font = font;
+                    this._font = font;
                 }
-                a = true;
-            });
-            await no.waitFor(() => { return a; });
+            } catch (error) {
+                console.error('[YJDynamicLoadFont] Failed to load font:', error);
+            }
         }
     }
 }

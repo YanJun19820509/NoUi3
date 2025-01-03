@@ -1,8 +1,8 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component } from '../../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
-import { YJPanelCreated } from '../../types';
+import { YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 
 /**
  * Predefined variables
@@ -16,6 +16,7 @@ import { YJPanelCreated } from '../../types';
  *
  */
 
+let _nodeSiblingIndex_: number = 0;
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
 @executeInEditMode()
@@ -31,7 +32,7 @@ export class YJPanel extends Component {
 
     public lastCloseTime: number = -1;
 
-    public status: 'close' | 'open' = 'close';
+    public status: 'close' | 'open' | 'hide' = 'close';
 
     @property
     panelType: string = '';
@@ -55,11 +56,15 @@ export class YJPanel extends Component {
     protected _lastMultiTouchState: boolean = false;
     protected _originX: number;
     private _loaded: boolean = false;
+    public nodeCacheKey: string;
+    /**是否缓存到面板池，默认缓存 */
+    protected cacheToPool: boolean = true;
 
     onLoad() {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
         }
+        if (!this.nodeCacheKey) this.nodeCacheKey = js.getClassName(this);
     }
 
     onEnable() {
@@ -148,20 +153,29 @@ export class YJPanel extends Component {
     public clear(force = false) {
         if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         no.setPrototype(this, { [YJPanelCreated]: '0' });
+        // const url = no.getPrototype(this, YJPanelPrefabMetaKey),
+        //     uuid = no.getPrototype(this, YJPanelPrefabUuidMetaKey),
+        //     k = url || uuid;
+        // no.assetBundleManager.cleanCacheAsset(k);
         this.node.destroy();
     }
 
     public hide() {
-        this.status = 'close';
-        no.visible(this.node, false);
-        no.siblingIndex(this.node, 0);
+        this.status = 'hide';
+        if (this.cacheToPool)
+            no.panelPool.put(this.nodeCacheKey, this);
+        else {
+            no.visible(this.node, false);
+            no.siblingIndex(this.node, 0);
+        }
     }
 
     public show() {
         this.status = 'open';
         if (this.node.active) this.onEnable();
-        no.visible(this.node, true);
-        no.siblingIndex(this.node, this.node.parent.children.length - 1);
+        if (!this.cacheToPool)
+            no.visible(this.node, true);
+        no.siblingIndex(this.node, _nodeSiblingIndex_++);
     }
 
     protected onClosePanel() {
@@ -181,5 +195,9 @@ export class YJPanel extends Component {
      */
     protected onLoadPanel() {
 
+    }
+
+    onDestroy() {
+        no.log('panel destroy', this.panelType);
     }
 }

@@ -13,9 +13,8 @@ class Database {
 
     private cCode = 94;
 
-    constructor(file: string | any) {
-        if (typeof file == 'string') this.loadFile(file);
-        else this.init(file);
+    constructor(file: any) {
+        this.init(file);
     }
 
     private init(file: any) {
@@ -29,13 +28,6 @@ class Database {
             this.tableNames.push(name);
         }
         this.loaded = true;
-    }
-
-    private loadFile(file: string) {
-        no.assetBundleManager.loadJSON(file, item => {
-            this.init(item.json);
-            item.decRef();
-        });
     }
 
     private allTablesData() {
@@ -91,14 +83,24 @@ class Database {
 class JsonConfig {
     private database: Map<string, Database> = new Map<string, Database>();
 
-    public async loadDatabase(file: string | any) {
-        const database = new Database(file);
+    public loadDatabase(d: { name: string, json: any }) {
+        const database = new Database(d);
         this.database.set(database.name, database);
-        await no.waitFor(() => { return database.loaded; });
     }
 
-    public async loadDatabases(files: (string | any)[]) {
-        for (const file of files) await this.loadDatabase(file);
+    public loadDatabases(files: string[]) {
+        for (const file of files) {
+            this.loadFile(file);
+        }
+    }
+
+
+    private loadFile(file: string) {
+        no.assetBundleManager.loadJSON(file, item => {
+            const database = new Database({ name: item.name, json: item.json });
+            this.database.set(database.name, database);
+            item.decRef();
+        });
     }
 
     /**
@@ -134,7 +136,7 @@ export const YJJsonConfig = new JsonConfig();
 js.mixin(no['DataCache'].prototype, {
     getJSON(path?: string | string[]): any {
         const a = YJJsonConfig.read(path);
-        if (!a) no.err('配置数据不存在：', path);
+        if (a === null || a === undefined) no.err('配置数据不存在：', path);
         return a;
     },
     setJSON(json: Object): void {

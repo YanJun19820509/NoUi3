@@ -41,28 +41,26 @@ export class SetAnimation extends FuckUi {
         }
     }
 
-    protected async onDataChange(data: any) {
+    protected onDataChange(data: any) {
         let ani = this.getComponent(Animation);
-        await no.waitFor(() => { return ani.enabled; }, this);
+        if (!ani.enabled) return; //动画组件未启用
         let { path, name, speed, repeat } = data;
         name = name || this.defaultName;
         if (name) {
             if (!ani.getState(name) && path) {
-                if (!await this._loadClip(path, name)) return;
-            }
-            this._play(name, speed, repeat);
+                this._loadClipAndPlay(path, name, speed, repeat)
+            } else
+                this._play(name, speed, repeat);
         }
     }
 
-    private async _loadClip(path: string, name: string): Promise<boolean> {
-        return new Promise<boolean>((resolve) => {
-            no.assetBundleManager.loadAnimationClip(path, (clip) => {
-                if (this?.node?.isValid) {
-                    no.addToArray(this.needReleaseClips, clip);
-                    this.getComponent(Animation).createState(clip, name);
-                    resolve(true);
-                } else resolve(false);
-            });
+    private _loadClipAndPlay(path: string, name: string, speed = 1, repeat?: number) {
+        no.assetBundleManager.loadAnimationClip(path, (clip) => {
+            if (this?.node?.isValid) {
+                this.getComponent(Animation).createState(clip, name);
+                this._play(name, speed, repeat);
+                no.addToArray(this.needReleaseClips, clip);
+            }
         });
     }
 

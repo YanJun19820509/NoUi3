@@ -237,14 +237,14 @@ export class YJWindowManager extends Component {
         let content: Node = self.getContent(to);
         const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
         if (!allowMultipleOpen) {
-            let a = content.getComponentInChildren(comp);
+            let a = content.getComponentInChildren(comp) || no.panelPool.get(comp.name);
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
                     // a.onEnable();
                     afterInit?.(a as T);
                 }).catch(e => { no.err('windowmanager', e.stack, e.message); });
-                no.siblingIndex(a.node, content.children.length - 1);
+                // no.siblingIndex(a.node, content.children.length - 1);
                 return;
             }
         }
@@ -294,7 +294,7 @@ export class YJWindowManager extends Component {
                     // a.onEnable();
                     afterInit?.(a);
                 }).catch(e => { no.err('windowmanager', e.stack, e.message); });
-                no.siblingIndex(a.node, content.children.length - 1);
+                // no.siblingIndex(a.node, content.children.length - 1);
                 return;
             }
         }
@@ -335,6 +335,27 @@ export class YJWindowManager extends Component {
         const self = YJWindowManager._ins,
             content: Node = self.getContent(to);
         panel.node.parent = content;
+    }
+
+    /**
+     * 隐藏某个窗口
+     * @param name 窗口类名
+     * @param to 所属节点
+     */
+    public static hidePanel(name: string, to?: string) {
+        let self = YJWindowManager._ins;
+        for (let i = 0, n = self.infos.length; i < n; i++) {
+            if (to && self.infos[i].type != to) continue;
+            let content: Node = self.infos[i].content;
+            let children = content.children;
+            for (let i = children.length - 1; i >= 0; i--) {
+                let node = children[i];
+                if (node.getComponent(name)) {
+                    (node.getComponent(name) as YJPanel).hide();
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -403,7 +424,7 @@ export class YJWindowManager extends Component {
             return;
         }
         let content: Node = YJWindowManager._ins.getContent(to);
-        let a = content.getComponentInChildren(comp);
+        let a = content.getComponentInChildren(comp) || no.panelPool.get(comp.name);
         if (!a) return null
         return a as T;
     }
@@ -529,7 +550,7 @@ export class YJWindowManager extends Component {
         for (let n = this.node.children.length; i < n; i++) {
             if (this.node.children[i]['yj_layerType'] == type) continue;
             if (this.node.children[i]['yj_layerType'] > type) {
-                node.setSiblingIndex(i);
+                no.siblingIndex(node, i);
                 break;
             }
         }

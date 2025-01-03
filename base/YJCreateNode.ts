@@ -45,23 +45,55 @@ export class YJCreateNode extends Component {
     }
 
     public async createNode(): Promise<Node> {
-        let a: Node;
-        if (this._recycleType != null) {
-            a = no.cachePool.reuse(this._recycleType);
+        // 1. 优先从对象池获取
+        if (this._recycleType) {
+            const recycledNode: Node = no.cachePool.reuse(this._recycleType);
+            if (recycledNode) {
+                recycledNode.parent = this.target;
+                no.visible(recycledNode, true);
+                return recycledNode;
+            }
         }
 
-        if (a == null) {
-            a = this.tempNode || await this.loadPrefab.loadPrefab();
-            if (!this?.node?.isValid) return;
-            if (a == null) return null;
-            await a.getComponent(YJLoadAssets)?.load();
-            if (!this?.node?.isValid) return;
-            a.getComponent(YJDataWork)?.init();
-            this._recycleType = a.getComponent(YJCacheObject)?.recycleType;
+        // 2. 使用缓存的临时节点或加载预制体
+        try {
+            let node: Node;
+            if (this.tempNode) {
+                node = instantiate(this.tempNode);
+            } else {
+                node = await this.loadPrefab.loadPrefab();
+            }
+
+            // 检查组件是否有效
+            if (!this?.node?.isValid) return null;
+            if (!node) return null;
+
+            // 3. 异步加载资源
+            const loadAssetsComp = node.getComponent(YJLoadAssets);
+            if (loadAssetsComp) {
+                await loadAssetsComp.load();
+                if (!this?.node?.isValid) return null;
+            }
+
+            // 4. 初始化数据
+            const dataWorkComp = node.getComponent(YJDataWork);
+            dataWorkComp?.init();
+
+            // 5. 缓存回收类型
+            const cacheObjComp = node.getComponent(YJCacheObject);
+            if (cacheObjComp) {
+                this._recycleType = cacheObjComp.recycleType;
+            }
+
+            // 6. 设置父节点和显示状态
+            node.parent = this.target;
+            no.visible(node, true);
+            return node;
+
+        } catch (error) {
+            console.error('[YJCreateNode] Failed to create node:', error);
+            return null;
         }
-        a.parent = this.target;
-        no.visible(a, true);
-        return a;
     }
 
     ///////////////////////////EDITOR///////////////

@@ -21,6 +21,7 @@ export class YJWebSocket implements YJSocketInterface {
     private url: string;
     private reIniting: boolean = false;
     private isClosed: boolean = false;
+    private isConnected: boolean = false;
     private isWxWs: boolean = false;
 
     public static new(url: string): YJWebSocket {
@@ -66,23 +67,27 @@ export class YJWebSocket implements YJSocketInterface {
 
     private _initWs() {
         this.ws['_uuid'] = no.uuid();
-
+        this.isClosed = false;
+        // 在重连的时候isClosed为false导致connect的时候没有onopen就发消息，所以增加了是否连接状态
+        this.isConnected = false;
         this.ws.onopen = (event) => {
             no.log(`websocket open:${this.url}`);
             this.isClosed = false;
+            this.isConnected = true;
+            this.onConnect?.();
         };
         this.ws.onmessage = (event) => {
             // no.log("response text msg: " + event.data);
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.err(`websocket error:${this.url}`, event);
+            no.err(`websocket error:${this.url}`, this.isClosed, JSON.stringify(event));
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
-            no.err(`websocket close:${this.url}`, event);
+            no.err(`websocket close:${this.url}`, this.isClosed, JSON.stringify(event));
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
@@ -97,10 +102,13 @@ export class YJWebSocket implements YJSocketInterface {
         });
 
         this.ws['_uuid'] = no.uuid();
-
+        this.isClosed = false;
+        this.isConnected = false;
         this.ws.onOpen((res) => {
             no.log(`websocket open:${this.url}`);
             this.isClosed = false;
+            this.isConnected = true;
+            this.onConnect?.();
         });
 
         this.ws.onMessage((res) => {
@@ -156,7 +164,6 @@ export class YJWebSocket implements YJSocketInterface {
     public async connect() {
         if (this.ws?.readyState != WebSocket.OPEN)
             this.initWebSocket();
-        await no.waitFor(() => { return !this.isClosed; })
     }
 
     private reInit() {
@@ -167,24 +174,24 @@ export class YJWebSocket implements YJSocketInterface {
         }
     }
 
-    public async isOk(): Promise<boolean> {
-        if (this.ws?.readyState == WebSocket.OPEN) return true;
-        return new Promise<boolean>(resolve => {
-            let n = 0;
-            no.scheduleForever(() => {
-                if (this.ws?.readyState == WebSocket.OPEN) {
-                    no.unschedule(this);
-                    resolve(true);
-                } else {
-                    n++;
-                    if (n >= 20) {
-                        no.unschedule(this);
-                        resolve(false);
-                    }
-                }
-            }, .5, this);
-        });
-    }
+    // public async isOk(): Promise<boolean> {
+    //     if (this.isConnected) return true;
+    //     return new Promise<boolean>(resolve => {
+    //         let n = 0;
+    //         no.scheduleForever(() => {
+    //             if (this.isConnected) {
+    //                 no.unschedule(this);
+    //                 resolve(true);
+    //             } else {
+    //                 n++;
+    //                 if (n >= 20) {
+    //                     no.unschedule(this);
+    //                     resolve(false);
+    //                 }
+    //             }
+    //         }, .5, this);
+    //     });
+    // }
 
     /**断开 */
     public close() {
@@ -203,8 +210,8 @@ export class YJWebSocket implements YJSocketInterface {
      * @param encryptType 加密方式
      * @param data 
      */
-    public async sendDataToServer(data: any) {
-        if (await this.isOk()) {
+    public sendDataToServer(data: any) {
+        if (this.isConnected) {
             this.sendData(data);
             return true;
         }
@@ -213,5 +220,9 @@ export class YJWebSocket implements YJSocketInterface {
 
     public isOpen(): boolean {
         return this.ws?.readyState == WebSocket.OPEN;
+    }
+
+    public onConnect() {
+
     }
 }

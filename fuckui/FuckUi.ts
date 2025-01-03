@@ -52,11 +52,11 @@ export class FuckUi extends Component {
             this._oldData = null;
             return;
         }
-        if (!disignore && this.saveIgnore && no.objectEquals(d, this._oldData)) {
-            if (DEBUG && this.showValueLog)
-                // no.log('重值忽略', this.bind_keys, d);
-                return;
-        }
+        // if (!disignore && this.saveIgnore && no.objectEquals(d, this._oldData)) {
+        //     if (DEBUG && this.showValueLog)
+        //         // no.log('重值忽略', this.bind_keys, d);
+        //         return;
+        // }
         this._oldData = d;
 
         this.logValue(d);

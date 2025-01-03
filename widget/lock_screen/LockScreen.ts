@@ -18,6 +18,7 @@ export class LockScreen extends YJPanel {
     private static _ins: LockScreen;
     private static _showing = 0;
     private _1 = 0;
+    cacheToPool: boolean = false;
     onLoad() {
         super.onLoad();
         LockScreen._ins = this;
@@ -34,7 +35,8 @@ export class LockScreen extends YJPanel {
 
     public static async hide() {
         this._showing = 0;
-        await no.waitFor(() => { return !!this._ins; });
+        if (!this._ins)
+            await no.waitFor(() => { return !!this._ins; });
         if (this._showing == 1) return;
         this._ins?.closePanel();
     }

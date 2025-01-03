@@ -7,4 +7,5 @@
 
 export const YJMacroConfig = {
     TTF_FONT: 'MiSans-Semibold.ttf',//字体
+    ENABLE_DYNAMIC_BATCH_RENDER: true,//是否开启动态批量渲染
 }

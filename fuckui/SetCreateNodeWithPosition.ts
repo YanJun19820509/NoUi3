@@ -112,16 +112,17 @@ export class SetCreateNodeWithPosition extends FuckUi {
         }
     }
 
-    protected onDataChange(data: any) {
-        this._isSettingData = true;
-        this.setItems([].concat(data));
-    }
-
-    protected async setItems(data: any[]) {
+    protected async onDataChange(data: any) {
         if (!this.template) {
             this.template = await this.loadPrefab.loadPrefab();
             if (!this?.node?.isValid) return;
         }
+        this._isSettingData = true;
+
+        this.setItems([].concat(data));
+    }
+
+    protected async setItems(data: any[]) {
         if (!this.container) this.container = this.node;
 
         let n = data.length;

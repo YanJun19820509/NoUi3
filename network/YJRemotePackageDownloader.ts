@@ -268,8 +268,7 @@ export class YJRemotePackageDownloader {
     private async loadBundleOneByOne(bundleNames: string[]) {
         for (let i = 0; i < this._allNum; i++) {
             this.loadRemoteBundle(bundleNames[i]);
-            await no.waitFor(() => { return this._completeNum == i + 1; });
-            // await no.sleep(2);
+            // await no.waitFor(() => { return this._completeNum == i + 1; });
         }
     }
 

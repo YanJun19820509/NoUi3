@@ -63,7 +63,7 @@ export class SetList extends FuckUi {
     public get setTemplateInfo(): boolean {
         return false;
     }
-    
+
     public set setTemplateInfo(v: boolean) {
         this.preInitItems();
     }
@@ -98,21 +98,6 @@ export class SetList extends FuckUi {
             if (!this.itemPanel) this.itemPanel = this.getComponent(YJLoadPrefab);
             return;
         }
-        if (!this.template) {
-            this.template = await this.itemPanel.loadPrefab();
-            if (!this?.node?.isValid) return;
-            this.preInitItems();
-        }
-        if (this.showMax == 0)
-            this.preInitItems();
-        this.isVertical = this.scrollView.vertical;
-        if (!this.content)
-            this.content = this.scrollView.content;
-        this.scrollViewContent = this.scrollView.content;
-        this._loaded = true;
-        this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
-            this.updatePos();
-        }, this);
     }
 
     onEnable() {
@@ -130,6 +115,25 @@ export class SetList extends FuckUi {
         if (this.clearOnDisable) {
             this.clearItems();
         }
+    }
+
+    private async initTemplate() {
+        if (this._loaded) return;
+        this._loaded = true;
+        if (!this.template) {
+            this.template = await this.itemPanel.loadPrefab();
+            if (!this?.node?.isValid) return;
+            this.preInitItems();
+        }
+        if (this.showMax == 0)
+            this.preInitItems();
+        this.isVertical = this.scrollView.vertical;
+        if (!this.content)
+            this.content = this.scrollView.content;
+        this.scrollViewContent = this.scrollView.content;
+        this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
+            this.updatePos();
+        }, this);
     }
 
     public clearItems() {
@@ -161,9 +165,8 @@ export class SetList extends FuckUi {
         }
         this.isFirst = false;
         this.unscheduleAllCallbacks();
+        await this.initTemplate();
         if (!this?.node?.isValid) return;
-        await no.waitFor(() => { return this._loaded; }, this);
-        if (!this?.node?.isValid || !this?.content?.isValid) return;
         let listItems = this.content.children;
         if (this.waitTime > 0) {
             for (let i = 0, n = listItems.length; i < n; i++) {
@@ -177,7 +180,7 @@ export class SetList extends FuckUi {
         if (listItems.length == 0) {
             this.allNum = a.length;
             this.showNum = this.showMax;
-            await this.initItems();
+            this.initItems();
             if (!this?.node?.isValid) return;
         } else if (this.autoScrollBack || this.allNum != a.length) {
             this.lastIndex = 0;
@@ -191,22 +194,19 @@ export class SetList extends FuckUi {
             // this.lastIndex = 0;
             // no.position(this.scrollViewContent, v3(0, 0));
             this.allNum = a.length;
-            await this.initItems();
+            this.initItems();
+            if (!this?.node?.isValid) return;
             // for (let i = 0, n = listItems.length; i < n; i++) {
             //     let item = listItems[i];
             //     this.setItemPosition(item, i);
             // }
         }
         this.listData = a;
-        await this.setList();
-        if (!this?.node?.isValid) return;
-        no.EventHandlerInfo.execute(this.onComplete);
-        this._isSettingData = false;
+        this.setList();
     }
 
-    private async initItems() {
+    private initItems() {
         if (!this.node.isValid) return;
-        await no.waitFor(() => { return this.template != null; }, this);
         if (!this.itemSize) return;
         if (this.isVertical) {
             this.contentSize = this.allNum * this.itemSize.height + this.offset.height;
@@ -237,7 +237,6 @@ export class SetList extends FuckUi {
     }
 
     private async setList() {
-        if (!this.node.isValid) return;
         no.sortArray(this.content.children, (a, b) => {
             return a['__dataIndex'] - b['__dataIndex'];
         });
@@ -252,6 +251,9 @@ export class SetList extends FuckUi {
                 if (i >= n) return false;
             }, this);
         }
+        if (!this?.node?.isValid) return;
+        no.EventHandlerInfo.execute(this.onComplete);
+        this._isSettingData = false;
     }
 
     private setItem(i: number) {

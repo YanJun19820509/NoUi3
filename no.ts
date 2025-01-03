@@ -1,3 +1,4 @@
+import { JSB } from "cc/env";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
@@ -13,7 +14,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = DEBUG;
+    let _isLogEnabled: boolean = false;
     let _isSpineEnable: boolean = true;
 
     /**
@@ -686,7 +687,7 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function warn(...Evns: any[]): void {
@@ -804,13 +805,21 @@ export namespace no {
     }
 
     export async function checkUntil(express: () => boolean) {
+        // 先检查一次,避免不必要的定时器
+        if (express()) {
+            return;
+        }
         return new Promise<void>(resolve => {
-            const a = setIntervalF(() => {
+
+            // 使用 requestAnimationFrame 代替 setInterval,性能更好
+            const check = () => {
                 if (express()) {
-                    clearIntervalF(a);
                     resolve();
+                    return;
                 }
-            });
+                requestAnimationFrame(check);
+            };
+            requestAnimationFrame(check);
         });
     }
 
@@ -1265,7 +1274,7 @@ export namespace no {
     /**
      * 等待几秒
      * @param duration 等待时长(秒)
-     * @param component
+     * @param component deprecated
      * @returns
      */
     export function sleep(duration: number, component?: Component): Promise<void> {
@@ -1274,8 +1283,9 @@ export namespace no {
             // if (checkValid(component)) {
             //     component.scheduleOnce(resolve, duration);
             // } else {
-            scheduleOnce(() => { resolve(); }, duration);
+            // scheduleOnce(() => { resolve(); }, duration);
             // }
+            setTimeout(() => { resolve(); }, duration * 1000);
         });
     }
 
@@ -1355,9 +1365,13 @@ export namespace no {
     }
 
     /**当前零点时间戳（秒） */
-    export function zeroTimestamp(v = 0): number {
+    export function zeroTimestamp(v = 0, isUTC = false): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
+        if (isUTC) {
+            a.setUTCHours(0, 0, 0, 0);
+        } else {
+            a.setHours(0, 0, 0, 0);
+        }
         return floor(a.getTime() / 1000) + v;
     }
 
@@ -1447,7 +1461,7 @@ export namespace no {
         let h = floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
-            formatter = `{d}{h}`;
+            formatter = `{d}d{h}h`;
             return formatString(formatter, { h: h, d: d });
         }
 
@@ -2065,6 +2079,7 @@ export namespace no {
         return args;
     }
 
+    let _tempPos: Vec3 = new Vec3();
     /**
      * 获取或设置节点x坐标
      * @param node 节点
@@ -2073,12 +2088,12 @@ export namespace no {
      */
     export function x(node: Node, x?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (x != undefined) {
-            p.x = x;
-            node.setPosition(p);
+            _tempPos.x = x;
+            node.setPosition(_tempPos);
         }
-        return p.x;
+        return _tempPos.x;
     }
 
     /**
@@ -2089,12 +2104,12 @@ export namespace no {
      */
     export function y(node: Node, y?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (y != undefined) {
-            p.y = y;
-            node.setPosition(p);
+            _tempPos.y = y;
+            node.setPosition(_tempPos);
         }
-        return p.y;
+        return _tempPos.y;
     }
 
     /**
@@ -2105,12 +2120,12 @@ export namespace no {
      */
     export function z(node: Node, z?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (z != undefined) {
-            p.z = z;
-            node.setPosition(p);
+            _tempPos.z = z;
+            node.setPosition(_tempPos);
         }
-        return p.z;
+        return _tempPos.z;
     }
     /**
      * 获取或设置节点siblingIndex
@@ -2120,11 +2135,12 @@ export namespace no {
      */
     export function siblingIndex(node: Node, index?: number): number {
         if (!node) return;
-        let p = node.getSiblingIndex();
-        if (index != undefined && p != index) {
-            p = index;
-            node.setSiblingIndex(p);
+        if (!node.parent?.['_children']) return 0;
+        if (index != undefined) {
+            node.setSiblingIndex(index);
+            return index;
         }
+        let p = node.parent['_children']?.findIndex(a => a.uuid == node.uuid) || 0;
         return p;
     }
 
@@ -2139,7 +2155,8 @@ export namespace no {
         if (pos != undefined) {
             node.setPosition(pos);
         }
-        return node.getPosition().clone();
+        node.getPosition(_tempPos);
+        return _tempPos.clone();
     }
 
     /**
@@ -2537,7 +2554,7 @@ export namespace no {
             setTimeout(() => {
                 this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 20);
+            }, 100);
         }
 
         /**
@@ -2560,7 +2577,7 @@ export namespace no {
         }
 
         public clear(): void {
-            this._data = {};
+            this._data = null;
         }
 
         /**
@@ -3399,7 +3416,7 @@ export namespace no {
          * @param onProgress 
          * @param onComplete 
          */
-        public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
+        public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
             if (requests.length == 0) {
                 onProgress?.(1);
                 onComplete?.([]);
@@ -3497,6 +3514,19 @@ export namespace no {
          */
         public cacheAsset(k: string, asset: any) {
             this._cacheAsset[k] = asset;
+        }
+
+        /**
+         * 清理资源
+         * @param k 
+         */
+        public cleanCacheAsset(k: string) {
+            let asset = this._cacheAsset[k];
+            if (asset) {
+                no.assetBundleManager.decRef(asset);
+                delete this._cacheAsset[k];
+                delete this._cacheAsset[asset.uuid];
+            }
         }
 
         public cacheImage(image: ImageAsset) {
@@ -6042,5 +6072,194 @@ export namespace no {
             }) as any;
         }
     }
+    /**获得浏览器参数  ?a=1&b=2 */
+    export function GetQueryString(name: string) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return decodeURIComponent(r[2]); return null;
+    }
+
+
+    //////////////////canvas缓存池//////////////////
+    interface ISharedLabelData {
+        canvas: HTMLCanvasElement;
+        context: CanvasRenderingContext2D | null;
+    }
+
+    class CanvasPool {
+        private static _instance: CanvasPool;
+        static getInstance(): CanvasPool {
+            if (!this._instance) {
+                this._instance = new CanvasPool();
+            }
+            return this._instance;
+        }
+        public pool: ISharedLabelData[] = [];
+        public get() {
+            let data = this.pool.shift();
+
+            if (!data) {
+                const canvas = window.document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                data = {
+                    canvas,
+                    context,
+                };
+            }
+            else {
+                data.context.clearRect(0, 0, data.canvas.width, data.canvas.height);
+            }
+            return data;
+        }
+
+        public put(canvas: ISharedLabelData) {
+            if (this.pool.length >= macro.MAX_LABEL_CANVAS_POOL_SIZE) {
+                return;
+            }
+            this.pool.push(canvas);
+        }
+    }
+    export const canvasPool: CanvasPool = CanvasPool.getInstance();
+    //////////////////canvas缓存池//////////////////
+
+
+    //////////////////node缓存池//////////////////
+
+    export class NodePool {
+        private cacheMap: Map<string, { o: Node, t: number }>;
+        private static _ins: NodePool = null;
+
+        public static ins(): NodePool {
+            if (!this._ins) this._ins = new NodePool();
+            return this._ins;
+        }
+
+        constructor() {
+            this.cacheMap = new Map<string, { o: Node, t: number }>();
+        }
+
+        public get(type: string): Node {
+            if (this.cacheMap.has(type)) {
+                const cache = this.cacheMap.get(type);
+                this._visible(cache.o, true);
+                this.cacheMap.delete(type);
+                return cache.o;
+            }
+            return null;
+        }
+
+        public put(type: string, node: Node) {
+            this._visible(node, false);
+            this.cacheMap.set(type, { o: node, t: Date.now() });
+        }
+
+        public clear() {
+            this.cacheMap.forEach((v, k) => {
+                v.o.destroy();
+            });
+            this.cacheMap.clear();
+        }
+
+        private _visible(node: Node, v: boolean) {
+            const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+            if (blockInputEvents)
+                blockInputEvents.forEach(a => a.enabled = v);
+            const btn = node.getComponent('YJButton');
+            if (btn)
+                btn['canClick'] = v;
+            if (node.parent) {
+                if (!v) {
+                    const idx = no.siblingIndex(node);
+                    node.parent['_children'].splice(idx, 1);
+                    if (node['__origin_x__'] == null) {
+                        node['__origin_x__'] = x(node);
+                    }
+                    x(node, 20000);
+                } else {
+                    node.parent['_children'].push(node);
+                    if (node['__origin_x__'] !== null) {
+                        x(node, node['__origin_x__']);
+                    }
+                }
+            }
+        }
+    }
+    /**节点池 */
+    export const nodePool = NodePool.ins();
+    //////////////////node缓存池//////////////////
+
+    //////////面板池
+    class PanelPool {
+        private cacheMap: Map<string, { o: Component, t: number }>;
+        private static _ins: PanelPool = null;
+
+        public static ins(): PanelPool {
+            if (!this._ins) this._ins = new PanelPool();
+            return this._ins;
+        }
+
+        constructor() {
+            this.cacheMap = new Map<string, { o: Component, t: number }>();
+        }
+
+        public get<T extends Component>(type: string): T {
+            if (this.cacheMap.has(type)) {
+                const cache = this.cacheMap.get(type);
+                this._visible(cache.o, true);
+                this.cacheMap.delete(type);
+                return cache.o as T;
+            }
+            return null;
+        }
+
+        public put(type: string, panel: Component) {
+            this._visible(panel, false);
+            this.cacheMap.set(type, { o: panel, t: Date.now() });
+        }
+
+        public clear() {
+            this.cacheMap.forEach((v, k) => {
+                v.o.node.parent['_children'].push(v.o.node);
+                v.o.node['_siblingIndex'] = v.o.node.parent['_children'].length - 1;
+                v.o['clear']();
+            });
+            this.cacheMap.clear();
+        }
+
+        public clearType(type: string) {
+            if (this.cacheMap.has(type)) {
+                const cache = this.cacheMap.get(type);
+                cache.o['clear']();
+                this.cacheMap.delete(type);
+            }
+        }
+
+        private _visible(panel: Component, v: boolean) {
+            const node = panel.node;
+            const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+            if (blockInputEvents)
+                blockInputEvents.forEach(a => a.enabled = v);
+            const btn = node.getComponent('YJButton');
+            if (btn)
+                btn['canClick'] = v;
+            if (node.parent) {
+                if (!v) {
+                    const idx = no.siblingIndex(node);
+                    node.parent['_children']?.splice(idx, 1);
+                    if (node['__origin_x__'] == null) {
+                        node['__origin_x__'] = x(node);
+                    }
+                    x(node, 20000);
+                } else {
+                    node.parent['_children']?.push(node);
+                    if (node['__origin_x__'] !== null) {
+                        x(node, node['__origin_x__']);
+                    }
+                }
+            }
+        }
+    }
+    export const panelPool = PanelPool.ins();
+    //////////面板池
 }
 no.addToWindowForDebug('no', no);

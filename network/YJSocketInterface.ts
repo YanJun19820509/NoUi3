@@ -20,6 +20,7 @@ export interface YJSocketInterface {
     dealReceivedData?(handler: (data: any) => void): void;
     onMessage?(v: any): any;
     onClose?(): void;
+    onConnect?(): void;
     clear?(): void;
     connect?(): void;
     close?(): void;

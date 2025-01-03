@@ -1,105 +1,180 @@
-
-import { ccclass, Component, Node, sys } from '../yj';
+import { ccclass } from '../yj';
 import { no } from '../no';
 
+/** 任务接口定义 */
+interface IJob {
+    func: Function;
+    target: any;
+    args?: any[];
+    resolve: (value?: any) => void;
+}
+
 /**
- * Predefined variables
- * Name = YJJobManager
- * DateTime = Mon Oct 31 2022 17:10:47 GMT+0800 (中国标准时间)
- * Author = mqsy_yj
- * FileBasename = YJJobManager.ts
- * FileBasenameNoExtension = YJJobManager
- * URL = db://assets/NoUi3/base/YJJobManager.ts
- * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
- *
+ * 全局任务调度管理器
+ * 用于管理和执行异步任务队列
  */
-type YJJob = { func: Function, target: any, args?: any };
-//任务管理器，管理全局任务的调度执行
 @ccclass('YJJobManager')
 export class YJJobManager {
-    private static _ins: YJJobManager;
-    private jobs: { [k: string]: YJJob } = {};
-    private jobKeys: string[] = [];
-    private lastJobKeyIndex: number = 0;
-    private needRemoveJobKeys: string[] = [];
-    //是否立刻执行
-    private doNow = false;
+    private static _instance: YJJobManager;
 
+    // 使用 Map 存储任务，提供更好的性能
+    private jobs: Map<string, IJob> = new Map();
+    // 使用 Set 存储活动任务ID，提高查找效率
+    private activeJobs: Set<string> = new Set();
+    // 任务队列
+    private jobQueue: string[] = [];
+
+    // 任务处理状态
+    private isProcessing: boolean = false;
+    // 每帧最大处理时间（毫秒）
+    private readonly MAX_PROCESS_TIME: number = 5;
+    // 是否立即执行所有任务
+    private executeImmediately: boolean = false;
+
+    /** 单例获取器 */
     public static get ins(): YJJobManager {
-        if (!this._ins) {
-            this._ins = new YJJobManager();
-            this._ins.executePerFrame();
+        if (!this._instance) {
+            this._instance = new YJJobManager();
+            this._instance.startProcessing();
         }
-        return this._ins;
+        return this._instance;
     }
 
     /**
-     * 由管理器来执行
-     * @param func 执行函数, 如果函数返回false将停止该任务的执行
-     * @param target 执行函数对象
+     * 添加并执行任务
+     * @param func 执行函数
+     * @param target 执行上下文
+     * @param args 函数参数
+     * @returns Promise
      */
-    public async execute(func: Function, target: any, args?: any): Promise<void> {
-        const k = no.uuid();
-        this.jobs[k] = { func: func, target: target, args: args };
-        this.jobKeys[this.jobKeys.length] = k;
-        return await no.waitFor(() => {
-            return this.jobKeys.indexOf(k) == -1;
+    public async execute(func: Function, target: any, args?: any): Promise<any> {
+        if (!func || !target) {
+            throw new Error('[YJJobManager] Invalid function or target');
+        }
+
+        const jobId = no.uuid();
+
+        this.activeJobs.add(jobId);
+        this.jobQueue.push(jobId);
+
+        let p = new Promise((resolve) => {
+            this.jobs.set(jobId, {
+                func,
+                target,
+                args,
+                resolve
+            });
         });
+
+        // 如果设置为立即执行，则直接处理任务
+        if (this.executeImmediately) {
+            this.processJobs();
+        }
+        return p;
     }
 
-    private nowMs(): number {
+    /**
+     * 开始任务处理循环
+     */
+    private startProcessing(): void {
+        const processFrame = () => {
+            this.processJobs();
+            // 使用 requestAnimationFrame 进行下一帧处理
+            requestAnimationFrame(processFrame);
+        };
+
+        requestAnimationFrame(processFrame);
+    }
+
+    /**
+     * 处理任务队列
+     */
+    private processJobs(): Promise<void> {
+        if (this.isProcessing || this.jobQueue.length === 0) return;
+
+        this.isProcessing = true;
+        const startTime = this.getCurrentTime();
+
+        try {
+            while (this.jobQueue.length > 0) {
+                // 检查处理时间是否超过限制
+                if (!this.executeImmediately &&
+                    this.getCurrentTime() - startTime > this.MAX_PROCESS_TIME) {
+                    break;
+                }
+
+                const jobId = this.jobQueue[0];
+                const job = this.jobs.get(jobId);
+
+                if (!job) continue;
+
+                if (!this.isValidTarget(job.target)) {
+                    this.jobQueue.shift();
+                    this.removeJob(jobId);
+                    job.resolve();
+                    continue;
+                }
+
+                try {
+                    const result = job.func.call(job.target, job.args);
+                    if (result !== false) {
+                        continue;
+                    }
+                } catch (error) {
+                    console.error('[YJJobManager] Job execution error:', error);
+                }
+                this.jobQueue.shift();
+                this.removeJob(jobId);
+                job.resolve();
+            }
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+
+    /**
+     * 移除任务
+     */
+    private removeJob(jobId: string): void {
+        this.jobs.delete(jobId);
+        this.activeJobs.delete(jobId);
+    }
+
+    /**
+     * 检查目标对象是否有效
+     */
+    private isValidTarget(target: any): boolean {
+        return target && no.checkValid(target);
+    }
+
+    /**
+     * 获取当前时间戳
+     */
+    private getCurrentTime(): number {
         return no.sysTime.locationNow;
     }
 
-    private executePerFrame() {
-        const frameStartTime = this.nowMs();
-        let aa = true;
-        while (aa) {
-            if (this.nowMs() - frameStartTime > 5) {
-                aa = false;
-            } else {
-                let n = this.jobKeys.length;
-                if (n == 0) {
-                    aa = false;
-                } else {
-                    this.clearRemoveKeys();
-                    let k: string, job: YJJob;
-                    for (let i = this.lastJobKeyIndex; i < n; i++) {
-                        k = this.jobKeys[i];
-                        job = this.jobs[k];
-                        if (!job || !no.checkValid(job.target) || job.func.call(job.target, job.args) === false) this.addNeedRemoveKey(k);
-                        if (!this.doNow && this.nowMs() - frameStartTime > 30) {
-                            this.lastJobKeyIndex = i;
-                            aa = false;
-                            break;
-                        }
-                    }
-                    if (aa)
-                        this.lastJobKeyIndex = 0;
-                }
-            }
-        }
-
-        requestAnimationFrame(function () {
-            YJJobManager.ins?.executePerFrame();
-        });
+    /**
+     * 设置是否立即执行任务
+     */
+    public setExecuteImmediately(value: boolean): void {
+        this.executeImmediately = value;
     }
 
-    private addNeedRemoveKey(k: string) {
-        no.addToArray(this.needRemoveJobKeys, k);
+    /**
+     * 清理所有任务
+     */
+    public clear(): void {
+        this.jobs.clear();
+        this.activeJobs.clear();
+        this.jobQueue.length = 0;
+        this.isProcessing = false;
     }
 
-    private clearRemoveKeys() {
-        if (this.needRemoveJobKeys.length == 0) return;
-        let k: string;
-        for (let i = this.jobKeys.length - 1; i >= 0; i--) {
-            k = this.jobKeys[i];
-            if (this.needRemoveJobKeys.indexOf(k) > -1) {
-                this.jobKeys.splice(i, 1);
-                delete this.jobs[k];
-                if (this.lastJobKeyIndex > i) this.lastJobKeyIndex--;
-            }
-        }
-        this.needRemoveJobKeys.length = 0;
+    /**
+     * 获取当前任务数量
+     */
+    public get jobCount(): number {
+        return this.activeJobs.size;
     }
 }

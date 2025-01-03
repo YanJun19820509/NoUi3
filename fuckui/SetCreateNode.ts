@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3, Layout } from '../yj';
+import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3, Layout, UIOpacity } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -98,6 +98,12 @@ export class SetCreateNode extends FuckUi {
             this.container?.children.forEach(child => {
                 child.destroy();
             });
+        } else {
+            if (this.uiAnim?.enabled) {
+                this.container?.children.forEach(child => {
+                    child.children[0].active = false;
+                });
+            }
         }
     }
 
@@ -121,9 +127,7 @@ export class SetCreateNode extends FuckUi {
     protected async setItems(data: any[]) {
         if (!this.container) this.container = this.node;
         if (this.onlyOne) {
-            await this.setDynamicAtlasNode(data[0]);
-            no.EventHandlerInfo.execute(this.onComplete);
-            this._isSettingData = false;
+            this.setDynamicAtlasNode(data[0]);
             return;
         }
 
@@ -162,6 +166,7 @@ export class SetCreateNode extends FuckUi {
         // no.visible(cacheItem, false);
         if (this.uiAnim?.enabled) {
             const box = no.newNode('box');
+            box.addComponent(UIOpacity);
             const layout = item.getComponent(Layout);
             if (!layout) {
                 if (!this.itemSize) this.itemSize = no.size(item);
@@ -228,30 +233,28 @@ export class SetCreateNode extends FuckUi {
                 if (!this?.node?.isValid) return;
             }
             item = instantiate(this.template);
+            if (item.getComponent(YJLoadAssets))
+                await item.getComponent(YJLoadAssets)?.load();
+            if (!this?.node?.isValid) return;
             item = this.initItem(item);
             item.parent = this.container;
-            if (this.uiAnim?.enabled) item = item.children[0];
-            await item.getComponent(YJLoadAssets)?.load();
-            if (!this?.node?.isValid) return;
             no.visible(item, true);
-            if (this.uiAnim?.enabled) {
-                this._aniEnd = false;
-                this.uiAnim.play(item);
-                await no.waitFor(() => { return this._aniEnd; });
-            }
-        } else {
-            if (this.uiAnim?.enabled) {
-                this._aniEnd = false;
-                item = item.children[0];
-                this.uiAnim.play(item);
-                await no.waitFor(() => { return this._aniEnd; });
-            }
         }
+        if (this.uiAnim?.enabled) {
+            this._aniEnd = false;
+            item = item.children[0];
+            this.uiAnim.play(item);
+            // await no.waitFor(() => { return this._aniEnd; });
+        }
+
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
             a.data = data;
         }
         else a?.init();
+
+        no.EventHandlerInfo.execute(this.onComplete);
+        this._isSettingData = false;
     }
 
     private _aniEnd = false;

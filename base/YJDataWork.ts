@@ -61,7 +61,8 @@ export class YJDataWork extends Component {
     /**
      * 组件销毁时调用
      */
-    protected onDestroy(): void {
+    onDestroy(): void {
+        this.clear();
     }
 
     /**
@@ -180,11 +181,17 @@ export class YJDataWork extends Component {
         no.addToArray(this.changedDataKeys, key);
         if (!this._neecChangeData) {
             this._neecChangeData = true;
-            no.scheduleOnce(() => {
+            // this.scheduleOnce(() => {
+            //     this.setChangedDataToUi();
+            //     this._neecChangeData = false;
+            // });
+            setTimeout(() => {
                 this.setChangedDataToUi();
                 this._neecChangeData = false;
-            }, 0);
+            }, 50);
         }
+        // if (!this.register.isInit) this.register.init();
+        // this.onValueChange(key);
         return this;//支持链式写法
     }
 
