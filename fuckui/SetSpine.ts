@@ -93,8 +93,9 @@ export class SetSpine extends FuckUi {
         if (!this.canDisable) return;
         this.a_clearData();
         let spine = this.getComponent(Skeleton);
-        spine?.clearTracks();
+        this.needClearTracks && !spine.isAnimationCached() && spine?.clearTracks();
         spine?.destroyRenderData();
+        // spine && (spine.skeletonData = null);
     }
 
     onDestroy() {
@@ -120,7 +121,7 @@ export class SetSpine extends FuckUi {
         const spine = this.getComponent(Skeleton);
 
         if (!path && !animation) {
-            spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
             spine.enabled = false;
             return;
         }
@@ -140,6 +141,10 @@ export class SetSpine extends FuckUi {
 
         if (path && this.curPath != path) {
             YJSpineManager.ins.get(path).then(res => {
+                if (!res) {
+                    no.err(`spine资源${path}不存在`);
+                    return;
+                }
                 if (!spine?.isValid) {
                     YJSpineManager.ins.set(path);
                     return;
@@ -171,7 +176,7 @@ export class SetSpine extends FuckUi {
             } else this.a_playOnce(tempStr);
             this.playDuration(duration);
         } else {
-            spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
             spine.enabled = false;
         }
     }
@@ -183,7 +188,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(Skeleton);
         if (spine.enabled)
-            this.needClearTracks && spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
@@ -202,7 +207,7 @@ export class SetSpine extends FuckUi {
             const spine = this.getComponent(Skeleton);
             spine.clearTrack(0);
             spine.loop = false;
-            this?.endCall.execute(spine.animation);
+            this?.endCall.execute(spine);
             this.setSpineData();
         }, duration);
     }
@@ -215,7 +220,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(Skeleton);
         if (spine.enabled)
-            this.needClearTracks && spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
@@ -232,7 +237,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(Skeleton);
         if (spine.enabled)
-            this.needClearTracks && spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = true;
         !!skin && spine.setSkin(skin);
@@ -258,7 +263,7 @@ export class SetSpine extends FuckUi {
         if (name == null) return;
         const spine = this.getComponent(Skeleton);
         if (spine.enabled)
-            this.needClearTracks && spine.clearTracks();
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
         spine.loop = false;
         !!skin && spine.setSkin(skin);
@@ -273,12 +278,12 @@ export class SetSpine extends FuckUi {
         if (no.spineEnable()) {
             spine?.setStartListener(() => {
                 if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                    this?.startCall.execute(spine.animation);
+                    this?.startCall.execute(spine);
                 spine?.setStartListener(() => { });
             });
         } else {
             if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                this?.startCall.execute(spine.animation);
+                this?.startCall.execute(spine);
         }
     }
 
@@ -286,14 +291,14 @@ export class SetSpine extends FuckUi {
         if (no.spineEnable()) {
             spine?.setCompleteListener(() => {
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine.animation);
+                    this?.endCall.execute(spine);
                 spine?.setCompleteListener(() => { });
                 this.setSpineData();
             });
         } else {
             this.scheduleOnce(() => {
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine.animation);
+                    this?.endCall.execute(spine);
                 this.setSpineData();
             }, 1);
         }

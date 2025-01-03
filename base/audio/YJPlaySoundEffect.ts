@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, Enum, Button } from '../../yj';
+import { ccclass, property, Component, Node, Enum, Button, js } from '../../yj';
 import { no } from '../../no';
 import { YJPanel } from '../node/YJPanel';
 import { YJSoundEffectManager } from './YJSoundEffectManager';
@@ -27,14 +27,23 @@ export class YJPlaySoundEffect extends Component {
     /** 音效类型 */
     @property({ type: Enum(SoundEffectType), displayName: '音效类型' })
     effectType: SoundEffectType = SoundEffectType.Other;
-    
+
     /** 音效别名,仅在音效类型为Other时可见 */
     @property({ displayName: '音效别名', visible() { return this.effectType == SoundEffectType.Other } })
     alias: string = '';
-    
+
     /** 是否自动播放,仅在音效类型为Other时可见 */
     @property({ visible() { return this.effectType == SoundEffectType.Other; } })
     autoPlay: boolean = false;
+
+    @property
+    public get bind(): boolean {
+        return false;
+    }
+
+    public set bind(v: boolean) {
+        this.getComponent(Button).clickEvents.push(no.createClickEvent(this.node, js.getClassName(this), 'a_play'));
+    }
 
     /**
      * 组件加载时根据音效类型进行初始化

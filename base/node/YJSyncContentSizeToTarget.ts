@@ -53,6 +53,7 @@ export class YJSyncContentSizeToTarget extends Component {
 
     /** 组件启用时注册尺寸变化监听 */
     protected onEnable(): void {
+        this.check();
         if (this.checkSelf)
             this.node.on(Node.EventType.SIZE_CHANGED, this.check, this);
         else this.target?.on(Node.EventType.SIZE_CHANGED, this.check, this);

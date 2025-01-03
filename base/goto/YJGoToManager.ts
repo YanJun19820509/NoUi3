@@ -67,6 +67,10 @@ export class YJGoToManager extends Component {
     private static show(info: YJGoToInfo, args: any, cb: () => void) {
         args = args || info.args;
         const clazz = js.getClassByName(info.target);
+        if (!clazz) {
+            no.log('跳转目标不存在', info.target);
+            return;
+        }
         if (typeof clazz['show'] == 'function') {
             no.evn.once(clazz['$super'] == YJPanel ? '_PanelOpen' : 'PopuPanelContent_create', (panel) => {
                 this._ins.trigger(panel, args, cb);

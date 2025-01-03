@@ -75,6 +75,15 @@ export class YJGuideManager extends Component {
     }
 
     /**
+     * 判断指定引导步骤是否已完成
+     * @param step 引导步骤ID
+     * @returns 是否已完成
+     */
+    public finished(step: string): boolean {
+        return this.saveSteps.indexOf(step) != -1;
+    }
+
+    /**
      * 获得有效引导步骤id
      * @param step 
      * @returns 

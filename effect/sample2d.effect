@@ -138,9 +138,14 @@ CCProgram unlit-fs %{
           _color = vec4(result.rgb, _color.a);
       }
 
-        else if(type == 9.){
+      else if(type == 9.){
           vec3 result = mix(vec3(236./255.,102./255.,88./255.).rgb, _color.rgb, ext.x);
           _color = vec4(result.rgb, _color.a);
+      }
+
+      //实现半透遮罩
+      else if(type == 10.){
+          _color = alphaMask(_color);
       }
       return _color;
   }

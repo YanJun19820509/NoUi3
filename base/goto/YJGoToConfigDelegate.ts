@@ -28,7 +28,9 @@ export type YJGoToInfo = {
     //'备注
     desc: string,
     //数据
-    data?: any
+    data?: any,
+    //系统功能id
+    sys_id?:string
 };
 
 @ccclass('YJGoToConfigDelegate')
