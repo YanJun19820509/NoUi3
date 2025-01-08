@@ -237,7 +237,7 @@ export class YJWindowManager extends Component {
         let content: Node = self.getContent(to);
         const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
         if (!allowMultipleOpen) {
-            let a = content.getComponentInChildren(comp) || no.panelPool.get(comp.name);
+            let a = content.getComponentInChildren(comp);
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
@@ -386,14 +386,25 @@ export class YJWindowManager extends Component {
      */
     public static closePanelIn(nodeName: string, excepts: string[] = []) {
         let content: Node = YJWindowManager._ins.getContent(nodeName);
-        content.children.forEach(node => {
-            let panel = node.getComponent(YJPanel);
+        const children = content.children.slice(),
+            len = children.length;
+        for (let i = len - 1; i >= 0; i--) {
+            const node = children[i];
+            const panel = node.getComponent(YJPanel);
             if (panel?.enabledInHierarchy) {
                 let name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;
                 panel.closePanel();
             }
-        });
+        }
+        // content.children.forEach(node => {
+        //     let panel = node.getComponent(YJPanel);
+        //     if (panel?.enabledInHierarchy) {
+        //         let name = js.getClassName(panel);
+        //         if (excepts.indexOf(name) > -1) return;
+        //         panel.closePanel();
+        //     }
+        // });
     }
 
     /**
@@ -424,7 +435,7 @@ export class YJWindowManager extends Component {
             return;
         }
         let content: Node = YJWindowManager._ins.getContent(to);
-        let a = content.getComponentInChildren(comp) || no.panelPool.get(comp.name);
+        let a = content.getComponentInChildren(comp);
         if (!a) return null
         return a as T;
     }
@@ -466,10 +477,29 @@ export class YJWindowManager extends Component {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
             content?.children.forEach(node => {
-                let panel = node.getComponent(YJPanel);
-                if (panel && !no.visible(panel.node) && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= duration) {
-                    // no.log('YJWindowManager release panel', panel.panelType);
-                    panel.clear();
+                if (node.isValid) {
+                    let panel = node.getComponent(YJPanel);
+                    if (panel && panel.status == 'close' && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= duration) {
+                        // no.log('YJWindowManager release panel', panel.panelType);
+                        panel.clear();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * 清理隐藏的面板
+     */
+    public clearHidePanel() {
+        for (let i = 0, n = this.infos.length; i < n; i++) {
+            let content = YJWindowManager._ins.getContent(this.infos[i].type);
+            content?.children.forEach(node => {
+                if (node.isValid) {
+                    let panel = node.getComponent(YJPanel);
+                    if (panel?.status == 'hide') {
+                        panel.clear();
+                    }
                 }
             });
         }
@@ -505,6 +535,13 @@ export class YJWindowManager extends Component {
      */
     public static clearClosedPanel() {
         YJWindowManager._ins.clearClosedPanel();
+    }
+
+    /**
+     * 清理隐藏的面板(静态方法)
+     */
+    public static clearHidePanel() {
+        YJWindowManager._ins.clearHidePanel();
     }
 
     /**

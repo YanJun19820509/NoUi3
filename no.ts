@@ -691,7 +691,7 @@ export namespace no {
     }
 
     export function warn(...Evns: any[]): void {
-        console.warn('#NoUi#Warn', Evns);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
     }
 
     export function err(...Evns: any[]): void {
@@ -699,11 +699,11 @@ export namespace no {
     }
 
     export function logTimeStart(type?: string) {
-        console.time(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
     }
 
     export function logTimeEnd(type?: string) {
-        console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
     /**
@@ -2770,7 +2770,7 @@ export namespace no {
     export class AssetBundleManager {
 
         private remoteAssetsCache: any = {};
-        private _cacheAsset: { [k: string]: any } = {};
+        private _cacheAsset: Map<string, Asset> = new Map();
         private _cacheAssetRef: { [k: string]: { ref: number, time: number } } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
         private _loadingAsset: { [k: string]: boolean } = {};
@@ -2853,7 +2853,10 @@ export namespace no {
         }
 
         public clearCachedAssets() {
-            this._cacheAsset = {};
+            this._cacheAsset.forEach((asset, key) => {
+                asset.destroy?.();
+            });
+            this._cacheAsset.clear();
         }
 
         /**
@@ -3004,7 +3007,7 @@ export namespace no {
         public load(bundleName: string, fileName: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
-                assetManager.loadAny({ 'url': fileName }, (err, item) => {
+                assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
                         log('load', fileName, err.message);
                     } else {
@@ -3504,7 +3507,7 @@ export namespace no {
          * @returns 
          */
         public getCachedAsset<T>(k: string): T {
-            return this._cacheAsset[k] as T;
+            return this._cacheAsset.get(k) as T;
         }
 
         /**
@@ -3513,7 +3516,7 @@ export namespace no {
          * @param asset 资源
          */
         public cacheAsset(k: string, asset: any) {
-            this._cacheAsset[k] = asset;
+            this._cacheAsset.set(k, asset);
         }
 
         /**
@@ -3521,15 +3524,15 @@ export namespace no {
          * @param k 
          */
         public cleanCacheAsset(k: string) {
-            let asset = this._cacheAsset[k];
+            let asset = this._cacheAsset.get(k);
             if (asset) {
                 no.assetBundleManager.decRef(asset);
-                delete this._cacheAsset[k];
-                delete this._cacheAsset[asset.uuid];
+                this._cacheAsset.delete(k);
+                this._cacheAsset.delete(asset.uuid);
             }
         }
 
-        public cacheImage(image: ImageAsset) {
+        public cacheImage(image: Texture2D) {
             this.cacheAsset(image.uuid, image);
             this._cacheAssetRef[image.uuid] = { ref: 0, time: sysTime.now };
             this.releaseUnuseImage();
@@ -3543,20 +3546,18 @@ export namespace no {
             return this.getCachedAsset(uuid);
         }
 
-        public createTextureFromCache(uuid: string): Texture2D | null {
-            const image = this.getCachedAsset<ImageAsset>(uuid.split('@')[0]);
+        public getTextureFromCache(uuid: string): Texture2D | null {
+            const image = this.getCachedAsset<Texture2D>(uuid);
             if (!image) return null;
-            let texture = new Texture2D();
-            texture['_uuid'] = uuid;
-            texture.image = image;
+
             let a = this._cacheAssetRef[image.uuid];
             a.ref++;
             a.time = sysTime.now;
-            return texture;
+            return image;
         }
 
         public createSpriteFrameFromCache(uuid: string): SpriteFrame | null {
-            const t = this.createTextureFromCache(uuid);
+            const t = this.getTextureFromCache(uuid);
             if (!t) return null;
             const s = new SpriteFrame();
             s._uuid = uuid;
@@ -3603,12 +3604,12 @@ export namespace no {
 
         public removeCachedImage(uuid: string) {
             // this._cacheAsset[uuid]?.destroy();
-            delete this._cacheAsset[uuid];
+            this._cacheAsset.delete(uuid);
             delete this._cacheAssetRef[uuid];
             this.release(uuid, true);
         }
 
-        private loadTypes: string[] = ['ImageAsset', 'Prefab', 'JsonAsset'];
+        private loadTypes: string[] = ['Texture2D', 'Prefab', 'JsonAsset'];
 
         /**
          * 加载目录下所有资源并放入缓存中，不支持同时加载多个目录，如果有需求，需要在外部根据实际性能情况做延迟加载
@@ -3632,7 +3633,7 @@ export namespace no {
                         if (item instanceof Prefab) {
                             const request = requests[i];
                             this.setPrefabNode(base + request.path + '.prefab', item);
-                        } else if (item instanceof ImageAsset) {
+                        } else if (item instanceof Texture2D) {
                             this.cacheImage(item);
                         } else if (item instanceof JsonAsset) {
                             this.cacheAsset(item.uuid, item.json);
@@ -3658,7 +3659,7 @@ export namespace no {
                     if (item instanceof Prefab) {
                         const request = requests[i];
                         this.setPrefabNode(base + request.path + '.prefab', item);
-                    } else if (item instanceof ImageAsset) {
+                    } else if (item instanceof Texture2D) {
                         this.cacheImage(item);
                     } else if (item instanceof JsonAsset) {
                         this.cacheAsset(item.uuid, item.json);
@@ -3671,6 +3672,8 @@ export namespace no {
             switch (typeName) {
                 case 'ImageAsset':
                     return ImageAsset;
+                case 'Texture2D':
+                    return Texture2D;
                 case 'Prefab':
                     return Prefab;
                 case 'JsonAsset':
@@ -3715,7 +3718,7 @@ export namespace no {
          */
         public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
-            let a = this.cacheMap.get(type).shift();
+            let a = this.cacheMap.get(type).pop();
             if (!a) return null;
             return a.o as T;
         }
@@ -4637,7 +4640,7 @@ export namespace no {
             if (this.isCd) {
                 return false;
             } else {
-                this.duration = duration;
+                this.duration = duration * 1000;
                 if (firstWait)
                     await this.setCd();
                 else
@@ -4648,9 +4651,15 @@ export namespace no {
         }
 
         private async setCd() {
-            this.isCd = true;
-            await sleep(this.duration);
-            this.isCd = false;
+            const it = this;
+            it.isCd = true;
+            // await sleep(this.duration);
+            return new Promise<void>(resolve => {
+                setTimeout(() => {
+                    it.isCd = false;
+                    resolve();
+                }, this.duration);
+            });
         }
     }
 
@@ -6096,7 +6105,7 @@ export namespace no {
         }
         public pool: ISharedLabelData[] = [];
         public get() {
-            let data = this.pool.shift();
+            let data = this.pool.pop();
 
             if (!data) {
                 const canvas = window.document.createElement('canvas');
@@ -6169,14 +6178,14 @@ export namespace no {
                 btn['canClick'] = v;
             if (node.parent) {
                 if (!v) {
-                    const idx = no.siblingIndex(node);
-                    node.parent['_children'].splice(idx, 1);
+                    const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+                    opacityCmp.opacity = 0;
                     if (node['__origin_x__'] == null) {
                         node['__origin_x__'] = x(node);
                     }
                     x(node, 20000);
                 } else {
-                    node.parent['_children'].push(node);
+                    node.getComponent(UIOpacity).opacity = 255;
                     if (node['__origin_x__'] !== null) {
                         x(node, node['__origin_x__']);
                     }
@@ -6188,78 +6197,5 @@ export namespace no {
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
 
-    //////////面板池
-    class PanelPool {
-        private cacheMap: Map<string, { o: Component, t: number }>;
-        private static _ins: PanelPool = null;
-
-        public static ins(): PanelPool {
-            if (!this._ins) this._ins = new PanelPool();
-            return this._ins;
-        }
-
-        constructor() {
-            this.cacheMap = new Map<string, { o: Component, t: number }>();
-        }
-
-        public get<T extends Component>(type: string): T {
-            if (this.cacheMap.has(type)) {
-                const cache = this.cacheMap.get(type);
-                this._visible(cache.o, true);
-                this.cacheMap.delete(type);
-                return cache.o as T;
-            }
-            return null;
-        }
-
-        public put(type: string, panel: Component) {
-            this._visible(panel, false);
-            this.cacheMap.set(type, { o: panel, t: Date.now() });
-        }
-
-        public clear() {
-            this.cacheMap.forEach((v, k) => {
-                v.o.node.parent['_children'].push(v.o.node);
-                v.o.node['_siblingIndex'] = v.o.node.parent['_children'].length - 1;
-                v.o['clear']();
-            });
-            this.cacheMap.clear();
-        }
-
-        public clearType(type: string) {
-            if (this.cacheMap.has(type)) {
-                const cache = this.cacheMap.get(type);
-                cache.o['clear']();
-                this.cacheMap.delete(type);
-            }
-        }
-
-        private _visible(panel: Component, v: boolean) {
-            const node = panel.node;
-            const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
-            if (blockInputEvents)
-                blockInputEvents.forEach(a => a.enabled = v);
-            const btn = node.getComponent('YJButton');
-            if (btn)
-                btn['canClick'] = v;
-            if (node.parent) {
-                if (!v) {
-                    const idx = no.siblingIndex(node);
-                    node.parent['_children']?.splice(idx, 1);
-                    if (node['__origin_x__'] == null) {
-                        node['__origin_x__'] = x(node);
-                    }
-                    x(node, 20000);
-                } else {
-                    node.parent['_children']?.push(node);
-                    if (node['__origin_x__'] !== null) {
-                        x(node, node['__origin_x__']);
-                    }
-                }
-            }
-        }
-    }
-    export const panelPool = PanelPool.ins();
-    //////////面板池
 }
 no.addToWindowForDebug('no', no);

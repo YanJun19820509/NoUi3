@@ -1,8 +1,8 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js } from '../../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js, UIOpacity, Node } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
-import { YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
+import { YJPanelCreated } from '../../types';
 
 /**
  * Predefined variables
@@ -161,21 +161,45 @@ export class YJPanel extends Component {
     }
 
     public hide() {
-        this.status = 'hide';
-        if (this.cacheToPool)
-            no.panelPool.put(this.nodeCacheKey, this);
-        else {
+        if (this.cacheToPool) {
+            this.status = 'hide';
+            this._visible(this.node, false);
+        } else {
             no.visible(this.node, false);
-            no.siblingIndex(this.node, 0);
         }
+        no.siblingIndex(this.node, 0);
     }
 
     public show() {
         this.status = 'open';
         if (this.node.active) this.onEnable();
-        if (!this.cacheToPool)
+        if (this.cacheToPool)
+            this._visible(this.node, true);
+        else
             no.visible(this.node, true);
         no.siblingIndex(this.node, _nodeSiblingIndex_++);
+    }
+
+    private _visible(node: Node, v: boolean) {
+        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+        if (blockInputEvents)
+            blockInputEvents.forEach(a => a.enabled = v);
+        const btn = node.getComponent('YJButton');
+        if (btn)
+            btn['canClick'] = v;
+        const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+        if (!v) {
+            opacityCmp.opacity = 0;
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
+            no.x(node, 20000);
+        } else {
+            opacityCmp.opacity = 255;
+            if (node['__origin_x__'] !== null) {
+                no.x(node, node['__origin_x__']);
+            }
+        }
     }
 
     protected onClosePanel() {

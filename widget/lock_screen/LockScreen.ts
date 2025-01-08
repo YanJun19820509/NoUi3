@@ -18,7 +18,7 @@ export class LockScreen extends YJPanel {
     private static _ins: LockScreen;
     private static _showing = 0;
     private _1 = 0;
-    cacheToPool: boolean = false;
+    // cacheToPool: boolean = false;
     onLoad() {
         super.onLoad();
         LockScreen._ins = this;
