@@ -1,4 +1,3 @@
-import { YJTextureManager } from "../base/YJTextureManager";
 import { no } from "../no";
 import { singleObject, SpriteFrameDataType, TextureInfo } from "../types";
 import { Asset, ccclass, EffectAsset, ImageAsset, JsonAsset, Material, Texture2D } from "../yj";
@@ -70,7 +69,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
         let uuids: string[] = [];
         textureInfos.forEach(a => {
-            uuids.push(a.assetUuid.split('@')[0]);
+            uuids.push(a.assetUuid);
         });
         let materialInfo = this.materialInfos[this.materialInfos.length - 1];
         let needLoadIdxes = materialInfo?.getNeedLoadIdxes(uuids);
@@ -99,16 +98,16 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         const n = idxes?.length || textureInfos.length;
         for (let i = 0; i < n; i++) {
             const textureInfo = textureInfos[idxes ? idxes[i] : i];
-            const assetUuid = textureInfo.assetUuid.split('@')[0];
-            if (YJTextureManager.hasTexture(assetUuid)) {
-                textures[textures.length] = YJTextureManager.getTexture(assetUuid);
+            const assetUuid = textureInfo.assetUuid;
+            if (no.assetBundleManager.hasImage(assetUuid)) {
+                textures[textures.length] = no.assetBundleManager.getTextureFromCache(assetUuid);
             } else {
                 if (textureInfo.path) {
                     const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
                     const info1: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(assetUuid);
-                    requests[requests.length] = { path: info1.path, bundle: bundle, type: ImageAsset };
+                    requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
                 } else {
-                    requests[requests.length] = { uuid: assetUuid, type: ImageAsset };
+                    requests[requests.length] = { uuid: assetUuid, type: Texture2D };
                 }
                 textures[textures.length] = null;
                 textureIdx[assetUuid] = textures.length - 1;
@@ -146,9 +145,9 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                         else
                             atlasJsons[atlasJsons.length] = item.json;
                         no.assetBundleManager.decRef(item);
-                    } else if (item instanceof ImageAsset) {
+                    } else if (item instanceof Texture2D) {
                         no.assetBundleManager.cacheImage(item);
-                        const t = YJTextureManager.getTexture(item.uuid);
+                        const t = no.assetBundleManager.getTextureFromCache(item.uuid);
                         const i = textureIdx[item.uuid];
                         if (i != null)
                             textures[i] = t;
@@ -202,9 +201,6 @@ export class YJSample2DMaterialInfo {
             return;
         }
         YJShowDynamicAtlasDebug.ins.remove(this.name);
-        this.textures.forEach(a => {
-            YJTextureManager.returnTexture(a.uuid);
-        });
         this.dynamicAtlas.onDestroy();
         this.textures.length = 0;
         this.atlasJsons.length = 0;

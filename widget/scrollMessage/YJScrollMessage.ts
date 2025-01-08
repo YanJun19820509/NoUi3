@@ -64,7 +64,6 @@ export class YJScrollMessage extends YJPanel {
         }
         if (this.moving) return;
         this.moving = true;
-        this.dataWork.setValue('show', true);
         this.setMsgItem();
     }
 
@@ -90,6 +89,7 @@ export class YJScrollMessage extends YJPanel {
                 pos: [end, 0]
             }
         });
+        this.dataWork.setValue('show', true);
         this.scheduleOnce(this.setMsgItem, n + .1);
     }
 }

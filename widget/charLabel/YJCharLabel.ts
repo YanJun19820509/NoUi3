@@ -1025,116 +1025,81 @@ export class YJCharLabel extends Sprite {
         const maxWidth = this.maxWidth;
         const ctx = this.shareCanvas().context;
         const extWidth = this.extWidth();
+        let blankWork = '', blankWidth = 0;
+        if (this.blankBreakWord) {
+            blankWork = ' ';
+            blankWidth = this.getMeasureWidth(ctx, blankWork);
+        }
 
-        // 解析富文本
-        let htmlElements = new HtmlTextParser().parse(v);
-        let lines: any[] = [];
-        let currentLine: any = { htmls: [], width: extWidth };
-        let currentHtml: IHtmlTextParserResultObj = null;
+        let a = new HtmlTextParser().parse(v),
+            lines: any[] = [],
+            oneLine: any = { htmls: [], width: 0 },
+            width = extWidth,
+            lineHeight = this.lineHeight;
 
-        // 处理每个富文本元素
-        for (let i = 0; i < htmlElements.length; i++) {
-            const element = htmlElements[i];
-            const style = element.style;
+        for (let i = 0, n = a.length; i < n; i++) {
+            const aa = a[i], style = aa.style, text = aa.text;
 
-            // 处理换行符
-            if (style?.isNewLine && element.text === '') {
-                if (currentHtml && currentHtml.text) {
-                    currentLine.htmls.push(currentHtml);
-                }
-                lines.push(no.clone(currentLine));
-                currentLine = { htmls: [], width: extWidth };
-                currentHtml = null;
+            if (style?.isNewLine && text == '') {
+                oneLine.width = width;
+                lines[lines.length] = no.clone(oneLine);
+                oneLine.htmls.length = 0;
+                width = extWidth;
                 continue;
             }
 
-            // 设置当前样式
-            this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
-            if (style?.outline || this.outlineWidth > 0) {
-                this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
-            }
-            if (this.shadowBlur > 0) {
-                this.setShadowStyle(ctx);
-            }
+            let html: IHtmlTextParserResultObj = { style: style, text: '' };
 
-            // 分词处理
-            const words = this.splitIntoWords(element.text);
-
-            for (let j = 0; j < words.length; j++) {
-                const word = words[j];
-                const wordWidth = this.getMeasureWidth(ctx, word, style?.size);
-
-                // 检查是否需要换行
-                if (currentLine.width + wordWidth > maxWidth - 4 * this.hdpScale) {
-                    // 当前行还有内容，保存当前行
-                    if (currentHtml && currentHtml.text) {
-                        currentLine.htmls.push(currentHtml);
-                    }
-                    lines.push(no.clone(currentLine));
-
-                    // 创建新行
-                    currentLine = { htmls: [], width: extWidth };
-                    currentHtml = { style: style, text: '' };
-
-                    // 处理单个词超过最大宽度的情况
-                    if (wordWidth > maxWidth - extWidth - 4 * this.hdpScale) {
-                        // 逐字符添加
-                        for (let k = 0; k < word.length; k++) {
-                            const char = word[k];
-                            const charWidth = this.getMeasureWidth(ctx, char, style?.size);
-
-                            if (currentLine.width + charWidth > maxWidth - 4 * this.hdpScale) {
-                                if (currentHtml.text) {
-                                    currentLine.htmls.push(currentHtml);
-                                    lines.push(no.clone(currentLine));
-                                    currentLine = { htmls: [], width: extWidth };
-                                    currentHtml = { style: style, text: '' };
-                                }
-                            }
-                            currentHtml.text += char;
-                            currentLine.width += charWidth;
-                        }
-                    } else {
-                        currentHtml.text = word;
-                        currentLine.width += wordWidth;
-                    }
+            if (this.blankBreakWord && text == blankWork) {
+                if (width + blankWidth <= maxWidth) {
+                    html.text += blankWork;
+                    width += blankWidth;
+                    oneLine.htmls[oneLine.htmls.length] = html;
+                    oneLine.width = width;
                 } else {
-                    // 可以添加到当前行
-                    if (!currentHtml) {
-                        currentHtml = { style: style, text: '' };
-                    }
-                    currentHtml.text += word;
-                    currentLine.width += wordWidth;
+                    lines[lines.length] = no.clone(oneLine);
+                    oneLine.htmls.length = 0;
+                    width = extWidth;
                 }
+                continue;
+            }
 
-                // 添加空格（如果不是最后一个词）
-                if (j < words.length - 1 && this.blankBreakWord) {
-                    const spaceWidth = this.getMeasureWidth(ctx, ' ', style?.size);
-                    if (currentLine.width + spaceWidth <= maxWidth - 4 * this.hdpScale) {
-                        currentHtml.text += ' ';
-                        currentLine.width += spaceWidth;
-                    } else {
-                        if (currentHtml && currentHtml.text) {
-                            currentLine.htmls.push(currentHtml);
-                        }
-                        lines.push(no.clone(currentLine));
-                        currentLine = { htmls: [], width: extWidth };
-                        currentHtml = { style: style, text: '' };
+            this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+            if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
+            if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+
+            let words: string | string[];
+            if (this.blankBreakWord)
+                words = text.split(blankWork);
+            else words = text;
+
+            for (let i = 0, n = words.length; i < n; i++) {
+                const c = words[i];
+                let w = this.getMeasureWidth(ctx, c, style?.size);
+                if (width + w <= maxWidth - 4 * this.hdpScale) {
+                    html.text += c + (i < n - 1 ? blankWork : '');
+                    width += w + (i < n - 1 ? blankWidth : 0);
+                    if (i == n - 1) width += 4 * this.hdpScale;
+                } else {
+                    if (html.text != '') {
+                        oneLine.htmls[oneLine.htmls.length] = html;
                     }
+                    oneLine.width = width;
+                    lines[lines.length] = no.clone(oneLine);
+                    html.text = c + (i < n - 1 ? blankWork : '');
+                    width = extWidth + w + (i < n - 1 ? blankWidth : 0);
+                    oneLine.htmls.length = 0;
                 }
             }
+            if (html.text != '') {
+                oneLine.htmls[oneLine.htmls.length] = html;
+            }
         }
-
-        // 添加最后一行
-        if (currentHtml && currentHtml.text) {
-            currentLine.htmls.push(currentHtml);
+        if (oneLine.htmls.length > 0) {
+            oneLine.width = width;
+            lines[lines.length] = oneLine;
         }
-        if (currentLine.htmls.length > 0) {
-            lines.push(currentLine);
-        }
-
-        // 绘制所有行
-        this.drawHtmlLines(lines, lines.length == 1 && !this.fixWidth ? currentLine.width : maxWidth, this.lineHeight);
+        this.drawHtmlLines(lines, lines.length == 1 && !this.fixWidth ? width : maxWidth, lineHeight);
     }
 
     private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
