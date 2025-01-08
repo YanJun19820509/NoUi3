@@ -1,4 +1,4 @@
-import { ccclass, disallowMultiple, Component, Node } from "../../yj";
+import { ccclass, disallowMultiple, Component, Node, JSB } from "../../yj";
 
 
 /**
@@ -11,9 +11,13 @@ export class YJNotBatchItem extends Component {
     /** 节点的父节点 */
     private parent: Node;
     /** 节点在父节点中的索引 */
-    private index: number; 
+    private index: number;
     /** 节点原始的透明度值 */
     private opacity: number;
+
+    onLoad() {
+        if (JSB) this.destroy();
+    }
 
     /**
      * 保存节点的属性

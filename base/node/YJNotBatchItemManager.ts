@@ -1,4 +1,4 @@
-import { ccclass, Component, director, isValid, UITransform, Node, Director } from '../../yj';
+import { ccclass, Component, director, isValid, UITransform, Node, Director, JSB } from '../../yj';
 import { YJNotBatchItem } from './YJNotBatchItem';
 /**
  * YJNotBatchItem管理器，会自动搜索当前节点下所有子节点的YJNotBatchItem
@@ -17,6 +17,10 @@ export class YJNotBatchItemManager extends Component {
 
     /** 组件加载时创建容器层并初始化 */
     protected onLoad(): void {
+        if (JSB) {
+            this.destroy();
+            return;
+        }
         YJNotBatchItemManager.batchNodes.push(this.node);
         // 创建容器层
         this._layer = new Node('_batch_layer');

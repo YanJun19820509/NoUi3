@@ -187,19 +187,30 @@ export class YJPanel extends Component {
         const btn = node.getComponent('YJButton');
         if (btn)
             btn['canClick'] = v;
-        const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+        // const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+        // if (!v) {
+        //     opacityCmp.opacity = 0;
+        //     if (node['__origin_x__'] == null) {
+        //         node['__origin_x__'] = no.x(node);
+        //     }
+        //     no.x(node, 20000);
+        // } else {
+        //     opacityCmp.opacity = 255;
+        //     if (node['__origin_x__'] !== null) {
+        //         no.x(node, node['__origin_x__']);
+        //     }
+        // }
         if (!v) {
-            opacityCmp.opacity = 0;
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }
             no.x(node, 20000);
         } else {
-            opacityCmp.opacity = 255;
             if (node['__origin_x__'] !== null) {
                 no.x(node, node['__origin_x__']);
             }
         }
+        node['_activeInHierarchy'] = v;
     }
 
     protected onClosePanel() {
