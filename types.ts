@@ -283,6 +283,9 @@ export class LoadAssetsInfo {
                 this.path = url.replace(this.bundleName + '/', '');
                 this.assetName = info?.displayName || info?.name;
                 cb?.(info);
+            }).catch(e => {
+                no.err('LoadAssetsInfo.setPathAndName', uuid, e.message);
+                cb?.(null);
             });
         }
     }

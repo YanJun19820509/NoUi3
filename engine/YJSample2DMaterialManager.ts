@@ -198,6 +198,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
             } else {
                 resolve();
             }
+        }).catch(e => {
+            no.err('YJSample2DMaterialManager.loadTextureAssets', e.message);
         });
     }
 }

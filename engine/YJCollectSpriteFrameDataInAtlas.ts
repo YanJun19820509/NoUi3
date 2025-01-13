@@ -125,6 +125,8 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                     resolve();
                 });
             });
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -139,6 +141,9 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
             }, () => {
                 resolve(1);
             });
+        }).catch(e => {
+            console.error(e);
+            return 1;
         });
     }
 }

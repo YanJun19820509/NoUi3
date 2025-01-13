@@ -1,5 +1,6 @@
 import { EDITOR, ccclass, property, menu, Component, Node, Prefab, instantiate } from '../../yj';
 import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
+import { no } from 'NoUi3/no';
 import { PrefabInfo } from 'NoUi3/types';
 
 @ccclass
@@ -53,6 +54,9 @@ export default class YJLoadPrefab extends Component {
                     resolve(null);
                 }
             });
+        }).catch(e => {
+            no.err('YJLoadPrefab loadPrefab', this.node.name, e.message);
+            return null;
         });
     }
 

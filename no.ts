@@ -19,7 +19,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = false;
+    let _isLogEnabled: boolean = true;
     let _isSpineEnable: boolean = true;
 
     /**
@@ -566,9 +566,9 @@ export namespace no {
         }
 
         public async checkTrue(type: string, target: any): Promise<any> {
-            if (!target?.isValid) return Promise.resolve(null);
+            if (!target?.isValid) return null;
             let a = this.check(type, target);
-            if (a.state) return Promise.resolve(a.value);
+            if (a.state) return a.value;
             await sleep(0, target);
             return this.checkTrue(type, target);
         }
@@ -730,6 +730,9 @@ export namespace no {
     export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             emitAndOnceCallback(emitType, callbackType, resolve, args, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -745,6 +748,9 @@ export namespace no {
                 if (v == '__clear_Wait_For_Event__') resolve(null);
                 else resolve(arg);
             }, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -757,6 +763,8 @@ export namespace no {
         if (comp)
             return new Promise<void>(resolve => {
                 scheduleUpdateCheck(express, resolve, comp);
+            }).catch(e => {
+                console.error(e);
             });
         else
             return checkUntil(express);
@@ -774,6 +782,9 @@ export namespace no {
                 if (v == '__clear_Wait_For_Event__') reject(null);
                 else resolve(v);
             }, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -797,6 +808,8 @@ export namespace no {
                     }
                 }
             }, target);
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -825,7 +838,9 @@ export namespace no {
                 requestAnimationFrame(check);
             };
             requestAnimationFrame(check);
-        });
+        }).catch(e => {
+            console.error(e);
+        });;
     }
 
     /**
@@ -1283,7 +1298,9 @@ export namespace no {
             // scheduleOnce(() => { resolve(); }, duration);
             // }
             setTimeout(() => { resolve(); }, duration * 1000);
-        });
+        }).catch(e => {
+            console.error(e);
+        });;
     }
 
     // 两个数相除百分比
@@ -1876,6 +1893,8 @@ export namespace no {
                     } else
                         t?.start();
                 }
+            }).catch(e => {
+                console.error(e);
             });
         }
 
@@ -3432,6 +3451,9 @@ export namespace no {
                 this.loadAny(request, item => {
                     resolve(item);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -3472,6 +3494,9 @@ export namespace no {
                         return this.has(path);
                     });
                 }
+            }).catch(e => {
+                console.error(e);
+                return false;
             });
         }
 
@@ -4657,6 +4682,9 @@ export namespace no {
                 this.httpRequest("GET", url, null, (v: any) => {
                     resolve(v);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -4665,6 +4693,9 @@ export namespace no {
                 this.httpRequest("POST", url, data, (v: any) => {
                     resolve(v);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
     }
@@ -4706,6 +4737,8 @@ export namespace no {
                     it.isCd = false;
                     resolve();
                 }, this.duration);
+            }).catch(e => {
+                console.error(e);
             });
         }
     }
@@ -5710,7 +5743,10 @@ export namespace no {
             }
             return new Promise<T>(resolve =>
                 assetBundleManager.loadByUuid<T>(uuid, asset => resolve(asset))
-            );
+            ).catch(e => {
+                console.error(e);
+                return null;
+            });
         }
 
         /**
@@ -5737,6 +5773,9 @@ export namespace no {
                 assetBundleManager.loadAnyFiles(requests, null, items => {
                     resolve(items);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -5771,6 +5810,9 @@ export namespace no {
                     assetBundleManager.loadAnyFiles(aa, null, items => {
                         resolve(items);
                     });
+                }).catch(e => {
+                    console.error(e);
+                    return [];
                 });
             });
         }
@@ -5878,7 +5920,10 @@ export namespace no {
                 if (info) {
                     return new Promise<T>(resolve =>
                         assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
-                    );
+                    ).catch(e => {
+                        console.error(e);
+                        return null;
+                    });
                 }
                 return null;
             });

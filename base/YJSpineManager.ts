@@ -111,6 +111,9 @@ export class YJSpineManager extends no.SingleObject {
                     });
                     resolve(res);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
 
             YJSpineManager._loading.set(normalizedPath, loadingPromise);
