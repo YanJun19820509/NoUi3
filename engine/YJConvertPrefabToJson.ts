@@ -215,6 +215,8 @@ export class YJConvertPrefabToJson extends Component {
                     resolve();
                 });
             });
+        }).catch(e => {
+            console.error(e);
         });
     }
 }
@@ -239,6 +241,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                     })
                 } else resolve(null);
             });
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -258,6 +263,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                 }
                 resolve(this._nodes[0]);
             });
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 

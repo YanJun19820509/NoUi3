@@ -157,6 +157,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                 });
                 resolve();
             });
+        }).catch(e => {
+            console.error(e);
         });
     }
 

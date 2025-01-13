@@ -74,6 +74,9 @@ export default class YJLoadPrefab extends Component {
                     if (p == null) reject(new Error('Failed to load prefab'));
                     else resolve(p);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
 
             // 4. 加载成功后的处理

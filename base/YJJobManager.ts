@@ -64,6 +64,8 @@ export class YJJobManager {
                 args,
                 resolve
             });
+        }).catch(e => {
+            console.error(e);
         });
 
         // 如果设置为立即执行，则直接处理任务

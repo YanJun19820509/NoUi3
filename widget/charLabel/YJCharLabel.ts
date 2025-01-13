@@ -1325,6 +1325,8 @@ export class YJCharLabel extends Sprite {
                         }
                         resolve();
                     });
+                }).catch(e => {
+                    console.error(e);
                 });
             }
         }

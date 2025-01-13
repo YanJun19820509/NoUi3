@@ -136,6 +136,8 @@ export class YJAudioManager extends Component {
                 let clip = this.clips.get(path);
                 this.audioSource.playOneShot(clip, 1);
                 this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
+            }).catch(e => {
+                console.error(e);
             });
         }
         return new Promise<void>(resolve => {
@@ -144,6 +146,8 @@ export class YJAudioManager extends Component {
                 this.audioSource.playOneShot(clip, 1);
                 this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
             });
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -197,6 +201,8 @@ export class YJAudioManager extends Component {
         return new Promise<void>(resolve => {
             this.audioSource.playOneShot(clip, 1);
             this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
+        }).catch(e => {
+            console.error(e);
         });
     }
 

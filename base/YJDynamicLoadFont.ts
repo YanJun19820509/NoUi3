@@ -42,6 +42,9 @@ export class YJDynamicLoadFont extends Component {
                     no.assetBundleManager.loadByUuid<Font>(this.fontUuid, (file) => {
                         resolve(file);
                     });
+                }).catch(e => {
+                    console.error(e);
+                    return null;
                 });
 
                 // 检查组件是否还有效

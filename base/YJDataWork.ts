@@ -185,10 +185,10 @@ export class YJDataWork extends Component {
             //     this.setChangedDataToUi();
             //     this._neecChangeData = false;
             // });
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 this.setChangedDataToUi();
                 this._neecChangeData = false;
-            }, 50);
+            });
         }
         // if (!this.register.isInit) this.register.init();
         // this.onValueChange(key);
