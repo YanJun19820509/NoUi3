@@ -99,7 +99,7 @@ export class YJDynamicAtlas {
     //     this.thisNodeName = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
     // }
 
-    onDestroy() {
+    destroy() {
         for (const key in this.spriteFrameMap) {
             (this.spriteFrameMap[key] as SpriteFrame).destroy();
         }

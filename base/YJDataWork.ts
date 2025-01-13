@@ -1,9 +1,9 @@
 
-import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple } from '../yj';
+import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple, Node } from '../yj';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
-import { YJFuckUiRegister } from './YJFuckUiRegister';
 import { YJJobManager } from './YJJobManager';
+import { YJDataWorkManager } from './YJDataWorkManager';
 
 /**
  * Predefined variables
@@ -19,15 +19,36 @@ import { YJJobManager } from './YJJobManager';
 
 @ccclass('YJDataWork')
 @menu('NoUi/base/YJDataWork(数据处理基类)')
-@requireComponent(YJFuckUiRegister)
-@executeInEditMode()
 @disallowMultiple()
 export class YJDataWork extends Component {
-    /**
-     * UI注册器组件实例,用于管理UI组件与数据的绑定关系
-     */
-    @property(YJFuckUiRegister)
-    register: YJFuckUiRegister = null;
+    @property({ editorOnly: true })
+    public get autoRegister(): boolean {
+        return false;
+    }
+
+    public set autoRegister(v: boolean) {
+        let list = this.getComponentsInChildren(FuckUi);
+        this.subFuckUiNodes.forEach(sub => {
+            list = list.concat(sub.getComponentsInChildren(FuckUi));
+        });
+        list.forEach((a: FuckUi) => {
+            if (!a.registerNode) {
+                a.registerNode = this.node;
+            }
+        });
+
+        this.subFuckUis = [];
+        list.forEach((a: FuckUi) => {
+            if (a.registerNode == this.node && a.bind_keys != '') {
+                this.subFuckUis[this.subFuckUis.length] = a;
+            }
+        });
+    }
+
+    @property(Node)
+    subFuckUiNodes: Node[] = [];
+    @property({ type: FuckUi })
+    subFuckUis: FuckUi[] = [];
 
     /**
      * 是否启用差异更新
@@ -37,6 +58,9 @@ export class YJDataWork extends Component {
      */
     @property({ displayName: '差异更新', tooltip: '仅修改某key下有变更的值，否则替换该key对应全部值。非差异更新性能较好，默认true' })
     onlyDiff: boolean = true;
+
+
+    protected _data2ui: object = {};
 
     /**
      * 数据存储对象
@@ -62,6 +86,7 @@ export class YJDataWork extends Component {
      * 组件销毁时调用
      */
     onDestroy(): void {
+        YJDataWorkManager.ins().remove(this);
         this.clear();
     }
 
@@ -71,22 +96,10 @@ export class YJDataWork extends Component {
      * 在运行时初始化数据
      */
     protected onLoad() {
-        if (EDITOR) {
-            this.register = this.getComponent(YJFuckUiRegister);
-            return;
-        }
+        YJDataWorkManager.ins().add(this);
         this._loaded = true;
         this._neecChangeData = false;
         this.init();
-    }
-
-    /**
-     * 组件启动时调用
-     * 在运行时初始化UI注册器
-     */
-    protected start() {
-        if (EDITOR) return;
-        this.register.init();
     }
 
     /**
@@ -112,6 +125,7 @@ export class YJDataWork extends Component {
      * 若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      */
     public init() {
+        this.bindSubFuckUis()
         if (!this._loaded) return;
         const afterDataInit = this['afterDataInit'];
         if (typeof afterDataInit == 'function') {
@@ -179,19 +193,6 @@ export class YJDataWork extends Component {
         this._data?.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
-        if (!this._neecChangeData) {
-            this._neecChangeData = true;
-            // this.scheduleOnce(() => {
-            //     this.setChangedDataToUi();
-            //     this._neecChangeData = false;
-            // });
-            setTimeout(() => {
-                this.setChangedDataToUi();
-                this._neecChangeData = false;
-            }, 50);
-        }
-        // if (!this.register.isInit) this.register.init();
-        // this.onValueChange(key);
         return this;//支持链式写法
     }
 
@@ -226,10 +227,9 @@ export class YJDataWork extends Component {
     /**
      * 将已改变的数据同步到UI
      */
-    private setChangedDataToUi() {
+    public syncDataToUi() {
         if (!this?.node?.isValid) return;
         if (!this?.changedDataKeys?.length) return;
-        if (!this.register.isInit) this.register.init();
         const keys = this.changedDataKeys.slice();
         this.changedDataKeys.length = 0;
         for (let i = 0, n = keys.length; i < n; i++) {
@@ -243,12 +243,12 @@ export class YJDataWork extends Component {
      * @param value 变化的值
      */
     private onValueChange(key: string, value?: any) {
-        let ui: FuckUi[] = this.register?.getUis(key) || [];
+        let ui: FuckUi[] = this.getUis(key) || [];
         if (value == null) value = this.getValue(key);
         this.setUiData(ui, value);
         if (value instanceof Array) {
             value.forEach((v, i) => {
-                let ui: FuckUi[] = this.register?.getUis(`${key}.${i}`) || [];
+                let ui: FuckUi[] = this.getUis(`${key}.${i}`) || [];
                 this.setUiData(ui, v);
             });
         } else if (value instanceof Object) {
@@ -282,9 +282,41 @@ export class YJDataWork extends Component {
             }
             ui.setData(a);
             if (ui.once) {
-                this.register.remove(ui);
+                this.remove(ui);
             }
         });
+    }
+
+    private getUis(key: string): FuckUi[] {
+        return this._data2ui[key];
+    }
+
+    private remove(ui: FuckUi) {
+        let keys = ui.bindKeys;
+        keys.forEach(key => {
+            let a: FuckUi[] = this._data2ui[key];
+            if (a) {
+                let i = a.indexOf(ui);
+                a.splice(i, 1);
+            }
+        });
+    }
+
+    private _isBound: boolean = false;
+    private bindSubFuckUis() {
+        if (this._isBound) return;
+        this._isBound = true;
+        let list = this.subFuckUis;
+        for (let i = 0, n = list.length; i < n; i++) {
+            let ui = list[i];
+            let keys = ui.bindKeys;
+            keys.forEach(key => {
+                if (!!key) {
+                    this._data2ui[key] = this._data2ui[key] || [];
+                    no.addToArray(this._data2ui[key], ui, 'uuid');
+                }
+            });
+        }
     }
 
     /**

@@ -1,24 +1,23 @@
 
 import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB } from '../yj';
 import { no } from '../no';
+import { singleObject } from 'NoUi3/types';
 
 /**
  * Predefined variables
- * Name = YJVertexColorTransition
+ * Name = YJVertexColorTransitionManager
  * DateTime = Sat May 21 2022 10:26:59 GMT+0800 (中国标准时间)
  * Author = mqsy_yj
- * FileBasename = YJVertexColorTransition.ts
- * FileBasenameNoExtension = YJVertexColorTransition
- * URL = db://assets/NoUi3/effect/YJVertexColorTransition.ts
+ * FileBasename = YJVertexColorTransitionManager.ts
+ * FileBasenameNoExtension = YJVertexColorTransitionManager
+ * URL = db://assets/NoUi3/effect/YJVertexColorTransitionManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
 
-@ccclass('YJVertexColorTransition')
-@disallowMultiple()
-export class YJVertexColorTransition extends Component {
+class YJVertexColorTransitionData {
+    public renderComp: Sprite;
 
-    private renderComp: Sprite;
     /**
      * _data数据说明，
      * x用来存放宏定义的类型，为负值，非负则为正常状态，整数部分为 color相关，小数部分为uv 相关
@@ -28,35 +27,24 @@ export class YJVertexColorTransition extends Component {
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
     private _defineIds: number[][] = [[], []];
-    private _dirtyVersion: number;
-
+    private _dirtyVersion: number = 0;
     private _updateColorLate: Function;
+    private _uuid: string = '';
 
-    onLoad() {
-        if (!this.enabled) return;
-        if (!this.renderComp)
-            this.renderComp = this.getComponent(Sprite);
-        if (!this.renderComp) return;
+    constructor(renderComp: Sprite) {
+        this.renderComp = renderComp;
+        this._uuid = renderComp.uuid;
         //hack tiled 的updateColorLate方法
         this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
         this.renderComp['_assembler'].updateColorLate = function () { };
     }
 
     public setEffect(defines: any, properties?: number[]) {
-        if (!this.enabled) return;
-        if (!this.renderComp)
-            this.renderComp = this.getComponent(Sprite);
         if (!this.renderComp || !defines) return;
         this._needUpdate = true;
         this._setDefines(defines);
         this._setProperties(properties);
-        this._updateVB();
     }
-
-    // private get opacity(): number {
-    //     //不要用this.renderComp.renderEntity.localOpacity，在h5和原生下这个返回的值不一致
-    //     return this.node._uiProps.localOpacity / 255;
-    // }
 
     private _setColor() {
         let c = this.renderComp.color;
@@ -102,6 +90,17 @@ export class YJVertexColorTransition extends Component {
         this._setColor();
     }
 
+    public lateUpdate() {
+        if (!this.renderComp?.node?.isValid) {
+            YJVertexColorTransitionManager.ins().remove(this._uuid);
+            return;
+        }
+        if (!this._needUpdate) return;
+        if (this.renderComp._dirtyVersion !== this._dirtyVersion || JSB) {
+            this._updateVB();
+        }
+    }
+
     private _updateVB() {
         if (!this.renderComp.renderData) {
             return;
@@ -124,13 +123,6 @@ export class YJVertexColorTransition extends Component {
                     this._updateBarFilledVB();
                 }
                 break;
-        }
-    }
-
-    lateUpdate() {
-        if (!this.enabled || !this.renderComp || !this._needUpdate) return;
-        if (this.renderComp._dirtyVersion !== this._dirtyVersion || JSB) {
-            this._updateVB();
         }
     }
 
@@ -175,7 +167,6 @@ export class YJVertexColorTransition extends Component {
     private _updateTiledVB() {
         const renderData = this.renderComp.renderData!;
         if (!renderData.chunk) {
-            this.scheduleOnce(this._updateTiledVB);
             return;
         }
         this._updateColorLate?.call(renderData['_assembler'], this.renderComp);
@@ -235,6 +226,57 @@ export class YJVertexColorTransition extends Component {
             vData[colorOffset + 2] = colorB;
             // vData[colorOffset + 3] = colorA;
             colorOffset += stride;
+        }
+    }
+}
+
+@ccclass('YJVertexColorTransitionManager')
+@singleObject()
+export class YJVertexColorTransitionManager extends no.SingleObject {
+    private list: YJVertexColorTransitionData[] = [];
+    private removeList: string[] = [];
+
+    public static ins(): YJVertexColorTransitionManager {
+        return super.instance() as YJVertexColorTransitionManager;
+    }
+
+    public add(renderComp: Sprite, defines: any, properties?: number[]) {
+        let data = no.itemOfArray<YJVertexColorTransitionData>(this.list, renderComp.uuid, 'uuid');
+        if (data) {
+            data.setEffect(defines, properties);
+        } else {
+            data = new YJVertexColorTransitionData(renderComp);
+            data.setEffect(defines, properties);
+            this.list.push(data);
+        }
+    }
+
+    public remove(uuid: string);
+    public remove(renderComp: Sprite);
+    public remove(a: string | Sprite) {
+        const uuid = typeof a === 'string' ? a : a.uuid;
+        this.removeList.push(uuid);
+    }
+
+    public clear(): void {
+        this.list.length = 0;
+        this.removeList.length = 0;
+    }
+
+    public lateUpdate() {
+        if (this.removeList.length > 0) {
+            for (let i = this.list.length - 1; i >= 0; i--) {
+                if (this.removeList.includes(this.list[i].renderComp.uuid)) {
+                    this.list.splice(i, 1);
+                } else {
+                    this.list[i].lateUpdate();
+                }
+            }
+            this.removeList.length = 0;
+        } else {
+            this.list.forEach(item => {
+                item.lateUpdate();
+            });
         }
     }
 }

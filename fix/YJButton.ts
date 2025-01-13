@@ -1,6 +1,7 @@
 
 import { EDITOR, ccclass, property, menu, requireComponent, Component, Node, Button, EventHandler, EventTouch, disallowMultiple } from '../yj';
 import { no } from '../no';
+import { YJSoundEffectManager } from 'NoUi3/base/audio/YJSoundEffectManager';
 
 /**
  * Predefined variables
@@ -54,6 +55,7 @@ export class YJButton extends Component {
         if (this.needWait) return;
         this.needWait = true;
         no.executeHandlers(this._clickEvents, event);
+        YJSoundEffectManager.ins.playClickSoundEffect();
         this.scheduleOnce(() => {
             this.needWait = false;
         }, this.delay);

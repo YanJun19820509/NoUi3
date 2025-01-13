@@ -1,6 +1,6 @@
-import { EDITOR, ccclass, property, menu, Component, Node, Prefab } from '../../yj';
-import { no } from '../../no';
+import { EDITOR, ccclass, property, menu, Component, Node, Prefab, instantiate } from '../../yj';
 import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
+import { PrefabInfo } from 'NoUi3/types';
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
@@ -11,22 +11,8 @@ import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
  */
 export default class YJLoadPrefab extends Component {
     /** 预制体资源 */
-    @property({ type: Prefab })
-    public get prefab(): Prefab {
-        return null;
-    }
-
-    /** 设置预制体时获取其url */
-    public set prefab(v: Prefab) {
-        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
-            if (!url) return;
-            this.prefabUrl = url;
-        });
-    }
-
-    /** 预制体资源url */
-    @property({ readonly: true })
-    prefabUrl: string = '';
+    @property({ type: PrefabInfo })
+    prefabInfo: PrefabInfo = new PrefabInfo();
 
     /** 是否自动加载预制体 */
     @property
@@ -56,39 +42,18 @@ export default class YJLoadPrefab extends Component {
      * @returns 预制体节点实例
      */
     public async loadPrefab(): Promise<Node> {
-        // 1. 首先检查是否已有缓存的节点
-        const cachedNode = this.instantiateNode();
-        if (cachedNode) return cachedNode;
-
-        // 2. 等待其他正在进行的加载完成
-        while (no.assetBundleManager.isAssetLoading(this.prefabUrl)) {
-            await no.sleep(0.02); // 增加等待时间，减少循环次数
-        }
-
-        // 3. 开始加载资源
-        no.assetBundleManager.loadingAsset(this.prefabUrl);
-
-        try {
-            const prefab = await new Promise<Prefab>((resolve, reject) => {
-                no.assetBundleManager.loadPrefab(this.prefabUrl, (p) => {
-                    if (p == null) reject(new Error('Failed to load prefab'));
-                    else resolve(p);
-                });
+        return new Promise<Node>(resolve => {
+            this.prefabInfo.loadAsset<Prefab>(prefab => {
+                if (prefab) {
+                    const node = instantiate(prefab);
+                    YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
+                    this.loaded = true;
+                    resolve(node);
+                } else {
+                    resolve(null);
+                }
             });
-
-            // 4. 加载成功后的处理
-            no.assetBundleManager.setPrefabNode(this.prefabUrl, prefab);
-            this.loaded = true;
-            const node = this.instantiateNode();
-            no.assetBundleManager.assetLoadingEnd(this.prefabUrl);
-            return node;
-
-        } catch (error) {
-            // 5. 处理加载失败的情况
-            no.assetBundleManager.assetLoadingEnd(this.prefabUrl);
-            console.error(`Failed to load prefab: ${this.prefabUrl}`, error);
-            return null;
-        }
+        });
     }
 
     /**
@@ -96,10 +61,13 @@ export default class YJLoadPrefab extends Component {
      * @returns 预制体节点实例
      */
     public instantiateNode(): Node {
-        const node = no.assetBundleManager.getPrefabNode(this.prefabUrl);
-        if (node)
+        const prefab = this.prefabInfo.loadAssetInCache<Prefab>();
+        if (prefab) {
+            const node = instantiate(prefab);
             YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
-        return node;
+            return node;
+        }
+        return null;
     }
 
     /** 清理加载状态 */

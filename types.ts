@@ -1,7 +1,7 @@
 
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
-import { Asset, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
+import { Asset, Bundle, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
 
 /**
  * Predefined variables
@@ -259,182 +259,172 @@ export function singleObject() {
 
 @ccclass("LoadAssetsInfo")
 export class LoadAssetsInfo {
-    @property({ readonly: true, displayName: '资源uuid' })
-    assetUuid: string = '';
-    @property({ readonly: true, displayName: '资源名称' })
+    @property({ readonly: true, displayName: '根路径', editorOnly: true })
+    base: string = '';
+    @property({ readonly: true, displayName: '分包名称' })
+    bundleName: string = '';
+    @property({ readonly: true, displayName: '资源名称', editorOnly: true })
     assetName: string = '';
-    @property({ readonly: true, displayName: '资源路径' })
+    @property({ readonly: true, displayName: '资源路径', tooltip: '相对于分包路径' })
     path: string = '';
 
-    public async load(): Promise<Asset> {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
-        if (file) {
-            file.addRef();
-            return file;
-        } else
-            return new Promise<Asset>(resolve => {
-                if (this.path)
-                    no.assetBundleManager.loadBundle(no.assetBundleManager.assetPath(this.path).bundle, () => {
-                        no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
-                            resolve(file);
-                        });
-                    });
-                else
-                    no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
-                        resolve(file);
-                    });
-            });
-    }
-
-    public release(cb?: (asset: Asset) => void): void {
-        let file = no.assetBundleManager.getAssetFromCache(this.assetUuid);
-        if (file) {
-            cb?.(file);
-            no.assetBundleManager.decRef(file);
-        }
-    }
-
-    public setPath() {
-        if (!this.assetUuid) {
+    public setPathAndName(uuid: string, cb?: (info: any) => void) {
+        if (!uuid) {
+            this.base = '';
+            this.assetName = '';
             this.path = '';
+            this.bundleName = '';
+            cb?.(null);
         } else {
-            no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
-                this.assetName = info.name;
-                this.path = info?.path;
+            Promise.all([no.EditorMode.getAssetInfo(uuid), no.EditorMode.getAssetUrlByUuid(uuid)]).then(([info, url]) => {
+                if (!info) return;
+                this.base = info.url.replace(url, '').replace(/\.[^/.]+$/, '');
+                this.bundleName = url.split('/')[0];
+                this.path = url.replace(this.bundleName + '/', '');
+                this.assetName = info?.displayName || info?.name;
+                cb?.(info);
             });
         }
     }
 
-    public setUuid() {
-        if (!this.path) {
-            this.assetUuid = '';
-        } else {
-            no.EditorMode.getAssetUuidByUrl(this.path).then(uuid => {
-                this.assetUuid = uuid;
+    public loadAsset<T extends Asset>(cb: (asset: T) => void) {
+        const bundle = no.assetBundleManager.getLoadedBundle(this.bundleName);
+        if (bundle) {
+            bundle.load<T>(this.path, (e, asset) => {
+                if (e) {
+                    no.err('LoadAssetsInfo.loadAsset', this.path, e.message);
+                }
+                cb(asset);
+                asset.addRef();
             });
+        } else {
+            no.err('LoadAssetsInfo.loadAsset bundle 不存在', this.path, this.bundleName);
+            cb(null);
         }
     }
-}
 
-@ccclass('JsonInfo')
-export class JsonInfo extends LoadAssetsInfo {
-    @property({ type: JsonAsset })
-    public get json(): JsonAsset {
+    public loadAssetInCache<T extends Asset>(): T {
+        const bundle = no.assetBundleManager.getLoadedBundle(this.bundleName);
+        if (bundle) {
+            return bundle.get<T>(this.path);
+        }
         return null;
     }
-
-    public set json(v: JsonAsset) {
-        if (v) {
-            this.assetUuid = v.uuid;
-            this.assetName = v.name;
-        }
-    }
 }
+
+// @ccclass('JsonInfo')
+// export class JsonInfo extends LoadAssetsInfo {
+//     @property({ type: JsonAsset })
+//     public get json(): JsonAsset {
+//         return null;
+//     }
+
+//     public set json(v: JsonAsset) {
+//         if (v) {
+//             this.assetUuid = v.uuid;
+//             this.assetName = v.name;
+//         }
+//     }
+// }
 @ccclass('TextureInfo')
 export class TextureInfo extends LoadAssetsInfo {
-    @property({ readonly: true, displayName: '图集配置文件uuid' })
-    atlasJsonUuid: string = '';
-    @property({ readonly: true, displayName: '图集配置文件名称' })
+    @property({ readonly: true, displayName: '图集配置文件name', editorOnly: true })
     atlasJsonName: string = '';
-    @property({ type: Texture2D })
+    @property({ readonly: true, displayName: '图集配置文件path' })
+    atlasJsonPath: string = '';
+    @property({ type: Texture2D, editorOnly: true })
     public get texture(): Texture2D {
         return null;
     }
 
     public set texture(v: Texture2D) {
         if (v) {
-            this.addTexture(v.uuid);
+            this.setPathAndName(v.uuid, info => {
+                this.setAtlasJson(info);
+            });
         }
     }
 
     public async addTexture(uuid: string) {
-        const info = await no.EditorMode.getAssetInfo(uuid);
-        if (!info) return false;
-        this.assetUuid = uuid;
-        this.path = info.path;
-        this.assetName = info?.displayName;
+        // uuid = uuid.replace('@6c48a', '');
+        return Promise.all([no.EditorMode.getAssetInfo(uuid), no.EditorMode.getAssetUrlByUuid(uuid)]).then(([info, url]) => {
+            if (!info) return false;
+            this.base = info.url.replace(url, '').replace(/\.[^/.]+$/, '');
+            this.assetName = info.displayName;
+            this.bundleName = url.split('/')[0];
+            this.path = url.replace(this.bundleName + '/', '').replace('.png', '');
+            this.setAtlasJson(info);
+            return true;
+        });
+    }
+
+    private setAtlasJson(info: any) {
+        if (!info) {
+            this.atlasJsonName = '';
+            this.atlasJsonPath = '';
+            return;
+        }
         let path = info?.path.replace('/texture', '_atlas.json');
         if (path) {
             no.EditorMode.getAssetInfo(path).then(info_1 => {
                 this.atlasJsonName = info_1.name;
-                this.atlasJsonUuid = info_1.uuid;
+                no.EditorMode.getAssetUrlByUuid(info_1.uuid).then(url => {
+                    this.atlasJsonPath = url.replace(this.bundleName + '/', '');
+                });
             });
         }
-        return true;
-    }
-
-}
-@ccclass('MaterialInfo')
-export class MaterialInfo extends LoadAssetsInfo {
-    @property({ type: Material })
-    public get material(): Material {
-        return null;
-    }
-
-    public set material(v: Material) {
-        if (v) {
-            this.assetUuid = v.uuid;
-            this.assetName = v.name;
-            this.setPath();
-        }
-    }
-
-    public addMaterial(uuid: string) {
-        this.assetUuid = uuid;
-        this.setPath();
     }
 }
+// @ccclass('MaterialInfo')
+// export class MaterialInfo extends LoadAssetsInfo {
+//     @property({ type: Material })
+//     public get material(): Material {
+//         return null;
+//     }
+
+//     public set material(v: Material) {
+//         if (v) {
+//             this.assetUuid = v.uuid;
+//             this.assetName = v.name;
+//             this.setPath();
+//         }
+//     }
+
+//     public addMaterial(uuid: string) {
+//         this.assetUuid = uuid;
+//         this.setPath();
+//     }
+// }
 @ccclass('SpriteFrameInfo')
 export class SpriteFrameInfo extends LoadAssetsInfo {
-    @property({ type: SpriteFrame })
+    @property({ type: SpriteFrame, editorOnly: true })
     public get spriteFrame(): SpriteFrame {
         return null;
     }
 
     public set spriteFrame(v: SpriteFrame) {
         if (v) {
-            this.assetUuid = v.uuid;
-            this.assetName = v.name;
-            this.setPath();
-        }
-    }
-
-    public setPath() {
-        if (!this.assetUuid) {
+            this.setPathAndName(v.uuid);
+        } else {
             this.path = '';
             this.assetName = '';
-            this.assetUuid = '';
-        } else {
-            no.EditorMode.getAssetInfo(this.assetUuid).then(info => {
-                const a = info.path.split('/');
-                this.assetName = a[a.length - 2];
-                this.path = info?.path;
-            });
         }
-    }
-
-    public addSpriteFrame(uuid: string) {
-        this.assetUuid = uuid;
-        this.setPath();
     }
 }
 @ccclass('PrefabInfo')
 export class PrefabInfo extends LoadAssetsInfo {
-    @property({ type: Prefab })
+    @property({ type: Prefab, editorOnly: true })
     public get prefab(): Prefab {
         return null;
     }
 
     public set prefab(v: Prefab) {
         if (v) {
-            this.assetUuid = v.uuid;
-            this.assetName = v.name;
+            this.setPathAndName(v.uuid);
+        } else {
+            this.path = '';
+            this.assetName = '';
         }
-    }
-
-    public addPrefab(url: string) {
-        this.path = url;
-        this.setUuid();
     }
 }
 export enum EasingType {

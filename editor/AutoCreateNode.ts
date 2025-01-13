@@ -15,10 +15,8 @@ import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { SetList } from '../fuckui/SetList';
 import { SetSliderProgress } from '../fuckui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../fuckui/SetSpriteFrameInSampler2D';
-import { YJShowSpriteFrameInSample2D } from '../engine/YJShowSpriteFrameInSample2D';
 import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJFuckUiRegister } from '../base/YJFuckUiRegister';
 
 /**
  * Predefined variables
@@ -92,7 +90,7 @@ export class AutoCreateNode extends Component {
     }
 
     private addComponents() {
-        const comps: typeof Component[] = [YJLoadAssets, YJDataWork, YJFuckUiRegister, YJShowSpriteFrameInSample2D, YJPlaySoundEffect];
+        const comps: typeof Component[] = [YJLoadAssets, YJDataWork, YJPlaySoundEffect];
         comps.forEach(comp => {
             if (!this.getComponent(comp)) this.addComponent(comp);
         })
@@ -128,8 +126,6 @@ export class AutoCreateNode extends Component {
             this.node.getComponent(UITransform).setContentSize(size);
             if (!this.node.getComponent(YJDataWork))
                 this.node.addComponent(YJDataWork);
-            if (!this.node.getComponent(YJShowSpriteFrameInSample2D))
-                this.node.addComponent(YJShowSpriteFrameInSample2D);
             if (!this.node.getComponent(BlockInputEvents))
                 this.node.addComponent(BlockInputEvents);
             this.parent = this.node.getChildByName('Canvas') || this.node;

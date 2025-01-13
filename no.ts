@@ -6,10 +6,15 @@ import {
     Layers,
     CCObject,
     EventTouch,
-    Toggle
+    Toggle,
+    resources
 } from "./yj";
 
-
+//用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
+assetManager.downloader.maxConcurrency = 10;
+//用于设置每帧发起的最大请求数，从而均摊发起请求的 CPU 开销，避免单帧过于卡顿
+assetManager.downloader.maxRequestsPerFrame = 10;
+assetManager.downloader.maxRetryCount = 2;
 export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
@@ -377,10 +382,10 @@ export namespace no {
     }
 
     class Event {
-        private _map: any;
+        private _map: Map<string, any[]>;
 
         constructor() {
-            this._map = {};
+            this._map = new Map();
         }
 
         /**
@@ -392,25 +397,25 @@ export namespace no {
          */
         public on(type: string, handler: Function, target?: any, onlyone = false): void {
             if (onlyone) this.typeOff(type);
-            let a: { h: Function, t: any, o: boolean }[] = this._map[type] || [];
+            let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             a[a.length] = {
                 h: handler,
                 t: target,
                 o: false
             };
-            this._map[type] = a;
+            this._map.set(type, a);
         }
         public once(type: string, handler: Function, target?: any): void {
-            let a: { h: Function, t: any, o: boolean }[] = this._map[type] || [];
+            let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             a[a.length] = {
                 h: handler,
                 t: target,
                 o: true
             };
-            this._map[type] = a;
+            this._map.set(type, a);
         }
         public off(type: string, handler: Function, target?: any): void {
-            let a: { h: Function, t: any, o: boolean }[] = this._map[type];
+            let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
@@ -419,11 +424,11 @@ export namespace no {
                     break;
                 }
             }
-            this._map[type] = a;
+            this._map.set(type, a);
         }
         public targetOff(target: any): void {
             for (let type in this._map) {
-                let a: { h: Function, t: any, o: boolean }[] = this._map[type];
+                let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
                 if (!a) continue;
                 for (let i = a.length - 1; i >= 0; i--) {
                     let b = a[i];
@@ -431,15 +436,15 @@ export namespace no {
                         a.splice(i, 1);
                     }
                 }
-                this._map[type] = a;
+                this._map.set(type, a);
             }
         }
         public typeOff(type: string): void {
-            delete this._map[type];
+            this._map.delete(type);
         }
         public emit(type: string, ...args: any[]): void {
             // log('no.evn emit', type, args);
-            let a: { h: Function, t: any, o: boolean }[] = this._map[type];
+            let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
             args = args || [];
             args[args.length] = type;
@@ -468,11 +473,11 @@ export namespace no {
                     a.splice(i, 1);
                 }
             }
-            this._map[type] = a;
+            this._map.set(type, a);
         }
 
         public hasType(type: string): boolean {
-            let a: any[] = this._map[type];
+            let a: any[] = this._map.get(type) || [];
             return a && a.length > 0;
         }
 
@@ -483,7 +488,7 @@ export namespace no {
          * @returns 
          */
         public offAfterTrigger(type: string, target?: any): void {
-            let a: { h: Function, t: any, o: boolean }[] = this._map[type];
+            let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
             a.forEach(b => {
                 if (target) {
@@ -493,7 +498,7 @@ export namespace no {
         }
 
         public clear() {
-            this._map = {};
+            this._map.clear();
         }
 
         /**
@@ -1070,19 +1075,11 @@ export namespace no {
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
         if (array == null || item == null) return -1;
-        let len = array.length;
-        for (let i = 0; i < len; i++) {
-            if (array[i][key] == item || (array[i][key] == item[key] && item[key] != undefined)) {
-                return i;
-            }
-        }
-        return -1;
+        return array.findIndex(a => a[key] == item);
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
-        let i = indexOfArray(array, value, key);
-        if (i == -1) return null;
-        return array[i];
+        return array.find(a => a[key] == value) as T;
     }
 
 
@@ -2459,6 +2456,7 @@ export namespace no {
         public static DataChangeEvent = 'data_change_event';
 
         private _data: any;
+        private _updateScheduled: boolean = false;
 
         public get data(): any {
             return this._data;
@@ -2497,16 +2495,11 @@ export namespace no {
          */
         public get(paths?: string | string[]): any {
             if (this._data == null) return null;
-            if (paths == null || paths == '*') return clone(this._data);
-            paths = [].concat(paths);
-            if (paths.length == 1) {
-                return clone(getValue(this._data, paths[0]));
-            } else {
-                let p = paths.join('.');
-                let a = getValue(this._data, p);
-                if (!a) return null;
-                return clone(a);
+            if (paths == null || paths == '*') return this._data;
+            if (paths instanceof Array) {
+                paths = paths.join('.');
             }
+            return getValue(this._data, paths);
         }
         /**
          * 写
@@ -2518,19 +2511,13 @@ export namespace no {
             if (this._data == null) {
                 this._data = {};
             }
-            if (recursive && value instanceof Object && value['constructor'] === Object) {
-                if (Object.keys(value).length == 0) {
-                    setValue(this._data, path, value);
-                } else {
-                    for (let key in value) {
-                        let v = value[key];
-                        this.set(path + '.' + key, v);
-                    }
-                }
+            if (recursive && value && typeof value === 'object') {
+                // 扁平化处理对象
+                this._flattenObject(path, value);
             } else {
                 setValue(this._data, path, value);
             }
-            this.handleDataChange();
+            this._scheduleUpdate();
             return this;
         }
 
@@ -2542,19 +2529,27 @@ export namespace no {
             return this;
         }
 
+        private _flattenObject(basePath: string, obj: any) {
+            for (const key in obj) {
+                const value = obj[key];
+                const newPath = basePath + '.' + key;
 
-        private aa: boolean = false;
-        private handleDataChange() {
-            if (this.aa) return;
-            this.aa = true;
-            // scheduleOnce(dt => {
-            //     this.emit(Data.DataChangeEvent, this);
-            //     this.aa = false;
-            // }, 0, this);
-            setTimeout(() => {
+                if (value && typeof value === 'object') {
+                    this._flattenObject(newPath, value);
+                } else {
+                    setValue(this._data, newPath, value);
+                }
+            }
+        }
+
+        private _scheduleUpdate(): void {
+            if (this._updateScheduled) return;
+
+            this._updateScheduled = true;
+            queueMicrotask(() => {
                 this.emit(Data.DataChangeEvent, this);
-                this.aa = false;
-            }, 100);
+                this._updateScheduled = false;
+            });
         }
 
         /**
@@ -2773,15 +2768,8 @@ export namespace no {
         private _cacheAsset: Map<string, Asset> = new Map();
         private _cacheAssetRef: { [k: string]: { ref: number, time: number } } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
-        private _loadingAsset: { [k: string]: boolean } = {};
-
-        public constructor() {
-            //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
-            assetManager.downloader.maxConcurrency = 10;
-            //用于设置每帧发起的最大请求数，从而均摊发起请求的 CPU 开销，避免单帧过于卡顿
-            assetManager.downloader.maxRequestsPerFrame = 10;
-            assetManager.downloader.maxRetryCount = 2;
-        }
+        private _pathToUuid: Map<string, string> = new Map();
+        private _loadingAssets: Map<string, number> = new Map();
 
         public get server(): string {
             return assetManager.downloader.remoteServerAddress;
@@ -2810,46 +2798,43 @@ export namespace no {
             return bundleName;
         }
 
-        public getPrefabNode(k: string): Node {
-            const n = this.getCachedAsset<Prefab>(k);
-            try {
-                if (n && n.isValid) return instantiate(n);
-                return null;
-            } catch (e) {
-                err('no getPrefabNode', e);
-                return null;
-            }
+        public hasAsset(path: string): boolean {
+            return this._pathToUuid.has(path);
         }
 
-        public setPrefabNode(k: string, prefab: Prefab) {
-            // console.log('setPrefabNode', k);
-            this.cacheAsset(k, prefab);
-            this.cacheAsset(prefab.uuid, prefab);
+        public loadInCache(path: string) {
+            const uuid = this._pathToUuid.get(path);
+            if (uuid) {
+                const asset = assetManager.assets.get(uuid);
+                asset.addRef();
+                return asset;
+            }
+            return null;
         }
 
         /**
          * 当多个并发加载同一个资源时，设置该资源的加载状态
-         * @param k 资源唯一标识uuid|url
+         * @param path 资源路径
          */
-        public loadingAsset(k: string) {
-            this._loadingAsset[k] = true;
+        public loadingAsset(path: string) {
+            this._loadingAssets.set(path, 1);
         }
 
         /**
          * 该资源是否在加载中
-         * @param k 资源唯一标识uuid|url
+         * @param path 资源路径
          * @returns 
          */
-        public isAssetLoading(k: string): boolean {
-            return this._loadingAsset[k] || false;
+        public isAssetLoading(path: string): boolean {
+            return this._loadingAssets.has(path);
         }
 
         /**
          * 标记该资源已经完成加载
-         * @param k 资源唯一标识uuid|url
+         * @param path 资源路径
          */
-        public assetLoadingEnd(k: string) {
-            this._loadingAsset[k] = false;
+        public assetLoadingEnd(path: string) {
+            this._loadingAssets.delete(path);
         }
 
         public clearCachedAssets() {
@@ -3631,8 +3616,6 @@ export namespace no {
                 this.loadAnyFiles(requests, null, items => {
                     items.forEach((item, i) => {
                         if (item instanceof Prefab) {
-                            const request = requests[i];
-                            this.setPrefabNode(base + request.path + '.prefab', item);
                         } else if (item instanceof Texture2D) {
                             this.cacheImage(item);
                         } else if (item instanceof JsonAsset) {
@@ -3654,18 +3637,7 @@ export namespace no {
                 if (info.ctor.name == 'Prefab')
                     requests[requests.length] = { path: info.path, uuid: info.uuid };
             }
-            this.loadAnyFiles(requests, null, items => {
-                items.forEach((item, i) => {
-                    if (item instanceof Prefab) {
-                        const request = requests[i];
-                        this.setPrefabNode(base + request.path + '.prefab', item);
-                    } else if (item instanceof Texture2D) {
-                        this.cacheImage(item);
-                    } else if (item instanceof JsonAsset) {
-                        this.cacheAsset(item.uuid, item.json);
-                    }
-                });
-            });
+            this.loadAnyFiles(requests);
         }
 
         public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
@@ -3700,6 +3672,81 @@ export namespace no {
 
     /**全局资源管理器 */
     export const assetBundleManager = new AssetBundleManager();
+
+    class ResourcesLoader {
+        private _pathToUuid: Map<string, string> = new Map();
+        private _loadingAssets: Map<string, number> = new Map();
+
+        /**
+         * 预加载files
+         * @param bundleName
+         * @param filePaths
+         * @param onProgress
+         */
+        public preloadFiles(filePaths: string[], onProgress?: (progress: number) => void): void {
+            resources.preload(filePaths, Asset, (finished, total, item) => {
+                onProgress && onProgress(finished / total);
+            }, (e, items) => {
+                if (e) err('preloadFiles', e.message);
+            });
+        }
+
+        /**
+         * 加载资源
+         * @param path 资源路径
+         * @param type 资源类型 TextAsset | JsonAsset | SpriteFrame | SkeletonData | SpriteAtlas | Texture2D | AudioClip | Prefab | AnimationClip | Material | EffectAsset | Font | BufferAsset
+         * @param onComplete 加载完成回调
+         */
+        public load(path: string, type: typeof Asset, onComplete: (asset: Asset) => void) {
+            const uuid = this._pathToUuid.get(path);
+            if (uuid) {
+                const asset = assetManager.assets.get(uuid);
+                asset.addRef();
+                return onComplete?.(asset);
+            };
+            this._loadingAssets.set(path, 1);
+            const p = path.replace('db://assets/resources/', '');
+            resources.load(p, type, null, (e, asset) => {
+                if (e) {
+                    err('resources.load', path, e.stack);
+                    return onComplete?.(null);
+                }
+                this._pathToUuid.set(path, asset.uuid);
+                asset.addRef();
+                onComplete?.(asset);
+                this.assetLoadingEnd(path);
+            });
+        }
+
+        public loadInCache(path: string, type: typeof Asset) {
+            const uuid = this._pathToUuid.get(path);
+            if (uuid) {
+                const asset = assetManager.assets.get(uuid);
+                asset.addRef();
+                return asset;
+            }
+            return null;
+        }
+
+        /**
+         * 该资源是否在加载中
+         * @param path 资源路径
+         * @returns 
+         */
+        public isAssetLoading(path: string): boolean {
+            return this._loadingAssets.has(path);
+        }
+
+        /**
+         * 标记该资源已经完成加载
+         * @param path 资源路径
+         */
+        public assetLoadingEnd(path: string) {
+            this._loadingAssets.delete(path);
+        }
+    }
+    /**resources包资源加载器 */
+    export const resourcesLoader = new ResourcesLoader();
 
     /**缓存池 */
     export class CachePool {
@@ -5617,13 +5664,25 @@ export namespace no {
         }
 
         /**
+         * 获取所有包名
+         * @returns string[]
+         */
+        export async function getBundleNames() {
+            return getBundleInfos().then(infos => {
+                return infos.map(info => info.name);
+            });
+        }
+
+        /**
          * 根据uuid获取资源url
          * @param uuid 
-         * @returns 
+         * @returns url结构为：'包名/path'
          */
         export async function getAssetUrlByUuid(uuid: string) {
-            return getAssetInfo(uuid).then(info => {
-                return info?.url;
+            return Promise.all([getAssetInfo(uuid), getBundleNames()]).then(([info, bundleNames]) => {
+                const url: string = info.url.replace(/\.[^/.]+$/, '');
+                const bundleName = bundleNames.find(name => url.indexOf(`/${name}/`) > -1);
+                return bundleName ? `${bundleName}${url.split(bundleName)[1]}` : url;
             });
         }
 

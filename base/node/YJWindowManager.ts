@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Component, Node, Prefab, js, Widget } from '../../yj';
+import { ccclass, property, menu, Component, Node, Prefab, js, Widget, instantiate } from '../../yj';
 import { no } from '../../no';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
@@ -256,19 +256,14 @@ export class YJWindowManager extends Component {
         const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
             uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey),
             k = url || uuid;
-        const node = no.assetBundleManager.getPrefabNode(k);
-        if (node) this.initNode(node, comp as (typeof YJPanel), content, beforeInit, afterInit);
-        else {
-            const request = { type: Prefab, url: url, uuid: uuid };
-            no.assetBundleManager.loadAny<Prefab>(request, pf => {
-                if (!pf) return;
-                no.assetBundleManager.setPrefabNode(k, pf);
-                if (!content?.isValid) {
-                    return
-                }
-                this.initNode(no.assetBundleManager.getPrefabNode(k), comp as (typeof YJPanel), content, beforeInit, afterInit);
-            });
-        }
+        const request = { type: Prefab, url: url, uuid: uuid };
+        no.assetBundleManager.loadAny<Prefab>(request, pf => {
+            if (!pf) return;
+            if (!content?.isValid) {
+                return
+            }
+            this.initNode(instantiate(pf), comp as (typeof YJPanel), content, beforeInit, afterInit);
+        });
     }
 
     /**
@@ -298,21 +293,16 @@ export class YJWindowManager extends Component {
                 return;
             }
         }
-        const node = no.assetBundleManager.getPrefabNode(prefabPath);
-        if (node) this.initNode(node, YJPanel, content, beforeInit, afterInit);
-        else {
-            const request = { type: Prefab, url: prefabPath, uuid: prefabPath };
-            no.assetBundleManager.loadAny<Prefab>(request, pf => {
-                if (!pf) return;
-                no.assetBundleManager.setPrefabNode(prefabPath, pf);
-                const node = no.assetBundleManager.getPrefabNode(prefabPath);
-                self.prefabPathToNodeName[prefabPath] = node.getComponent(YJPanel).panelType;
-                if (!content?.isValid) {
-                    return
-                }
-                this.initNode(node, YJPanel, content, beforeInit, afterInit);
-            });
-        }
+        const request = { type: Prefab, url: prefabPath, uuid: prefabPath };
+        no.assetBundleManager.loadAny<Prefab>(request, pf => {
+            if (!pf) return;
+            const node = instantiate(pf);
+            self.prefabPathToNodeName[prefabPath] = node.getComponent(YJPanel).panelType;
+            if (!content?.isValid) {
+                return
+            }
+            this.initNode(node, YJPanel, content, beforeInit, afterInit);
+        });
     }
 
     /**

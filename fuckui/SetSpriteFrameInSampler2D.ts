@@ -1,6 +1,6 @@
 
 import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid } from '../yj';
-import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
+import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -27,7 +27,7 @@ import { YJMacroConfig } from 'NoUi3/macro';
  */
 
 @ccclass('SetSpriteFrameInSampler2D')
-@requireComponent([Sprite, YJVertexColorTransition])
+@requireComponent([Sprite])
 @disallowMultiple()
 export class SetSpriteFrameInSampler2D extends FuckUi {
     @property
@@ -80,8 +80,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if ((this.loadFromAtlas || this.canPack)) {
             this.setDynamicAtlas();
-        } else if (!this.loadFromAtlas && !this.canPack) {
-            this.getComponent(YJVertexColorTransition).enabled = false;
         }
         this.initSpriteFrameInfo();
     }
@@ -125,7 +123,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setDynamicAtlas() {
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
-        this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -154,7 +151,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                         //如果散图有压缩设置，则不能打包
                         if (info.userData.compressSettings?.useCompressTexture) {
                             this.canPack = false;
-                            this.getComponent(YJVertexColorTransition).enabled = false;
                         }
                     });
                 } else {
@@ -231,14 +227,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             defines[this.lastDefine] = false;
         }
         this.lastDefine = t;
-        this.getComponent(YJVertexColorTransition)?.setEffect(defines);
+        YJVertexColorTransitionManager.ins().add(this.getComponent(Sprite), defines);
     }
 
     private clearEffect() {
         if (this.lastDefine) {
             const defines: any = {};
             defines[this.lastDefine] = false;
-            this.getComponent(YJVertexColorTransition)?.setEffect(defines);
+            YJVertexColorTransitionManager.ins().remove(this.getComponent(Sprite));
         }
     }
 

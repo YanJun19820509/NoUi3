@@ -40,7 +40,7 @@ const createMaterial = function () {
 export class YJSample2DMaterialManager extends no.SingleObject {
     private materialInfos: YJSample2DMaterialInfo[] = [];
     private noShareMaterialInfos: YJSample2DMaterialInfo[] = [];
-
+    private atlasJson: Map<string, any> = new Map();
 
     public static get ins(): YJSample2DMaterialManager {
         return super.instance();
@@ -66,14 +66,22 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         }
     }
 
+    public getAtlasInfo(path: string, spriteName: string): any | null {
+        return this.atlasJson.get(path)?.[spriteName];
+    }
+
     public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
-        let uuids: string[] = [];
-        textureInfos.forEach(a => {
-            uuids.push(a.assetUuid);
-        });
         let materialInfo = this.materialInfos[this.materialInfos.length - 1];
-        let needLoadIdxes = materialInfo?.getNeedLoadIdxes(uuids);
-        if (!share || !materialInfo || !needLoadIdxes) {
+        const needLoadIdxes: number[] = [];
+        let canUse = true;
+        if (materialInfo) {
+            textureInfos.forEach((a, i) => {
+                if (!materialInfo.hasTexture(a.path))
+                    needLoadIdxes.push(i);
+            });
+            canUse = materialInfo.maxIdx + needLoadIdxes.length < 8;
+        }
+        if (!share || !materialInfo || !canUse) {
             materialInfo = this.createMaterialInfo(name, share && REUSE_MATERIAL);
             await this.loadTextures(materialInfo, textureInfos);
         } else {
@@ -92,80 +100,105 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         no.removeFromArray(this.noShareMaterialInfos, materialInfo, 'uuid');
     }
 
-    private async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[], idxes?: number[]) {
-        let requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }[] = [];
-        let textureIdx: any = {}, jsonIdx: any = {}, textures: Texture2D[] = [], atlasJsons: any[] = [];
-        const n = idxes?.length || textureInfos.length;
-        for (let i = 0; i < n; i++) {
+    public async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[], idxes?: number[]) {
+        const promises: Promise<void>[] = [];
+        for (let i = 0, n = idxes?.length || textureInfos.length; i < n; i++) {
             const textureInfo = textureInfos[idxes ? idxes[i] : i];
-            const assetUuid = textureInfo.assetUuid;
-            if (no.assetBundleManager.hasImage(assetUuid)) {
-                textures[textures.length] = no.assetBundleManager.getTextureFromCache(assetUuid);
-            } else {
-                if (textureInfo.path) {
-                    const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
-                    const info1: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(assetUuid);
-                    requests[requests.length] = { path: info1.path, bundle: bundle, type: Texture2D };
-                } else {
-                    requests[requests.length] = { uuid: assetUuid, type: Texture2D };
-                }
-                textures[textures.length] = null;
-                textureIdx[assetUuid] = textures.length - 1;
-            }
-            const atlasJson = this.getAtlasJson(textureInfo.atlasJsonUuid);
-            if (atlasJson != null) {
-                atlasJsons[atlasJsons.length] = atlasJson;
-            } else {
-                if (textureInfo.path) {
-                    const bundle = no.assetBundleManager.assetPath(textureInfo.path).bundle;
-                    const info2: any = no.assetBundleManager.getLoadedBundle(bundle).getAssetInfo(textureInfo.atlasJsonUuid);
-                    requests[requests.length] = { path: info2.path, bundle: bundle, type: JsonAsset };
-                } else {
-                    requests[requests.length] = { uuid: textureInfo.atlasJsonUuid, type: JsonAsset };
-                }
-                atlasJsons[atlasJsons.length] = null;
-                jsonIdx[textureInfo.atlasJsonUuid] = atlasJsons.length - 1;
-            }
+            promises.push(this.loadTextureAssets(textureInfo, materialInfo));
         }
-        if (requests.length > 0) {
-            await this._loadFiles(requests, textureIdx, jsonIdx, textures, atlasJsons);
-        }
-        materialInfo.setAtlases(textures, atlasJsons);
+        await Promise.all(promises);
     }
 
-    private async _loadFiles(requests: any[], textureIdx: any, jsonIdx: any, textures: Texture2D[], atlasJsons: any[]) {
+    // private async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[], idxes?: number[]) {
+    //     let requests: { uuid?: string, path?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }[] = [];
+    //     let textureIdx: any = {}, jsonIdx: any = {}, textures: Texture2D[] = [], atlasJsons: any[] = [];
+    //     const n = idxes?.length || textureInfos.length;
+    //     for (let i = 0; i < n; i++) {
+    //         const textureInfo = textureInfos[idxes ? idxes[i] : i];
+    //         const assetPath = textureInfo.path;
+    //         if (no.assetBundleManager.hasAsset(assetPath)) {
+    //             textures[textures.length] = no.assetBundleManager.loadInCache(assetPath) as Texture2D;
+    //         } else {
+    //             const bundle = assetPath.split('/')[0];
+    //             requests[requests.length] = { path: assetPath.replace(bundle + '/', ''), bundle: bundle, type: Texture2D };
+    //             textures[textures.length] = null;
+    //             textureIdx[assetPath] = textures.length - 1;
+    //         }
+    //         const atlasJsonPath = textureInfo.atlasJsonPath;
+    //         if (this.atlasJson.has(atlasJsonPath)) {
+    //             atlasJsons[atlasJsons.length] = this.atlasJson.get(atlasJsonPath);
+    //         } else {
+    //             const bundle = atlasJsonPath.split('/')[0];
+    //             requests[requests.length] = { path: atlasJsonPath.replace(bundle + '/', ''), bundle: bundle, type: JsonAsset };
+    //             atlasJsons[atlasJsons.length] = null;
+    //             jsonIdx[atlasJsonPath] = atlasJsons.length - 1;
+    //         }
+    //     }
+    //     if (requests.length > 0) {
+    //         await this._loadFiles(requests, textureIdx, jsonIdx, textures, atlasJsons);
+    //     }
+    //     materialInfo.setAtlases(textures, atlasJsons);
+    // }
+
+    // private async _loadFiles(requests: any[], textureIdx: any, jsonIdx: any, textures: Texture2D[], atlasJsons: any[]) {
+    //     return new Promise<void>(resolve => {
+    //         no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
+    //             items.forEach(item => {
+    //                 if (item instanceof JsonAsset) {
+    //                     this.setAtlasJson(item.uuid, item.json)
+    //                     this.atlasJson.set()
+    //                     const i = jsonIdx[item.uuid];
+    //                     if (i != null)
+    //                         atlasJsons[i] = item.json;
+    //                     else
+    //                         atlasJsons[atlasJsons.length] = item.json;
+    //                     no.assetBundleManager.decRef(item);
+    //                 } else if (item instanceof Texture2D) {
+    //                     no.assetBundleManager.cacheImage(item);
+    //                     const t = no.assetBundleManager.getTextureFromCache(item.uuid);
+    //                     const i = textureIdx[item.uuid];
+    //                     if (i != null)
+    //                         textures[i] = t;
+    //                     else
+    //                         textures[textures.length] = t;
+    //                 }
+    //             });
+    //             resolve();
+    //         });
+    //     });
+    // }
+
+    private async loadTextureAssets(textureInfo: TextureInfo, materialInfo: YJSample2DMaterialInfo) {
         return new Promise<void>(resolve => {
-            no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
-                items.forEach(item => {
-                    if (item instanceof JsonAsset) {
-                        this.setAtlasJson(item.uuid, item.json)
-                        const i = jsonIdx[item.uuid];
-                        if (i != null)
-                            atlasJsons[i] = item.json;
-                        else
-                            atlasJsons[atlasJsons.length] = item.json;
-                        no.assetBundleManager.decRef(item);
-                    } else if (item instanceof Texture2D) {
-                        no.assetBundleManager.cacheImage(item);
-                        const t = no.assetBundleManager.getTextureFromCache(item.uuid);
-                        const i = textureIdx[item.uuid];
-                        if (i != null)
-                            textures[i] = t;
-                        else
-                            textures[textures.length] = t;
+            const assetPath = textureInfo.path,
+                jsonPath = textureInfo.atlasJsonPath,
+                bundleName = textureInfo.bundleName,
+                bundle = no.assetBundleManager.getLoadedBundle(bundleName);
+            if (bundle) {
+                materialInfo.addTexturePath(assetPath);
+                const paths: string[] = [assetPath];
+                if (!this.atlasJson.has(jsonPath)) {
+                    paths.push(jsonPath);
+                }
+                bundle.load(paths, (e, assets) => {
+                    if (!e) {
+                        const texture = assets[0] as Texture2D;
+                        const json = assets[1] as JsonAsset;
+                        texture.addRef();
+                        if (json) {
+                            this.atlasJson.set(jsonPath, json.json);
+                            no.assetBundleManager.decRef(json);
+                        }
+                        materialInfo.setAtlases(texture, { jsonName: jsonPath, names: Object.keys(json.json) });
+                    } else {
+                        no.err('YJSample2DMaterialManager.loadTextureAssets', e.message);
                     }
+                    resolve();
                 });
+            } else {
                 resolve();
-            });
+            }
         });
-    }
-
-    private getAtlasJson(uuid: string): any | null {
-        return no.assetBundleManager.getCachedAtlasJson(uuid) || null;
-    }
-
-    private setAtlasJson(uuid: string, json: any): void {
-        no.assetBundleManager.cacheAsset(uuid, json)
     }
 }
 
@@ -173,15 +206,12 @@ no.addToWindowForDebug('YJSample2DMaterialManager', YJSample2DMaterialManager);
 
 @ccclass('YJSample2DMaterialInfo')
 export class YJSample2DMaterialInfo {
-    // public material: Material;
-    // public atlas: Atlas;
     public dynamicAtlas: YJDynamicAtlas;
     public uuid: string;
     public refCount: number = 0;
-    private textureUuids: string[] = [];
-    private spriteFrameMap: any = {};
-    private atlasJsons: any[] = [];
-    private textures: Texture2D[] = [];
+    private texturePaths: string[] = [];
+    private atlasMap: Map<string, { idx: number, jsonName: any }> = new Map();
+    public maxIdx: number = 1;
     private name: string;
 
     constructor(name: string, reuse: boolean) {
@@ -201,39 +231,35 @@ export class YJSample2DMaterialInfo {
             return;
         }
         YJShowDynamicAtlasDebug.ins.remove(this.name);
-        this.dynamicAtlas.onDestroy();
-        this.textures.length = 0;
-        this.atlasJsons.length = 0;
-        this.textureUuids.length = 0;
-        this.spriteFrameMap = {};
+        this.dynamicAtlas.destroy();
+        this.atlasMap.clear();
+        this.texturePaths.length = 0;
         YJSample2DMaterialManager.ins.deleteMaterial(this);
     }
 
-    public getNeedLoadIdxes(textureUuids: string[]): number[] {
-        const idxes: number[] = [];
-        textureUuids.forEach((uuid, i) => {
-            if (this.textureUuids.indexOf(uuid) == -1) {
-                idxes.push(i);
-            }
-        });
-        return this.textureUuids.length + idxes.length < 8 ? idxes : null;
+    public hasTexture(texturePaths: string): boolean {
+        return this.texturePaths.indexOf(texturePaths) > -1;
+    }
+
+    public addTexturePath(path: string) {
+        this.texturePaths.push(path);
     }
 
     //设置材质的贴图
-    public setAtlases(textures: Texture2D[], jsons: any[]) {
+    public setAtlases(texture: Texture2D, jsonInfo: { jsonName: string, names: string[] }) {
         const material = this.dynamicAtlas.customMaterial;
-        for (let i = 0, n = textures.length; i < n; i++) {
-            const t = textures[i];
-            const key = `atlas${this.textures.length}`;
-            this.textures.push(t);
-            this.textureUuids.push(t.uuid);
-            if (no.materialHasProperty(material, 0, 0, key)) {
-                material.setProperty(key, t, 0);
-            } else {
-                no.err(`YJSample2DMaterialManager setAtlases key(${key}) 不存在！`)
-            }
+        const key = `atlas${this.maxIdx}`;
+        if (no.materialHasProperty(material, 0, 0, key)) {
+            material.setProperty(key, texture, 0);
+        } else {
+            no.err(`YJSample2DMaterialManager setAtlases key(${key}) 不存在！`)
         }
-        this.atlasJsons = this.atlasJsons.concat(jsons);
+        const jsonName = jsonInfo.jsonName;
+        const names = jsonInfo.names;
+        names.forEach(name => {
+            this.atlasMap.set(name, { idx: this.maxIdx, jsonName: jsonName });
+        });
+        this.maxIdx++;
     }
 
     /**
@@ -242,20 +268,10 @@ export class YJSample2DMaterialInfo {
      * @returns [所属atlas下标，SpriteFrameInfo]
      */
     public getSpriteFrameInAtlas(name: string): [number, SpriteFrameDataType] {
-        let a = this.spriteFrameMap[name];
-        if (a) return a;
-        let info: SpriteFrameDataType, idx: number;
-        for (let i = 0, n = this.atlasJsons.length; i < n; i++) {
-            const s = this.atlasJsons[i][name];
-            if (s) {
-                info = s;
-                idx = i;
-                break;
-            }
+        let a = this.atlasMap.get(name);
+        if (a) {
+            return [a.idx, YJSample2DMaterialManager.ins.getAtlasInfo(a.jsonName, name)];
         }
-        if (!info) return [null, null];
-        a = [idx, info];
-        this.spriteFrameMap[name] = a;
-        return a;
+        return [null, null];
     }
 }

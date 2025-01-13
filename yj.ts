@@ -194,6 +194,7 @@ export const quat = _cc.quat;
 export const director = _cc.director;
 export const instantiate = _cc.instantiate;
 export const assetManager = _cc.assetManager;
+export const resources = _cc.resources;
 export const game = _cc.game;
 export const color = _cc.color;
 export const dynamicAtlasManager = _cc.DynamicAtlasManager.instance;

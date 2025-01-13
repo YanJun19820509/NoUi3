@@ -39,7 +39,7 @@ export class FuckUi extends Component {
 
     onLoad() {
         if (EDITOR) {
-            if (!this.registerNode) this.registerNode = no.getComponentInParents(this.node, 'YJFuckUiRegister')?.node;
+            if (!this.registerNode) this.registerNode = no.getComponentInParents(this.node, 'YJDataWork')?.node;
         } else {
             this.update = function () { };
         }

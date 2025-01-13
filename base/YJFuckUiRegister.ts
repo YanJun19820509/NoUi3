@@ -17,7 +17,7 @@ import { FuckUi } from '../fuckui/FuckUi';
 @ccclass('YJFuckUiRegister')
 @disallowMultiple()
 export class YJFuckUiRegister extends Component {
-    @property
+    @property({ editorOnly: true })
     public get autoRegister(): boolean {
         return false;
     }

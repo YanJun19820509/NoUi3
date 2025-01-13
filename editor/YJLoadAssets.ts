@@ -1,4 +1,4 @@
-import { ccclass, property, menu, Component, Node, Sprite, } from '../yj';
+import { ccclass, property, menu, Component, Node, Sprite, Button, EDITOR, executeInEditMode, } from '../yj';
 import { no } from '../no';
 import { TextureInfo } from '../types';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
@@ -18,10 +18,11 @@ import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
 
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
+@executeInEditMode()
 export class YJLoadAssets extends Component {
     @property({ displayName: '共享材质' })
     share: boolean = true;
-    @property({ displayName: '搜索需要加载的纹理' })
+    @property({ displayName: '搜索需要加载的纹理', editorOnly: true })
     public get getAllAssets(): boolean {
         return false;
     }
@@ -48,7 +49,7 @@ export class YJLoadAssets extends Component {
     }
     @property({ type: TextureInfo, displayName: '纹理信息' })
     textureInfos: TextureInfo[] = [];
-    @property({ displayName: '更新纹理信息' })
+    @property({ displayName: '更新纹理信息', editorOnly: true })
     public get updateAllAssets(): boolean {
         return false;
     }
@@ -57,20 +58,91 @@ export class YJLoadAssets extends Component {
         if (this.textureInfos.length == 0) {
             return;
         }
-        const textureUuid: string[] = [];
+        const ps: Promise<string>[] = [];
         this.textureInfos.forEach(a => {
-            textureUuid.push(a.assetUuid);
+            ps.push(no.EditorMode.getAssetUuidByUrl(a.base + a.bundleName + '/' + a.path.replace('/texture', '.png/texture')));
         });
-        this.textureInfos.length = 0;
-        textureUuid.forEach(uuid => {
-            const info = new TextureInfo();
-            info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+        Promise.all(ps).then(uuids => {
+            this.textureInfos.length = 0;
+            uuids.forEach(uuid => {
+                const info = new TextureInfo();
+                info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+            });
         });
+    }
+
+    @property({ displayName: '显示SpriteFrame', editorOnly: true })
+    public get showSpriteFrame(): boolean {
+        return this._show;
+    }
+    private _show: boolean = false;
+
+    public set showSpriteFrame(v: boolean) {
+        this._show = v;
+        this.showSubSpriteFrame(v);
+    }
+
+    private showSubSpriteFrame(v: boolean) {
+        let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
+        list.forEach(a => {
+            if (v) a.resetSprite();
+            else {
+                a.removeSprite();
+            }
+        });
+        list = this.getComponentsInChildren('YJLanguageSprite');
+        list.forEach(a => {
+            if (v) a.resetSprite();
+            else {
+                a.removeSprite();
+            }
+        });
+        list = this.getComponentsInChildren('YJBitmapFont');
+        list.forEach(a => {
+            if (v) a.resetFont();
+            else a.removeFont();
+        });
+        list = this.getComponentsInChildren('YJLanguageLabel');
+        list.forEach(a => {
+            if (v) a.resetLabel();
+            else a.removeLabel();
+        });
+        list = this.getComponentsInChildren('YJCharLabel');
+        list.forEach(a => {
+            if (v) a.resetLabel();
+            else a.removeLabel();
+        });
+        list = this.getComponentsInChildren('SetMaterial');
+        list.forEach(a => {
+            if (v) a.resetMaterial();
+            else a.removeMaterial();
+        });
+        list = this.getComponentsInChildren('SetSpriteFrame');
+        list.forEach(a => {
+            if (v) a.resetSprite();
+            else {
+                a.removeSprite();
+            }
+        });
+        if (!v) {
+            list = this.getComponentsInChildren(Button);
+            list.forEach((a: Button) => {
+                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame') || !a.getComponent('Sprite')) {
+                    a.normalSprite = null;
+                    a.hoverSprite = null;
+                    a.pressedSprite = null;
+                    a.disabledSprite = null;
+                }
+            });
+        }
     }
 
     private materialInfoUuid: string;
 
     onLoad() {
+        if (EDITOR) {
+            this.showSpriteFrame = true;
+        }
         this.setPanelNameToSubNode();
     }
 
@@ -83,9 +155,11 @@ export class YJLoadAssets extends Component {
      */
     public async load() {
         const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
-        const materialInfoUuid = await YJSample2DMaterialManager.ins.createAtlasMaterial(name, this.textureInfos, this.share);
-        this.materialInfoUuid = materialInfoUuid;
-        YJLoadAssets.setMaterialInfoUuidToSubNode(this.node, materialInfoUuid);
+        return YJSample2DMaterialManager.ins.createAtlasMaterial(name, this.textureInfos, this.share).then(uuid => {
+            this.materialInfoUuid = uuid;
+            YJLoadAssets.setMaterialInfoUuidToSubNode(this.node, uuid);
+            return;
+        });
     }
 
     /**

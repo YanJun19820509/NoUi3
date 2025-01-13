@@ -1,4 +1,5 @@
 
+import { deprecate } from 'util';
 import { ccclass, property, Component, Button, executeInEditMode, EDITOR } from '../yj';
 
 /**
@@ -13,6 +14,11 @@ import { ccclass, property, Component, Button, executeInEditMode, EDITOR } from 
  *
  */
 //用来控制使用SetSpriteFrameInSample2D的Sprite显示/隐藏默认spriteFrame
+/**
+ * 
+ * 注意：这个组件在3.7.2版本中被废弃，显示/隐藏默认spriteFrame操作移到YJLoadAssets组件中
+ * 
+ */
 @ccclass('YJShowSpriteFrameInSample2D')
 @executeInEditMode()
 export class YJShowSpriteFrameInSample2D extends Component {
@@ -36,7 +42,7 @@ export class YJShowSpriteFrameInSample2D extends Component {
                 a.removeSprite();
             }
         });
-        list =  this.getComponentsInChildren('YJLanguageSprite');
+        list = this.getComponentsInChildren('YJLanguageSprite');
         list.forEach(a => {
             if (v) a.resetSprite();
             else {

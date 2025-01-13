@@ -71,7 +71,6 @@ export class YJPanel extends Component {
         if (EDITOR) return;
         this.lastCloseTime = -1;
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType);
-        no.EventHandlerInfo.execute(this.onOpen);
         no.log('panel load', this.panelType);
         this.onLoadPanel();
     }
@@ -98,7 +97,7 @@ export class YJPanel extends Component {
                     this._lastMultiTouchState = no.multiTouch();
                     no.multiTouch(this.multiTouch);
                     // no.evn.emit('show_info___', 'initPanel 5')
-                    return Promise.resolve();
+                    no.EventHandlerInfo.execute(this.onOpen);
                 }).catch(e => {
                     no.err('YJPanel initPanel', this.node.name, e.message);
                     // no.evn.emit('show_info___', 'initPanel 4', e.message)
@@ -107,6 +106,7 @@ export class YJPanel extends Component {
         } else {
             // no.evn.emit('show_info___', 'initPanel 6')
             this.show();
+            no.EventHandlerInfo.execute(this.onOpen);
             // this.getComponentsInChildren(Component).forEach(c => {
             //     if (c.enabledInHierarchy) c['onEnable']?.();
             // });
@@ -119,7 +119,6 @@ export class YJPanel extends Component {
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
         // no.evn.emit('show_info___', 'initPanel 8')
-        return Promise.resolve();
     }
 
     public closePanel() {

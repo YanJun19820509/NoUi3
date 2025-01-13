@@ -1,8 +1,8 @@
 
 import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
-import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransition';
 
 /**
  * Predefined variables
@@ -40,12 +40,10 @@ export class SetEffect extends FuckUi {
     }
 
     protected setMaterial(path: string, defines: any, properties: any) {
-        const a = this.getComponent(YJVertexColorTransition);
-        if (a && a.enabled) {
-            a.setEffect(defines, properties);
-            // this.work();
+        if (!path) {
+            YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
         }
-        else if (!path || this._renderComp.material.effectName == `../${path}`) {
+        else if (this._renderComp.material.effectName == `../${path}`) {
             this.setProperties(this._renderComp.material, defines, properties);
             this.work();
         }
@@ -93,7 +91,7 @@ export class SetEffect extends FuckUi {
     //计算frame在合图中的实际rect
     private caculateFact() {
         //当多个组件使用同一个材质时，需要使用sharedMaterial
-        let material = this.getComponent(YJVertexColorTransition) ? this._renderComp.sharedMaterial : this._renderComp.material;
+        let material = this._renderComp.sharedMaterial || this._renderComp.material;
         if (!material || !material.effectAsset) return;
         let f: SpriteFrame, texture: Texture2D;
         if (this._renderComp instanceof Sprite) {
