@@ -276,24 +276,34 @@ export class SetMultipleList extends FuckUi {
 
     private setList() {
         if (!this.node.isValid) return;
-        for (const type in this.typeDataIndexMap) {
+        const types = Object.keys(this.itemsMap);
+        for (let ii = 0, nn = types.length; ii < nn; ii++) {
+            const type = types[ii];
             const indexs: number[] = this.typeDataIndexMap[type];
-            for (let i = 0, n = indexs.length; i < n; i++) {
-                if (indexs[i] >= this.lastIndex) {
-                    let items: Node[] = this.itemsMap[type];
-                    items.forEach((item, j) => {
-                        const k = indexs[i + j];
-                        if (k != undefined) {
-                            this.setItemData(item, this.listData[k]);
-                            this.setItemPosition(item, k);
-                            no.visible(item, true);
-                        }
-                        else {
-                            no.visible(item, false);
-                            item['__dataIndex'] = -1;
-                        }
-                    });
-                    break;
+            if (!indexs) {
+                let items: Node[] = this.itemsMap[type];
+                items.forEach((item, j) => {
+                    no.visible(item, false);
+                    item['__dataIndex'] = -1;
+                });
+            } else {
+                for (let i = 0, n = indexs.length; i < n; i++) {
+                    if (indexs[i] >= this.lastIndex) {
+                        let items: Node[] = this.itemsMap[type];
+                        items.forEach((item, j) => {
+                            const k = indexs[i + j];
+                            if (k != undefined) {
+                                this.setItemData(item, this.listData[k]);
+                                this.setItemPosition(item, k);
+                                no.visible(item, true);
+                            }
+                            else {
+                                no.visible(item, false);
+                                item['__dataIndex'] = -1;
+                            }
+                        });
+                        break;
+                    }
                 }
             }
         }

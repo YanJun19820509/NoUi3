@@ -81,15 +81,15 @@ export class YJGameState extends Component {
                 window.document.location.reload();
         } else {
             if (this.isEngineRestart) {
-                // this.scheduleOnce(() => {
-                //重启一定要有足够的延时才不会异常
-                if (JSB)
-                    game.restart();
-                else if (sys.platform == sys.Platform.WECHAT_GAME)
-                    window['wx'].restartMiniProgram();
-                else if (sys.isBrowser)
-                    window.document.location.reload();
-                // }, 1);
+                this.scheduleOnce(() => {
+                    //重启一定要有足够的延时才不会异常
+                    if (JSB)
+                        game.restart();
+                    else if (sys.platform == sys.Platform.WECHAT_GAME)
+                        window['wx'].restartMiniProgram();
+                    else if (sys.isBrowser)
+                        window.document.location.reload();
+                }, 1);
             } else no.EventHandlerInfo.execute(this.onGameRestart);
         }
     }

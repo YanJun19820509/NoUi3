@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInp
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated } from '../../types';
+import { YJDataWork } from '../YJDataWork';
 
 /**
  * Predefined variables
@@ -159,6 +160,7 @@ export class YJPanel extends Component {
     }
 
     public hide() {
+        this.onClosePanel();
         if (this.cacheToPool) {
             this.status = 'hide';
             this._visible(this.node, false);
@@ -207,6 +209,7 @@ export class YJPanel extends Component {
             if (node['__origin_x__'] !== null) {
                 no.x(node, node['__origin_x__']);
             }
+            node.getComponentsInChildren(YJDataWork).forEach(a => a.onEnable());
         }
         node['_activeInHierarchy'] = v;
     }
