@@ -14,7 +14,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = true;
+    let _isLogEnabled: boolean = DEBUG;
     let _isSpineEnable: boolean = true;
 
     /**

@@ -61,7 +61,7 @@ export class YJDataWork extends Component {
     /**
      * 组件销毁时调用
      */
-    onDestroy(): void {
+    protected onDestroy(): void {
         this.clear();
     }
 
