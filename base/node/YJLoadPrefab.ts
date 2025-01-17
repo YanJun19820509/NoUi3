@@ -60,20 +60,6 @@ export default class YJLoadPrefab extends Component {
         });
     }
 
-    /**
-     * 实例化预制体节点
-     * @returns 预制体节点实例
-     */
-    public instantiateNode(): Node {
-        const prefab = this.prefabInfo.loadAssetInCache<Prefab>();
-        if (prefab) {
-            const node = instantiate(prefab);
-            YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
-            return node;
-        }
-        return null;
-    }
-
     /** 清理加载状态 */
     public clear(): void {
         this.loaded = false;

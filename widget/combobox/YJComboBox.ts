@@ -108,12 +108,15 @@ export class YJComboBox extends YJDataWork {
 
     private setChecked(id: string) {
         let list = this.data.list;
-        list?.forEach((a: any) => {
-            a.checked = a.id == id;
-            if (a.checked) {
-                this.data = a;
+        if (list) {
+            for (let i = 0, n = list.length; i < n; i++) {
+                const a = list[i];
+                a.checked = a.id == id;
+                if (a.checked) {
+                    this.data = a;
+                }
             }
-        });
+        }
         this.data = { list: list };
     }
 }

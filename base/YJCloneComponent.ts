@@ -26,10 +26,11 @@ export class YJCloneComponent extends Component {
     public set target(v: Node) {
         this.setNodeProperties(v);
         let comps = v.getComponents(Component);
-        comps.forEach(comp => {
-            if (!comp.enabled) return;
+        for (let i = 0; i < comps.length; i++) {
+            const comp = comps[i];
+            if (!comp.enabled) continue;
             this.addComp(comp);
-        });
+        }
     }
     @property
     asyncPosition: boolean = false;
@@ -54,19 +55,21 @@ export class YJCloneComponent extends Component {
         let name = js.getClassName(comp);
         let props = this.getProperties(name);
         let a = this.node.getComponent(name) || this.node.addComponent(name);
-        props.forEach(p => {
+        for (let i = 0; i < props.length; i++) {
+            const p = props[i];
             a[p] = comp[p];
-        });
+        }
     }
 
     private getProperties(className: string): string[] {
         let props: string[] = js.getClassByName(className)['__props__'];
         // console.log(props)
         let a: string[] = [];
-        props.forEach(p => {
-            if (p == 'node' || p.indexOf('_') == 0) return;
+        for (let i = 0; i < props.length; i++) {
+            const p = props[i];
+            if (p == 'node' || p.indexOf('_') == 0) continue;
             a[a.length] = p;
-        });
+        }
         return a;
     }
 }

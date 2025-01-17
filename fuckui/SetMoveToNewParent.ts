@@ -31,7 +31,7 @@ export class SetMoveToNewParent extends SetMoveTweenToNodeTarget {
         no.position(this.node, pos);
         let dis = Vec3.distance(pos, p);
         let duration = this.fixSpeed ? dis / this.speed : this.time;
-        this.getComponent(SetNodeTweenAction).setData({
+        this.getComponent(SetNodeTweenAction).a_setData({
             duration: duration,
             to: 1,
             props: {

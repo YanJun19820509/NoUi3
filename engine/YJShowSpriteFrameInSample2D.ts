@@ -36,62 +36,63 @@ export class YJShowSpriteFrameInSample2D extends Component {
 
     private showSubSpriteFrame(v: boolean) {
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
             else {
-                a.removeSprite();
+                list[i].removeSprite();
             }
-        });
+        }
         list = this.getComponentsInChildren('YJLanguageSprite');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
             else {
-                a.removeSprite();
+                list[i].removeSprite();
             }
-        });
+        }
         list = this.getComponentsInChildren('YJBitmapFont');
-        list.forEach(a => {
-            if (v) a.resetFont();
-            else a.removeFont();
-        });
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetFont();
+            else list[i].removeFont();
+        }
         list = this.getComponentsInChildren('YJLanguageLabel');
-        list.forEach(a => {
-            if (v) a.resetLabel();
-            else a.removeLabel();
-        });
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetLabel();
+            else list[i].removeLabel();
+        }
         list = this.getComponentsInChildren('YJCharLabel');
-        list.forEach(a => {
-            if (v) a.resetLabel();
-            else a.removeLabel();
-        });
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetLabel();
+            else list[i].removeLabel();
+        }
         list = this.getComponentsInChildren('SetMaterial');
-        list.forEach(a => {
-            if (v) a.resetMaterial();
-            else a.removeMaterial();
-        });
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetMaterial();
+            else list[i].removeMaterial();
+        }
         list = this.getComponentsInChildren('SetSpriteFrame');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
             else {
-                a.removeSprite();
+                list[i].removeSprite();
             }
-        });
+        }
         if (!v) {
             list = this.getComponentsInChildren(Button);
-            list.forEach((a: Button) => {
-                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame') || !a.getComponent('Sprite')) {
-                    a.normalSprite = null;
-                    a.hoverSprite = null;
-                    a.pressedSprite = null;
-                    a.disabledSprite = null;
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].getComponent('SetSpriteFrameInSampler2D') || list[i].getComponent('SetSpriteFrame') || !list[i].getComponent('Sprite')) {
+                    list[i].normalSprite = null;
+                    list[i].hoverSprite = null;
+                    list[i].pressedSprite = null;
+                    list[i].disabledSprite = null;
                 }
-            });
+            }
         }
     }
 
     onLoad() {
         if (EDITOR) {
-            this.showSpriteFrame = this._show;
+            // this.showSpriteFrame = this._show;
+            this.destroy();
         }
     }
 }

@@ -1,8 +1,7 @@
-import { _decorator, Component, Node } from 'cc';
 import { no } from 'NoUi3/no';
 import { YJDataWork } from './YJDataWork';
 import { singleObject } from 'NoUi3/types';
-const { ccclass, property } = _decorator;
+import { ccclass } from 'NoUi3/yj';
 /**
  * dataWork管理器,延时处理dataWork数据同步逻辑
  */
@@ -32,17 +31,18 @@ export class YJDataWorkManager extends no.SingleObject {
     lastUpdate() {
         if (this.removeList.length > 0) {
             for (let i = this.list.length - 1; i >= 0; i--) {
-                if (this.removeList.includes(this.list[i].uuid)) {
+                const item = this.list[i];
+                if (this.removeList.indexOf(item.uuid) >= 0) {
                     this.list.splice(i, 1);
                 } else {
-                    this.list[i].syncDataToUi();
+                    item.syncDataToUi();
                 }
             }
             this.removeList.length = 0;
         } else {
-            this.list.forEach(item => {
-                item.syncDataToUi();
-            });
+            for (let i = 0; i < this.list.length; i++) {
+                this.list[i].syncDataToUi();
+            }
         }
     }
 }

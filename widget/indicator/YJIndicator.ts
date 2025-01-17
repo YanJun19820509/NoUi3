@@ -57,8 +57,8 @@ export class YJIndicator extends YJDataWork {
 
     private setCur(idx: number) {
         let arr = this.container.children;
-        arr.forEach((a, i) => {
-            a.getComponent(Toggle).isChecked = i == idx;
-        });
+        for (let i = 0, n = arr.length; i < n; i++) {
+            arr[i].getComponent(Toggle).isChecked = i == idx;
+        }
     }
 }

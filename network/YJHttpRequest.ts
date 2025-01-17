@@ -141,9 +141,10 @@ export class YJHttpRequest implements YJSocketInterface {
         }
 
         if (this.headers.length > 0) {
-            this.headers.forEach(header => {
+            for (let i = 0, n = this.headers.length; i < n; i++) {
+                let header = this.headers[i];
                 xhr.setRequestHeader(header.name, header.value);
-            });
+            }
         }
 
         xhr.onreadystatechange = function () {
@@ -179,9 +180,10 @@ export class YJHttpRequest implements YJSocketInterface {
             'content-type': contentType
         };
         if (this.headers.length > 0) {
-            this.headers.forEach(header => {
+            for (let i = 0, n = this.headers.length; i < n; i++) {
+                let header = this.headers[i];
                 h[header.name] = header.value;
-            });
+            }
         }
         window['wx'].request({
             url: url,

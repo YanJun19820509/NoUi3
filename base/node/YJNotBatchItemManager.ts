@@ -76,13 +76,14 @@ export class YJNotBatchItemManager extends Component {
         let nodes: Node[] = [];
         for (let i = 0; i < n; i++) {
             let children = this._subNodes[i]['_children'];
-            children.forEach((child) => {
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
                 // 为子节点添加或获取YJNotBatchItem组件
                 const notBatchItem = child.getComponent(YJNotBatchItem) || child.addComponent(YJNotBatchItem);
                 notBatchItem.saveProperties();
                 this._layer['_children'].push(child);
                 if (child['_children'].length > 0) nodes.push(child);
-            });
+            }
             this._subNodes[i]['_children'].length = 0;
         }
         this._subNodes = nodes;

@@ -134,9 +134,9 @@ export class SetTimeCountDown extends FuckUi {
     private setPercent(v: number) {
         v /= this._max;
         if (this.is0_1) v = 1 - v;
-        this.fuckUiComponents.forEach(ui => {
-            ui.setData(String(v));
-        });
+        for (let i = 0; i < this.fuckUiComponents.length; i++) {
+            this.fuckUiComponents[i].a_setData(String(v));
+        }
     }
 
     /////////////EDITOR////////////

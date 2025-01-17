@@ -40,7 +40,8 @@ export class YJCreateSpriteFrame extends Component {
 
     private getSize(sfs: SpriteFrame[]): Size {
         let size = new Size();
-        sfs.forEach((sf, i) => {
+        for (let i = 0; i < sfs.length; i++) {
+            const sf = sfs[i];
             switch (this.align) {
                 case AlignType.Top:
                 case AlignType.Bottom:
@@ -59,7 +60,7 @@ export class YJCreateSpriteFrame extends Component {
                     size.height += sf.rect.height + (i > 0 ? this.offset.y : 0);
                     break;
             }
-        });
+        }
         return size;
     }
 
@@ -87,7 +88,8 @@ export class YJCreateSpriteFrame extends Component {
         let width = texture.width, height = texture.height;
 
         let x = 0, y = 0, sx = 0, sy = 0;
-        sfs.forEach(sf => {
+        for (let i = 0; i < sfs.length; i++) {
+            const sf = sfs[i];
             let rect = sf.rect;
             let buffer = texture.getTextureBuffer(sf.texture as Texture2D, rect);
             switch (this.align) {
@@ -121,6 +123,6 @@ export class YJCreateSpriteFrame extends Component {
             texture.drawTextureBufferAt(buffer, x, y, rect.width, rect.height);
             x += sx;
             y += sy;
-        });
+        }
     }
 }

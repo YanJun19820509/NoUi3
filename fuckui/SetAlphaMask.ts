@@ -46,7 +46,7 @@ export class SetAlphaMask extends FuckUi {
                 this.SetAlphaMaskNoEffect(v);
             } else {
                 let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-                setEffect.setData(
+                setEffect.a_setData(
                     {
                         defines: {
                             ['0-10']: v
@@ -56,10 +56,12 @@ export class SetAlphaMask extends FuckUi {
             }
         }
         if (this.recursive) {
-            this.getComponentsInChildren(UIRenderer).forEach(child => {
-                if (a?.uuid == child.uuid) return;
-                child.getComponent(SetAlphaMask)?.setData(v);
-            });
+            let children = this.getComponentsInChildren(UIRenderer);
+            for (let i = 0; i < children.length; i++) {
+                let child = children[i];
+                if (a?.uuid == child.uuid) continue;
+                child.getComponent(SetAlphaMask)?.a_setData(v);
+            }
         }
     }
 
@@ -75,9 +77,11 @@ export class SetAlphaMask extends FuckUi {
         this.autoSetChildren = false;
 
         if (this.recursive) {
-            this.getComponentsInChildren(UIRenderer).forEach(child => {
+            let children = this.getComponentsInChildren(UIRenderer);
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
                 const a = (child.getComponent(SetAlphaMask) || child.addComponent(SetAlphaMask));
-            });
+            }
         }
     }
 }

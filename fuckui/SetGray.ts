@@ -60,7 +60,7 @@ export class SetGray extends FuckUi {
                 this.setGrayNoEffect(v);
             } else {
                 let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-                setEffect.setData(
+                setEffect.a_setData(
                     {
                         defines: {
                             [this.isMask ? '0-5' : '0-2']: v
@@ -70,10 +70,12 @@ export class SetGray extends FuckUi {
             }
         }
         if (this.recursive) {
-            this.getComponentsInChildren(UIRenderer).forEach(child => {
-                if (a?.uuid == child.uuid) return;
-                child.getComponent(SetGray)?.setData(v);
-            });
+            let children = this.getComponentsInChildren(UIRenderer);
+            for (let i = 0; i < children.length; i++) {
+                let child = children[i];
+                if (a?.uuid == child.uuid) continue;
+                child.getComponent(SetGray)?.a_setData(v);
+            }
         }
     }
 
@@ -89,10 +91,12 @@ export class SetGray extends FuckUi {
         this.autoSetChildren = false;
 
         if (this.recursive) {
-            this.getComponentsInChildren(UIRenderer).forEach(child => {
+            let children = this.getComponentsInChildren(UIRenderer);
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
                 const a = (child.getComponent(SetGray) || child.addComponent(SetGray));
                 a.isMask = this.isMask;
-            });
+            }
         }
     }
 }

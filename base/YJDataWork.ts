@@ -2,7 +2,6 @@
 import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple, Node } from '../yj';
 import { FuckUi } from '../fuckui/FuckUi';
 import { no } from '../no';
-import { YJJobManager } from './YJJobManager';
 import { YJDataWorkManager } from './YJDataWorkManager';
 
 /**
@@ -21,28 +20,31 @@ import { YJDataWorkManager } from './YJDataWorkManager';
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @disallowMultiple()
 export class YJDataWork extends Component {
-    @property({ editorOnly: true })
+    @property
     public get autoRegister(): boolean {
         return false;
     }
 
     public set autoRegister(v: boolean) {
         let list = this.getComponentsInChildren(FuckUi);
-        this.subFuckUiNodes.forEach(sub => {
+        for (let i = 0, n = this.subFuckUiNodes.length; i < n; i++) {
+            const sub = this.subFuckUiNodes[i];
             list = list.concat(sub.getComponentsInChildren(FuckUi));
-        });
-        list.forEach((a: FuckUi) => {
+        }
+        for (let i = 0, n = list.length; i < n; i++) {
+            const a = list[i];
             if (!a.registerNode) {
                 a.registerNode = this.node;
             }
-        });
+        }
 
         this.subFuckUis = [];
-        list.forEach((a: FuckUi) => {
+        for (let i = 0, n = list.length; i < n; i++) {
+            const a = list[i];
             if (a.registerNode == this.node && a.bind_keys != '') {
                 this.subFuckUis[this.subFuckUis.length] = a;
             }
-        });
+        }
     }
 
     @property(Node)
@@ -60,7 +62,7 @@ export class YJDataWork extends Component {
     onlyDiff: boolean = true;
 
 
-    protected _data2ui: object = {};
+    protected _data2ui: Map<string, FuckUi[]> = new Map();
 
     /**
      * 数据存储对象
@@ -85,7 +87,7 @@ export class YJDataWork extends Component {
     /**
      * 组件销毁时调用
      */
-    onDestroy(): void {
+    protected onDestroy(): void {
         YJDataWorkManager.ins().remove(this);
         this.clear();
     }
@@ -125,7 +127,7 @@ export class YJDataWork extends Component {
      * 若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      */
     public init() {
-        this.bindSubFuckUis()
+        this.bindSubFuckUis();
         if (!this._loaded) return;
         const afterDataInit = this['afterDataInit'];
         if (typeof afterDataInit == 'function') {
@@ -161,6 +163,7 @@ export class YJDataWork extends Component {
      */
     public set data(d: any) {
         if (typeof d != 'object') return;
+        this.bindSubFuckUis();
         for (let key in d) {
             this.setValue(key, d[key]);
         }
@@ -192,7 +195,8 @@ export class YJDataWork extends Component {
     public setValue(key: string, value: any) {
         this._data?.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
-        no.addToArray(this.changedDataKeys, key);
+        // no.addToArray(this.changedDataKeys, key);
+        this.onValueChange(key, value);
         return this;//支持链式写法
     }
 
@@ -228,12 +232,16 @@ export class YJDataWork extends Component {
      * 将已改变的数据同步到UI
      */
     public syncDataToUi() {
-        if (!this?.node?.isValid) return;
-        if (!this?.changedDataKeys?.length) return;
-        const keys = this.changedDataKeys.slice();
-        this.changedDataKeys.length = 0;
-        for (let i = 0, n = keys.length; i < n; i++) {
-            this.onValueChange(keys[i]);
+        // if (!this?.node?.isValid) return;
+        // if (!this?.changedDataKeys?.length) return;
+        // const keys = this.changedDataKeys.slice();
+        // this.changedDataKeys.length = 0;
+        // for (let i = 0, n = keys.length; i < n; i++) {
+        //     this.onValueChange(keys[i]);
+        // }
+        for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
+            const ui = this.subFuckUis[i];
+            ui.syncData();
         }
     }
 
@@ -243,23 +251,25 @@ export class YJDataWork extends Component {
      * @param value 变化的值
      */
     private onValueChange(key: string, value?: any) {
-        let ui: FuckUi[] = this.getUis(key) || [];
+        let ui: FuckUi[] = this.getUis(key);
         if (value == null) value = this.getValue(key);
         this.setUiData(ui, value);
-        if (value instanceof Array) {
-            value.forEach((v, i) => {
-                let ui: FuckUi[] = this.getUis(`${key}.${i}`) || [];
-                this.setUiData(ui, v);
-            });
-        } else if (value instanceof Object) {
-            if (DEBUG && value.__classname__) {
-                console.warn('不能传递对象类型数据：', key, value);
-                return;
-            }
-            for (let k in value) {
-                this.onValueChange(`${key}.${k}`, value[k]);
-            }
-        }
+        //为提升性能，暂时不支持数组和对象子元素的更新
+        // if (value instanceof Array) {
+        //     value.forEach((v, i) => {
+        //         let ui: FuckUi[] = this.getUis(`${key}.${i}`);
+        //         this.setUiData(ui, v);
+        //     });
+        // }
+        // else if (value instanceof Object) {
+        //     if (DEBUG && value.__classname__) {
+        //         console.warn('不能传递对象类型数据：', key, value);
+        //         return;
+        //     }
+        //     for (let k in value) {
+        //         this.onValueChange(`${key}.${k}`, value[k]);
+        //     }
+        // }
     }
 
     /**
@@ -268,38 +278,29 @@ export class YJDataWork extends Component {
      * @param data 要设置的数据
      */
     private setUiData(uis: FuckUi[], data: any) {
-        if (uis == null) return;
-        uis.forEach(ui => {
-            let keys = ui.bindKeys;
-            let a: any;
-            if (keys.length == 1) {
-                a = data;
-            } else {
-                a = {};
-                keys.forEach(key => {
-                    a[key] = this._data.get(key);
-                });
-            }
-            ui.setData(a);
+        if (!uis?.length) return;
+        for (let i = 0, n = uis.length; i < n; i++) {
+            const ui = uis[i];
+            ui.dataDirty = true;
             if (ui.once) {
                 this.remove(ui);
             }
-        });
+        }
     }
 
     private getUis(key: string): FuckUi[] {
-        return this._data2ui[key];
+        return this._data2ui.get(key);
     }
 
     private remove(ui: FuckUi) {
         let keys = ui.bindKeys;
-        keys.forEach(key => {
-            let a: FuckUi[] = this._data2ui[key];
+        for (let j = 0, n = keys.length; j < n; j++) {
+            let a: FuckUi[] = this.getUis(keys[j]);
             if (a) {
                 let i = a.indexOf(ui);
                 a.splice(i, 1);
             }
-        });
+        }
     }
 
     private _isBound: boolean = false;
@@ -309,13 +310,19 @@ export class YJDataWork extends Component {
         let list = this.subFuckUis;
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];
+            ui['setData'](this._data.data);
             let keys = ui.bindKeys;
-            keys.forEach(key => {
+            for (let j = 0, n = keys.length; j < n; j++) {
+                const key = keys[j];
                 if (!!key) {
-                    this._data2ui[key] = this._data2ui[key] || [];
-                    no.addToArray(this._data2ui[key], ui, 'uuid');
+                    let a = this._data2ui.get(key);
+                    if (!a) {
+                        a = [];
+                        this._data2ui.set(key, a);
+                    }
+                    a.push(ui);
                 }
-            });
+            }
         }
     }
 

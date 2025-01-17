@@ -798,9 +798,9 @@ export class YJUIAnimationEffect extends Component {
     private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], onEnd?: () => void) {
         if (!isValid(node)) return;
         let a: any[] = [];
-        serialAnimationEffects.forEach(b => {
-            a = a.concat(b.getTweenSet(node));
-        });
+        for (let i = 0; i < serialAnimationEffects.length; i++) {
+            a = a.concat(serialAnimationEffects[i].getTweenSet(node));
+        }
         no.TweenSet.play(no.parseTweenData(a, node), () => {
             onEnd?.();
         });

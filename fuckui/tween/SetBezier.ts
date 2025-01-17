@@ -32,15 +32,15 @@ export class SetBezier extends SetNodeTweenAction {
         points.shift();
         let d = [];
         let t = data.duration / points.length;
-        points.forEach(p => {
+        for (let i = 0; i < points.length; i++) {
             d[d.length] = {
                 duration: t,
                 to: 1,
                 props: {
-                    pos: [p.x, p.y]
+                    pos: [points[i].x, points[i].y]
                 }
             };
-        });
+        }
         return no.parseTweenData(d, this.node);
     }
 
@@ -71,9 +71,9 @@ export class SetBezier extends SetNodeTweenAction {
     private getControlPoints(points: { x: number, y: number }[]): Vec3[] {
         let p = this.node.position;
         let ps: Vec3[] = [p];
-        points.forEach(point => {
-            ps[ps.length] = v3(point.x + p.x, point.y + p.y);
-        });
+        for (let i = 0; i < points.length; i++) {
+            ps[ps.length] = v3(points[i].x + p.x, points[i].y + p.y);
+        }
         return ps;
     }
 }

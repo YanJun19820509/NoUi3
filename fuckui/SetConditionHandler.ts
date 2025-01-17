@@ -30,10 +30,10 @@ export class SetConditionHandler extends FuckUi {
     infos: ConditionHandlerInfo[] = [];
 
     protected onDataChange(data: any) {
-        this.infos.forEach(info => {
-            if (info.condition == data) {
-                no.EventHandlerInfo.execute(info.handlers);
+        for (let i = 0; i < this.infos.length; i++) {
+            if (this.infos[i].condition == data) {
+                no.EventHandlerInfo.execute(this.infos[i].handlers);
             }
-        });
+        }
     }
 }

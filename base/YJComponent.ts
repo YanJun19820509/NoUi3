@@ -85,9 +85,9 @@ export class YJComponent extends Component {
     }
 
     private removeHandlers(keys: number[]): void {
-        keys.forEach(k => {
-            this.updateHandlers?.delete(k);
-        });
+        for (let i = 0; i < keys.length; i++) {
+            this.updateHandlers?.delete(keys[i]);
+        }
     }
 
     lateUpdate(dt: number) {

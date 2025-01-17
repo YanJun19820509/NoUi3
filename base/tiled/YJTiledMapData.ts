@@ -95,9 +95,10 @@ export class YJTiledMapData {
                 };
                 if (tile.properties != null) {
                     let prop: any = {};
-                    tile.properties.forEach((p: any) => {
+                    for (let i = 0; i < tile.properties.length; i++) {
+                        const p = tile.properties[i];
                         prop[p.name] = p.value;
-                    });
+                    }
                     a.prop = prop;
                 }
                 this.tilesets.set(firstgid + tile.id, a);
@@ -109,9 +110,10 @@ export class YJTiledMapData {
     private propertiesOf(d: any): any {
         if (d.properties == null) return null;
         let a: any = new Object();
-        d.properties.forEach((p: any) => {
+        for (let i = 0; i < d.properties.length; i++) {
+            const p = d.properties[i];
             a[p.name] = p.value;
-        });
+        }
         return a;
     }
 
@@ -125,9 +127,10 @@ export class YJTiledMapData {
                 y: this.mapSize.height - obj.y,
             };
             if (obj.properties != null)
-                obj.properties.forEach((p: any) => {
+                for (let i = 0; i < obj.properties.length; i++) {
+                    const p = obj.properties[i];
                     a[p.name] = p.value;
-                });
+                }
             if (obj.gid != null && this.tilesets.has(obj.gid)) {
                 let tile = this.tilesets.get(obj.gid);
                 no.forEachKV(tile, (key, value) => {

@@ -41,6 +41,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     private materialInfos: YJSample2DMaterialInfo[] = [];
     private noShareMaterialInfos: YJSample2DMaterialInfo[] = [];
     private atlasJson: Map<string, any> = new Map();
+    private atlasJsonKeys: Map<string, string[]> = new Map();
+    private keyToMaterialUuid: Map<string, string> = new Map();
 
     public static get ins(): YJSample2DMaterialManager {
         return super.instance();
@@ -56,7 +58,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         return materialInfo;
     }
 
-    public getMaterialInfo(uuid: string): YJSample2DMaterialInfo {
+    public getMaterialInfo(key: string): YJSample2DMaterialInfo {
+        const uuid = this.keyToMaterialUuid.get(key);
         let i = no.indexOfArray(this.materialInfos, uuid, 'uuid');
         if (i > -1)
             return this.materialInfos[i];
@@ -71,26 +74,55 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     }
 
     public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
-        let materialInfo = this.materialInfos[this.materialInfos.length - 1];
-        const needLoadIdxes: number[] = [];
-        let canUse = true;
-        if (materialInfo) {
-            textureInfos.forEach((a, i) => {
-                if (!materialInfo.hasTexture(a.path))
-                    needLoadIdxes.push(i);
-            });
-            canUse = materialInfo.maxIdx + needLoadIdxes.length < 8;
-        }
-        if (!share || !materialInfo || !canUse) {
-            materialInfo = this.createMaterialInfo(name, share && REUSE_MATERIAL);
-            await this.loadTextures(materialInfo, textureInfos);
+        let materialInfo: YJSample2DMaterialInfo;
+        if (!share || !REUSE_MATERIAL) {
+            materialInfo = this.createMaterialInfo(name, false);
         } else {
-            materialInfo.refCount++;
-            if (needLoadIdxes.length > 0) {
-                await this.loadTextures(materialInfo, textureInfos, needLoadIdxes);
+            const { maxMaterialInfo, maxDiff } = this.reuseMaterial(textureInfos);
+            if (!maxMaterialInfo) {
+                materialInfo = this.createMaterialInfo(name, true);
+            } else {
+                let newTextureInfos = [];
+                for (let i = 0, n = textureInfos.length; i < n; i++) {
+                    let info = textureInfos[i];
+                    for (let j = 0, m = maxDiff.length; j < m; j++) {
+                        if (info.path === maxDiff[j]) {
+                            newTextureInfos[newTextureInfos.length] = info;
+                            break;
+                        }
+                    }
+                }
+                textureInfos = newTextureInfos;
+                materialInfo = maxMaterialInfo;
+                materialInfo.refCount++;
             }
         }
+        await this.loadTextures(materialInfo, textureInfos);
+        this.keyToMaterialUuid.set(name, materialInfo.uuid);
         return materialInfo.uuid;
+    }
+
+    private reuseMaterial(textureInfos: TextureInfo[]) {
+        if (this.materialInfos.length == 0) return {};
+        const assetPaths: string[] = [];
+        for (let i = 0; i < textureInfos.length; i++) {
+            assetPaths.push(textureInfos[i].path);
+        }
+        //遍历materialInfos，如果找到相同元素最多且materialInfo.maxIdx+不相同元素数量<8，则返回materialInfo，否则返回null
+
+        const l = assetPaths.length;
+        let maxCount = l, maxMaterialInfo: YJSample2DMaterialInfo = null, maxDiff: string[] = [];
+        for (let i = 0; i < this.materialInfos.length; i++) {
+            const materialInfo = this.materialInfos[i];
+            const diff = materialInfo.compareTexturePaths(assetPaths),
+                count = diff.length;
+            if (count < maxCount && materialInfo.maxIdx + count < 8) {
+                maxCount = count;
+                maxMaterialInfo = materialInfo;
+                maxDiff = diff;
+            }
+        }
+        return { maxMaterialInfo, maxDiff };
     }
 
     public deleteMaterial(materialInfo: YJSample2DMaterialInfo) {
@@ -100,10 +132,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         no.removeFromArray(this.noShareMaterialInfos, materialInfo, 'uuid');
     }
 
-    public async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[], idxes?: number[]) {
+    public async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[]) {
         const promises: Promise<void>[] = [];
-        for (let i = 0, n = idxes?.length || textureInfos.length; i < n; i++) {
-            const textureInfo = textureInfos[idxes ? idxes[i] : i];
+        for (let i = 0, n = textureInfos.length; i < n; i++) {
+            const textureInfo = textureInfos[i];
             promises.push(this.loadTextureAssets(textureInfo, materialInfo));
         }
         await Promise.all(promises);
@@ -187,11 +219,13 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                         texture.addRef();
                         if (json) {
                             this.atlasJson.set(jsonPath, json.json);
+                            this.atlasJsonKeys.set(jsonPath, Object.keys(json.json));
                             no.assetBundleManager.decRef(json);
                         }
-                        materialInfo.setAtlases(texture, { jsonName: jsonPath, names: Object.keys(json.json) });
+                        let jsonInfo = { jsonName: jsonPath, names: this.atlasJsonKeys.get(jsonPath) };
+                        materialInfo.setAtlases(texture, jsonInfo);
                     } else {
-                        no.err('YJSample2DMaterialManager.loadTextureAssets', e.message);
+                        no.err('YJSample2DMaterialManager.loadTextureAssets', e.message, paths);
                     }
                     resolve();
                 });
@@ -222,7 +256,7 @@ export class YJSample2DMaterialInfo {
         this.name = name;
 
         const material = createMaterial();
-        const size = reuse ? 2048 : 1024;
+        const size = reuse ? 2048 : 512;
         const atlas = new Atlas(size, size, name);
         this.dynamicAtlas = new YJDynamicAtlas(atlas, material);
         YJShowDynamicAtlasDebug.ins.add(atlas, name);
@@ -239,6 +273,21 @@ export class YJSample2DMaterialInfo {
         YJSample2DMaterialManager.ins.deleteMaterial(this);
     }
 
+    /**
+     * 比较两个数组，返回不相同的元素
+     * @param texturePaths 
+     * @returns 
+     */
+    public compareTexturePaths(texturePaths: string[]): string[] {
+        let result = [];
+        for (let i = 0, n = texturePaths.length; i < n; i++) {
+            if (this.texturePaths.indexOf(texturePaths[i]) == -1) {
+                result[result.length] = texturePaths[i];
+            }
+        }
+        return result;
+    }
+
     public hasTexture(texturePaths: string): boolean {
         return this.texturePaths.indexOf(texturePaths) > -1;
     }
@@ -248,7 +297,7 @@ export class YJSample2DMaterialInfo {
     }
 
     //设置材质的贴图
-    public setAtlases(texture: Texture2D, jsonInfo: { jsonName: string, names: string[] }) {
+    public setAtlases(texture: Texture2D, jsonInfo?: { jsonName: string, names: string[] }) {
         const material = this.dynamicAtlas.customMaterial;
         const key = `atlas${this.maxIdx}`;
         if (no.materialHasProperty(material, 0, 0, key)) {
@@ -256,11 +305,13 @@ export class YJSample2DMaterialInfo {
         } else {
             no.err(`YJSample2DMaterialManager setAtlases key(${key}) 不存在！`)
         }
-        const jsonName = jsonInfo.jsonName;
-        const names = jsonInfo.names;
-        names.forEach(name => {
-            this.atlasMap.set(name, { idx: this.maxIdx, jsonName: jsonName });
-        });
+        if (jsonInfo) {
+            const jsonName = jsonInfo.jsonName;
+            const names = jsonInfo.names;
+            for (let i = 0; i < names.length; i++) {
+                this.atlasMap.set(names[i], { idx: this.maxIdx, jsonName: jsonName });
+            }
+        }
         this.maxIdx++;
     }
 

@@ -80,7 +80,8 @@ export class YJToggleGroupManager extends ToggleContainer {
         if (this.checkedToggleUuid == toggle.uuid) return;
         this.checkedToggleUuid = toggle.uuid;
 
-        let i = no.indexOfArray(this.getComponentsInChildren(Toggle), toggle, 'uuid');
+        const toggles = this.toggleItems;
+        let i = toggles.indexOf(toggle);
         no.EventHandlerInfo.execute(this.onToggleChecked, i);
     }
 

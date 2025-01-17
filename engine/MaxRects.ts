@@ -74,9 +74,9 @@ export class MaxRects {
 
     public get lastRects(): math.Rect[] {
         let a: math.Rect[] = [];
-        this._rects.forEach(r => {
-            a[a.length] = r.rect;
-        });
+        for (let i = 0; i < this._rects.length; i++) {
+            a[a.length] = this._rects[i].rect;
+        }
         return a;
     }
 

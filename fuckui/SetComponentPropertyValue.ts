@@ -43,12 +43,12 @@ export class SetComponentPropertyValue extends FuckUi {
         } else {
             let cs = this._target.components;
             let a: any = {};
-            cs.forEach((c, i) => {
-                let name = js.getClassName(c);
-                if (name == 'SetComponentPropertyValue') return;
+            for (let i = 0; i < cs.length; i++) {
+                let name = js.getClassName(cs[i]);
+                if (name == 'SetComponentPropertyValue') continue;
                 a[name] = i;
                 this.componentNames[i] = name;
-            });
+            }
             this.setEnum(a, 'component');
         }
     }

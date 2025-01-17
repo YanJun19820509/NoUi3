@@ -32,15 +32,21 @@ class Database {
 
     private allTablesData() {
         let d: any = {};
-        this.tableNames.forEach(tn => {
+        for (let i = 0; i < this.tableNames.length; i++) {
+            let tn = this.tableNames[i];
             d[tn] = this.read(tn);
-        });
+        }
         return d;
     }
 
     private initData(data: string) {
         const arr: any[] = data.split(String.fromCharCode(this.cCode));
-        return arr.map(a => a == '' || isNaN(a) ? a : Number(a));
+        let result = [];
+        for (let i = 0, n = arr.length; i < n; i++) {
+            let a = arr[i];
+            result[i] = a == '' || isNaN(a) ? a : Number(a);
+        }
+        return result;
     }
 
     /**
@@ -89,8 +95,8 @@ class JsonConfig {
     }
 
     public loadDatabases(files: string[]) {
-        for (const file of files) {
-            this.loadFile(file);
+        for (let i = 0, n = files.length; i < n; i++) {
+            this.loadFile(files[i]);
         }
     }
 

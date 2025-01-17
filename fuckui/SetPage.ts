@@ -1,9 +1,10 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, instantiate, PageView } from '../yj';
+import { EDITOR, ccclass, property, executeInEditMode, instantiate, PageView, Node } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { FuckUi } from './FuckUi';
 import { SetCreateNode } from './SetCreateNode';
+import { YJJobManager } from 'NoUi3/base/YJJobManager';
 
 /**
  * Predefined variables
@@ -27,27 +28,34 @@ export class SetPage extends FuckUi {
     @property(PageView)
     view: PageView = null;
 
-    protected onDataChange(data: any) {
+    private tempNode: Node;
+
+    protected async onDataChange(data: any) {
         data = [].concat(data);
         if (data.length == 0) this._clear();
         else {
-            data.forEach((d: any) => {
-                if (d instanceof Object) this._add(d);
-                else if (typeof d == 'number') this._remove(d);
-            });
+            if (!this.tempNode) this.tempNode = await this.page.loadPrefab();
+            this.setPages(data);
         }
     }
 
-    private async _add(data: any) {
-        if (!this.page.loaded) {
-            await this.page.loadPrefab();
-            if (!this?.node?.isValid) return;
-        }
-        let node = this.page.instantiateNode();
+    private setPages(data: any[]) {
+        const num = data.length;
+        let i = 0;
+        YJJobManager.ins.addTask(() => {
+            const d = data[i++];
+            if (d instanceof Object) this.setPage(d);
+            else if (typeof d == 'number') this._remove(d);
+            return i >= num;
+        });
+    }
+
+    private async setPage(data: any) {
+        let node = instantiate(this.tempNode);
         await node.getComponent(YJLoadAssets)?.load();
         if (!this?.node?.isValid) return;
         this.view.addPage(node);
-        (node.getComponent(SetCreateNode) || node.getComponentInChildren(SetCreateNode))?.setData(data);
+        (node.getComponent(SetCreateNode) || node.getComponentInChildren(SetCreateNode))?.a_setData(data);
     }
 
     private _remove(index: number) {

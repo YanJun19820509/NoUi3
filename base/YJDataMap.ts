@@ -29,11 +29,12 @@ export class YJDataMapInfo {
             }
         }
         let a: any = {};
-        keys.forEach(k => {
+        for (let i = 0, n = keys.length; i < n; i++) {
+            let k = keys[i];
             let v = dataSource[k];
             if (v == null) v = dataSource.get(k);
             a[k] = v;
-        });
+        }
         return a;
     }
 }
@@ -66,8 +67,9 @@ export class YJDataMap extends YJDataWork {
 
     protected syncWithDataSource() {
         if (!this._dataSource) return;
-        this.keyMaps.forEach(km => {
+        for (let i = 0; i < this.keyMaps.length; i++) {
+            const km = this.keyMaps[i];
             this.setValue(km.uiKey, km.getData(this._dataSource));
-        });
+        }
     }
 }

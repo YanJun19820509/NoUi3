@@ -29,9 +29,9 @@ export class SetPathWithNodePointByUrl extends FuckUi {
         no.assetBundleManager.loadPrefab(data, item => {
             let n = instantiate(item);
             let path: Vec3[] = [];
-            n.children.forEach(child => {
-                path[path.length] = child.position.clone();
-            });
+            for (let i = 0; i < n.children.length; i++) {
+                path[path.length] = n.children[i].position.clone();
+            }
             this.onParsed.execute(path);
             this.autoRelease && no.assetBundleManager.release(item);
         });

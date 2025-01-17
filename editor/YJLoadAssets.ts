@@ -18,19 +18,20 @@ import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
 
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
-@executeInEditMode()
+// @executeInEditMode()
 export class YJLoadAssets extends Component {
     @property({ displayName: '共享材质' })
     share: boolean = true;
-    @property({ displayName: '搜索需要加载的纹理', editorOnly: true })
+    @property({ displayName: '搜索需要加载的纹理' })
     public get getAllAssets(): boolean {
         return false;
     }
 
     public set getAllAssets(v: boolean) {
-        const list: any = this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+        const list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             textureUuid: string[] = [];
-        list.forEach(a => {
+        for (let i = 0; i < list.length; i++) {
+            const a = list[i];
             if (a.loadFromAtlas) {
                 const sf = a.getComponent(Sprite).spriteFrame;
                 if (sf) {
@@ -40,38 +41,43 @@ export class YJLoadAssets extends Component {
                     no.warn(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
                 }
             }
-        });
+        }
         this.textureInfos.length = 0;
-        textureUuid.forEach(uuid => {
+        for (let i = 0; i < textureUuid.length; i++) {
             const info = new TextureInfo();
-            info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
-        });
+            info.addTexture(textureUuid[i]).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+        }
     }
     @property({ type: TextureInfo, displayName: '纹理信息' })
     textureInfos: TextureInfo[] = [];
-    @property({ displayName: '更新纹理信息', editorOnly: true })
+    @property({ displayName: '更新纹理信息'})
     public get updateAllAssets(): boolean {
         return false;
     }
 
     public set updateAllAssets(v: boolean) {
         if (this.textureInfos.length == 0) {
+            this.getAllAssets = true;
             return;
         }
         const ps: Promise<string>[] = [];
-        this.textureInfos.forEach(a => {
-            ps.push(no.EditorMode.getAssetUuidByUrl(a.base + a.bundleName + '/' + a.path.replace('/texture', '.png/texture')));
-        });
+        for (let i = 0; i < this.textureInfos.length; i++) {
+            const a = this.textureInfos[i];
+            if (a.path.indexOf('db://assets/') == 0)
+                ps.push(no.EditorMode.getAssetUuidByUrl(a.path.replace('/texture', '.png/texture')));
+            else
+                ps.push(no.EditorMode.getAssetUuidByUrl(a.base + a.bundleName + '/' + a.path.replace('/texture', '.png/texture')));
+        }
         Promise.all(ps).then(uuids => {
             this.textureInfos.length = 0;
-            uuids.forEach(uuid => {
+            for (let i = 0; i < uuids.length; i++) {
                 const info = new TextureInfo();
-                info.addTexture(uuid).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
-            });
+                info.addTexture(uuids[i]).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+            }
         });
     }
 
-    @property({ displayName: '显示SpriteFrame', editorOnly: true })
+    @property({ displayName: '显示SpriteFrame'})
     public get showSpriteFrame(): boolean {
         return this._show;
     }
@@ -83,67 +89,93 @@ export class YJLoadAssets extends Component {
     }
 
     private showSubSpriteFrame(v: boolean) {
+        const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
+        this._materialKey = name;
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
             else {
-                a.removeSprite();
+                list[i].removeSprite();
+                list[i].materialInfoUuid = name;
+                list[i].panelName = name;
             }
-        });
+        }
         list = this.getComponentsInChildren('YJLanguageSprite');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
             else {
-                a.removeSprite();
+                list[i].removeSprite();
+                list[i].materialInfoUuid = name;
             }
-        });
+        }
         list = this.getComponentsInChildren('YJBitmapFont');
-        list.forEach(a => {
-            if (v) a.resetFont();
-            else a.removeFont();
-        });
-        list = this.getComponentsInChildren('YJLanguageLabel');
-        list.forEach(a => {
-            if (v) a.resetLabel();
-            else a.removeLabel();
-        });
-        list = this.getComponentsInChildren('YJCharLabel');
-        list.forEach(a => {
-            if (v) a.resetLabel();
-            else a.removeLabel();
-        });
-        list = this.getComponentsInChildren('SetMaterial');
-        list.forEach(a => {
-            if (v) a.resetMaterial();
-            else a.removeMaterial();
-        });
-        list = this.getComponentsInChildren('SetSpriteFrame');
-        list.forEach(a => {
-            if (v) a.resetSprite();
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetFont();
             else {
-                a.removeSprite();
+                list[i].removeFont();
+                list[i].materialInfoUuid = name;
             }
-        });
+        }
+        list = this.getComponentsInChildren('YJLanguageLabel');
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetLabel();
+            else {
+                list[i].removeLabel();
+            }
+        }
+        list = this.getComponentsInChildren('YJCharLabel');
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetLabel();
+            else {
+                list[i].removeLabel();
+                list[i].materialInfoUuid = name;
+                list[i].panelName = name;
+            }
+        }
+        list = this.getComponentsInChildren('SetMaterial');
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetMaterial();
+            else {
+                list[i].removeMaterial();
+            }
+        }
+        list = this.getComponentsInChildren('SetSpriteFrame');
+        for (let i = 0; i < list.length; i++) {
+            if (v) list[i].resetSprite();
+            else {
+                list[i].removeSprite();
+            }
+        }
         if (!v) {
             list = this.getComponentsInChildren(Button);
-            list.forEach((a: Button) => {
+            for (let i = 0; i < list.length; i++) {
+                let a = list[i] as Button;
                 if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame') || !a.getComponent('Sprite')) {
                     a.normalSprite = null;
                     a.hoverSprite = null;
                     a.pressedSprite = null;
                     a.disabledSprite = null;
                 }
-            });
+            }
+            list = this.getComponentsInChildren('YJLoadPrefab');
+            for (let i = 0; i < list.length; i++) {
+                list[i].materialInfoUuid = name;
+            }
+            list = this.getComponentsInChildren('YJDynamicTexture');
+            for (let i = 0; i < list.length; i++) {
+                list[i].materialInfoUuid = name;
+            }
         }
     }
 
-    private materialInfoUuid: string;
+    @property({ visible() { return false; } })
+    _materialKey: string = '';
 
     onLoad() {
-        if (EDITOR) {
-            this.showSpriteFrame = true;
-        }
-        this.setPanelNameToSubNode();
+        // if (EDITOR) {
+        //     this.showSpriteFrame = true;
+        // }
+        // this.setPanelNameToSubNode();
     }
 
     onDestroy() {
@@ -154,19 +186,14 @@ export class YJLoadAssets extends Component {
      * 加载图集
      */
     public async load() {
-        const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
-        return YJSample2DMaterialManager.ins.createAtlasMaterial(name, this.textureInfos, this.share).then(uuid => {
-            this.materialInfoUuid = uuid;
-            YJLoadAssets.setMaterialInfoUuidToSubNode(this.node, uuid);
-            return;
-        });
+        return YJSample2DMaterialManager.ins.createAtlasMaterial(this._materialKey, this.textureInfos, this.share);
     }
 
     /**
      * 释放图集
      */
     public release() {
-        YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid)?.destroy();
+        YJSample2DMaterialManager.ins.getMaterialInfo(this._materialKey)?.destroy();
         if (TextureInfoInGPU.isWork) {
             const name = this.node.name;
             no.setTimeoutF(() => {
@@ -175,24 +202,27 @@ export class YJLoadAssets extends Component {
         }
     }
 
-    private setPanelNameToSubNode() {
-        if (TextureInfoInGPU.isWork) {
-            const arr = [].concat(this.getComponentsInChildren('SetSpriteFrameInSampler2D'), this.getComponentsInChildren('YJCharLabel')),
-                name = this.node.name;
-            arr.forEach(item => item.panelName = name);
-        }
-    }
+    // private setPanelNameToSubNode() {
+    //     if (TextureInfoInGPU.isWork) {
+    //         const arr = [].concat(this.getComponentsInChildren('SetSpriteFrameInSampler2D'), this.getComponentsInChildren('YJCharLabel')),
+    //             name = this.node.name;
+    //         arr.forEach(item => item.panelName = name);
+    //     }
+    // }
 
     public static setMaterialInfoUuidToSubNode(node: Node, materialInfoUuid: string) {
-        if (!node) return;
+        if (!node || !materialInfoUuid) return;
         const arr = [].concat(
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             node.getComponentsInChildren('YJLanguageSprite'),
             node.getComponentsInChildren('YJCharLabel'),
             node.getComponentsInChildren('YJDynamicTexture'),
             node.getComponentsInChildren('YJBitmapFont'),
-            node.getComponentsInChildren('YJLoadPrefab')
+            node.getComponentsInChildren('YJLoadPrefab'),
+            node.getComponentsInChildren('YJDynamicTexture')
         );
-        arr.forEach(item => item.materialInfoUuid = materialInfoUuid);
+        for (let i = 0; i < arr.length; i++) {
+            arr[i].materialInfoUuid = materialInfoUuid;
+        }
     }
 }

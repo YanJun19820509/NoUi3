@@ -76,7 +76,6 @@ export class YJScrollPanel extends Component {
                 let content = new Node('content');
                 content.layer = Layers.Enum.UI_2D;
                 content.addComponent(UITransform);
-                content.addComponent(SetNodeTweenAction).saveIgnore = false;
                 content.parent = this.node;
                 this.content = content;
             }
@@ -330,7 +329,7 @@ export class YJScrollPanel extends Component {
 
     private setTween(props: any, duration?: number) {
         if (duration == null) duration = this.duration;
-        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).setData({
+        (this.content.getComponent(SetNodeTweenAction) || this.content.addComponent(SetNodeTweenAction)).a_setData({
             duration: duration,
             to: 1,
             props: props

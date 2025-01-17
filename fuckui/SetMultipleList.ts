@@ -73,19 +73,21 @@ export class SetMultipleList extends FuckUi {
         let viewSize = no.size(this.scrollView.view.node);
         let isVertical = this.scrollView.vertical;
         if (isVertical) {
-            this.templates.forEach(t => {
+            for (let i = 0; i < this.templates.length; i++) {
+                const t = this.templates[i];
                 if (t.template) {
                     t.itemSize = no.size(t.template);
                     t.showMax = no.ceil(viewSize.height / t.itemSize.height);
                 }
-            });
+            }
         } else {
-            this.templates.forEach(t => {
+            for (let i = 0; i < this.templates.length; i++) {
+                const t = this.templates[i];
                 if (t.template) {
                     t.itemSize = no.size(t.template);
                     t.showMax = no.ceil(viewSize.width / t.itemSize.width);
                 }
-            });
+            }
         }
     }
 
@@ -135,9 +137,9 @@ export class SetMultipleList extends FuckUi {
         this.itemsMap = null;
         this.content?.setPosition(0, 0);
         this.lastIndex = 0;
-        this.content?.children.forEach(item => {
-            item.destroy();
-        });
+        for (let i = 0, n = this.content?.children.length; i < n; i++) {
+            this.content.children[i].destroy();
+        }
     }
 
     public static format(data: any, templateType: string) {
@@ -184,7 +186,8 @@ export class SetMultipleList extends FuckUi {
         let lastItemSize = 0;
         this.typeDataIndexMap = {};
 
-        this.listData.forEach((d, index) => {
+        for (let index = 0; index < this.listData.length; index++) {
+            const d = this.listData[index];
             const templateType = d[templateTypeKey];
             this.typeDataIndexMap[templateType] = this.typeDataIndexMap[templateType] || [];
             this.typeDataIndexMap[templateType][this.typeDataIndexMap[templateType].length] = index;
@@ -203,7 +206,7 @@ export class SetMultipleList extends FuckUi {
                     lastItemSize = size.width;
                 }
             }
-        });
+        }
 
         let s: Size;
         if (this.isVertical) {
@@ -276,24 +279,36 @@ export class SetMultipleList extends FuckUi {
 
     private setList() {
         if (!this.node.isValid) return;
-        for (const type in this.typeDataIndexMap) {
+        const types = Object.keys(this.itemsMap);
+        for (let ii = 0, nn = types.length; ii < nn; ii++) {
+            const type = types[ii];
             const indexs: number[] = this.typeDataIndexMap[type];
-            for (let i = 0, n = indexs.length; i < n; i++) {
-                if (indexs[i] >= this.lastIndex) {
-                    let items: Node[] = this.itemsMap[type];
-                    items.forEach((item, j) => {
-                        const k = indexs[i + j];
-                        if (k != undefined) {
-                            this.setItemData(item, this.listData[k]);
-                            this.setItemPosition(item, k);
-                            no.visible(item, true);
+            if (!indexs) {
+                let items: Node[] = this.itemsMap[type];
+                for (let j = 0; j < items.length; j++) {
+                    const item = items[j];
+                    no.visible(item, false);
+                    item['__dataIndex'] = -1;
+                }
+            } else {
+                for (let i = 0, n = indexs.length; i < n; i++) {
+                    if (indexs[i] >= this.lastIndex) {
+                        let items: Node[] = this.itemsMap[type];
+                        for (let j = 0; j < items.length; j++) {
+                            const item = items[j];
+                            const k = indexs[i + j];
+                            if (k != undefined) {
+                                this.setItemData(item, this.listData[k]);
+                                this.setItemPosition(item, k);
+                                no.visible(item, true);
+                            }
+                            else {
+                                no.visible(item, false);
+                                item['__dataIndex'] = -1;
+                            }
                         }
-                        else {
-                            no.visible(item, false);
-                            item['__dataIndex'] = -1;
-                        }
-                    });
-                    break;
+                        break;
+                    }
                 }
             }
         }
@@ -360,7 +375,7 @@ export class SetMultipleList extends FuckUi {
         else {
             let a = item.getComponent(SetCreateNode);
             if (a)
-                a.setData(data);
+                a.a_setData(data);
         }
     }
 

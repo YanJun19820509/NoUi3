@@ -9,6 +9,7 @@ import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
 import { YJi18n } from 'NoUi3/base/YJi18n';
 import { YJMacroConfig } from 'NoUi3/macro';
+import { YJJobManager } from 'NoUi3/base/YJJobManager';
 
 /**
  * Predefined variables
@@ -54,19 +55,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private lastDefine: string;
 
     private defineIndex: number = 0;
-    private _lastName: string;
+    // private _lastName: string;
     private _singleSpriteFrame: SpriteFrame = null;
     private dynamicAtlas: YJDynamicAtlas = null;
     private materialInfo: YJSample2DMaterialInfo;
-
-
-    onLoad() {
-        super.onLoad();
-        //运行时update方法置空
-        if (!EDITOR) {
-            this.update = null;
-        }
-    }
 
     update() {
         if (EDITOR) {
@@ -86,29 +78,45 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     onEnable() {
         if (EDITOR) return;
+        if (!this.initMaterialInfo()) {
+            return requestAnimationFrame(this.onEnable.bind(this));
+        };
         if (this.multiLan && this.defaultName) {
-            this.setSingleSpriteFrame(this.defaultName);
+            this.checkLanguageChange();
             YJi18n.ins.onLanguagechange(this.checkLanguageChange, this);
             return
         }
         if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
-            this.setDefaultSpriteFrame();
-        else
-            this.setSpriteFrame(this._lastName || this.defaultName);
+            YJJobManager.ins.addTask(() => {
+                this.setDefaultSpriteFrame();
+                return true;
+            });
+        else if (this.defaultName)
+            YJJobManager.ins.addTask(() => {
+                this.setSpriteFrame(this.defaultName);
+                return true;
+            });
     }
 
     private initMaterialInfo() {
-        if (!this.materialInfoUuid || this.materialInfo) return;
+        if (!this.loadFromAtlas && !this.canPack) return true;
+        if (!this.materialInfoUuid) return false;
+        if (this.materialInfo) return true;
         this.materialInfo = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid);
+        if (!this.materialInfo) return false;
         this.dynamicAtlas = this.materialInfo.dynamicAtlas;
+        return true;
     }
 
     private checkLanguageChange() {
-        this.setSingleSpriteFrame(this.defaultName);
+        YJJobManager.ins.addTask(() => {
+            this.setSingleSpriteFrame(this.defaultName);
+            return true;
+        });
     }
 
     onDisable() {
-        this._lastName = null;
+        // this._lastName = null;
         // this.a_setEmpty();
     }
 
@@ -177,6 +185,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.setSingleSpriteFrame(data);
             return;
         }
+
+        if (!this.materialInfo) {
+            return requestAnimationFrame(this.changeData.bind(this));
+        }
         this.setSpriteFrame(data);
     }
 
@@ -196,7 +208,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this.setDefaultSpriteFrame();
             return;
         }
-        this.initMaterialInfo();
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
             if (this.dynamicAtlas)
@@ -210,7 +221,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             return;
         }
         if (YJMacroConfig.ENABLE_DYNAMIC_BATCH_RENDER) {
-            if (name != this.defaultName) this._lastName = name;
+            // if (name != this.defaultName) this._lastName = name;
             if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
                 this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
             this.setEffect(i);
@@ -245,6 +256,11 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             } else {
                 this.getComponent(Sprite).spriteFrame = file;
                 if (!EDITOR) {
+
+                    if (this._singleSpriteFrame) {
+                        this._singleSpriteFrame.decRef();
+                        this._singleSpriteFrame = null;
+                    }
                     this._singleSpriteFrame = file;
 
                     if (TextureInfoInGPU.isWork) {
@@ -256,7 +272,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setDefaultSpriteFrame() {
-        this.initMaterialInfo();
         if (!this.loadFromAtlas && this.canPack) {
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
@@ -266,6 +281,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (this.defaultSpriteFrameUuid) {
             const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
             if (s) {
+                if (this._singleSpriteFrame) {
+                    this._singleSpriteFrame.decRef();
+                    this._singleSpriteFrame = null;
+                }
                 this._singleSpriteFrame = s;
                 this.packSpriteFrame(s);
                 if (TextureInfoInGPU.isWork) {
@@ -282,12 +301,15 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.loadByUuid();
             return;
         }
-        this.initMaterialInfo();
         no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
             if (!file) {
                 no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl);
                 this.loadByUuid();
             } else {
+                if (this._singleSpriteFrame) {
+                    this._singleSpriteFrame.decRef();
+                    this._singleSpriteFrame = null;
+                }
                 this._singleSpriteFrame = file;
                 this.packSpriteFrame(file);
 
@@ -299,7 +321,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private loadByUuid() {
-        this.initMaterialInfo();
         no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
             if (!file) {
                 no.err('setDefaultSpriteFrame by uuid no file', this.node?.name, this.defaultSpriteFrameUuid)
@@ -307,6 +328,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 if (EDITOR) {
                     this.getComponent(Sprite).spriteFrame = file;
                 } else {
+                    if (this._singleSpriteFrame) {
+                        this._singleSpriteFrame.decRef();
+                        this._singleSpriteFrame = null;
+                    }
                     this._singleSpriteFrame = file;
                     this.packSpriteFrame(file);
 
@@ -320,7 +345,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setSingleSpriteFrame(name: string) {
         if (!isValid(this)) return;
-        this.initMaterialInfo();
         if (this.canPack) {
             const sprite = this.getComponent(Sprite);
             if (!sprite.customMaterial) {
@@ -354,7 +378,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                 this.clearEffect();
                 this.packSpriteFrame(spriteFrame);
 
-                if (TextureInfoInGPU.isWork) {
+                if (TextureInfoInGPU.isWork && this.panelName) {
                     TextureInfoInGPU.addTextureUuidToPanel(spriteFrame.uuid, this.panelName);
                 }
             }
@@ -384,7 +408,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     public removeSprite() {
-        this._lastName = null;
+        // this._lastName = null;
         this.getComponent(Sprite).spriteFrame = null;
         this.getComponent(Sprite).spriteAtlas = null;
         if (EDITOR && this.bind_keys) {

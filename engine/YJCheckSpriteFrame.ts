@@ -41,22 +41,23 @@ export class YJCheckSpriteFrame extends Component {
 
     private lookupAllPrefabs(checkType: CheckType) {
         no.warn('开始检测', checkType)
-        Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.Prefab' }).then(infos => {
+        Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.Prefab' }).then((infos: any[]) => {
             let aa = [];
             let path: any = {};
-            infos.forEach(a => {
+            for (let i = 0; i < infos.length; i++) {
+                const a = infos[i];
                 if (a.path.startsWith('db://assets/res') || a.path.startsWith('db://assets/resources')) {
                     aa[aa.length] = { uuid: a.uuid, type: Prefab };
                     path[a.uuid] = a.url;
                 }
-            });
+            }
             if (checkType == CheckType.Error) this.checkPrefabError(aa, path);
             else {
                 assetManager.loadAny(aa, null, (err, prefabs: Prefab[]) => {
                     if (!err) {
-                        prefabs.forEach(p => {
-                            this.checkSprite(p, path[p.uuid], checkType);
-                        })
+                        for (let i = 0; i < prefabs.length; i++) {
+                            this.checkSprite(prefabs[i], path[prefabs[i].uuid], checkType);
+                        }
                     } else
                         no.err(err.message);
                     no.warn('检测完成')
@@ -79,8 +80,9 @@ export class YJCheckSpriteFrame extends Component {
     private checkSprite(prefab: Prefab, url: string, checkType: CheckType) {
         const node = instantiate(prefab),
             arr = node.getComponentsInChildren(Sprite);
-        arr.forEach(a => {
-            if (a instanceof YJCharLabel) return;
+        for (let i = 0; i < arr.length; i++) {
+            const a = arr[i];
+            if (a instanceof YJCharLabel) continue;
             if (checkType == CheckType.SetSpriteFrameInSampler2D) {
                 //检测sprite节点上没有挂SetSpriteFrameInSampler2D
                 if (!a.getComponent('SetSpriteFrameInSampler2D') && a.spriteFrame && !a.spriteFrame.name.startsWith('default_') && !a.spriteFrame.uuid.endsWith('@f9941')) {
@@ -95,7 +97,7 @@ export class YJCheckSpriteFrame extends Component {
                     no.err(`预制体${url}     节点${a.name}`);
                 }
             }
-        });
+        }
     }
 }
 

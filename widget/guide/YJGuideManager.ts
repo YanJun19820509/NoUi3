@@ -93,7 +93,10 @@ export class YJGuideManager extends Component {
             return "";
         }
         step = step?.toString();
-        this.saveSteps = this.saveSteps.map((v) => { return v?.toString() });
+        let len = this.saveSteps.length;
+        for (let i = 0; i < len; i++) {
+            this.saveSteps[i] = this.saveSteps[i]?.toString();
+        }
         if (this.saveSteps.indexOf(step) != -1) {
             let next = this.getGuideInfo(`guide_config.${step}`);
             if (next && next.save_type == 0) {

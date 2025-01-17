@@ -254,11 +254,11 @@ export class YJHotUpdate extends Component {
             // 更新搜索路径
             var searchPaths = native.fileUtils.getSearchPaths();
             var newPaths = this._am.getLocalManifest().getSearchPaths();
-            newPaths.forEach(path => {
-                if (searchPaths.indexOf(path) == -1) {
-                    searchPaths.unshift(path);
+            for (let i = 0; i < newPaths.length; i++) {
+                if (searchPaths.indexOf(newPaths[i]) == -1) {
+                    searchPaths.unshift(newPaths[i]);
                 }
-            });
+            }
             let a = no.jsonStringify(searchPaths);
             no.log(a);
             localStorage.setItem('HotUpdateSearchPaths', a);

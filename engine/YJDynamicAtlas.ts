@@ -171,7 +171,8 @@ export class YJDynamicAtlas {
         let texture = frames[0].texture as Texture2D;
         const p = this.atlas.drawTexture(texture);
         if (p) {
-            frames.forEach(frame => {
+            for (let i = 0; i < frames.length; i++) {
+                let frame = frames[i];
                 let offset = frame.rect.origin;
                 let pp = {
                     x: p.x + offset.x,
@@ -179,7 +180,7 @@ export class YJDynamicAtlas {
                     texture: p.texture
                 };
                 frame._setDynamicAtlasFrame(pp);
-            });
+            }
         }
     }
 
@@ -436,10 +437,10 @@ export class YJDynamicAtlas {
             node.getComponentsInChildren('YJDynamicTexture'),
             node.getComponentsInChildren('YJBitmapFont')
         );
-        bs.forEach(b => {
-            if (!b.dynamicAtlas)
-                b.dynamicAtlas = dynamicAtlas;
-        });
+        for (let i = 0; i < bs.length; i++) {
+            if (!bs[i].dynamicAtlas)
+                bs[i].dynamicAtlas = dynamicAtlas;
+        }
 
         // let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
         // r.forEach(rr => {
@@ -454,13 +455,13 @@ export class YJDynamicAtlas {
         const material = this.customMaterial;
         if (material) {
             let props: any = {};
-            textureUuids.forEach((uuid, i) => {
+            for (let i = 0; i < textureUuids.length; i++) {
                 const key = `atlas${i}`;//空出atlas0，用于放多语言
                 props[key] = {
-                    "__uuid__": uuid,
+                    "__uuid__": textureUuids[i],
                     "__expectedType__": "cc.Texture2D"
                 };
-            });
+            }
 
             const fs = require('fs');
             Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {

@@ -63,17 +63,16 @@ export class YJNodeTarget extends Component {
 
     /** 组件启动时执行位置检查 */
     protected start(): void {
-        YJJobManager.ins.execute(this.check, this);
+        YJJobManager.ins.addTask(this.check.bind(this));
     }
 
     /** 检查节点位置是否变化,变化时更新位置并在nodeTargetManager中注册 */
     private check() {
         if (this.pos.equals(this.node.worldPosition)) {
             no.nodeTargetManager.register(this.type, this);
-            return false;
+            return true;
         } else {
             this.pos = this.node.worldPosition;
-            return true;
         }
     }
 

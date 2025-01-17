@@ -33,10 +33,10 @@ export class SetList extends FuckUi {
     @property({ displayName: '列数', step: 1, min: 1 })
     columnNumber: number = 1;
 
-    @property({ tooltip: '仅第一次创建时有创建间隔' })
-    onlyFirstTime: boolean = false;
-    @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
-    wait: number = 0;
+    // @property({ tooltip: '仅第一次创建时有创建间隔' })
+    // onlyFirstTime: boolean = false;
+    // @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
+    // wait: number = 0;
 
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
@@ -87,8 +87,8 @@ export class SetList extends FuckUi {
      */
     private lastIndex: number = 0;
     private _loaded: boolean = false;
-    private isFirst: boolean = true;
-    private waitTime: number;
+    // private isFirst: boolean = true;
+    // private waitTime: number;
     private _isSettingData: boolean = false;
     private scrollViewContent: Node;
 
@@ -138,9 +138,9 @@ export class SetList extends FuckUi {
 
     public clearItems() {
         this.content?.setPosition(0, 0);
-        this.content?.children.forEach(item => {
-            item.destroy();
-        });
+        for (let i = 0; i < this.content?.children.length; i++) {
+            this.content.children[i].destroy();
+        }
     }
 
     onDestroy() {
@@ -151,38 +151,45 @@ export class SetList extends FuckUi {
 
     protected async onDataChange(data: any) {
         let a = [].concat(data);
-        if (this.isFirst && a.length == 0) {
+        if (a.length == 0) {
             no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
         this._isSettingData = true;
-        if (this.onlyFirstTime) {
-            if (this.isFirst) {
-                this.waitTime = this.wait;
-            } else this.waitTime = 0;
-        } else {
-            this.waitTime = this.wait;
-        }
-        this.isFirst = false;
+        // if (this.onlyFirstTime) {
+        //     if (this.isFirst) {
+        //         this.waitTime = this.wait;
+        //     } else this.waitTime = 0;
+        // } else {
+        //     this.waitTime = this.wait;
+        // }
+        // this.isFirst = false;
         this.unscheduleAllCallbacks();
         await this.initTemplate();
         if (!this?.node?.isValid) return;
         let listItems = this.content.children;
-        if (this.waitTime > 0) {
-            for (let i = 0, n = listItems.length; i < n; i++) {
-                let item = listItems[i];
-                no.visible(item.children[0], false);
-            }
-        }
+        // if (this.waitTime > 0) {
+        //     for (let i = 0, n = listItems.length; i < n; i++) {
+        //         let item = listItems[i];
+        //         no.visible(item.children[0], false);
+        //     }
+        // }
         if (this.columnNumber > 1) {
             a = no.arrayToArrays(a, this.columnNumber);
         }
-        if (listItems.length == 0) {
-            this.allNum = a.length;
-            this.showNum = this.showMax;
-            this.initItems();
-            if (!this?.node?.isValid) return;
-        } else if (this.autoScrollBack || this.allNum != a.length) {
+        // if (listItems.length == 0) {
+        //     this.allNum = a.length;
+        //     this.showNum = this.showMax;
+        //     this.initItems();
+        // } else if (this.autoScrollBack || this.allNum != a.length) {
+        //     this.lastIndex = 0;
+        //     no.position(this.scrollViewContent, v3(0, 0));
+        //     for (let i = 0, n = listItems.length; i < n; i++) {
+        //         let item = listItems[i];
+        //         this.setItemPosition(item, i);
+        //     }
+        // }
+        if (this.autoScrollBack && listItems.length > 0) {
             this.lastIndex = 0;
             no.position(this.scrollViewContent, v3(0, 0));
             for (let i = 0, n = listItems.length; i < n; i++) {
@@ -191,15 +198,9 @@ export class SetList extends FuckUi {
             }
         }
         if (this.allNum != a.length) {
-            // this.lastIndex = 0;
-            // no.position(this.scrollViewContent, v3(0, 0));
             this.allNum = a.length;
+            this.showNum = Math.min(this.showMax, this.allNum);
             this.initItems();
-            if (!this?.node?.isValid) return;
-            // for (let i = 0, n = listItems.length; i < n; i++) {
-            //     let item = listItems[i];
-            //     this.setItemPosition(item, i);
-            // }
         }
         this.listData = a;
         this.setList();
@@ -217,39 +218,38 @@ export class SetList extends FuckUi {
             this.content.getComponent(UITransform).width = this.contentSize;
             this.content.getComponent(UITransform).height = this.itemSize.height;
         }
-        let listItems = this.content.children,
-            len = listItems.length;
-        if (this.showNum > len) {
-            for (let i = len; i < this.showNum; i++) {
-                const item = instantiate(this.template);
-                no.position(item, v3(0, 0));
-                // item.active = true;
-                // item.parent = this.content;
-                const box = no.newNode('box');
-                no.size(box, this.itemSize);
-                const a = no.anchor(item);
-                no.anchor(box, a.x, a.y);
-                box.addChild(item);
-                box.parent = this.content;
-                this.setItemPosition(box, i);
-            }
-        }
+        // let listItems = this.content.children,
+        //     len = listItems.length;
+        // if (this.showNum > len) {
+        //     for (let i = len; i < this.showNum; i++) {
+        //         const item = instantiate(this.template);
+        //         no.position(item, v3(0, 0));
+        //         const box = no.newNode('box');
+        //         no.size(box, this.itemSize);
+        //         const a = no.anchor(item);
+        //         no.anchor(box, a.x, a.y);
+        //         box.addChild(item);
+        //         box.parent = this.content;
+        //         this.setItemPosition(box, i);
+        //     }
+        // }
     }
 
-    private async setList() {
+    private setList() {
         no.sortArray(this.content.children, (a, b) => {
             return a['__dataIndex'] - b['__dataIndex'];
         });
         if (this.uiAnim?.enabled) {
-            this.setItem(0);
-        } else {
-            const n = this.content.children.length;
             let i = 0;
-            await YJJobManager.ins.execute(() => {
-                if (!this?.node?.isValid) return false;
+            this.schedule(() => {
                 this.setItem(i++);
-                if (i >= n) return false;
-            }, this);
+            }, 0.1, this.showNum - 1);
+        } else {
+            let i = 0;
+            YJJobManager.ins.addTask(() => {
+                this.setItem(i++);
+                return i >= this.showNum;
+            });
         }
         if (!this?.node?.isValid) return;
         no.EventHandlerInfo.execute(this.onComplete);
@@ -257,8 +257,19 @@ export class SetList extends FuckUi {
     }
 
     private setItem(i: number) {
-        const item = this.content.children[i];
-        if (!item) return;
+        let item = this.content.children[i];
+        if (!item) {
+            const node = instantiate(this.template);
+            no.position(node, v3(0, 0));
+            const box = no.newNode('box');
+            no.size(box, this.itemSize);
+            const a = no.anchor(node);
+            no.anchor(box, a.x, a.y);
+            box.addChild(node);
+            box.parent = this.content;
+            this.setItemPosition(box, i);
+            item = box;
+        }
         const data_idx = item['__dataIndex'];
         if (this.listData[data_idx]) {
             this.setItemData(item, this.listData[data_idx]);
@@ -275,13 +286,12 @@ export class SetList extends FuckUi {
     private setItemData(item: Node, data = []) {
         let b = item.children[0].getComponent(YJDataWork);
         if (b) {
-            b.data = data;
-            b.init();
+            b.initWithData(data);
         }
         else {
             let a = item.children[0].getComponent(SetCreateNode);
             if (a)
-                a.setData(data);
+                a.a_setData(data);
         }
     }
 

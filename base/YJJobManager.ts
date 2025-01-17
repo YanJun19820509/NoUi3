@@ -1,12 +1,41 @@
+import { no } from 'NoUi3/no';
 import { ccclass } from '../yj';
-import { no } from '../no';
 
-/** 任务接口定义 */
-interface IJob {
-    func: Function;
-    target: any;
-    args?: any[];
-    resolve: (value?: any) => void;
+/**
+ * 任务优先级枚举
+ */
+export enum TaskPriority {
+    IMMEDIATE = 0,    // 立即执行
+    HIGH = 1,         // 高优先级
+    NORMAL = 2,       // 普通优先级
+    LOW = 3,          // 低优先级
+    IDLE = 4          // 空闲时执行
+}
+
+/**
+ * 任务状态
+ */
+export enum TaskStatus {
+    PENDING,    // 等待执行
+    RUNNING,    // 执行中
+    PAUSED,     // 暂停
+    COMPLETED,  // 完成
+    CANCELED    // 取消
+}
+
+/**
+ * 任务接口定义
+ */
+interface ITask {
+    id: number;                           // 任务唯一ID
+    priority: TaskPriority;               // 任务优先级
+    execute: () => boolean | Promise<boolean>;  // 任务执行函数，返回是否完成
+    progress?: number;                    // 执行进度 0-1
+    status: TaskStatus;                   // 任务状态
+    timeSlice?: number;                   // 单次执行时间片(ms)
+    timeout?: number;                     // 超时时间(ms)
+    startTime?: number;                   // 开始时间
+    context?: any;                        // 任务上下文
 }
 
 /**
@@ -17,166 +46,249 @@ interface IJob {
 export class YJJobManager {
     private static _instance: YJJobManager;
 
-    // 使用 Map 存储任务，提供更好的性能
-    private jobs: Map<string, IJob> = new Map();
-    // 使用 Set 存储活动任务ID，提高查找效率
-    private activeJobs: Set<string> = new Set();
-    // 任务队列
-    private jobQueue: string[] = [];
+    private taskQueue: Map<TaskPriority, ITask[]> = new Map();
+    private taskIdCounter: number = 0;
+    private isRunning: boolean = false;
+    private frameTimeBudget: number = 16; // 默认16ms
+    private metricsHistory: number[] = [];
+    private readonly METRICS_SAMPLE_SIZE = 60; // 保存60帧的性能数据
 
-    // 任务处理状态
-    private isProcessing: boolean = false;
-    // 每帧最大处理时间（毫秒）
-    private readonly MAX_PROCESS_TIME: number = 5;
-    // 是否立即执行所有任务
-    private executeImmediately: boolean = false;
+    // 性能监控阈值
+    private readonly Date_THRESHOLDS = {
+        GOOD: 14,      // 小于14ms认为性能良好
+        WARNING: 16,   // 16ms警告
+        CRITICAL: 20   // 20ms危险
+    };
 
     /** 单例获取器 */
     public static get ins(): YJJobManager {
         if (!this._instance) {
             this._instance = new YJJobManager();
-            this._instance.startProcessing();
         }
         return this._instance;
     }
 
-    /**
-     * 添加并执行任务
-     * @param func 执行函数
-     * @param target 执行上下文
-     * @param args 函数参数
-     * @returns Promise
-     */
-    public async execute(func: Function, target: any, args?: any): Promise<any> {
-        if (!func || !target) {
-            throw new Error('[YJJobManager] Invalid function or target');
+    constructor() {
+        // 初始化优先级队列
+        let priorities = Object.values(TaskPriority);
+        for (let i = 0; i < priorities.length; i++) {
+            let priority = priorities[i];
+            if (typeof priority === 'number') {
+                this.taskQueue.set(priority, []);
+            }
         }
-
-        const jobId = no.uuid();
-
-        this.activeJobs.add(jobId);
-        this.jobQueue.push(jobId);
-
-        let p = new Promise((resolve) => {
-            this.jobs.set(jobId, {
-                func,
-                target,
-                args,
-                resolve
-            });
-        }).catch(e => {
-            console.error(e);
-        });
-
-        // 如果设置为立即执行，则直接处理任务
-        if (this.executeImmediately) {
-            this.processJobs();
-        }
-        return p;
     }
 
     /**
-     * 开始任务处理循环
+     * 添加任务
      */
-    private startProcessing(): void {
-        const processFrame = () => {
-            this.processJobs();
-            // 使用 requestAnimationFrame 进行下一帧处理
-            requestAnimationFrame(processFrame);
+    public addTask(
+        execute: () => boolean | Promise<boolean>,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        timeSlice?: number,
+        context?: any
+    ): number {
+        const task: ITask = {
+            id: ++this.taskIdCounter,
+            priority,
+            execute,
+            status: TaskStatus.PENDING,
+            timeSlice,
+            startTime: Date.now(),
+            context,
+            progress: 0
         };
 
-        requestAnimationFrame(processFrame);
+        this.taskQueue.get(priority)!.push(task);
+
+        if (!this.isRunning) {
+            this.start();
+        }
+
+        return task.id;
     }
 
     /**
-     * 处理任务队列
+     * 开始执行任务队列
      */
-    private processJobs(): Promise<void> {
-        if (this.isProcessing || this.jobQueue.length === 0) return;
+    private start(): void {
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.scheduleNextFrame();
+    }
 
-        this.isProcessing = true;
-        const startTime = this.getCurrentTime();
+    /**
+     * 调度下一帧
+     */
+    private scheduleNextFrame(): void {
+        if (!this.isRunning) return;
+        requestAnimationFrame(this.update.bind(this));
+    }
 
-        try {
-            while (this.jobQueue.length > 0) {
-                // 检查处理时间是否超过限制
-                if (!this.executeImmediately &&
-                    this.getCurrentTime() - startTime > this.MAX_PROCESS_TIME) {
+    /**
+     * 更新函数 - 核心执行逻辑
+     */
+    private async update(timestamp: number): Promise<void> {
+        const frameStartTime = Date.now();
+        let timeRemaining = this.frameTimeBudget;
+
+        // 按优先级遍历任务队列
+        for (let priority = TaskPriority.IMMEDIATE; priority <= TaskPriority.IDLE; priority++) {
+            const tasks = this.taskQueue.get(priority)!;
+
+            if (tasks.length === 0) continue;
+
+            // 执行当前优先级的任务
+            for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
+
+                // 检查是否还有足够的时间片
+                if (timeRemaining <= 0 && priority !== TaskPriority.IMMEDIATE) {
                     break;
                 }
 
-                const jobId = this.jobQueue[0];
-                const job = this.jobs.get(jobId);
-
-                if (!job) continue;
-
-                if (!this.isValidTarget(job.target)) {
-                    this.jobQueue.shift();
-                    this.removeJob(jobId);
-                    job.resolve();
-                    continue;
-                }
+                const taskStartTime = Date.now();
 
                 try {
-                    const result = job.func.call(job.target, job.args);
-                    if (result !== false) {
-                        continue;
+                    const result = await task.execute();
+
+                    if (result) {
+                        // 任务完成
+                        task.status = TaskStatus.COMPLETED;
+                        tasks.splice(i--, 1);
                     }
                 } catch (error) {
-                    console.error('[YJJobManager] Job execution error:', error);
+                    console.error(`Task ${task.id} failed:`, error);
+                    tasks.splice(i--, 1);
                 }
-                this.jobQueue.shift();
-                this.removeJob(jobId);
-                job.resolve();
+
+                const taskDuration = Date.now() - taskStartTime;
+                timeRemaining -= taskDuration;
             }
-        } finally {
-            this.isProcessing = false;
+        }
+
+        // 更新性能指标
+        this.updateMetrics(Date.now() - frameStartTime);
+
+        // 自适应调整帧时间预算
+        this.adjustFrameBudget();
+
+        // 继续下一帧
+        this.scheduleNextFrame();
+    }
+
+    /**
+     * 更新性能指标
+     */
+    private updateMetrics(frameDuration: number): void {
+        this.metricsHistory.push(frameDuration);
+        if (this.metricsHistory.length > this.METRICS_SAMPLE_SIZE) {
+            this.metricsHistory.shift();
         }
     }
 
     /**
-     * 移除任务
+     * 动态调整帧时间预算
      */
-    private removeJob(jobId: string): void {
-        this.jobs.delete(jobId);
-        this.activeJobs.delete(jobId);
+    private adjustFrameBudget(): void {
+        if (this.metricsHistory.length < this.METRICS_SAMPLE_SIZE) return;
+
+        const avgFrameTime = this.metricsHistory.reduce((a, b) => a + b) / this.metricsHistory.length;
+
+        if (avgFrameTime > this.Date_THRESHOLDS.CRITICAL) {
+            this.frameTimeBudget = Math.max(this.frameTimeBudget - 2, 8);
+        } else if (avgFrameTime < this.Date_THRESHOLDS.GOOD) {
+            this.frameTimeBudget = Math.min(this.frameTimeBudget + 1, 16);
+        }
     }
 
     /**
-     * 检查目标对象是否有效
+     * 取消任务
      */
-    private isValidTarget(target: any): boolean {
-        return target && no.checkValid(target);
+    public cancelTask(taskId: number): boolean {
+        let taskQueueValues = Array.from(this.taskQueue.values());
+        for (let i = 0, n = taskQueueValues.length; i < n; i++) {
+            let tasks = taskQueueValues[i];
+            for (let j = 0, m = tasks.length; j < m; j++) {
+                if (tasks[j].id === taskId) {
+                    tasks[j].status = TaskStatus.CANCELED;
+                    tasks.splice(j, 1);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
-     * 获取当前时间戳
+     * 暂停任务
      */
-    private getCurrentTime(): number {
-        return no.sysTime.locationNow;
+    public pauseTask(taskId: number): boolean {
+        let taskQueueValues = Array.from(this.taskQueue.values());
+        for (let i = 0, n = taskQueueValues.length; i < n; i++) {
+            let tasks = taskQueueValues[i];
+            let task = null;
+            for (let j = 0, m = tasks.length; j < m; j++) {
+                let t = tasks[j];
+                if (t.id === taskId) {
+                    task = t;
+                    break;
+                }
+            }
+            if (task) {
+                task.status = TaskStatus.PAUSED;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * 设置是否立即执行任务
+     * 恢复任务
      */
-    public setExecuteImmediately(value: boolean): void {
-        this.executeImmediately = value;
+    public resumeTask(taskId: number): boolean {
+        let taskQueueValues = Array.from(this.taskQueue.values());
+        for (let i = 0, n = taskQueueValues.length; i < n; i++) {
+            let tasks = taskQueueValues[i];
+            let task = null;
+            for (let j = 0, m = tasks.length; j < m; j++) {
+                let t = tasks[j];
+                if (t.id === taskId) {
+                    task = t;
+                    break;
+                }
+            }
+            if (task && task.status === TaskStatus.PAUSED) {
+                task.status = TaskStatus.PENDING;
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * 清理所有任务
+     * 获取性能统计信息
      */
-    public clear(): void {
-        this.jobs.clear();
-        this.activeJobs.clear();
-        this.jobQueue.length = 0;
-        this.isProcessing = false;
+    public getPerformanceStats() {
+        return {
+            averageFrameTime: this.metricsHistory.reduce((a, b) => a + b, 0) / this.metricsHistory.length,
+            currentFrameBudget: this.frameTimeBudget,
+            taskCount: Array.from(this.taskQueue.values()).reduce((sum, tasks) => sum + tasks.length, 0)
+        };
     }
 
-    /**
-     * 获取当前任务数量
-     */
-    public get jobCount(): number {
-        return this.activeJobs.size;
+    private performanceStatsInterval;
+    public startPerformanceStats() {
+        // 监控性能
+        this.performanceStatsInterval = setInterval(() => {
+            const stats = YJJobManager.ins.getPerformanceStats();
+            console.log('Performance Stats:', stats);
+        }, 1000);
+    }
+
+    public stopPerformanceStats() {
+        clearInterval(this.performanceStatsInterval);
     }
 }
+
+no.addToWindowForDebug('YJJobManager', YJJobManager.ins);

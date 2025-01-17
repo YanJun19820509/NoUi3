@@ -57,9 +57,9 @@ export class SetNodeTweenAction extends FuckUi {
 
     private stop() {
         if (this._action instanceof Array) {
-            this._action.forEach(a => {
-                a.stop();
-            })
+            for (let i = 0; i < this._action.length; i++) {
+                this._action[i].stop();
+            }
         } else
             this._action?.stop();
         this._action = null;

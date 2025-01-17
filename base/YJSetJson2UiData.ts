@@ -23,7 +23,7 @@ export class Json2UiDataInfo {
 
     public setData() {
         if (this.json == '' || !this.ui) return;
-        this.ui.setData(this.json.replace(/\n/g, '').replace(/\'/g, '\"'));
+        this.ui.a_setData(this.json.replace(/\n/g, '').replace(/\'/g, '\"'));
     }
 }
 /**

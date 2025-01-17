@@ -91,9 +91,9 @@ export class AutoCreateNode extends Component {
 
     private addComponents() {
         const comps: typeof Component[] = [YJLoadAssets, YJDataWork, YJPlaySoundEffect];
-        comps.forEach(comp => {
-            if (!this.getComponent(comp)) this.addComponent(comp);
-        })
+        for (let i = 0; i < comps.length; i++) {
+            if (!this.getComponent(comps[i])) this.addComponent(comps[i]);
+        }
     }
 
     private getSpriteFrame(name: string): SpriteFrame {
@@ -113,6 +113,7 @@ export class AutoCreateNode extends Component {
             this.deleteConfigFile(dest + `/${name}.json`);
             this.createNodes(f.json);
             this.enabled = false;
+            this.destroy();
         });
     }
 
@@ -130,11 +131,12 @@ export class AutoCreateNode extends Component {
                 this.node.addComponent(BlockInputEvents);
             this.parent = this.node.getChildByName('Canvas') || this.node;
 
-            config.nodes.forEach((n: any) => {
+            for (let i = 0; i < config.nodes.length; i++) {
+                const n = config.nodes[i];
                 n.x = n.x - size.width / 2;
                 n.y = size.height / 2 - n.y;
                 this.parseType(n, this.parent);
-            });
+            }
         } catch (e) {
             console.log(e);
         }
@@ -185,9 +187,9 @@ export class AutoCreateNode extends Component {
     }
 
     private parseChildren(c: any, parent: Node) {
-        c.children.forEach((child: any) => {
-            this.parseType(child, parent);
-        });
+        for (let i = 0; i < c.children.length; i++) {
+            this.parseType(c.children[i], parent);
+        }
     }
 
     public getSpriteFrameName(name: string) {

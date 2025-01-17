@@ -60,7 +60,8 @@ export class SetGraphics extends FuckUi {
     }
 
     private createLines(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             this._moveLineTo(g, d.points);
             if (d.lineWidth) g.lineWidth = d.lineWidth;
             if (d.fillColor) g.fillColor.fromHEX(d.fillColor);
@@ -68,48 +69,53 @@ export class SetGraphics extends FuckUi {
             if (d.close) g.close();
             if (d.strokeColor || d.stroke) g.stroke();
             if (d.fillColor || d.fill) g.fill();
-        });
+        }
     }
 
     private createArcs(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             g.arc(d.points[0], d.points[1], d.radius[0], d.startEndAngles[0], d.startEndAngles[1], d.counterclockwise);
             this._fillWidthColor(g, d);
-        });
+        }
     }
 
     private createEllipses(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             g.ellipse(d.points[0], d.points[1], d.radius[0], d.radius[1]);
             this._fillWidthColor(g, d);
-        });
+        }
     }
 
     private createCircles(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             g.circle(d.points[0], d.points[1], d.radius[0]);
             this._fillWidthColor(g, d);
-        });
+        }
     }
 
     private createRects(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             if (d.radius?.[0])
                 g.roundRect(d.points[0], d.points[1], d.size[0], d.size[1], d.radius[0]);
             else
                 g.rect(d.points[0], d.points[1], d.size[0], d.size[1]);
             this._fillWidthColor(g, d);
-        });
+        }
     }
 
     private createBeziers(g: Graphics, data: no.GraphicsData[]) {
-        data.forEach(d => {
+        for (let i = 0; i < data.length; i++) {
+            const d = data[i];
             if (d.points.length == 4)
                 this.createQuadratic(g, d);
             else if (d.points.length == 6)
                 g.bezierCurveTo(d.points[0], d.points[1], d.points[2], d.points[3], d.points[4], d.points[5]);
             this._fillWidthColor(g, d);
-        });
+        }
     }
 
     private createQuadratic(g: Graphics, d: no.GraphicsData) {

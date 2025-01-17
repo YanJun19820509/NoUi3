@@ -216,9 +216,10 @@ export class YJWideArea extends YJTouchListener {
     private moveBlocks(x: number, y: number) {
         if (!this.blockLayer) return;
         this.clearSameRowInfo();
-        this.blockLayer.children.forEach(block => {
-            this.setBlockPos(block, x, y);
-        });
+        const blocks = this.blockLayer.children;
+        for (let i = 0, n = blocks.length; i < n; i++) {
+            this.setBlockPos(blocks[i], x, y);
+        }
         this.setPerspectiveEffect();
     }
 
@@ -276,10 +277,12 @@ export class YJWideArea extends YJTouchListener {
     private setPerspectiveEffect() {
         if (!this.perspectiveEffectEnable) {
             for (const k in this._sameRowInfo) {
-                this._sameRowInfo[k].forEach(node => {
+                const arr = this._sameRowInfo[k];
+                for (let i = 0; i < arr.length; i++) {
+                    const node = arr[i];
                     no.position(node, node['_origin_pos_']);
                     no.scale(node, v3(1, 1));
-                });
+                }
             }
             return;
         }
@@ -307,12 +310,13 @@ export class YJWideArea extends YJTouchListener {
                     scale = (.5 - ((y + halfBlockSize * scale) / height)) * scale2 + scale1;
                 y += halfBlockSize * scale;
             }
-            nodes.forEach(node => {
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
                 let origin_pos = node['_origin_pos_'];
                 no.scale(node, v3(scale, scale));
                 no.position(node, v3(origin_pos.x * scale, y));
                 origin_pos.y = y;
-            });
+            }
             y += halfBlockSize * scale;
         }
     }

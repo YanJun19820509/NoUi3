@@ -61,7 +61,9 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
             scale = Number(aa[aa.length - 1]) || YJCollectSpriteFrameDataInAtlas._scale;
         if (scale != 1) scale = Math.floor(1 / scale * 1000) / 1000;
         let infoMap: { [k: string]: SpriteFrameDataType } = {};
-        atlas.getSpriteFrames().forEach(sf => {
+        const frames = atlas.getSpriteFrames();
+        for (let i = 0; i < frames.length; i++) {
+            const sf = frames[i];
             console.log(sf);
             let a: SpriteFrameDataType = {
                 uuid: sf.uuid,
@@ -77,7 +79,7 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 a.capInsets = sf['_capInsets'];
             }
             infoMap[sf.name] = a;
-        });
+        }
         return infoMap;
     }
 
@@ -109,9 +111,9 @@ export class YJCollectSpriteFrameDataInAtlas extends Component {
                 assetManager.loadAny(aa, null, (err, atlases: SpriteAtlas | SpriteAtlas[]) => {
                     atlases = [].concat(atlases);
                     if (!err) {
-                        atlases.forEach(atlas => {
-                            infos[atlas.name] = this.getSpriteFramesInfo(atlas, path[atlas.name].scale);
-                        });
+                        for (let i = 0; i < atlases.length; i++) {
+                            infos[atlases[i].name] = this.getSpriteFramesInfo(atlases[i], path[atlases[i].name].scale);
+                        }
                         for (const name in infos) {
                             // console.log(path[name].path, infos[name]);
                             // return;

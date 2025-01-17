@@ -48,27 +48,27 @@ export class YJTouchManager extends Component {
     }
 
     protected onStart(event: EventTouch) {
-        this._dispatchers.forEach(dispatcher => {
-            dispatcher.onStart(event);
-        });
+        for (let i = 0; i < this._dispatchers.length; i++) {
+            this._dispatchers[i].onStart(event);
+        }
     }
 
     protected onMove(event: EventTouch) {
-        this._dispatchers.forEach(dispatcher => {
-            dispatcher.onMove(event);
-        });
+        for (let i = 0; i < this._dispatchers.length; i++) {
+            this._dispatchers[i].onMove(event);
+        }
     }
 
     protected onEnd(event: EventTouch) {
-        this._dispatchers.forEach(dispatcher => {
-            dispatcher.onEnd(event);
-        });
+        for (let i = 0; i < this._dispatchers.length; i++) {
+            this._dispatchers[i].onEnd(event);
+        }
     }
 
     protected onCancel(event: EventTouch) {
-        this._dispatchers.forEach(dispatcher => {
-            dispatcher.onCancel(event);
-        });
+        for (let i = 0; i < this._dispatchers.length; i++) {
+            this._dispatchers[i].onCancel(event);
+        }
     }
 }
 

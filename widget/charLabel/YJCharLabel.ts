@@ -394,7 +394,7 @@ export class YJCharLabel extends Sprite {
 
     @property
     public get packToAtlas(): boolean {
-        return this._packToAtlas;
+        return true;
     }
 
     public set packToAtlas(v: boolean) {
@@ -670,11 +670,12 @@ export class YJCharLabel extends Sprite {
             let lineHeight = this.lineHeight;
             let width = extWidth;
 
-            lines.forEach(line => {
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
                 // 如果是空行，直接添加
                 if (line.length === 0) {
-                    resultLines.push('');
-                    return;
+                    resultLines[resultLines.length] = '';
+                    continue;
                 }
 
                 // 分词处理
@@ -682,8 +683,8 @@ export class YJCharLabel extends Sprite {
                 let currentLine = '';
                 let currentWidth = extWidth;
 
-                for (let i = 0; i < words.length; i++) {
-                    const word = words[i];
+                for (let j = 0; j < words.length; j++) {
+                    const word = words[j];
                     const wordWidth = this.getMeasureWidth(ctx, word);
 
                     // 检查是否需要换行
@@ -693,7 +694,7 @@ export class YJCharLabel extends Sprite {
                     } else {
                         // 如果当前行不为空，先保存当前行
                         if (currentLine) {
-                            resultLines.push(currentLine);
+                            resultLines[resultLines.length] = currentLine;
                             currentLine = '';
                             currentWidth = extWidth;
                         }
@@ -704,8 +705,8 @@ export class YJCharLabel extends Sprite {
                             let tempLine = '';
                             let tempWidth = extWidth;
 
-                            for (let j = 0; j < word.length; j++) {
-                                const char = word[j];
+                            for (let k = 0; k < word.length; k++) {
+                                const char = word[k];
                                 const charWidth = this.getMeasureWidth(ctx, char);
 
                                 if (tempWidth + charWidth <= maxWidth - 2 * this.hdpScale) {
@@ -713,7 +714,7 @@ export class YJCharLabel extends Sprite {
                                     tempWidth += charWidth;
                                 } else {
                                     if (tempLine) {
-                                        resultLines.push(tempLine);
+                                        resultLines[resultLines.length] = tempLine;
                                     }
                                     tempLine = char;
                                     tempWidth = extWidth + charWidth;
@@ -733,9 +734,9 @@ export class YJCharLabel extends Sprite {
 
                 // 添加最后一行
                 if (currentLine) {
-                    resultLines.push(currentLine);
+                    resultLines[resultLines.length] = currentLine;
                 }
-            });
+            }
 
             width = resultLines.length == 1 && !this.fixWidth ?
                 this.getMeasureWidth(ctx, resultLines[0]) + extWidth :
@@ -830,7 +831,8 @@ export class YJCharLabel extends Sprite {
         canvas.canvas.height = hh * lines.length;
         const ctx = canvas.context;
 
-        lines.forEach((v, i) => {
+        for (let i = 0; i < lines.length; i++) {
+            let v = lines[i];
             this.setFontStyle(ctx);
             if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
@@ -872,15 +874,15 @@ export class YJCharLabel extends Sprite {
             }
             const fontSize = this.fontSize;
             let x1 = x;
-            for (let i = 0, n = v.length; i < n; i++) {
-                const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+            for (let j = 0; j < v.length; j++) {
+                const c = v[j], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
                 if (this.outlineWidth > 0)
                     ctx.strokeText(c, x1, y);
                 ctx.fillText(c, x1, y);
                 x1 += w;
             }
             this.drawUnderline(ctx, w, x, oy);
-        });
+        }
         this.fixHDP(ctx, width, canvas.canvas.height);
     }
 
@@ -964,7 +966,7 @@ export class YJCharLabel extends Sprite {
 
         if (this.packToAtlas && this.dynamicAtlas) {
             if (this.useJob)
-                YJJobManager.ins.execute(this.packSpriteFrame, this);
+                YJJobManager.ins.addTask(this.packSpriteFrame.bind(this));
             else
                 this.packSpriteFrame();
         }
@@ -979,7 +981,7 @@ export class YJCharLabel extends Sprite {
             this.spriteFrame = s;
         }
         // no.size(this.node, size(this.spriteFrame.rect.width, this.spriteFrame.rect.height));
-        return false;
+        return true;
     }
 
     /**
@@ -1190,7 +1192,8 @@ export class YJCharLabel extends Sprite {
         canvas.canvas.height = hh * lines.length;
         const ctx = canvas.context;
 
-        lines.forEach((line, i) => {
+        for (let i = 0, n = lines.length; i < n; i++) {
+            const line = lines[i];
             let y = hh * i;
 
             if (this.verticalAlign == VerticalTextAlignment.CENTER) {
@@ -1224,8 +1227,9 @@ export class YJCharLabel extends Sprite {
             }
 
             let len = 0, x1 = x;
-            for (let j = 0, n = line.htmls.length; j < n; j++) {
-                const html = line.htmls[j], style = html.style, text = html.text;
+            const htmls = line.htmls;
+            for (let j = 0, m = htmls.length; j < m; j++) {
+                const html = htmls[j], style = html.style, text = html.text;
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
                 if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
@@ -1235,9 +1239,9 @@ export class YJCharLabel extends Sprite {
                 // 先绘制描边
                 if (style?.outline || this.outlineWidth > 0) {
                     this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
-                    for (let i = 0, n = text.length; i < n; i++) {
-                        const c = text[i], k = c + '::' + fontSize;
-                        const w = this._measuredWidth[k] || fontSize;
+                    for (let k = 0, p = text.length; k < p; k++) {
+                        const c = text[k], key = c + '::' + fontSize;
+                        const w = this._measuredWidth[key] || fontSize;
                         ctx.strokeText(c, x2, y);
                         x2 += w;
                     }
@@ -1248,9 +1252,9 @@ export class YJCharLabel extends Sprite {
                 if (this.gradientColor) {
                     ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.canvas.width, height: 0 });
                 }
-                for (let i = 0, n = text.length; i < n; i++) {
-                    const c = text[i], k = c + '::' + fontSize;
-                    const w = this._measuredWidth[k] || fontSize;
+                for (let k = 0, p = text.length; k < p; k++) {
+                    const c = text[k], key = c + '::' + fontSize;
+                    const w = this._measuredWidth[key] || fontSize;
                     ctx.fillText(c, x2, y);
                     x2 += w;
                 }
@@ -1260,7 +1264,7 @@ export class YJCharLabel extends Sprite {
             }
 
             this.drawUnderline(ctx, len, x, hh * (i + 1));
-        });
+        }
 
         this.fixHDP(ctx, width, canvas.canvas.height);
     }

@@ -59,11 +59,13 @@ export class SetLock extends FuckUi {
             const a = this.getComponent(SetGray);
             if (a) {
                 if (a.recursive) {
-                    a.getComponentsInChildren(SetGray).forEach(aa => {
+                    let grays = a.getComponentsInChildren(SetGray);
+                    for (let i = 0; i < grays.length; i++) {
+                        const aa = grays[i];
                         const bb = aa.getComponent('SetEffect');
                         aa?.destroy();
                         bb?.destroy();
-                    });
+                    }
                 }
                 a?.destroy();
             }
@@ -110,7 +112,7 @@ export class SetLock extends FuckUi {
     private setGray(v: boolean) {
         no.visible(this.lockNode, v);
         let a = this.target.getComponent(SetGray) || this.target.addComponent(SetGray);
-        a.setData(v);
+        a.a_setData(v);
     }
 
     private createLockNode() {

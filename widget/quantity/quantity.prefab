@@ -52,13 +52,10 @@
       },
       {
         "__id__": 128
-      },
-      {
-        "__id__": 130
       }
     ],
     "_prefab": {
-      "__id__": 132
+      "__id__": 130
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -682,7 +679,6 @@
     "__prefab": {
       "__id__": 28
     },
-    "dynamicAtlas": null,
     "needClear": false,
     "canRotate": true,
     "_id": ""
@@ -1417,7 +1413,6 @@
     "__prefab": {
       "__id__": 65
     },
-    "dynamicAtlas": null,
     "needClear": false,
     "canRotate": true,
     "_id": ""
@@ -2032,7 +2027,6 @@
     "__prefab": {
       "__id__": 93
     },
-    "dynamicAtlas": null,
     "needClear": false,
     "canRotate": true,
     "_id": ""
@@ -2669,7 +2663,7 @@
     "fileId": "b4zh/KyXtPl5A8OySd7Hr9"
   },
   {
-    "__type__": "8be88gNNxtDToe2whYNWUdx",
+    "__type__": "d95eb+RU+NMhpN21Ft3VH9K",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -2679,7 +2673,6 @@
     "__prefab": {
       "__id__": 127
     },
-    "autoRegister": false,
     "subFuckUiNodes": [],
     "subFuckUis": [
       {
@@ -2710,26 +2703,6 @@
         "__id__": 119
       }
     ],
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "a0In8S3HFP1qYJCy5BQYxt"
-  },
-  {
-    "__type__": "d95eb+RU+NMhpN21Ft3VH9K",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 1
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 129
-    },
-    "register": {
-      "__id__": 126
-    },
     "onlyDiff": true,
     "a1": true,
     "a10": false,
@@ -2753,7 +2726,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 131
+      "__id__": 129
     },
     "registerNode": {
       "__id__": 1
@@ -2763,7 +2736,7 @@
     "saveIgnore": true,
     "showValueLog": false,
     "dataWork": {
-      "__id__": 128
+      "__id__": 126
     },
     "_id": ""
   },

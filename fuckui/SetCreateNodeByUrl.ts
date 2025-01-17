@@ -118,10 +118,11 @@ export class SetCreateNodeByUrl extends FuckUi {
     }
 
     private clear(all = false) {
-        this.container?.children.forEach(child => {
+        for (let i = 0; i < this.container?.children.length; i++) {
+            const child = this.container.children[i];
             if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
                 child.destroy();
-        });
+        }
         if (!this.isValid) return;
         if (this.needDestroyChildrenUuid)
             this.needDestroyChildrenUuid.length = 0;
@@ -130,11 +131,12 @@ export class SetCreateNodeByUrl extends FuckUi {
     private setNeedDestroyChildren() {
         if (this.needDestroyChildrenUuid)
             this.needDestroyChildrenUuid.length = 0;
-        this.container?.children.forEach(child => {
+        for (let i = 0; i < this.container?.children.length; i++) {
+            const child = this.container.children[i];
             this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
             // child.active = false;
             no.visible(child, false);
-        });
+        }
     }
 
     ///////////////////////////EDITOR///////////////

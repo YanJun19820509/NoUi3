@@ -149,14 +149,15 @@ export class YJSpineManager extends no.SingleObject {
         });
 
         // 释放资源
-        toRelease.forEach(key => {
+        for (let i = 0; i < toRelease.length; i++) {
+            const key = toRelease[i];
             const resource = YJSpineManager._map.get(key);
             if (resource) {
                 totalSize -= resource.size;
                 no.assetBundleManager.release(resource.data, true);
                 YJSpineManager._map.delete(key);
             }
-        });
+        }
 
         // 输出内存使用情况
         if (toRelease.length > 0) {

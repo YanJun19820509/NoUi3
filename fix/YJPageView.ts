@@ -83,9 +83,11 @@ export class YJPageView extends PageView {
 
     public a_removeAllPages() {
         let pages = this.getPages();
-        pages?.forEach(p => {
-            p.destroy();
-        });
+        if (pages) {
+            for (let i = 0; i < pages.length; i++) {
+                pages[i].destroy();
+            }
+        }
     }
 
     onLoad() {

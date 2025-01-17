@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB } from '../yj';
+import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB, executeInEditMode } from '../yj';
 import { no } from '../no';
 import { singleObject } from 'NoUi3/types';
 
@@ -42,6 +42,7 @@ class YJVertexColorTransitionData {
     public setEffect(defines: any, properties?: number[]) {
         if (!this.renderComp || !defines) return;
         this._needUpdate = true;
+        this._dirtyVersion = 0;
         this._setDefines(defines);
         this._setProperties(properties);
     }
@@ -79,13 +80,14 @@ class YJVertexColorTransitionData {
             }
         }
         let type: number[] = [];
-        this._defineIds.forEach((ids, i) => {
+        for (let i = 0; i < this._defineIds.length; i++) {
             let sum = 0;
-            ids.forEach(a => {
-                sum += a;
-            });
+            let ids = this._defineIds[i];
+            for (let j = 0; j < ids.length; j++) {
+                sum += ids[j];
+            }
             type[i] = sum;
-        });
+        }
         this._data.x = -Number(type.join('.'));
         this._setColor();
     }
@@ -96,16 +98,16 @@ class YJVertexColorTransitionData {
             return;
         }
         if (!this._needUpdate) return;
-        if (this.renderComp._dirtyVersion !== this._dirtyVersion || JSB) {
-            this._updateVB();
-        }
+        // if (this.renderComp._dirtyVersion !== this._dirtyVersion || JSB) {
+        //     this._dirtyVersion = this.renderComp._dirtyVersion;
+        this._updateVB();
+        // }
     }
 
     private _updateVB() {
         if (!this.renderComp.renderData) {
             return;
         }
-        this._dirtyVersion = this.renderComp._dirtyVersion;
         switch (this.renderComp.type) {
             case Sprite.Type.SIMPLE:
                 this._updateSimpleVB();
@@ -233,21 +235,21 @@ class YJVertexColorTransitionData {
 @ccclass('YJVertexColorTransitionManager')
 @singleObject()
 export class YJVertexColorTransitionManager extends no.SingleObject {
-    private list: YJVertexColorTransitionData[] = [];
-    private removeList: string[] = [];
+    private list: Map<string, YJVertexColorTransitionData> = new Map();
+    private removeSet: string[] = [];
 
     public static ins(): YJVertexColorTransitionManager {
         return super.instance() as YJVertexColorTransitionManager;
     }
 
     public add(renderComp: Sprite, defines: any, properties?: number[]) {
-        let data = no.itemOfArray<YJVertexColorTransitionData>(this.list, renderComp.uuid, 'uuid');
+        let data = this.list.get(renderComp.uuid);
         if (data) {
             data.setEffect(defines, properties);
         } else {
             data = new YJVertexColorTransitionData(renderComp);
             data.setEffect(defines, properties);
-            this.list.push(data);
+            this.list.set(renderComp.uuid, data);
         }
     }
 
@@ -255,28 +257,37 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
     public remove(renderComp: Sprite);
     public remove(a: string | Sprite) {
         const uuid = typeof a === 'string' ? a : a.uuid;
-        this.removeList.push(uuid);
+        this.removeSet.push(uuid);
     }
 
     public clear(): void {
-        this.list.length = 0;
-        this.removeList.length = 0;
+        this.list.clear();
+        this.removeSet.length = 0;
     }
 
     public lateUpdate() {
-        if (this.removeList.length > 0) {
-            for (let i = this.list.length - 1; i >= 0; i--) {
-                if (this.removeList.includes(this.list[i].renderComp.uuid)) {
-                    this.list.splice(i, 1);
+        if (this.removeSet.length > 0) {
+            this.list.forEach((item, uuid) => {
+                if (this.removeSet.indexOf(uuid) > -1) {
+                    this.list.delete(uuid);
                 } else {
-                    this.list[i].lateUpdate();
+                    item.lateUpdate();
                 }
-            }
-            this.removeList.length = 0;
+            });
+
+            this.removeSet.length = 0;
         } else {
             this.list.forEach(item => {
                 item.lateUpdate();
             });
         }
+    }
+}
+
+@ccclass('YJVertexColorTransition')
+@executeInEditMode()
+export class YJVertexColorTransition extends Component {
+    onLoad() {
+        this.destroy();
     }
 }

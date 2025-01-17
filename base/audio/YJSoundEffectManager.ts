@@ -46,7 +46,8 @@ export class YJSoundEffectManager extends Component {
             if (!infos.length) {
                 return;
             }
-            infos.forEach(info => {
+            for (let j = 0; j < infos.length; j++) {
+                let info = infos[j];
                 let effectInfo = new SoundEffectInfo();
                 let name = info.name.split('.')[0];
                 effectInfo.alias = name;
@@ -57,7 +58,7 @@ export class YJSoundEffectManager extends Component {
                     effectInfo.alias = this.soundEffects[i].alias;
                     this.soundEffects.splice(i, 1, effectInfo);
                 } else this.soundEffects[this.soundEffects.length] = effectInfo;
-            });
+            }
         });
     }
 
@@ -95,9 +96,10 @@ export class YJSoundEffectManager extends Component {
         YJSoundEffectManager._ins = this;
         if (EDITOR) return;
         this._map = {};
-        this.soundEffects.forEach(info => {
+        for (let i = 0; i < this.soundEffects.length; i++) {
+            let info = this.soundEffects[i];
             if (info.alias) this._map[info.alias] = info.assetUrl.replace('db://assets/', '');
-        });
+        }
     }
 
     /**

@@ -55,9 +55,10 @@ export namespace HexAStar {
 
         setWallFromArray(array: number[][]) {
             this.wallSet.clear();
-            array.forEach(([x, y]) => {
+            for (let i = 0; i < array.length; i++) {
+                const [x, y] = array[i];
                 this.wallSet.add(`${x},${y}`);
-            });
+            }
         }
 
 
@@ -67,9 +68,10 @@ export namespace HexAStar {
 
         setEmptyGroundFromArray(array: number[][]) {
             this.emptySet.clear();
-            array.forEach(([x, y]) => {
+            for (let i = 0; i < array.length; i++) {
+                const [x, y] = array[i];
                 this.emptySet.add(`${x},${y}`);
-            });
+            }
         }
 
         addEmptyGround(x: number, y: number) {
@@ -103,9 +105,10 @@ export namespace HexAStar {
                 }
 
                 let neighbors = this.generateNeighbors(current);
-                neighbors.forEach(neighbor => {
+                for (let i = 0; i < neighbors.length; i++) {
+                    const neighbor = neighbors[i];
                     if (this.closeSet.has(neighbor.nodeKey) || this.wallSet.has(neighbor.nodeKey) || !this.emptySet.has(neighbor.nodeKey)) {
-                        return;
+                        continue;
                     }
 
                     let tentative_gScore = current.g + current.getG();
@@ -121,15 +124,23 @@ export namespace HexAStar {
                         updatingNeighbor.initF(this.endNode);
                         updatingNeighbor.parent = current;
                     }
-                });
+                }
             }
             console.log('没有找到路径');
             return [];
         }
 
         private generateNeighbors(node: Node): Node[] {
-            return Hex.directions.map(dir => new Node(node.x + dir.q, node.y + dir.r))
-                .filter(neighbor => !this.wallSet.has(neighbor.nodeKey) || this.emptySet.has(neighbor.nodeKey));
+            let neighbors: Node[] = [];
+            let directions = Hex.directions;
+            for (let i = 0, n = directions.length; i < n; i++) {
+                let dir = directions[i];
+                let neighbor = new Node(node.x + dir.q, node.y + dir.r);
+                if (!this.wallSet.has(neighbor.nodeKey) || this.emptySet.has(neighbor.nodeKey)) {
+                    neighbors.push(neighbor);
+                }
+            }
+            return neighbors;
         }
     }
 

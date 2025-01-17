@@ -35,9 +35,9 @@ export class YJButton extends Component {
         this.needWait = false;
         if (this._clickEvents.length == 0) {
             const btn = this.getComponent(Button);
-            btn.clickEvents.forEach(e => {
-                this._clickEvents[this._clickEvents.length] = e;
-            });
+            for (let i = 0; i < btn.clickEvents.length; i++) {
+                this._clickEvents[this._clickEvents.length] = btn.clickEvents[i];
+            }
             btn.clickEvents.length = 0;
             this.scheduleOnce(() => {
                 btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];

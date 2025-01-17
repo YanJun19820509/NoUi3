@@ -85,9 +85,9 @@ export class SetCreateSwitchContent extends FuckUi {
         this.unscheduleAllCallbacks();
         this.a_clearData();
         if (this.clearOnDisable) {
-            this.contents?.forEach(info => {
-                info.clear();
-            });
+            for (let i = 0; i < this.contents?.length; i++) {
+                this.contents[i].clear();
+            }
             this.container.destroyAllChildren();
         }
     }
@@ -109,11 +109,12 @@ export class SetCreateSwitchContent extends FuckUi {
     }
 
     private hideContent(exceptName: string) {
-        this.contents?.forEach(info => {
+        for (let i = 0; i < this.contents?.length; i++) {
+            const info = this.contents[i];
             if (this.noCache && info.name != exceptName) info.clear();
             else
                 info.show(info.name == exceptName);
-        });
+        }
     }
 
     public a_showByName(name: string) {

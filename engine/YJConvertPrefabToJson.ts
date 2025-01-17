@@ -47,12 +47,12 @@ class YJCollectPrefabInfo {
         if (val instanceof Array) {
             if (val.length == 0) return null;
             let a: any[] = ['__type__'];
-            val.forEach(b => {
-                const c = this.toNormalValue(b);
+            for (let i = 0; i < val.length; i++) {
+                const c = this.toNormalValue(val[i]);
                 if (a.length == 1) a[1] = c[1];
                 a[2] = a[2] || [];
                 a[2].push(c[2]);
-            });
+            }
             return a;
         }
         let out: any[] = [];
@@ -114,16 +114,19 @@ class YJCollectPrefabInfo {
         else if (comp.enabled != undefined) info['enabled'] = comp.enabled;
         if (ComponentProperties[name]) {
             info['node'] = this.toNormalValue(comp['node']);
-            ComponentProperties[name].forEach(p => {
+            for (let i = 0; i < ComponentProperties[name].length; i++) {
+                const p = ComponentProperties[name][i];
                 info[p] = this.toNormalValue(comp[p]);
-            });
+            }
         }
         else {
-            const props: string[] = js.getClassByName(name)['__props__'];
-            props.forEach(p => {
-                if (['_name', '_objFlags', '__editorExtras__', '__scriptAsset', '_enabled', '__prefab'].includes(p)) return;
+            const props: string[] = js.getClassByName(name)['__props__'],
+                ignore = ['_name', '_objFlags', '__editorExtras__', '__scriptAsset', '_enabled', '__prefab'];
+            for (let i = 0; i < props.length; i++) {
+                const p = props[i];
+                if (ignore.includes(p)) continue;
                 info[p] = this.toNormalValue(comp[p]);
-            });
+            }
         }
         return info;
     }
@@ -134,9 +137,9 @@ class YJCollectPrefabInfo {
             info['parent'] = this.toNormalValue(node.parent);
         this._objs[this._objs.length] = node;
         this._objInfos[this._objInfos.length] = info;
-        node.children.forEach(child => {
-            this.getNodes(child);
-        });
+        for (let i = 0; i < node.children.length; i++) {
+            this.getNodes(node.children[i]);
+        }
     }
 
     private getComponents(idx: number) {
@@ -188,21 +191,22 @@ export class YJConvertPrefabToJson extends Component {
             Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.Prefab' }).then(assets => {
                 let aa = [];
                 let path = {};
-                assets.forEach(a => {
+                for (let i = 0; i < assets.length; i++) {
+                    const a = assets[i];
                     // console.log(a.path);
-                    if (dir && a.path.indexOf(dir) == -1) return;
+                    if (dir && a.path.indexOf(dir) == -1) continue;
                     aa[aa.length] = { uuid: a.uuid, type: Prefab };
                     const name = a.name.replace('.prefab', '');
                     path[name] = a.path;
-                });
+                }
                 let infos: { [k: string]: { [t: string]: any } } = {};
                 assetManager.loadAny(aa, null, (err, prefabs: Prefab[] | Prefab) => {
                     prefabs = [].concat(prefabs);
                     if (!err) {
                         // console.log(prefabs.length);
-                        prefabs.forEach(prefab => {
-                            infos[prefab.name] = YJCollectPrefabInfo.getPrefabInfo(prefab);
-                        });
+                        for (let i = 0; i < prefabs.length; i++) {
+                            infos[prefabs[i].name] = YJCollectPrefabInfo.getPrefabInfo(prefabs[i]);
+                        }
                         for (const name in infos) {
                             // console.log(infos[name]);
                             // console.log(JSON.stringify(infos[name]));
@@ -251,9 +255,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
         return new Promise<Node>(resolve => {
             const uuids: string[] = arr[arr.length - 1].asset;
             let re: any[] = []
-            uuids.forEach(uuid => {
-                re.push({ uuid: uuid });
-            });
+            for (let i = 0; i < uuids.length; i++) {
+                re.push({ uuid: uuids[i] });
+            }
             no.assetBundleManager.loadAnyFiles(re, null, items => {
                 this._assets = items;
                 for (let i = 0, n = arr.length - 1; i < n; i++) {
@@ -332,26 +336,26 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                 case 'Node':
                     if (val instanceof Array) {
                         out = [];
-                        val.forEach(v => {
-                            out.push(this._nodes[val]);
-                        });
+                        for (let i = 0; i < val.length; i++) {
+                            out.push(this._nodes[val[i]]);
+                        }
                     } else
                         out = this._nodes[val];
                     break;
                 case 'EventHandler':
                     if (val instanceof Array) {
                         out = [];
-                        val.forEach(v => {
+                        for (let i = 0; i < val.length; i++) {
                             let a = new EventHandler();
-                            this.toTargetVal(v.target, v => {
+                            this.toTargetVal(val[i].target, v => {
                                 a.target = v;
                             });;
-                            a._componentId = v._componentId;
-                            a.component = v.component;
-                            a.handler = v.handler;
-                            a.customEventData = v.customEventData;
+                            a._componentId = val[i]._componentId;
+                            a.component = val[i].component;
+                            a.handler = val[i].handler;
+                            a.customEventData = val[i].customEventData;
                             out.push(a);
-                        });
+                        }
                     } else {
                         out = new EventHandler();
                         this.toTargetVal(val.target, v => {
@@ -420,13 +424,13 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
                     break;
                 case "no.EventHandlerInfo":
                     out = [];
-                    val.forEach(v => {
+                    for (let i = 0; i < val.length; i++) {
                         const a = new no.EventHandlerInfo();
-                        this.toTargetVal(v.handler, vv => {
+                        this.toTargetVal(val[i].handler, vv => {
                             a.handler = vv;
                         });
                         out.push(a);
-                    });
+                    }
                     break;
                 default: out = val;
             }
@@ -438,9 +442,9 @@ export class YJCreateNodeByPrefabJson extends no.SingleObject {
     private getAssetByUuid(uuids: string | string[]): Asset | Asset[] {
         let ids = [].concat(uuids);
         let a: Asset[] = [];
-        ids.forEach(id => {
-            a.push(no.itemOfArray(this._assets, id, 'uuid'));
-        })
+        for (let i = 0; i < ids.length; i++) {
+            a.push(no.itemOfArray(this._assets, ids[i], 'uuid'));
+        }
         return (typeof uuids == 'string') ? a[0] : a;
     }
 }

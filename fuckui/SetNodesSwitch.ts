@@ -27,20 +27,22 @@ export class SwitchInfo {
     public checkShow(v: string) {
         if (!this.conditions) this.conditions = this.condition.split(',');
         let a = this.conditions.indexOf(v) != -1;
-        this.nodes.forEach(node => {
-            if (!isValid(node)) return;
+        for (let i = 0; i < this.nodes.length; i++) {
+            const node = this.nodes[i];
+            if (!isValid(node)) continue;
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }
-            no.visible(node, a);
+            no.visibleByActiveInHierarchy(node, a);
             // no.x(node, !a ? 20000 : node['__origin_x__']);
-        });
+        }
     }
 
     public init() {
-        this.nodes.forEach(node => {
-            no.visible(node, false);
-        });
+        for (let i = 0; i < this.nodes.length; i++) {
+            const node = this.nodes[i];
+            no.visibleByActiveInHierarchy(node, false);
+        }
     }
 }
 @ccclass('SetNodesSwitch')

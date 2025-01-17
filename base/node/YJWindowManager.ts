@@ -466,7 +466,8 @@ export class YJWindowManager extends Component {
         const duration = no.isDebug() ? 5 : this.duration;
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
-            content?.children.forEach(node => {
+            for (let i = 0; i < content?.children.length; i++) {
+                const node = content.children[i];
                 if (node.isValid) {
                     let panel = node.getComponent(YJPanel);
                     if (panel && panel.status == 'close' && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= duration) {
@@ -474,7 +475,7 @@ export class YJWindowManager extends Component {
                         panel.clear();
                     }
                 }
-            });
+            }
         }
     }
 
@@ -484,14 +485,15 @@ export class YJWindowManager extends Component {
     public clearHidePanel() {
         for (let i = 0, n = this.infos.length; i < n; i++) {
             let content = YJWindowManager._ins.getContent(this.infos[i].type);
-            content?.children.forEach(node => {
+            for (let i = 0; i < content?.children.length; i++) {
+                const node = content.children[i];
                 if (node.isValid) {
                     let panel = node.getComponent(YJPanel);
                     if (panel?.status == 'hide') {
                         panel.clear();
                     }
                 }
-            });
+            }
         }
     }
 

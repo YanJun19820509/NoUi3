@@ -98,14 +98,14 @@ export class SetVisibility extends FuckUi {
     }
 
     public a_show(): void {
-        this.setData(this.reverse ? false : true);
+        this.a_setData(this.reverse ? false : true);
     }
 
     public a_hide(): void {
-        this.setData(this.reverse ? true : false);
+        this.a_setData(this.reverse ? true : false);
     }
 
     public a_changeVisible(): void {
-        this.setData((this.isOpacity ? no.visibleByOpacity(this.node) : no.visible(this.node)) ? false : true);
+        this.a_setData((this.isOpacity ? no.visibleByOpacity(this.node) : no.visible(this.node)) ? false : true);
     }
 }

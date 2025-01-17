@@ -49,7 +49,8 @@ export class YJInitDataWork extends Component {
 
     private setData2DataWork() {
         let d: any = {};
-        this.datas.forEach(info => {
+        for (let i = 0; i < this.datas.length; i++) {
+            const info = this.datas[i];
             if (info.key) {
                 let v: any;
                 switch (info.type) {
@@ -69,7 +70,7 @@ export class YJInitDataWork extends Component {
                 }
                 d[info.key] = v;
             }
-        });
+        }
         this.dataWork.data = d;
     }
 }

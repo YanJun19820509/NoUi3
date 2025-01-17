@@ -84,8 +84,8 @@ export class YJLabelCss extends Component {
         s = s.replace(new RegExp('\n|\r|px|', 'g'), '');
         let a = s.split(';');
         let r: any = {};
-        a.forEach(b => {
-            let c = b.split(': ');
+        for (let i = 0; i < a.length; i++) {
+            let c = a[i].split(': ');
             switch (c[0].trim()) {
                 case 'font-size':
                     r.fontSize = Number(c[1]);
@@ -109,7 +109,7 @@ export class YJLabelCss extends Component {
                     r.stroke = this.parseStroke(c[1]);
                     break;
             }
-        });
+        }
         return r;
     }
 

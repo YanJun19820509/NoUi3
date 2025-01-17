@@ -144,7 +144,8 @@ export class YJPreload extends YJComponent {
         this.finished = 0;
         this.progress = 0;
         this.fileInfo = new Map<string, string[]>();
-        this.files.forEach(path => {
+        for (let i = 0; i < this.files.length; i++) {
+            let path = this.files[i];
             let p = no.assetBundleManager.assetPath(path);
             let b = p.bundle;
             if (this.bundles.indexOf(b) == -1) {
@@ -154,11 +155,11 @@ export class YJPreload extends YJComponent {
                 this.fileInfo.set(b, []);
             }
             let f = p.path;
-            let i = this.fileInfo.get(b);
-            if (i.indexOf(f) == -1) {
-                i.push(f);
+            let j = this.fileInfo.get(b);
+            if (j.indexOf(f) == -1) {
+                j.push(f);
             }
-        });
+        }
         this.total = this.bundles.length + this.fileInfo.size + this.bundleFiles.length + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length + (this.scene != '' ? 1 : 0);
     }
 
@@ -223,9 +224,9 @@ export class YJPreload extends YJComponent {
             this.progress = 0;
         } else {
             let request = [];
-            this.prefabFiles.forEach(info => {
-                request[request.length] = { url: info.url };
-            });
+            for (let i = 0; i < this.prefabFiles.length; i++) {
+                request[request.length] = { url: this.prefabFiles[i].url };
+            }
             this.finished += request.length;
             no.assetBundleManager.loadAnyFiles(request, p => {
                 if (p == 1) {
@@ -235,11 +236,12 @@ export class YJPreload extends YJComponent {
                     this.progress = p / this.total;
                 }
             }, items => {
-                items.forEach((item: Prefab) => {
+                for (let i = 0; i < items.length; i++) {
+                    let item = items[i] as Prefab;
                     item.optimizationPolicy = 2;
                     let a = instantiate(item);
                     a.getComponent('YJCacheObject')?.['preCreate']();
-                });
+                }
             });
         }
     }
@@ -267,9 +269,9 @@ export class YJPreload extends YJComponent {
         if (EDITOR) {
             if (this.needCheck) {
                 this.needCheck = false;
-                this.prefabFiles.forEach(info => {
-                    info.check();
-                });
+                for (let i = 0; i < this.prefabFiles.length; i++) {
+                    this.prefabFiles[i].check();
+                }
             }
         } else {
             if (this.loadNext) {
@@ -430,15 +432,17 @@ export class YJPreload extends YJComponent {
 
     private loadTextures() {
         let requests: any[] = [];
-        this.texturePaths.forEach(path => {
+        for (let i = 0; i < this.texturePaths.length; i++) {
+            const path = this.texturePaths[i];
             const p = no.assetBundleManager.assetPath(path);
             requests[requests.length] = { path: p.path + '/texture', bundle: p.bundle, type: Texture2D };
-        });
+        }
         no.assetBundleManager.loadAnyFiles(requests);
-        this.textureFolders.forEach(folder => {
+        for (let i = 0; i < this.textureFolders.length; i++) {
+            let folder = this.textureFolders[i];
             no.assetBundleManager.loadAllFilesInFolder(folder, null, (items) => {
-                console.log(items.length)
+                // console.log(items.length)
             }, [Texture2D]);
-        });
+        }
     }
 }

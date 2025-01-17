@@ -62,7 +62,9 @@ export class YJTween {
     public static stopAll() {
         for (const key in YJTween._tweenMap) {
             const tweens = YJTween._tweenMap[key];
-            for (const tween of tweens) tween.stop();
+            for (let i = 0, n = tweens.length; i < n; i++) {
+                tweens[i].stop();
+            }
         }
     }
 
@@ -74,7 +76,9 @@ export class YJTween {
         const uuid = target.uuid;
         if (YJTween._tweenMap[uuid]) {
             const tweens = YJTween._tweenMap[uuid];
-            for (const tween of tweens) tween.stop();
+            for (let i = 0, n = tweens.length; i < n; i++) {
+                tweens[i].stop();
+            }
         }
     }
 
@@ -183,7 +187,12 @@ export class YJTween {
      * @returns this
      */
     public sequence(...tweens: YJTween[]) {
-        this._actions = this._actions.concat(...tweens.map(t => t._actions));
+        for (let i = 0, n = tweens.length; i < n; i++) {
+            const tween = tweens[i];
+            for (let j = 0, m = tween._actions.length; j < m; j++) {
+                this._actions.push(tween._actions[j]);
+            }
+        }
         return this;
     }
 
@@ -217,9 +226,9 @@ export class YJTween {
     public stop() {
         if (this._started) {
             no.unscheduleTargetUpdateFunction(this);
-            this._actions.forEach(a => {
-                a.reset();
-            });
+            for (let i = 0; i < this._actions.length; i++) {
+                this._actions[i].reset();
+            }
             this._started = false;
             this._paused = false;
         }
@@ -256,7 +265,9 @@ export class YJTween {
             return;
         }
         if (this._paused) return;
-        this._tweens.forEach(t => t.update(dt));
+        for (let i = 0; i < this._tweens.length; i++) {
+            this._tweens[i].update(dt);
+        }
         const a = this._actions[this._actionIndex];
         if (!a) {
             this.stop();
@@ -287,9 +298,9 @@ export class YJTween {
     public parse(data: TweenDataType | TweenDataType[]) {
         if (this._target) {
             data = [].concat(data);
-            data.forEach(d => {
-                this._parse(d);
-            });
+            for (let i = 0; i < data.length; i++) {
+                this._parse(data[i]);
+            }
         }
         return this;
     }
@@ -423,7 +434,9 @@ class TweenActionTo extends TweenActionBase {
     protected onUpdate(dt: number) {
         if (!this.props)
             this.initProps(this._originProps);
-        this.props.forEach(prop => this.updateProp(prop));
+        for (let i = 0; i < this.props.length; i++) {
+            this.updateProp(this.props[i]);
+        }
     }
 
     public reverse() {
@@ -449,9 +462,11 @@ class TweenActionTo extends TweenActionBase {
      * 重置属性值
      */
     protected resetProps() {
-        this.props?.forEach(prop => {
-            prop.cur = prop.start.slice();
-        });
+        if (this.props) {
+            for (let i = 0; i < this.props.length; i++) {
+                this.props[i].cur = this.props[i].start.slice();
+            }
+        }
     }
 
     /**
@@ -572,9 +587,9 @@ class TweenActionTo extends TweenActionBase {
      */
     protected propValueAdd(v1: number[], v2: number[]): number[] {
         let v3: number[] = [];
-        v1.forEach((v, i) => {
-            v3[i] = v + (v2[i] || 0);
-        });
+        for (let i = 0; i < v1.length; i++) {
+            v3[i] = v1[i] + (v2[i] || 0);
+        }
         return v3;
     }
 
@@ -586,9 +601,9 @@ class TweenActionTo extends TweenActionBase {
      */
     protected propValueMinus(v1: number[], v2: number[]): number[] {
         let v3: number[] = [];
-        v1.forEach((v, i) => {
-            v3[i] = v - (v2[i] || 0);
-        });
+        for (let i = 0; i < v1.length; i++) {
+            v3[i] = v1[i] - (v2[i] || 0);
+        }
         return v3;
     }
 }
@@ -614,15 +629,20 @@ class TweenActionBy extends TweenActionTo {
     }
 
     protected resetProps() {
-        this.props?.forEach(prop => {
-            prop.start = this.propValueMinus(prop.cur, prop.increment);
-        });
+        if (this.props) {
+            for (let i = 0; i < this.props.length; i++) {
+                const prop = this.props[i];
+                prop.start = this.propValueMinus(prop.cur, prop.increment);
+            }
+        }
     }
 
     protected reverseProps() {
-        this.props?.forEach(prop => {
-            prop.start = prop.cur.slice();
-        });
+        if (this.props) {
+            for (let i = 0; i < this.props.length; i++) {
+                this.props[i].start = this.props[i].cur.slice();
+            }
+        }
     }
 }
 
@@ -680,14 +700,18 @@ class TweenActionRepeat extends TweenActionBase {
         super.reset();
         this._repeatCount = this._repeat + 1;
         this._actionIndex = 0;
-        this._actions.forEach(a => a.reset());
+        for (let i = 0; i < this._actions.length; i++) {
+            this._actions[i].reset();
+        }
     }
 
     public reverse() {
         super.reverse();
         this._repeatCount = this._repeat + 1;
         this._actionIndex = this._actions.length - 1;
-        this._actions.forEach(a => a.reverse());
+        for (let i = 0; i < this._actions.length; i++) {
+            this._actions[i].reverse();
+        }
     }
 
     protected onUpdate(dt: number) {
@@ -695,10 +719,15 @@ class TweenActionRepeat extends TweenActionBase {
         if (!a) {
             if (this._repeat < 0 || --this._repeatCount > 0) {
                 this._actionIndex = this.isReverse ? this._actions.length - 1 : 0;
-                if (this.isReverse)
-                    this._actions.forEach(a => a.reverse());
-                else
-                    this._actions.forEach(a => a.reset());
+                if (this.isReverse) {
+                    for (let i = 0; i < this._actions.length; i++) {
+                        this._actions[i].reverse();
+                    }
+                } else {
+                    for (let i = 0; i < this._actions.length; i++) {
+                        this._actions[i].reset();
+                    }
+                }
                 return this.onUpdate(dt);
             } else {
                 this.done = true;
@@ -735,7 +764,9 @@ class TweenActionReverse extends TweenActionBase {
         super.reset();
         this._repeatCount = 2;
         this._actionIndex = 0;
-        this._actions.forEach(a => a.reset());
+        for (let i = 0; i < this._actions.length; i++) {
+            this._actions[i].reset();
+        }
     }
 
     protected onUpdate(dt: number) {
@@ -744,7 +775,9 @@ class TweenActionReverse extends TweenActionBase {
             if (--this._repeatCount == 1) {
                 this.isReverse = true;
                 this._actionIndex = this._actions.length - 1;
-                this._actions.forEach(a => a.reverse());
+                for (let i = 0; i < this._actions.length; i++) {
+                    this._actions[i].reverse();
+                }
                 return this.onUpdate(dt);
             } else {
                 this.done = true;

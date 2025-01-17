@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInp
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated } from '../../types';
+import { YJDataWork } from '../YJDataWork';
 
 /**
  * Predefined variables
@@ -82,43 +83,23 @@ export class YJPanel extends Component {
         //todo 先调数据接口同时加载资源
         if (this.status == 'close')
             no.evn.targetOff(this);
-        // no.evn.emit('show_info___', 'initPanel 1')
         if (!this._loaded) {
             this.status = 'open';
             this._loaded = true;
             this._originX = no.x(this.node);
-            if (this.getComponent(YJLoadAssets)) {
-                // no.evn.emit('show_info___', 'initPanel 2')
-                return this.getComponent(YJLoadAssets).load().then(() => {
-                    // no.evn.emit('show_info___', 'initPanel 3')
-                    this.onInitPanel();
-                    if (this.isFullScreen)
-                        no.evn.emit('_full_screen_panel_open', this.panelType);
-                    this._lastMultiTouchState = no.multiTouch();
-                    no.multiTouch(this.multiTouch);
-                    // no.evn.emit('show_info___', 'initPanel 5')
-                    no.EventHandlerInfo.execute(this.onOpen);
-                }).catch(e => {
-                    no.err('YJPanel initPanel', this.node.name, e.message);
-                    // no.evn.emit('show_info___', 'initPanel 4', e.message)
-                });
-            }
+            await this.getComponent(YJLoadAssets)?.load().catch(e => {
+                no.err('YJPanel initPanel', this.node.name, e.message);
+            });
         } else {
-            // no.evn.emit('show_info___', 'initPanel 6')
             this.show();
-            no.EventHandlerInfo.execute(this.onOpen);
-            // this.getComponentsInChildren(Component).forEach(c => {
-            //     if (c.enabledInHierarchy) c['onEnable']?.();
-            // });
         }
-        // no.evn.emit('show_info___', 'initPanel 7')
+        no.EventHandlerInfo.execute(this.onOpen);
         //todo 等待数据返回
         this.onInitPanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_open', this.panelType);
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
-        // no.evn.emit('show_info___', 'initPanel 8')
     }
 
     public closePanel() {
@@ -127,7 +108,7 @@ export class YJPanel extends Component {
         no.EventHandlerInfo.execute(this.onClose);
         this.lastCloseTime = no.sysTime.now;
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
-        this.onClosePanel();
+        // this.onClosePanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
         no.multiTouch(this._lastMultiTouchState);
@@ -160,9 +141,10 @@ export class YJPanel extends Component {
     }
 
     public hide() {
+        this.onClosePanel();
         if (this.cacheToPool) {
             this.status = 'hide';
-            this._visible(this.node, false);
+            no.visibleByActiveInHierarchy(this.node, false);
         } else {
             no.visible(this.node, false);
         }
@@ -173,33 +155,12 @@ export class YJPanel extends Component {
         this.status = 'open';
         if (this.node.active) this.onEnable();
         if (this.cacheToPool)
-            this._visible(this.node, true);
+            no.visibleByActiveInHierarchy(this.node, true);
         else
             no.visible(this.node, true);
         no.siblingIndex(this.node, _nodeSiblingIndex_++);
     }
 
-    private _visible(node: Node, v: boolean) {
-        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
-        if (blockInputEvents)
-            blockInputEvents.forEach(a => a.enabled = v);
-        const btn = node.getComponent('YJButton');
-        if (btn)
-            btn['canClick'] = v;
-        const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
-        if (!v) {
-            opacityCmp.opacity = 0;
-            if (node['__origin_x__'] == null) {
-                node['__origin_x__'] = no.x(node);
-            }
-            no.x(node, 20000);
-        } else {
-            opacityCmp.opacity = 255;
-            if (node['__origin_x__'] !== null) {
-                no.x(node, node['__origin_x__']);
-            }
-        }
-    }
 
     protected onClosePanel() {
         no.evn.targetOff(this);

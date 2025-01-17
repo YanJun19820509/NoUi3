@@ -43,13 +43,10 @@
       },
       {
         "__id__": 88
-      },
-      {
-        "__id__": 90
       }
     ],
     "_prefab": {
-      "__id__": 92
+      "__id__": 90
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -239,14 +236,14 @@
     "once": false,
     "saveIgnore": true,
     "showValueLog": false,
-    "defaultSpriteFrameUuid": "57520716-48c8-4a19-8acf-41c9f8777fb0@f9941",
     "defaultName": "default_sprite",
-    "singleFolder": "icons/",
+    "defaultSpriteFrameUuid": "57520716-48c8-4a19-8acf-41c9f8777fb0@f9941",
+    "defaultUrl": "",
+    "bundleName": "",
     "loadFromAtlas": true,
-    "multiLan": false,
+    "canPack": true,
     "uiAnim": null,
-    "loadAsset": null,
-    "dynamicAtlas": null,
+    "multiLan": false,
     "_id": ""
   },
   {
@@ -328,8 +325,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 750,
-      "height": 1560
+      "width": 720,
+      "height": 1280
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -586,8 +583,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 750,
-      "height": 1560
+      "width": 720,
+      "height": 1280
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -695,8 +692,8 @@
     },
     "_lpos": {
       "__type__": "cc.Vec3",
-      "x": -265,
-      "y": -720,
+      "x": -250,
+      "y": -580,
       "z": 0
     },
     "_lrot": {
@@ -784,7 +781,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 23.486328125,
+      "width": 26.94598388671875,
       "height": 24
     },
     "_anchorPoint": {
@@ -820,7 +817,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "X:_rgba(255, 255, 255, 255)_22_SOURCEHANSANSCN-MEDIUM_LABEL_rgba(0, 0, 0, 255)_0_0_0",
+      "__uuid__": "1486696953",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -836,7 +833,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "X:",
     "_fontColor": {
@@ -847,9 +844,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -967,7 +967,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 22.5732421875,
+      "width": 26.483978271484375,
       "height": 24
     },
     "_anchorPoint": {
@@ -1003,7 +1003,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "Y:_rgba(255, 255, 255, 255)_22_SOURCEHANSANSCN-MEDIUM_LABEL_rgba(0, 0, 0, 255)_0_0_0",
+      "__uuid__": "1500229754",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -1019,7 +1019,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "Y:",
     "_fontColor": {
@@ -1030,9 +1030,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -1150,7 +1153,7 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 70.7412109375,
+      "width": 74.64195251464844,
       "height": 24
     },
     "_anchorPoint": {
@@ -1186,7 +1189,7 @@
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "Angle:_rgba(255, 255, 255, 255)_22_SOURCEHANSANSCN-MEDIUM_LABEL_rgba(0, 0, 0, 255)_0_0_0",
+      "__uuid__": "780120532",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -1202,7 +1205,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "Angle:",
     "_fontColor": {
@@ -1213,9 +1216,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -1385,7 +1391,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "",
     "_fontColor": {
@@ -1396,9 +1402,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -1594,7 +1603,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "",
     "_fontColor": {
@@ -1605,9 +1614,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -1803,7 +1815,7 @@
     "_isTrimmedMode": true,
     "_useGrayscale": false,
     "_atlas": null,
-    "dynamicAtlas": null,
+    "_gradientColor": null,
     "useJob": true,
     "_string": "",
     "_fontColor": {
@@ -1814,9 +1826,12 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "SOURCEHANSANSCN-MEDIUM_LABEL",
+    "_font": {
+      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
+    "_foitnFamily": "MiSans-Semibold_LABEL",
     "_lineHeight": 22,
     "_horizontalAlign": 0,
     "_verticalAlign": 1,
@@ -2056,8 +2071,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 750,
-      "height": 1560
+      "width": 720,
+      "height": 1280
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -2106,7 +2121,7 @@
     "fileId": "13QUuYTrFB/I8ll1LtPI1K"
   },
   {
-    "__type__": "8be88gNNxtDToe2whYNWUdx",
+    "__type__": "50b94/59pRMxJyr8ytJA4B1",
     "_name": "",
     "_objFlags": 0,
     "node": {
@@ -2116,7 +2131,6 @@
     "__prefab": {
       "__id__": 87
     },
-    "autoRegister": false,
     "subFuckUiNodes": [],
     "subFuckUis": [
       {
@@ -2132,26 +2146,6 @@
         "__id__": 70
       }
     ],
-    "_id": ""
-  },
-  {
-    "__type__": "cc.CompPrefabInfo",
-    "fileId": "b4f3eOziNPBZ/vvm0YlQRe"
-  },
-  {
-    "__type__": "50b94/59pRMxJyr8ytJA4B1",
-    "_name": "",
-    "_objFlags": 0,
-    "node": {
-      "__id__": 1
-    },
-    "_enabled": true,
-    "__prefab": {
-      "__id__": 89
-    },
-    "register": {
-      "__id__": 86
-    },
     "onlyDiff": true,
     "_id": ""
   },
@@ -2168,7 +2162,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 91
+      "__id__": 89
     },
     "dispatcher": null,
     "startHandlers": [],

@@ -42,9 +42,9 @@ export class SetSpriteFrameWithState extends FuckUi {
     protected onDataChange(data: any) {
         const comp = this.getComponent('SetSpriteFrameInSampler2D') || this.getComponent('SetSpriteFrame');
         if (!comp) return;
-        this.stateInfos.forEach(info => {
-            info.check(String(data), comp);
-        });
+        for (let i = 0; i < this.stateInfos.length; i++) {
+            this.stateInfos[i].check(String(data), comp);
+        }
     }
 
     /**如果没需求可以不实现 */

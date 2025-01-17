@@ -73,7 +73,8 @@ export class SetCreateSpriteFrame extends FuckUi {
 
     private drawTTFSpriteFrames(labels: CreateSpritemFrameLabelData[]) {
         let arr: { label: Label, x: number, y: number }[] = [];
-        labels.forEach(a => {
+        for (let i = 0; i < labels.length; i++) {
+            const a = labels[i];
             this.createLabel(a).then(label => {
                 arr[arr.length] = {
                     label: label,
@@ -87,7 +88,7 @@ export class SetCreateSpriteFrame extends FuckUi {
                     });
                 }
             }).catch(e => { no.err('createspriteframe', e); });
-        });
+        }
     }
 
     private createLabel(d: any): Promise<Label> {
@@ -168,15 +169,17 @@ export class SetCreateSpriteFrame extends FuckUi {
     }
 
     private drawTTFSpriteFramesToCanvas(labels: { label: Label, x: number, y: number }[]) {
-        labels.forEach(a => {
+        for (let i = 0; i < labels.length; i++) {
+            const a = labels[i];
             this.drawSpriteFrameToTexture(a.label.ttfSpriteFrame, a.x, a.y);
-        });
+        }
     }
 
     private drawSpriteFramesToTexture(frames: { frame: SpriteFrame, x: number, y: number }[]) {
-        frames.forEach(a => {
+        for (let i = 0; i < frames.length; i++) {
+            const a = frames[i];
             this.drawSpriteFrameToTexture(a.frame, a.x, a.y);
-        });
+        }
     }
 
     private _createImage(pixels: ArrayBufferView, rect: Rect): HTMLCanvasElement {

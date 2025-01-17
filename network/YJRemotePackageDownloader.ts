@@ -357,9 +357,9 @@ export class YJRemotePackageDownloader {
 
     public clearBundles(bundleNames: string[] | string) {
         bundleNames = [].concat(bundleNames);
-        bundleNames.forEach(bundleName => {
-            this.clearAllBundleFiles(bundleName);
-        });
+        for (let i = 0, n = bundleNames.length; i < n; i++) {
+            this.clearAllBundleFiles(bundleNames[i]);
+        }
     }
 }
 

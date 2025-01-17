@@ -7,3 +7,4 @@ SetEquipmentColor
 YJFuckUiRegister
 
 去掉了YJPlaySoundEffect中对按钮的绑定
+更新了YJJobManager分帧管理器的逻辑

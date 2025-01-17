@@ -45,21 +45,25 @@ export class YJMenu extends Component {
         this.container = this.container || this.node;
         if (!force && this.container.children.length > 0) return;
         this.container.removeAllChildren();
-        menuItems.forEach((info, i) => {
-            if (!no.isDebug() && info.DEBUG) return;
+        for (let i = 0; i < menuItems.length; i++) {
+            const info = menuItems[i];
+            if (!no.isDebug() && info.DEBUG) continue;
             const item = instantiate(this.itemTemp);
             if (info.title) {
                 let list: any[] = item.getComponentsInChildren(Label);
-                if (list.length == 0)
+                if (list.length == 0) {
                     list = item.getComponentsInChildren(YJCharLabel);
-                list.forEach(a => {
-                    a.getComponent(FuckUi)?.setData(info.title);
-                });
+                }
+                for (let j = 0; j < list.length; j++) {
+                    const a = list[j];
+                    a.getComponent(FuckUi)?.a_setData(info.title);
+                }
             }
-            if (info.redHintKeys)
+            if (info.redHintKeys) {
                 item.getComponentInChildren(YJHintWatcher)?.setHintTypes(info.redHintKeys);
+            }
             item.active = true;
             item.parent = this.container || this.node;
-        });
+        }
     }
 }

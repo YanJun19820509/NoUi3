@@ -64,18 +64,20 @@ export class YJSetShaderProperties extends Component {
         if (this.path == '') return;
         let ss = this.getComponent(SetEffect);
         let properties = {};
-        this.properties.forEach(p => {
+        for (let i = 0; i < this.properties.length; i++) {
+            let p = this.properties[i];
             properties[p.type] = p.value;
-        });
+        }
         let defines = {};
-        this.defines.forEach(d => {
+        for (let i = 0; i < this.defines.length; i++) {
+            let d = this.defines[i];
             defines[d.type] = d.isWork;
-        });
+        }
         let d = {
             path: this.path,
             properties: properties,
             defines: defines
         };
-        ss.setData(d);
+        ss.a_setData(d);
     }
 }

@@ -1,7 +1,8 @@
 
-import { ccclass, property, disallowMultiple, Component, Node } from '../yj';
+import { ccclass, property, disallowMultiple, Component, Node, executeInEditMode } from '../yj';
 import { no } from '../no';
 import { FuckUi } from '../fuckui/FuckUi';
+import { YJDataWork } from './YJDataWork';
 
 /**
  * Predefined variables
@@ -16,29 +17,30 @@ import { FuckUi } from '../fuckui/FuckUi';
  */
 @ccclass('YJFuckUiRegister')
 @disallowMultiple()
+@executeInEditMode()
 export class YJFuckUiRegister extends Component {
-    @property({ editorOnly: true })
+    @property
     public get autoRegister(): boolean {
         return false;
     }
 
     public set autoRegister(v: boolean) {
         let list = this.getComponentsInChildren(FuckUi);
-        this.subFuckUiNodes.forEach(sub => {
-            list = list.concat(sub.getComponentsInChildren(FuckUi));
-        });
-        list.forEach((a: FuckUi) => {
-            if (!a.registerNode) {
-                a.registerNode = this.node;
+        for (let i = 0; i < this.subFuckUiNodes.length; i++) {
+            list = list.concat(this.subFuckUiNodes[i].getComponentsInChildren(FuckUi));
+        }
+        for (let i = 0; i < list.length; i++) {
+            if (!list[i].registerNode) {
+                list[i].registerNode = this.node;
             }
-        });
+        }
 
         this.subFuckUis = [];
-        list.forEach((a: FuckUi) => {
-            if (a.registerNode == this.node && a.bind_keys != '') {
-                this.subFuckUis[this.subFuckUis.length] = a;
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].registerNode == this.node && list[i].bind_keys != '') {
+                this.subFuckUis[this.subFuckUis.length] = list[i];
             }
-        });
+        }
     }
 
     @property(Node)
@@ -65,13 +67,13 @@ export class YJFuckUiRegister extends Component {
 
     public remove(ui: FuckUi) {
         let keys = ui.bindKeys;
-        keys.forEach(key => {
-            let a: FuckUi[] = this._data2ui[key];
+        for (let j = 0; j < keys.length; j++) {
+            let a: FuckUi[] = this._data2ui[keys[j]];
             if (a) {
                 let i = a.indexOf(ui);
                 a.splice(i, 1);
             }
-        });
+        }
     }
 
     private bindSubFuckUis() {
@@ -79,12 +81,18 @@ export class YJFuckUiRegister extends Component {
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];
             let keys = ui.bindKeys;
-            keys.forEach(key => {
+            for (let i = 0; i < keys.length; i++) {
+                const key = keys[i];
                 if (!!key) {
                     this._data2ui[key] = this._data2ui[key] || [];
                     no.addToArray(this._data2ui[key], ui, 'uuid');
                 }
-            });
+            }
         }
+    }
+
+    onLoad() {
+        this.getComponent(YJDataWork).autoRegister = true;
+        this.destroy();
     }
 }

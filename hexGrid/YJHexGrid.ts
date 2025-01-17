@@ -34,9 +34,9 @@ export class YJHexGrid {
      */
     public static serializeHexs(hexs: Hex[]): number[][] {
         let arr: number[][] = [];
-        hexs.forEach(hex => {
-            arr[arr.length] = hex.toNumbers();
-        });
+        for (let i = 0; i < hexs.length; i++) {
+            arr.push(hexs[i].toNumbers());
+        }
         return arr;
     }
 
@@ -47,9 +47,9 @@ export class YJHexGrid {
      */
     public static deserializeHexs(arr: number[][]): Hex[] {
         let hexs: Hex[] = [];
-        arr.forEach(a => {
-            hexs[hexs.length] = Hex.new(a);
-        });
+        for (let i = 0; i < arr.length; i++) {
+            hexs.push(Hex.new(arr[i]));
+        }
         return hexs;
     }
 
@@ -61,14 +61,14 @@ export class YJHexGrid {
      */
     public static convertToNeighbor(targetHex: Hex, hexs: Hex[], direction: number): Hex[] {
         let a = targetHex.neighbor(direction), b: Hex, arr: Hex[] = [];
-        hexs.forEach(hex => {
+        for (let i = 0; i < hexs.length; i++) {
             if (!b) {
-                arr[arr.length] = a;
-                b = a.subtract(hex);
+                arr.push(a);
+                b = a.subtract(hexs[i]); 
             } else {
-                arr[arr.length] = hex.add(b);
+                arr.push(hexs[i].add(b));
             }
-        });
+        }
         return arr;
     }
 
@@ -83,13 +83,14 @@ export class YJHexGrid {
         task.setStart(startHex.toNumbers());
         task.setEnd(endHex.toNumbers());
         let arr: number[][] = [], path: Hex[] = [];
-        unobstructedHexs.forEach(bh => {
-            arr[arr.length] = bh.toNumbers();
-        });
+        for (let i = 0, len = unobstructedHexs.length; i < len; i++) {
+            arr[i] = unobstructedHexs[i].toNumbers();
+        }
         task.setEmptyGroundFromArray(arr);
-        task.findPath().forEach(p => {
-            path[path.length] = Hex.new(p.x, p.y);
-        });
+        let pathArr = task.findPath();
+        for (let i = 0; i < pathArr.length; i++) {
+            path.push(Hex.new(pathArr[i].x, pathArr[i].y));
+        }
         return path;
     }
 

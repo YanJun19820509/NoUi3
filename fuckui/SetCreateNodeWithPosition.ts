@@ -56,9 +56,10 @@ export class SetCreateNodeWithPosition extends FuckUi {
             if (this.saveCurrentPositions) {
                 this.saveCurrentPositions = false;
                 let pos: Vec3[] = [];
-                this.node.children.forEach(child => {
+                for (let i = 0; i < this.node.children.length; i++) {
+                    const child = this.node.children[i];
                     pos[pos.length] = child.position.clone();
-                });
+                }
                 let setted = false;
                 for (let i = 0, n = this.positionTypes.length; i < n; i++) {
                     const info = this.positionTypes[i];
@@ -79,12 +80,12 @@ export class SetCreateNodeWithPosition extends FuckUi {
                 let posinfo = this.getPositions(this.previewNum);
                 if (!posinfo) return;
                 let size = this.template?.getComponent(UITransform).contentSize.clone() || math.size(100, 100);
-                posinfo.positions.forEach(pos => {
+                for (let i = 0; i < posinfo.positions.length; i++) {
                     let node = new Node();
                     node.addComponent(UITransform).setContentSize(size);
-                    node.setPosition(pos);
+                    node.setPosition(posinfo.positions[i]);
                     node.parent = this.container;
-                });
+                }
             }
         }
     }
@@ -106,9 +107,9 @@ export class SetCreateNodeWithPosition extends FuckUi {
         this.unscheduleAllCallbacks();
         this.a_clearData();
         if (this.clearOnDisable) {
-            this.container?.children.forEach(child => {
-                child.destroy();
-            });
+            for (let i = 0; i < this.container?.children.length; i++) {
+                this.container.children[i].destroy();
+            }
         }
     }
 
@@ -122,7 +123,7 @@ export class SetCreateNodeWithPosition extends FuckUi {
         this.setItems([].concat(data));
     }
 
-    protected async setItems(data: any[]) {
+    protected setItems(data: any[]) {
         if (!this.container) this.container = this.node;
 
         let n = data.length;
@@ -133,16 +134,15 @@ export class SetCreateNodeWithPosition extends FuckUi {
 
         let positionInfo = this.getPositions(n);
         if (n > l) {
-            await YJJobManager.ins.execute((max: number) => {
-                if (!this?.node?.isValid) return false;
+            let max = n;
+            while (max > 0) {
                 let item = instantiate(this.template);
                 // item.active = true;
                 item.setPosition(positionInfo.positions[this.container.children.length]);
                 item.parent = this.container;
                 // no.visible(item, false);
-                if (this.container.children.length >= max) return false;
-            }, this, n);
-            if (!this.container?.isValid) return;
+                max--;
+            }
         } else if (n - l == 1) {
             let item = instantiate(this.template);
             // item.active = true;

@@ -61,13 +61,15 @@ export default class YJLoadPrefabs extends Component {
     private loadPrefab() {
         this._loadedNodes = new Map();
         const arr: any[] = [];
-        this.prefabs.forEach(item => {
+        for (let i = 0; i < this.prefabs.length; i++) {
+            const item = this.prefabs[i];
             arr.push({ url: item.prefabUrl, k: item.key });
-        });
-        no.assetBundleManager.loadAnyFiles(arr, null, items => {
-            items.forEach((item: Prefab, i) => {
+        }
+        no.assetBundleManager.loadAnyFiles(arr, null, (items: Prefab[]) => {
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
                 this._loadedNodes.set(arr[i].k, instantiate(item));
-            });
+            }
         });
     }
 

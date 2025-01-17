@@ -105,16 +105,17 @@ class _TextureInfoInGPU {
             return;
         }
         let infos: ProfilerData[] = [];
-        uuids.forEach(uuid => {
-            let data: ProfilerData = no.itemOfArray(this.uuids, uuid, "uuid");
+        for (let i = 0; i < uuids.length; i++) {
+            let data: ProfilerData = no.itemOfArray(this.uuids, uuids[i], "uuid");
             if (data) infos.push(data);
-        });
+        }
         if (infos.length == 0) {
             console.log(`>>>>>>${panelName}资源已全部释放`);
             return;
         } else {
             console.log(`>>>>>>${panelName}资源未释放: ${infos.length}个`);
-            infos.forEach(data => {
+            for (let i = 0; i < infos.length; i++) {
+                let data = infos[i];
                 let asset = no.assetBundleManager.getCachedImageInfo(data.uuid);
                 console.log(`
                 ---UUID: ${data.uuid}
@@ -122,7 +123,7 @@ class _TextureInfoInGPU {
                 ---大小: ${bytes2MB(data.size)} MB
                 ---引用计数: ${asset?.ref}
             `);
-            });
+            }
             console.log(`>>>>>>${panelName}结束`);
         }
         this.panelTextureMap[panelName].length = 0;

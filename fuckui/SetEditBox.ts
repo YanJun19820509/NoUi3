@@ -72,7 +72,7 @@ export class SetEditBox extends FuckUi {
             if (v != v1) {
                 v = v1;
                 this.scheduleOnce(() => {
-                    this.setData(JSON.stringify(v));
+                    this.a_setData(JSON.stringify(v));
                 });
             }
         }

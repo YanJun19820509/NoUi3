@@ -39,10 +39,11 @@ export class YJAutoAlignChildrenNode extends Component {
         if (a > 1 && (this.align == AlignType.Bottom || this.align == AlignType.Middle || this.align == AlignType.Top)) return;
         if (a < 1 && (this.align == AlignType.Left || this.align == AlignType.Center || this.align == AlignType.Right)) return;
         this.lastAlign = this.align;
-        this.node.children.forEach(child => {
+        for (let i = 0; i < this.node.children.length; i++) {
+            const child = this.node.children[i];
             if (child.active) {
                 let w = child.getComponent(Widget) || child.addComponent(Widget);
-                if (w.isStretchHeight) return;
+                if (w.isStretchHeight) continue;
                 switch (this.align) {
                     case AlignType.Bottom:
                         w.isAlignTop = false;
@@ -81,6 +82,6 @@ export class YJAutoAlignChildrenNode extends Component {
                         break;
                 }
             }
-        });
+        }
     }
 }

@@ -24,8 +24,8 @@ export class YJUpdatePreDataWork extends Component {
 
     public updateData(d: any) {
         const keys = this.bind_keys.split(',');
-        for (const key of keys) {
-            const ks = key.split('.');
+        for (let i = 0, n = keys.length; i < n; i++) {
+            const ks = keys[i].split('.');
             if (ks.length == 1) {
                 this.dataWork.changeValueByUi(ks[0], d);
             } else {

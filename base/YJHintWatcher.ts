@@ -40,9 +40,9 @@ export class YJHintWatcher extends Component {
         if (this.types == '') return;
         let types = this.types.split(',');
         this.typeList = types;
-        types.forEach(type => {
-            this.bindHint(type);
-        });
+        for (let i = 0; i < types.length; i++) {
+            this.bindHint(types[i]);
+        }
     }
 
     protected bindHint(type: string): void {
@@ -56,9 +56,9 @@ export class YJHintWatcher extends Component {
         }
         let n = 0;
         if (this.hint.isNumber) {
-            this.typeList.forEach(type => {
-                n += no.hintCenter.getHintValue(type);
-            });
+            for (let i = 0; i < this.typeList.length; i++) {
+                n += no.hintCenter.getHintValue(this.typeList[i]); 
+            }
         } else if (v < 1) {
             let len = this.typeList?.length || 0;
             for (let i = 0; i < len; i++) {
@@ -69,7 +69,7 @@ export class YJHintWatcher extends Component {
                 }
             }
         } else n = 1;
-        this.hint.setData(String(n));
+        this.hint.a_setData(String(n));
     }
 
     /**

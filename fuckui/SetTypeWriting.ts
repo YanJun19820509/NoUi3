@@ -180,9 +180,9 @@ export class SetTypeWritting extends FuckUi {
     private splitHtmlString(htmlStr: string): any[] {
         let a = new HtmlTextParser().parse(htmlStr);
         let b: any[] = [];
-        a.forEach(aa => {
-            b = b.concat(this.singleLetterWithStyle(aa));
-        });
+        for (let i = 0; i < a.length; i++) {
+            b = b.concat(this.singleLetterWithStyle(a[i]));
+        }
         return b;
     }
 
@@ -196,14 +196,14 @@ export class SetTypeWritting extends FuckUi {
             lineHeight = richText.lineHeight;
         let style: IHtmlTextParserStack = o.style || {};
         if (!style.size) style.size = fontSize;
-        a.forEach(aa => {
+        for (let i = 0; i < a.length; i++) {
             b[b.length] = {
-                text: aa,
+                text: a[i],
                 style: o.style,
                 fontFamily: fontFamily,
                 lineHeight: lineHeight
             };
-        });
+        }
         return b;
     }
 
@@ -211,7 +211,8 @@ export class SetTypeWritting extends FuckUi {
         if (!o.style) return o.text.split('');
         if (o.text == '' && o.style.isNewLine) return ['<br/>'];
         let a = o.text.split(''), b: string[] = [];
-        a.forEach(aa => {
+        for (let i = 0; i < a.length; i++) {
+            let aa = a[i];
             if (o.style.bold) aa = no.addBBCode(aa, 'b');
             if (o.style.italic) aa = no.addBBCode(aa, 'i');
             if (o.style.underline) aa = no.addBBCode(aa, 'u');
@@ -222,7 +223,7 @@ export class SetTypeWritting extends FuckUi {
                 { key: 'width', value: o.style.outline.width }
             ]);
             b[b.length] = aa;
-        });
+        }
         return b;
     }
 
@@ -258,10 +259,6 @@ export class SetTypeWritting extends FuckUi {
             outline.width = a.style.outline.width;
         }
         let dynamicTexture = this.getComponent(YJDynamicTexture);
-        if (dynamicTexture && dynamicTexture.enabled) {
-            labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
-            label.customMaterial = dynamicTexture.dynamicAtlas.customMaterial;
-        }
         label.string = a.text;
         labelNode.parent = this.node;
         labelNode.active = true;
@@ -287,10 +284,6 @@ export class SetTypeWritting extends FuckUi {
         label.lineHeight = Math.max(rt.fontSize, rt.lineHeight);
         label.maxWidth = rt.maxWidth;
         label.cacheMode = Label.CacheMode.NONE;
-        let dynamicTexture = this.getComponent(YJDynamicTexture);
-        if (dynamicTexture && dynamicTexture.enabled) {
-            labelNode.addComponent(YJDynamicTexture).dynamicAtlas = dynamicTexture.dynamicAtlas;
-        }
         label.string = v;
         labelNode.parent = this.node;
         labelNode.active = true;

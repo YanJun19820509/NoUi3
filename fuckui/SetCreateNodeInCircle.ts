@@ -4,6 +4,7 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJJobManager } from 'NoUi3/base/YJJobManager';
 
 /**
  * Predefined variables
@@ -95,35 +96,40 @@ export class SetCreateNodeInCircle extends FuckUi {
             this.template.destroy();
     }
 
-    protected onDataChange(data: any) {
+    protected async onDataChange(data: any) {
+        if (!this.template) {
+            this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
+        }
         this.setItems([].concat(data));
     }
 
     protected async setItems(data: any[]) {
-        let l = this.container.children.length;
-        if (l == 0) {
-            for (let i = 0; i < this.num; i++) {
-                let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                item.active = true;
-                no.visible(item, false);
-                this.setPos(item, i);
-                item.parent = this.container;
-            }
+        const num = data.length;
+        let i = 0;
+        YJJobManager.ins.addTask(() => {
+            this.setItem(data, i++);
+            return i >= num;
+        });
+    }
 
-            l = this.num;
-        }
-        for (let i = 0; i < l; i++) {
-            let item = this.container.children[i];
-            if (data[i] == null) {
+    private setItem(data: any[], i: number) {
+        let item = this.container.children[i];
+        if (data[i] == null) {
+            if (item) {
                 no.visible(item, false);
-            } else {
-                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                if (a) {
-                    a.data = data[i];
-                    a.init();
-                }
-                no.visible(item, true);
             }
+            return;
+        }
+        if (!item) {
+            item = instantiate(this.template);
+            this.setPos(item, i);
+            item.parent = this.container;
+            no.visible(item, true);
+        }
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            a.initWithData(data[i]);
         }
     }
 

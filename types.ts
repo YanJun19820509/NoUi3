@@ -335,7 +335,7 @@ export class TextureInfo extends LoadAssetsInfo {
     atlasJsonName: string = '';
     @property({ readonly: true, displayName: '图集配置文件path' })
     atlasJsonPath: string = '';
-    @property({ type: Texture2D, editorOnly: true })
+    @property({ type: Texture2D })
     public get texture(): Texture2D {
         return null;
     }
@@ -400,7 +400,7 @@ export class TextureInfo extends LoadAssetsInfo {
 // }
 @ccclass('SpriteFrameInfo')
 export class SpriteFrameInfo extends LoadAssetsInfo {
-    @property({ type: SpriteFrame, editorOnly: true })
+    @property({ type: SpriteFrame })
     public get spriteFrame(): SpriteFrame {
         return null;
     }
@@ -416,7 +416,7 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
 }
 @ccclass('PrefabInfo')
 export class PrefabInfo extends LoadAssetsInfo {
-    @property({ type: Prefab, editorOnly: true })
+    @property({ type: Prefab })
     public get prefab(): Prefab {
         return null;
     }

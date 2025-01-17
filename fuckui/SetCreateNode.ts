@@ -32,6 +32,8 @@ export class SetCreateNode extends FuckUi {
 
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
+    @property({ displayName: '第一次逐个创建', tooltip: '逐个创建能提高性能，如果没有特殊需求，不要取消' })
+    isFirst = true;
 
     @property({ displayName: '仅创建部分' })
     createPart: boolean = false;
@@ -43,11 +45,6 @@ export class SetCreateNode extends FuckUi {
 
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
-
-    // @property({ tooltip: '仅第一次创建时有创建间隔' })
-    // onlyFirstTime: boolean = false;
-    // @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
-    // wait: number = 0;
 
     @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
     onComplete: no.EventHandlerInfo[] = [];
@@ -62,8 +59,6 @@ export class SetCreateNode extends FuckUi {
     recreateOnEnable: boolean = false;
 
     protected needSetDynamicAtlas: boolean = true;
-    private isFirst: boolean = true;
-    // private waitTime: number;
     private _isSettingData: boolean = false;
     private itemSize: Size;
 
@@ -95,29 +90,25 @@ export class SetCreateNode extends FuckUi {
         this.a_clearData();
         if (this.clearOnDisable) {
             !this.recreateOnEnable && this.a_clearData();
-            this.container?.children.forEach(child => {
-                child.destroy();
-            });
+            for (let i = 0; i < this.container?.children.length; i++) {
+                this.container.children[i].destroy();
+            }
             this.isFirst = true;
         } else {
             if (this.uiAnim?.enabled) {
-                this.container?.children.forEach(child => {
-                    child.children[0].active = false;
-                });
+                for (let i = 0; i < this.container?.children.length; i++) {
+                    this.container.children[i].children[0].active = false;
+                }
             }
         }
     }
 
-    protected onDataChange(data: any) {
+    protected async onDataChange(data: any) {
+        if (!this.template) {
+            this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
+        }
         this._isSettingData = true;
-        // if (this.onlyFirstTime) {
-        //     if (this.isFirst) {
-        //         this.isFirst = false;
-        //         this.waitTime = this.wait;
-        //     } else this.waitTime = 0;
-        // } else {
-        //     this.waitTime = this.wait;
-        // }
         data = [].concat(data);
         if (this.createPart) {
             data = (data as any[]).slice(0, this.createNum);
@@ -125,8 +116,12 @@ export class SetCreateNode extends FuckUi {
         this.setItems(data);
     }
 
-    protected async setItems(data: any[]) {
+    protected setItems(data: any[]) {
         if (!this.container) this.container = this.node;
+        if (!this.container) {
+            console.error('SetCreateNode: container is null', this.bind_keys);
+            return;
+        }
         if (this.onlyOne) {
             this.setDynamicAtlasNode(data[0]);
             return;
@@ -144,24 +139,16 @@ export class SetCreateNode extends FuckUi {
             return;
         }
 
-        if (!this.template) {
-            this.template = await this.loadPrefab.loadPrefab();
-            if (!this?.node?.isValid) return;
-        }
-
-        if (!this.onlyAdd && n - l >= 1 || (this.onlyAdd && n >= 1)) {
-            await YJJobManager.ins.execute((max: number) => {
-                if (!this?.node?.isValid) false;
-                let item = this.loadPrefab?.instantiateNode() || instantiate(this.template);
-                this.container.addChild(this.initItem(item));
-                if (this.container.children.length >= max) return false;
-            }, this, !this.onlyAdd ? n : n + l);
-            if (!this.container?.isValid) return;
-        }
+        // if (!this.onlyAdd && n - l >= 1 || (this.onlyAdd && n >= 1)) {
+        //     let max = !this.onlyAdd ? n : n + l;
+        //     while (max > 0) {
+        //         let item = instantiate(this.template);
+        //         this.container.addChild(this.initItem(item));
+        //         max--;
+        //     }
+        // }
 
         let start = !this.onlyAdd ? 0 : l;
-        // this._n = 0;
-        // this.setItem(data, start);
         if (this.uiAnim?.enabled) {
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
@@ -169,23 +156,27 @@ export class SetCreateNode extends FuckUi {
                 }
             }, 0.1, Math.ceil((data.length - start) / this.batchNum));
         } else {
-            if (!this.isFirst) {
-                this.isFirst = false;
-                this.schedule(() => {
-                    this.setItem(data, start++);
-                }, 0.1, data.length - start);
-            } else {
-                for (let i = start, len = data.length; i < len; i++) {
-                    this.setItem(data, i);
-                }
-            }
+            // if (this.isFirst) {
+            //     this.isFirst = false;
+            //     this.schedule(() => {
+            //         this.setItem(data, start++);
+            //     }, 0.1, data.length - start);
+            // } else {
+            //     for (let i = start, len = data.length; i < len; i++) {
+            //         this.setItem(data, i);
+            //     }
+            // }
+            const len = data.length;
+            YJJobManager.ins.addTask(() => {
+                this.setItem(data, start++);
+                return start >= len;
+            });
         }
         this._isSettingData = false;
     }
 
     private initItem(item: Node) {
         no.position(item, v3(0, 0));
-        // no.visible(cacheItem, false);
         if (this.uiAnim?.enabled) {
             const box = no.newNode('box');
             box.addComponent(UIOpacity);
@@ -216,18 +207,19 @@ export class SetCreateNode extends FuckUi {
         return item;
     }
 
-    private _n: number = 0;
     private setItem(data: any[], i = 0) {
         if (i >= data.length) {
             no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
         let item = this.container.children[i];
-        if (!item) return;
+        if (!item) {
+            item = this.initItem(instantiate(this.template));
+            this.container.addChild(item);
+        }
         if (this.uiAnim?.enabled) item = item.children[0];
         if (data[i] == null) {
             no.visible(item, false);
-            // this.setItem(data, start, ++i);
             return;
         }
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
@@ -239,23 +231,6 @@ export class SetCreateNode extends FuckUi {
         if (this.uiAnim?.enabled) {
             this.uiAnim.play(item);
         }
-        // if (this.uiAnim?.enabled) {
-        //     this.uiAnim.play(item);
-        //     if (++this._n >= this.batchNum) {
-        //         this._n = 0;
-        //         this.scheduleOnce(() => {
-        //             this.setItem(data, start, ++i);
-        //         }, 0.1);
-        //     } else this.setItem(data, start, ++i);
-        // } else
-        //     if (this.isFirst) {
-        //         this.isFirst = false;
-        //         this.scheduleOnce(() => {
-        //             this.setItem(data, start, ++i);
-        //         }, 0.1);
-        //     } else {
-        //         this.setItem(data, start, ++i);
-        //     }
     }
 
     protected async setDynamicAtlasNode(data: any) {

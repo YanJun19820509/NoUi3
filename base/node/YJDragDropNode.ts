@@ -81,7 +81,6 @@ export class YJDragDropNode extends YJTouchListener {
     start() {
         if (this.canBack) {
             this._originalPos = this.node.position.clone();
-            (this.getComponent(SetNodeTweenAction) || this.addComponent(SetNodeTweenAction)).saveIgnore = false;
         }
     }
 
@@ -147,7 +146,7 @@ export class YJDragDropNode extends YJTouchListener {
     /** 返回原点 */
     private moveBack() {
         if (!this.canBack) return;
-        this.getComponent(SetNodeTweenAction).setData({
+        this.getComponent(SetNodeTweenAction).a_setData({
             duration: 0.2,
             to: 1,
             props: {

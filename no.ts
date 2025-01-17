@@ -19,7 +19,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = true;
+    let _isLogEnabled: boolean = false;
     let _isSpineEnable: boolean = true;
 
     /**
@@ -490,11 +490,12 @@ export namespace no {
         public offAfterTrigger(type: string, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
-            a.forEach(b => {
+            for (let i = 0, n = a.length; i < n; i++) {
+                const b = a[i];
                 if (target) {
                     if (b.t == target) b.o = true;
                 } else b.o = true;
-            });
+            }
         }
 
         public clear() {
@@ -680,9 +681,10 @@ export namespace no {
 
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (!handlers || handlers.length == 0) return;
-            handlers.forEach(handler => {
+            for (let i = 0; i < handlers.length; i++) {
+                const handler = handlers[i];
                 handler?.execute.apply(handler, args);
-            });
+            }
         }
 
         public execute(...args: any[]): void {
@@ -852,9 +854,10 @@ export namespace no {
         if (data == null) return '';
         var s = String(formatter);
         let keys = Object.keys(data);
-        keys.forEach(k => {
+        for (let i = 0; i < keys.length; i++) {
+            let k = keys[i];
             s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), data[k]);
-        });
+        }
         return s;
     }
 
@@ -929,9 +932,19 @@ export namespace no {
         if (arr.length == 1) return arr[0];
         let a: any[] = [];
         if (except) {
-            a = arr.filter((v, i) => {
-                return !except.includes(v);
-            });
+            a = [];
+            for (let i = 0, n = arr.length; i < n; i++) {
+                let has = false;
+                for (let j = 0, m = except.length; j < m; j++) {
+                    if (arr[i] === except[j]) {
+                        has = true;
+                        break;
+                    }
+                }
+                if (!has) {
+                    a[a.length] = arr[i];
+                }
+            }
         } else {
             a = arr.slice();
         }
@@ -1047,11 +1060,12 @@ export namespace no {
      */
     export function joinStrings(separator: string, ...strs: string[]): string {
         let a: string[] = [];
-        strs.forEach(str => {
+        for (let i = 0, n = strs.length; i < n; i++) {
+            const str = strs[i];
             if (str != null && str != '') {
                 a[a.length] = str;
             }
-        });
+        }
         return a.join(separator);
     }
     /**
@@ -1090,11 +1104,23 @@ export namespace no {
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
         if (array == null || item == null) return -1;
-        return array.findIndex(a => a[key] == item);
+        for(let i = 0, n = array.length; i < n; i++) {
+            let a = array[i];
+            if(a[key] == item || a[key] == item[key]) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
-        return array.find(a => a[key] == value) as T;
+        for(let i = 0, n = array.length; i < n; i++) {
+            let a = array[i];
+            if(a[key] == value || a[key] == value[key]) {
+                return a as T;
+            }
+        }
+        return null as T;
     }
 
 
@@ -1185,9 +1211,10 @@ export namespace no {
      */
     export function arrayToKV(array: any[], keyType: string): any {
         let b: any = {};
-        array.forEach(a => {
+        for (let i = 0, n = array.length; i < n; i++) {
+            let a = array[i];
             b[a[keyType]] = a;
-        });
+        }
         return b;
     }
 
@@ -1223,9 +1250,10 @@ export namespace no {
      * @param handlers
      */
     export function executeHandlers(handlers: EventHandler[], ...args: any[]): void {
-        handlers.forEach(handler => {
+        for (let i = 0; i < handlers.length; i++) {
+            const handler = handlers[i];
             handler.emit([].concat(args, handler.customEventData));
-        });
+        }
     }
 
     /**
@@ -1701,12 +1729,12 @@ export namespace no {
         if (obj == null || keyName == null || valueName == null) return null;
         let arr = new Array();
         let keys = Object.keys(obj);
-        keys.forEach(key => {
+        for (let i = 0; i < keys.length; i++) {
             arr[arr.length] = {
-                [keyName]: key,
-                [valueName]: obj[key]
+                [keyName]: keys[i],
+                [valueName]: obj[keys[i]]
             };
-        });
+        }
         return arr;
     }
 
@@ -1719,9 +1747,9 @@ export namespace no {
         if (obj == null) return [];
         let arr = new Array();
         let keys = Object.keys(obj);
-        keys.forEach(key => {
-            arr[arr.length] = obj[key];
-        });
+        for (let i = 0; i < keys.length; i++) {
+            arr[arr.length] = obj[keys[i]];
+        }
         return arr;
     }
 
@@ -1734,10 +1762,11 @@ export namespace no {
         if (!weight) return 0;
         let sum = 0;
         except = except || [];
-        weight.forEach((w, i) => {
-            if (except.indexOf(i) == -1)
-                sum += Number(w);
-        });
+        for (let i = 0; i < weight.length; i++) {
+            if (except.indexOf(i) == -1) {
+                sum += Number(weight[i]);
+            }
+        }
         let r = random() * sum;
         let n = weight.length;
         let a = 0;
@@ -1759,9 +1788,9 @@ export namespace no {
     export function weightRandomObject(weight: any[], key: string): number {
         if (!weight) return 0;
         let a: number[] = [];
-        weight.forEach(item => {
-            a[a.length] = Number(item[key]);
-        });
+        for (let i = 0; i < weight.length; i++) {
+            a[a.length] = Number(weight[i][key]);
+        }
         return weightRandom(a);
     }
 
@@ -2065,9 +2094,9 @@ export namespace no {
 
         if (data instanceof Array && data[0] instanceof Array) {//并行
             let a: TweenSet[] = [];
-            data.forEach(td => {
-                a = a.concat(parseTweenData(td, node))
-            });
+            for (let i = 0; i < data.length; i++) {
+                a = a.concat(parseTweenData(data[i], node));
+            }
             return a;
         } else {
             let _tween = new TweenSet(node);
@@ -2474,7 +2503,7 @@ export namespace no {
     export class Data extends Event {
         public static DataChangeEvent = 'data_change_event';
 
-        private _data: any;
+        private _data: any = {};
         private _updateScheduled: boolean = false;
 
         public get data(): any {
@@ -2488,7 +2517,6 @@ export namespace no {
 
         /**转成json string */
         public get json(): string {
-            if (this._data == null) this._data = {};
             let a = clone(this._data);
             a.__ut = sysTime.now;
             return jsonStringify(a);
@@ -2513,7 +2541,6 @@ export namespace no {
          * @param path
          */
         public get(paths?: string | string[]): any {
-            if (this._data == null) return null;
             if (paths == null || paths == '*') return this._data;
             if (paths instanceof Array) {
                 paths = paths.join('.');
@@ -2527,12 +2554,15 @@ export namespace no {
          * @param recursive 是否递归，默认true
          */
         public set(path: string, value: any, recursive = true) {
-            if (this._data == null) {
-                this._data = {};
-            }
-            if (recursive && value && typeof value === 'object') {
-                // 扁平化处理对象
-                this._flattenObject(path, value);
+            if (recursive && value instanceof Object && value['constructor'] === Object) {
+                if (Object.keys(value).length == 0) {
+                    setValue(this._data, path, value);
+                } else {
+                    for (let key in value) {
+                        let v = value[key];
+                        this.set(path + '.' + key, v);
+                    }
+                }
             } else {
                 setValue(this._data, path, value);
             }
@@ -2541,24 +2571,8 @@ export namespace no {
         }
 
         public setKV(k: string, v: any) {
-            if (this._data == null) {
-                this._data = {};
-            }
             setValue(this._data, k, v);
             return this;
-        }
-
-        private _flattenObject(basePath: string, obj: any) {
-            for (const key in obj) {
-                const value = obj[key];
-                const newPath = basePath + '.' + key;
-
-                if (value && typeof value === 'object') {
-                    this._flattenObject(newPath, value);
-                } else {
-                    setValue(this._data, newPath, value);
-                }
-            }
         }
 
         private _scheduleUpdate(): void {
@@ -2586,12 +2600,11 @@ export namespace no {
          * @param path
          */
         public delete(path: string): any {
-            if (this._data == null) return null;
             return deleteValue(this._data, path);
         }
 
         public clear(): void {
-            this._data = null;
+            this._data = {};
         }
 
         /**
@@ -2636,9 +2649,10 @@ export namespace no {
 
         public update(keys: string | string[]) {
             keys = [].concat(keys);
-            keys.forEach(key => {
+            for (let i = 0; i < keys.length; i++) {
+                let key = keys[i];
                 this._data[key] = this._map[key]();
-            });
+            }
         }
     }
 
@@ -2857,9 +2871,9 @@ export namespace no {
         }
 
         public clearCachedAssets() {
-            this._cacheAsset.forEach((asset, key) => {
+            for (const [key, asset] of this._cacheAsset) {
                 asset.destroy?.();
-            });
+            }
             this._cacheAsset.clear();
         }
 
@@ -3111,10 +3125,10 @@ export namespace no {
                         onComplete && onComplete(null);
                         // log('loadFiles', filePaths, err.message);
                     } else {
-                        items.forEach(item => {
-                            this.addRef(item);//增加引用计数
-                            // this.loadDepends(item.uuid);
-                        });
+                        for (let i = 0; i < items.length; i++) {
+                            this.addRef(items[i]);//增加引用计数
+                            // this.loadDepends(items[i].uuid);
+                        }
                         onComplete && onComplete(items);
                     }
                 });
@@ -3307,11 +3321,12 @@ export namespace no {
             let bundle = this.getLoadedBundle(p.bundle);
             let infos = bundle.getDirWithPath(p.path);
             let requests: { path: string, bundle: string, type: typeof Asset }[] = [];
-            infos.forEach(a => {
+            for (let i = 0; i < infos.length; i++) {
+                let a = infos[i];
                 if (a.uuid.indexOf('@') == -1) {
                     requests[requests.length] = { path: a.path, bundle: p.bundle, type: Asset };
                 }
-            });
+            }
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
@@ -3438,9 +3453,9 @@ export namespace no {
                     err('loadAnyFiles', requests, e.stack);
                 } else {
                     items = [].concat(items);
-                    items.forEach(item => {
-                        this.addRef(item);
-                    });
+                    for (let i = 0; i < items.length; i++) {
+                        this.addRef(items[i]);
+                    }
                     onComplete?.(items);
                 }
             });
@@ -3633,20 +3648,22 @@ export namespace no {
                     infos = bundle.getDirWithPath(p.path),
                     base = 'db://' + bundle.base.replace(this.server + 'remote', 'assets');
                 let requests: { path?: string, uuid?: string }[] = [];
-                infos.forEach(a => {
+                for (let i = 0; i < infos.length; i++) {
+                    const a = infos[i];
                     if (a.uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
                         requests[requests.length] = { path: a.path, uuid: a.uuid };
                     }
-                });
+                }
                 this.loadAnyFiles(requests, null, items => {
-                    items.forEach((item, i) => {
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
                         if (item instanceof Prefab) {
                         } else if (item instanceof Texture2D) {
                             this.cacheImage(item);
                         } else if (item instanceof JsonAsset) {
                             this.cacheAsset(item.uuid, item.json);
                         }
-                    });
+                    }
                     onComplete?.();
                 });
             }
@@ -3654,15 +3671,14 @@ export namespace no {
 
         public loadAllPrefabsInBundle(bundleName: string) {
             const bundle = this.getLoadedBundle(bundleName),
-                assetInfos = bundle['_config'].assetInfos._map,
-                base = 'db://' + bundle.base.replace(this.server + 'remote', 'assets');
+                assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
             for (const uuid in assetInfos) {
                 const info = assetInfos[uuid];
-                if (info.ctor.name == 'Prefab')
-                    requests[requests.length] = { path: info.path, uuid: info.uuid };
+                if (info.ctor?.name == 'Prefab')
+                    requests[requests.length] = info.path;
             }
-            this.loadAnyFiles(requests);
+            bundle.load(requests);
         }
 
         public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
@@ -3864,7 +3880,8 @@ export namespace no {
         private checkClear() {
             let t = timestamp();
             let types = MapKeys2Array(this.cacheMap);
-            types.forEach(type => {
+            for (let j = 0; j < types.length; j++) {
+                let type = types[j];
                 let arr = this.cacheMap.get(type) || [];
                 for (let i = arr.length - 1; i >= 0; i--) {
                     let a = arr[i];
@@ -3874,7 +3891,7 @@ export namespace no {
                     }
                 }
                 if (arr.length == 0) this.cacheMap.delete(type);
-            });
+            }
         }
     }
     /**全局缓存池,适用于非节点数据或节点的父节点不固定的情况，如果是节点且其父节点固定，用全局缓存池会导致dc增加 */
@@ -4415,9 +4432,9 @@ export namespace no {
 
             if (table[1] != null && arr.length >= 1) {
                 let b = [];
-                arr.forEach(a => {
-                    b.push(this.getQueryValue(a, table[1]));
-                });
+                for (let i = 0; i < arr.length; i++) {
+                    b.push(this.getQueryValue(arr[i], table[1]));
+                }
                 return b;
             } else if (table[1] == null) {
                 return arr;
@@ -4429,18 +4446,18 @@ export namespace no {
             let a = keys.split(',');
             if (a.length == 1) return tableData[a[0]];
             let b: any = {};
-            a.forEach(k => {
-                b[k] = tableData[k];
-            });
+            for (let i = 0; i < a.length; i++) {
+                b[a[i]] = tableData[a[i]];
+            }
             return b;
         }
 
         private parseOr(str: string): string[][] {
             let queryies: string[][] = [];
             let ands = str.split(' or ');
-            ands.forEach(and => {
-                queryies.push(this.parseAnd(and));
-            });
+            for (let i = 0; i < ands.length; i++) {
+                queryies.push(this.parseAnd(ands[i]));
+            }
             return queryies;
         }
 
@@ -4585,9 +4602,9 @@ export namespace no {
          */
         public select(tableNames: string[], expression: string): any {
             let datas = {};
-            tableNames.forEach(n => {
-                datas[n] = this._tables[n];
-            });
+            for (let i = 0; i < tableNames.length; i++) {
+                datas[tableNames[i]] = this._tables[tableNames[i]];
+            }
             return RelationQuery.new.select(expression, datas);
         }
 
@@ -4783,10 +4800,10 @@ export namespace no {
      */
     export function createGraphicLineData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         let ps = [];
-        d.points.forEach(p => {
-            ps[ps.length] = p.x;
-            ps[ps.length] = p.y;
-        });
+        for (let i = 0; i < d.points.length; i++) {
+            ps[ps.length] = d.points[i].x;
+            ps[ps.length] = d.points[i].y;
+        }
         return {
             points: ps,
             lineWidth: d.lineWidth || 0,
@@ -4912,10 +4929,10 @@ export namespace no {
      */
     export function createBezierData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         let ps = [];
-        d.points.forEach(p => {
-            ps[ps.length] = p.x;
-            ps[ps.length] = p.y;
-        });
+        for (let i = 0; i < d.points.length; i++) {
+            ps[ps.length] = d.points[i].x;
+            ps[ps.length] = d.points[i].y;
+        }
         return {
             points: ps,
             lineWidth: d.lineWidth || 0,
@@ -4945,18 +4962,21 @@ export namespace no {
         const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str?.split('').forEach(function (str, i) {
-            bytes[i] = str.charCodeAt(0);
-        });
+        if (str) {
+            let chars = str.split('');
+            for (let i = 0; i < chars.length; i++) {
+                bytes[i] = chars[i].charCodeAt(0);
+            }
+        }
 
         return bytes;
     }
 
     export function bytes2String(bytes: Uint8Array): string {
         let sArr: string[] = [];
-        bytes?.forEach(c => {
-            sArr[sArr.length] = String.fromCharCode(c);
-        });
+        for (let i = 0; i < bytes?.length; i++) {
+            sArr[sArr.length] = String.fromCharCode(bytes[i]);
+        }
         return sArr.join('');
     }
 
@@ -4964,9 +4984,12 @@ export namespace no {
         const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
 
-        str?.split('').forEach(function (str, i) {
-            bytes[i] = str.charCodeAt(0);
-        });
+        if (str) {
+            let chars = str.split('');
+            for (let i = 0; i < chars.length; i++) {
+                bytes[i] = chars[i].charCodeAt(0);
+            }
+        }
 
         return buffer;
     }
@@ -5024,9 +5047,10 @@ export namespace no {
         if (tags == 'br') return `${text}<br/>`;
         if (tags instanceof Array) {
             let a = text;
-            tags.forEach(t => {
+            for (let i = 0; i < tags.length; i++) {
+                let t = tags[i];
                 a = addBBCode(a, t.tag, t.value);
-            });
+            }
             return a;
         } else {
             const tagFormat = '<{tag}{props}>{content}</{tag}>';
@@ -5039,9 +5063,9 @@ export namespace no {
 
                 let ps: string[] = [''];
                 props = [].concat(props);
-                props.forEach(p => {
-                    ps[ps.length] = no.formatString(propFormat, p);
-                });
+                for (let i = 0; i < props.length; i++) {
+                    ps[ps.length] = no.formatString(propFormat, props[i]);
+                }
 
                 return no.formatString(tagFormat, { tag: tags, props: ps.join(' '), content: text });
             } else
@@ -5192,10 +5216,13 @@ export namespace no {
             this._singleObjects[this._singleObjects.length] = singleObject;
         }
         public static clear() {
-            this._singleObjects.forEach(so => {
-                so['_ins']?.clear();
-                so['_ins'] = null;
-            });
+            for (let i = 0; i < this._singleObjects.length; i++) {
+                let so = this._singleObjects[i];
+                if (so['_ins']) {
+                    so['_ins'].clear();
+                    so['_ins'] = null;
+                }
+            }
         }
     }
 
@@ -5345,11 +5372,38 @@ export namespace no {
         return node['yj_need_render'] !== false;
     }
 
+    export function visibleByActiveInHierarchy(node: Node, v: boolean) {
+        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+        if (blockInputEvents)
+            for (let i = 0; i < blockInputEvents.length; i++) {
+                blockInputEvents[i].enabled = v;
+            }
+        const btn = node.getComponent('YJButton');
+        if (btn)
+            btn['canClick'] = v;
+        if (!v) {
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
+            no.x(node, 20000);
+        } else {
+            if (!node.active) node.active = true;
+            if (node['__origin_x__'] !== null) {
+                no.x(node, node['__origin_x__']);
+            }
+            let comps = node.getComponentsInChildren('YJDataWork');
+            for (let i = 0; i < comps.length; i++) {
+                comps[i]['onEnable']();
+            }
+        }
+        node['_activeInHierarchy'] = v;
+    }
+
     function onVisibleChange(node: Node, v: boolean) {
         const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
-        arr.forEach(a => {
-            a.changeVisible(v);
-        });
+        for (let i = 0; i < arr.length; i++) {
+            arr[i].changeVisible(v);
+        }
     }
 
     /**
@@ -5424,7 +5478,8 @@ export namespace no {
             let rect = targetNode.getComponent(UITransform).getBoundingBox(),
                 targetNodePos = no.position(targetNode);
             rect.center = v2();
-            children.forEach(child => {
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
                 const size = no.size(child), pos = no.position(child);
                 const xMin = pos.x - size.width / 2,
                     xMax = xMin + size.width,
@@ -5434,7 +5489,7 @@ export namespace no {
                 rect.xMax = Math.max(rect.xMax, xMax);
                 rect.yMin = Math.min(rect.yMin, yMin);
                 rect.yMax = Math.max(rect.yMax, yMax);
-            });
+            }
             rect.x += targetNodePos.x;
             rect.y += targetNodePos.y;
             return rect;
@@ -5504,9 +5559,9 @@ export namespace no {
     export function stringToNumberArray(v: string, split = ','): number[] {
         const a = v.split(split);
         let b: number[] = [];
-        a.forEach(c => {
-            b[b.length] = Number(c);
-        });
+        for (let i = 0; i < a.length; i++) {
+            b[b.length] = Number(a[i]); 
+        }
         return b;
     }
 
@@ -5532,9 +5587,9 @@ export namespace no {
         n.layer = Layers.Enum.UI_2D;
         n.addComponent(UITransform);
         if (components) {
-            components.forEach(c => {
-                n.addComponent(c);
-            });
+            for (let i = 0; i < components.length; i++) {
+                n.addComponent(components[i] as any);
+            }
         };
         return n;
     }
@@ -5546,9 +5601,11 @@ export namespace no {
      */
     export function createSensitiveWordDFA(words: string[]): any {
         const root: any = {};
-        for (let word of words) {
+        for (let i = 0; i < words.length; i++) {
             let node = root;
-            for (let char of word) {
+            let word = words[i];
+            for (let j = 0; j < word.length; j++) {
+                let char = word[j];
                 node[char] = node[char] || {};
                 node = node[char];
             }
@@ -5702,7 +5759,11 @@ export namespace no {
          */
         export async function getBundleNames() {
             return getBundleInfos().then(infos => {
-                return infos.map(info => info.name);
+                let names = [];
+                for(let i = 0, n = infos.length; i < n; i++){
+                    names.push(infos[i].name);
+                }
+                return names;
             });
         }
 
@@ -5714,7 +5775,13 @@ export namespace no {
         export async function getAssetUrlByUuid(uuid: string) {
             return Promise.all([getAssetInfo(uuid), getBundleNames()]).then(([info, bundleNames]) => {
                 const url: string = info.url.replace(/\.[^/.]+$/, '');
-                const bundleName = bundleNames.find(name => url.indexOf(`/${name}/`) > -1);
+                let bundleName = null;
+                for (let i = 0, n = bundleNames.length; i < n; i++) {
+                    if (url.indexOf('/' + bundleNames[i] + '/') > -1) {
+                        bundleName = bundleNames[i];
+                        break;
+                    }
+                }
                 return bundleName ? `${bundleName}${url.split(bundleName)[1]}` : url;
             });
         }
@@ -5782,9 +5849,10 @@ export namespace no {
         export async function loadAssetInfosOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
                 let a: _AssetInfo[] = [];
-                infos.forEach(info => {
+                for (let i = 0, n = infos.length; i < n; i++) {
+                    const info = infos[i];
                     if (info.url.indexOf(folderUrl) > -1) a[a.length] = info;
-                });
+                }
                 return a;
             });
         }
@@ -5798,11 +5866,12 @@ export namespace no {
         export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
                 let aa = [];
-                infos.forEach(a => {
+                for (let i = 0; i < infos.length; i++) {
+                    const a = infos[i];
                     if (a['url'].indexOf(folderUrl) > -1) {
                         aa[aa.length] = { uuid: a.uuid };
                     }
-                });
+                }
                 if (!aa.length) {
                     return [];
                 }
@@ -5845,10 +5914,11 @@ export namespace no {
         export async function getBundlesUnderFolder(folderUrl: string) {
             return getBundleInfos().then(infos => {
                 let bundles: string[] = [];
-                infos.forEach(info => {
+                for (let i = 0, n = infos.length; i < n; i++) {
+                    const info = infos[i];
                     if (info.url.indexOf(folderUrl) == 0)
                         bundles[bundles.length] = info.name;
-                });
+                }
                 return bundles;
             });
         }
@@ -5988,13 +6058,13 @@ export namespace no {
             if (idx > -1) {
                 const sss = getStringBetween(formula, '(', ')', idx);
                 const args: any[] = sss.split(',');
-                args.forEach((a, i) => {
-                    const b = splitFormula(a);
+                for (let i = 0; i < args.length; i++) {
+                    const b = splitFormula(args[i]);
                     if (typeof b == 'string' && b.startsWith('_'))
                         args[i] = b.replace('_', '-');
                     else
                         args[i] = b;
-                });
+                }
                 const a = Math[func](...args);
                 return splitFormula(formula.replace(`${func}(${sss})`, `${a}`));
             }
@@ -6082,7 +6152,8 @@ export namespace no {
             const keysA = Object.keys(a);
             const keysB = Object.keys(b);
             if (keysA.length !== keysB.length) return false;
-            for (const key of keysA) {
+            for (let i = 0, n = keysA.length; i < n; i++) {
+                let key = keysA[i];
                 if (!keysB.includes(key) || !objectEquals(a[key], b[key])) return false;
             }
             return true;
@@ -6276,7 +6347,9 @@ export namespace no {
         private _visible(node: Node, v: boolean) {
             const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
             if (blockInputEvents)
-                blockInputEvents.forEach(a => a.enabled = v);
+                for (let i = 0; i < blockInputEvents.length; i++) {
+                    blockInputEvents[i].enabled = v;
+                }
             const btn = node.getComponent('YJButton');
             if (btn)
                 btn['canClick'] = v;

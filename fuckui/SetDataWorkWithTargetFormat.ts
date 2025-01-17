@@ -33,9 +33,10 @@ export class SetDataWorkWithTargetFormat extends FuckUi {
     protected onDataChange(data: any) {
         if (this.targetDataWork) {
             let a = {};
-            this.dataMaps.forEach(map => {
+            for (let i = 0; i < this.dataMaps.length; i++) {
+                const map = this.dataMaps[i];
                 a[map.targetDataKey] = data[map.inputDataValueKey];
-            });
+            }
             this.targetDataWork.data = a;
             this.targetDataWork.init();
         }
