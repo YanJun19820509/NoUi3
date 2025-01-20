@@ -4,6 +4,7 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJDataWork } from 'NoUi3/base/YJDataWork';
 
 /**
  * Predefined variables
@@ -31,6 +32,8 @@ class ContentInfo {
         if (this.loadedNode.getComponent(YJLoadAssets))
             await this.loadedNode.getComponent(YJLoadAssets).load();
         this.loadedNode.parent = parent;
+        //将类型标识设置到dataWork中，用于区分不同内容
+        this.loadedNode.getComponent(YJDataWork).setValue('_content_type_', this.name);
     }
 
     public show(v: boolean): void {

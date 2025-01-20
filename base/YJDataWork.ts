@@ -186,8 +186,9 @@ export class YJDataWork extends Component {
             //     this._neecChangeData = false;
             // });
             requestAnimationFrame(() => {
-                this.setChangedDataToUi();
+                //_neecChangeData需要在setChangedDataToUi前设置为false，否则数据会异常
                 this._neecChangeData = false;
+                this.setChangedDataToUi();
             });
         }
         // if (!this.register.isInit) this.register.init();
