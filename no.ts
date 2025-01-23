@@ -5298,6 +5298,33 @@ export namespace no {
         return node['yj_need_render'] !== false;
     }
 
+    export function visibleByActiveInHierarchy(node: Node, v: boolean) {
+        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+        if (blockInputEvents)
+            for (let i = 0; i < blockInputEvents.length; i++) {
+                blockInputEvents[i].enabled = v;
+            }
+        const btn = node.getComponent('YJButton');
+        if (btn)
+            btn['canClick'] = v;
+        if (!v) {
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
+            no.x(node, 20000);
+        } else {
+            if (!node.active) node.active = true;
+            if (node['__origin_x__'] !== null) {
+                no.x(node, node['__origin_x__']);
+            }
+            let comps = node.getComponentsInChildren('YJDataWork');
+            for (let i = 0; i < comps.length; i++) {
+                comps[i]['onEnable']();
+            }
+        }
+        node['_activeInHierarchy'] = v;
+    }
+
     function onVisibleChange(node: Node, v: boolean) {
         const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
         arr.forEach(a => {
@@ -6195,7 +6222,7 @@ export namespace no {
         public get(type: string): Node {
             if (this.cacheMap.has(type)) {
                 const cache = this.cacheMap.get(type);
-                this._visible(cache.o, true);
+                visibleByActiveInHierarchy(cache.o, true);
                 this.cacheMap.delete(type);
                 return cache.o;
             }
@@ -6203,7 +6230,7 @@ export namespace no {
         }
 
         public put(type: string, node: Node) {
-            this._visible(node, false);
+            visibleByActiveInHierarchy(node, false);
             this.cacheMap.set(type, { o: node, t: Date.now() });
         }
 
@@ -6213,34 +6240,18 @@ export namespace no {
             });
             this.cacheMap.clear();
         }
-
-        private _visible(node: Node, v: boolean) {
-            const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
-            if (blockInputEvents)
-                blockInputEvents.forEach(a => a.enabled = v);
-            const btn = node.getComponent('YJButton');
-            if (btn)
-                btn['canClick'] = v;
-            if (node.parent) {
-                if (!v) {
-                    const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
-                    opacityCmp.opacity = 0;
-                    if (node['__origin_x__'] == null) {
-                        node['__origin_x__'] = x(node);
-                    }
-                    x(node, 20000);
-                } else {
-                    node.getComponent(UIOpacity).opacity = 255;
-                    if (node['__origin_x__'] !== null) {
-                        x(node, node['__origin_x__']);
-                    }
-                }
-            }
-        }
     }
     /**节点池 */
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
 
+    /**
+     * 获取对象类型
+     * @param obj 
+     * @returns 类型名：Array,Object,String,Number,Boolean,Function,Null,Undefined,Symbol
+     */
+    export function objectType(obj: any): string {
+        return Object.prototype.toString.call(obj).slice(8, -1);
+    }
 }
 no.addToWindowForDebug('no', no);

@@ -31,19 +31,15 @@ class ContentInfo {
         if (!no.checkValid(parent)) return;
         if (this.loadedNode.getComponent(YJLoadAssets))
             await this.loadedNode.getComponent(YJLoadAssets).load();
-        this.loadedNode.parent = parent;
         //将类型标识设置到dataWork中，用于区分不同内容
         this.loadedNode.getComponent(YJDataWork).setValue('_content_type_', this.name);
+        this.loadedNode.parent = parent;
     }
 
     public show(v: boolean): void {
         if (this.loadedNode) {
             if (!isValid(this.loadedNode)) return;
-            if (this.loadedNode['__origin_x__'] == null) {
-                this.loadedNode['__origin_x__'] = no.x(this.loadedNode);
-            }
-            no.visibleByOpacity(this.loadedNode, v);
-            no.x(this.loadedNode, !v ? 20000 : this.loadedNode['__origin_x__']);
+            no.visibleByActiveInHierarchy(this.loadedNode, v);
         }
     }
 

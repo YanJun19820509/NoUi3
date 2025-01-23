@@ -59,7 +59,7 @@ export class YJPanel extends Component {
     private _loaded: boolean = false;
     public nodeCacheKey: string;
     /**是否缓存到面板池，默认缓存 */
-    protected cacheToPool: boolean = false;
+    protected cacheToPool: boolean = true;
 
     onLoad() {
         if (EDITOR) {

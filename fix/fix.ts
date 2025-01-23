@@ -161,6 +161,17 @@ js.mixin(Skeleton.prototype, {
     }
 });
 
+const _off = Node.prototype.off;
+js.mixin(Node.prototype, {
+    off(type, callback, target, useCapture) {
+        if (!this._eventProcessor) {
+            no.warn('hack Node.prototype.off 节点销毁时没有_eventProcessor');
+            return;
+        }
+        _off.call(this, type, callback, target, useCapture);
+    }
+});
+
 //会出现错位，先去掉
 // js.mixin(Toggle.prototype, {
 //     playEffect() {
