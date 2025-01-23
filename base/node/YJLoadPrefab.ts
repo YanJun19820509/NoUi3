@@ -15,23 +15,12 @@ export default class YJLoadPrefab extends Component {
     @property({ type: PrefabInfo })
     prefabInfo: PrefabInfo = new PrefabInfo();
 
-    /** 是否自动加载预制体 */
-    @property
-    autoLoad: boolean = true;
-
     /** 材质信息uuid */
     @property({ visible() { return false; } })
     materialInfoUuid: string;
 
     /** 是否已加载完成 */
     public loaded: boolean = false;
-
-    /** 组件加载时自动加载预制体 */
-    onLoad() {
-        if (EDITOR) return;
-        if (!this.autoLoad) return;
-        this.loadPrefab();
-    }
 
     /** 组件销毁时清理 */
     onDestroy() {

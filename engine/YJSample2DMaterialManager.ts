@@ -309,6 +309,8 @@ export class YJSample2DMaterialInfo {
             const jsonName = jsonInfo.jsonName;
             const names = jsonInfo.names;
             for (let i = 0; i < names.length; i++) {
+                //如果已经存在同名的，则跳过，所以要确保同名必然同纹理，不同纹理必然不同名
+                if (this.atlasMap.has(names[i])) continue;
                 this.atlasMap.set(names[i], { idx: this.maxIdx, jsonName: jsonName });
             }
         }
@@ -319,6 +321,7 @@ export class YJSample2DMaterialInfo {
      * 从spriteframe的数据文件中获取spriteFrameInfo
      * @param name spriteFrame的名称
      * @returns [所属atlas下标，SpriteFrameInfo]
+     * 注意，共享材质情况下，有可能会有不同图集里有同名的纹理，现在只会返回先加入的图集的纹理，所以要确保同名必然同纹理，不同纹理必然不同名，否则显示会异常
      */
     public getSpriteFrameInAtlas(name: string): [number, SpriteFrameDataType] {
         let a = this.atlasMap.get(name);

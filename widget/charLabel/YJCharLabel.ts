@@ -20,6 +20,10 @@ import { YJGradientColor } from './YJGradientColor';
  * 自定义文本组件,使用时替换掉Label组件
  */
 
+
+//已测量文字最大最小宽
+const _measuredWidth: Map<string, number> = new Map();
+
 /**
  * 自定义文本渲染组件
  * 继承自Sprite组件，支持富文本、描边、渐变色等特性
@@ -196,16 +200,16 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
     /** 垂直对齐方式 */
-    @property({ type: Enum(VerticalTextAlignment), visible() { return false; } })
-    public get verticalAlign(): number {
-        return 1;
-    }
+    // @property({ type: Enum(VerticalTextAlignment), visible() { return false; } })
+    // public get verticalAlign(): number {
+    //     return 1;
+    // }
 
-    public set verticalAlign(v: number) {
-        if (v == this._verticalAlign) return;
-        this._verticalAlign = v;
-        this.setLabel();
-    }
+    // public set verticalAlign(v: number) {
+    //     if (v == this._verticalAlign) return;
+    //     this._verticalAlign = v;
+    //     this.setLabel();
+    // }
     /** 
      * 文字排版模式
      * NONE: 不限制大小
@@ -230,7 +234,7 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
     /** 最大宽度限制 */
-    @property({ visible() { return this.overflow != Label.Overflow.NONE; } })
+    @property({ visible() { return this._overflow != Label.Overflow.NONE; } })
     public get maxWidth(): number {
         return this._maxWidth * this.hdpScale;
     }
@@ -241,9 +245,9 @@ export class YJCharLabel extends Sprite {
         this.setLabel();
     }
     //固定宽
-    @property({ visible() { return this.overflow != Label.Overflow.NONE; } })
+    @property({ visible() { return this._overflow != Label.Overflow.NONE; } })
     public get fixWidth(): boolean {
-        if (this.overflow == Label.Overflow.NONE) return false;
+        if (this._overflow == Label.Overflow.NONE) return false;
         return this._fixWidth;
     }
 
@@ -402,10 +406,6 @@ export class YJCharLabel extends Sprite {
         this._packToAtlas = v;
     }
 
-    @property({ displayName: '使用job管理' })
-    useJob: boolean = true;
-
-
 
     @property({ serializable: true })
     protected _string: string = '';
@@ -467,8 +467,6 @@ export class YJCharLabel extends Sprite {
 
     //高清模式系数
     private _hdpScale = 2;
-    //已测量文字最大最小宽
-    private _measuredWidth: { [k: string]: number } = {};
 
     private _needSet: boolean = true;
 
@@ -579,17 +577,7 @@ export class YJCharLabel extends Sprite {
         else fontSize *= this._hdp ? this._hdpScale : 1;
         if (bold == null) bold = this.bold;
         if (italic == null) italic = this.italic;
-        switch (this.verticalAlign) {
-            case VerticalTextAlignment.TOP:
-                ctx.textBaseline = 'top';
-                break;
-            case VerticalTextAlignment.CENTER:
-                ctx.textBaseline = 'middle';
-                break;
-            case VerticalTextAlignment.BOTTOM:
-                ctx.textBaseline = 'bottom';
-                break;
-        }
+        ctx.textBaseline = this._overflow == Label.Overflow.NONE ? 'middle' : 'top';
         ctx.textAlign = 'left';
         ctx.imageSmoothingQuality = 'high';
         ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
@@ -632,23 +620,27 @@ export class YJCharLabel extends Sprite {
         return c.charCodeAt(0) < 128;
     }
 
-    private getMeasureWidth(ctx: CanvasRenderingContext2D, str: any, fontSize?: number): number {
+    private getCharWidth(c: string, fontSize: number): number {
+        const a = this.isASCII(c);
+        if (a) {
+            const k = c + '::' + fontSize;
+            if (!_measuredWidth.has(k)) {
+                const ctx = this.shareCanvas().context;
+                const mt = ctx.measureText(c);
+                _measuredWidth.set(k, mt.width);
+            }
+            return _measuredWidth.get(k);
+        } else {
+            return fontSize;
+        }
+    }
+
+    private measureWidth(ctx: CanvasRenderingContext2D, str: any, fontSize?: number): number {
         if (fontSize == null) fontSize = this.fontSize;
         else fontSize *= this._hdp ? this._hdpScale : 1;
         let w = 0;
         for (let i = 0, n = str.length; i < n; i++) {
-            const c = str[i], k = c + '::' + fontSize, w1 = this._measuredWidth[k];
-            if (w1) w += w1;
-            else {
-                const a = this.isASCII(c);
-                if (a) {
-                    const mt = ctx.measureText(c);
-                    w += mt.width;
-                    this._measuredWidth[k] = mt.width;
-                } else {
-                    w += fontSize;
-                }
-            }
+            w += this.getCharWidth(str[i], fontSize);
         }
         return w;
     }
@@ -661,15 +653,13 @@ export class YJCharLabel extends Sprite {
         const ctx = this.shareCanvas().context;
         this.setFontStyle(ctx);
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
-        const maxWidth = this.maxWidth;
-        if (this.overflow == Label.Overflow.RESIZE_HEIGHT) {
+        if (this._overflow == Label.Overflow.RESIZE_HEIGHT) {
+            let maxWidth = this.maxWidth;
             const extWidth = this.extWidth();
             // 处理换行符
             const lines = v.split('\\n');
             let resultLines: string[] = [];
-            let lineHeight = this.lineHeight;
-            let width = extWidth;
-
+            const halfWidth = this.fontSize / 2;
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
                 // 如果是空行，直接添加
@@ -685,10 +675,10 @@ export class YJCharLabel extends Sprite {
 
                 for (let j = 0; j < words.length; j++) {
                     const word = words[j];
-                    const wordWidth = this.getMeasureWidth(ctx, word);
+                    const wordWidth = this.measureWidth(ctx, word);
 
                     // 检查是否需要换行
-                    if (currentWidth + wordWidth <= maxWidth - 2 * this.hdpScale) {
+                    if (currentWidth + wordWidth <= this.maxWidth + halfWidth) {
                         currentLine += word;
                         currentWidth += wordWidth;
                     } else {
@@ -696,25 +686,27 @@ export class YJCharLabel extends Sprite {
                         if (currentLine) {
                             resultLines[resultLines.length] = currentLine;
                             currentLine = '';
+                            if (currentWidth > maxWidth) maxWidth = currentWidth;
                             currentWidth = extWidth;
                         }
 
                         // 处理单个词超过最大宽度的情况
-                        if (wordWidth > maxWidth - extWidth - 2 * this.hdpScale) {
+                        if (wordWidth > this.maxWidth + halfWidth) {
                             // 逐字符添加
                             let tempLine = '';
                             let tempWidth = extWidth;
 
                             for (let k = 0; k < word.length; k++) {
                                 const char = word[k];
-                                const charWidth = this.getMeasureWidth(ctx, char);
+                                const charWidth = this.measureWidth(ctx, char);
 
-                                if (tempWidth + charWidth <= maxWidth - 2 * this.hdpScale) {
+                                if (tempWidth + charWidth <= this.maxWidth + halfWidth) {
                                     tempLine += char;
                                     tempWidth += charWidth;
                                 } else {
                                     if (tempLine) {
                                         resultLines[resultLines.length] = tempLine;
+                                        if (tempWidth > maxWidth) maxWidth = tempWidth;
                                     }
                                     tempLine = char;
                                     tempWidth = extWidth + charWidth;
@@ -738,47 +730,52 @@ export class YJCharLabel extends Sprite {
                 }
             }
 
-            width = resultLines.length == 1 && !this.fixWidth ?
-                this.getMeasureWidth(ctx, resultLines[0]) + extWidth :
-                maxWidth;
-
-            this.drawLines(resultLines, width, lineHeight);
+            this.drawLines(resultLines, this.fixWidth ? this.maxWidth : maxWidth, this.lineHeight);
         } else {
-            let w = this.getMeasureWidth(ctx, v),
-                ww: number = 0,
-                lineHeight = this.lineHeight;
-            if (this.overflow == Label.Overflow.SHRINK) {
-                ww = w;
-            } else if (this.overflow == Label.Overflow.CLAMP) {
-                ww = Math.min(w, maxWidth);
-            } else {
-                ww = w;
+            // 处理换行符
+            const lines = v.split('\\n');
+            let resultLines: string[] = [];
+            let maxWidth = 0;
+            for (let i = 0; i < lines.length; i++) {
+                const currentLine = lines[i];
+                let w = this.measureWidth(ctx, currentLine),
+                    ww: number = 0;
+                if (this._overflow == Label.Overflow.SHRINK) {
+                    ww = w;
+                } else if (this._overflow == Label.Overflow.CLAMP) {
+                    ww = Math.min(w, this.maxWidth);
+                } else {
+                    ww = w;
+                }
+                if (maxWidth < ww) maxWidth = ww;
+                resultLines[resultLines.length] = currentLine;
             }
-            this.drawLine(v, !this.fixWidth ? ww : maxWidth, lineHeight);
+            const width = this._overflow != Label.Overflow.NONE && this.fixWidth ? this.maxWidth : maxWidth;
+            if (resultLines.length > 1) {
+                this.drawLines(resultLines, width + this.extWidth(), this.lineHeight);
+            } else {
+                this.drawLine(resultLines[0], width, this.lineHeight);
+            }
         }
         return false;
     }
 
     private drawLine(v: string, width: number, height: number) {
         const canvas = this.shareCanvas();
-        let x = 2,
-            y = 0;
         width += this.extWidth() + 2;
         height += this.extHeight();
         canvas.canvas.width = width;
         canvas.canvas.height = height;
 
-        if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-            y = height / 2 - (this.underline ? this.underlineWidth : 0);
-            if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
-        } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - (this.underline ? this.underlineWidth : 0);
-            if (this.outlineWidth > 0) y -= this.outlineWidth;
-            if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
+        let x = 2,
+            y = !this.underline ? height / 2 : 2;
+        if (this.underline) {
+            if (this.outlineWidth > 0) y += this.outlineWidth / 2;
+            if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
+                y -= this.shadowOffset.y;
+            }
         } else {
-            if (this.outlineWidth > 0) y += this.outlineWidth;
-            if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
-            if (this.underline && this.underlineWidth > 0) y += this.underlineWidth;
+            if (this.shadowBlur > 0) y -= this.shadowOffset.y / 2;
         }
 
         if (this.outlineWidth > 0) {
@@ -789,6 +786,8 @@ export class YJCharLabel extends Sprite {
         }
         let ctx = canvas.context;
         this.setFontStyle(ctx);
+        if (this.underline)
+            ctx.textBaseline = 'top';
         if (this.gradientColor) {
             ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width, height });
         }
@@ -800,7 +799,7 @@ export class YJCharLabel extends Sprite {
         const fontSize = this.fontSize;
         let x1 = x;
         for (let i = 0, n = v.length; i < n; i++) {
-            const c = v[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+            const c = v[i], w = this.getCharWidth(c, fontSize);
             if (this.outlineWidth > 0) {
                 ctx.strokeText(c, x1, y);
             }
@@ -811,7 +810,7 @@ export class YJCharLabel extends Sprite {
         this.drawUnderline(ctx, width, x, height);
 
         let scale = 1;
-        if (this.overflow == Label.Overflow.SHRINK) {
+        if (this._overflow == Label.Overflow.SHRINK) {
             const maxWidth = this.maxWidth;
             if (width > maxWidth) {
                 scale = maxWidth / width;
@@ -834,25 +833,18 @@ export class YJCharLabel extends Sprite {
         for (let i = 0; i < lines.length; i++) {
             let v = lines[i];
             this.setFontStyle(ctx);
+            ctx.textBaseline = 'top';
             if (this.outlineWidth > 0) this.setStrokeStyle(ctx);
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
             let y = hh * i;
 
-            if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-                y += hh / 2 - (this.underline ? this.underlineWidth : 0);
-                if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
-            } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - (this.underline ? this.underlineWidth : 0);
-                if (this.outlineWidth > 0) y -= this.outlineWidth;
-                if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
-            } else {
-                if (this.outlineWidth > 0) y += this.outlineWidth;
-                if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
-                if (this.underline && this.underlineWidth > 0) y += this.underlineWidth * i;
+            if (this.outlineWidth > 0) y += this.outlineWidth / 2;
+            if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
+                y -= this.shadowOffset.y;
             }
 
-            const w = this.getMeasureWidth(ctx, v), oy = hh * (i + 1);
+            const w = this.measureWidth(ctx, v);
 
             let x = 2;
             if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
@@ -875,13 +867,13 @@ export class YJCharLabel extends Sprite {
             const fontSize = this.fontSize;
             let x1 = x;
             for (let j = 0; j < v.length; j++) {
-                const c = v[j], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                const c = v[j], w = this.getCharWidth(c, fontSize);
                 if (this.outlineWidth > 0)
                     ctx.strokeText(c, x1, y);
                 ctx.fillText(c, x1, y);
                 x1 += w;
             }
-            this.drawUnderline(ctx, w, x, oy);
+            this.drawUnderline(ctx, w, x, hh * (i + 1));
         }
         this.fixHDP(ctx, width, canvas.canvas.height);
     }
@@ -895,8 +887,8 @@ export class YJCharLabel extends Sprite {
 
     private extHeight(): number {
         let a = 2;
-        if (this.outlineWidth > 0) a += this.outlineWidth + 2;
-        if (this.shadowBlur > 0) a += this.shadowBlur * 2 + Math.abs(this.shadowOffset.y);
+        if (this.outlineWidth > 0) a += this.outlineWidth;
+        if (this.shadowBlur > 0) a += this.shadowBlur + Math.max(Math.abs(this.shadowOffset.y), this.shadowBlur);//+ Math.abs(this.shadowOffset.y);
         if (this.underline) a += this.underlineWidth + this.hdpScale;
         return a;
     }
@@ -914,6 +906,7 @@ export class YJCharLabel extends Sprite {
     private drawUnderline(ctx: CanvasRenderingContext2D, width: number, x: number, y: number) {
         if (!this.underline || width == 0) return;
         y -= this.underlineWidth + this.hdpScale;
+        if (this.shadowBlur > 0 && this.shadowOffset.y > 0) y -= this.shadowOffset.y;
         ctx.beginPath();
         ctx.strokeStyle = '#' + this._fontColor.toHEX('#rrggbb');
         ctx.lineWidth = this.underlineWidth;
@@ -928,7 +921,7 @@ export class YJCharLabel extends Sprite {
         if (p) {
             let width = p.rect.width,
                 height = p.rect.height;
-            if (this.overflow == Label.Overflow.SHRINK) {
+            if (this._overflow == Label.Overflow.SHRINK) {
                 const maxWidth = this.maxWidth;
                 if (width > maxWidth) {
                     let scale = maxWidth / width;
@@ -965,10 +958,7 @@ export class YJCharLabel extends Sprite {
         this.spriteFrame = spriteFrame;
 
         if (this.packToAtlas && this.dynamicAtlas) {
-            if (this.useJob)
-                YJJobManager.ins.addTask(this.packSpriteFrame.bind(this));
-            else
-                this.packSpriteFrame();
+            YJJobManager.ins.addTask(this.packSpriteFrame.bind(this));
         }
         this.clearCanvas();
     }
@@ -990,32 +980,66 @@ export class YJCharLabel extends Sprite {
      * @param v 富文本内容
      */
     private drawRichString(v: string) {
-        if (this.overflow != Label.Overflow.RESIZE_HEIGHT) this.drawRichStringNotResizeHeight(v);
+        if (this._overflow != Label.Overflow.RESIZE_HEIGHT) this.drawRichStringNotResizeHeight(v);
         else this.drawRichStringWithResizeHeight(v);
         return false;
     }
 
     private drawRichStringNotResizeHeight(v: string) {
-        const maxWidth = this.maxWidth;
         const ctx = this.shareCanvas().context;
+        const extWidth = this.extWidth();
         let a = new HtmlTextParser().parse(v),
-            ww = 0,
+            lines: any[] = [],
+            oneLine: any = { htmls: [], width: 0 },
+            width = extWidth,
             lineHeight = this.lineHeight,
-            maxSize = this.fontSize;
+            ww = 0,
+            maxSize = this.fontSize,
+            maxWidth = 0;
         for (let i = 0, n = a.length; i < n; i++) {
             const aa = a[i], style = aa.style, text = aa.text;
+
+            if (style?.isNewLine && text == '') {
+                oneLine.width = width;
+                lines[lines.length] = no.clone(oneLine);
+                oneLine.htmls.length = 0;
+                width = extWidth;
+                if (maxWidth < ww) maxWidth = ww;
+                ww = 0;
+                continue;
+            }
+
             this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
             if (style?.outline || this.outlineWidth > 0) this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
+
             maxSize = Math.max(maxSize, style?.size || 0);
 
-            let w = this.getMeasureWidth(ctx, text, style?.size);
+            let w = this.measureWidth(ctx, text, style?.size);
             ww += w;
+
+            oneLine.htmls[oneLine.htmls.length] = { style, text };
         }
-        if (this.overflow == Label.Overflow.CLAMP) {
-            ww = Math.min(ww, maxWidth);
+        // 添加最后一行
+        if (oneLine) {
+            lines[lines.length] = oneLine;
         }
-        this.drawHtmlTexts(a, !this.fixWidth ? ww : maxWidth, lineHeight, maxSize);
+        if (maxWidth < ww) maxWidth = ww;
+
+        let www = maxWidth;
+        if (this._overflow != Label.Overflow.NONE) {
+            if (this.fixWidth) {
+                www = this.maxWidth;
+            } else if (this._overflow == Label.Overflow.CLAMP) {
+                www = Math.min(maxWidth, this.maxWidth);
+            }
+        }
+
+        if (lines.length > 1) {
+            this.drawHtmlLines(lines, www + this.extWidth(), lineHeight);
+        } else {
+            this.drawHtmlTexts(a, www, lineHeight, maxSize);
+        }
     }
 
     /**
@@ -1030,7 +1054,7 @@ export class YJCharLabel extends Sprite {
         let blankWork = '', blankWidth = 0;
         if (this.blankBreakWord) {
             blankWork = ' ';
-            blankWidth = this.getMeasureWidth(ctx, blankWork);
+            blankWidth = this.measureWidth(ctx, blankWork);
         }
 
         let a = new HtmlTextParser().parse(v),
@@ -1077,7 +1101,7 @@ export class YJCharLabel extends Sprite {
 
             for (let i = 0, n = words.length; i < n; i++) {
                 const c = words[i];
-                let w = this.getMeasureWidth(ctx, c, style?.size);
+                let w = this.measureWidth(ctx, c, style?.size);
                 if (width + w <= maxWidth - 4 * this.hdpScale) {
                     html.text += c + (i < n - 1 ? blankWork : '');
                     width += w + (i < n - 1 ? blankWidth : 0);
@@ -1106,28 +1130,20 @@ export class YJCharLabel extends Sprite {
 
     private drawHtmlTexts(htmls: IHtmlTextParserResultObj[], width: number, height: number, fontSize: number) {
         const canvas = this.shareCanvas();
-
-        let x = 2,
-            y = 0;
         width += this.extWidth() + 2;
         height += this.extHeight();
         canvas.canvas.width = width;
         canvas.canvas.height = height;
-        const ctx = canvas.context;
-
-        if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-            y = height / 2 - (this.underline ? this.underlineWidth : 0);
-            if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
-        } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-            y = height - (this.underline ? this.underlineWidth : 0);
-            if (this.outlineWidth > 0) y -= this.outlineWidth;
-            if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
+        let x = 2,
+            y = this.underline ? 2 : (height / 2);
+        if (this.underline) {
+            if (this.outlineWidth > 0) y += this.outlineWidth / 2;
+            if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
+                y -= this.shadowOffset.y;
+            }
         } else {
-            if (this.outlineWidth > 0) y += this.outlineWidth;
-            if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
-            if (this.underline && this.underlineWidth > 0) y += this.underlineWidth;
+            if (this.shadowBlur > 0) y -= this.shadowOffset.y / 2;
         }
-
         if (this.outlineWidth > 0) {
             x += this.outlineWidth + 2;
         }
@@ -1135,10 +1151,13 @@ export class YJCharLabel extends Sprite {
             x += this.shadowBlur + (this.shadowOffset.x < 0 ? -this.shadowOffset.x : 0);
         }
 
+        const ctx = canvas.context;
         let len = 0, x1 = x;
         for (let i = 0, n = htmls.length; i < n; i++) {
             const html = htmls[i], style = html.style, text = html.text;
             this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+            if (this.underline)
+                ctx.textBaseline = 'top';
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
             if (style?.outline || this.outlineWidth > 0) {
                 this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
@@ -1149,7 +1168,7 @@ export class YJCharLabel extends Sprite {
             const fontSize = style?.size * this.hdpScale || this.fontSize;
             let x2 = x1;
             for (let i = 0, n = text.length; i < n; i++) {
-                const c = text[i], k = c + '::' + fontSize, w = this._measuredWidth[k] || fontSize;
+                const c = text[i], w = this.getCharWidth(c, fontSize);
 
                 if (style?.outline || this.outlineWidth > 0) {
                     ctx.strokeText(c, x2, y);
@@ -1157,7 +1176,7 @@ export class YJCharLabel extends Sprite {
                 ctx.fillText(c, x2, y);
                 x2 += w;
             }
-            // const w = this.getMeasureWidth(ctx, text, style?.size);
+            // const w = this.measureWidth(ctx, text, style?.size);
             len += x2 - x1;
             x1 = x2;
         }
@@ -1165,7 +1184,7 @@ export class YJCharLabel extends Sprite {
         this.drawUnderline(ctx, len, x, height);
 
         let scale = 1;
-        if (this.overflow == Label.Overflow.SHRINK) {
+        if (this._overflow == Label.Overflow.SHRINK) {
             const maxWidth = this.maxWidth;
             if (width > maxWidth) {
                 scale = maxWidth / width;
@@ -1196,19 +1215,11 @@ export class YJCharLabel extends Sprite {
             const line = lines[i];
             let y = hh * i;
 
-            if (this.verticalAlign == VerticalTextAlignment.CENTER) {
-                y += hh / 2 - (this.underline ? this.underlineWidth : 0);
-                if (this.shadowBlur > 0) y += (this.shadowBlur - this.shadowOffset.y) / 2;
-            } else if (this.verticalAlign == VerticalTextAlignment.BOTTOM) {
-                y += hh - (this.underline ? this.underlineWidth : 0);
-                if (this.outlineWidth > 0) y -= this.outlineWidth;
-                if (this.shadowBlur > 0) y -= this.shadowBlur + (this.shadowOffset.y > 0 ? this.shadowOffset.y : 0);
-            } else {
-                if (this.outlineWidth > 0) y += this.outlineWidth;
-                if (this.shadowBlur > 0) y += this.shadowBlur - (this.shadowOffset.y < 0 ? this.shadowOffset.y : 0);
-                if (this.underline && this.underlineWidth > 0) y += this.underlineWidth * i;
+            if (this.outlineWidth > 0) y += this.outlineWidth / 2;
+            if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
+                y -= this.shadowOffset.y;
             }
-
+            
             let x = 2;
             if (this.horizontalAlign == HorizontalTextAlignment.LEFT) {
                 if (this.outlineWidth > 0) {
@@ -1231,6 +1242,7 @@ export class YJCharLabel extends Sprite {
             for (let j = 0, m = htmls.length; j < m; j++) {
                 const html = htmls[j], style = html.style, text = html.text;
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
+                ctx.textBaseline = 'top';
                 if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
                 const fontSize = style?.size * this.hdpScale || this.fontSize;
@@ -1240,8 +1252,7 @@ export class YJCharLabel extends Sprite {
                 if (style?.outline || this.outlineWidth > 0) {
                     this.setStrokeStyle(ctx, style?.outline?.color, style?.outline?.width);
                     for (let k = 0, p = text.length; k < p; k++) {
-                        const c = text[k], key = c + '::' + fontSize;
-                        const w = this._measuredWidth[key] || fontSize;
+                        const c = text[k], w = this.getCharWidth(c, fontSize);
                         ctx.strokeText(c, x2, y);
                         x2 += w;
                     }
@@ -1253,8 +1264,7 @@ export class YJCharLabel extends Sprite {
                     ctx.fillStyle = this.gradientColor.createGradient(ctx, { x: 0, y, width: canvas.canvas.width, height: 0 });
                 }
                 for (let k = 0, p = text.length; k < p; k++) {
-                    const c = text[k], key = c + '::' + fontSize;
-                    const w = this._measuredWidth[key] || fontSize;
+                    const c = text[k], w = this.getCharWidth(c, fontSize);
                     ctx.fillText(c, x2, y);
                     x2 += w;
                 }

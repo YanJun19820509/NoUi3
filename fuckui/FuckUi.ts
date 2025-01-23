@@ -37,7 +37,9 @@ export class FuckUi extends Component {
     showValueLog: boolean = false;
 
     public dataDirty: boolean = false;
-
+    /**
+     * dataWork的data引用
+     */
     private _oldData: any;
 
     onLoad() {
@@ -45,6 +47,11 @@ export class FuckUi extends Component {
             if (!this.registerNode) this.registerNode = no.getComponentInParents(this.node, 'YJDataWork')?.node;
         } else {
             this.update = function () { };
+            if (DEBUG) {
+                if (this.bind_keys.indexOf('.') != -1) {
+                    no.err('FuckUi不支持多级key', this.name, this.bind_keys);
+                }
+            }
         }
     }
 

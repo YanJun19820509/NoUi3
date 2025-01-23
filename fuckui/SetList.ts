@@ -38,6 +38,8 @@ export class SetList extends FuckUi {
     // @property({ displayName: '创建间隔(s)', step: .01, min: 0 })
     // wait: number = 0;
 
+    @property({ displayName: '第一次逐个创建', tooltip: '逐个创建能提高性能，如果没有特殊需求，不要取消' })
+    isFirst = true;
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
 
@@ -74,7 +76,6 @@ export class SetList extends FuckUi {
 
 
     private listData: any[];
-    // private listItems: Node[] = [];
     private isVertical: boolean;
     /**
      * 横向时指宽，纵向时指高
@@ -87,10 +88,9 @@ export class SetList extends FuckUi {
      */
     private lastIndex: number = 0;
     private _loaded: boolean = false;
-    // private isFirst: boolean = true;
-    // private waitTime: number;
     private _isSettingData: boolean = false;
     private scrollViewContent: Node;
+    private _1b1: boolean = false;
 
     async onLoad() {
         super.onLoad();
@@ -189,6 +189,7 @@ export class SetList extends FuckUi {
         //         this.setItemPosition(item, i);
         //     }
         // }
+        if (listItems.length == 0) this._1b1 = this.isFirst;
         if (this.autoScrollBack && listItems.length > 0) {
             this.lastIndex = 0;
             no.position(this.scrollViewContent, v3(0, 0));
@@ -239,7 +240,8 @@ export class SetList extends FuckUi {
         no.sortArray(this.content.children, (a, b) => {
             return a['__dataIndex'] - b['__dataIndex'];
         });
-        if (this.uiAnim?.enabled) {
+        if (this.uiAnim?.enabled || this._1b1) {
+            this._1b1 = false;
             let i = 0;
             this.schedule(() => {
                 this.setItem(i++);
@@ -258,6 +260,7 @@ export class SetList extends FuckUi {
 
     private setItem(i: number) {
         let item = this.content.children[i];
+        let isNew = false;
         if (!item) {
             const node = instantiate(this.template);
             no.position(node, v3(0, 0));
@@ -269,6 +272,7 @@ export class SetList extends FuckUi {
             box.parent = this.content;
             this.setItemPosition(box, i);
             item = box;
+            isNew = true;
         }
         const data_idx = item['__dataIndex'];
         if (this.listData[data_idx]) {
@@ -277,9 +281,21 @@ export class SetList extends FuckUi {
         no.visible(item.children[0], i < this.allNum);
         if (this.uiAnim?.enabled) {
             this.uiAnim.play(item.children[0]);
-            this.scheduleOnce(() => {
-                this.setItem(++i);
-            }, 0.1);
+        } else if (this.isFirst && isNew) {
+            no.TweenSet.play(no.parseTweenData([
+                {
+                    set: 1,
+                    props: {
+                        scale: [0, 0]
+                    }
+                }, {
+                    duration: .1,
+                    to: 1,
+                    props: {
+                        scale: [1, 1]
+                    }
+                }
+            ], item.children[0]));
         }
     }
 

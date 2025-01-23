@@ -61,6 +61,7 @@ export class SetCreateNode extends FuckUi {
     protected needSetDynamicAtlas: boolean = true;
     private _isSettingData: boolean = false;
     private itemSize: Size;
+    private _1b1: boolean = false;
 
     onDestroy() {
         if (EDITOR) {
@@ -128,6 +129,9 @@ export class SetCreateNode extends FuckUi {
         }
 
         let l = this.container.children.length;
+        if (l == 0) {
+            this._1b1 = this.isFirst;
+        }
         if (!this.onlyAdd)
             for (let i = l - 1; i >= 0; i--) {
                 no.visible(this.container.children[i], !!data[i]);
@@ -149,23 +153,14 @@ export class SetCreateNode extends FuckUi {
         // }
 
         let start = !this.onlyAdd ? 0 : l;
-        if (this.uiAnim?.enabled) {
+        if (this.uiAnim?.enabled || this._1b1) {
+            this._1b1 = false;
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
                     this.setItem(data, start++);
                 }
             }, 0.1, Math.ceil((data.length - start) / this.batchNum));
         } else {
-            // if (this.isFirst) {
-            //     this.isFirst = false;
-            //     this.schedule(() => {
-            //         this.setItem(data, start++);
-            //     }, 0.1, data.length - start);
-            // } else {
-            //     for (let i = start, len = data.length; i < len; i++) {
-            //         this.setItem(data, i);
-            //     }
-            // }
             const len = data.length;
             YJJobManager.ins.addTask(() => {
                 this.setItem(data, start++);
@@ -177,7 +172,7 @@ export class SetCreateNode extends FuckUi {
 
     private initItem(item: Node) {
         no.position(item, v3(0, 0));
-        if (this.uiAnim?.enabled) {
+        if (this.uiAnim?.enabled || this.isFirst) {
             const box = no.newNode('box');
             box.addComponent(UIOpacity);
             const layout = item.getComponent(Layout);
@@ -212,16 +207,18 @@ export class SetCreateNode extends FuckUi {
             no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
+        let isNew = false;
         let item = this.container.children[i];
         if (!item) {
             item = this.initItem(instantiate(this.template));
             this.container.addChild(item);
+            isNew = true;
         }
-        if (this.uiAnim?.enabled) item = item.children[0];
         if (data[i] == null) {
             no.visible(item, false);
             return;
         }
+        if (this.uiAnim?.enabled || this.isFirst) item = item.children[0];
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
             a.data = data[i];
@@ -230,6 +227,21 @@ export class SetCreateNode extends FuckUi {
         no.visible(item, true);
         if (this.uiAnim?.enabled) {
             this.uiAnim.play(item);
+        } else if (this.isFirst && isNew) {
+            no.TweenSet.play(no.parseTweenData([
+                {
+                    set: 1,
+                    props: {
+                        scale: [0, 0]
+                    }
+                }, {
+                    duration: .1,
+                    to: 1,
+                    props: {
+                        scale: [1, 1]
+                    }
+                }
+            ], item));
         }
     }
 

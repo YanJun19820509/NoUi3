@@ -1104,9 +1104,9 @@ export namespace no {
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
         if (array == null || item == null) return -1;
-        for(let i = 0, n = array.length; i < n; i++) {
+        for (let i = 0, n = array.length; i < n; i++) {
             let a = array[i];
-            if(a[key] == item || a[key] == item[key]) {
+            if (a[key] == item || a[key] == item[key]) {
                 return i;
             }
         }
@@ -1114,9 +1114,10 @@ export namespace no {
     }
 
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
-        for(let i = 0, n = array.length; i < n; i++) {
+        if (array == null || value == null || key == null) return null as T;
+        for (let i = 0, n = array.length; i < n; i++) {
             let a = array[i];
-            if(a[key] == value || a[key] == value[key]) {
+            if (a[key] == value || a[key] == value[key]) {
                 return a as T;
             }
         }
@@ -3669,7 +3670,7 @@ export namespace no {
             }
         }
 
-        public loadAllPrefabsInBundle(bundleName: string) {
+        public loadAllPrefabsInBundle(bundleName: string, onComplete?: () => void) {
             const bundle = this.getLoadedBundle(bundleName),
                 assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
@@ -3678,7 +3679,19 @@ export namespace no {
                 if (info.ctor?.name == 'Prefab')
                     requests[requests.length] = info.path;
             }
-            bundle.load(requests);
+            bundle.load(requests, onComplete);
+        }
+
+        public loadAllImagesInBundle(bundleName: string, type: 'Texture2D' | 'SpriteFrame' | 'ImageAsset', onComplete?: () => void) {
+            const bundle = this.getLoadedBundle(bundleName),
+                assetInfos = bundle['_config'].assetInfos._map;
+            let requests: any[] = [];
+            for (const uuid in assetInfos) {
+                const info = assetInfos[uuid];
+                if (info.ctor?.name == type)
+                    requests[requests.length] = info.path;
+            }
+            bundle.load(requests, onComplete);
         }
 
         public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
@@ -5560,7 +5573,7 @@ export namespace no {
         const a = v.split(split);
         let b: number[] = [];
         for (let i = 0; i < a.length; i++) {
-            b[b.length] = Number(a[i]); 
+            b[b.length] = Number(a[i]);
         }
         return b;
     }
@@ -5760,7 +5773,7 @@ export namespace no {
         export async function getBundleNames() {
             return getBundleInfos().then(infos => {
                 let names = [];
-                for(let i = 0, n = infos.length; i < n; i++){
+                for (let i = 0, n = infos.length; i < n; i++) {
                     names.push(infos[i].name);
                 }
                 return names;

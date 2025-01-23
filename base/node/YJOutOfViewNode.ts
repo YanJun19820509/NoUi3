@@ -1,4 +1,4 @@
-import { ccclass, Component, Node, property, v3 } from "NoUi3/yj";
+import { ccclass, Component, EDITOR, executeInEditMode, Node, property, v3 } from "NoUi3/yj";
 import { YJOutOfViewManager } from "./YJOutOfViewManager";
 import { YJDataWork } from "../YJDataWork";
 import { no } from "NoUi3/no";
@@ -10,10 +10,17 @@ import { no } from "NoUi3/no";
  */
 
 @ccclass('YJOutOfViewNode')
+@executeInEditMode()
 export class YJOutOfViewNode extends Component {
     /** 管理器节点引用 */
     @property({ type: Node })
     managerNode: Node = null;
+
+    onLoad() {
+        if (EDITOR) {
+            this.managerNode = no.getComponentInParents(this.node, YJOutOfViewManager).node;
+        }
+    }
 
     /** 组件启用时将自身添加到管理器中 */
     onEnable() {

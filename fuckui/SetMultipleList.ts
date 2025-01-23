@@ -252,31 +252,6 @@ export class SetMultipleList extends FuckUi {
         this._isSettingData = false;
     }
 
-    // private setList() {
-    //     if (!this.node.isValid) return;
-    //     for (const type in this.typeDataIndexMap) {
-    //         const indexs: number[] = this.typeDataIndexMap[type],
-    //             items: Node[] = this.itemsMap[type],
-    //             n = indexs.length,
-    //             len = items.length,
-    //             lastIndex = this.lastIndex;
-    //         let i = 0;
-    //         for (; i < n; i++) {
-    //             if (i >= lastIndex) break;
-    //         }
-    //         if (n - i < len) i = n - len;
-    //         for (let j = 0; j < len; j++) {
-    //             const k = indexs[i + j],
-    //                 item = items[j];
-    //             if (k != undefined) {
-    //                 this.setItemData(item, this.listData[k]);
-    //                 this.setItemPosition(item, k);
-    //                 no.visible(item, true);
-    //             }
-    //         }
-    //     }
-    // }
-
     private setList() {
         if (!this.node.isValid) return;
         const types = Object.keys(this.itemsMap);
