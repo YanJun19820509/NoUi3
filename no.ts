@@ -5312,6 +5312,10 @@ export namespace no {
                 node['__origin_x__'] = no.x(node);
             }
             no.x(node, 20000);
+            let comps = node.getComponentsInChildren('YJDataWork');
+            for (let i = 0; i < comps.length; i++) {
+                comps[i]['onDisable']();
+            }
         } else {
             if (!node.active) node.active = true;
             if (node['__origin_x__'] !== null) {

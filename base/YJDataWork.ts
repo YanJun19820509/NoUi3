@@ -98,6 +98,10 @@ export class YJDataWork extends Component {
         this.afterInit();
     }
 
+    onDisable() {
+        no.evn.targetOff(this);
+    }
+
     /**
      * 使用指定数据初始化
      * @param d 初始数据
