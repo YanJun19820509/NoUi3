@@ -175,7 +175,7 @@ export class YJLoadAssets extends Component {
         if (EDITOR) {
             // this.showSpriteFrame = true;
             this.textureInfos.forEach(info => {
-                // info.resetInfo();
+                info.resetInfo();
             });
         }
         // this.setPanelNameToSubNode();
