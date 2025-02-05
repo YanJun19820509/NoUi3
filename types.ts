@@ -343,36 +343,39 @@ export class TextureInfo extends LoadAssetsInfo {
     public set texture(v: Texture2D) {
         if (v) {
             this.setPathAndName(v.uuid, info => {
-                this.setAtlasJson(info);
+                this.path = this.path.replace('.png', '');
+                this.setAtlasJson();
             });
         }
     }
 
     public async addTexture(uuid: string) {
-        // uuid = uuid.replace('@6c48a', '');
         return Promise.all([no.EditorMode.getAssetInfo(uuid), no.EditorMode.getAssetUrlByUuid(uuid)]).then(([info, url]) => {
             if (!info) return false;
             this.base = info.url.replace(url, '').replace(/\.[^/.]+$/, '');
             this.assetName = info.displayName;
             this.bundleName = url.split('/')[0];
             this.path = url.replace(this.bundleName + '/', '').replace('.png', '');
-            this.setAtlasJson(info);
+            this.setAtlasJson();
             return true;
         });
     }
 
-    private setAtlasJson(info: any) {
-        if (!info) {
-            this.atlasJsonName = '';
-            this.atlasJsonPath = '';
-            return;
-        }
-        let path = info?.path.replace('/texture', '_atlas.json');
-        if (path) {
-            no.EditorMode.getAssetInfo(path).then(info_1 => {
-                this.atlasJsonName = info_1.name;
-                no.EditorMode.getAssetUrlByUuid(info_1.uuid).then(url => {
-                    this.atlasJsonPath = url.replace(this.bundleName + '/', '');
+    private setAtlasJson() {
+        this.atlasJsonPath = this.path.replace('/texture', '_atlas');
+        this.atlasJsonName = this.atlasJsonPath.split('/')[1] + '.json';
+    }
+
+    /**
+     * 重置图集信息
+     * @deprecated 将在3.7.3版本中移除
+     */
+    public resetInfo() {
+        if (!this.base && this.path) {
+            const path = this.path.replace('/texture', '.png/texture');
+            no.EditorMode.getAssetUuidByUrl(path).then(uuid => {
+                this.setPathAndName(uuid, info => {
+                    this.setAtlasJson();
                 });
             });
         }

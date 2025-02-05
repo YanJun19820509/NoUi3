@@ -412,7 +412,7 @@ export class YJCharLabel extends Sprite {
 
     @property
     public get packToAtlas(): boolean {
-        return true;
+        return this._packToAtlas;
     }
 
     public set packToAtlas(v: boolean) {

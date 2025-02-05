@@ -18,7 +18,7 @@ import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
 
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
-// @executeInEditMode()
+@executeInEditMode()
 export class YJLoadAssets extends Component {
     @property({ displayName: '共享材质' })
     share: boolean = true;
@@ -50,7 +50,7 @@ export class YJLoadAssets extends Component {
     }
     @property({ type: TextureInfo, displayName: '纹理信息' })
     textureInfos: TextureInfo[] = [];
-    @property({ displayName: '更新纹理信息'})
+    @property({ displayName: '更新纹理信息' })
     public get updateAllAssets(): boolean {
         return false;
     }
@@ -77,7 +77,7 @@ export class YJLoadAssets extends Component {
         });
     }
 
-    @property({ displayName: '显示SpriteFrame'})
+    @property({ displayName: '显示SpriteFrame' })
     public get showSpriteFrame(): boolean {
         return this._show;
     }
@@ -172,9 +172,12 @@ export class YJLoadAssets extends Component {
     _materialKey: string = '';
 
     onLoad() {
-        // if (EDITOR) {
-        //     this.showSpriteFrame = true;
-        // }
+        if (EDITOR) {
+            // this.showSpriteFrame = true;
+            this.textureInfos.forEach(info => {
+                // info.resetInfo();
+            });
+        }
         // this.setPanelNameToSubNode();
     }
 
