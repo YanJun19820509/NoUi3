@@ -283,6 +283,9 @@ export class LoadAssetsInfo {
                     no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
                         resolve(file);
                     });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
     }
 

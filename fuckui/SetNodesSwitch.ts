@@ -32,14 +32,14 @@ export class SwitchInfo {
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }
-            no.visibleByOpacity(node, a);
-            no.x(node, !a ? 20000 : node['__origin_x__']);
+            no.visible(node, a);
+            // no.x(node, !a ? 20000 : node['__origin_x__']);
         });
     }
 
     public init() {
         this.nodes.forEach(node => {
-            no.visibleByOpacity(node, false);
+            no.visible(node, false);
         });
     }
 }

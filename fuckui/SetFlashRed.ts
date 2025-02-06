@@ -63,6 +63,10 @@ export class SetFlashRed extends FuckUi {
     }
 
     private setProgressByFrame(dt: number) {
+        if (!this?.node?.isValid) {
+            no.unschedule(this, this.setProgressByFrame);
+            return
+        }
         if (this._time > 0) {
             this._time -= dt;
 

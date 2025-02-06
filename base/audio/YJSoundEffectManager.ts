@@ -26,12 +26,21 @@ export class SoundEffectInfo {
 }
 
 @ccclass('YJSoundEffectManager')
+/**
+ * 音效管理类,用于管理游戏中的音效播放
+ */
 export class YJSoundEffectManager extends Component {
+    /**
+     * 编辑器属性,用于解析项目中的音频资源
+     */
     @property({ displayName: '开始解析' })
     public get parse(): boolean {
         return false;
     }
 
+    /**
+     * 解析项目中的音频资源,生成音效信息列表
+     */
     public set parse(v: boolean) {
         no.EditorMode.getAssetInfosByCCType('cc.AudioClip').then(infos => {
             if (!infos.length) {
@@ -51,26 +60,37 @@ export class YJSoundEffectManager extends Component {
             });
         });
     }
+
+    /** 音效信息列表 */
     @property(SoundEffectInfo)
     soundEffects: SoundEffectInfo[] = [];
 
+    /** 通用点击音效的别名 */
     @property({ displayName: '通用点击音效', tooltip: '音效资源别名' })
     clickAtlas: string = '';
 
+    /** 通用界面打开音效的别名 */
     @property({ displayName: '通用界面打开音效', tooltip: '音效资源别名' })
     openAtlas: string = '';
 
+    /** 通用界面关闭音效的别名 */
     @property({ displayName: '通用关闭打开音效', tooltip: '音效资源别名' })
     closeAtlas: string = '';
 
+    /** 音效资源映射表 */
     private _map: any;
 
+    /** 单例实例 */
     private static _ins: YJSoundEffectManager;
 
+    /** 获取单例实例 */
     public static get ins(): YJSoundEffectManager {
         return this._ins;
     }
 
+    /**
+     * 组件加载时初始化单例和音效映射表
+     */
     onLoad() {
         YJSoundEffectManager._ins = this;
         if (EDITOR) return;
@@ -80,19 +100,25 @@ export class YJSoundEffectManager extends Component {
         });
     }
 
+    /**
+     * 组件销毁时清理单例
+     */
     onDestroy() {
         YJSoundEffectManager._ins = null;
     }
 
+    /**
+     * 根据别名播放背景音乐
+     * @param alias 音乐别名
+     */
     public playMusicByAlias(alias: string): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playBGM(url);
     }
 
-
     /**
      * 根据别名播放音效
-     * @param alias 
+     * @param alias 音效别名
      */
     public playEffectByAlias(alias: string): void {
         let url = this._map[alias];

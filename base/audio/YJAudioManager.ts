@@ -17,15 +17,24 @@ import { no } from '../../no';
 @ccclass('YJAudioManager')
 @menu('NoUi/audio/YJAudioManager(音频管理组件)')
 @requireComponent(AudioSource)
+/**
+ * 音频管理组件,用于管理游戏中的音频播放
+ */
 export class YJAudioManager extends Component {
+    /** 背景音乐开关的本地存储key */
     private musicOn: string = '__musicOn';
+    /** 音效开关的本地存储key */
     private effectOn: string = '__effectOn';
+    /** 上一次播放的背景音乐路径 */
     private _lastBGM: string;
 
+    /** 音频源组件 */
     private audioSource: AudioSource = null;
 
+    /** 单例实例 */
     private static _ins: YJAudioManager;
 
+    /** 获取单例实例 */
     public static get ins(): YJAudioManager {
         return this._ins;
     }
@@ -43,16 +52,18 @@ export class YJAudioManager extends Component {
         YJAudioManager._ins = null;
     }
 
+    /** 音频剪辑缓存Map */
     private clips: Map<string, AudioClip> = new Map();
 
     /**
-     * 音乐开
+     * 获取背景音乐开关状态
      */
     public get isBGMOn(): boolean {
         return this._isBGMOn;
     }
     /**
      * 设置音乐开关
+     * @param v true开启,false关闭
      */
     public setBGMOn(v: boolean) {
         localStorage.setItem(this.musicOn, v ? '1' : '0');
@@ -62,32 +73,29 @@ export class YJAudioManager extends Component {
     }
 
     /**
-     * 音效开关
+     * 获取音效开关状态
      */
     public get isEffectOn(): boolean {
         return this._isEffectOn;
     }
     /**
      * 设置音效开关
+     * @param v true开启,false关闭
      */
     public setEffectOn(v: boolean) {
         localStorage.setItem(this.effectOn, v ? '1' : '0');
         this._isEffectOn = v;
     }
 
-    /**
-     * 背景音乐开关
-     */
+    /** 背景音乐开关状态 */
     private _isBGMOn = true;
 
-    /**
-     * 音效开关
-     */
+    /** 音效开关状态 */
     private _isEffectOn = true;
 
     /**
      * 播放背景音乐
-     * @param path 音频剪辑路径
+     * @param path 音频剪辑路径,不传则播放上一次的背景音乐
      */
     public playBGM(path?: string): void {
         if (path) this._lastBGM = path;
@@ -117,9 +125,9 @@ export class YJAudioManager extends Component {
     }
 
     /**
-     * 异步播放
+     * 异步播放音效一次
      * @param path 音频剪辑路径
-     * @returns
+     * @returns Promise
      */
     public async playOnceAsync(path: string): Promise<void> {
         if (!this.isEffectOn) return;
@@ -128,6 +136,8 @@ export class YJAudioManager extends Component {
                 let clip = this.clips.get(path);
                 this.audioSource.playOneShot(clip, 1);
                 this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
+            }).catch(e => {
+                console.error(e);
             });
         }
         return new Promise<void>(resolve => {
@@ -136,11 +146,13 @@ export class YJAudioManager extends Component {
                 this.audioSource.playOneShot(clip, 1);
                 this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
             });
+        }).catch(e => {
+            console.error(e);
         });
     }
 
     /**
-     * 停止背景音乐
+     * 停止背景音乐播放
      */
     public stopBGM() {
         this.audioSource.stop();
@@ -154,9 +166,8 @@ export class YJAudioManager extends Component {
     }
 
     /**
-     *设置音量
-     *
-     * @param {number} n
+     * 设置音量
+     * @param n 音量值 0-1
      */
     public setVolume(n: number) {
         this.audioSource.volume = n;
@@ -181,22 +192,35 @@ export class YJAudioManager extends Component {
     }
 
     /**
-     * 异步播放音频剪辑
+     * 异步播放音频剪辑一次
      * @param clip 音频剪辑
+     * @returns Promise
      */
     public async playClipOnceAsync(clip: AudioClip): Promise<void> {
         if (!this.isEffectOn) return;
         return new Promise<void>(resolve => {
             this.audioSource.playOneShot(clip, 1);
             this.audioSource.node.once(AudioSource.EventType.ENDED, resolve);
+        }).catch(e => {
+            console.error(e);
         });
     }
 
+    /**
+     * 缓存音频剪辑
+     * @param path 音频剪辑路径
+     * @param clip 音频剪辑
+     */
     public setClip(path: string, clip: AudioClip): void {
         if (path && !this.clips.has(path))
             this.clips.set(path, clip);
     }
 
+    /**
+     * 播放音频剪辑
+     * @param clip 音频剪辑
+     * @param loop 是否循环，默认true
+     */
     private _playClip(clip: AudioClip, loop = true): void {
         if (loop) {
             this.audioSource.stop();
@@ -208,12 +232,22 @@ export class YJAudioManager extends Component {
         }
     }
 
+    /**
+     * 加载并播放音频
+     * @param path 音频剪辑路径
+     * @param loop 是否循环
+     */
     private loadAndPlay(path: string, loop: boolean): void {
         this.loadAudioClip(path, clip => {
             this._playClip(clip, loop);
         });
     }
 
+    /**
+     * 加载音频剪辑
+     * @param path 音频剪辑路径
+     * @param callback 加载完成回调
+     */
     private loadAudioClip(path: string, callback: (clip: AudioClip) => void) {
         no.assetBundleManager.loadAudio(path, (clip) => {
             this.setClip(path, clip);

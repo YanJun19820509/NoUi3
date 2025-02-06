@@ -340,3 +340,8 @@ vec4 blackMaskColor(vec4 _o){
   _o*=maskcolor;
   return _o;
 }
+
+//无颜色半透遮罩 - 保持原图形状，移除颜色信息
+vec4 alphaMask(vec4 _o){
+  return vec4(0.0, 0.0, 0.0, _o.a * 0.5);
+}

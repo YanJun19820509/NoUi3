@@ -7,7 +7,8 @@ import { FuckUi } from './FuckUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
-import { i18nG } from 'scripts/common/i18nG';
+import { YJi18n } from 'NoUi3/base/YJi18n';
+import { YJMacroConfig } from 'NoUi3/macro';
 
 /**
  * Predefined variables
@@ -89,7 +90,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (EDITOR) return;
         if (this.multiLan && this.defaultName) {
             this.setSingleSpriteFrame(this.defaultName);
-            i18nG.onLanguagechange(this.checkLanguageChange, this);
+            YJi18n.ins.onLanguagechange(this.checkLanguageChange, this);
             return
         }
         if (!this.loadFromAtlas && this.defaultSpriteFrameUuid)
@@ -212,10 +213,14 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             this.resetSprite();
             return;
         }
-        if (name != this.defaultName) this._lastName = name;
-        if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
-            this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
-        this.setEffect(i);
+        if (YJMacroConfig.ENABLE_DYNAMIC_BATCH_RENDER) {
+            if (name != this.defaultName) this._lastName = name;
+            if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
+                this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
+            this.setEffect(i);
+        } else {
+            this.setSpriteFrameByUuid(spriteFrame.uuid);
+        }
     }
 
     private setEffect(idx: number) {
@@ -235,6 +240,23 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
             defines[this.lastDefine] = false;
             this.getComponent(YJVertexColorTransition)?.setEffect(defines);
         }
+    }
+
+    private setSpriteFrameByUuid(uuid: string) {
+        no.assetBundleManager.loadByUuid<SpriteFrame>(uuid, (file) => {
+            if (!file) {
+                no.err('setSpriteFrameByUuid by uuid no file', this.node?.name, uuid)
+            } else {
+                this.getComponent(Sprite).spriteFrame = file;
+                if (!EDITOR) {
+                    this._singleSpriteFrame = file;
+
+                    if (TextureInfoInGPU.isWork) {
+                        TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                    }
+                }
+            }
+        });
     }
 
     private setDefaultSpriteFrame() {
@@ -311,7 +333,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         let path: string;
         if (this.multiLan) {
-            path = `${i18nG.getLNG()}/${name}/spriteFrame`;
+            path = `${YJi18n.ins.language}/${name}/spriteFrame`;
         } else path = `${this.bundleName}/${name}/spriteFrame`;
         no.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {

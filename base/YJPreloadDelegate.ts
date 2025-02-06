@@ -17,6 +17,6 @@ import { YJPreload } from './YJPreload';
 @ccclass('YJPreloadDelegate')
 export class YJPreloadDelegate extends Component {
     beforeStartLoad(preload: YJPreload) { }
-    async onJsonLoaded(assets: JsonAsset[]): Promise<void> { }
+    onJsonLoaded(assets: JsonAsset[]) { }
     onLoadComplete(): void { }
 }

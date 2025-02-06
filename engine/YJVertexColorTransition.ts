@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color } from '../yj';
+import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB } from '../yj';
 import { no } from '../no';
 
 /**
@@ -129,7 +129,7 @@ export class YJVertexColorTransition extends Component {
 
     lateUpdate() {
         if (!this.enabled || !this.renderComp || !this._needUpdate) return;
-        if (this.renderComp._dirtyVersion !== this._dirtyVersion) {
+        if (this.renderComp._dirtyVersion !== this._dirtyVersion || JSB) {
             this._updateVB();
         }
     }

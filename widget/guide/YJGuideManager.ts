@@ -74,6 +74,38 @@ export class YJGuideManager extends Component {
         return true;
     }
 
+    /**
+     * 判断指定引导步骤是否已完成
+     * @param step 引导步骤ID
+     * @returns 是否已完成
+     */
+    public finished(step: string): boolean {
+        return this.saveSteps.indexOf(step) != -1;
+    }
+
+    /**
+     * 获得有效引导步骤id
+     * @param step 
+     * @returns 
+     */
+    public getValidStep(step: string): string {
+        if (!this.isWork) {
+            return "";
+        }
+        step = step?.toString();
+        this.saveSteps = this.saveSteps.map((v) => { return v?.toString() });
+        if (this.saveSteps.indexOf(step) != -1) {
+            let next = this.getGuideInfo(`guide_config.${step}`);
+            if (next && next.save_type == 0) {
+                return "";
+            }
+            if (next && next.next_id) {
+                return this.getValidStep(next.next_id);
+            }
+        }
+        return step;
+    }
+
     public get isFirst(): boolean {
         if (!this.isWork) return false;
         return this.saveSteps.length == 0;

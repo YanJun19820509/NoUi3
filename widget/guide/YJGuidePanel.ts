@@ -46,6 +46,7 @@ export class YJGuidePanel extends YJPanel {
     protected isGuiding: boolean = false;
 
     onLoad() {
+        super.onLoad();
         YJGuidePanel._ins = this;
     }
 

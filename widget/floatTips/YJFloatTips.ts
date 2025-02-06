@@ -33,12 +33,12 @@ export class YJFloatTips extends YJDataWork {
     public setTips(tips: string | string[]): void {
         this.tipList = this.tipList.concat(tips);
         if (this.isShowing) return;
-        this.isShowing = true;
         this.show();
     }
 
-    private async show() {
-        await no.waitFor(() => { return this.enabledInHierarchy; }, this);
+    private show() {
+        if (!this.enabledInHierarchy) return;
+        this.isShowing = true;
         let tip = this.tipList.shift();
         if (!tip) {
             this.isShowing = false;

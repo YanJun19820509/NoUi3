@@ -36,6 +36,9 @@ export class YJHttpRequest implements YJSocketInterface {
                 no.err('getDataFromServer', v);
                 resolve(null);
             });
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -46,6 +49,9 @@ export class YJHttpRequest implements YJSocketInterface {
             }, v => {
                 resolve(null);
             });
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 

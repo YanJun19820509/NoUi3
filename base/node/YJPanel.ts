@@ -1,8 +1,9 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component } from '../../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js, UIOpacity, Node } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated } from '../../types';
+import { YJDataWork } from '../YJDataWork';
 
 /**
  * Predefined variables
@@ -16,6 +17,7 @@ import { YJPanelCreated } from '../../types';
  *
  */
 
+let _nodeSiblingIndex_: number = 0;
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
 @executeInEditMode()
@@ -31,7 +33,7 @@ export class YJPanel extends Component {
 
     public lastCloseTime: number = -1;
 
-    public status: 'close' | 'open' = 'close';
+    public status: 'close' | 'open' | 'hide' = 'close';
 
     @property
     panelType: string = '';
@@ -55,11 +57,15 @@ export class YJPanel extends Component {
     protected _lastMultiTouchState: boolean = false;
     protected _originX: number;
     private _loaded: boolean = false;
+    public nodeCacheKey: string;
+    /**是否缓存到面板池，默认缓存 */
+    protected cacheToPool: boolean = true;
 
     onLoad() {
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
         }
+        if (!this.nodeCacheKey) this.nodeCacheKey = js.getClassName(this);
     }
 
     onEnable() {
@@ -93,7 +99,6 @@ export class YJPanel extends Component {
                     this._lastMultiTouchState = no.multiTouch();
                     no.multiTouch(this.multiTouch);
                     // no.evn.emit('show_info___', 'initPanel 5')
-                    return Promise.resolve();
                 }).catch(e => {
                     no.err('YJPanel initPanel', this.node.name, e.message);
                     // no.evn.emit('show_info___', 'initPanel 4', e.message)
@@ -114,7 +119,6 @@ export class YJPanel extends Component {
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
         // no.evn.emit('show_info___', 'initPanel 8')
-        return Promise.resolve();
     }
 
     public closePanel() {
@@ -148,23 +152,74 @@ export class YJPanel extends Component {
     public clear(force = false) {
         if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         no.setPrototype(this, { [YJPanelCreated]: '0' });
+        // const url = no.getPrototype(this, YJPanelPrefabMetaKey),
+        //     uuid = no.getPrototype(this, YJPanelPrefabUuidMetaKey),
+        //     k = url || uuid;
+        // no.assetBundleManager.cleanCacheAsset(k);
         this.node.destroy();
     }
 
     public hide() {
-        this.status = 'close';
-        no.visible(this.node, false);
+        this.onClosePanel();
+        if (this.cacheToPool) {
+            this.status = 'hide';
+            this._visible(this.node, false);
+        } else {
+            no.visible(this.node, false);
+        }
         no.siblingIndex(this.node, 0);
     }
 
     public show() {
         this.status = 'open';
         if (this.node.active) this.onEnable();
-        no.visible(this.node, true);
-        no.siblingIndex(this.node, this.node.parent.children.length - 1);
+        if (this.cacheToPool)
+            this._visible(this.node, true);
+        else
+            no.visible(this.node, true);
+        no.siblingIndex(this.node, _nodeSiblingIndex_++);
     }
 
-    //////由子类实现
+    private _visible(node: Node, v: boolean) {
+        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+        if (blockInputEvents)
+            blockInputEvents.forEach(a => a.enabled = v);
+        const btn = node.getComponent('YJButton');
+        if (btn)
+            btn['canClick'] = v;
+        // const opacityCmp = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+        // if (!v) {
+        //     opacityCmp.opacity = 0;
+        //     if (node['__origin_x__'] == null) {
+        //         node['__origin_x__'] = no.x(node);
+        //     }
+        //     no.x(node, 20000);
+        // } else {
+        //     opacityCmp.opacity = 255;
+        //     if (node['__origin_x__'] !== null) {
+        //         no.x(node, node['__origin_x__']);
+        //     }
+        // }
+        if (!v) {
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
+            no.x(node, 20000);
+        } else {
+            if (node['__origin_x__'] !== null) {
+                no.x(node, node['__origin_x__']);
+            }
+            node.getComponentsInChildren(YJDataWork).forEach(a => a.onEnable());
+        }
+        node['_activeInHierarchy'] = v;
+    }
+
+    protected onClosePanel() {
+        no.evn.targetOff(this);
+        this.unscheduleAllCallbacks();
+    }
+
+    //////以下方法需要子类实现
     /**
      * 初始化预制体内已有的数据节点逻辑放在这里
      */
@@ -178,8 +233,7 @@ export class YJPanel extends Component {
 
     }
 
-    protected onClosePanel() {
-        no.evn.targetOff(this);
-        this.unscheduleAllCallbacks();
+    onDestroy() {
+        no.log('panel destroy', this.panelType);
     }
 }

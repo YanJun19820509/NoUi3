@@ -45,16 +45,20 @@ export class OpenWindowInfo {
 @ccclass('YJOpenWindow')
 @menu('NoUi/node/YJOpenWindow(打开窗口)')
 export class YJOpenWindow extends Component {
+    /** 窗口信息列表 */
     @property(OpenWindowInfo)
     infos: OpenWindowInfo[] = [];
 
+    /** 是否自动打开窗口 */
     @property
     autoOpen: boolean = false;
 
+    /** 组件加载时,如果autoOpen为true则自动打开窗口 */
     onLoad() {
         this.autoOpen && this.a_open();
     }
 
+    /** 按顺序打开所有窗口,每个窗口间隔0.2秒 */
     public a_open() {
         let n = this.infos.length, i = 0;
         this.schedule(() => {
@@ -62,20 +66,40 @@ export class YJOpenWindow extends Component {
         }, .2, n - 1);
     }
 
+    /** 
+     * 根据索引打开指定窗口
+     * @param event 触摸事件
+     * @param idx 窗口索引
+     */
     public a_openAt(event: EventTouch, idx: string): void {
         this.openAt(Number(idx || event));
     }
 
+    /**
+     * 根据窗口名称打开指定窗口
+     * @param event 触摸事件
+     * @param name 窗口名称
+     */
     public a_openName(event: EventTouch, name: string): void {
         const idx = no.indexOfArray(this.infos, name || event, 'windowName');
         this.openAt(idx);
     }
 
+    /**
+     * 打开指定索引的窗口
+     * @param i 窗口索引
+     * @param onOpended 窗口打开后的回调
+     */
     public openAt(i: number, onOpended?: (panel: YJPanel) => void) {
         let info = this.infos[i];
         info?.open(onOpended);
     }
 
+    /**
+     * 获取指定索引的窗口信息
+     * @param i 窗口索引
+     * @returns 窗口信息
+     */
     public getWindowInfoAt(i: number) {
         return this.infos[i];
     }

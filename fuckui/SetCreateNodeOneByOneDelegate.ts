@@ -15,7 +15,7 @@ import { ccclass, Component, Node } from '../yj';
 
 @ccclass('SetCreateNodeOneByOneDelegate')
 export class SetCreateNodeOneByOneDelegate extends Component {
-    public async beforeCreateOneNode(idx: number, data: any) { }
-    public async afterCreateOneNode(idx: number, data: any, node: Node) { }
+    public beforeCreateOneNode(idx: number, data: any) { }
+    public afterCreateOneNode(idx: number, data: any, node: Node) { }
     public afterAllCreated() { }
 }

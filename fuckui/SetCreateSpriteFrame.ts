@@ -65,6 +65,9 @@ export class SetCreateSpriteFrame extends FuckUi {
                     resolve(this.drawSpriteFramesToTexture(arr));
                 }
             }
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -117,6 +120,9 @@ export class SetCreateSpriteFrame extends FuckUi {
                 label.font = f;
                 resolve(label);
             });
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 

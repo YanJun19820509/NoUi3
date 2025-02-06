@@ -28,16 +28,30 @@ const eventTypeMap = {
 @ccclass('YJScrollViewEvent')
 @requireComponent(ScrollView)
 export class YJScrollViewEvent extends Component {
+    /** 滚动事件回调 */
     @property({ type: no.EventHandlerInfo })
     onScroll: no.EventHandlerInfo[] = [];
+
+    /** 滚动到顶部事件回调 */
     @property({ type: no.EventHandlerInfo })
     onToTop: no.EventHandlerInfo[] = [];
+
+    /** 滚动到底部事件回调 */
     @property({ type: no.EventHandlerInfo })
     onToBottom: no.EventHandlerInfo[] = [];
+
+    /** 滚动到最左边事件回调 */
     @property({ type: no.EventHandlerInfo })
     onToLeft: no.EventHandlerInfo[] = [];
+
+    /** 滚动到最右边事件回调 */
     @property({ type: no.EventHandlerInfo })
     onToRight: no.EventHandlerInfo[] = [];
+
+    /** 
+     * 绑定滚动事件
+     * 设置为true时会自动给ScrollView添加滚动事件监听
+     */
     @property
     public get bind(): boolean {
         return false;
@@ -47,9 +61,16 @@ export class YJScrollViewEvent extends Component {
         this.getComponent(ScrollView).scrollEvents = [no.createClickEvent(this.node, 'YJScrollViewEvent', 'onScrollEvent')];
     }
 
+    /** 滚动区域的最大偏移量 */
     private _maxOffset: Vec2;
+    /** 上一次滚动的偏移量 */
     private _lastOffset: Vec2;
 
+    /**
+     * 滚动事件回调
+     * @param sv ScrollView组件
+     * @param type 滚动事件类型
+     */
     private onScrollEvent(sv: ScrollView, type: number) {
         if (!this._maxOffset) this._maxOffset = sv.getMaxScrollOffset();
         const et = eventTypeMap[type], offset = sv.getScrollOffset();

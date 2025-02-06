@@ -102,6 +102,8 @@ export class YJComponent extends Component {
     public async waitFor(express: (dt?: number) => boolean): Promise<void> {
         return new Promise<void>(resolve => {
             this.callUntil(express, resolve);
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -133,6 +135,8 @@ export class YJComponent extends Component {
         return new Promise<void>(resolve => {
             let repeat = !n ? 0 : (n < 0 ? Infinity : n - 1);
             this.schedule(resolve, 0, repeat);
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -144,6 +148,8 @@ export class YJComponent extends Component {
     public async waitForTime(duration: number): Promise<void> {
         return new Promise<void>(resolve => {
             this.scheduleOnce(resolve, duration);
+        }).catch(e => {
+            console.error(e);
         });
     }
 

@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, Enum, Button } from '../../yj';
+import { ccclass, property, Component, Node, Enum, Button, js } from '../../yj';
 import { no } from '../../no';
 import { YJPanel } from '../node/YJPanel';
 import { YJSoundEffectManager } from './YJSoundEffectManager';
@@ -24,13 +24,33 @@ export enum SoundEffectType {
 
 @ccclass('YJPlaySoundEffect')
 export class YJPlaySoundEffect extends Component {
+    /** 音效类型 */
     @property({ type: Enum(SoundEffectType), displayName: '音效类型' })
     effectType: SoundEffectType = SoundEffectType.Other;
+
+    /** 音效别名,仅在音效类型为Other时可见 */
     @property({ displayName: '音效别名', visible() { return this.effectType == SoundEffectType.Other } })
     alias: string = '';
+
+    /** 是否自动播放,仅在音效类型为Other时可见 */
     @property({ visible() { return this.effectType == SoundEffectType.Other; } })
     autoPlay: boolean = false;
 
+    @property
+    public get bind(): boolean {
+        return false;
+    }
+
+    public set bind(v: boolean) {
+        this.getComponent(Button).clickEvents.push(no.createClickEvent(this.node, js.getClassName(this), 'a_play'));
+    }
+
+    /**
+     * 组件加载时根据音效类型进行初始化
+     * - 如果是按钮点击音效,则为所有子节点中的按钮添加点击音效
+     * - 如果是窗口打开/关闭音效,则为面板添加对应的音效处理
+     * - 如果是其他类型且设置了自动播放,则直接播放音效
+     */
     onLoad() {
         if (this.effectType == SoundEffectType.ClickButton) {
             let btns = this.getComponentsInChildren(Button);
@@ -49,6 +69,13 @@ export class YJPlaySoundEffect extends Component {
         }
     }
 
+    /**
+     * 根据音效类型播放对应的音效
+     * - ClickButton: 播放按钮点击音效
+     * - OpenWindow: 播放窗口打开音效
+     * - CloseWindow: 播放窗口关闭音效
+     * - Other: 根据别名播放指定音效
+     */
     public a_play(): void {
         switch (this.effectType) {
             case SoundEffectType.ClickButton:

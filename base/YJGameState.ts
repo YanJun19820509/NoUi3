@@ -1,5 +1,5 @@
 
-import { JSB, ccclass, property, menu, Component, game, sys, Game } from '../yj';
+import { JSB, ccclass, property, menu, Component, game, sys, Game, native } from '../yj';
 import { no } from '../no';
 import { YJWindowManager } from './node/YJWindowManager';
 
@@ -80,17 +80,17 @@ export class YJGameState extends Component {
             else if (sys.isBrowser)
                 window.document.location.reload();
         } else {
-            if (this.isEngineRestart)
+            if (this.isEngineRestart) {
                 this.scheduleOnce(() => {
                     //重启一定要有足够的延时才不会异常
-                    if (JSB)
+                    if (JSB) {
                         game.restart();
-                    else if (sys.platform == sys.Platform.WECHAT_GAME)
+                    } else if (sys.platform == sys.Platform.WECHAT_GAME)
                         window['wx'].restartMiniProgram();
                     else if (sys.isBrowser)
                         window.document.location.reload();
                 }, 1);
-            else no.EventHandlerInfo.execute(this.onGameRestart);
+            } else no.EventHandlerInfo.execute(this.onGameRestart);
         }
     }
 

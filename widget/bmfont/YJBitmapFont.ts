@@ -179,6 +179,9 @@ export class YJBitmapFont extends Component {
                     no.assetBundleManager.assetLoadingEnd(url);
                 });
                 // }
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
     }

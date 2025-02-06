@@ -27,21 +27,33 @@ export class ListenerInfo {
 @ccclass('YJEventOn')
 @menu('NoUi/event/YJEventOn(消息监听)')
 export class YJEventOn extends Component {
+    /** 事件监听信息列表 */
     @property(ListenerInfo)
     infos: ListenerInfo[] = [];
 
+    /** 组件启用时初始化事件监听 */
     onEnable() {
         this.init();
     }
 
+    /** 组件禁用时移除所有事件监听 */
     onDisable() {
         no.evn.targetOff(this);
     }
 
+    /**
+     * 手动触发指定类型的事件
+     * @param e 事件参数或事件类型
+     * @param type 事件类型,如果提供则优先使用type而不是e
+     */
     public a_trigger(e: any, type?: string) {
         this._on(type || e);
     }
 
+    /**
+     * 初始化所有事件监听
+     * 根据ListenerInfo中的配置为每个事件类型注册监听
+     */
     private init() {
         this.infos.forEach(info => {
             if (info.type == '') return;
@@ -53,6 +65,10 @@ export class YJEventOn extends Component {
         });
     }
 
+    /**
+     * 事件监听回调函数
+     * @param args 事件参数列表,最后一个参数为事件类型
+     */
     private _on(...args: string[]) {
         if (!this.infos) {
             this.onDisable();

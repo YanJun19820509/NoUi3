@@ -24,7 +24,7 @@ class _YJTextureManager extends no.SingleObject {
             ++item.ref;
             return item.texture;
         } else {
-            const t = no.assetBundleManager.createTextureFromCache(key);
+            const t = no.assetBundleManager.getTextureFromCache(key);
             this.addTexure(key, t);
             return t;
         }

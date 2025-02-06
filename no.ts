@@ -1,3 +1,4 @@
+import { JSB } from "cc/env";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
@@ -560,9 +561,9 @@ export namespace no {
         }
 
         public async checkTrue(type: string, target: any): Promise<any> {
-            if (!target?.isValid) return Promise.resolve(null);
+            if (!target?.isValid) return null;
             let a = this.check(type, target);
-            if (a.state) return Promise.resolve(a.value);
+            if (a.state) return a.value;
             await sleep(0, target);
             return this.checkTrue(type, target);
         }
@@ -686,11 +687,11 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        _isLogEnabled && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function warn(...Evns: any[]): void {
-        console.warn('#NoUi#Warn', Evns);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
     }
 
     export function err(...Evns: any[]): void {
@@ -698,11 +699,11 @@ export namespace no {
     }
 
     export function logTimeStart(type?: string) {
-        console.time(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
     }
 
     export function logTimeEnd(type?: string) {
-        console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
     /**
@@ -724,6 +725,9 @@ export namespace no {
     export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             emitAndOnceCallback(emitType, callbackType, resolve, args, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -739,6 +743,9 @@ export namespace no {
                 if (v == '__clear_Wait_For_Event__') resolve(null);
                 else resolve(arg);
             }, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -751,6 +758,8 @@ export namespace no {
         if (comp)
             return new Promise<void>(resolve => {
                 scheduleUpdateCheck(express, resolve, comp);
+            }).catch(e => {
+                console.error(e);
             });
         else
             return checkUntil(express);
@@ -768,6 +777,9 @@ export namespace no {
                 if (v == '__clear_Wait_For_Event__') reject(null);
                 else resolve(v);
             }, target);
+        }).catch(e => {
+            console.error(e);
+            return null;
         });
     }
 
@@ -791,6 +803,8 @@ export namespace no {
                     }
                 }
             }, target);
+        }).catch(e => {
+            console.error(e);
         });
     }
 
@@ -804,14 +818,24 @@ export namespace no {
     }
 
     export async function checkUntil(express: () => boolean) {
+        // 先检查一次,避免不必要的定时器
+        if (express()) {
+            return;
+        }
         return new Promise<void>(resolve => {
-            const a = setIntervalF(() => {
+
+            // 使用 requestAnimationFrame 代替 setInterval,性能更好
+            const check = () => {
                 if (express()) {
-                    clearIntervalF(a);
                     resolve();
+                    return;
                 }
-            });
-        });
+                requestAnimationFrame(check);
+            };
+            requestAnimationFrame(check);
+        }).catch(e => {
+            console.error(e);
+        });;
     }
 
     /**
@@ -1253,7 +1277,7 @@ export namespace no {
         // } else if (typeof d == 'object')
         //     return instantiate(d);
         if (typeof d == 'object') {
-            if (structuredClone) return structuredClone(d);
+            if (typeof structuredClone == "function") return structuredClone(d);
             else {
                 let a = JSON.stringify(d);
                 return JSON.parse(a);
@@ -1265,7 +1289,7 @@ export namespace no {
     /**
      * 等待几秒
      * @param duration 等待时长(秒)
-     * @param component
+     * @param component deprecated
      * @returns
      */
     export function sleep(duration: number, component?: Component): Promise<void> {
@@ -1274,9 +1298,12 @@ export namespace no {
             // if (checkValid(component)) {
             //     component.scheduleOnce(resolve, duration);
             // } else {
-            scheduleOnce(() => { resolve(); }, duration);
+            // scheduleOnce(() => { resolve(); }, duration);
             // }
-        });
+            setTimeout(() => { resolve(); }, duration * 1000);
+        }).catch(e => {
+            console.error(e);
+        });;
     }
 
     // 两个数相除百分比
@@ -1355,9 +1382,13 @@ export namespace no {
     }
 
     /**当前零点时间戳（秒） */
-    export function zeroTimestamp(v = 0): number {
+    export function zeroTimestamp(v = 0, isUTC = false): number {
         let a = new Date(sysTime.now * 1000);
-        a.setHours(0, 0, 0, 0);
+        if (isUTC) {
+            a.setUTCHours(0, 0, 0, 0);
+        } else {
+            a.setHours(0, 0, 0, 0);
+        }
         return floor(a.getTime() / 1000) + v;
     }
 
@@ -1447,7 +1478,7 @@ export namespace no {
         let h = floor(sec / 3600) % 24;
         if (d > 0) {
             // todo i18n
-            formatter = `{d}{h}`;
+            formatter = `{d}d{h}h`;
             return formatString(formatter, { h: h, d: d });
         }
 
@@ -1865,6 +1896,8 @@ export namespace no {
                     } else
                         t?.start();
                 }
+            }).catch(e => {
+                console.error(e);
             });
         }
 
@@ -2065,6 +2098,7 @@ export namespace no {
         return args;
     }
 
+    let _tempPos: Vec3 = new Vec3();
     /**
      * 获取或设置节点x坐标
      * @param node 节点
@@ -2073,12 +2107,12 @@ export namespace no {
      */
     export function x(node: Node, x?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (x != undefined) {
-            p.x = x;
-            node.setPosition(p);
+            _tempPos.x = x;
+            node.setPosition(_tempPos);
         }
-        return p.x;
+        return _tempPos.x;
     }
 
     /**
@@ -2089,12 +2123,12 @@ export namespace no {
      */
     export function y(node: Node, y?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (y != undefined) {
-            p.y = y;
-            node.setPosition(p);
+            _tempPos.y = y;
+            node.setPosition(_tempPos);
         }
-        return p.y;
+        return _tempPos.y;
     }
 
     /**
@@ -2105,12 +2139,12 @@ export namespace no {
      */
     export function z(node: Node, z?: number): number {
         if (!node) return;
-        let p = node.getPosition();
+        node.getPosition(_tempPos);
         if (z != undefined) {
-            p.z = z;
-            node.setPosition(p);
+            _tempPos.z = z;
+            node.setPosition(_tempPos);
         }
-        return p.z;
+        return _tempPos.z;
     }
     /**
      * 获取或设置节点siblingIndex
@@ -2120,11 +2154,12 @@ export namespace no {
      */
     export function siblingIndex(node: Node, index?: number): number {
         if (!node) return;
-        let p = node.getSiblingIndex();
-        if (index != undefined && p != index) {
-            p = index;
-            node.setSiblingIndex(p);
+        if (!node.parent?.['_children']) return 0;
+        if (index != undefined) {
+            node.setSiblingIndex(index);
+            return index;
         }
+        let p = node.parent['_children']?.findIndex(a => a.uuid == node.uuid) || 0;
         return p;
     }
 
@@ -2139,7 +2174,8 @@ export namespace no {
         if (pos != undefined) {
             node.setPosition(pos);
         }
-        return node.getPosition().clone();
+        node.getPosition(_tempPos);
+        return _tempPos.clone();
     }
 
     /**
@@ -2530,10 +2566,14 @@ export namespace no {
         private handleDataChange() {
             if (this.aa) return;
             this.aa = true;
-            scheduleOnce(dt => {
+            // scheduleOnce(dt => {
+            //     this.emit(Data.DataChangeEvent, this);
+            //     this.aa = false;
+            // }, 0, this);
+            setTimeout(() => {
                 this.emit(Data.DataChangeEvent, this);
                 this.aa = false;
-            }, 0, this);
+            }, 100);
         }
 
         /**
@@ -2556,7 +2596,7 @@ export namespace no {
         }
 
         public clear(): void {
-            this._data = {};
+            this._data = null;
         }
 
         /**
@@ -2749,7 +2789,7 @@ export namespace no {
     export class AssetBundleManager {
 
         private remoteAssetsCache: any = {};
-        private _cacheAsset: { [k: string]: any } = {};
+        private _cacheAsset: Map<string, Asset> = new Map();
         private _cacheAssetRef: { [k: string]: { ref: number, time: number } } = {};
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
         private _loadingAsset: { [k: string]: boolean } = {};
@@ -2832,7 +2872,10 @@ export namespace no {
         }
 
         public clearCachedAssets() {
-            this._cacheAsset = {};
+            this._cacheAsset.forEach((asset, key) => {
+                asset.destroy?.();
+            });
+            this._cacheAsset.clear();
         }
 
         /**
@@ -2983,7 +3026,7 @@ export namespace no {
         public load(bundleName: string, fileName: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
-                assetManager.loadAny({ 'url': fileName }, (err, item) => {
+                assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
                         log('load', fileName, err.message);
                     } else {
@@ -3395,7 +3438,7 @@ export namespace no {
          * @param onProgress 
          * @param onComplete 
          */
-        public async loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
+        public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
             if (requests.length == 0) {
                 onProgress?.(1);
                 onComplete?.([]);
@@ -3423,6 +3466,9 @@ export namespace no {
                 this.loadAny(request, item => {
                     resolve(item);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -3463,6 +3509,9 @@ export namespace no {
                         return this.has(path);
                     });
                 }
+            }).catch(e => {
+                console.error(e);
+                return false;
             });
         }
 
@@ -3483,7 +3532,7 @@ export namespace no {
          * @returns 
          */
         public getCachedAsset<T>(k: string): T {
-            return this._cacheAsset[k] as T;
+            return this._cacheAsset.get(k) as T;
         }
 
         /**
@@ -3492,10 +3541,23 @@ export namespace no {
          * @param asset 资源
          */
         public cacheAsset(k: string, asset: any) {
-            this._cacheAsset[k] = asset;
+            this._cacheAsset.set(k, asset);
         }
 
-        public cacheImage(image: ImageAsset) {
+        /**
+         * 清理资源
+         * @param k 
+         */
+        public cleanCacheAsset(k: string) {
+            let asset = this._cacheAsset.get(k);
+            if (asset) {
+                no.assetBundleManager.decRef(asset);
+                this._cacheAsset.delete(k);
+                this._cacheAsset.delete(asset.uuid);
+            }
+        }
+
+        public cacheImage(image: Texture2D) {
             this.cacheAsset(image.uuid, image);
             this._cacheAssetRef[image.uuid] = { ref: 0, time: sysTime.now };
             this.releaseUnuseImage();
@@ -3509,20 +3571,18 @@ export namespace no {
             return this.getCachedAsset(uuid);
         }
 
-        public createTextureFromCache(uuid: string): Texture2D | null {
-            const image = this.getCachedAsset<ImageAsset>(uuid.split('@')[0]);
+        public getTextureFromCache(uuid: string): Texture2D | null {
+            const image = this.getCachedAsset<Texture2D>(uuid);
             if (!image) return null;
-            let texture = new Texture2D();
-            texture['_uuid'] = uuid;
-            texture.image = image;
+
             let a = this._cacheAssetRef[image.uuid];
             a.ref++;
             a.time = sysTime.now;
-            return texture;
+            return image;
         }
 
         public createSpriteFrameFromCache(uuid: string): SpriteFrame | null {
-            const t = this.createTextureFromCache(uuid);
+            const t = this.getTextureFromCache(uuid);
             if (!t) return null;
             const s = new SpriteFrame();
             s._uuid = uuid;
@@ -3569,12 +3629,12 @@ export namespace no {
 
         public removeCachedImage(uuid: string) {
             // this._cacheAsset[uuid]?.destroy();
-            delete this._cacheAsset[uuid];
+            this._cacheAsset.delete(uuid);
             delete this._cacheAssetRef[uuid];
             this.release(uuid, true);
         }
 
-        private loadTypes: string[] = ['ImageAsset', 'Prefab', 'JsonAsset'];
+        private loadTypes: string[] = ['Texture2D', 'Prefab', 'JsonAsset'];
 
         /**
          * 加载目录下所有资源并放入缓存中，不支持同时加载多个目录，如果有需求，需要在外部根据实际性能情况做延迟加载
@@ -3598,7 +3658,7 @@ export namespace no {
                         if (item instanceof Prefab) {
                             const request = requests[i];
                             this.setPrefabNode(base + request.path + '.prefab', item);
-                        } else if (item instanceof ImageAsset) {
+                        } else if (item instanceof Texture2D) {
                             this.cacheImage(item);
                         } else if (item instanceof JsonAsset) {
                             this.cacheAsset(item.uuid, item.json);
@@ -3624,7 +3684,7 @@ export namespace no {
                     if (item instanceof Prefab) {
                         const request = requests[i];
                         this.setPrefabNode(base + request.path + '.prefab', item);
-                    } else if (item instanceof ImageAsset) {
+                    } else if (item instanceof Texture2D) {
                         this.cacheImage(item);
                     } else if (item instanceof JsonAsset) {
                         this.cacheAsset(item.uuid, item.json);
@@ -3637,6 +3697,8 @@ export namespace no {
             switch (typeName) {
                 case 'ImageAsset':
                     return ImageAsset;
+                case 'Texture2D':
+                    return Texture2D;
                 case 'Prefab':
                     return Prefab;
                 case 'JsonAsset':
@@ -3681,7 +3743,7 @@ export namespace no {
          */
         public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
-            let a = this.cacheMap.get(type).shift();
+            let a = this.cacheMap.get(type).pop();
             if (!a) return null;
             return a.o as T;
         }
@@ -3797,9 +3859,15 @@ export namespace no {
             this.checkHintType(type);
         }
 
+        public setMainHint(type: string, v: number): void {
+            v = float(v, 0);
+            this.data.set(type, v);
+            this.emit(type, v, type);
+        }
+
         public changeHint(type: string, v: number): void {
             v = float(v, 0);
-            let a = this.getHintValue(type);
+            let a = this.getHintValue(type) || 0;
             a += v;
             if (a < 0) a = 0;
             this.setHint(type, a);
@@ -3866,9 +3934,8 @@ export namespace no {
         }
 
         public getHintValue(type: string): number {
-            let n = 0;
-            if (this.data.has(type)) n = this.data.get(type);
-            return n;
+            if (this.data.has(type)) return this.data.get(type);
+            return null;
         }
 
         private checkHint(): boolean {
@@ -3883,14 +3950,25 @@ export namespace no {
         }
 
         private checkHintType(type: string) {
-            const mainType = this.sub2Main[type] || type,
-                subTypes = this.main2Subs[mainType];
+            const mainType = this.sub2Main[type];
+            if (!mainType || mainType != type) {
+                this.emit(type, this.getHintValue(type) || 0, type);
+            }
+            if (!mainType) return;
+
+            const subTypes = this.main2Subs[mainType];
             let n = 0;
-            if (!subTypes) {
-                n = this.getHintValue(type);
-            } else {
+            if (subTypes) {
+                let b: number[] = [];
                 for (let i = 0, m = subTypes.length; i < m; i++) {
-                    n += this.getHintValue(subTypes[i]);
+                    const a = this.getHintValue(subTypes[i]);
+                    if (a != null) b.push(a);
+                }
+                if (b.length > 0) {
+                    n = b.reduce((a, b) => a + b);
+                    this.data.set(mainType, n);
+                } else {
+                    n = this.data.get(mainType) || 0;
                 }
             }
             this.emit(mainType, n, mainType);
@@ -4557,6 +4635,9 @@ export namespace no {
                 this.httpRequest("GET", url, null, (v: any) => {
                     resolve(v);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -4565,6 +4646,9 @@ export namespace no {
                 this.httpRequest("POST", url, data, (v: any) => {
                     resolve(v);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
     }
@@ -4587,7 +4671,7 @@ export namespace no {
             if (this.isCd) {
                 return false;
             } else {
-                this.duration = duration;
+                this.duration = duration * 1000;
                 if (firstWait)
                     await this.setCd();
                 else
@@ -4598,9 +4682,17 @@ export namespace no {
         }
 
         private async setCd() {
-            this.isCd = true;
-            await sleep(this.duration);
-            this.isCd = false;
+            const it = this;
+            it.isCd = true;
+            // await sleep(this.duration);
+            return new Promise<void>(resolve => {
+                setTimeout(() => {
+                    it.isCd = false;
+                    resolve();
+                }, this.duration);
+            }).catch(e => {
+                console.error(e);
+            });
         }
     }
 
@@ -5206,6 +5298,37 @@ export namespace no {
         return node['yj_need_render'] !== false;
     }
 
+    export function visibleByActiveInHierarchy(node: Node, v: boolean) {
+        const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
+        if (blockInputEvents)
+            for (let i = 0; i < blockInputEvents.length; i++) {
+                blockInputEvents[i].enabled = v;
+            }
+        const btn = node.getComponent('YJButton');
+        if (btn)
+            btn['canClick'] = v;
+        if (!v) {
+            if (node['__origin_x__'] == null) {
+                node['__origin_x__'] = no.x(node);
+            }
+            no.x(node, 20000);
+            let comps = node.getComponentsInChildren('YJDataWork');
+            for (let i = 0; i < comps.length; i++) {
+                comps[i]['onDisable']();
+            }
+        } else {
+            if (!node.active) node.active = true;
+            if (node['__origin_x__'] !== null) {
+                no.x(node, node['__origin_x__']);
+            }
+            let comps = node.getComponentsInChildren('YJDataWork');
+            for (let i = 0; i < comps.length; i++) {
+                comps[i]['onEnable']();
+            }
+        }
+        node['_activeInHierarchy'] = v;
+    }
+
     function onVisibleChange(node: Node, v: boolean) {
         const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
         arr.forEach(a => {
@@ -5592,7 +5715,10 @@ export namespace no {
             }
             return new Promise<T>(resolve =>
                 assetBundleManager.loadByUuid<T>(uuid, asset => resolve(asset))
-            );
+            ).catch(e => {
+                console.error(e);
+                return null;
+            });
         }
 
         /**
@@ -5619,6 +5745,9 @@ export namespace no {
                 assetBundleManager.loadAnyFiles(requests, null, items => {
                     resolve(items);
                 });
+            }).catch(e => {
+                console.error(e);
+                return null;
             });
         }
 
@@ -5653,6 +5782,9 @@ export namespace no {
                     assetBundleManager.loadAnyFiles(aa, null, items => {
                         resolve(items);
                     });
+                }).catch(e => {
+                    console.error(e);
+                    return [];
                 });
             });
         }
@@ -5760,7 +5892,10 @@ export namespace no {
                 if (info) {
                     return new Promise<T>(resolve =>
                         assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
-                    );
+                    ).catch(e => {
+                        console.error(e);
+                        return null;
+                    });
                 }
                 return null;
             });
@@ -5997,6 +6132,130 @@ export namespace no {
             return a[index];
         }
         return a[a.length - 1];
+    }
+
+    /**定义回调和调用次数 调用次数到达后调用回调*/
+    export function countCall(callback: Function, count: number): any {
+        let currentCount = 0;
+        if (callback.constructor.name === 'AsyncFunction') {
+            // async回调
+            return (async function () {
+                currentCount++;
+                if (currentCount >= count) {
+                    await (callback)();
+                    currentCount = 0;
+                }
+            }) as any;
+        } else {
+            // 普通回调
+            return (function () {
+                currentCount++;
+                if (currentCount >= count) {
+                    (callback)();
+                    currentCount = 0;
+                }
+            }) as any;
+        }
+    }
+    /**获得浏览器参数  ?a=1&b=2 */
+    export function GetQueryString(name: string) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return decodeURIComponent(r[2]); return null;
+    }
+
+
+    //////////////////canvas缓存池//////////////////
+    interface ISharedLabelData {
+        canvas: HTMLCanvasElement;
+        context: CanvasRenderingContext2D | null;
+    }
+
+    class CanvasPool {
+        private static _instance: CanvasPool;
+        static getInstance(): CanvasPool {
+            if (!this._instance) {
+                this._instance = new CanvasPool();
+            }
+            return this._instance;
+        }
+        public pool: ISharedLabelData[] = [];
+        public get() {
+            let data = this.pool.pop();
+
+            if (!data) {
+                const canvas = window.document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                data = {
+                    canvas,
+                    context,
+                };
+            }
+            else {
+                data.context.clearRect(0, 0, data.canvas.width, data.canvas.height);
+            }
+            return data;
+        }
+
+        public put(canvas: ISharedLabelData) {
+            if (this.pool.length >= macro.MAX_LABEL_CANVAS_POOL_SIZE) {
+                return;
+            }
+            this.pool.push(canvas);
+        }
+    }
+    export const canvasPool: CanvasPool = CanvasPool.getInstance();
+    //////////////////canvas缓存池//////////////////
+
+
+    //////////////////node缓存池//////////////////
+
+    export class NodePool {
+        private cacheMap: Map<string, { o: Node, t: number }>;
+        private static _ins: NodePool = null;
+
+        public static ins(): NodePool {
+            if (!this._ins) this._ins = new NodePool();
+            return this._ins;
+        }
+
+        constructor() {
+            this.cacheMap = new Map<string, { o: Node, t: number }>();
+        }
+
+        public get(type: string): Node {
+            if (this.cacheMap.has(type)) {
+                const cache = this.cacheMap.get(type);
+                visibleByActiveInHierarchy(cache.o, true);
+                this.cacheMap.delete(type);
+                return cache.o;
+            }
+            return null;
+        }
+
+        public put(type: string, node: Node) {
+            visibleByActiveInHierarchy(node, false);
+            this.cacheMap.set(type, { o: node, t: Date.now() });
+        }
+
+        public clear() {
+            this.cacheMap.forEach((v, k) => {
+                v.o.destroy();
+            });
+            this.cacheMap.clear();
+        }
+    }
+    /**节点池 */
+    export const nodePool = NodePool.ins();
+    //////////////////node缓存池//////////////////
+
+    /**
+     * 获取对象类型
+     * @param obj 
+     * @returns 类型名：Array,Object,String,Number,Boolean,Function,Null,Undefined,Symbol
+     */
+    export function objectType(obj: any): string {
+        return Object.prototype.toString.call(obj).slice(8, -1);
     }
 }
 no.addToWindowForDebug('no', no);

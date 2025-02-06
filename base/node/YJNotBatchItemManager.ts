@@ -1,4 +1,4 @@
-import { ccclass, Component, director, isValid, UITransform, Node, Director } from '../../yj';
+import { ccclass, Component, director, isValid, UITransform, Node, Director, JSB } from '../../yj';
 import { YJNotBatchItem } from './YJNotBatchItem';
 /**
  * YJNotBatchItem管理器，会自动搜索当前节点下所有子节点的YJNotBatchItem
@@ -7,21 +7,32 @@ import { YJNotBatchItem } from './YJNotBatchItem';
  */
 @ccclass('YJNotBatchItemManager')
 export class YJNotBatchItemManager extends Component {
+    /** 存储所有YJNotBatchItemManager组件所在的节点 */
     public static batchNodes: Node[] = [];
 
+    /** 用于存放不参与合批的节点的容器层 */
     private _layer: Node;
+    /** 存储包含子节点的不参与合批节点 */
     private _subNodes: Node[] = [];
 
+    /** 组件加载时创建容器层并初始化 */
     protected onLoad(): void {
+        if (JSB) {
+            this.destroy();
+            return;
+        }
         YJNotBatchItemManager.batchNodes.push(this.node);
+        // 创建容器层
         this._layer = new Node('_batch_layer');
         const ut = this._layer.addComponent(UITransform);
+        // 设置容器层的大小和锚点与当前节点一致
         ut.setContentSize(this.node.getComponent(UITransform).contentSize.clone());
         ut.setAnchorPoint(this.node.getComponent(UITransform).anchorPoint.clone());
         this._layer.layer = this.node.layer;
         this._layer.parent = this.node;
     }
 
+    /** 组件销毁时从batchNodes中移除 */
     protected onDestroy(): void {
         let index = YJNotBatchItemManager.batchNodes.indexOf(this.node);
         if (index > -1) {
@@ -29,12 +40,17 @@ export class YJNotBatchItemManager extends Component {
         }
     }
 
+    /** 将不参与合批的子节点移动到新的容器层 */
     public setNotBatchChildrenToNewLayer() {
         if (!this.enabledInHierarchy) return;
         this.getNotBatchChildren(this.node);
         this.getSubNotBatchChildren();
     }
 
+    /**
+     * 递归查找节点下所有不参与合批的子节点
+     * @param parent 要查找的父节点
+     */
     private getNotBatchChildren(parent: Node) {
         if (parent && parent.name != '_batch_layer') {
             let children = parent['_children'];
@@ -44,6 +60,7 @@ export class YJNotBatchItemManager extends Component {
                 if (isValid(child, true)) {
                     const notBatchItem = child.getComponent(YJNotBatchItem);
                     if (notBatchItem && notBatchItem.enabled) {
+                        // 保存节点属性并移动到容器层
                         notBatchItem.saveProperties();
                         children.splice(i, 1);
                         this._layer['_children'].unshift(child);
@@ -56,6 +73,7 @@ export class YJNotBatchItemManager extends Component {
         }
     }
 
+    /** 递归处理包含子节点的不参与合批节点 */
     private getSubNotBatchChildren() {
         const n = this._subNodes.length;
         if (n == 0) return;
@@ -63,6 +81,7 @@ export class YJNotBatchItemManager extends Component {
         for (let i = 0; i < n; i++) {
             let children = this._subNodes[i]['_children'];
             children.forEach((child) => {
+                // 为子节点添加或获取YJNotBatchItem组件
                 const notBatchItem = child.getComponent(YJNotBatchItem) || child.addComponent(YJNotBatchItem);
                 notBatchItem.saveProperties();
                 this._layer['_children'].push(child);
@@ -74,6 +93,7 @@ export class YJNotBatchItemManager extends Component {
         this.getSubNotBatchChildren();
     }
 
+    /** 将不参与合批的节点恢复到原来的位置 */
     public resetNotBatchChildrenToOldLayer() {
         if (!this.enabledInHierarchy) return;
         const batchItems = this._layer.children;

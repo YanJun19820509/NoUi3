@@ -38,17 +38,19 @@ export class YJPageView extends PageView {
     }
 
     public a_onTouchMove(event: EventTouch, start: Vec2, end: Vec2) {
+        const nodeTransform = this.node.getComponent(UITransform);
+        const contentTransform = this.content.getComponent(UITransform);
         if (this.direction == PageView.Direction.Horizontal) {
             let x = this.content.position.x;
             x += event.getDeltaX();
             if (x > 0) x = 0;
-            else if (x < this.node.getComponent(UITransform).width - this.content.getComponent(UITransform).width) x = this.node.getComponent(UITransform).width - this.content.getComponent(UITransform).width;
+            else if (x < nodeTransform.width - contentTransform.width) x = nodeTransform.width - contentTransform.width;
             this.content.setPosition(x, this.content.position.y);
         } else if (this.direction == PageView.Direction.Vertical) {
             let y = this.content.position.y;
             y += event.getDeltaY();
             if (y < 0) y = 0;
-            else if (y > this.content.getComponent(UITransform).height - this.node.getComponent(UITransform).height) y = this.content.getComponent(UITransform).height - this.node.getComponent(UITransform).height;
+            else if (y > nodeTransform.height - contentTransform.height) y = nodeTransform.height - contentTransform.height;
             this.content.setPosition(this.content.position.x, y);
         }
     }

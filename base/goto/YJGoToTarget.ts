@@ -16,11 +16,18 @@ import { no } from '../../no';
 
 @ccclass('YJGoToTarget')
 export class YJGoToTarget extends Component {
+    /** 回调事件列表 */
     @property(no.EventHandlerInfo)
     cbs: no.EventHandlerInfo[] = [];
+
+    /** 延时执行时间(秒) */
     @property({ displayName: '延时执行(s)', min: 0 })
     delay: number = 0;
 
+    /**
+     * 触发目标事件
+     * @param args 事件参数
+     */
     public trigger(args: any): void {
         this.scheduleOnce(() => {
             no.EventHandlerInfo.execute(this.cbs, args);

@@ -27,32 +27,32 @@ export class SetFrameAnimation extends FuckUi {
 
     protected async onDataChange(data: any) {
         if (data.path) {
-            await this.setSpriteFrame(data.path);
+            this.setSpriteFrame(data.path);
+        } else {
+            this.setProperties(data.cells, data.speed);
+            this.setLoop(data.loop, data.cells, data.speed);
         }
-        this.setProperties(data.cells, data.speed);
-        this.setLoop(data.loop, data.cells, data.speed);
     }
 
-    private async setSpriteFrame(path: string) {
-        return new Promise<void>(resolve => {
-            path = path.replace('.png', '') + '/spriteFrame';
-            no.assetBundleManager.loadSprite(path, spriteFrame => {
-                if (!spriteFrame) {
-                    no.err('setSingleSpriteFrame no file', name);
-                } else {
-                    if (!this.isValid) {
-                        return;
-                    }
-                    if (this._spriteFrame) {
-                        this._spriteFrame.decRef();
-                        this._spriteFrame = null;
-                    }
-                    this._spriteFrame = spriteFrame;
-                    const sprite = this.getComponent(Sprite);
-                    sprite.spriteFrame = spriteFrame;
+    private setSpriteFrame(data: any) {
+        const path = data.path.replace('.png', '') + '/spriteFrame';
+        no.assetBundleManager.loadSprite(path, spriteFrame => {
+            if (!spriteFrame) {
+                no.err('setSingleSpriteFrame no file', path);
+            } else {
+                if (!this.isValid) {
+                    return;
                 }
-                resolve();
-            });
+                if (this._spriteFrame) {
+                    this._spriteFrame.decRef();
+                    this._spriteFrame = null;
+                }
+                this._spriteFrame = spriteFrame;
+                const sprite = this.getComponent(Sprite);
+                sprite.spriteFrame = spriteFrame;
+                this.setProperties(data.cells, data.speed);
+                this.setLoop(data.loop, data.cells, data.speed);
+            }
         });
     }
 

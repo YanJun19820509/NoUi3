@@ -28,21 +28,37 @@ import { DEBUG, Node, UIOpacity, UITransform, ccclass, easing, isValid, js, quat
  * 同时还支持停止stop，暂停pause，继续resume
  */
 @ccclass('YJTween')
+/**
+ * 缓动动画类
+ */
 export class YJTween {
     //缓动目标
     private _target: Node = null;
+    //缓动动作列表
     private _actions: TweenActionBase[];
+    //并行执行的缓动动画列表
     private _tweens: YJTween[];
+    //当前执行的动作索引
     private _actionIndex: number;
+    //是否已开始播放
     private _started: boolean;
+    //是否暂停
     private _paused: boolean;
     //缓存起来，方便查找和停止
     private static _tweenMap: { [uuid: string]: YJTween[] } = {};
 
+    /**
+     * 创建一个缓动动画
+     * @param target 目标节点
+     * @returns YJTween实例
+     */
     public static tween(target: Node) {
         return new YJTween(target);
     }
 
+    /**
+     * 停止所有缓动动画
+     */
     public static stopAll() {
         for (const key in YJTween._tweenMap) {
             const tweens = YJTween._tweenMap[key];
@@ -50,6 +66,10 @@ export class YJTween {
         }
     }
 
+    /**
+     * 停止指定节点的所有缓动动画
+     * @param target 目标节点
+     */
     public static stopAllByTarget(target: Node) {
         const uuid = target.uuid;
         if (YJTween._tweenMap[uuid]) {
@@ -58,12 +78,20 @@ export class YJTween {
         }
     }
 
+    /**
+     * 将缓动动画添加到缓存Map中
+     * @param tween 缓动动画实例
+     */
     private static addToMap(tween: YJTween) {
         const uuid = tween._target.uuid;
         if (!YJTween._tweenMap[uuid]) YJTween._tweenMap[uuid] = [];
         YJTween._tweenMap[uuid].push(tween);
     }
 
+    /**
+     * 构造函数
+     * @param target 目标节点
+     */
     constructor(target: Node) {
         this._target = target;
         this._actions = [];
@@ -71,21 +99,45 @@ export class YJTween {
         YJTween.addToMap(this);
     }
 
+    /**
+     * 添加一个缓动到目标值的动作
+     * @param duration 持续时间
+     * @param props 目标属性值
+     * @param easing 缓动函数类型
+     * @returns this
+     */
     public to(duration: number, props: PropType, easing?: EasingType) {
         this._actions[this._actions.length] = new TweenActionTo(this._target, duration, props, easing);
         return this;
     }
 
+    /**
+     * 添加一个缓动增量值的动作
+     * @param duration 持续时间
+     * @param props 增量属性值
+     * @param easing 缓动函数类型
+     * @returns this
+     */
     public by(duration: number, props: PropType, easing?: EasingType) {
         this._actions[this._actions.length] = new TweenActionBy(this._target, duration, props, easing);
         return this;
     }
 
+    /**
+     * 添加一个直接设置属性值的动作
+     * @param props 属性值
+     * @returns this
+     */
     public set(props: PropType) {
         this._actions[this._actions.length] = new TweenActionSet(this._target, props);
         return this;
     }
 
+    /**
+     * 添加一个延迟动作
+     * @param duration 延迟时间
+     * @returns this
+     */
     public delay(duration: number) {
         this._actions[this._actions.length] = new TweenActionDelay(this._target, duration);
         return this;
@@ -94,7 +146,7 @@ export class YJTween {
     /**
      * 重复，共执行times+1次
      * @param times <0表示无限循环，0表示不重复，>0表示重复次数。
-     * @returns 
+     * @returns this
      */
     public repeat(times: number) {
         if (times != 0) {
@@ -104,28 +156,51 @@ export class YJTween {
         return this;
     }
 
+    /**
+     * 反转当前所有动作
+     * @returns this
+     */
     public reverse() {
         const a = new TweenActionReverse(this._target, this._actions);
         this._actions = [a];
         return this;
     }
 
+    /**
+     * 添加一个回调动作
+     * @param fn 回调函数
+     * @returns this
+     */
     public call(fn: () => void) {
         if (fn && typeof fn === 'function')
             this._actions[this._actions.length] = new TweenActionCall(this._target, fn);
         return this;
     }
 
+    /**
+     * 将多个缓动动画串行执行
+     * @param tweens 缓动动画列表
+     * @returns this
+     */
     public sequence(...tweens: YJTween[]) {
         this._actions = this._actions.concat(...tweens.map(t => t._actions));
         return this;
     }
 
+    /**
+     * 将多个缓动动画并行执行
+     * @param tweens 缓动动画列表
+     * @returns this
+     */
     public parallel(...tweens: YJTween[]) {
         this._tweens = this._tweens.concat(tweens);
         return this;
     }
 
+    /**
+     * 开始执行缓动动画
+     * @returns this
+     */
     public start() {
         if (this._started) return;
         this._started = true;
@@ -137,7 +212,7 @@ export class YJTween {
 
     /**
      * 停止所有缓动动作，并重置所有属性到初始值。
-     * @returns 
+     * @returns this
      */
     public stop() {
         if (this._started) {
@@ -151,18 +226,30 @@ export class YJTween {
         return this;
     }
 
+    /**
+     * 暂停缓动动画
+     * @returns this
+     */
     public pause() {
         if (this._started)
             this._paused = true;
         return this;
     }
 
+    /**
+     * 恢复缓动动画
+     * @returns this
+     */
     public resume() {
         if (this._started)
             this._paused = false;
         return this;
     }
 
+    /**
+     * 更新缓动动画
+     * @param dt 时间增量
+     */
     public update(dt: number) {
         if (!isValid(this._target)) {
             this.clear();
@@ -179,6 +266,9 @@ export class YJTween {
         if (a.done) this._actionIndex++;
     }
 
+    /**
+     * 清理缓动动画
+     */
     public clear() {
         no.unscheduleTargetUpdateFunction(this);
         this._actions.length = 0;
@@ -204,6 +294,11 @@ export class YJTween {
         return this;
     }
 
+    /**
+     * 解析单个缓动数据
+     * @param data 缓动数据
+     * @returns YJTween实例
+     */
     private _parse(data: TweenDataType) {
         const { delay, duration, to, by, set, props, easing, repeat, reverse, callback }: TweenDataType = data;
         let a = this;
@@ -235,16 +330,28 @@ export class YJTween {
         return a;
     }
 
+    /**
+     * 创建一个新的缓动动画实例
+     * @returns YJTween实例
+     */
     private _new() {
         return YJTween.tween(this._target);
     }
 }
 
+/**
+ * 缓动动作基类
+ */
 class TweenActionBase {
+    /** 目标节点 */
     public readonly target: Node;
+    /** 持续时间 */
     public readonly duration: number;
+    /** 是否完成 */
     public done: boolean;
+    /** 当前时间 */
     protected t: number;
+    /** 是否反向播放 */
     protected isReverse: boolean;
 
     constructor(target: Node, duration: number) {
@@ -255,6 +362,10 @@ class TweenActionBase {
         this.isReverse = false;
     }
 
+    /**
+     * 更新动作
+     * @param dt 时间增量
+     */
     public update(dt: number) {
         if (!isValid(this.target) || this.done) return;
         if (!this.isReverse) {
@@ -267,24 +378,40 @@ class TweenActionBase {
         this.onUpdate(dt);
     }
 
+    /**
+     * 反转动作
+     */
     public reverse() {
         this.t = this.duration;
         this.isReverse = true;
         this.done = false;
     }
 
+    /**
+     * 重置动作
+     */
     public reset() {
         this.t = 0;
         this.isReverse = false;
         this.done = false;
     }
 
+    /**
+     * 更新回调
+     * @param dt 时间增量
+     */
     protected onUpdate(dt: number) { }
 }
 
+/**
+ * 缓动到目标值的动作
+ */
 class TweenActionTo extends TweenActionBase {
+    /** 缓动函数 */
     public readonly easingFn: EasingMethodFn;
+    /** 原始属性值 */
     protected _originProps: PropType;
+    /** 动作属性列表 */
     protected props: ActionProp[];
 
     constructor(target: Node, duration: number, props?: PropType, easing?: EasingType) {
@@ -309,18 +436,28 @@ class TweenActionTo extends TweenActionBase {
         this.resetProps();
     }
 
+    /**
+     * 反转属性值
+     */
     protected reverseProps() {
         // this.props.forEach(prop => {
         //     prop.start = prop.cur.slice();
         // });
     }
 
+    /**
+     * 重置属性值
+     */
     protected resetProps() {
         this.props?.forEach(prop => {
             prop.cur = prop.start.slice();
         });
     }
 
+    /**
+     * 更新单个属性值
+     * @param prop 属性对象
+     */
     private updateProp(prop: ActionProp) {
         const t = this.done ? (this.isReverse ? 0 : 1) : this.easingFn(this.t / this.duration);
         for (let i = 0, n = prop.start.length; i < n; i++) {
@@ -351,6 +488,10 @@ class TweenActionTo extends TweenActionBase {
         }
     }
 
+    /**
+     * 初始化属性列表
+     * @param props 属性对象
+     */
     protected initProps(props: PropType) {
         this.props = [];
         if (!props) return;
@@ -368,6 +509,11 @@ class TweenActionTo extends TweenActionBase {
         }
     }
 
+    /**
+     * 根据属性类型获取目标组件
+     * @param type 属性类型
+     * @returns 目标组件
+     */
     protected getPropTargetByType(type: string): TargetType {
         switch (type) {
             case "pos":
@@ -385,6 +531,12 @@ class TweenActionTo extends TweenActionBase {
         }
     }
 
+    /**
+     * 根据属性类型获取属性值
+     * @param target 目标组件
+     * @param type 属性类型
+     * @returns 属性值数组
+     */
     protected getPropValueByType(target: TargetType, type: string): number[] {
         switch (type) {
             case "pos": {
@@ -412,6 +564,12 @@ class TweenActionTo extends TweenActionBase {
         }
     }
 
+    /**
+     * 数组相加
+     * @param v1 数组1
+     * @param v2 数组2
+     * @returns 相加后的数组
+     */
     protected propValueAdd(v1: number[], v2: number[]): number[] {
         let v3: number[] = [];
         v1.forEach((v, i) => {
@@ -420,6 +578,12 @@ class TweenActionTo extends TweenActionBase {
         return v3;
     }
 
+    /**
+     * 数组相减
+     * @param v1 数组1
+     * @param v2 数组2
+     * @returns 相减后的数组
+     */
     protected propValueMinus(v1: number[], v2: number[]): number[] {
         let v3: number[] = [];
         v1.forEach((v, i) => {
@@ -429,6 +593,9 @@ class TweenActionTo extends TweenActionBase {
     }
 }
 
+/**
+ * 缓动增量值的动作
+ */
 class TweenActionBy extends TweenActionTo {
     protected initProps(props: PropType) {
         this.props = [];
@@ -459,6 +626,9 @@ class TweenActionBy extends TweenActionTo {
     }
 }
 
+/**
+ * 直接设置属性值的动作
+ */
 class TweenActionSet extends TweenActionTo {
     constructor(target: Node, props: PropType) {
         super(target, 0);
@@ -466,8 +636,14 @@ class TweenActionSet extends TweenActionTo {
     }
 }
 
+/**
+ * 延迟动作
+ */
 class TweenActionDelay extends TweenActionBase { }
 
+/**
+ * 回调动作
+ */
 class TweenActionCall extends TweenActionBase {
     private _call: () => void;
     constructor(target: Node, callFn: () => void) {
@@ -478,6 +654,9 @@ class TweenActionCall extends TweenActionBase {
     protected onUpdate(dt: number) { this._call?.(); }
 }
 
+/**
+ * 重复动作
+ */
 class TweenActionRepeat extends TweenActionBase {
     private _actions: TweenActionBase[];
     private _repeat: number;
@@ -532,6 +711,9 @@ class TweenActionRepeat extends TweenActionBase {
     }
 }
 
+/**
+ * 反转动作
+ */
 class TweenActionReverse extends TweenActionBase {
     private _actions: TweenActionBase[];
     private _actionIndex: number;
@@ -575,15 +757,24 @@ class TweenActionReverse extends TweenActionBase {
     }
 }
 
+/** 目标组件类型 */
 export type TargetType = Node | UITransform | UIOpacity;
+/** 属性类型 */
 export type PropType = { pos?: number[], angle?: number[], rotation?: number[], scale?: number[], size?: number[], anchor?: number[], opacity?: number[] };
+/** 缓动数据类型 */
 export type TweenDataType = { delay?: number, duration?: number, to?: number | PropType, by?: number | PropType, set?: number | PropType, props?: PropType, easing?: EasingType, repeat?: number, reverse?: boolean, callback?: () => void };
+/** 动作属性类型 */
 export type ActionProp = { target: TargetType, type: string, start: number[], increment: number[], cur: number[] };
 // export type EasingType = "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn";
 
-
+/** 缓动函数类型 */
 export type EasingMethodFn = (k: number) => number;
 
+/**
+ * 获取缓动函数
+ * @param easingMethod 缓动类型
+ * @returns 缓动函数
+ */
 export function getEasingFn(easingMethod: EasingType): EasingMethodFn {
     switch (easingMethod) {
         case EasingType.LINEAR: return easing.linear;

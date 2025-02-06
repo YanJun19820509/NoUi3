@@ -53,8 +53,9 @@ export class FuckUi extends Component {
             return;
         }
         if (!disignore && this.saveIgnore && no.objectEquals(d, this._oldData)) {
-            if (DEBUG && this.showValueLog)
-                no.log('重值忽略', this.bind_keys, d);
+            if (DEBUG && this.showValueLog) {
+                // no.log('重值忽略', this.bind_keys, d);
+            }
             return;
         }
         this._oldData = d;
@@ -99,7 +100,7 @@ export class FuckUi extends Component {
     }
 
     public resetData(): void {
-        if (!this._oldData) return;
+        if (!this.dataSetted) return;
         let d = this._oldData;
         // if (d != '') {
         //     try {
