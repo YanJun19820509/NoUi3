@@ -14,8 +14,8 @@ out vec4 color;
 out vec2 ext;
 out vec2 uv0;
 out float def;
-out float t1;
-out float t2;
+out float t1;//整数位
+out float t2;//小数位
 
 vec4 vert() {
   vec4 pos = vec4(a_position, 1);
