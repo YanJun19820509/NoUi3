@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid, DEBUG } from '../yj';
 import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -210,6 +210,27 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         const [i, spriteFrame] = this.materialInfo.getSpriteFrameInAtlas(name);
         if (!spriteFrame) {
             no.err('这里需要检查下资源使用问题，设置的从合图加载，但未找到资源', this.node.name, name);
+
+            if (DEBUG) {
+                const names = [];
+                let currentNode = this.node;
+
+                // 遍历父节点，收集名称
+                while (currentNode) {
+                    // 检查当前节点是否有 name 属性
+                    if (currentNode.name) {
+                        names.unshift(currentNode.name);
+                    } else {
+                        // 如果没有 name，停止遍历
+                        break;
+                    }
+                    // 移动到父节点
+                    currentNode = currentNode.parent;
+                }
+
+                console.error('节点路径', JSON.stringify(names));
+            }
+
             this.resetSprite();
             return;
         }

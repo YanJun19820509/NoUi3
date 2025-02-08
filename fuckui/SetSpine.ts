@@ -92,10 +92,9 @@ export class SetSpine extends FuckUi {
     onDisable() {
         if (!this.canDisable) return;
         this.a_clearData();
-        let spine = this.getComponent(Skeleton);
-        this.needClearTracks && !spine.isAnimationCached() && spine?.clearTracks();
-        spine?.destroyRenderData();
-        // spine && (spine.skeletonData = null);
+        let spine = this.curSpine();
+        this.needClearTracks && !spine?.isAnimationCached() && spine?.clearTracks();
+        spine?.node.destroy();
     }
 
     onDestroy() {
@@ -114,19 +113,23 @@ export class SetSpine extends FuckUi {
         this.setSpineData();
     }
 
+    private curSpine(): Skeleton {
+        return this.node.children[0]?.getComponent(Skeleton);
+    }
+
     private setSpineData() {
         const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
         let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean, duration: number } = data;
-        const spine = this.getComponent(Skeleton);
+        let spine = this.curSpine();
 
-        if (!path && !animation) {
+        if (spine && !path && !animation) {
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
             spine.enabled = false;
             return;
         }
 
-        if (!path && !this.curPath && !spine.skeletonData && this.spineUrl) {
+        if (!path && !this.curPath && this.spineUrl) {
             path = this.spineUrl;
         }
 
@@ -137,7 +140,6 @@ export class SetSpine extends FuckUi {
             YJSpineManager.ins.set(this.curPath);
         }
 
-        spine.timeScale = ((timeScale || 1) * this.GlobalScale);
 
         if (path && this.curPath != path) {
             YJSpineManager.ins.get(path).then(res => {
@@ -145,14 +147,19 @@ export class SetSpine extends FuckUi {
                     no.err(`spine资源${path}不存在`);
                     return;
                 }
-                if (!spine?.isValid) {
+                if (!this.node?.isValid) {
                     YJSpineManager.ins.set(path);
                     return;
                 }
                 this.curPath = path;
-                //在设置新SkeletonData 之前清理下RenderData
-                spine.destroyRenderData();
+                //销毁原spine节点
+                spine?.node.destroy();
+                //创建新spine节点
+                const newSpineNode = no.newNode('spine', [Skeleton]);
+                newSpineNode.parent = this.node;
+                spine = newSpineNode.getComponent(Skeleton);
                 spine.skeletonData = res;
+                spine.timeScale = ((timeScale || 1) * this.GlobalScale);
 
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (pause) {
@@ -165,6 +172,7 @@ export class SetSpine extends FuckUi {
                 this.playDuration(duration);
             });
         } else if (animation != null) {
+            spine.timeScale = ((timeScale || 1) * this.GlobalScale);
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
                 this.a_pause(tempStr);
@@ -186,7 +194,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -204,7 +212,7 @@ export class SetSpine extends FuckUi {
     private playDuration(duration: number) {
         if (!duration) return;
         this.scheduleOnce(() => {
-            const spine = this.getComponent(Skeleton);
+            const spine = this.curSpine();
             spine.clearTrack(0);
             spine.loop = false;
             this?.endCall.execute(spine);
@@ -218,7 +226,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -235,7 +243,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -250,9 +258,9 @@ export class SetSpine extends FuckUi {
     }
 
     public a_stop(): void {
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         spine.clearTrack(0);
-        spine.enabled = false;
+        spine.node.destroy();
     }
 
     public a_pause(e: any, animation?: string): void {
@@ -261,7 +269,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -321,7 +329,7 @@ export class SetSpine extends FuckUi {
 
     public setSpineEnable(v: boolean) {
         if (!this.canDisable) return;
-        const spine = this.getComponent(Skeleton);
+        const spine = this.curSpine();
         if (!spine.node.activeInHierarchy) return;
         if (v && !this.isFullScreenHide) {
             return;
