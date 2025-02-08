@@ -158,6 +158,7 @@ export class SetSpine extends FuckUi {
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.parent = this.node;
                 spine = newSpineNode.getComponent(Skeleton);
+                spine.premultipliedAlpha = this.getComponent(Skeleton).premultipliedAlpha;
                 spine.skeletonData = res;
                 spine.timeScale = ((timeScale || 1) * this.GlobalScale);
 
