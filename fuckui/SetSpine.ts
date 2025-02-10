@@ -84,6 +84,7 @@ export class SetSpine extends FuckUi {
         if (sys.platform == sys.Platform.WECHAT_GAME)
             this.GlobalScale = .5;
         let spine = this.getComponent(Skeleton);
+        spine.enabled = false;
         if (this.autoPlayOnEnable) {
             this.onDataChange({ path: this.curPath, animation: this.animationName, loop: spine.loop });
         }
@@ -123,7 +124,8 @@ export class SetSpine extends FuckUi {
         let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean, duration: number } = data;
         let spine = this.curSpine();
 
-        if (spine && !path && !animation) {
+        if (!path && !animation) {
+            if (!spine) return;
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
             spine.enabled = false;
             return;
@@ -154,7 +156,7 @@ export class SetSpine extends FuckUi {
                 }
                 this.curPath = path;
                 //销毁原spine节点
-                spine?.node.destroy();
+                spine?.node?.destroy();
                 //创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.parent = this.node;
@@ -262,8 +264,8 @@ export class SetSpine extends FuckUi {
 
     public a_stop(): void {
         const spine = this.curSpine();
-        spine.clearTrack(0);
-        spine.node.destroy();
+        spine?.clearTrack(0);
+        spine?.node?.destroy();
     }
 
     public a_pause(e: any, animation?: string): void {
