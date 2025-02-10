@@ -85,7 +85,7 @@ export class SetSpine extends FuckUi {
             this.GlobalScale = .5;
         let spine = this.getComponent(Skeleton);
         if (this.autoPlayOnEnable) {
-            this.onDataChange({ animation: this.animationName, loop: spine.loop });
+            this.onDataChange({ path: this.curPath, animation: this.animationName, loop: spine.loop });
         }
     }
 
@@ -114,7 +114,7 @@ export class SetSpine extends FuckUi {
     }
 
     private curSpine(): Skeleton {
-        return this.node.children[0]?.getComponent(Skeleton);
+        return this.node.getComponentInChildren(Skeleton);
     }
 
     private setSpineData() {
@@ -141,7 +141,8 @@ export class SetSpine extends FuckUi {
         }
 
 
-        if (path && this.curPath != path) {
+        if (!spine || (path && this.curPath != path)) {
+            if (!path) path = this.curPath;
             YJSpineManager.ins.get(path).then(res => {
                 if (!res) {
                     no.err(`spine资源${path}不存在`);
@@ -173,6 +174,7 @@ export class SetSpine extends FuckUi {
                 this.playDuration(duration);
             });
         } else if (animation != null) {
+            if (!spine) return;
             spine.timeScale = ((timeScale || 1) * this.GlobalScale);
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
