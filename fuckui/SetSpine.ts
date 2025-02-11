@@ -94,8 +94,9 @@ export class SetSpine extends FuckUi {
         if (!this.canDisable) return;
         this.a_clearData();
         let spine = this.curSpine();
-        this.needClearTracks && !spine?.isAnimationCached() && spine?.clearTracks();
-        spine?.node.destroy();
+        if (!spine) return;
+        this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
+        spine.node.destroy();
     }
 
     onDestroy() {
@@ -115,6 +116,7 @@ export class SetSpine extends FuckUi {
     }
 
     private curSpine(): Skeleton {
+        if (!this.node?.isValid) return null;
         return this.node.getComponentInChildren(Skeleton);
     }
 
