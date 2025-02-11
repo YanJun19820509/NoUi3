@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys, size } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -53,6 +53,7 @@ export class SetSpine extends FuckUi {
     private loopNum: number = 0;
     private _startIndexes: string[];
     private _endIndexes: string[];
+    private _curSpine: Skeleton;
 
     protected update(): void {
         if (!EDITOR) return;
@@ -93,10 +94,10 @@ export class SetSpine extends FuckUi {
     onDisable() {
         if (!this.canDisable) return;
         this.a_clearData();
-        let spine = this.curSpine();
+        let spine = this._curSpine;
         if (!spine) return;
         this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        spine.node.destroy();
+        spine.node?.destroy();
     }
 
     onDestroy() {
@@ -115,21 +116,15 @@ export class SetSpine extends FuckUi {
         this.setSpineData();
     }
 
-    private curSpine(): Skeleton {
-        if (!this.node?.isValid) return null;
-        return this.node.getComponentInChildren(Skeleton);
-    }
-
     private setSpineData() {
         const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
         let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: { path: string, skin: string, animation: string, loop: boolean, timeScale: number, loopNum: number, pause: boolean, duration: number } = data;
-        let spine = this.curSpine();
-
+        let spine = this._curSpine;
         if (!path && !animation) {
             if (!spine) return;
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-            spine.enabled = false;
+            spine.node.destroy();
             return;
         }
 
@@ -145,7 +140,7 @@ export class SetSpine extends FuckUi {
         }
 
 
-        if (!spine || (path && this.curPath != path)) {
+        if (!spine?.isValid || (path && this.curPath != path)) {
             if (!path) path = this.curPath;
             YJSpineManager.ins.get(path).then(res => {
                 if (!res) {
@@ -163,9 +158,19 @@ export class SetSpine extends FuckUi {
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.parent = this.node;
                 spine = newSpineNode.getComponent(Skeleton);
-                spine.premultipliedAlpha = this.getComponent(Skeleton).premultipliedAlpha;
+                this._curSpine = spine;
+                const bSpine = this.getComponent(Skeleton);
+                spine.premultipliedAlpha = bSpine.premultipliedAlpha;
+                spine.defaultCacheMode = bSpine.defaultCacheMode;
+                spine.timeScale = bSpine.timeScale;
+                spine.enableBatch = bSpine.enableBatch;
+                spine.sockets = bSpine.sockets;
                 spine.skeletonData = res;
                 spine.timeScale = ((timeScale || 1) * this.GlobalScale);
+                const width = res.getRuntimeData().width,
+                    height = res.getRuntimeData().height;
+                no.size(this.node, size(width, height));
+                no.anchor(this.node, 1);
 
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (pause) {
@@ -201,7 +206,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -219,7 +224,7 @@ export class SetSpine extends FuckUi {
     private playDuration(duration: number) {
         if (!duration) return;
         this.scheduleOnce(() => {
-            const spine = this.curSpine();
+            const spine = this._curSpine;
             spine.clearTrack(0);
             spine.loop = false;
             this?.endCall.execute(spine);
@@ -233,7 +238,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -250,7 +255,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -265,7 +270,7 @@ export class SetSpine extends FuckUi {
     }
 
     public a_stop(): void {
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         spine?.clearTrack(0);
         spine?.node?.destroy();
     }
@@ -276,7 +281,7 @@ export class SetSpine extends FuckUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true;
@@ -336,7 +341,7 @@ export class SetSpine extends FuckUi {
 
     public setSpineEnable(v: boolean) {
         if (!this.canDisable) return;
-        const spine = this.curSpine();
+        const spine = this._curSpine;
         if (!spine.node.activeInHierarchy) return;
         if (v && !this.isFullScreenHide) {
             return;
