@@ -170,7 +170,6 @@ export class SetSpine extends FuckUi {
                 const width = res.getRuntimeData().width,
                     height = res.getRuntimeData().height;
                 no.size(this.node, size(width, height));
-                no.anchor(this.node, 1);
 
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (pause) {
