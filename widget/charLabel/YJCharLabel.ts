@@ -519,8 +519,7 @@ export class YJCharLabel extends Sprite {
      * 更新文本渲染
      * 处理文本的样式设置和渲染逻辑
      */
-    private async setLabel() {
-        if (!await no.Throttling.ins(this).wait(.2, true)) return;
+    private setLabel() {
         if (EDITOR && !this._needSetLabel) return;
         if (!this.enabledInHierarchy || !isValid(this.node)) {
             this._needSet = true;
