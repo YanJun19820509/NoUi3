@@ -127,7 +127,6 @@ export class YJDataWork extends Component {
      * 若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
      */
     public init() {
-        this.bindSubFuckUis();
         if (!this._loaded) return;
         const afterDataInit = this['afterDataInit'];
         if (typeof afterDataInit == 'function') {
@@ -163,7 +162,6 @@ export class YJDataWork extends Component {
      */
     public set data(d: any) {
         if (typeof d != 'object') return;
-        this.bindSubFuckUis();
         for (let key in d) {
             this.setValue(key, d[key]);
         }
@@ -193,6 +191,7 @@ export class YJDataWork extends Component {
      * @param value 要设置的值
      */
     public setValue(key: string, value: any) {
+        this.bindSubFuckUis();
         this._data?.set(key, value, this.onlyDiff);
         //过滤同一帧内同一key多次赋值的情况
         // no.addToArray(this.changedDataKeys, key);

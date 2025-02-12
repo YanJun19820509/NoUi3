@@ -211,7 +211,7 @@ export class YJWindowManager extends Component {
         beforeInit?.(a as T);
         a.initPanel().then(() => {
             content.addChild(node);
-            YJSoundEffectManager.ins.playOpenSoundEffect();
+            YJSoundEffectManager.ins?.playOpenSoundEffect();
             afterInit?.(a as T);
         }).catch(e => { no.err('windowmanager', e.stack); });
     }
