@@ -125,7 +125,7 @@ export class SetSpine extends FuckUi {
         if (!path && !animation) {
             if (!spine) return;
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-            spine.node.destroy();
+            spine.node?.destroy();
             return;
         }
 
@@ -170,7 +170,9 @@ export class SetSpine extends FuckUi {
                 spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
                 const width = res.getRuntimeData().width,
                     height = res.getRuntimeData().height;
-                no.size(this.node, size(width, height));
+                if (width > 0 && height > 0) {
+                    no.size(this.node, size(width, height));
+                }
 
                 let tempStr = (skin ? (skin + ':') : '') + animation;
                 if (pause) {
