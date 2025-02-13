@@ -50,6 +50,7 @@ export class SetSpine extends FuckUi {
     private spineQueue: any[];
     private queueIndex: number = 0;
     private GlobalScale: number = 1;
+    private defaultScale: number = 1;
     private loopNum: number = 0;
     private _startIndexes: string[];
     private _endIndexes: string[];
@@ -160,13 +161,13 @@ export class SetSpine extends FuckUi {
                 spine = newSpineNode.getComponent(Skeleton);
                 this._curSpine = spine;
                 const bSpine = this.getComponent(Skeleton);
+                this.defaultScale = bSpine.timeScale;
                 spine.premultipliedAlpha = bSpine.premultipliedAlpha;
                 spine.defaultCacheMode = bSpine.defaultCacheMode;
-                spine.timeScale = bSpine.timeScale;
                 spine.enableBatch = bSpine.enableBatch;
                 spine.sockets = bSpine.sockets;
                 spine.skeletonData = res;
-                spine.timeScale = ((timeScale || 1) * this.GlobalScale);
+                spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
                 const width = res.getRuntimeData().width,
                     height = res.getRuntimeData().height;
                 no.size(this.node, size(width, height));
@@ -183,7 +184,7 @@ export class SetSpine extends FuckUi {
             });
         } else if (animation != null) {
             if (!spine) return;
-            spine.timeScale = ((timeScale || 1) * this.GlobalScale);
+            spine.timeScale = ((timeScale || this.defaultScale) * this.GlobalScale);
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
                 this.a_pause(tempStr);

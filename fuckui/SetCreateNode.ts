@@ -152,19 +152,20 @@ export class SetCreateNode extends FuckUi {
         //     }
         // }
 
-        let start = !this.onlyAdd ? 0 : l;
+        const start = !this.onlyAdd ? 0 : l;
+        let dataIdx = 0;
         if (this.uiAnim?.enabled || this._1b1) {
             this._1b1 = false;
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
-                    this.setItem(data, start++);
+                    this.setItem(data, start, dataIdx++);
                 }
-            }, 0.1, Math.ceil((data.length - start) / this.batchNum));
+            }, 0.1, Math.ceil(data.length / this.batchNum));
         } else {
             const len = data.length;
             YJJobManager.ins.addTask(() => {
-                this.setItem(data, start++);
-                return start >= len;
+                this.setItem(data, start, dataIdx++);
+                return dataIdx >= len;
             });
         }
         this._isSettingData = false;
@@ -202,26 +203,27 @@ export class SetCreateNode extends FuckUi {
         return item;
     }
 
-    private setItem(data: any[], i = 0) {
-        if (i >= data.length) {
+    private setItem(data: any[], childIdxStart = 0, dataIdx = 0) {
+        const childIdx = childIdxStart + dataIdx;
+        if (dataIdx >= data.length) {
             no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
         let isNew = false;
-        let item = this.container.children[i];
+        let item = this.container.children[childIdx];
         if (!item) {
             item = this.initItem(instantiate(this.template));
             this.container.addChild(item);
             isNew = true;
         }
-        if (data[i] == null) {
+        if (data[dataIdx] == null) {
             no.visible(item, false);
             return;
         }
         if (this.uiAnim?.enabled || this.isFirst) item = item.children[0];
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
-            a.data = data[i];
+            a.data = data[dataIdx];
             a.init();
         }
         no.visible(item, true);

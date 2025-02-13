@@ -9,56 +9,93 @@ import { YJWideAreaDelegate } from "./YJWideAreaDelegate";
  */
 @ccclass('YJWideArea')
 export class YJWideArea extends YJTouchListener {
+    /** 数据工作组件 */
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
+
+    /** 网格大小 - 整个地面将按该大小分为无数个网格，每个网格有其对应的网格坐标UV，原点处网格坐标为(0,0) */
     @property({ displayName: '网格大小', tooltip: '整个地面将按该大小分为无数个网格，每个网格有其对应的网格坐标UV，原点处网格坐标为(0,0)', step: 1, min: 1, max: 2048 })
     meshSize: number = 64;
+
+    /** 是否使用视图块 */
     @property({ displayName: '使用视图块' })
     useBlock: boolean = true;
+
+    /** 视图块大小 - 整个屏幕将按视图块大小分割成多个正方形，在移动的过程中移出屏幕外的视图块将填充到即将移入屏幕内的区域位置 */
     @property({ displayName: '视图块大小', visible() { return this.useBlock; }, tooltip: '整个屏幕将按视图块大小分割成多个正方形，在移动的过程中移出屏幕外的视图块将填充到即将移入屏幕内的区域位置', step: 1, min: 1, max: 2048 })
     blocksSize: number = 256;
+
+    /** 视图块模板节点 */
     @property({ type: Node, displayName: '视图块模板', visible() { return this.useBlock; } })
     blockTemp: Node = null;
+
+    /** 视图块层节点 */
     @property({ type: Node, displayName: '视图块层', visible() { return this.useBlock; } })
     blockLayer: Node = null;
+
+    /** 每秒移动距离 */
     @property({ tooltip: '每秒移动距离' })
     speed: number = 10;
+
+    /** 是否自动移动 - 滑动屏幕会改变移动方向，手指抬起后点自动按该方向移动 */
     @property({ displayName: '自动移动', tooltip: '滑动屏幕会改变移动方向，手指抬起后点自动按该方向移动' })
     autoMove: boolean = true;
+
+    /** 是否开启阶梯增速 - 根据触摸滑动的距离长短增减speed */
     @property({ displayName: '开启阶梯增速', tooltip: '根据触摸滑动的距离长短增减speed' })
     stepSpeed: boolean = true;
+
+    /** 阶梯增速的阶段长度 - 每当增加或减少该长度，speed相应增减0.5倍 */
     @property({ displayName: '阶梯增速的阶段长度', tooltip: '每当增加或减少该长度，speed相应增减0.5倍', visible() { return this.stepSpeed; } })
     stepSpeedLen: number = 20;
+
+    /** 是否开启半球透视效果 */
     @property({ displayName: '开启半球透视效果' })
     perspectiveEffectEnable: boolean = false;
+
+    /** 透视率 - 控制透视效果的强度 */
     @property({ displayName: '透视率', min: .1, max: 1, visible() { return this.perspectiveEffectEnable; } })
     perspectiveScale: number = 1;
+
+    /** 是否显示罗盘 */
     @property({ displayName: '显示罗盘' })
     showCompass: boolean = true;
+
+    /** 广域代理组件 */
     @property({ type: YJWideAreaDelegate })
     delegate: YJWideAreaDelegate = null;
 
-    /**第一次点击坐标 */
+    /** 第一次点击坐标 */
     private startTouchPos: Vec2;
-    /**广阔相对于无限空间的当前坐标 */
+
+    /** 广阔相对于无限空间的当前坐标 */
     private _curPos: Vec2;
-    /**速度倍率 */
+
+    /** 速度倍率 */
     private _speedMultipel: number = 1;
 
+    /** 移动方向信息 {angle:角度, radian:弧度} */
     private _dir: { angle: number, radian: number };
 
+    /** 是否正在移动 */
     private _isMoving: boolean = false;
 
+    /** 视图范围 {x:左边界, y:下边界, z:右边界, w:上边界} */
     private _range: Vec4;
 
+    /** 视图块组大小 {x:列数, y:行数} */
     private _blockGroupSize: Vec2;
 
+    /** 视图块层大小 */
     private _blockLayerSize: Size;
 
+    /** 同行视图块信息 {y坐标: 节点数组} */
     private _sameRowInfo: { [y: number]: Node[] };
 
+    /** 初始行信息 {y:y坐标, scale:缩放} */
     private _initRowInfo: { y: number, scale: number }[];
 
+    /** 最底部y坐标 */
     private _bottomY: number;
 
     start() {
@@ -75,6 +112,7 @@ export class YJWideArea extends YJTouchListener {
         this.move(dt);
     }
 
+    /** 触摸开始回调 */
     public onStart(e: EventTouch) {
         const a = super.onStart(e);
         if (a) {
@@ -84,6 +122,7 @@ export class YJWideArea extends YJTouchListener {
         return a;
     }
 
+    /** 触摸移动回调 */
     public onMove(e: EventTouch) {
         const a = super.onMove(e);
         if (a) {
@@ -101,7 +140,7 @@ export class YJWideArea extends YJTouchListener {
         return a;
     }
 
-
+    /** 触摸结束回调 */
     public onEnd(e: EventTouch) {
         const a = super.onEnd(e);
         if (a) {
@@ -114,7 +153,7 @@ export class YJWideArea extends YJTouchListener {
         return a;
     }
 
-    /**行数 */
+    /** 获取行数 */
     private getRowNumber(viewSize: Size): number {
         this._initRowInfo = [];
         if (!this.perspectiveEffectEnable) {
@@ -143,7 +182,8 @@ export class YJWideArea extends YJTouchListener {
             return this._initRowInfo.length;
         }
     }
-    /**列数 */
+
+    /** 获取列数 */
     private getColumnNumber(viewSize: Size): number {
         let n: number = 0;
         if (!this.perspectiveEffectEnable) {
@@ -156,6 +196,7 @@ export class YJWideArea extends YJTouchListener {
         return n;
     }
 
+    /** 创建视图块 */
     private createBlocks() {
         if (!this.useBlock || !this.blockTemp || !this.blockLayer) return;
         const viewSize = this._blockLayerSize;
@@ -184,6 +225,7 @@ export class YJWideArea extends YJTouchListener {
         this.delegate?.onBlocksInit(this.blockLayer.children);
     }
 
+    /** 创建单个视图块 */
     private createBlock(x: number, y: number, width: number, height: number) {
         const node = instantiate(this.blockTemp);
         node.getComponent(UITransform).setContentSize(this.blocksSize, this.blocksSize);
@@ -197,6 +239,7 @@ export class YJWideArea extends YJTouchListener {
         this.setSameRow(node, pos);
     }
 
+    /** 移动视图 */
     private move(dt: number) {
         const len = this.speed * this._speedMultipel * dt,
             x = len * Math.cos(this._dir.radian),
@@ -213,6 +256,7 @@ export class YJWideArea extends YJTouchListener {
         this.moveBlocks(x, y);
     }
 
+    /** 移动视图块 */
     private moveBlocks(x: number, y: number) {
         if (!this.blockLayer) return;
         this.clearSameRowInfo();
@@ -223,6 +267,7 @@ export class YJWideArea extends YJTouchListener {
         this.setPerspectiveEffect();
     }
 
+    /** 设置视图块位置 */
     private setBlockPos(block: Node, x: number, y: number) {
         let pos = block['_origin_pos_'],
             isSwitch = false;
@@ -258,10 +303,12 @@ export class YJWideArea extends YJTouchListener {
         this.delegate?.onBlockMove(block, pos);
     }
 
+    /** 清除同行信息 */
     private clearSameRowInfo() {
         this._sameRowInfo = {};
     }
 
+    /** 设置同行信息 */
     private setSameRow(node: Node, pos: Vec3) {
         node['_origin_pos_'] = pos;
         let nodes = this._sameRowInfo[pos.y] || [];
@@ -269,11 +316,7 @@ export class YJWideArea extends YJTouchListener {
         this._sameRowInfo[pos.y] = nodes;
     }
 
-    /**
-     * 透视效果计算
-     * @param pos 
-     * @returns 
-     */
+    /** 设置透视效果 */
     private setPerspectiveEffect() {
         if (!this.perspectiveEffectEnable) {
             for (const k in this._sameRowInfo) {
@@ -321,6 +364,7 @@ export class YJWideArea extends YJTouchListener {
         }
     }
 
+    /** 坐标转UV */
     private xy2uv(xy: Vec2): Vec2 {
         const a = xy.x < 0 ? -1 : 1,
             b = xy.y < 0 ? -1 : 1;
@@ -329,6 +373,7 @@ export class YJWideArea extends YJTouchListener {
         return v2(u, v);
     }
 
+    /** 获取触摸UI坐标 */
     private touchUILocationAR(e: EventTouch): Vec2 {
         let p = e.getUILocation();
         // let pos = math.v3(p.x, p.y);
@@ -344,10 +389,12 @@ export class YJWideArea extends YJTouchListener {
         return p;
     }
 
+    /** 获取当前坐标 */
     public get curPos(): Vec2 {
         return this._curPos;
     }
 
+    /** 设置当前坐标 */
     public set curPos(v: Vec2) {
         if (v.equals(this._curPos)) return;
         this._curPos = v;
