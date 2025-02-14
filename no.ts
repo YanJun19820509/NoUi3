@@ -1797,6 +1797,7 @@ export namespace no {
 
     /**
      * 浮点数取整数位，不能用于超大数据
+     * Math.floor对负数不友好，如-1.2会返回-2，但预期可能是-1，所以需要使用|0来处理
      * @param v 
      * @returns 
      */
