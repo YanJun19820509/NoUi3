@@ -1,5 +1,6 @@
 import { no } from 'NoUi3/no';
 import { ccclass, Component, EventTouch, property, Vec2 } from 'NoUi3/yj';
+import { YJMoveHandleDelegate } from './YJMoveHandleDelegate';
 
 @ccclass('YJMoveHandle')
 /**
@@ -7,9 +8,8 @@ import { ccclass, Component, EventTouch, property, Vec2 } from 'NoUi3/yj';
  * 用于处理触摸移动事件,计算移动方向和状态
  */
 export class YJMoveHandle extends Component {
-    /** 移动事件回调数组 */
-    @property({ type: no.EventHandlerInfo, displayName: '移动事件' })
-    moveHandlers: no.EventHandlerInfo[] = [];
+    @property({ type: YJMoveHandleDelegate, displayName: '代理组件', tooltip: '移动事件回调组件，需要实现moveHandleEvent方法' })
+    delegate: YJMoveHandleDelegate = null;
 
     /** 触摸开始时的坐标 */
     private startTouchPos: Vec2;
@@ -46,7 +46,7 @@ export class YJMoveHandle extends Component {
         //与第一次点击坐标的夹角
         this._dir = no.angleTo(this.startTouchPos, pos);
         this._isMoving = false;
-        no.EventHandlerInfo.execute(this.moveHandlers, { type: 'stop' });
+        this.delegate?.moveHandleEvent({ type: 'stop' });
     }
 
     /**
@@ -64,7 +64,7 @@ export class YJMoveHandle extends Component {
      */
     update(dt: number) {
         if (this._isMoving) {
-            no.EventHandlerInfo.execute(this.moveHandlers, { type: 'move', dir: this._dir, dt });
+            this.delegate?.moveHandleEvent({ type: 'move', dir: this._dir, dt });
         }
     }
 }
