@@ -177,6 +177,10 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private changeData() {
         const data = this._data;
+        if (data == 'null') {
+            this.a_setEmpty();
+            return;
+        }
         if (!this.loadFromAtlas) {
             this.setSingleSpriteFrame(data);
             return;
@@ -188,10 +192,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         if (!this.enabled || !name) return;
         if (!this.loadFromAtlas) {
             this.resetSprite();
-            return;
-        }
-        if (name == 'null') {
-            this.a_setEmpty();
             return;
         }
 

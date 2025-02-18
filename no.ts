@@ -2616,6 +2616,10 @@ export namespace no {
         public offChange(handler: (d?: Data) => void, target?: any): void {
             this.off(Data.DataChangeEvent, handler, target);
         }
+
+        public triggerChange() {
+            this.emit(Data.DataChangeEvent, this);
+        }
     }
 
     /**
