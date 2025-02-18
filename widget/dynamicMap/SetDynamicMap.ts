@@ -77,6 +77,7 @@ export class SetDynamicMap extends FuckUi {
             this._tileSize = tileSize;
         }
         if (tileInfos) {
+            this._tileNodeMap.clear();
             for (let i = 0, n = tileInfos.length; i < n; i++) {
                 const tileInfo = tileInfos[i];
                 const uv = this.xyToUv(tileInfo.x, tileInfo.y);
@@ -119,22 +120,26 @@ export class SetDynamicMap extends FuckUi {
             }
         }
 
+        const items = this.node.children;
         if (this._tileNodeMap.size == 0) {
             // 首次创建地砖
             for (let i = 0, n = visibleUv.length; i < n; i++) {
                 const key = visibleUv[i];
                 const data = this._tileMap.get(key);
                 if (data) {
-                    const item = instantiate(this.template);
+                    let item = items[i];
+                    if (!item) {
+                        item = instantiate(this.template);
+                        item.parent = this.node;
+                        no.visible(item, true);
+                    }
                     this._tileNodeMap.set(key, item);
-                    item.parent = this.node;
                     let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                     if (a) {
                         a.initWithData(data);
                     }
                     this._tempV3.set(data.x, data.y, 0);
                     no.position(item, this._tempV3);
-                    no.visible(item, true);
                 }
             }
         } else {
