@@ -109,10 +109,12 @@ export class YJSliderButton extends Component {
 
     private setCheckedNodesVisible() {
         this.checkedShowNodes.forEach(n => {
-            no.visible(n, this._checked);
+            // no.visible(n, this._checked);
+            n.active = this._checked;
         });
         this.checkedHideNodes.forEach(n => {
-            no.visible(n, !this._checked);
+            // no.visible(n, !this._checked);
+            n.active = !this._checked;
         });
         this._done = true;
     }
