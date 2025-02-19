@@ -21,43 +21,60 @@ import { TileType } from '../../../res/test/maze/DungeonMapGenerator';
 @ccclass('SetMinimap')
 export class SetMinimap extends FuckUi {
 
+    /** 迷你地图节点 */
     @property({ type: Node, displayName: '迷你地图节点' })
     minimapNode: Node = null;
+
+    /** 迷你地图图集,图集内单图长宽相等,且应尽量小如12px */
     @property({ type: ImageAsset, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
     minimapImageSet: ImageAsset = null;
+
+    /** 图集内单图尺寸 */
     @property({ displayName: '图集内单图尺寸' })
     minimapCellSize: number = 12;
+
+    /** 放大倍数 */
+    @property({ displayName: '放大倍数' })
+    scale: number = 3;
+
+    /** 地砖类型与图集映射,下标对应地砖类型 */
     @property({ type: Vec2, displayName: '地砖类型与图集映射', tooltip: '下标对应地砖类型' })
     minimapSetPoses: Vec2[] = [];
 
     /** 瓦片图集 */
     protected _tileset: HTMLCanvasElement;
+
     /** 画布元素 */
     private _canvas: HTMLCanvasElement | null = null;
+
     /** 画布上下文 */
     private _context: CanvasRenderingContext2D | null = null;
+
     /** 显示迷你地图的精灵 */
     private _minimapSprite: Sprite = null;
+
+    /** 迷你地图缩放比例 */
     private _minimapScale: number = 1;
-    /**
-     * 地砖节点映射,key为uv坐标字符串,value为地砖节点
-     */
-    private _tileInfoMap: Map<string, any> = new Map();
+
+    /** 当前位置 */
     private _curPos: Vec3;
+
+    /** 纹理是否需要更新 */
     private _textureDirty: boolean = false;
 
+    /**
+     * 数据变更处理
+     * @param data 包含地图信息、移动信息、地砖信息的数据对象
+     */
     protected onDataChange(data: any) {
         const { mapInfo, moveBy, tileInfos } = data;
         if (mapInfo) {
             this.initMinimap(mapInfo.width, mapInfo.height, mapInfo.cellSize);
         }
         if (tileInfos) {
-            this._tileInfoMap.clear();
-            for (let i = 0, n = tileInfos.length; i < n; i++) {
-                const info = tileInfos[i];
-                if (info.type == TileType.EMPTY) continue;
-                this._tileInfoMap.set(`${info.x}_${info.y}`, info);
-            }
+            this._context.fillStyle = 'black';
+            this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
+            this.setMinimap(tileInfos);
         }
         if (moveBy) {
             if (!this._curPos) {
@@ -65,10 +82,15 @@ export class SetMinimap extends FuckUi {
             }
             this._curPos.add3f(moveBy[0] * this._minimapScale, moveBy[1] * this._minimapScale, 0);
             no.position(this._minimapSprite.node, this._curPos);
-            this.setTiles();
         }
     }
 
+    /**
+     * 初始化迷你地图
+     * @param width 地图宽度
+     * @param height 地图高度
+     * @param cellSize 单元格尺寸
+     */
     private initMinimap(width: number, height: number, cellSize: number) {
         if (!this.minimapNode) return;
         if (!this.minimapNode.getComponent(Mask)) {
@@ -78,56 +100,28 @@ export class SetMinimap extends FuckUi {
             const node = no.newNode('MinimapSprite', [Sprite]);
             node.parent = this.minimapNode;
             this._minimapSprite = node.getComponent(Sprite);
-            // this._minimapSprite.spriteFrame = new SpriteFrame();
         }
         if (!this._canvas) {
             const { canvas, context } = no.canvasPool.get();
             this._canvas = canvas;
             this._context = context;
-            this._minimapScale = this.minimapCellSize / cellSize;
+            this._minimapScale = this.minimapCellSize * this.scale / cellSize;
             this._canvas.width = width * this._minimapScale;
             this._canvas.height = height * this._minimapScale;
-            this._context.fillStyle = 'black';
-            this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
             no.size(this._minimapSprite.node, size(this._canvas.width, this._canvas.height));
         }
         this._tileset = this.minimapImageSet.data as HTMLCanvasElement;
     }
 
-    private setTiles() {
-        if (this._tileInfoMap.size == 0) return;
-        const pos = this._minimapSprite.node.position;
-        //节点坐标与在屏幕中心显示的坐标相反
-        const x = -pos.x;
-        const y = -pos.y;
-        const uv = this.xyToUv(x, y);
-        const visibleUv: string[] = [];
-        const nodeSize = no.size(this.node);
-        const r = Math.floor(Math.min(nodeSize.width, nodeSize.height) / 2 / this.minimapCellSize);
-        for (let i = -r; i <= r; i++) {
-            for (let j = -r; j <= r; j++) {
-                const u = uv[0] + i;
-                const v = uv[1] + j;
-                visibleUv[visibleUv.length] = `${u}_${v}`;
-            }
-        }
-
-        const tileInfos: any[] = [];
-        for (let i = 0, n = visibleUv.length; i < n; i++) {
-            const key = visibleUv[i];
-            const data = this._tileInfoMap.get(key);
-            if (data) {
-                tileInfos[tileInfos.length] = data;
-                this._tileInfoMap.delete(key);
-            }
-        }
-        this.setMinimap(tileInfos);
-    }
-
+    /**
+     * 设置迷你地图
+     * @param tileInfos 地砖信息数组
+     */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
         if (!this.minimapNode || tileInfos.length == 0) return;
         for (let i = 0, n = tileInfos.length; i < n; i++) {
             const info = tileInfos[i];
+            if (info.type < 0) continue;
             this._drawTile(info.x, info.y, info.type);
         }
         this.updateMinimap();
@@ -140,8 +134,8 @@ export class SetMinimap extends FuckUi {
      * @param tile 瓦片类型
      */
     protected _drawTile(x: number, y: number, tile: number) {
-        const TILE_SIZE = this.minimapCellSize;
-        if (tile < 0) return;
+        const TILE_SIZE = this.minimapCellSize,
+            scaleTileSize = TILE_SIZE * this.scale;
         const pos = this.minimapSetPoses[0];
         this._context.drawImage(
             this._tileset,
@@ -149,13 +143,16 @@ export class SetMinimap extends FuckUi {
             pos.y,
             TILE_SIZE,
             TILE_SIZE,
-            x * TILE_SIZE,
-            y * TILE_SIZE,
-            TILE_SIZE,
-            TILE_SIZE);
+            x * scaleTileSize,
+            y * scaleTileSize,
+            scaleTileSize,
+            scaleTileSize);
         this._textureDirty = true;
     }
 
+    /**
+     * 更新迷你地图显示
+     */
     protected updateMinimap() {
         if (!this._textureDirty) return;
         const t = new Texture2D();
@@ -165,6 +162,7 @@ export class SetMinimap extends FuckUi {
         this._minimapSprite.spriteFrame = sf;
         this._textureDirty = false;
     }
+
     /**
      * 世界坐标转UV坐标
      * 当格子数据为偶数时，x在[0,128)内u为0，x在[-128,0)内u为-1,可以直接用Math.floor来处理
@@ -174,8 +172,8 @@ export class SetMinimap extends FuckUi {
      * @returns UV坐标数组[u,v]
      */
     private xyToUv(x: number, y: number) {
-        const u = Math.floor(x / this.minimapCellSize),
-            v = Math.floor(y / this.minimapCellSize);
+        const u = Math.floor((x + this._canvas.width / 2) / this.minimapCellSize / this.scale),
+            v = Math.floor((y + this._canvas.height / 2) / this.minimapCellSize / this.scale);
         return [u, v];
     }
 }
