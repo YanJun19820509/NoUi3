@@ -101,20 +101,18 @@ export class YJSliderButton extends Component {
             }
         }, this.slider);
         no.TweenSet.play(action, () => {
-            this.setCheckedNodesVisible();
             if (!noChange)
                 no.EventHandlerInfo.execute(this.onChange, this._checked);
         });
+        this.setCheckedNodesVisible();
     }
 
     private setCheckedNodesVisible() {
         this.checkedShowNodes.forEach(n => {
-            // no.visible(n, this._checked);
-            n.active = this._checked;
+            no.visibleByActiveInHierarchy(n, this._checked);
         });
         this.checkedHideNodes.forEach(n => {
-            // no.visible(n, !this._checked);
-            n.active = !this._checked;
+            no.visibleByActiveInHierarchy(n, !this._checked);
         });
         this._done = true;
     }
