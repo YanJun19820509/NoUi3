@@ -218,7 +218,7 @@ export class YJSample2DMaterialInfo {
                 idxes.push(i);
             }
         });
-        return this.textureUuids.length + idxes.length < 8 ? idxes : null;
+        return (this.textureUuids.length + idxes.length) < 8 ? idxes : null;
     }
 
     //设置材质的贴图
