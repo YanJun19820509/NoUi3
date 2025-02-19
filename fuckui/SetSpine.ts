@@ -268,6 +268,9 @@ export class SetSpine extends FuckUi {
 
     private _play(spine: Skeleton, animationName: string, loop: boolean) {
         if (!no.spineEnable()) return;
+        if (!spine?.node?.activeInHierarchy) {
+            return
+        }
         spine?.setAnimation(0, animationName, loop);
     }
 
