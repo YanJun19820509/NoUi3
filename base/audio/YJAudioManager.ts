@@ -250,8 +250,12 @@ export class YJAudioManager extends Component {
      */
     private loadAudioClip(path: string, callback: (clip: AudioClip) => void) {
         no.assetBundleManager.loadAudio(path, (clip) => {
-            this.setClip(path, clip);
-            callback && callback(clip);
+            if (clip) {
+                this.setClip(path, clip);
+                callback && callback(clip);
+            } else {
+                no.err('loadAudioClip fail', path)
+            }
         });
     }
 }
