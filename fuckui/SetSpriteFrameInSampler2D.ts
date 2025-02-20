@@ -80,8 +80,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if ((this.loadFromAtlas || this.canPack)) {
             this.setDynamicAtlas();
-        } else if (!this.loadFromAtlas && !this.canPack) {
-            this.getComponent(YJVertexColorTransition).enabled = false;
         }
         this.initSpriteFrameInfo();
     }
@@ -125,7 +123,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     public setDynamicAtlas() {
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
-        this.getComponent(YJVertexColorTransition).enabled = this.loadFromAtlas;
         if (!this.loadFromAtlas && !this.canPack) return;
         if (this.getComponent(Sprite).spriteAtlas)
             this.getComponent(Sprite).spriteAtlas = null;
@@ -154,7 +151,6 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
                         //如果散图有压缩设置，则不能打包
                         if (info.userData.compressSettings?.useCompressTexture) {
                             this.canPack = false;
-                            this.getComponent(YJVertexColorTransition).enabled = false;
                         }
                     });
                 } else {
@@ -203,8 +199,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         this.initMaterialInfo();
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
-            if (this.dynamicAtlas)
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
 
         const [i, spriteFrame] = this.materialInfo.getSpriteFrameInAtlas(name);
@@ -236,8 +231,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if (YJMacroConfig.ENABLE_DYNAMIC_BATCH_RENDER) {
             if (name != this.defaultName) this._lastName = name;
-            if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
-                this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
+            if (!this.dynamicAtlas?.setCachedSpriteFrameInSample2D(sprite, name))
+                this.dynamicAtlas?.setSpriteFrameInSample2D(sprite, spriteFrame, name);
             this.setEffect(i);
         } else {
             this.setSpriteFrameByUuid(spriteFrame.uuid);
@@ -282,11 +277,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setDefaultSpriteFrame() {
         this.initMaterialInfo();
-        if (!this.loadFromAtlas && this.canPack) {
-            const sprite = this.getComponent(Sprite);
-            if (!sprite.customMaterial) {
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
-            }
+        const sprite = this.getComponent(Sprite);
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
         if (this.defaultSpriteFrameUuid) {
             const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
@@ -346,11 +339,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     private setSingleSpriteFrame(name: string) {
         if (!isValid(this)) return;
         this.initMaterialInfo();
-        if (this.canPack) {
-            const sprite = this.getComponent(Sprite);
-            if (!sprite.customMaterial) {
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
-            }
+        const sprite = this.getComponent(Sprite);
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
         let path: string;
         if (this.multiLan) {

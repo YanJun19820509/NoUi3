@@ -186,6 +186,7 @@ export class SetSpine extends FuckUi {
             });
         } else if (animation != null) {
             if (!spine) return;
+            spine.node.active = true;
             spine.timeScale = ((timeScale || this.defaultScale) * this.GlobalScale);
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
@@ -268,6 +269,12 @@ export class SetSpine extends FuckUi {
 
     private _play(spine: Skeleton, animationName: string, loop: boolean) {
         if (!no.spineEnable()) return;
+
+        if (!spine.isAnimationCached() && !spine.skeletonData) {
+            no.warn(`spine节点${spine.node.name}没有动画数据  this.curPath ${this.curPath}`);
+            return
+        }
+
         if (!spine?.node?.activeInHierarchy) {
             no.warn(`spine节点${spine.node.name}未在场景中激活  this.curPath ${this.curPath}`);
             return
