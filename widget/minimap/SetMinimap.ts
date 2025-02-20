@@ -1,7 +1,6 @@
 import { FuckUi } from 'NoUi3/fuckui/FuckUi';
 import { no } from 'NoUi3/no';
 import { ccclass, Sprite, Node, ImageAsset, Vec2, Mask, property, size, SpriteFrame, Texture2D, Vec3, v3 } from 'NoUi3/yj';
-import { TileType } from '../../../res/test/maze/DungeonMapGenerator';
 
 /**
  * 
@@ -161,19 +160,5 @@ export class SetMinimap extends FuckUi {
         sf.texture = t;
         this._minimapSprite.spriteFrame = sf;
         this._textureDirty = false;
-    }
-
-    /**
-     * 世界坐标转UV坐标
-     * 当格子数据为偶数时，x在[0,128)内u为0，x在[-128,0)内u为-1,可以直接用Math.floor来处理
-     * 当格子数据为奇数时，x在(-64,64)内u为0，x在(-192,-64]内u为-1,不能直接用Math.floor来处理
-     * @param x x坐标
-     * @param y y坐标
-     * @returns UV坐标数组[u,v]
-     */
-    private xyToUv(x: number, y: number) {
-        const u = Math.floor((x + this._canvas.width / 2) / this.minimapCellSize / this.scale),
-            v = Math.floor((y + this._canvas.height / 2) / this.minimapCellSize / this.scale);
-        return [u, v];
     }
 }

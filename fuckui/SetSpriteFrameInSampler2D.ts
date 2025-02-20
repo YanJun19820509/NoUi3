@@ -42,7 +42,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     @property({ displayName: '从图集加载', readonly: true })
     loadFromAtlas: boolean = true;
     @property({ displayName: '可动态合图', visible() { return !this.loadFromAtlas; } })
-    canPack: boolean = true;
+    canPack: boolean = false;
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
     @property({ visible() { return false; } })

@@ -186,15 +186,26 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 设置指定key的值,并同步到UI
+     * 设置指定key的数据,并同步到UI,如果[差异更新]为true,则仅更新有变更的数据
      * @param key 数据的key
      * @param value 要设置的值
      */
     public setValue(key: string, value: any) {
         this.bindSubFuckUis();
         this._data?.set(key, value, this.onlyDiff);
-        //过滤同一帧内同一key多次赋值的情况
-        // no.addToArray(this.changedDataKeys, key);
+        this.onValueChange(key, value);
+        return this;//支持链式写法
+    }
+
+    /**
+     * 重置指定key的数据，并同步到UI,不会进行差异更新，会直接替换该key对应的全部值。
+     * 如果希望该key中部分数据同步到UI中，则使用该方法。
+     * @param key 数据的key
+     * @param value 要设置的值
+     */
+    public resetValue(key: string, value: any) {
+        this.bindSubFuckUis();
+        this._data?.set(key, value, false);
         this.onValueChange(key, value);
         return this;//支持链式写法
     }

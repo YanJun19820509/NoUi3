@@ -116,7 +116,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
             const materialInfo = this.materialInfos[i];
             const diff = materialInfo.compareTexturePaths(assetPaths),
                 count = diff.length;
-            if (count < maxCount && materialInfo.maxIdx + count < 8) {
+            if (count < maxCount && (materialInfo.maxIdx + count) < 8) {
                 maxCount = count;
                 maxMaterialInfo = materialInfo;
                 maxDiff = diff;

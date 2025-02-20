@@ -268,6 +268,14 @@ export class SetSpine extends FuckUi {
 
     private _play(spine: Skeleton, animationName: string, loop: boolean) {
         if (!no.spineEnable()) return;
+        if (!spine?.node?.activeInHierarchy) {
+            no.warn(`spine节点${spine.node.name}未在场景中激活  this.curPath ${this.curPath}`);
+            return
+        }
+        if (!spine?.node?.active) {
+            no.warn(`spine节点${spine.node.name}自身未激活  this.curPath ${this.curPath}`);
+            return
+        }
         spine?.setAnimation(0, animationName, loop);
     }
 

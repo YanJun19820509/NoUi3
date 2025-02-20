@@ -694,11 +694,11 @@ export namespace no {
     }
 
     export function log(...Evns: any[]): void {
-        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     export function warn(...Evns: any[]): void {
-        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
     }
 
     export function err(...Evns: any[]): void {
@@ -706,11 +706,11 @@ export namespace no {
     }
 
     export function logTimeStart(type?: string) {
-        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
     }
 
     export function logTimeEnd(type?: string) {
-        (_isLogEnabled || (JSB && window?.DBT?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
     /**
@@ -2625,6 +2625,10 @@ export namespace no {
 
         public offChange(handler: (d?: Data) => void, target?: any): void {
             this.off(Data.DataChangeEvent, handler, target);
+        }
+
+        public triggerChange() {
+            this.emit(Data.DataChangeEvent, this);
         }
     }
 

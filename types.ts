@@ -363,7 +363,8 @@ export class TextureInfo extends LoadAssetsInfo {
 
     private setAtlasJson() {
         this.atlasJsonPath = this.path.replace('/texture', '_atlas');
-        this.atlasJsonName = this.atlasJsonPath.split('/')[1] + '.json';
+        const a = this.atlasJsonPath.split('/');
+        this.atlasJsonName = [a[a.length - 1], '.json'].join('');
     }
 
     /**
