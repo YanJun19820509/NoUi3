@@ -9,9 +9,11 @@ import { YJDataWork } from 'NoUi3/base/YJDataWork';
  * DateTime Thu Feb 13 2025 15:39:59 GMT+0800 (中国标准时间)
  * data:{
  *  tileSize?:number,//地砖尺寸
- *  startPos?:number[],//起始坐标
  *  tileInfos?:{x:number, y: number,...any}[],//地砖信息,必需有地砖坐标xy数据
+ *  startPos?:number[],//起始位置
+ *  moveBy?:number[],//移动距离
  * }
+ * 
  */
 
 @ccclass('SetDynamicMap')
@@ -47,55 +49,50 @@ export class SetDynamicMap extends FuckUi {
      */
     private _lateShowNodes: Node[] = [];
 
-    /**
-     * 组件加载时调用
-     * 监听节点位置变化
-     */
-    onLoad() {
-        super.onLoad();
-        this.node.on(Node.EventType.TRANSFORM_CHANGED, this.onChange, this);
-    }
-
-    /**
-     * 组件销毁时调用
-     * 移除节点位置变化监听
-     */
-    onDestroy() {
-        this.node.off(Node.EventType.TRANSFORM_CHANGED, this.onChange, this);
-    }
+    private _tileNodes: Node[] = [];
+    /** 当前位置 */
+    private _curPos: Vec3;
 
     /**
      * 数据变化时调用
      * @param data 新的数据
      */
     protected onDataChange(data: any) {
-        const { tileSize, tileInfos, startPos } = data;
+        const { tileSize, tileInfos, startPos, moveBy } = data;
         if (tileSize) {
             const s = view.getVisibleSize();
             //以tileSize为单元格长宽，计算可见区域需要格子的行列数
             this._gridColRow = [Math.ceil(s.width / tileSize / 2) + 1, Math.ceil(s.height / tileSize / 2) + 1];
             this._tileSize = tileSize;
+            //清除数据源内的tileSize，避免重复设置
+            this.clearDataValue(`${this.bind_keys}.tileSize`);
         }
         if (tileInfos) {
             this._tileNodeMap.clear();
+            this._tileMap.clear();
+            for (let i = 0, n = this._tileNodes.length; i < n; i++) {
+                this._tileNodes[i]['_activeInHierarchy'] = false;
+            }
             for (let i = 0, n = tileInfos.length; i < n; i++) {
                 const tileInfo = tileInfos[i];
                 const uv = this.xyToUv(tileInfo.x, tileInfo.y);
                 this._tileMap.set(`${uv[0]}_${uv[1]}`, tileInfo);
             }
+            //清除数据源内的tileInfos，避免重复设置
+            this.clearDataValue(`${this.bind_keys}.tileInfos`);
         }
         if (startPos) {
-            no.position(this.node, v3(startPos[0], startPos[1]));
+            if (!this._curPos) {
+                this._curPos = v3();
+            }
+            this._curPos.set(startPos[0], startPos[1], 0);
+            no.position(this.node, this._curPos);
+            this.clearDataValue(`${this.bind_keys}.startPos`);
             this.setTiles();
         }
-    }
-
-    /**
-     * 节点位置变化时调用
-     * @param type 变化类型
-     */
-    private onChange(type: any) {
-        if (type & Node.TransformBit.POSITION) {
+        if (moveBy) {
+            this._curPos.add3f(moveBy[0], moveBy[1], 0);
+            no.position(this.node, this._curPos);
             this.setTiles();
         }
     }
@@ -105,6 +102,7 @@ export class SetDynamicMap extends FuckUi {
      * 根据当前位置计算可见区域内的地砖,并创建或移动地砖节点
      */
     private setTiles() {
+        if (!this._gridColRow.length) return;
         const pos = this.node.position;
         //节点坐标与在屏幕中心显示的坐标相反
         const x = -pos.x;
@@ -120,18 +118,18 @@ export class SetDynamicMap extends FuckUi {
             }
         }
 
-        const items = this.node.children;
         if (this._tileNodeMap.size == 0) {
             // 首次创建地砖
             for (let i = 0, n = visibleUv.length; i < n; i++) {
                 const key = visibleUv[i];
                 const data = this._tileMap.get(key);
                 if (data) {
-                    let item = items[i];
+                    let item = this._tileNodes[i];
                     if (!item) {
                         item = instantiate(this.template);
                         item.parent = this.node;
                         no.visible(item, true);
+                        this._tileNodes.push(item);
                     }
                     this._tileNodeMap.set(key, item);
                     let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
@@ -140,6 +138,7 @@ export class SetDynamicMap extends FuckUi {
                     }
                     this._tempV3.set(data.x, data.y, 0);
                     no.position(item, this._tempV3);
+                    this._lateShowNodes.push(item);
                 }
             }
         } else {
@@ -166,6 +165,7 @@ export class SetDynamicMap extends FuckUi {
                         item = instantiate(this.template);
                         item.parent = this.node;
                         no.visible(item, true);
+                        this._tileNodes.push(item);
                     } else {
                         this._lateShowNodes.push(item);
                     }

@@ -210,8 +210,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         const sprite = this.getComponent(Sprite);
         if (!sprite.customMaterial) {
-            if (this.dynamicAtlas)
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
 
         const [i, spriteFrame] = this.materialInfo.getSpriteFrameInAtlas(name);
@@ -222,8 +221,8 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
         }
         if (YJMacroConfig.ENABLE_DYNAMIC_BATCH_RENDER) {
             // if (name != this.defaultName) this._lastName = name;
-            if (!this.dynamicAtlas.setCachedSpriteFrameInSample2D(sprite, name))
-                this.dynamicAtlas.setSpriteFrameInSample2D(sprite, spriteFrame, name);
+            if (!this.dynamicAtlas?.setCachedSpriteFrameInSample2D(sprite, name))
+                this.dynamicAtlas?.setSpriteFrameInSample2D(sprite, spriteFrame, name);
             this.setEffect(i);
         } else {
             this.setSpriteFrameByUuid(spriteFrame.uuid);
@@ -272,11 +271,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private setDefaultSpriteFrame() {
-        if (!this.loadFromAtlas && this.canPack) {
-            const sprite = this.getComponent(Sprite);
-            if (!sprite.customMaterial) {
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
-            }
+        const sprite = this.getComponent(Sprite);
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
         if (this.defaultSpriteFrameUuid) {
             const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
@@ -345,11 +342,9 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
 
     private setSingleSpriteFrame(name: string) {
         if (!isValid(this)) return;
-        if (this.canPack) {
-            const sprite = this.getComponent(Sprite);
-            if (!sprite.customMaterial) {
-                sprite.customMaterial = this.dynamicAtlas.customMaterial;
-            }
+        const sprite = this.getComponent(Sprite);
+        if (!sprite.customMaterial) {
+            sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
         let path: string;
         if (this.multiLan) {

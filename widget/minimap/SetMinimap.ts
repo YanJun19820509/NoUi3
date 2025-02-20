@@ -13,6 +13,7 @@ import { ccclass, Sprite, Node, ImageAsset, Vec2, Mask, property, size, SpriteFr
  *      cellSize:number,//地砖尺寸
  *  },
  *  moveBy?:number[],//移动距离
+ *  startPos?:number[],//起始位置
  *  tileInfos?:{type: number, x:number, y:number}[],//地砖信息,直接使用DungeonMapGenerator创建的数据
  * }
  */
@@ -66,19 +67,28 @@ export class SetMinimap extends FuckUi {
      * @param data 包含地图信息、移动信息、地砖信息的数据对象
      */
     protected onDataChange(data: any) {
-        const { mapInfo, moveBy, tileInfos } = data;
+        const { mapInfo, moveBy, tileInfos, startPos } = data;
         if (mapInfo) {
             this.initMinimap(mapInfo.width, mapInfo.height, mapInfo.cellSize);
+            //清除数据源内的mapInfo，避免重复初始化
+            this.clearDataValue(`${this.bind_keys}.mapInfo`);
         }
         if (tileInfos) {
             this._context.fillStyle = 'black';
             this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
             this.setMinimap(tileInfos);
+            //清除数据源内的tileInfos，避免重复绘制
+            this.clearDataValue(`${this.bind_keys}.tileInfos`);
+        }
+        if (startPos) {
+            if (!this._curPos) {
+                this._curPos = v3();
+            }
+            this._curPos.set(startPos[0] * this._minimapScale, startPos[1] * this._minimapScale, 0);
+            no.position(this._minimapSprite.node, this._curPos);
+            this.clearDataValue(`${this.bind_keys}.startPos`);
         }
         if (moveBy) {
-            if (!this._curPos) {
-                this._curPos = no.position(this._minimapSprite.node).clone();
-            }
             this._curPos.add3f(moveBy[0] * this._minimapScale, moveBy[1] * this._minimapScale, 0);
             no.position(this._minimapSprite.node, this._curPos);
         }

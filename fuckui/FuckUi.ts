@@ -40,7 +40,7 @@ export class FuckUi extends Component {
     /**
      * dataWork的data引用
      */
-    private _oldData: any;
+    private _oldData: no.Data;
 
     onLoad() {
         if (EDITOR) {
@@ -88,11 +88,11 @@ export class FuckUi extends Component {
         let keys = this.bindKeys;
         let a: any;
         if (keys.length == 1) {
-            a = this._oldData[keys[0]];
+            a = this._oldData.data[keys[0]];
         } else {
             a = {};
             for (let i = 0; i < keys.length; i++) {
-                a[keys[i]] = this._oldData[keys[i]];
+                a[keys[i]] = this._oldData.data[keys[i]];
             }
         }
         return a;
@@ -181,6 +181,15 @@ export class FuckUi extends Component {
 
     public get dataSetted(): boolean {
         return this._oldData != null;
+    }
+
+    /**
+     * 删除dataWork中指定key的值
+     * @param key 
+     * @param value 
+     */
+    protected clearDataValue(key: string) {
+        no.deleteValue(this._oldData.data, key);
     }
 
     /**

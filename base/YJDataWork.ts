@@ -320,7 +320,7 @@ export class YJDataWork extends Component {
         let list = this.subFuckUis;
         for (let i = 0, n = list.length; i < n; i++) {
             let ui = list[i];
-            ui['setData'](this._data.data);
+            ui['setData'](this._data);
             let keys = ui.bindKeys;
             for (let j = 0, n = keys.length; j < n; j++) {
                 const key = keys[j];
