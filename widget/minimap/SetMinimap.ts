@@ -41,8 +41,6 @@ export class SetMinimap extends FuckUi {
     @property({ type: Vec2, displayName: '地砖类型与图集映射', tooltip: '下标对应地砖类型' })
     minimapSetPoses: Vec2[] = [];
 
-    /** 瓦片图集 */
-    protected _tileset: HTMLCanvasElement;
 
     /** 画布元素 */
     private _canvas: HTMLCanvasElement | null = null;
@@ -61,6 +59,9 @@ export class SetMinimap extends FuckUi {
 
     /** 纹理是否需要更新 */
     private _textureDirty: boolean = false;
+
+    /** 瓦片图集数据 */
+    private _imageSetTileData: Map<string, ArrayBufferLike>;
 
     /**
      * 数据变更处理
@@ -118,8 +119,11 @@ export class SetMinimap extends FuckUi {
             this._canvas.width = width * this._minimapScale;
             this._canvas.height = height * this._minimapScale;
             no.size(this._minimapSprite.node, size(this._canvas.width, this._canvas.height));
+
+            if (!this._imageSetTileData) {
+                this.setImageSetTileData();
+            }
         }
-        this._tileset = this.minimapImageSet.data as HTMLCanvasElement;
     }
 
     /**
@@ -128,36 +132,47 @@ export class SetMinimap extends FuckUi {
      */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
         if (!this.minimapNode || tileInfos.length == 0) return;
+        let imageData = this._context.createImageData(this._canvas.width, this._canvas.height);
         for (let i = 0, n = tileInfos.length; i < n; i++) {
             const info = tileInfos[i];
             if (info.type < 0) continue;
-            this._drawTile(info.x, info.y, info.type);
+            this._drawTileImageData(imageData, info.x, info.y, info.type);
         }
+        this._context.putImageData(imageData, 0, 0);
         this.updateMinimap();
     }
 
-    /**
-     * 绘制单个瓦片
-     * @param x x坐标
-     * @param y y坐标
-     * @param tile 瓦片类型
-     */
-    protected _drawTile(x: number, y: number, tile: number) {
-        const TILE_SIZE = this.minimapCellSize,
-            scaleTileSize = TILE_SIZE * this.scale;
-        const pos = this.minimapSetPoses[0];
-        this._context.drawImage(
-            this._tileset,
-            pos.x,
-            pos.y,
-            TILE_SIZE,
-            TILE_SIZE,
-            x * scaleTileSize,
-            y * scaleTileSize,
-            scaleTileSize,
-            scaleTileSize);
-        this._textureDirty = true;
+    protected _drawTileImageData(imageData: ImageData, x: number, y: number, tile: number) {
+        const tileData = this._imageSetTileData.get(`${0}`),
+            scaleTileSize = this.minimapCellSize * this.scale;
+        let i = x * scaleTileSize,
+            k = y * scaleTileSize,
+            data = imageData.data;
+
     }
+
+    // /**
+    //  * 绘制单个瓦片
+    //  * @param x x坐标
+    //  * @param y y坐标
+    //  * @param tile 瓦片类型
+    //  */
+    // protected _drawTile(x: number, y: number, tile: number) {
+    //     const TILE_SIZE = this.minimapCellSize,
+    //         scaleTileSize = TILE_SIZE * this.scale;
+    //     const pos = this.minimapSetPoses[0];
+    //     this._context.drawImage(
+    //         this._tileset,
+    //         pos.x,
+    //         pos.y,
+    //         TILE_SIZE,
+    //         TILE_SIZE,
+    //         x * scaleTileSize,
+    //         y * scaleTileSize,
+    //         scaleTileSize,
+    //         scaleTileSize);
+    //     this._textureDirty = true;
+    // }
 
     /**
      * 更新迷你地图显示
@@ -170,5 +185,30 @@ export class SetMinimap extends FuckUi {
         sf.texture = t;
         this._minimapSprite.spriteFrame = sf;
         this._textureDirty = false;
+    }
+
+    private setImageSetTileData() {
+        this._imageSetTileData = new Map();
+        const width = this.minimapImageSet.width;
+        const imageSet = this.minimapImageSet.data as ArrayBufferView;
+        const cellSize = this.minimapCellSize;
+        for (let i = 0, n = this.minimapSetPoses.length; i < n; i++) {
+            const { x, y } = this.minimapSetPoses[i];
+            const buffer = new ArrayBuffer(cellSize * cellSize);
+            let idx = 0;
+            for (let j = y, l = y + cellSize; j < l; j++) {
+                for (let k = x, m = x + cellSize; k < m; k++) {
+                    const r = imageSet[j * width + k * 4];
+                    const g = imageSet[j * width + k * 4 + 1];
+                    const b = imageSet[j * width + k * 4 + 2];
+                    const a = imageSet[j * width + k * 4 + 3];
+                    buffer[idx++] = r;
+                    buffer[idx++] = g;
+                    buffer[idx++] = b;
+                    buffer[idx++] = a;
+                }
+            }
+            this._imageSetTileData.set(`${i}`, buffer);
+        }
     }
 }
