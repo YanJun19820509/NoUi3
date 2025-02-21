@@ -2581,7 +2581,7 @@ export namespace no {
             if (this._updateScheduled) return;
 
             this._updateScheduled = true;
-            queueMicrotask(() => {
+            requestAnimationFrame(() => {
                 this.emit(Data.DataChangeEvent, this);
                 this._updateScheduled = false;
             });

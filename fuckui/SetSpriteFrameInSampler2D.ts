@@ -241,11 +241,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     }
 
     private clearEffect() {
-        if (this.lastDefine) {
-            const defines: any = {};
-            defines[this.lastDefine] = false;
-            YJVertexColorTransitionManager.ins().remove(this.getComponent(Sprite));
-        }
+        YJVertexColorTransitionManager.ins().remove(this.getComponent(Sprite));
     }
 
     private setSpriteFrameByUuid(uuid: string) {

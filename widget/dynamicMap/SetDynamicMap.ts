@@ -62,7 +62,7 @@ export class SetDynamicMap extends FuckUi {
         if (tileSize) {
             const s = view.getVisibleSize();
             //以tileSize为单元格长宽，计算可见区域需要格子的行列数
-            this._gridColRow = [Math.ceil(s.width / tileSize / 2) + 1, Math.ceil(s.height / tileSize / 2) + 1];
+            this._gridColRow = [Math.ceil(s.width / tileSize / 2) + 2, Math.ceil(s.height / tileSize / 2) + 2];
             this._tileSize = tileSize;
             //清除数据源内的tileSize，避免重复设置
             this.clearDataValue(`${this.bind_keys}.tileSize`);
@@ -71,7 +71,8 @@ export class SetDynamicMap extends FuckUi {
             this._tileNodeMap.clear();
             this._tileMap.clear();
             for (let i = 0, n = this._tileNodes.length; i < n; i++) {
-                this._tileNodes[i]['_activeInHierarchy'] = false;
+                const item = this._tileNodes[i];
+                item['_activeInHierarchy'] = false;
             }
             for (let i = 0, n = tileInfos.length; i < n; i++) {
                 const tileInfo = tileInfos[i];
