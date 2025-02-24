@@ -1,6 +1,7 @@
+import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
 import { FuckUi } from 'NoUi3/fuckui/FuckUi';
 import { no } from 'NoUi3/no';
-import { ccclass, Sprite, Node, ImageAsset, Vec2, Mask, property, size, SpriteFrame, Texture2D, Vec3, v3 } from 'NoUi3/yj';
+import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Vec3, v3, rect } from 'NoUi3/yj';
 
 /**
  * 
@@ -26,8 +27,8 @@ export class SetMinimap extends FuckUi {
     minimapNode: Node = null;
 
     /** 迷你地图图集,图集内单图长宽相等,且应尽量小如12px */
-    @property({ type: ImageAsset, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
-    minimapImageSet: ImageAsset = null;
+    @property({ type: Texture2D, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
+    minimapImageSet: Texture2D = null;
 
     /** 图集内单图尺寸 */
     @property({ displayName: '图集内单图尺寸' })
@@ -40,13 +41,6 @@ export class SetMinimap extends FuckUi {
     /** 地砖类型与图集映射,下标对应地砖类型 */
     @property({ type: Vec2, displayName: '地砖类型与图集映射', tooltip: '下标对应地砖类型' })
     minimapSetPoses: Vec2[] = [];
-
-
-    /** 画布元素 */
-    private _canvas: HTMLCanvasElement | null = null;
-
-    /** 画布上下文 */
-    private _context: CanvasRenderingContext2D | null = null;
 
     /** 显示迷你地图的精灵 */
     private _minimapSprite: Sprite = null;
@@ -61,7 +55,9 @@ export class SetMinimap extends FuckUi {
     private _textureDirty: boolean = false;
 
     /** 瓦片图集数据 */
-    private _imageSetTileData: Map<string, ArrayBufferLike>;
+    private _imageSetTileData: Map<string, ArrayBufferView>;
+
+    private _texture: DynamicAtlasTexture = null;
 
     /**
      * 数据变更处理
@@ -75,8 +71,6 @@ export class SetMinimap extends FuckUi {
             this.clearDataValue(`${this.bind_keys}.mapInfo`);
         }
         if (tileInfos) {
-            this._context.fillStyle = 'black';
-            this._context.fillRect(0, 0, this._canvas.width, this._canvas.height);
             this.setMinimap(tileInfos);
             //清除数据源内的tileInfos，避免重复绘制
             this.clearDataValue(`${this.bind_keys}.tileInfos`);
@@ -85,12 +79,12 @@ export class SetMinimap extends FuckUi {
             if (!this._curPos) {
                 this._curPos = v3();
             }
-            this._curPos.set(startPos[0] * this._minimapScale, startPos[1] * this._minimapScale, 0);
+            this._curPos.set(startPos[0] * this._minimapScale * this.scale, startPos[1] * this._minimapScale * this.scale, 0);
             no.position(this._minimapSprite.node, this._curPos);
             this.clearDataValue(`${this.bind_keys}.startPos`);
         }
         if (moveBy) {
-            this._curPos.add3f(moveBy[0] * this._minimapScale, moveBy[1] * this._minimapScale, 0);
+            this._curPos.add3f(moveBy[0] * this._minimapScale * this.scale, moveBy[1] * this._minimapScale * this.scale, 0);
             no.position(this._minimapSprite.node, this._curPos);
         }
     }
@@ -110,19 +104,13 @@ export class SetMinimap extends FuckUi {
             const node = no.newNode('MinimapSprite', [Sprite]);
             node.parent = this.minimapNode;
             this._minimapSprite = node.getComponent(Sprite);
+            no.scale(node, v3(this.scale, this.scale, 1));
         }
-        if (!this._canvas) {
-            const { canvas, context } = no.canvasPool.get();
-            this._canvas = canvas;
-            this._context = context;
-            this._minimapScale = this.minimapCellSize * this.scale / cellSize;
-            this._canvas.width = width * this._minimapScale;
-            this._canvas.height = height * this._minimapScale;
-            no.size(this._minimapSprite.node, size(this._canvas.width, this._canvas.height));
-
-            if (!this._imageSetTileData) {
-                this.setImageSetTileData();
-            }
+        this._minimapScale = this.minimapCellSize / cellSize;
+        this._texture = new DynamicAtlasTexture();
+        this._texture.initWithSize(width * this._minimapScale, height * this._minimapScale);
+        if (!this._imageSetTileData) {
+            this.setImageSetTileData();
         }
     }
 
@@ -132,82 +120,38 @@ export class SetMinimap extends FuckUi {
      */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
         if (!this.minimapNode || tileInfos.length == 0) return;
-        let imageData = this._context.createImageData(this._canvas.width, this._canvas.height);
         for (let i = 0, n = tileInfos.length; i < n; i++) {
             const info = tileInfos[i];
             if (info.type < 0) continue;
-            this._drawTileImageData(imageData, info.x, info.y, info.type);
+            this._drawTile(info.x, info.y, info.type);
         }
-        this._context.putImageData(imageData, 0, 0);
+        this._textureDirty = true;
         this.updateMinimap();
     }
 
-    protected _drawTileImageData(imageData: ImageData, x: number, y: number, tile: number) {
-        const tileData = this._imageSetTileData.get(`${0}`),
-            scaleTileSize = this.minimapCellSize * this.scale;
-        let i = x * scaleTileSize,
-            k = y * scaleTileSize,
-            data = imageData.data;
-
+    protected _drawTile(x: number, y: number, tile: number) {
+        const buffer = this._imageSetTileData.get(`${0}`);
+        const cellSize = this.minimapCellSize;
+        this._texture.drawTextureBufferAt(buffer, x * cellSize, y * cellSize, cellSize, cellSize);
     }
-
-    // /**
-    //  * 绘制单个瓦片
-    //  * @param x x坐标
-    //  * @param y y坐标
-    //  * @param tile 瓦片类型
-    //  */
-    // protected _drawTile(x: number, y: number, tile: number) {
-    //     const TILE_SIZE = this.minimapCellSize,
-    //         scaleTileSize = TILE_SIZE * this.scale;
-    //     const pos = this.minimapSetPoses[0];
-    //     this._context.drawImage(
-    //         this._tileset,
-    //         pos.x,
-    //         pos.y,
-    //         TILE_SIZE,
-    //         TILE_SIZE,
-    //         x * scaleTileSize,
-    //         y * scaleTileSize,
-    //         scaleTileSize,
-    //         scaleTileSize);
-    //     this._textureDirty = true;
-    // }
 
     /**
      * 更新迷你地图显示
      */
     protected updateMinimap() {
         if (!this._textureDirty) return;
-        const t = new Texture2D();
-        t.image = new ImageAsset(this._canvas);
         const sf = new SpriteFrame();
-        sf.texture = t;
+        sf.texture = this._texture;
         this._minimapSprite.spriteFrame = sf;
         this._textureDirty = false;
     }
 
     private setImageSetTileData() {
         this._imageSetTileData = new Map();
-        const width = this.minimapImageSet.width;
-        const imageSet = this.minimapImageSet.data as ArrayBufferView;
         const cellSize = this.minimapCellSize;
         for (let i = 0, n = this.minimapSetPoses.length; i < n; i++) {
             const { x, y } = this.minimapSetPoses[i];
-            const buffer = new ArrayBuffer(cellSize * cellSize);
-            let idx = 0;
-            for (let j = y, l = y + cellSize; j < l; j++) {
-                for (let k = x, m = x + cellSize; k < m; k++) {
-                    const r = imageSet[j * width + k * 4];
-                    const g = imageSet[j * width + k * 4 + 1];
-                    const b = imageSet[j * width + k * 4 + 2];
-                    const a = imageSet[j * width + k * 4 + 3];
-                    buffer[idx++] = r;
-                    buffer[idx++] = g;
-                    buffer[idx++] = b;
-                    buffer[idx++] = a;
-                }
-            }
+            const buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
             this._imageSetTileData.set(`${i}`, buffer);
         }
     }
