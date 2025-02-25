@@ -1,6 +1,5 @@
-
+import { no } from 'NoUi3/no';
 import { ccclass, property, menu, Component, isValid, Node, macro } from '../../yj';
-import { no } from '../../no';
 
 /**
  * Predefined variables
@@ -18,37 +17,26 @@ import { no } from '../../no';
 @ccclass('YJSetChildrenShieldByY')
 @menu('NoUi/node/YJSetChildrenShieldByY(设置子节点之间的遮挡关系)')
 export class YJSetChildrenShieldByY extends Component {
-    @property({ type: Node, displayName: '目标节点', tooltip: '如果指定了目标节点，仅会处理目标节点相对其他同级节点的遮挡关系' })
-    target: Node = null;
     @property({ displayName: '更新频率(帧)' })
     frameNum: number = 10;
 
     private resort() {
         if (!isValid(this?.node)) return;
-        let children = this.node['_children'];
-        no.sortArray(children, (b, a) => {
+        const children = this.node.children;
+        const visibleChildren: Node[] = [];
+        for (let i = 0, n = children.length; i < n; i++) {
+            const child = children[i];
+            if (child.activeInHierarchy) {
+                visibleChildren.push(child);
+            }
+        }
+        no.sortArray(visibleChildren, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
-        if (this.target) {
-            let maxY: number, maxChild: Node, idx: number;
-            const targetY = this.target.position.y;
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                if (child === this.target) continue;
-                const childY = child.position.y;
-                if (!maxChild || (childY > maxY && childY < targetY)) {
-                    maxY = childY;
-                    maxChild = child;
-                    idx = i;
-                }
-            }
-            if (maxChild && maxY < targetY) {
-                const targetIdx = children.indexOf(this.target);
-                if (idx > targetIdx) idx--;
-                if (idx == targetIdx) return;
-                children.splice(targetIdx, 1);
-                children.splice(idx, 0, this.target);
-            }
+
+        for (let i = 0, n = visibleChildren.length; i < n; i++) {
+            const child = visibleChildren[i];
+            child.setSiblingIndex(i);
         }
     }
 
