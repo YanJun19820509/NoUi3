@@ -62,6 +62,7 @@ export class SetCreateNode extends FuckUi {
     private _isSettingData: boolean = false;
     private itemSize: Size;
     private _1b1: boolean = false;
+    private _items: Node[] = [];
 
     onDestroy() {
         if (EDITOR) {
@@ -91,14 +92,15 @@ export class SetCreateNode extends FuckUi {
         this.a_clearData();
         if (this.clearOnDisable) {
             !this.recreateOnEnable && this.a_clearData();
-            for (let i = 0; i < this.container?.children.length; i++) {
-                this.container.children[i].destroy();
+            for (let i = 0; i < this._items.length; i++) {
+                this._items[i].destroy();
             }
+            this._items = [];
             this.isFirst = true;
         } else {
             if (this.uiAnim?.enabled) {
-                for (let i = 0; i < this.container?.children.length; i++) {
-                    this.container.children[i].children[0].active = false;
+                for (let i = 0; i < this._items.length; i++) {
+                    this._items[i].children[0].active = false;
                 }
             }
         }
@@ -128,18 +130,21 @@ export class SetCreateNode extends FuckUi {
             return;
         }
 
-        let l = this.container.children.length;
+        let l = this._items.length;
         if (l == 0) {
             this._1b1 = this.isFirst;
         }
         if (!this.onlyAdd)
             for (let i = l - 1; i >= 0; i--) {
-                no.visible(this.container.children[i], !!data[i]);
+                no.visible(this._items[i], !!data[i]);
             }
 
         let n = data.length;
         if (!n) {
-            this.container.removeAllChildren();
+            for (let i = 0, n = this._items.length; i < n; i++) {
+                this._items[i].destroy();
+            }
+            this._items = [];
             return;
         }
 
@@ -210,10 +215,11 @@ export class SetCreateNode extends FuckUi {
             return;
         }
         let isNew = false;
-        let item = this.container.children[childIdx];
+        let item = this._items[childIdx];
         if (!item) {
             item = this.initItem(instantiate(this.template));
             this.container.addChild(item);
+            this._items.push(item);
             isNew = true;
         }
         if (data[dataIdx] == null) {
@@ -249,7 +255,7 @@ export class SetCreateNode extends FuckUi {
 
     protected async setDynamicAtlasNode(data: any) {
         if (data == null) return;
-        let item = this.container.children[0];
+        let item = this._items[0];
         if (!item) {
             if (!this.template) {
                 this.template = await this.loadPrefab.loadPrefab();
@@ -262,6 +268,7 @@ export class SetCreateNode extends FuckUi {
             item = this.initItem(item);
             item.parent = this.container;
             no.visible(item, true);
+            this._items.push(item);
         }
         if (this.uiAnim?.enabled) {
             this._aniEnd = false;

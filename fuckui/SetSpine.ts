@@ -314,28 +314,28 @@ export class SetSpine extends FuckUi {
     private bindStartCall(spine: Skeleton) {
         if (no.spineEnable()) {
             spine?.setStartListener(() => {
-                if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                    this?.startCall.execute(spine);
                 spine?.setStartListener(() => { });
+                if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
+                    this?.startCall.execute(spine, this.queueIndex);
             });
         } else {
             if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                this?.startCall.execute(spine);
+                this?.startCall.execute(spine, this.queueIndex);
         }
     }
 
     private bindEndCall(spine: Skeleton) {
         if (no.spineEnable()) {
             spine?.setCompleteListener(() => {
-                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine);
                 spine?.setCompleteListener(() => { });
+                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
+                    this?.endCall.execute(spine, this.queueIndex);
                 this.setSpineData();
             });
         } else {
             this.scheduleOnce(() => {
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine);
+                    this?.endCall.execute(spine, this.queueIndex);
                 this.setSpineData();
             }, 1);
         }
