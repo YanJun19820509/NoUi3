@@ -92,9 +92,21 @@ export class YJRenderBase extends UIRenderer {
      * 设置默认顶点数据
      */
     protected setDefaultRenderData() {
+        this.setRenderData({
+            uv: this.getDefaultUV(),
+            xy: this.getDefaultXY(),
+            colors: [this.color],
+        })
+    }
+
+    /**
+     * 添加默认顶点数据
+     */
+    protected addDefaultRenderData() {
         this.addRenderData({
             uv: this.getDefaultUV(),
-            xy: this.getDefaultXY()
+            xy: this.getDefaultXY(),
+            colors: [this.color],
         })
     }
 
@@ -242,7 +254,6 @@ export class YJRenderBase extends UIRenderer {
 }
 
 const vec3_temp = new Vec3();
-const _worldMatrix = new Mat4();
 export const YJAssemblerBase = {
     createData(vertexFormat?: Attribute[]) {
         const renderData = RenderData.add(vertexFormat);
@@ -291,17 +302,20 @@ export const YJAssemblerBase = {
         const vertexCount = renderData.vertexCount;
         const floatStride = renderData.floatStride;
 
-        comp.node.getWorldMatrix(_worldMatrix);
+        const m = comp.node.worldMatrix;
 
-        let vertexOffset = 0;
+        let offset = 0;
         for (let i = 0; i < vertexCount; i++) {
             const vert = dataList[i];
-            Vec3.set(vec3_temp, vert.x, vert.y, 0);
-            Vec3.transformMat4(vec3_temp, vec3_temp, _worldMatrix);
-            vData[vertexOffset] = vec3_temp.x;
-            vData[vertexOffset + 1] = vec3_temp.y;
-            vData[vertexOffset + 2] = vec3_temp.z;
-            vertexOffset += floatStride;
+            const x = vert.x;
+            const y = vert.y;
+            let rhw = m.m03 * x + m.m07 * y + m.m15;
+            rhw = rhw ? Math.abs(1 / rhw) : 1;
+
+            vData[offset + 0] = (m.m00 * x + m.m04 * y + m.m12) * rhw;
+            vData[offset + 1] = (m.m01 * x + m.m05 * y + m.m13) * rhw;
+            vData[offset + 2] = (m.m02 * x + m.m06 * y + m.m14) * rhw;
+            offset += floatStride;
         }
     },
 
@@ -329,8 +343,8 @@ export const YJAssemblerBase = {
         const renderData = comp.renderData!;
         const chunk = renderData.chunk;
         const bid = chunk.bufferId;
-        const meshBuffer = chunk.vertexAccessor.getMeshBuffer(chunk.bufferId);
-        const ib = chunk.vertexAccessor.getIndexBuffer(bid);
+        const meshBuffer = chunk.meshBuffer;
+        const ib = meshBuffer.iData;
         const vertexCount = renderData.vertexCount;
         const indexNumMap = comp.indexNumMap;
         let vid = chunk.vertexOffset;
@@ -360,11 +374,17 @@ export const YJAssemblerBase = {
         for (let i = 0; i < vertexCount; i++) {
             //更新color
             const color: Color = comp.renderColors?.[i] || comp.color;
-            Color.toArray(vData, color, colorOffset);
+            vData[colorOffset] = color.r / 255;
+            vData[colorOffset + 1] = color.g / 255;
+            vData[colorOffset + 2] = color.b / 255;
+            vData[colorOffset + 3] = color.a / 255;
 
             //更新color2
             if (comp.renderColors2?.[i]) {
-                Color.toArray(vData, comp.renderColors2[i], colorOffset + 4);
+                vData[colorOffset + 4] = comp.renderColors2[i].r / 255;
+                vData[colorOffset + 5] = comp.renderColors2[i].g / 255;
+                vData[colorOffset + 6] = comp.renderColors2[i].b / 255;
+                vData[colorOffset + 7] = comp.renderColors2[i].a / 255;
             }
             colorOffset += floatStride;
         }

@@ -1,8 +1,9 @@
 import { YJRenderBase } from '../../base/render/YJRenderBase';
 import { no } from '../../no';
-import { EDITOR, ccclass, isValid, math, property, size, JsonAsset, Attribute, UIVertexFormat, color } from '../../yj';
+import { EDITOR, ccclass, isValid, math, property, size, JsonAsset, Attribute, UIVertexFormat, color, executeInEditMode } from '../../yj';
 
 @ccclass('YJBitmapLabel')
+// @executeInEditMode()
 export class YJBitmapLabel extends YJRenderBase {
     @property
     public get atlasJson(): string {
@@ -136,8 +137,8 @@ export class YJBitmapLabel extends YJRenderBase {
         for (let i = 0, n = arr.length; i < n; i++) {
             const letterInfo = arr[i];
             if (!letterInfo) continue;
-            width += letterInfo.width + this.spacingX;
-            if (letterInfo.height > height) height = letterInfo.height;
+            width += letterInfo.originalSize[0] + this.spacingX;
+            if (letterInfo.originalSize[1] > height) height = letterInfo.originalSize[1];
         }
         width -= this.spacingX;
         height = Math.max(height, this.lineHeight);
@@ -147,17 +148,17 @@ export class YJBitmapLabel extends YJRenderBase {
         for (let i = 0, n = arr.length; i < n; i++) {
             const letterInfo = arr[i],
                 x = appX,
-                y = letterInfo.height / 2,
+                y = letterInfo.originalSize[1] / 2,
                 uv = letterInfo.uv;
-            this.appendQuad(uv, letterInfo.rotated, x, y, letterInfo.width, letterInfo.height);
-            appX += letterInfo.width + this.spacingX;
+            this.appendQuad(uv, letterInfo.rotated, x, y, letterInfo.originalSize[0], letterInfo.originalSize[1]);
+            appX += letterInfo.originalSize[0] + this.spacingX;
         }
     }
 
     private getCharConfigs() {
         let arr: any[] = [];
         for (let i = 0, n = this._string.length; i < n; i++) {
-            const key = this.fontType + '/' + this._string.charCodeAt(i);
+            const key = (this.fontType ? this.fontType + '/' : '') + this._string.charCodeAt(i);
             arr[arr.length] = this._atlasConfig[key];
         }
         return arr;
