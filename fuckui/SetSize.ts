@@ -48,8 +48,7 @@ export class SetSize extends FuckUi {
         for (let k in data) {
             a.push(data[k]);
         }
-        no.width(this.node, a[0]);
-        no.height(this.node, a[1]);
+        no.size(this.node, size(a[0], a[1]));
     }
 
     private checkSize() {
