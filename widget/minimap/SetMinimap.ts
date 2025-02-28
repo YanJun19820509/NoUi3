@@ -1,7 +1,7 @@
 import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
 import { FuckUi } from 'NoUi3/fuckui/FuckUi';
 import { no } from 'NoUi3/no';
-import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Vec3, v3, rect } from 'NoUi3/yj';
+import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Vec3, v3, rect, Graphics, size } from 'NoUi3/yj';
 
 /**
  * 
@@ -23,8 +23,10 @@ import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Ve
 export class SetMinimap extends FuckUi {
 
     /** 迷你地图节点 */
-    @property({ type: Node, displayName: '迷你地图节点' })
-    minimapNode: Node = null;
+    @property({ type: Sprite, displayName: '迷你地图节点' })
+    minimapSprite: Sprite = null;
+    @property({ type: Mask, displayName: '迷你地图遮罩' })
+    minimapMask: Mask = null;
 
     /** 迷你地图图集,图集内单图长宽相等,且应尽量小如12px */
     @property({ type: Texture2D, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
@@ -43,7 +45,7 @@ export class SetMinimap extends FuckUi {
     minimapSetPoses: Vec2[] = [];
 
     /** 显示迷你地图的精灵 */
-    private _minimapSprite: Sprite = null;
+    // private _minimapSprite: Sprite = null;
 
     /** 迷你地图缩放比例 */
     private _minimapScale: number = 1;
@@ -80,12 +82,14 @@ export class SetMinimap extends FuckUi {
                 this._curPos = v3();
             }
             this._curPos.set(startPos[0] * this._minimapScale * this.scale, startPos[1] * this._minimapScale * this.scale, 0);
-            no.position(this._minimapSprite.node, this._curPos);
+            no.position(this.minimapSprite.node, this._curPos);
             this.clearDataValue(`${this.bind_keys}.startPos`);
+            this.setMask();
         }
         if (moveBy) {
             this._curPos.add3f(moveBy[0] * this._minimapScale * this.scale, moveBy[1] * this._minimapScale * this.scale, 0);
-            no.position(this._minimapSprite.node, this._curPos);
+            no.position(this.minimapSprite.node, this._curPos);
+            this.setMask();
         }
     }
 
@@ -96,22 +100,26 @@ export class SetMinimap extends FuckUi {
      * @param cellSize 单元格尺寸
      */
     private initMinimap(width: number, height: number, cellSize: number) {
-        if (!this.minimapNode) return;
-        if (!this.minimapNode.getComponent(Mask)) {
-            this.minimapNode.addComponent(Mask);
-        }
-        if (!this._minimapSprite) {
-            const node = no.newNode('MinimapSprite', [Sprite]);
-            node.parent = this.minimapNode;
-            this._minimapSprite = node.getComponent(Sprite);
-            no.scale(node, v3(this.scale, this.scale, 1));
-        }
+        if (!this.minimapSprite) return;
+        // if (!this.minimapNode.getComponent(Mask)) {
+        //     this.minimapNode.addComponent(Mask);
+        // }
+        // if (!this._minimapSprite) {
+        //     const node = no.newNode('MinimapSprite', [Sprite]);
+        //     node.parent = this.minimapNode;
+        //     this._minimapSprite = node.getComponent(Sprite);
+        //     no.scale(node, v3(this.scale, this.scale, 1));
+        // }
+        no.scale(this.minimapSprite.node, v3(this.scale, this.scale, 1));
         this._minimapScale = this.minimapCellSize / cellSize;
         this._texture = new DynamicAtlasTexture();
         this._texture.initWithSize(width * this._minimapScale, height * this._minimapScale);
         if (!this._imageSetTileData) {
             this.setImageSetTileData();
         }
+        no.size(this.minimapMask.node, size(width * this._minimapScale, height * this._minimapScale));
+        no.size(this.minimapMask.node.children[0], size(width * this._minimapScale, height * this._minimapScale));
+        no.scale(this.minimapMask.node, v3(this.scale, this.scale, 1));
     }
 
     /**
@@ -119,7 +127,7 @@ export class SetMinimap extends FuckUi {
      * @param tileInfos 地砖信息数组
      */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
-        if (!this.minimapNode || tileInfos.length == 0) return;
+        if (!this.minimapSprite || tileInfos.length == 0) return;
         for (let i = 0, n = tileInfos.length; i < n; i++) {
             const info = tileInfos[i];
             if (info.type < 0) continue;
@@ -142,7 +150,7 @@ export class SetMinimap extends FuckUi {
         if (!this._textureDirty) return;
         const sf = new SpriteFrame();
         sf.texture = this._texture;
-        this._minimapSprite.spriteFrame = sf;
+        this.minimapSprite.spriteFrame = sf;
         this._textureDirty = false;
     }
 
@@ -154,5 +162,16 @@ export class SetMinimap extends FuckUi {
             const buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
             this._imageSetTileData.set(`${i}`, buffer);
         }
+    }
+
+
+    private _maskData: no.GraphicsData[] = [];
+
+    private setMask() {
+        no.position(this.minimapMask.node, this._curPos);
+        const { x, y } = this._curPos;
+        const graphic = this.minimapMask.getComponent(Graphics);
+        graphic.circle(-x / this.scale, -y / this.scale, 12);
+        graphic.fill();
     }
 }
