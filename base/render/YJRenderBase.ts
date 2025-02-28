@@ -253,7 +253,6 @@ export class YJRenderBase extends UIRenderer {
     }
 }
 
-const vec3_temp = new Vec3();
 export const YJAssemblerBase = {
     createData(vertexFormat?: Attribute[]) {
         const renderData = RenderData.add(vertexFormat);
