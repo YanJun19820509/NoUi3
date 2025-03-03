@@ -189,6 +189,7 @@ export class FuckUi extends Component {
      * @param value 
      */
     protected clearDataValue(key: string) {
+        if (!this._oldData) return;
         no.deleteValue(this._oldData.data, key);
     }
 
