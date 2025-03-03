@@ -153,7 +153,8 @@ export class SetSpine extends FuckUi {
                     return;
                 }
                 this.curPath = path;
-                //销毁原spine节点
+                //销毁原spine节点  因为是异步的 所以需要重新获取
+                let spine = this._curSpine;
                 spine?.node?.destroy();
                 //创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
