@@ -2,6 +2,7 @@ import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
 import { FuckUi } from 'NoUi3/fuckui/FuckUi';
 import { no } from 'NoUi3/no';
 import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Vec3, v3, rect, Graphics, size } from 'NoUi3/yj';
+import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
 
 /**
  * 
@@ -25,8 +26,8 @@ export class SetMinimap extends FuckUi {
     /** 迷你地图节点 */
     @property({ type: Sprite, displayName: '迷你地图节点' })
     minimapSprite: Sprite = null;
-    @property({ type: Mask, displayName: '迷你地图遮罩' })
-    minimapMask: Mask = null;
+    @property({ type: SetFogOfWar, displayName: '迷雾' })
+    fogOfWar: SetFogOfWar = null;
 
     /** 迷你地图图集,图集内单图长宽相等,且应尽量小如12px */
     @property({ type: Texture2D, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
@@ -36,13 +37,21 @@ export class SetMinimap extends FuckUi {
     @property({ displayName: '图集内单图尺寸' })
     minimapCellSize: number = 12;
 
-    /** 放大倍数 */
-    @property({ displayName: '放大倍数' })
-    scale: number = 3;
-
     /** 地砖类型与图集映射,下标对应地砖类型 */
     @property({ type: Vec2, displayName: '地砖类型与图集映射', tooltip: '下标对应地砖类型' })
     minimapSetPoses: Vec2[] = [];
+
+    /** 局部显示 */
+    @property({ displayName: '局部显示' })
+    isPart: boolean = false;
+
+    /** 放大倍数 */
+    @property({ displayName: '放大倍数', visible() { return this.isPart; } })
+    scale: number = 3;
+
+    /** 角色节点 */
+    @property({ type: Node, displayName: '角色节点' })
+    roleNode: Node = null;
 
     /** 显示迷你地图的精灵 */
     // private _minimapSprite: Sprite = null;
@@ -67,6 +76,7 @@ export class SetMinimap extends FuckUi {
      */
     protected onDataChange(data: any) {
         const { mapInfo, moveBy, tileInfos, startPos } = data;
+        if (!this.isPart) this.scale = 1;
         if (mapInfo) {
             this.initMinimap(mapInfo.width, mapInfo.height, mapInfo.cellSize);
             //清除数据源内的mapInfo，避免重复初始化
@@ -82,14 +92,28 @@ export class SetMinimap extends FuckUi {
                 this._curPos = v3();
             }
             this._curPos.set(startPos[0] * this._minimapScale * this.scale, startPos[1] * this._minimapScale * this.scale, 0);
-            no.position(this.minimapSprite.node, this._curPos);
+            if (this.isPart) {
+                no.position(this.minimapSprite.node, this._curPos);
+                if (this.fogOfWar)
+                    no.position(this.fogOfWar.node, this._curPos);
+            } else
+                this.roleNode.setPosition(-this._curPos.x, -this._curPos.y);
             this.clearDataValue(`${this.bind_keys}.startPos`);
-            this.setMask();
+            this.fogOfWar?.a_setData({
+                pos: [-this._curPos.x / this._minimapScale / this.scale, -this._curPos.y / this._minimapScale / this.scale]
+            });
         }
         if (moveBy) {
             this._curPos.add3f(moveBy[0] * this._minimapScale * this.scale, moveBy[1] * this._minimapScale * this.scale, 0);
-            no.position(this.minimapSprite.node, this._curPos);
-            this.setMask();
+            if (this.isPart) {
+                no.position(this.minimapSprite.node, this._curPos);
+                if (this.fogOfWar)
+                    no.position(this.fogOfWar.node, this._curPos);
+            } else
+                this.roleNode.setPosition(-this._curPos.x, -this._curPos.y);
+            this.fogOfWar?.a_setData({
+                pos: [-this._curPos.x / this._minimapScale / this.scale, -this._curPos.y / this._minimapScale / this.scale]
+            });
         }
     }
 
@@ -101,25 +125,21 @@ export class SetMinimap extends FuckUi {
      */
     private initMinimap(width: number, height: number, cellSize: number) {
         if (!this.minimapSprite) return;
-        // if (!this.minimapNode.getComponent(Mask)) {
-        //     this.minimapNode.addComponent(Mask);
-        // }
-        // if (!this._minimapSprite) {
-        //     const node = no.newNode('MinimapSprite', [Sprite]);
-        //     node.parent = this.minimapNode;
-        //     this._minimapSprite = node.getComponent(Sprite);
-        //     no.scale(node, v3(this.scale, this.scale, 1));
-        // }
-        no.scale(this.minimapSprite.node, v3(this.scale, this.scale, 1));
+        const scale = v3(this.scale, this.scale, 1);
+        no.scale(this.minimapSprite.node, scale);
         this._minimapScale = this.minimapCellSize / cellSize;
         this._texture = new DynamicAtlasTexture();
         this._texture.initWithSize(width * this._minimapScale, height * this._minimapScale);
         if (!this._imageSetTileData) {
             this.setImageSetTileData();
         }
-        no.size(this.minimapMask.node, size(width * this._minimapScale, height * this._minimapScale));
-        no.size(this.minimapMask.node.children[0], size(width * this._minimapScale, height * this._minimapScale));
-        no.scale(this.minimapMask.node, v3(this.scale, this.scale, 1));
+        if (this.fogOfWar) {
+            no.scale(this.fogOfWar.node, scale);
+            this.fogOfWar.a_setData({
+                size: [width * this._minimapScale, height * this._minimapScale],
+                scale: this._minimapScale
+            });
+        }
     }
 
     /**
@@ -162,16 +182,5 @@ export class SetMinimap extends FuckUi {
             const buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
             this._imageSetTileData.set(`${i}`, buffer);
         }
-    }
-
-
-    private _maskData: no.GraphicsData[] = [];
-
-    private setMask() {
-        no.position(this.minimapMask.node, this._curPos);
-        const { x, y } = this._curPos;
-        const graphic = this.minimapMask.getComponent(Graphics);
-        graphic.circle(-x / this.scale, -y / this.scale, 12);
-        graphic.fill();
     }
 }
