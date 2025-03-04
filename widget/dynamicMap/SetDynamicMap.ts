@@ -10,6 +10,7 @@ import { YJDataWork } from 'NoUi3/base/YJDataWork';
  * data:{
  *  tileSize?:number,//地砖尺寸
  *  tileInfos?:{x:number, y: number,...any}[],//地砖信息,必需有地砖坐标xy数据
+ *  tileChangeInfos?:{x:number, y: number,...any}[],//地砖变化信息,必需有地砖坐标xy数据
  *  startPos?:number[],//起始位置
  *  moveBy?:number[],//移动距离
  * }
@@ -58,7 +59,7 @@ export class SetDynamicMap extends FuckUi {
      * @param data 新的数据
      */
     protected onDataChange(data: any) {
-        const { tileSize, tileInfos, startPos, moveBy } = data;
+        const { tileSize, tileInfos, startPos, moveBy, tileChangeInfos } = data;
         if (tileSize) {
             const s = view.getVisibleSize();
             //以tileSize为单元格长宽，计算可见区域需要格子的行列数
@@ -82,6 +83,23 @@ export class SetDynamicMap extends FuckUi {
             //清除数据源内的tileInfos，避免重复设置
             this.clearDataValue(`${this.bind_keys}.tileInfos`);
         }
+        if (tileChangeInfos) {
+            for (let i = 0, n = tileChangeInfos.length; i < n; i++) {
+                const tileChangeInfo = tileChangeInfos[i];
+                const uv = this.xyToUv(tileChangeInfo.x, tileChangeInfo.y);
+                const key = `${uv[0]}_${uv[1]}`;
+                this._tileMap.set(key, tileChangeInfo);
+                if (this._tileNodeMap.has(key)) {
+                    const node = this._tileNodeMap.get(key);
+                    let a = node.getComponent(YJDataWork) || node.getComponentInChildren(YJDataWork);
+                    if (a) {
+                        a.initWithData(tileChangeInfo);
+                    }
+                }
+            }
+            //清除数据源内的tileChangeInfos，避免重复设置
+            this.clearDataValue(`${this.bind_keys}.tileChangeInfos`);
+        }
         if (startPos) {
             if (!this._curPos) {
                 this._curPos = v3();
@@ -94,6 +112,7 @@ export class SetDynamicMap extends FuckUi {
         if (moveBy) {
             this._curPos.add3f(moveBy[0], moveBy[1], 0);
             no.position(this.node, this._curPos);
+            this.clearDataValue(`${this.bind_keys}.moveBy`);
             this.setTiles();
         }
     }
