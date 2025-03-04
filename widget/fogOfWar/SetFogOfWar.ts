@@ -24,8 +24,11 @@ export class SetFogOfWar extends FuckUi {
     exploredAlpha: number = 0.5;
 
     // 移动超过此距离才更新迷雾（像素）
-    @property({ displayName: '更新迷雾阈值', tooltip: '移动超过此距离才更新迷雾' })
+    @property({ displayName: '更新迷雾阈值', tooltip: '移动超过此距离才更新迷雾,相对于实际地图' })
     updateThreshold: number = 10;
+
+    @property({ displayName: '精度缩放', tooltip: '精度缩放', min: 1 })
+    accuracyScale: number = 2;
 
     // 迷雾精灵
     private fogSprite: Sprite = null!;
@@ -41,7 +44,7 @@ export class SetFogOfWar extends FuckUi {
 
     // 地图宽度
     private _mapWidth: number = 0;
-    
+
     // 地图高度
     private _mapHeight: number = 0;
 
@@ -63,14 +66,14 @@ export class SetFogOfWar extends FuckUi {
         }
         if (data.pos) {
             if (!this._lastUpdatePos) {
-                this._lastUpdatePos = new Vec2(data.pos[0] * this.mapScale, data.pos[1] * this.mapScale);
+                this._lastUpdatePos = new Vec2(data.pos[0] * this.mapScale * this.accuracyScale, data.pos[1] * this.mapScale * this.accuracyScale);
                 this.updateFog();
             } else {
-                const pos = v2(data.pos[0] * this.mapScale, data.pos[1] * this.mapScale);
+                const pos = v2(data.pos[0] * this.mapScale * this.accuracyScale, data.pos[1] * this.mapScale * this.accuracyScale);
                 const distance = Vec2.distance(pos, this._lastUpdatePos);
 
                 // 如果移动了足够的距离，更新迷雾
-                if (distance >= this.updateThreshold) {
+                if (distance >= this.updateThreshold * this.mapScale * this.accuracyScale) {
                     this._lastUpdatePos.set(pos);
                     this.updateFog();
                 }
@@ -84,17 +87,18 @@ export class SetFogOfWar extends FuckUi {
      */
     private _createFogSystem(mapSize: number[]) {
         const [width, height] = mapSize;
-        no.size(this.node, size(width, height));
-        this._mapWidth = width;
-        this._mapHeight = height;
+        this._mapWidth = width * this.accuracyScale;
+        this._mapHeight = height * this.accuracyScale;
+        no.size(this.node, size(this._mapWidth, this._mapHeight));
+        no.scale(this.node, v3(1 / this.accuracyScale, 1 / this.accuracyScale, 1));
         // 创建纹理缓冲区 (RGBA格式，每像素4字节)
         // 注意：这里直接使用地图尺寸作为纹理尺寸
-        this.textureBuffer = new Uint8Array(width * height * 4);
+        this.textureBuffer = new Uint8Array(this._mapWidth * this._mapHeight * 4);
 
         // console.log("创建迷雾纹理，尺寸:", width, "x", height);
 
         // 初始化缓冲区 (全黑不透明)
-        for (let i = 0; i < width * height; i++) {
+        for (let i = 0, n = this._mapWidth * this._mapHeight; i < n; i++) {
             // RGBA: 黑色不透明
             this.textureBuffer[i * 4] = 0;     // R
             this.textureBuffer[i * 4 + 1] = 0; // G
@@ -104,7 +108,7 @@ export class SetFogOfWar extends FuckUi {
 
         // 创建纹理
         this.fogTexture = new DynamicAtlasTexture();
-        this.fogTexture.initWithSize(width, height);
+        this.fogTexture.initWithSize(this._mapWidth, this._mapHeight);
         this.fogTexture.uploadData(this.textureBuffer);
 
         // 添加精灵组件
@@ -126,15 +130,14 @@ export class SetFogOfWar extends FuckUi {
         const centerY = texturePos[1];
 
         // 增大视野范围以便于调试和观察效果
-        const effectiveRadius = Math.floor(this.visionRadius * this.mapScale); // 临时放大视野半径便于观察
+        const effectiveRadius = Math.floor(this.visionRadius * this.mapScale * this.accuracyScale); // 临时放大视野半径便于观察
 
         // 计算视野范围的边界（优化：只更新视野范围内的像素）
         const startX = Math.max(0, centerX - effectiveRadius - 2);
         const endX = Math.min(this._mapWidth - 1, centerX + effectiveRadius + 2);
         const startY = Math.max(0, centerY - effectiveRadius - 2);
         const endY = Math.min(this._mapHeight - 1, centerY + effectiveRadius + 2);
-
-        // console.log("更新迷雾区域:", startX, startY, endX, endY, "中心点:", centerX, centerY);
+        const transitionWidth = 5 * this.accuracyScale;
 
         // 在视野半径内更新迷雾
         for (let y = startY; y <= endY; y++) {
@@ -146,18 +149,15 @@ export class SetFogOfWar extends FuckUi {
 
                 // 计算像素索引
                 const pixelIndex = (y * this._mapWidth + x) * 4;
-
-                if (distance <= effectiveRadius) {
-                    // 在视野范围内 - 完全透明
-                    this.textureBuffer[pixelIndex + 3] = 0;
-                } else if (distance <= effectiveRadius + 0) { // 增加过渡区域宽度
-                    // 在边缘区域 - 半透明(已探索)
-                    // 只有当前像素是完全不透明时才设置为半透明（避免覆盖已探索区域）
-                    if (this.textureBuffer[pixelIndex + 3] > Math.floor(this.exploredAlpha * 255)) {
-                        this.textureBuffer[pixelIndex + 3] = Math.floor(this.exploredAlpha * 255);
+                const smoothStep = no.smoothStep(distance, effectiveRadius, effectiveRadius + transitionWidth);
+                if (smoothStep == 1) continue;
+                if (smoothStep == 0) this.textureBuffer[pixelIndex + 3] = 0;
+                else {
+                    const alpha = Math.floor(this.exploredAlpha * 255 * smoothStep);
+                    if (this.textureBuffer[pixelIndex + 3] > alpha) {
+                        this.textureBuffer[pixelIndex + 3] = alpha;
                     }
                 }
-                // 超出范围的不变
             }
         }
 
