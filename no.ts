@@ -1852,6 +1852,19 @@ export namespace no {
         return v;
     }
 
+    /**
+     * 平滑过渡,v在min和max之间平滑过渡,min和max的值会自动转换为0-1之间
+     * @param v 
+     * @param min 
+     * @param max 
+     * @returns 当v小于min时返回0，当v大于max时返回1，否则返回0-1之间的值
+     */
+    export function smoothStep(v: number, min: number, max: number): number {
+        if (v < min) return 0;
+        if (v > max) return 1;
+        return (v - min) / (max - min);
+    }
+
     function eIndex(n: number): number {
         let s = n.toString().toLowerCase();
         let a = s.split('e');
