@@ -183,7 +183,9 @@ export class YJPanel extends Component {
     private _visible(node: Node, v: boolean) {
         const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
         if (blockInputEvents)
-            blockInputEvents.forEach(a => a.enabled = v);
+            for (let i = 0; i < blockInputEvents.length; i++) {
+                blockInputEvents[i].enabled = v;
+            }
         const btn = node.getComponent('YJButton');
         if (btn)
             btn['canClick'] = v;
@@ -209,7 +211,10 @@ export class YJPanel extends Component {
             if (node['__origin_x__'] !== null) {
                 no.x(node, node['__origin_x__']);
             }
-            node.getComponentsInChildren(YJDataWork).forEach(a => a.onEnable());
+            let comps = node.getComponentsInChildren(YJDataWork);
+            for (let i = 0; i < comps.length; i++) {
+                comps[i].onEnable();
+            }
         }
         node['_activeInHierarchy'] = v;
     }

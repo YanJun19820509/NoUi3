@@ -39,7 +39,7 @@ class ContentInfo {
     public show(v: boolean): void {
         if (this.loadedNode) {
             if (!isValid(this.loadedNode)) return;
-            no.visibleByActiveInHierarchy(this.loadedNode, v);
+            no.visible(this.loadedNode, v);
         }
     }
 
