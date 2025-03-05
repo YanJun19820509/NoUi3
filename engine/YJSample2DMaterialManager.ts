@@ -134,28 +134,31 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     }
 
     private async _loadFiles(requests: any[], textureIdx: any, jsonIdx: any, textures: Texture2D[], atlasJsons: any[]) {
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve, reject) => {
             no.assetBundleManager.loadAnyFiles(requests, null, (items) => {
-                items.forEach(item => {
-                    if (item instanceof JsonAsset) {
-                        this.setAtlasJson(item.uuid, item.json)
-                        const i = jsonIdx[item.uuid];
-                        if (i != null)
-                            atlasJsons[i] = item.json;
-                        else
-                            atlasJsons[atlasJsons.length] = item.json;
-                        no.assetBundleManager.decRef(item);
-                    } else if (item instanceof Texture2D) {
-                        no.assetBundleManager.cacheImage(item);
-                        const t = no.assetBundleManager.getTextureFromCache(item.uuid);
-                        const i = textureIdx[item.uuid];
-                        if (i != null)
-                            textures[i] = t;
-                        else
-                            textures[textures.length] = t;
+                try {
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item instanceof JsonAsset) {
+                            this.setAtlasJson(item.uuid, item.json)
+                            const idx = jsonIdx[item.uuid];
+                            if (idx != null)
+                                atlasJsons[idx] = item.json;
+                            else
+                                atlasJsons[atlasJsons.length] = item.json;
+                            no.assetBundleManager.decRef(item);
+                        } else if (item instanceof Texture2D) {
+                            no.assetBundleManager.cacheImage(item);
+                            const t = no.assetBundleManager.getTextureFromCache(item.uuid);
+                            const idx = textureIdx[item.uuid];
+                            if (idx != null)
+                                textures[idx] = t;
+                            else
+                                textures[textures.length] = t;
+                        }
                     }
-                });
-                resolve();
+                    resolve();
+                } catch (e) { reject(e); }
             });
         }).catch(e => {
             console.error(e);

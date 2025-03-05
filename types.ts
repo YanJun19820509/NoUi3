@@ -272,7 +272,22 @@ export class LoadAssetsInfo {
             file.addRef();
             return file;
         } else
-            return new Promise<Asset>(resolve => {
+            // return new Promise<Asset>(resolve => {
+            //     if (this.path)
+            //         no.assetBundleManager.loadBundle(no.assetBundleManager.assetPath(this.path).bundle, () => {
+            //             no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
+            //                 resolve(file);
+            //             });
+            //         });
+            //     else
+            //         no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
+            //             resolve(file);
+            //         });
+            // }).catch(e => {
+            //     console.error(e);
+            //     return null;
+            // });
+            return no.promiseHandlerCallRevole(resolve => {
                 if (this.path)
                     no.assetBundleManager.loadBundle(no.assetBundleManager.assetPath(this.path).bundle, () => {
                         no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
@@ -283,10 +298,7 @@ export class LoadAssetsInfo {
                     no.assetBundleManager.loadByUuid<Asset>(this.assetUuid, file => {
                         resolve(file);
                     });
-            }).catch(e => {
-                console.error(e);
-                return null;
-            });
+            })
     }
 
     public release(cb?: (asset: Asset) => void): void {

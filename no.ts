@@ -723,11 +723,8 @@ export namespace no {
     }
 
     export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
-        return new Promise<any>(resolve => {
+        return promiseHandlerCallRevole((resolve) => {
             emitAndOnceCallback(emitType, callbackType, resolve, args, target);
-        }).catch(e => {
-            console.error(e);
-            return null;
         });
     }
 
@@ -738,14 +735,20 @@ export namespace no {
      * @param arg 标识，当事件触发时会将这个值返回
      */
     export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
-        return new Promise<any>(resolve => {
+        // return new Promise<any>(resolve => {
+        //     evn.once(type, (v: any) => {
+        //         if (v == '__clear_Wait_For_Event__') resolve(null);
+        //         else resolve(arg);
+        //     }, target);
+        // }).catch(e => {
+        //     console.error(e);
+        //     return null;
+        // });
+        return promiseHandlerCallRevole((resolve) => {
             evn.once(type, (v: any) => {
                 if (v == '__clear_Wait_For_Event__') resolve(null);
                 else resolve(arg);
             }, target);
-        }).catch(e => {
-            console.error(e);
-            return null;
         });
     }
 
@@ -755,14 +758,14 @@ export namespace no {
      * @returns 
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
-        if (comp)
-            return new Promise<void>(resolve => {
-                scheduleUpdateCheck(express, resolve, comp);
-            }).catch(e => {
-                console.error(e);
-            });
-        else
-            return checkUntil(express);
+        // if (comp)
+        //     return new Promise<void>(resolve => {
+        //         scheduleUpdateCheck(express, resolve, comp);
+        //     }).catch(e => {
+        //         console.error(e);
+        //     });
+        // else
+        return checkUntil(express);
     }
 
     /**
@@ -772,14 +775,20 @@ export namespace no {
      * @returns 
      */
     export function waiForEventValue(type: string, target?: any): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+        // return new Promise<any>((resolve, reject) => {
+        //     evn.once(type, (v: any) => {
+        //         if (v == '__clear_Wait_For_Event__') reject(null);
+        //         else resolve(v);
+        //     }, target);
+        // }).catch(e => {
+        //     console.error(e);
+        //     return null;
+        // });
+        return promiseHandlerCallRevole((resolve) => {
             evn.once(type, (v: any) => {
-                if (v == '__clear_Wait_For_Event__') reject(null);
+                if (v == '__clear_Wait_For_Event__') resolve(null);
                 else resolve(v);
             }, target);
-        }).catch(e => {
-            console.error(e);
-            return null;
         });
     }
 
@@ -792,7 +801,21 @@ export namespace no {
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         let e = evn;
-        return new Promise<void>((resolve, reject) => {
+        // return new Promise<void>((resolve, reject) => {
+        //     e.on(type, (v: any) => {
+        //         if (v == '__clear_Wait_For_Event__') resolve();
+        //         else {
+        //             log('waiForEventValueEqual', type, v);
+        //             if (v == equalValue) {
+        //                 e.offAfterTrigger(type, target);
+        //                 resolve();
+        //             }
+        //         }
+        //     }, target);
+        // }).catch(e => {
+        //     console.error(e);
+        // });
+        return promiseHandlerCallRevole((resolve) => {
             e.on(type, (v: any) => {
                 if (v == '__clear_Wait_For_Event__') resolve();
                 else {
@@ -803,8 +826,6 @@ export namespace no {
                     }
                 }
             }, target);
-        }).catch(e => {
-            console.error(e);
         });
     }
 
@@ -826,16 +847,21 @@ export namespace no {
 
             // 使用 requestAnimationFrame 代替 setInterval,性能更好
             const check = () => {
-                if (express()) {
+                try {
+                    if (express()) {
+                        resolve();
+                        return;
+                    }
+                    requestAnimationFrame(check);
+                } catch (e) {
+                    console.error(e);
                     resolve();
-                    return;
                 }
-                requestAnimationFrame(check);
             };
             requestAnimationFrame(check);
         }).catch(e => {
             console.error(e);
-        });;
+        });
     }
 
     /**
@@ -1294,16 +1320,14 @@ export namespace no {
      */
     export function sleep(duration: number, component?: Component): Promise<void> {
         if (duration <= 0) duration = game.deltaTime;
-        return new Promise<void>(resolve => {
-            // if (checkValid(component)) {
-            //     component.scheduleOnce(resolve, duration);
-            // } else {
-            // scheduleOnce(() => { resolve(); }, duration);
-            // }
+        // return new Promise<void>(resolve => {
+        //     setTimeout(() => { resolve(); }, duration * 1000);
+        // }).catch(e => {
+        //     console.error(e);
+        // });
+        return promiseHandlerCallRevole((resolve) => {
             setTimeout(() => { resolve(); }, duration * 1000);
-        }).catch(e => {
-            console.error(e);
-        });;
+        });
     }
 
     // 两个数相除百分比
@@ -1888,7 +1912,18 @@ export namespace no {
         }
 
         public start(): Promise<void> {
-            return new Promise<void>(resolve => {
+            // return new Promise<void>(resolve => {
+            //     for (const key in this.map) {
+            //         let t: Tween = this.map[key];
+            //         if (key == TweenSetType.Node) {
+            //         t.call(resolve).start();
+            //     } else
+            //         t?.start();
+            // }
+            // }).catch(e => {
+            //     console.error(e);
+            // });
+            return promiseHandlerCallRevole((resolve) => {
                 for (const key in this.map) {
                     let t: Tween = this.map[key];
                     if (key == TweenSetType.Node) {
@@ -1896,8 +1931,6 @@ export namespace no {
                     } else
                         t?.start();
                 }
-            }).catch(e => {
-                console.error(e);
             });
         }
 
@@ -3466,13 +3499,16 @@ export namespace no {
         }
 
         private _loadAnyFile(request: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }) {
-            return new Promise<Asset>(resolve => {
+            // return new Promise<Asset>(resolve => {
+            //     this.loadAny(request, item => {
+            //         resolve(item);
+            //     });
+            // }).catch(e => {
+            //     console.error(e);
+            return promiseHandlerCallRevole(resolve => {
                 this.loadAny(request, item => {
                     resolve(item);
                 });
-            }).catch(e => {
-                console.error(e);
-                return null;
             });
         }
 
@@ -3502,21 +3538,15 @@ export namespace no {
             assetManager.releaseAll();
         }
 
-        public has(path: string): Promise<boolean> {
-            return new Promise<boolean>(resolve => {
-                const p = this.assetPath(path);
-                let bundle = this.getLoadedBundle(p.bundle);
-                if (bundle != null) {
-                    resolve(bundle['_config'].paths.has(p.path));
-                } else {
-                    this.loadBundle(p.bundle, () => {
-                        return this.has(path);
-                    });
-                }
-            }).catch(e => {
-                console.error(e);
+        public has(path: string) {
+            const p = this.assetPath(path);
+            let bundle = this.getLoadedBundle(p.bundle);
+            if (bundle != null) {
+                return bundle['_config'].paths.has(p.path);
+            } else {
+                err(`assetBundleManager [has]:${p.bundle}未加载`, path);
                 return false;
-            });
+            }
         }
 
         public getCachedTexture(img: ImageAsset): Texture2D | null {
@@ -4635,25 +4665,35 @@ export namespace no {
         }
 
         public get(url: string): Promise<any> {
-            return new Promise<any>(resolve => {
+            // return new Promise<any>(resolve => {
+            //     this.httpRequest("GET", url, null, (v: any) => {
+            //         resolve(v);
+            //     });
+            // }).catch(e => {
+            //     console.error(e);
+            //     return null;
+            // });
+            return promiseHandlerCallRevole(resolve => {
                 this.httpRequest("GET", url, null, (v: any) => {
                     resolve(v);
                 });
-            }).catch(e => {
-                console.error(e);
-                return null;
-            });
+            })
         }
 
         public post(url: string, data: string | object): Promise<any> {
-            return new Promise<any>(resolve => {
+            // return new Promise<any>(resolve => {
+            //     this.httpRequest("POST", url, data, (v: any) => {
+            //         resolve(v);
+            //     });
+            // }).catch(e => {
+            //     console.error(e);
+            //     return null;
+            // });
+            return promiseHandlerCallRevole(resolve => {
                 this.httpRequest("POST", url, data, (v: any) => {
                     resolve(v);
                 });
-            }).catch(e => {
-                console.error(e);
-                return null;
-            });
+            })
         }
     }
 
@@ -4689,13 +4729,19 @@ export namespace no {
             const it = this;
             it.isCd = true;
             // await sleep(this.duration);
-            return new Promise<void>(resolve => {
+            // return new Promise<void>(resolve => {
+            //     setTimeout(() => {
+            //         it.isCd = false;
+            //         resolve();
+            //     }, this.duration);
+            // }).catch(e => {
+            //     console.error(e);
+            // });
+            return promiseHandlerCallRevole(resolve => {
                 setTimeout(() => {
                     it.isCd = false;
                     resolve();
                 }, this.duration);
-            }).catch(e => {
-                console.error(e);
             });
         }
     }
@@ -5717,12 +5763,15 @@ export namespace no {
             if (!uuid) {
                 return null;
             }
-            return new Promise<T>(resolve =>
+            // return new Promise<T>(resolve =>
+            //     assetBundleManager.loadByUuid<T>(uuid, asset => resolve(asset))
+            // ).catch(e => {
+            //     console.error(e);
+            //     return null;
+            // });
+            return promiseHandlerCallRevole(resolve => {
                 assetBundleManager.loadByUuid<T>(uuid, asset => resolve(asset))
-            ).catch(e => {
-                console.error(e);
-                return null;
-            });
+            })
         }
 
         /**
@@ -5745,14 +5794,19 @@ export namespace no {
                 return [];
             }
 
-            return new Promise<any>(resolve => {
+            // return new Promise<any>(resolve => {
+            //     assetBundleManager.loadAnyFiles(requests, null, items => {
+            //         resolve(items);
+            //     });
+            // }).catch(e => {
+            //     console.error(e);
+            //     return null;
+            // });
+            return promiseHandlerCallRevole(resolve => {
                 assetBundleManager.loadAnyFiles(requests, null, items => {
                     resolve(items);
                 });
-            }).catch(e => {
-                console.error(e);
-                return null;
-            });
+            })
         }
 
         export async function loadAssetInfosOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
@@ -5782,14 +5836,19 @@ export namespace no {
                 if (!aa.length) {
                     return [];
                 }
-                return new Promise<any>(resolve => {
+                // return new Promise<any>(resolve => {
+                //     assetBundleManager.loadAnyFiles(aa, null, items => {
+                //         resolve(items);
+                //     });
+                // }).catch(e => {
+                //     console.error(e);
+                //     return [];
+                // });
+                return promiseHandlerCallRevole(resolve => {
                     assetBundleManager.loadAnyFiles(aa, null, items => {
                         resolve(items);
                     });
-                }).catch(e => {
-                    console.error(e);
-                    return [];
-                });
+                })
             });
         }
 
@@ -5894,12 +5953,15 @@ export namespace no {
         export async function getAssetByFileName<T extends Asset>(fileName: string) {
             return getAssetInfoByFileName(fileName).then(info => {
                 if (info) {
-                    return new Promise<T>(resolve =>
+                    // return new Promise<T>(resolve =>
+                    //     assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
+                    // ).catch(e => {
+                    //     console.error(e);
+                    //     return null;
+                    // });
+                    return promiseHandlerCallRevole(resolve => {
                         assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
-                    ).catch(e => {
-                        console.error(e);
-                        return null;
-                    });
+                    })
                 }
                 return null;
             });
@@ -6260,6 +6322,44 @@ export namespace no {
      */
     export function objectType(obj: any): string {
         return Object.prototype.toString.call(obj).slice(8, -1);
+    }
+
+    // 定义一个泛型类型的函数类型，返回值为T
+    type PromiseHandlerFuncReturn<T> = () => T;
+    // 定义一个函数类型，参数为resolve函数
+    type PromiseHandlerFuncResolve = (resolve: (value?: any) => void, reject: (reason?: any) => void) => void;
+
+    /**
+     * 处理带有返回值的Promise
+     * @param func 要执行的函数
+     * @param defaultValue 默认值
+     * @returns 返回Promise的结果
+     */
+    export async function promiseHandlerWithReturnValue<T>(func: PromiseHandlerFuncReturn<T>, defaultValue: T) {
+        return new Promise<T>((resolve) => {
+            try {
+                resolve(func());
+            } catch (e) {
+                console.error(e.stack);
+                resolve(defaultValue);
+            }
+        });
+    }
+
+    /**
+     * 处理带有resolve回调的Promise
+     * @param func 要执行的函数
+     * @returns 返回Promise的结果
+     */
+    export async function promiseHandlerCallRevole(func: PromiseHandlerFuncResolve) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                func(resolve, reject);
+            } catch (e) {
+                console.error(e.stack);
+                resolve(null);
+            }
+        });
     }
 }
 no.addToWindowForDebug('no', no);

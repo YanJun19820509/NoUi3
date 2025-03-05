@@ -33,13 +33,12 @@ export class SetCreateSpriteFrame extends FuckUi {
         if (!data) return;
         this.texture = new DynamicAtlasTexture();
         this.texture.initWithSize(data.width, data.height);
-        this.drawSpriteFrames(data.spriteFrames).then(() => {
-            if (data.labels && data.labels.length > 0)
-                this.drawTTFSpriteFrames(data.labels);
-            else {
-                this.setSpriteFrame();
-            }
-        }).catch(e => { no.err('createspriteframe', e); });
+        this.drawSpriteFrames(data.spriteFrames);
+        if (data.labels && data.labels.length > 0)
+            this.drawTTFSpriteFrames(data.labels);
+        else {
+            this.setSpriteFrame();
+        }
     }
 
     private findSpriteFrame(name: string): SpriteFrame {
@@ -50,25 +49,20 @@ export class SetCreateSpriteFrame extends FuckUi {
         return null;
     }
 
-    private drawSpriteFrames(spriteFrames: CreateSpritemFrameSFData[]): Promise<void> {
-        return new Promise<void>(resolve => {
-            let arr: { frame: SpriteFrame, x: number, y: number }[] = [];
-            for (let i = 0, n = spriteFrames.length; i < n; i++) {
-                const a = spriteFrames[i];
-                const sf = this.findSpriteFrame(a.name);
-                arr[arr.length] = {
-                    frame: sf,
-                    x: a.x,
-                    y: a.y
-                };
-                if (arr.length == n) {
-                    resolve(this.drawSpriteFramesToTexture(arr));
-                }
+    private drawSpriteFrames(spriteFrames: CreateSpritemFrameSFData[]) {
+        let arr: { frame: SpriteFrame, x: number, y: number }[] = [];
+        for (let i = 0, n = spriteFrames.length; i < n; i++) {
+            const a = spriteFrames[i];
+            const sf = this.findSpriteFrame(a.name);
+            arr[arr.length] = {
+                frame: sf,
+                x: a.x,
+                y: a.y
+            };
+            if (arr.length == n) {
+                this.drawSpriteFramesToTexture(arr)
             }
-        }).catch(e => {
-            console.error(e);
-            return null;
-        });
+        }
     }
 
     private drawTTFSpriteFrames(labels: CreateSpritemFrameLabelData[]) {

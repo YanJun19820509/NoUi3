@@ -165,20 +165,14 @@ export class YJBitmapFont extends Component {
         }
         else {
             no.assetBundleManager.loadingAsset(url);
-            return new Promise<BitmapFont>(resolve => {
-                // if (!url) {
-                //     no.assetBundleManager.loadByUuid<BitmapFont>(fontUuid, BitmapFont, bf => {
-                //         this.setFontToCache(fontUuid, bf);
-                //         resolve(bf);
-                //         no.assetBundleManager.assetLoadingEnd(fontUuid);
-                //     });
-                // } else {
+            return new Promise<BitmapFont>((resolve, reject) => {
                 no.assetBundleManager.loadFile(url, BitmapFont, (bf: BitmapFont) => {
-                    this.setFontToCache(url, bf);
-                    resolve(bf);
-                    no.assetBundleManager.assetLoadingEnd(url);
+                    try {
+                        this.setFontToCache(url, bf);
+                        resolve(bf);
+                        no.assetBundleManager.assetLoadingEnd(url);
+                    } catch (e) { reject(e); }
                 });
-                // }
             }).catch(e => {
                 console.error(e);
                 return null;
