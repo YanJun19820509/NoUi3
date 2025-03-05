@@ -1348,14 +1348,16 @@ export class YJCharLabel extends Sprite {
             }
             else {
                 YJCharLabel.fontLoading[this._fontUuid] = true;
-                return new Promise<void>(resolve => {
+                return new Promise<void>((resolve, reject) => {
                     no.assetBundleManager.loadByUuid<TTFFont>(this._fontUuid, file => {
-                        if (file) {
-                            this._font = file;
-                            this.setFontToCache(this._fontUuid, file);
-                            this.fontFamily = this._font._fontFamily;
-                        }
-                        resolve();
+                        try {
+                            if (file) {
+                                this._font = file;
+                                this.setFontToCache(this._fontUuid, file);
+                                this.fontFamily = this._font._fontFamily;
+                            }
+                            resolve();
+                        } catch (e) { reject(e); }
                     });
                 }).catch(e => {
                     console.error(e);

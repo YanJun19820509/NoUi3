@@ -99,7 +99,8 @@ export class YJSpineManager extends no.SingleObject {
             const loadingPromise = new Promise<SkeletonData>((resolve, reject) => {
                 no.assetBundleManager.loadSpine(normalizedPath, (res: SkeletonData) => {
                     if (!res) {
-                        reject(new Error(`Failed to load spine: ${normalizedPath}`));
+                        no.err(`Failed to load spine: ${normalizedPath}`);
+                        resolve(null);
                         return;
                     }
 

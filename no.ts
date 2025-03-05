@@ -3517,21 +3517,15 @@ export namespace no {
             assetManager.releaseAll();
         }
 
-        public has(path: string): Promise<boolean> {
-            return new Promise<boolean>(resolve => {
-                const p = this.assetPath(path);
-                let bundle = this.getLoadedBundle(p.bundle);
-                if (bundle != null) {
-                    resolve(bundle['_config'].paths.has(p.path));
-                } else {
-                    this.loadBundle(p.bundle, () => {
-                        return this.has(path);
-                    });
-                }
-            }).catch(e => {
-                console.error(e);
+        public has(path: string) {
+            const p = this.assetPath(path);
+            let bundle = this.getLoadedBundle(p.bundle);
+            if (bundle != null) {
+                return bundle['_config'].paths.has(p.path);
+            } else {
+                err(`assetBundleManager [has]:${p.bundle}未加载`, path);
                 return false;
-            });
+            }
         }
 
         public getCachedTexture(img: ImageAsset): Texture2D | null {
@@ -6405,5 +6399,51 @@ export namespace no {
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
 
+    /**
+     * 获取对象类型
+     * @param obj 
+     * @returns 类型名：Array,Object,String,Number,Boolean,Function,Null,Undefined,Symbol
+     */
+    export function objectType(obj: any): string {
+        return Object.prototype.toString.call(obj).slice(8, -1);
+    }
+
+    // 定义一个泛型类型的函数类型，返回值为T
+    type PromiseHandlerFuncReturn<T> = () => T;
+    // 定义一个函数类型，参数为resolve函数
+    type PromiseHandlerFuncResolve = (resolve: (value?: any) => void, reject: (reason?: any) => void) => void;
+
+    /**
+     * 处理带有返回值的Promise
+     * @param func 要执行的函数
+     * @param defaultValue 默认值
+     * @returns 返回Promise的结果
+     */
+    export async function promiseHandlerWithReturnValue<T>(func: PromiseHandlerFuncReturn<T>, defaultValue: T) {
+        return new Promise<T>((resolve) => {
+            try {
+                resolve(func());
+            } catch (e) {
+                console.error(e.stack);
+                resolve(defaultValue);
+            }
+        });
+    }
+
+    /**
+     * 处理带有resolve回调的Promise
+     * @param func 要执行的函数
+     * @returns 返回Promise的结果
+     */
+    export async function promiseHandlerCallRevole(func: PromiseHandlerFuncResolve) {
+        return new Promise<any>((resolve, reject) => {
+            try {
+                func(resolve, reject);
+            } catch (e) {
+                console.error(e.stack);
+                resolve(null);
+            }
+        });
+    }
 }
 no.addToWindowForDebug('no', no);

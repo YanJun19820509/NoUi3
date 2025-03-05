@@ -153,7 +153,8 @@ export class SetSpine extends FuckUi {
                     return;
                 }
                 this.curPath = path;
-                //销毁原spine节点
+                //销毁原spine节点 因为是异步的 所以需要重新获取
+                let spine = this._curSpine;
                 spine?.node?.destroy();
                 //创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
@@ -283,7 +284,9 @@ export class SetSpine extends FuckUi {
             no.warn(`spine节点${spine.node.name}自身未激活  this.curPath ${this.curPath}`);
             return
         }
-        spine?.setAnimation(0, animationName, loop);
+        if (spine?._skeleton?.data) {
+            spine.setAnimation(0, animationName, loop);
+        }
     }
 
     public a_stop(): void {
