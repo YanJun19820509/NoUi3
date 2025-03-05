@@ -284,7 +284,9 @@ export class SetSpine extends FuckUi {
             no.warn(`spine节点${spine.node.name}自身未激活  this.curPath ${this.curPath}`);
             return
         }
-        spine?.setAnimation(0, animationName, loop);
+        if (spine?._skeleton?.data) {
+            spine.setAnimation(0, animationName, loop);
+        }
     }
 
     public a_stop(): void {
