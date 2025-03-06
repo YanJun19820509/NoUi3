@@ -79,7 +79,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         } else {
             materialInfo.refCount++;
             if (needLoadIdxes.length > 0) {
-                await this.loadTextures(materialInfo, textureInfos, needLoadIdxes);
+                if (!await this.loadTextures(materialInfo, textureInfos, needLoadIdxes)) {
+                    no.warn('材质已满，重新创建材质')
+                    return this.createAtlasMaterial(name, textureInfos, share);
+                }
             }
         }
         return materialInfo.uuid;
@@ -130,7 +133,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         if (requests.length > 0) {
             await this._loadFiles(requests, textureIdx, jsonIdx, textures, atlasJsons);
         }
-        materialInfo.setAtlases(textures, atlasJsons);
+        return materialInfo.setAtlases(textures, atlasJsons);
     }
 
     private async _loadFiles(requests: any[], textureIdx: any, jsonIdx: any, textures: Texture2D[], atlasJsons: any[]) {
@@ -226,6 +229,7 @@ export class YJSample2DMaterialInfo {
 
     //设置材质的贴图
     public setAtlases(textures: Texture2D[], jsons: any[]) {
+        if (this.textures.length > 6) return false;
         const material = this.dynamicAtlas.customMaterial;
         for (let i = 0, n = textures.length; i < n; i++) {
             const t = textures[i];
@@ -236,9 +240,11 @@ export class YJSample2DMaterialInfo {
                 material.setProperty(key, t, 0);
             } else {
                 no.err(`YJSample2DMaterialManager setAtlases key(${key}) 不存在！`)
+                return false;
             }
         }
         this.atlasJsons = this.atlasJsons.concat(jsons);
+        return true;
     }
 
     /**
