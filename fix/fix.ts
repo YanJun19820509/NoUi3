@@ -165,6 +165,7 @@ const _off = Node.prototype.off;
 js.mixin(Node.prototype, {
     off(type, callback, target, useCapture) {
         if (!this._eventProcessor) {
+            //这个问题多半是因为父节点在off子节点on的事件时，子节点已经销毁了，引擎里并没有做子节点状态的检查
             no.warn('hack Node.prototype.off 节点销毁时没有_eventProcessor');
             return;
         }
