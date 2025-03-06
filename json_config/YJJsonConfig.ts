@@ -1,6 +1,35 @@
 import { no } from "../no";
 import { js } from "../yj";
 
+
+/**
+ * ObjectProxy类用于创建一个代理对象，用于拦截对配置数据的访问和修改
+ */
+class ObjectProxy {
+    private proxy: object;
+    private root: string;
+    public static new(data: object, root: string): object {
+        return new ObjectProxy(data, root).proxy;
+    }
+
+    constructor(data: object, root: string) {
+        this.root = root;
+        this.proxy = new Proxy(data, {
+            get: (target: object, prop: string) => {
+                if (typeof prop === 'symbol') return this;
+                const a = target[prop as keyof object];
+                if (a == null) {
+                    no.err('配置数据不存在', this.root, prop);
+                }
+                return typeof a === 'object' ? ObjectProxy.new(a, this.root + '.' + prop) : a;
+            },
+            set: (target: object, prop: string, value: any): boolean => {
+                no.warn(`试图修改配置数据，已拦截，属性: ${this.root + '.' + String(prop)}, 值: ${value}`);
+                return false;
+            }
+        });
+    }
+}
 /**
  * json 配置读取
  */
@@ -71,7 +100,7 @@ class Database {
         }
         //如果需要读取id为空或个数大于1，则返回整个数据
         if (!exprotIds || exprotIds?.length > 1)
-            return data;
+            return ObjectProxy.new(data, tableName);
         //此时需要读取id个数为1
         //如果需要读取的属性只有一个，则返回该属性值
         if (exportProperties?.length == 1)
