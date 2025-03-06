@@ -1313,6 +1313,20 @@ export namespace no {
     }
 
     /**
+     * 克隆代理对象
+     * @param d 
+     * @returns 
+     */
+    export function cloneProxyObject(d: any): any {
+        const keys = Object.keys(d);
+        const a = {};
+        for (const key of keys) {
+            a[key] = typeof d[key] == 'object' ? cloneProxyObject(d[key]) : d[key];
+        }
+        return a;
+    }
+
+    /**
      * 等待几秒
      * @param duration 等待时长(秒)
      * @param component deprecated
@@ -2549,15 +2563,15 @@ export namespace no {
          */
         public get(paths?: string | string[]): any {
             if (this._data == null) return null;
-            if (paths == null || paths == '*') return clone(this._data);
+            if (paths == null || paths == '*') return this._data;
             paths = [].concat(paths);
             if (paths.length == 1) {
-                return clone(getValue(this._data, paths[0]));
+                return getValue(this._data, paths[0]);
             } else {
                 let p = paths.join('.');
                 let a = getValue(this._data, p);
                 if (!a) return null;
-                return clone(a);
+                return a;
             }
         }
         /**
