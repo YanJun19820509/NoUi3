@@ -1232,7 +1232,7 @@ export namespace no {
     }
 
     /**
-     * 以v1为圆心从水平正x方向到v2的夹角
+     * 以p1为圆心从水平正x方向到p2的夹角
      * @param p1
      * @param p2
      * @returns angle角度,radian弧度

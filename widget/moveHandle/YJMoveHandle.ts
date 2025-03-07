@@ -54,7 +54,6 @@ export class YJMoveHandle extends Component {
     public onEnd(e: EventTouch) {
         this._isMoving = false;
         const pos = this.touchUILocationAR(e);
-        console.log(sys.now() - this._touchTime)
         if (this.clickMove && sys.now() - this._touchTime < 150) {
             const dir = no.angleTo(v2(0, 0), pos);
             this.delegate?.moveHandleEvent({ type: 'moveto', pos, dir });

@@ -24,7 +24,7 @@ console.log(task.pathSet); //输出路径结果
  */
 
 export namespace AStar {
-    class Node {
+    export class Node {
         public x: number;
         public y: number;
         public g: number;
@@ -78,7 +78,7 @@ export namespace AStar {
 
     export class Task {
         private pathSet: Node[];
-        private startNode: Node;
+        public startNode: Node;
         private endNode: Node;
         private openSet: Node[];
         private closeSet: Node[];
@@ -110,14 +110,14 @@ export namespace AStar {
 
         setWallFromArray(array: number[][]) {
             this.wallSet = [];
-            for (let i = 0; i < array.length; i += 2) {
+            for (let i = 0; i < array.length; i++) {
                 this.wallSet.push(new Node(array[i][0], array[i][1]));
             }
         }
 
         setEmptyGroundFromArray(array: number[][]) {
             this.emptySet = [];
-            for (let i = 0; i < array.length; i += 2) {
+            for (let i = 0; i < array.length; i++) {
                 this.emptySet.push(new Node(array[i][0], array[i][1]));
             }
         }
