@@ -145,7 +145,10 @@ export class SetCreateNode extends FuckUi {
         }
 
         if (!this.template) {
-            this.template = await this.loadPrefab.loadPrefab();
+            if (!this.loadPrefab) {
+                console.error('SetCreateNode: loadPrefab is null', this.node.name, this.bind_keys, this.oldData);
+            }
+            this.template = await this.loadPrefab?.loadPrefab();
             if (!this?.node?.isValid) return;
         }
 

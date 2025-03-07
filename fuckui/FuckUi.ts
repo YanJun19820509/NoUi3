@@ -58,7 +58,7 @@ export class FuckUi extends Component {
             }
             return;
         }
-        this._oldData = d;
+        this._oldData = no.clone(d);
 
         this.logValue(d);
         this.onDataChange(d);
