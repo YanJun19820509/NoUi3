@@ -1,11 +1,11 @@
 import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
 import { FuckUi } from 'NoUi3/fuckui/FuckUi';
 import { no } from 'NoUi3/no';
-import { ccclass, Sprite, Node, Vec2, Mask, property, SpriteFrame, Texture2D, Vec3, v3, rect, Graphics, size } from 'NoUi3/yj';
+import { ccclass, Sprite, Node, Vec2, property, SpriteFrame, Texture2D, Vec3, v3, rect, EventTouch, size } from 'NoUi3/yj';
 import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
 
 /**
- * 
+ * 迷你地图组件，支持全屏和局部显示，迷雾，点击获取地图位置
  * Author mqsy_yj
  * DateTime Fri Feb 14 2025 09:33:20 GMT+0800 (中国标准时间)
  * data:{
@@ -53,6 +53,9 @@ export class SetMinimap extends FuckUi {
     @property({ type: Node, displayName: '角色节点' })
     roleNode: Node = null;
 
+    @property({ type: no.EventHandlerInfo, displayName: '点击事件', visible() { return !this.isPart; } })
+    clickEvent: no.EventHandlerInfo[] = [];
+
     /** 显示迷你地图的精灵 */
     // private _minimapSprite: Sprite = null;
 
@@ -69,6 +72,23 @@ export class SetMinimap extends FuckUi {
     private _imageSetTileData: Map<string, ArrayBufferView>;
 
     private _texture: DynamicAtlasTexture = null;
+
+    /**
+     * 组件加载时的初始化操作
+     */
+    onLoad() {
+        super.onLoad();
+        if (!this.isPart)
+            this.node.on(Node.EventType.TOUCH_END, this.onClick, this, true);
+    }
+
+    /**
+     * 组件销毁时的清理操作
+     */
+    onDestroy(): void {
+        if (!this.isPart)
+            this.node.off(Node.EventType.TOUCH_END, this.onClick, this, true);
+    }
 
     /**
      * 数据变更处理
@@ -140,6 +160,7 @@ export class SetMinimap extends FuckUi {
                 scale: this._minimapScale
             });
         }
+        no.size(this.node, size(this._texture.width, this._texture.height));
     }
 
     /**
@@ -157,6 +178,12 @@ export class SetMinimap extends FuckUi {
         this.updateMinimap();
     }
 
+    /**
+     * 绘制单个瓦片
+     * @param x 瓦片的x坐标
+     * @param y 瓦片的y坐标
+     * @param tile 瓦片类型
+     */
     protected _drawTile(x: number, y: number, tile: number) {
         const buffer = this._imageSetTileData.get(`${0}`);
         const cellSize = this.minimapCellSize;
@@ -174,6 +201,9 @@ export class SetMinimap extends FuckUi {
         this._textureDirty = false;
     }
 
+    /**
+     * 设置图集瓦片数据
+     */
     private setImageSetTileData() {
         this._imageSetTileData = new Map();
         const cellSize = this.minimapCellSize;
@@ -182,5 +212,23 @@ export class SetMinimap extends FuckUi {
             const buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
             this._imageSetTileData.set(`${i}`, buffer);
         }
+    }
+
+    private _tempV31: Vec3 = v3();
+    private _tempV32: Vec3 = v3();
+    /**
+     * 处理点击事件，点击迷你地图获取点击位置与当前位置的相对位置，并以YJMoveHandle的数据格式返回
+     * @param e 触摸事件对象
+     */
+    private onClick(e: EventTouch) {
+        if (this.isPart) return;
+        e.preventSwallow = true;
+        this._tempV31.set(-this._curPos.x, -this._curPos.y, 0);
+        const p = e.getUILocation();
+        this._tempV32.set(p.x, p.y, 0);
+        no.worldPositionInNode(this._tempV32, this.node, this._tempV32);
+        const dir = no.angleTo(this._tempV31, this._tempV32);
+        const s = this._minimapScale * this.scale;
+        no.EventHandlerInfo.execute(this.clickEvent, { type: 'moveto', pos: { x: (this._tempV32.x - this._tempV31.x) / s, y: (this._tempV32.y - this._tempV31.y) / s }, dir });
     }
 }
