@@ -79,7 +79,7 @@ export class SetMinimap extends FuckUi {
     onLoad() {
         super.onLoad();
         if (!this.isPart)
-            this.node.on(Node.EventType.TOUCH_END, this.onClick, this, true);
+            this.minimapSprite.node.on(Node.EventType.TOUCH_END, this.onClick, this, true);
     }
 
     /**
@@ -87,7 +87,7 @@ export class SetMinimap extends FuckUi {
      */
     onDestroy(): void {
         if (!this.isPart)
-            this.node.off(Node.EventType.TOUCH_END, this.onClick, this, true);
+            this.minimapSprite.node.off(Node.EventType.TOUCH_END, this.onClick, this, true);
     }
 
     /**
@@ -148,6 +148,7 @@ export class SetMinimap extends FuckUi {
         const scale = v3(this.scale, this.scale, 1);
         no.scale(this.minimapSprite.node, scale);
         this._minimapScale = this.minimapCellSize / cellSize;
+        this._texture?.destroy();
         this._texture = new DynamicAtlasTexture();
         this._texture.initWithSize(width * this._minimapScale, height * this._minimapScale);
         if (!this._imageSetTileData) {
@@ -226,7 +227,7 @@ export class SetMinimap extends FuckUi {
         this._tempV31.set(-this._curPos.x, -this._curPos.y, 0);
         const p = e.getUILocation();
         this._tempV32.set(p.x, p.y, 0);
-        no.worldPositionInNode(this._tempV32, this.node, this._tempV32);
+        no.worldPositionInNode(this._tempV32, this.minimapSprite.node, this._tempV32);
         const dir = no.angleTo(this._tempV31, this._tempV32);
         const s = this._minimapScale * this.scale;
         no.EventHandlerInfo.execute(this.clickEvent, { type: 'moveto', pos: { x: (this._tempV32.x - this._tempV31.x) / s, y: (this._tempV32.y - this._tempV31.y) / s }, dir });

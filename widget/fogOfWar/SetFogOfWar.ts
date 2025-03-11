@@ -107,6 +107,7 @@ export class SetFogOfWar extends FuckUi {
         }
 
         // 创建纹理
+        this.fogTexture?.destroy();
         this.fogTexture = new DynamicAtlasTexture();
         this.fogTexture.initWithSize(this._mapWidth, this._mapHeight);
         this.fogTexture.uploadData(this.textureBuffer);
