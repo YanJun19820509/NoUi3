@@ -67,7 +67,7 @@ export class SetList extends FuckUi {
     public set setTemplateInfo(v: boolean) {
         this.preInitItems();
     }
-    @property({ displayName: '所需元素节点个数', readonly: true })
+    @property({ displayName: '所需元素节点个数', min: 0, step: 1 })
     showMax: number = 0;
     @property({ visible() { return false; } })
     itemSize: Size = size();
