@@ -1,4 +1,3 @@
-
 import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
 import { no } from './no';
 import { Asset, Bundle, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
@@ -257,6 +256,31 @@ export function singleObject() {
 }
 
 
+/**
+ * 节流装饰器
+ * @param waitSeconds 等待时间
+ * @param firstWait 是否第一次等待
+ * @example
+ * class Example {
+ *     @throttleWithCondition(2, true)
+ *     handleClick() {
+ *         console.log('Button clicked');
+ *     }
+ * }
+ */
+export function throttleWithCondition(waitSeconds: number, firstWait = false) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args: any[]) {
+            no.Throttling.ins(this).wait(waitSeconds, firstWait).then(v => {
+                if (v)
+                    originalMethod.apply(this, args);
+            });
+        };
+    };
+}
+
+
 @ccclass("LoadAssetsInfo")
 export class LoadAssetsInfo {
     @property({ readonly: true, displayName: '根路径', editorOnly: true })
@@ -268,6 +292,11 @@ export class LoadAssetsInfo {
     @property({ readonly: true, displayName: '资源路径', tooltip: '相对于分包路径' })
     path: string = '';
 
+    /**
+     * 设置路径和名称
+     * @param uuid 资源的UUID
+     * @param cb 回调函数
+     */
     public setPathAndName(uuid: string, cb?: (info: any) => void) {
         if (!uuid) {
             this.base = '';
@@ -290,6 +319,10 @@ export class LoadAssetsInfo {
         }
     }
 
+    /**
+     * 加载资源
+     * @param cb 回调函数
+     */
     public loadAsset<T extends Asset>(cb: (asset: T) => void) {
         const bundle = no.assetBundleManager.getLoadedBundle(this.bundleName);
         if (bundle) {
@@ -306,6 +339,10 @@ export class LoadAssetsInfo {
         }
     }
 
+    /**
+     * 从缓存中加载资源
+     * @returns 资源
+     */
     public loadAssetInCache<T extends Asset>(): T {
         const bundle = no.assetBundleManager.getLoadedBundle(this.bundleName);
         if (bundle) {
@@ -349,6 +386,11 @@ export class TextureInfo extends LoadAssetsInfo {
         }
     }
 
+    /**
+     * 添加纹理
+     * @param uuid 资源的UUID
+     * @returns Promise<boolean>
+     */
     public async addTexture(uuid: string) {
         return Promise.all([no.EditorMode.getAssetInfo(uuid), no.EditorMode.getAssetUrlByUuid(uuid)]).then(([info, url]) => {
             if (!info) return false;
@@ -361,6 +403,9 @@ export class TextureInfo extends LoadAssetsInfo {
         });
     }
 
+    /**
+     * 设置图集JSON
+     */
     private setAtlasJson() {
         this.atlasJsonPath = this.path.replace('/texture', '_atlas');
         const a = this.atlasJsonPath.split('/');
