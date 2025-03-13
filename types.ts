@@ -257,6 +257,30 @@ export function singleObject() {
 }
 
 
+/**
+ * 节流装饰器
+ * @param waitSeconds 等待时间
+ * @param firstWait 是否第一次等待
+ * @example
+ * class Example {
+ *     @throttleWithCondition(2, true)
+ *     handleClick() {
+ *         console.log('Button clicked');
+ *     }
+ * }
+ */
+export function throttleWithCondition(waitSeconds: number, firstWait = false) {
+    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args: any[]) {
+            no.Throttling.ins(this).wait(waitSeconds, firstWait).then(v => {
+                if (v)
+                    originalMethod.apply(this, args);
+            });
+        };
+    };
+}
+
 @ccclass("LoadAssetsInfo")
 export class LoadAssetsInfo {
     @property({ readonly: true, displayName: '资源uuid' })
