@@ -1862,6 +1862,19 @@ export namespace no {
         return v;
     }
 
+    /**
+     * 循环索引, 当n < min时返回max，当n > max时返回min，否则返回n
+     * @param n 
+     * @param min 
+     * @param max 
+     * @returns 
+     */
+    export function circleIndex(n: number, min: number, max: number): number {
+        if (n < min) return max;
+        if (n > max) return min;
+        return n;
+    }
+
     function eIndex(n: number): number {
         let s = n.toString().toLowerCase();
         let a = s.split('e');
