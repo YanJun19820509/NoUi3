@@ -349,12 +349,11 @@ class AnimationEffect {
      * @param node 目标节点
      */
     private moveBy(node: Node) {
-        const pos = no.position(node);
         return [{
             duration: this.duration,
-            [this.duration == 0 ? 'set' : 'to']: 1,
+            [this.duration == 0 ? 'set' : 'by']: 1,
             props: {
-                pos: [this.moveByArgs.x + pos.x, this.moveByArgs.y + pos.y]
+                pos: [this.moveByArgs.x, this.moveByArgs.y]
             }
         }];
     }
