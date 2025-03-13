@@ -21,11 +21,6 @@ export class SetFlip extends FuckUi {
     @property({ displayName: '垂直翻转' })
     vertical: boolean = false;
 
-    onLoad(): void {
-        super.onLoad();
-        this.saveIgnore = false;
-    }
-
     protected onDataChange(data: any): void {
         this.a_flip();
     }

@@ -1,4 +1,3 @@
-import { JSB } from "cc/env";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
@@ -7,7 +6,7 @@ import {
     CCObject,
     EventTouch,
     Toggle,
-    resources
+    resources, JSB
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。

@@ -2,7 +2,8 @@ import { ccclass, property, menu, Component, Node, Prefab, instantiate } from '.
 import { no } from '../../no';
 import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
 
-export class PrefabInfo {
+@ccclass('YJLoadPrefabsInfo')
+class YJLoadPrefabsInfo {
     @property
     key: string = '';
     /** 预制体资源 */
@@ -32,8 +33,8 @@ export class PrefabInfo {
  * DateTime 2024/1/8
  */
 export default class YJLoadPrefabs extends Component {
-    @property({ type: [PrefabInfo] })
-    prefabs: PrefabInfo[] = [];
+    @property({ type: [YJLoadPrefabsInfo] })
+    prefabs: YJLoadPrefabsInfo[] = [];
 
     /** 材质信息uuid */
     @property({ visible() { return false; } })

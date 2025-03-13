@@ -1,5 +1,3 @@
-
-import { deprecate } from 'util';
 import { ccclass, property, Component, Button, executeInEditMode, EDITOR } from '../yj';
 
 /**

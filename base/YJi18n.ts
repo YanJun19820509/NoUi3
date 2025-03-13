@@ -22,7 +22,7 @@ export class YJi18n extends no.Data {
     private _lan: string;
     private _defLan: string;
     /**语言包事件 */
-    public event = no.evn.new();
+    private _event = no.evn.new();
     public static get ins(): YJi18n {
         if (!this._ins)
             this._ins = new YJi18n();
@@ -85,10 +85,10 @@ export class YJi18n extends no.Data {
 
 
     public onLanguagechange(handler: Function, target?: any) {
-        this.event.on('Languagechange', handler, target);
+        this._event.on('Languagechange', handler, target);
     }
 
     public offLanguagechange(handler: Function, target?: any) {
-        this.event.off('Languagechange', handler, target);
+        this._event.off('Languagechange', handler, target);
     }
 }

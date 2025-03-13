@@ -42,7 +42,7 @@ export class YJCheckSpriteFrame extends Component {
     private lookupAllPrefabs(checkType: CheckType) {
         no.warn('开始检测', checkType)
         Editor.Message.request('asset-db', 'query-assets', { ccType: 'cc.Prefab' }).then((infos: any[]) => {
-            let aa = [];
+            let aa: any[] = [];
             let path: any = {};
             for (let i = 0; i < infos.length; i++) {
                 const a = infos[i];

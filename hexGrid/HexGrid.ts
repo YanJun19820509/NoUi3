@@ -268,12 +268,12 @@ export class Orientation {
     constructor(public f0: number, public f1: number, public f2: number, public f3: number, public b0: number, public b1: number, public b2: number, public b3: number, public start_angle: number) { }
 }
 
-export class Layout {
+export class HexLayout {
     public static new(orientation: Orientation, origin: Point, width: number, height: number) {
         let size: Point;
         if (orientation == this.flat) size = new Point(width / 2, height / Math.sqrt(3));
         else if (orientation == this.pointy) size = new Point(width / Math.sqrt(3), height / 2);
-        return new Layout(orientation, size, origin);
+        return new HexLayout(orientation, size, origin);
     }
     constructor(public orientation: Orientation, public size: Point, public origin: Point) { }
     public static pointy: Orientation = new Orientation(Math.sqrt(3.0), Math.sqrt(3.0) / 2.0, 0.0, 3.0 / 2.0, Math.sqrt(3.0) / 3.0, -1.0 / 3.0, 0.0, 2.0 / 3.0, 0.5);

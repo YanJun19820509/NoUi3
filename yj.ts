@@ -1,6 +1,5 @@
 import * as _cc from 'cc';
 import * as env from 'cc/env';
-import { AssetInfo } from '../../../extensions/ccc-ext-APS/@types/packages/asset-db/@types/public';
 
 export const { ccclass, property, executeInEditMode, requireComponent, menu, disallowMultiple, type } = _cc._decorator;
 export const __private = _cc.__private;
@@ -9,7 +8,6 @@ export const DEBUG = env.DEBUG;
 export const Director = _cc.Director;
 export type CCObject = _cc.CCObject;
 export const CCObject = _cc.CCObject;
-export type _AssetInfo = AssetInfo;
 export interface Component extends _cc.Component { };
 export class Component extends _cc.Component { };
 export const Vec2 = _cc.Vec2;
@@ -235,3 +233,55 @@ export const input = _cc.input;
 export const PhysicsSystem = _cc.PhysicsSystem;
 export const primitives = _cc.primitives;
 export const UIVertexFormat = _cc.UIVertexFormat;
+
+//EDITOR
+// 资源的基础信息
+export interface _AssetInfo {
+    // Asset name
+    // 资源名字
+    name: string;
+    // Asset display name
+    // 资源用于显示的名字
+    displayName: string;
+    // URL
+    source: string;
+    // loader 加载的层级地址
+    path: string;
+    // loader 加载地址会去掉扩展名，这个参数不去掉
+    url: string;
+    // 绝对路径
+    file: string;
+    // 资源的唯一 ID
+    uuid: string;
+    // 使用的导入器名字
+    importer: string;
+    // 类型
+    type: string;
+    // 是否是文件夹
+    isDirectory: boolean;
+    // 导入资源的 map
+    library: { [key: string]: string };
+    // 子资源 map
+    subAssets: { [key: string]: _AssetInfo };
+    // 是否显示
+    visible: boolean;
+    // 是否只读
+    readonly: boolean;
+
+    // 虚拟资源可以实例化成实体的话，会带上这个扩展名
+    instantiation?: string;
+    // 跳转指向资源
+    redirect?: IRedirectInfo;
+    // 继承类型
+    extends?: string[];
+    // 是否导入完成
+    imported: boolean;
+    // 是否导入失败
+    invalid: boolean;
+}
+export interface IRedirectInfo {
+    // 跳转资源的类型
+    type: string;
+    // 跳转资源的 uuid
+    uuid: string;
+}

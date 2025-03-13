@@ -449,27 +449,4 @@ export class YJDynamicAtlas {
         //     }
         // });
     }
-
-    public setMaterialTextures(textureUuids: string[]) {
-        if (!EDITOR) return;
-        const material = this.customMaterial;
-        if (material) {
-            let props: any = {};
-            for (let i = 0; i < textureUuids.length; i++) {
-                const key = `atlas${i}`;//空出atlas0，用于放多语言
-                props[key] = {
-                    "__uuid__": textureUuids[i],
-                    "__expectedType__": "cc.Texture2D"
-                };
-            }
-
-            const fs = require('fs');
-            Editor.Message.request('asset-db', 'query-asset-info', material.uuid).then(info => {
-                console.log(info);
-                let json = JSON.parse(fs.readFileSync(info.file));
-                json['_props'] = [props];
-                fs.writeFileSync(info.file, JSON.stringify(json, null, 2));
-            });
-        }
-    }
 }

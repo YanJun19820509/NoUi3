@@ -22,11 +22,7 @@ export class SetBitmapFontWithStateInfo extends LoadAssetsInfo {
 
     public set bmFont(v: BitmapFont) {
         if (v) {
-            this.assetName = v.name;
-            this.assetUuid = v.uuid;
-            no.EditorMode.getAssetUrlByUuid(this.assetUuid).then(url => {
-                this.path = url;
-            });
+            this.setPathAndName(v.uuid);
         }
     }
 }
@@ -46,7 +42,7 @@ export class SetBitmapFontWithState extends FuckUi {
     protected onDataChange(data: any) {
         const info = no.itemOfArray<SetBitmapFontWithStateInfo>(this.states, String(data), 'state');
         if (info) {
-            this.getComponent(YJBitmapFont).setBitmapFont(info.assetUuid, info.path);
+            this.getComponent(YJBitmapFont).setBitmapFont(null, info.path);
         }
     }
 

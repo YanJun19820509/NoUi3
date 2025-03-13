@@ -37,7 +37,7 @@ export class SetGraphicsEffect extends SetEffect {
 
         if (rect) {
             properties = properties || {};
-            properties[`i_min_max_uv${this.idx}`] = no.getGraphicUVInWorld(rect[0], rect[1], rect[2], rect[3], this.node);;
+            properties[`i_min_max_uv`] = no.getGraphicUVInWorld(rect[0], rect[1], rect[2], rect[3], this.node);;
         }
 
         this.setMaterial(path, defines, properties);
