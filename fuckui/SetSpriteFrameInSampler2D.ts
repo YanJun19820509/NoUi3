@@ -38,7 +38,7 @@ export class SetSpriteFrameInSampler2D extends FuckUi {
     defaultUrl: string = '';
     @property
     bundleName: string = '';
-    @property({ displayName: '从图集加载', readonly: true })
+    @property({ displayName: '从图集加载' })
     loadFromAtlas: boolean = true;
     @property({ displayName: '可动态合图', visible() { return !this.loadFromAtlas; } })
     canPack: boolean = false;
