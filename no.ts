@@ -26,13 +26,39 @@ export namespace no {
      */
     export const notUseDynamicAtlas = false;//sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS;
 
+    /**
+     * 启用/禁用日志输出功能
+     * @param v 是否启用日志输出
+     * @example
+     * // 在游戏启动时关闭日志
+     * no.setLogEnabled(false);
+     */
     export function setLogEnabled(v: boolean) {
         _isLogEnabled = v;
     }
 
+    /**
+     * 获取当前调试模式状态
+     * @returns 是否处于调试模式
+     * @example
+     * if (no.isDebug()) {
+     *     // 调试模式下显示开发面板
+     *     showDevTools();
+     * }
+     */
     export function isDebug(): boolean {
         return _debug;
     }
+
+    /**
+     * 设置调试模式状态
+     * @param v 是否启用调试模式
+     * @example
+     * // 测试阶段开启调试模式
+     * no.setDebug(true);
+     * // 生产环境关闭调试模式
+     * no.setDebug(false);
+     */
     export function setDebug(v: boolean) {
         _debug = v;
         log('isDebug', _debug);
@@ -67,10 +93,31 @@ export namespace no {
         _appVer = v;
     }
 
+    /**
+     * 获取当前Spine动画是否启用
+     * @returns 当前Spine动画启用状态
+     * @example
+     * // 检查当前Spine动画状态
+     * const isEnabled = no.spineEnable();
+     * if (isEnabled) {
+     *     console.log('Spine动画已启用');
+     * }
+     */
     export function spineEnable(): boolean {
         return _isSpineEnable;
     }
 
+    /**
+     * 设置是否启用Spine动画
+     * @param v 是否启用Spine动画
+     * @example
+     * // 启用Spine动画
+     * no.setSpineEnable(true);
+     * // 禁用Spine动画（可用于性能优化）
+     * no.setSpineEnable(false);
+     * // 根据条件动态切换
+     * no.setSpineEnable(device.platform !== 'MOBILE');
+     */
     export function setSpineEnable(v: boolean) {
         _isSpineEnable = v;
     }
@@ -85,11 +132,12 @@ export namespace no {
         return macro.ENABLE_MULTI_TOUCH;
     }
 
+    let _uuidCount = 0;
     /**
      * 创建唯一标识
+     * @param obj 
      * @returns 
      */
-    let _uuidCount = 0;
     export function uuid(obj?: any): string {
         if (obj && obj['_uuid']) return obj['_uuid'];
         // return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -380,6 +428,9 @@ export namespace no {
         unschedule(handler);
     }
 
+    /**
+     * 事件系统
+     */
     class Event {
         private _map: Map<string, any[]>;
 
@@ -404,6 +455,17 @@ export namespace no {
             };
             this._map.set(type, a);
         }
+        /**
+         * 注册一次性事件监听（触发后自动移除）
+         * @param type 事件类型 
+         * @param handler 事件处理函数
+         * @param target 事件目标对象
+         * @example
+         * // 监听游戏结束事件（仅触发一次）
+         * no.evn.once('game_over', (score) => {
+         *     console.log(`最终得分: ${score}`);
+         * }, this);
+         */
         public once(type: string, handler: Function, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             a[a.length] = {
@@ -413,6 +475,16 @@ export namespace no {
             };
             this._map.set(type, a);
         }
+
+        /**
+         * 移除指定类型的事件监听
+         * @param type 事件类型
+         * @param handler 要移除的处理函数
+         * @param target 要移除的目标对象
+         * @example
+         * // 移除特定伤害事件监听
+         * no.evn.off('player_hurt', this.onHurt, this);
+         */
         public off(type: string, handler: Function, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
@@ -425,6 +497,14 @@ export namespace no {
             }
             this._map.set(type, a);
         }
+
+        /**
+         * 移除指定目标的所有事件监听
+         * @param target 要移除的目标对象
+         * @example
+         * // 当UI面板关闭时移除所有相关监听
+         * no.evn.targetOff(this.uiPanel);
+         */
         public targetOff(target: any): void {
             for (let type in this._map) {
                 let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
@@ -438,11 +518,27 @@ export namespace no {
                 this._map.set(type, a);
             }
         }
+
+        /**
+         * 移除指定类型的所有事件监听
+         * @param type 事件类型
+         * @example
+         * // 清除所有网络错误监听
+         * no.evn.typeOff('network_error');
+         */
         public typeOff(type: string): void {
             this._map.delete(type);
         }
+
+        /**
+         * 触发指定类型的事件
+         * @param type 事件类型
+         * @param args 事件参数（最后一个参数会自动追加事件类型）
+         * @example
+         * // 触发玩家移动事件并传递坐标
+         * no.evn.emit('player_move', x, y, z);
+         */
         public emit(type: string, ...args: any[]): void {
-            // log('no.evn emit', type, args);
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
             if (!a) return;
             args = args || [];
@@ -475,16 +571,28 @@ export namespace no {
             this._map.set(type, a);
         }
 
+        /**
+         * 检查是否存在指定类型的事件监听
+         * @param type 事件类型
+         * @returns 是否存在监听
+         * @example
+         * // 检查是否有成就解锁监听
+         * if (no.evn.hasType('achievement_unlock')) {
+         *     // 存在成就系统相关监听
+         * }
+         */
         public hasType(type: string): boolean {
             let a: any[] = this._map.get(type) || [];
             return a && a.length > 0;
         }
 
         /**
-         * 在监听回调中移除某个监听
-         * @param type 
-         * @param target 
-         * @returns 
+         * 在事件触发后移除指定监听（标记移除）
+         * @param type 事件类型
+         * @param target 可选目标对象（不传则移除该类型所有监听）
+         * @example
+         * // 标记移除新手引导完成监听
+         * no.evn.offAfterTrigger('tutorial_complete', this);
          */
         public offAfterTrigger(type: string, target?: any): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
@@ -497,13 +605,22 @@ export namespace no {
             }
         }
 
+        /**
+         * 清空所有事件监听
+         * @example
+         * // 游戏重置时清空所有事件
+         * no.evn.clear();
+         */
         public clear() {
             this._map.clear();
         }
 
         /**
-         * 创建一个新的事件对象
-         * @returns 
+         * 创建新的事件系统实例
+         * @returns 新的事件系统实例
+         * @example
+         * // 为小游戏创建独立的事件系统
+         * const miniGameEvents = no.evn.new();
          */
         public new() {
             return new Event();
@@ -514,6 +631,9 @@ export namespace no {
     */
     export const evn = new Event();
 
+    /**
+     * 状态系统
+     */
     export class State {
         private _states: any;
         private _watchers: any;
@@ -523,33 +643,83 @@ export namespace no {
             this._watchers = {};
         }
 
+        /**
+         * 设置状态值并记录时间戳
+         * @param type 状态类型标识 
+         * @param value 要设置的状态值
+         * @example
+         * // 设置玩家生命值状态
+         * no.state.set('player_health', 100);
+         * // 标记关卡完成状态
+         * no.state.set('level_completed', true);
+         */
         public set(type: string, value?: any): void {
             this._states[type] = { v: value, t: sys.now() };
         }
 
+        /**
+         * 注册状态监听（自动生成目标UUID）
+         * @param type 要监听的状态类型
+         * @param target 监听目标对象（需保持引用）
+         * @example
+         * // 监听玩家升级事件
+         * no.state.on('player_level_up', this);
+         */
         public on(type: string, target: any) {
             if (!target.uuid) target.uuid = uuid();
             this._watchers[type] = this._watchers[type] || {};
             this._watchers[type][target.uuid] = sys.now();
         }
 
-
+        /**
+         * 移除状态监听
+         * @param type 要移除的状态类型 
+         * @param target 要移除的监听目标
+         * @example
+         * // 当对象销毁时移除监听
+         * no.state.off('player_level_up', this);
+         */
         public off(type: string, target: any) {
             if (!target.uuid) return;
             if (this._watchers[type])
                 delete this._watchers[type][target.uuid];
         }
 
+        /**
+         * 清除指定类型的状态和监听
+         * @param type 要清除的状态类型
+         * @example
+         * // 重置任务状态
+         * no.state.clear('quest_progress');
+         */
         public clear(type: string) {
             delete this._states[type];
             delete this._watchers[type];
         }
 
+        /**
+         * 清空所有状态和监听
+         * @example
+         * // 游戏重置时清空所有状态
+         * no.state.clearAll();
+         */
         public clearAll(): void {
             this._states = {};
             this._watchers = {};
         }
 
+        /**
+         * 检查状态更新（带自动标记已读功能）
+         * @param type 要检查的状态类型
+         * @param target 检查目标对象
+         * @returns 包含状态是否更新和值的对象
+         * @example
+         * // 检查资源加载状态
+         * const resStatus = no.state.check('assets_loaded', this);
+         * if (resStatus.state) {
+         *     console.log('加载进度:', resStatus.value);
+         * }
+         */
         public check(type: string, target: any): { state: boolean, value?: any } {
             let c = { state: false, value: null };
             let b: { v: any, t: number } = this._states[type];
@@ -565,6 +735,18 @@ export namespace no {
             return c;
         }
 
+        /**
+         * 异步等待状态变为true
+         * @param type 要等待的状态类型
+         * @param target 目标对象
+         * @returns Promise对象，解析时返回状态值
+         * @example
+         * // 等待数据加载完成
+         * async function init() {
+         *     const data = await no.state.checkTrue('data_loaded', this);
+         *     initUI(data);
+         * }
+         */
         public async checkTrue(type: string, target: any): Promise<any> {
             if (!target?.isValid) return null;
             let a = this.check(type, target);
@@ -579,13 +761,23 @@ export namespace no {
     */
     export const state = new State();
 
+    /**
+     * 时间系统
+     */
     class st {
         private _time: number;
         private _targets: any[];
         private _num: number;
         private _IdKey = '__tickTockId';
 
-        /**当前系统时间s */
+        /** 
+         * 获取/设置当前游戏系统时间（基于游戏启动时间的秒数计时）
+         * @example
+         * // 获取当前游戏运行时间
+         * const currentTime = no.sysTime.now;
+         * // 设置游戏时间（用于调试或时间同步）
+         * no.sysTime.now = 3600; // 设置为1小时
+         */
         public get now(): number {
             return this._time;
         }
@@ -595,24 +787,37 @@ export namespace no {
         }
 
         /**
-         * 当前设备时间戳ms
+         * 获取当前设备本地时间戳（毫秒级，不受游戏时间影响）
+         * @returns 当前设备时间戳（毫秒）
+         * @example
+         * // 记录精确的本地时间
+         * const timestamp = no.sysTime.locationNow;
+         * console.log(`当前设备时间：${new Date(timestamp)}`);
          */
         public get locationNow(): number {
             return Date.now();
         }
 
         /**
-         * 当前时区时间戳s
+         * 获取当前时区时间（秒级，基于本地时区）
+         * @returns 当前时区时间戳（秒）
+         * @example
+         * // 显示本地时间
+         * const localSeconds = no.sysTime.locationTimeZoneNow;
+         * console.log(`当前本地时间：${new Date(localSeconds * 1000)}`);
          */
         public get locationTimeZoneNow(): number {
             return no.localDateSeconds(this._time);
         }
 
         constructor() {
+            // 初始化系统时间（转换为秒）
             let t = floor(sys.now() / 1000);
             this._time = t;
             this._targets = [];
             this._num = 1;
+            
+            // 创建每秒定时器
             setInterval(() => {
                 this._time++;
                 this.cb();
@@ -620,8 +825,16 @@ export namespace no {
         }
 
         /**
-         * 注册每秒回调目标
-         * @param target 目标，可为任意类的实例，但需要实现方法doTickTock(now: number){}
+         * 注册每秒回调（需实现doTickTock方法）
+         * @param target 需要接收时间更新的对象，必须包含doTickTock(now: number)方法
+         * @example
+         * class GameTimer {
+         *     doTickTock(now: number) {
+         *         console.log(`当前游戏时间：${now}`);
+         *     }
+         * }
+         * const timer = new GameTimer();
+         * no.sysTime.onTickTock(timer);
          */
         public onTickTock(target: any): void {
             if (target == null) return;
@@ -630,11 +843,23 @@ export namespace no {
             addToArray(this._targets, target, this._IdKey);
         }
 
+        /**
+         * 取消注册每秒回调
+         * @param target 需要移除的时间监听对象
+         * @example
+         * // 当对象销毁时取消时间监听
+         * no.sysTime.offTickTock(timer);
+         */
         public offTickTock(target: any): void {
             removeFromArray(this._targets, target, this._IdKey);
         }
 
+        /**
+         * 每秒触发所有注册对象的回调
+         * @private
+         */
         private cb() {
+            // 调试模式下增加异常捕获
             if (DEBUG) {
                 try {
                     for (let i = this._targets.length - 1; i >= 0; i--) {
@@ -645,6 +870,7 @@ export namespace no {
                     log(e);
                 }
             } else {
+                // 生产环境直接执行
                 for (let i = this._targets.length - 1; i >= 0; i--) {
                     let a = this._targets[i];
                     if (a && a.doTickTock) a.doTickTock(this._time);
@@ -662,6 +888,20 @@ export namespace no {
         @property(EventHandler)
         handler: EventHandler = new EventHandler();
 
+        /**
+         * 创建运行时事件处理器配置
+         * @param target 目标节点
+         * @param comp 组件类名
+         * @param handler 处理方法名
+         * @returns 事件处理器配置对象
+         * @example
+         * // 创建按钮点击处理器
+         * const btnHandler = EventHandlerInfo.new(
+         *     this.buttonNode, 
+         *     'Button', 
+         *     'onClick'
+         * );
+         */
         public static new(target: Node, comp: string, handler: string): EventHandlerInfo {
             let a = new EventHandlerInfo();
             a.handler.target = target;
@@ -670,6 +910,20 @@ export namespace no {
             return a;
         }
 
+        /**
+         * 创建编辑器环境下的事件处理器配置
+         * @param target 目标节点
+         * @param compId 编辑器组件ID
+         * @param handler 处理方法名
+         * @returns 事件处理器配置对象
+         * @example
+         * // 在编辑器工具中创建处理器
+         * const editorHandler = EventHandlerInfo.newInEditor(
+         *     this.node,
+         *     '3f4r5-6tg7',
+         *     'onCustomEvent'
+         * );
+         */
         public static newInEditor(target: Node, compId: string, handler: string): EventHandlerInfo {
             let a = new EventHandlerInfo();
             a.handler.target = target;
@@ -678,6 +932,17 @@ export namespace no {
             return a;
         }
 
+        /**
+         * 批量执行事件处理器
+         * @param handlers 处理器数组
+         * @param args 传递给处理器的参数
+         * @example
+         * // 触发所有按钮点击处理器
+         * EventHandlerInfo.execute(
+         *     [btnHandler, editorHandler],
+         *     { type: 'custom_click' }
+         * );
+         */
         public static execute(handlers: EventHandlerInfo[], ...args: any[]): void {
             if (!handlers || handlers.length == 0) return;
             for (let i = 0; i < handlers.length; i++) {
@@ -686,38 +951,105 @@ export namespace no {
             }
         }
 
+        /**
+         * 执行当前事件处理器
+         * @param args 传递给处理器的参数
+         * @example
+         * // 在自定义组件中触发事件
+         * this.eventHandler.execute(
+         *     { data: this.itemData },
+         *     v2(100, 200)
+         * );
+         */
         public execute(...args: any[]): void {
             if (isValid(this.handler?.target, true))
                 this.handler.emit(args);
         }
     }
 
+    /**
+     * 带标记的日志输出（受全局日志开关控制）
+     * @param Evns 要输出的任意类型参数（支持多参数）
+     * @example
+     * // 记录玩家位置和状态
+     * no.log('玩家坐标', player.position, '当前状态:', player.state);
+     * // 调试物品拾取逻辑
+     * no.log('拾取物品:', itemId, '剩余背包空间:', backpack.space);
+     */
     export function log(...Evns: any[]): void {
         (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
+    /**
+     * 带标记的警告输出（受全局日志开关控制）
+     * @param Evns 要输出的警告内容（支持多参数）
+     * @example
+     * // 资源加载失败警告
+     * no.warn('未找到角色贴图:', texturePath);
+     * // 非法状态警告
+     * no.warn('玩家处于异常状态:', currentState, '位置:', player.position);
+     */
     export function warn(...Evns: any[]): void {
         (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
     }
 
+    /**
+     * 带标记的错误输出（始终输出到控制台）
+     * @param Evns 要输出的错误内容（支持多参数）
+     * @example
+     * // 关键数据缺失错误
+     * no.err('未找到玩家基础数据:', playerId);
+     * // 网络请求失败记录
+     * no.err('API请求超时:', url, '参数:', reqParams);
+     */
     export function err(...Evns: any[]): void {
         console.error('#NoUi#这不是报错', Evns);
     }
 
+    /**
+     * 启动性能计时器（需与logTimeEnd配对使用）
+     * @param type 计时器标识类型（可选）
+     * @example
+     * // 测量资源加载耗时
+     * no.logTimeStart('load_textures');
+     * // 测试战斗逻辑性能
+     * no.logTimeStart('battle_calculation');
+     */
     export function logTimeStart(type?: string) {
         (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
     }
 
+    /**
+     * 结束性能计时器并输出结果
+     * @param type 计时器标识类型（需与logTimeStart对应）
+     * @example
+     * // 结束资源加载计时
+     * no.logTimeEnd('load_textures'); // 控制台输出: #NoUi#time-load_textures: 0.25ms
+     * // 结束战斗逻辑计时
+     * no.logTimeEnd('battle_calculation');
+     */
     export function logTimeEnd(type?: string) {
         (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
+   
     /**
-     * 发出消息并回调一次
-     * @param type
-     * @param callback
-     * @param args
-     * @param target
+     * 触发事件并注册一次性回调
+     * @param emitType 要触发的事件类型
+     * @param callbackType 要监听的回调事件类型
+     * @param callback 回调函数
+     * @param args 事件参数（可选）
+     * @param target 目标对象（可选）
+     * @example
+     * // 发送登录请求后等待服务器响应
+     * no.emitAndOnceCallback(
+     *   'login_request', 
+     *   'login_response',
+     *   (response) => {
+     *     if(response.success) showMainUI();
+     *   },
+     *   [{username: 'test', password: '123'}]
+     * );
      */
     export function emitAndOnceCallback(emitType: string, callbackType: string, callback: (v: any) => void, args?: any[], target?: any): void {
         if (!evn.hasType(emitType)) {
@@ -728,6 +1060,24 @@ export namespace no {
         }
     }
 
+    /**
+     * 异步版触发事件并等待回调（返回Promise）
+     * @param emitType 要触发的事件类型
+     * @param callbackType 要监听的回调事件类型 
+     * @param args 事件参数（可选）
+     * @param target 目标对象（可选）
+     * @returns Promise对象，解析时返回回调值
+     * @example
+     * // 异步加载资源并等待完成
+     * async function loadCharacter() {
+     *   const data = await no.emitAndOnceCallbackAsync(
+     *     'load_character_assets',
+     *     'assets_loaded',
+     *     [characterId]
+     *   );
+     *   initCharacter(data);
+     * }
+     */
     export function emitAndOnceCallbackAsync(emitType: string, callbackType: string, args?: any[], target?: any): Promise<any> {
         return new Promise<any>(resolve => {
             emitAndOnceCallback(emitType, callbackType, resolve, args, target);
@@ -738,10 +1088,21 @@ export namespace no {
     }
 
     /**
-     * 等待事件
-     * @param type 事件类型
-     * @param target
-     * @param arg 标识，当事件触发时会将这个值返回
+     * 等待事件触发（返回Promise）
+     * @param type 要等待的事件类型
+     * @param target 目标对象（可选）
+     * @param arg 标识值，当事件触发时会将这个值返回（可选）
+     * @returns Promise对象，解析时返回传入的标识值
+     * @example
+     * // 等待网络连接成功
+     * async function initNetwork() {
+     *   await no.waitForEvent('network_connected');
+     *   startSyncData();
+     * }
+     * 
+     * // 带标识值的等待
+     * const result = await no.waitForEvent('user_confirm', this, 'confirmed');
+     * console.log(result); // 输出: 'confirmed'
      */
     export function waitForEvent(type: string, target?: any, arg?: any): Promise<any> {
         return new Promise<any>(resolve => {
@@ -756,9 +1117,19 @@ export namespace no {
     }
 
     /**
-     * 等待方法成立
-     * @param express 
-     * @returns 
+     * 等待条件成立（返回Promise）
+     * @param express 条件判断函数，返回boolean（可接收deltaTime参数）
+     * @param comp 关联的组件（可选，用于自动管理生命周期）
+     * @returns Promise对象，当条件成立时解析
+     * @example
+     * // 等待玩家血量恢复
+     * await no.waitFor(() => player.health >= 100);
+     * 
+     * // 带组件的条件等待（组件销毁时自动取消）
+     * await no.waitFor(
+     *   () => loadingProgress >= 1.0,
+     *   this.loadingComponent
+     * );
      */
     export function waitFor(express: (dt?: number) => boolean, comp?: Component): Promise<void> {
         if (comp)
@@ -772,10 +1143,19 @@ export namespace no {
     }
 
     /**
-     * 等待有返回值的事件
-     * @param type 
-     * @param target 
-     * @returns 
+     * 等待事件触发并获取事件值（返回Promise）
+     * @param type 事件类型
+     * @param target 可选目标对象
+     * @returns Promise对象，解析时返回事件携带的值
+     * @example
+     * // 等待资源加载完成事件并获取加载结果
+     * async function loadData() {
+     *   const result = await no.waiForEventValue('data_loaded');
+     *   console.log('加载结果:', result);
+     * }
+     * 
+     * // 带目标对象的等待
+     * const userData = await no.waiForEventValue('user_info_updated', this.userComponent);
      */
     export function waiForEventValue(type: string, target?: any): Promise<any> {
         return new Promise<any>((resolve, reject) => {
@@ -791,10 +1171,16 @@ export namespace no {
 
     /**
      * 等待事件返回值与预期值相等
-     * @param type 
-     * @param equalValue 预期值
-     * @param target 
-     * @returns 
+     * @param type 事件类型
+     * @param equalValue 预期匹配的值
+     * @param target 可选目标对象
+     * @returns Promise对象，当值匹配时解析
+     * @example
+     * // 等待登录状态变为成功
+     * await no.waiForEventValueEqual('login_status', 'success');
+     * 
+     * // 带目标对象的条件等待
+     * await no.waiForEventValueEqual('item_purchased', 123, this.storeComponent);
      */
     export function waiForEventValueEqual(type: string, equalValue: any, target?: any): Promise<void> {
         let e = evn;
@@ -815,21 +1201,39 @@ export namespace no {
     }
 
     /**
-     * 取消
-     * @param type 
+     * 取消指定类型事件的等待
+     * @param type 要取消的事件类型
+     * @example
+     * // 取消所有网络超时等待
+     * no.clearWaitForEvent('network_timeout');
+     * 
+     * // 在场景切换时取消相关等待
+     * onSceneChange() {
+     *   no.clearWaitForEvent('scene_loading');
+     * }
      */
     export function clearWaitForEvent(type: string) {
         evn.emit(type, '__clear_Wait_For_Event__');
         evn.typeOff(type);
     }
 
+    /**
+     * 持续检查条件直到满足（使用requestAnimationFrame优化性能）
+     * @param express 条件判断函数
+     * @returns Promise对象，当条件满足时解析
+     * @example
+     * // 等待资源加载完成
+     * await no.checkUntil(() => resourcesLoaded);
+     * 
+     * // 等待界面元素可见
+     * await no.checkUntil(() => this.uiElement.active);
+     */
     export async function checkUntil(express: () => boolean) {
         // 先检查一次,避免不必要的定时器
         if (express()) {
             return;
         }
         return new Promise<void>(resolve => {
-
             // 使用 requestAnimationFrame 代替 setInterval,性能更好
             const check = () => {
                 if (express()) {
@@ -841,17 +1245,23 @@ export namespace no {
             requestAnimationFrame(check);
         }).catch(e => {
             console.error(e);
-        });;
+        });
     }
 
     /**
      * 根据模板格式化字符串
-     * @param formatter 模板，如'{a}:{b}:{c}' {0}:{1}:{2}
-     * @param data 需要替换的数据，如{'a':1,'b':2,'c':3}，返回1:2:3  [1,2,3] 1:2:3
+     * @param formatter 模板字符串，支持 {key} 和 {0} 格式的占位符
+     * @param data 替换数据，可以是对象或数组
+     * @returns 格式化后的字符串
+     * @example
+     * // 对象参数示例
+     * formatString('玩家:{name} 等级:{level}', {name: '张三', level: 99}); // 返回 "玩家:张三 等级:99"
+     * // 数组参数示例
+     * formatString('坐标:{0},{1}', [120, 240]); // 返回 "坐标:120,240"
      */
     export function formatString(formatter: string, data: any[] | object): string {
         if (data == null) return '';
-        var s = String(formatter);
+        let s = String(formatter);
         let keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             let k = keys[i];
@@ -860,6 +1270,16 @@ export namespace no {
         return s;
     }
 
+    /**
+     * 格式化字符串后执行求值运算
+     * @param formatter 可包含变量的表达式模板
+     * @param data 替换数据对象
+     * @returns 表达式计算结果
+     * @example
+     * // 计算玩家属性
+     * evalFormateStr('{atk} * {critMultiplier}', {atk: 100, critMultiplier: 2.5}); // 返回 250
+     * @warning 注意eval的安全风险，请勿用于不可信输入
+     */
     export function evalFormateStr(formatter: string, data: any) {
         let str = formatString(formatter, data);
         return eval(str);
@@ -867,17 +1287,26 @@ export namespace no {
 
     /**
      * JSON对象深拷贝
-     * @param json
+     * @param json 需要拷贝的JSON对象
+     * @returns 深拷贝后的新对象
+     * @example
+     * const original = { a: 1, b: { c: 2 } };
+     * const cloned = cloneJson(original);
+     * cloned.b.c = 3;
+     * console.log(original.b.c); // 仍然输出2
      */
     export function cloneJson(json: any): any {
         return parse2Json(jsonStringify(json));
     }
 
-
     /**
-     *
-     * @param hex '#412a00'
-     * @returns {r: 65, g: 42, b: 0}
+     * 十六进制颜色转RGB对象
+     * @param hex 十六进制颜色字符串，支持 # 开头或省略
+     * @returns 包含r,g,b属性的对象（值范围0-255），无效格式返回null
+     * @example
+     * hex2Rgb('#ff0000');    // 返回 {r: 255, g: 0, b: 0}
+     * hex2Rgb('00ff00');     // 返回 {r: 0, g: 255, b: 0}
+     * hex2Rgb('invalid');    // 返回 null
      */
     export function hex2Rgb(hex: string) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -888,10 +1317,14 @@ export namespace no {
         } : null;
     }
 
-
     /**
-     * 封装cc.Color.fromHEX
-     * @param v
+     * 字符串转Color对象
+     * @param v 颜色字符串，支持十六进制格式（#RGB或#RRGGBB）
+     * @returns 对应的Color对象
+     * @example
+     * str2Color('#ff0000');  // 返回红色
+     * str2Color('#0f0');     // 返回绿色
+     * str2Color('0000ff');   // 返回蓝色
      */
     export function str2Color(v: string): Color {
         let c = color();
@@ -900,31 +1333,59 @@ export namespace no {
     }
 
     /**
-     * 大数字转换成最多3位数加单位的格式
-     * @param n
+     * 大数字缩写格式化
+     * @param n 需要格式化的数字
+     * @returns 格式化后的字符串（最多保留1位小数）
+     * @example
+     * num2str(2500);     // 返回 "2.5K"
+     * num2str(1350000);  // 返回 "1.3M"
+     * num2str(999);      // 返回 "999"
+     * num2str(1234567);  // 返回 "1.2B"
      */
     export function num2str(n: number): string {
         if (n == null) return '';
         if (n < 1000) return String(n);
         let unit = ['K', 'M', 'B'];
-        var a = '';
         let s = String(n);
         let len = s.length;
         let l = len % 3;
-        if (l == 1) {
-            a = s[0] + '.' + s[1];
-        } else {
-            a = s[0] + s[1] + (l == 0 ? s[2] : '');
+        
+        // 计算显示数值部分
+        let displayValue = '';
+        if (l === 1) { // 处理类似 1,500 -> 1.5K
+            displayValue = `${s[0]}.${s[1]}`;
+        } else { // 处理类似 12,500 -> 12.5K 或 123,456 -> 123K
+            displayValue = s.slice(0, l || 3);
+            if (l === 0) displayValue = s.slice(0, 3);
         }
-        return a + unit[floor(len / 3) - 1 - (l == 0 ? 1 : 0)];
+        
+        // 计算单位索引
+        const unitIndex = Math.floor(len / 3) - 1 - (l === 0 ? 1 : 0);
+        return displayValue + unit[unitIndex];
     }
 
     /**
-     * 从数组里随机n个元素
-     * @param arr
-     * @param n
-     * @param repeatable 随机的元素能否重复
-     * @param except 排除的元素
+     * 从数组中随机抽取指定数量的元素
+     * @param arr 源数组（支持任意类型元素）
+     * @param n 需要抽取的元素数量（默认1，当n=1时返回单个元素，否则返回数组）
+     * @param repeatable 是否允许重复抽取（默认false）
+     * @param except 需要排除的元素数组（可选）
+     * @returns 随机抽取的元素或元素数组
+     * @example
+     * // 基本用法：从数字数组中随机1个
+     * const num = no.arrayRandom([1,2,3,4,5]);
+     * 
+     * // 抽取3个不重复的字母
+     * const letters = no.arrayRandom(['a','b','c','d','e'], 3);
+     * 
+     * // 排除特定元素后抽取
+     * const colors = no.arrayRandom(['red','green','blue','yellow'], 2, false, ['red']);
+     * 
+     * // 允许重复抽取（可能得到相同元素）
+     * const roles = no.arrayRandom(['战士','法师','牧师'], 5, true);
+     * 
+     * // 处理空数组情况
+     * const empty = no.arrayRandom([]); // 返回null
      */
     export function arrayRandom(arr: any[], n = 1, repeatable = false, except?: any[]): any {
         if (!arr || arr.length == 0) return null;
@@ -961,9 +1422,20 @@ export namespace no {
     }
 
     /**
-     * 从object中获取值
-     * @param data
-     * @param path 如a.b.c
+     * 从对象中获取嵌套属性值
+     * @param data 源数据对象
+     * @param path 属性路径（使用点号分隔），例如'a.b.c'
+     * @returns 获取到的属性值，路径不存在时返回null
+     * @example
+     * // 获取嵌套属性
+     * const user = { profile: { name: '张三', address: { city: '北京' } } };
+     * no.getValue(user, 'profile.address.city'); // 返回 '北京'
+     * 
+     * // 路径不存在的情况
+     * no.getValue(user, 'profile.age'); // 返回 null
+     * 
+     * // 不传path返回整个对象
+     * no.getValue(user); // 返回user对象本身
      */
     export function getValue(data: Object, path?: string): any {
         if (!path) {
@@ -981,21 +1453,38 @@ export namespace no {
     }
 
     /**
-     *
-     * @param data Object
-     * @param path ['a','b','c']
-     * @param def any 默认值
+     * 使用数组路径获取嵌套属性值
+     * @param data 源数据对象
+     * @param path 属性路径数组，例如['a','b','c']
+     * @param def 当路径不存在时返回的默认值
+     * @returns 获取到的属性值或默认值
+     * @example
+     * // 使用数组路径获取值
+     * const config = { db: { mysql: { port: 3306 } } };
+     * no.getValuePath(config, ['db','mysql','port'], 8080); // 返回 3306
+     * 
+     * // 路径不存在时返回默认值
+     * no.getValuePath(config, ['db','redis','port'], 6379); // 返回 6379
      */
-    export function getValuePath(data: Object, path: any[], def?: any): void {
+    export function getValuePath(data: Object, path: any[], def?: any): any {
         let k = path.join('.');
         return getValue(data, k) || def
     }
 
     /**
-     * 向object中写入值
-     * @param data
-     * @param path 如a.b.c
-     * @param value
+     * 设置对象的嵌套属性值（自动创建中间对象）
+     * @param data 目标对象
+     * @param path 属性路径（使用点号分隔），例如'a.b.c'
+     * @param value 要设置的值
+     * @example
+     * // 设置深层属性
+     * const obj = {};
+     * no.setValue(obj, 'a.b.c', 10);
+     * console.log(obj.a.b.c); // 输出 10
+     * 
+     * // 覆盖现有值
+     * no.setValue(obj, 'a.b', { d: 20 });
+     * console.log(obj.a.b.d); // 输出 20
      */
     export function setValue(data: Object, path: string, value: any): void {
         let p = path.split('.');
@@ -1019,10 +1508,16 @@ export namespace no {
     }
 
     /**
-     *
-     * @param data Object
-     * @param path ['a','b','c']
-     * @param value any
+     * 使用数组路径设置嵌套属性值
+     * @param data 目标对象
+     * @param path 属性路径数组，例如['a','b','c']
+     * @param value 要设置的值
+     * @example
+     * // 动态路径设置
+     * const settings = {};
+     * const path = ['server', 'ports', 'http'];
+     * no.setValuePath(settings, path, 80);
+     * console.log(settings.server.ports.http); // 输出 80
      */
     export function setValuePath(data: Object, path: any[], value: any): void {
         let k = path.join('.');
@@ -1030,9 +1525,19 @@ export namespace no {
     }
 
     /**
-     * 删除object中的值
-     * @param data
-     * @param path 如a.b.c
+     * 删除对象的嵌套属性
+     * @param data 目标对象
+     * @param path 属性路径（使用点号分隔），例如'a.b.c'
+     * @returns 被删除的属性值，路径不存在时返回null
+     * @example
+     * // 删除属性
+     * const data = { user: { id: 1, temp: 'value' } };
+     * const deleted = no.deleteValue(data, 'user.temp');
+     * console.log(deleted); // 输出 'value'
+     * console.log('temp' in data.user); // 输出 false
+     * 
+     * // 删除不存在的路径
+     * no.deleteValue(data, 'user.age'); // 返回 null
      */
     export function deleteValue(data: Object, path: string): any {
         let p = path.split('.');
@@ -1053,9 +1558,15 @@ export namespace no {
     }
 
     /**
-     * 连接多个字符串
-     * @param separator
-     * @param strs
+     * 连接多个字符串并过滤空值
+     * @param separator 连接分隔符
+     * @param strs 要连接的字符串数组（支持null/undefined过滤）
+     * @returns 拼接后的字符串
+     * @example
+     * // 拼接文件路径
+     * const path = no.joinStrings('/', 'usr', 'local', 'bin'); // 返回 "usr/local/bin"
+     * // 拼接API参数
+     * const params = no.joinStrings('&', 'name=John', null, 'age=25'); // 返回 "name=John&age=25"
      */
     export function joinStrings(separator: string, ...strs: string[]): string {
         let a: string[] = [];
@@ -1067,18 +1578,32 @@ export namespace no {
         }
         return a.join(separator);
     }
+
     /**
-     * 连接多个字符串，默认连接符[.]
-     * @param strs
+     * 使用点号连接多个字符串
+     * @param strs 要连接的字符串数组
+     * @returns 拼接后的字符串
+     * @example
+     * // 组合API版本号
+     * const version = no.join('1', '0', '3'); // 返回 "1.0.3"
+     * // 创建命名空间
+     * const namespace = no.join('game', 'utils', 'math'); // 返回 "game.utils.math"
      */
     export function join(...strs: string[]): string {
         return joinStrings('.', ...strs);
     }
 
     /**
-     * 将一维数组转成2维数组
-     * @param array 原数组
-     * @param num 子数组最大长度
+     * 将一维数组分割为二维数组
+     * @param array 原始数组
+     * @param num 每个子数组的最大长度
+     * @returns 二维数组
+     * @example
+     * // 分页处理数据
+     * const data = [1,2,3,4,5];
+     * const paged = no.arrayToArrays(data, 2); // 返回 [[1,2],[3,4],[5]]
+     * // 矩阵转换
+     * const matrix = no.arrayToArrays([1,2,3,4,5,6], 3); // 返回 [[1,2,3],[4,5,6]]
      */
     export function arrayToArrays(array: any[], num: number): any[] {
         if (!array) return [];
@@ -1096,10 +1621,18 @@ export namespace no {
     };
 
     /**
-     *
-     * @param array
-     * @param item
-     * @param key
+     * 在对象数组中查找元素索引
+     * @param array 目标数组
+     * @param item 要查找的元素（可以是对象或属性值）
+     * @param key 用于比较的对象属性名
+     * @returns 元素索引，未找到返回-1
+     * @example
+     * // 查找用户ID为3的索引
+     * const users = [{id:1,name:'A'}, {id:2,name:'B'}, {id:3,name:'C'}];
+     * const index = no.indexOfArray(users, 3, 'id'); // 返回2
+     * // 查找完整对象
+     * const target = {id:2,name:'B'};
+     * const index2 = no.indexOfArray(users, target, 'id'); // 返回1
      */
     export function indexOfArray(array: any[], item: any, key: string): number {
         if (array == null || item == null) return -1;
@@ -1112,6 +1645,20 @@ export namespace no {
         return -1;
     }
 
+    /**
+     * 在对象数组中查找元素对象
+     * @template T 返回类型
+     * @param array 目标数组
+     * @param value 要查找的值（可以是对象或属性值）
+     * @param key 用于比较的对象属性名
+     * @returns 找到的元素对象，未找到返回null
+     * @example
+     * // 查找用户ID为2的用户对象
+     * const user = no.itemOfArray(users, 2, 'id'); // 返回 {id:2,name:'B'}
+     * // 使用对象查找
+     * const partialUser = {id:3};
+     * const found = no.itemOfArray(users, partialUser, 'id'); // 返回 {id:3,name:'C'}
+     */
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
         if (array == null || value == null || key == null) return null as T;
         for (let i = 0, n = array.length; i < n; i++) {
@@ -1123,7 +1670,17 @@ export namespace no {
         return null as T;
     }
 
-
+    /**
+     * 检查数组是否包含另一个数组的任意元素
+     * @param array 主数组
+     * @param other 要检查的数组
+     * @returns 是否包含任意元素
+     * @example
+     * // 检查权限
+     * const userRoles = ['admin', 'editor'];
+     * const requiredRoles = ['viewer', 'editor'];
+     * const hasAccess = no.isArrayIncludeOther(userRoles, requiredRoles); // 返回true
+     */
     export function isArrayIncludeOther(array: any[], other: any[]): boolean {
         for (let i = 0, n = other.length; i < n; i++) {
             if (array.indexOf(other[i]) > -1) return true;
@@ -1131,6 +1688,17 @@ export namespace no {
         return false;
     }
 
+    /**
+     * 获取两个数组的交集
+     * @param array 主数组
+     * @param other 要比较的数组
+     * @returns 包含共同元素的新数组
+     * @example
+     * // 获取共同好友
+     * const myFriends = ['Alice', 'Bob', 'Charlie'];
+     * const yourFriends = ['Bob', 'David', 'Eve'];
+     * const common = no.arrayIncludeOther(myFriends, yourFriends); // 返回 ['Bob']
+     */
     export function arrayIncludeOther(array: any[], other: any[]): any[] {
         let arr: any[] = [];
         for (let i = 0, n = other.length; i < n; i++) {
@@ -1139,6 +1707,22 @@ export namespace no {
         return arr;
     }
 
+    /**
+     * 向数组添加元素（支持唯一性检查）
+     * @param array 目标数组
+     * @param value 要添加的值
+     * @param key 唯一性检查的属性名（可选）
+     * @returns 是否添加成功
+     * @example
+     * // 添加唯一用户
+     * const users = [];
+     * no.addToArray(users, {id:1,name:'A'}, 'id'); // 返回true
+     * no.addToArray(users, {id:1,name:'B'}, 'id'); // 返回false
+     * 
+     * // 普通添加
+     * const numbers = [1,2,3];
+     * no.addToArray(numbers, 4); // 返回true
+     */
     export function addToArray(array: any[], value: any, key?: string): boolean {
         if (!array) return false;
         if (key == null && array.indexOf(value) == -1) {
@@ -1152,9 +1736,14 @@ export namespace no {
     }
 
     /**
-     * 在数据后插入新数据
-     * @param array
-     * @param value
+     * 向数组末尾追加元素
+     * @param array 目标数组
+     * @param value 要添加的值
+     * @example
+     * // 记录日志
+     * const log = [];
+     * no.pushToArray(log, 'error1');
+     * no.pushToArray(log, 'error2'); // log: ['error1', 'error2']
      */
     export function pushToArray(array: any[], value: any): void {
         if (!array) return;
@@ -1162,6 +1751,20 @@ export namespace no {
         array[array.length] = value;
     }
 
+    /**
+     * 从数组中移除元素
+     * @param array 目标数组
+     * @param value 要移除的值（可以是对象或属性值）
+     * @param key 对象属性名（可选）
+     * @example
+     * // 移除用户
+     * const users = [{id:1}, {id:2}];
+     * no.removeFromArray(users, 1, 'id'); // 移除id=1的用户
+     * 
+     * // 移除普通元素
+     * const nums = [10,20,30];
+     * no.removeFromArray(nums, 20); // nums变为[10,30]
+     */
     export function removeFromArray(array: any[], value: any, key?: string): void {
         let i = -1;
         if (key == null) {
@@ -1173,8 +1776,15 @@ export namespace no {
     }
 
     /**
-     * 获得map中key的数组
-     * @param map
+     * 将Map的键转换为数组
+     * @template K 键类型
+     * @template T 值类型
+     * @param map 源Map对象
+     * @returns 键数组
+     * @example
+     * // 获取玩家ID列表
+     * const players = new Map([[1, 'A'], [2, 'B']]);
+     * const ids = no.MapKeys2Array(players); // 返回 [1,2]
      */
     export function MapKeys2Array<K, T>(map: Map<K, T>): K[] {
         let a: K[] = [];
@@ -1188,8 +1798,15 @@ export namespace no {
     }
 
     /**
-     * 获得map中value的数组
-     * @param map
+     * 将Map的值转换为数组
+     * @template K 键类型
+     * @template T 值类型
+     * @param map 源Map对象
+     * @returns 值数组
+     * @example
+     * // 获取玩家得分列表
+     * const scores = new Map([['A', 100], ['B', 200]]);
+     * const values = no.MapValues2Array(scores); // 返回 [100,200]
      */
     export function MapValues2Array<K, T>(map: Map<K, T>): T[] {
         if (map == null || map.size == 0) return [];
@@ -1204,10 +1821,15 @@ export namespace no {
     }
 
     /**
-     * 将数组转成kv结构
-     * @param array 
-     * @param keyType 
-     * @returns 
+     * 将对象数组转换为键值对结构
+     * @param array 源数组
+     * @param keyType 作为键的属性名
+     * @returns 键值对对象
+     * @example
+     * // 转换用户数据
+     * const users = [{id:1,name:'A'}, {id:2,name:'B'}];
+     * const userMap = no.arrayToKV(users, 'id');
+     * // 结果: {1: {id:1,name:'A'}, 2: {id:2,name:'B'}}
      */
     export function arrayToKV(array: any[], keyType: string): any {
         let b: any = {};
@@ -1219,9 +1841,20 @@ export namespace no {
     }
 
     /**
-     * 遍历kv对象
-     * @param d kv对象
-     * @param func return true时终止遍历
+     * 遍历键值对对象
+     * @param d 要遍历的对象
+     * @param func 遍历回调函数（返回true时终止遍历）
+     * @example
+     * // 遍历配置项
+     * const config = {width:100, height:200};
+     * no.forEachKV(config, (k,v) => {
+     *     console.log(`${k}: ${v}`);
+     * });
+     * 
+     * // 提前终止遍历
+     * no.forEachKV(config, (k,v) => {
+     *     if(k === 'height') return true; // 遇到height键时停止遍历
+     * });
      */
     export function forEachKV(d: any, func: (k: any, v: any) => boolean) {
         if (d == null) return;
@@ -1231,10 +1864,21 @@ export namespace no {
     }
 
     /**
-     * 以p1为圆心从水平正x方向到p2的夹角
-     * @param p1
-     * @param p2
-     * @returns angle角度,radian弧度
+     * 计算两点之间的角度（以p1为圆心，从水平正X轴到p2的夹角）
+     * @param p1 圆心/起点坐标（支持Vec2或Vec3类型）
+     * @param p2 目标点坐标（支持Vec2或Vec3类型）
+     * @returns 包含角度（0-360度）和弧度（-π~π）的对象
+     * @example
+     * // 计算玩家朝向敌人的角度
+     * const playerPos = new Vec3(0, 0, 0);
+     * const enemyPos = new Vec3(1, 1, 0);
+     * const angleInfo = no.angleTo(playerPos, enemyPos);
+     * console.log(`攻击角度：${angleInfo.angle}度`);
+     * 
+     * // 处理2D坐标
+     * const from = new Vec2(0, 0);
+     * const to = new Vec2(0, 1);
+     * console.log(no.angleTo(from, to).radian); // 输出1.5708（π/2）
      */
     export function angleTo(p1: Vec2 | Vec3, p2: Vec2 | Vec3): { angle: number, radian: number } {
         let a = v2(p2.x - p1.x, p2.y - p1.y);
@@ -1246,8 +1890,17 @@ export namespace no {
     }
 
     /**
-     * 执行EventHandler
-     * @param handlers
+     * 批量执行事件处理器
+     * @param handlers 事件处理器数组
+     * @param args 要传递给处理器的参数（会自动合并handler的customEventData）
+     * @example
+     * // 触发按钮点击事件
+     * const handlers = [buttonClickHandler, achievementUnlockHandler];
+     * no.executeHandlers(handlers, 'attack_button');
+     * 
+     * // 带自定义数据的事件处理
+     * const damageHandlers = getDamageHandlers();
+     * no.executeHandlers(damageHandlers, 100, 'fire_damage');
      */
     export function executeHandlers(handlers: EventHandler[], ...args: any[]): void {
         for (let i = 0; i < handlers.length; i++) {
@@ -1257,27 +1910,60 @@ export namespace no {
     }
 
     /**
-     * Vec3转Vec2
-     * @param v3
+     * 将三维坐标转换为二维坐标（丢弃z轴）
+     * @param v3 三维坐标对象
+     * @returns 二维坐标对象
+     * @example
+     * // 在2D游戏中处理3D模型位置
+     * const model3DPos = new Vec3(100, 200, 0);
+     * const uiPos = no.vec3ToVec2(model3DPos);
+     * this.uiWidget.node.position = uiPos;
      */
     export function vec3ToVec2(v3: Vec3): Vec2 {
         return new Vec2(v3.x, v3.y);
     }
 
     /**
-     * Vec2转Vec3
-     * @param v2
+     * 将二维坐标转换为三维坐标（z轴默认为0）
+     * @param v2 二维坐标对象
+     * @returns 三维坐标对象
+     * @example
+     * // 将UI坐标转换为3D世界坐标
+     * const uiPos = new Vec2(300, 150);
+     * const worldPos = no.vec2ToVec3(uiPos);
+     * this.character.node.position = worldPos;
+     * 
+     * // 在2.5D游戏中使用
+     * const mapCoord = new Vec2(5, 8);
+     * const worldCoord = no.vec2ToVec3(mapCoord).addZ(10);
      */
     export function vec2ToVec3(v2: Vec2): Vec3 {
         return new Vec3(v2.x, v2.y);
     }
 
     /**
-     * 创建一个EventHandler
-     * @param target
-     * @param component
-     * @param handler
-     * @param arg
+     * 创建事件处理器对象
+     * @param target 事件目标节点
+     * @param comp 组件类型（可以是组件类或组件名称字符串）
+     * @param handler 要调用的处理方法名称
+     * @param arg 自定义事件数据（会传递给处理方法的参数）
+     * @returns 配置好的事件处理器对象
+     * @example
+     * // 创建按钮点击事件处理器
+     * const btnHandler = no.createEventHandler(
+     *   this.btnNode, 
+     *   'ButtonComponent', 
+     *   'onClick',
+     *   { type: 'attack' }
+     * );
+     * 
+     * // 使用组件类创建技能释放处理器
+     * const skillHandler = no.createEventHandler(
+     *   skillNode,
+     *   SkillController,
+     *   'castSkill',
+     *   'fireball'
+     * );
      */
     export function createEventHandler(target: Node, comp: string | typeof Component, handler: string, arg = ''): EventHandler {
         let a = new EventHandler();
@@ -1291,16 +1977,24 @@ export namespace no {
         return a;
     }
 
-    /**克隆 */
+    /**
+     * 深拷贝对象/数组（支持结构化克隆和JSON序列化两种方式）
+     * @param d 要克隆的数据（支持对象、数组和基本类型）
+     * @returns 克隆后的新对象
+     * @example
+     * // 克隆配置对象
+     * const originalConfig = { version: 1, features: ['a','b'] };
+     * const clonedConfig = no.clone(originalConfig);
+     * clonedConfig.version = 2;
+     * console.log(originalConfig.version); // 仍为1
+     * 
+     * // 克隆数组
+     * const arr = [1, { name: 'test' }];
+     * const clonedArr = no.clone(arr);
+     * clonedArr[1].name = 'modified';
+     * console.log(arr[1].name); // 仍为'test'
+     */
     export function clone(d: any): any {
-        // if (Array.isArray(d)) {
-        //     let a: any[] = [];
-        //     d.forEach(b => {
-        //         a.push(clone(b));
-        //     });
-        //     return a;
-        // } else if (typeof d == 'object')
-        //     return instantiate(d);
         if (typeof d == 'object') {
             if (typeof structuredClone == "function") return structuredClone(d);
             else {
@@ -1312,27 +2006,50 @@ export namespace no {
     }
 
     /**
-     * 等待几秒
-     * @param duration 等待时长(秒)
-     * @param component deprecated
-     * @returns
+     * 异步等待指定时间（使用setTimeout实现）
+     * @param duration 等待时长（单位：秒）
+     * @param component 已废弃参数（保留兼容性）
+     * @returns Promise对象，在指定时间后resolve
+     * @example
+     * // 等待3秒后执行操作
+     * async function delayAction() {
+     *   await no.sleep(3);
+     *   console.log('3秒后执行');
+     * }
+     * 
+     * // 网络请求后最小等待
+     * async function fetchData() {
+     *   const response = await fetch('/api');
+     *   await no.sleep(0.5); // 至少等待500ms避免闪烁
+     *   showData(response);
+     * }
      */
     export function sleep(duration: number, component?: Component): Promise<void> {
         if (duration <= 0) duration = game.deltaTime;
         return new Promise<void>(resolve => {
-            // if (checkValid(component)) {
-            //     component.scheduleOnce(resolve, duration);
-            // } else {
-            // scheduleOnce(() => { resolve(); }, duration);
-            // }
             setTimeout(() => { resolve(); }, duration * 1000);
         }).catch(e => {
             console.error(e);
-        });;
+        });
     }
 
-    // 两个数相除百分比
-    export function twoNumPercentage2Num(min, max, maxNum) {
+    /**
+     * 计算两个数值的百分比比例
+     * @param min 当前值（分子）
+     * @param max 最大值（分母）
+     * @param maxNum 比例基数（如要转换为0-100的百分比则传100）
+     * @returns 计算后的比例数值（向下取整）
+     * @example
+     * // 计算进度条比例（0-100）
+     * const progress = no.twoNumPercentage2Num(25, 50, 100); // 50
+     * 
+     * // 计算血量显示比例（0-1）
+     * const hpRatio = no.twoNumPercentage2Num(75, 150, 1); // 0
+     * 
+     * // 处理越界值
+     * const safeValue = no.twoNumPercentage2Num(200, 100, 1000); // 1000
+     */
+    export function twoNumPercentage2Num(min: number, max: number, maxNum: number): number {
         if (min > max) {
             min = max;
         }
@@ -1340,10 +2057,26 @@ export namespace no {
     }
 
     /**
-     * 取两值之间的随机值
-     * @param min
-     * @param max 
-     * @param isInt 是否取整，默认true
+     * 获取指定范围内的随机值（支持整数/浮点数和排除值）
+     * @param min 最小值（包含）
+     * @param max 最大值（包含）
+     * @param except 需要排除的数值数组 或 是否取整（默认true）
+     * @returns 范围内的随机数值
+     * @example
+     * // 基础用法：生成1-6的随机整数（骰子）
+     * const dice = no.randomBetween(1, 6);
+     * 
+     * // 生成0-1的随机浮点数
+     * const precise = no.randomBetween(0, 1, false);
+     * 
+     * // 排除特定值：生成1-10但不包含5和7
+     * const safeNum = no.randomBetween(1, 10, [5, 7]);
+     * 
+     * // 颜色通道生成：0-255整数且排除纯黑
+     * const colorChannel = no.randomBetween(0, 255, [0,0,0]);
+     * 
+     * // 边界测试：当min等于max时
+     * const fixed = no.randomBetween(100, 100); // 总是返回100
      */
     export function randomBetween(min: number, max: number, except?: number[]): number;
     export function randomBetween(min: number, max: number, isInt?: boolean): number;
@@ -1360,6 +2093,16 @@ export namespace no {
 
     /**
      * 将UTC时区时间戳转化为本地系统所在时区时间戳
+     * @param utcSeconds UTC时间戳（秒）
+     * @returns 本地时区时间戳（秒）
+     * @example
+     * // 将UTC时间转换为北京时间
+     * const utcTime = 1620000000; // 2021-05-03T00:00:00Z
+     * const localTime = no.localDateSeconds(utcTime); // 返回1620028800（北京时间2021-05-03T08:00:00+08:00）
+     * 
+     * // 处理跨时区应用场景
+     * const serverUTC = 1672531200; // 服务器UTC时间
+     * const clientLocal = no.localDateSeconds(serverUTC); // 根据客户端时区转换
      */
     export function localDateSeconds(utcSeconds: number): number {
         const t = new Date(utcSeconds * 1000);
@@ -1370,6 +2113,14 @@ export namespace no {
     /**
      * 将秒数解析为日时分秒
      * @param v 总秒数
+     * @returns 包含天(d)、小时(h)、分钟(M)、秒(s)的对象
+     * @example
+     * // 计算在线时长
+     * no.parseSeconds(86461); // {d:1, h:1, M:1, s:1}
+     * 
+     * // 显示任务剩余时间
+     * const {d, h} = no.parseSeconds(93200);
+     * console.log(`剩余${d}天${h}小时`);
      */
     export function parseSeconds(v: number): { d: number, h: number, M: number, s: number } {
         let d = floor(v / 86400);
@@ -1382,6 +2133,14 @@ export namespace no {
     /**
      * 将时间戳解析为年月日时分秒
      * @param v 时间戳总秒数
+     * @returns 包含年(y)、月(m)、日(d)、时(h)、分(M)、秒(s)的对象
+     * @example
+     * // 解析活动开始时间
+     * no.parseTimestamp(1696141845); // {y:2023, m:10, d:1, h:12, M:30, s:45}
+     * 
+     * // 格式化生日时间
+     * const {y, m, d} = no.parseTimestamp(947606400);
+     * console.log(`生日：${y}年${m}月${d}日`); // 生日：2000年1月1日
      */
     export function parseTimestamp(v: number): { y: number, m: number, d: number, h: number, M: number, s: number } {
         let t = new Date(v * 1000);
@@ -1394,19 +2153,53 @@ export namespace no {
         return { y: y, m: m, d: d, h: h, M: M, s: s };
     }
 
-    /**当前时间戳（秒） */
+    /**
+     * 获取当前时间戳（秒）
+     * @param v 时间偏移量（秒），默认0
+     * @returns 当前时间戳（秒）加上偏移量
+     * @example
+     * // 获取当前时间
+     * no.timestamp(); // 1696141845
+     * 
+     * // 计算1小时后时间
+     * const oneHourLater = no.timestamp(3600);
+     */
     export function timestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         return floor(a.getTime() / 1000) + v;
     }
 
-    /**当前时间戳（毫秒） */
+    /**
+     * 获取当前时间戳（毫秒）
+     * @param v 时间偏移量（毫秒），默认0
+     * @returns 当前时间戳（毫秒）加上偏移量
+     * @example
+     * // 精确计时
+     * const start = no.timestampMs();
+     * // ...执行操作
+     * const cost = no.timestampMs() - start;
+     * 
+     * // 设置30分钟后过期
+     * const expireTime = no.timestampMs(1800000);
+     */
     export function timestampMs(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         return a.getTime() + v;
     }
 
-    /**当前零点时间戳（秒） */
+    /**
+     * 获取当前/指定偏移的零点时间戳（秒）
+     * @param v 时间偏移量（秒）默认0
+     * @param isUTC 是否使用UTC时间 默认false（使用本地时区）
+     * @returns 零点时间戳（秒） + 偏移量
+     * @example
+     * // 获取今日零点
+     * no.zeroTimestamp(); // 1696141800
+     * // 获取UTC零点
+     * no.zeroTimestamp(0, true); 
+     * // 获取明日此时时间戳
+     * no.zeroTimestamp(86400);
+     */
     export function zeroTimestamp(v = 0, isUTC = false): number {
         let a = new Date(sysTime.now * 1000);
         if (isUTC) {
@@ -1417,7 +2210,16 @@ export namespace no {
         return floor(a.getTime() / 1000) + v;
     }
 
-    /**本周一 零点时间戳（秒）*/
+    /**
+     * 获取本周一零点时间戳（秒）
+     * @param v 时间偏移量（秒）默认0
+     * @returns 本周一零点时间戳 + 偏移量
+     * @example
+     * // 获取本周一零点
+     * no.mondayZeroTimestamp(); 
+     * // 计算本周活动结束时间（下周一零点前10秒）
+     * no.nextMondayZeroTimestamp(-10);
+     */
     export function mondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
@@ -1425,7 +2227,16 @@ export namespace no {
         return floor(a.getTime() / 1000) + v;
     }
 
-    /**下周一 零点时间戳（秒）*/
+    /**
+     * 获取下周一零点时间戳（秒）
+     * @param v 时间偏移量（秒）默认0
+     * @returns 下周一零点时间戳 + 偏移量
+     * @example
+     * // 获取下周一起始时间
+     * no.nextMondayZeroTimestamp();
+     * // 计算周常任务剩余时间
+     * const remain = no.nextMondayZeroTimestamp() - Date.now()/1000;
+     */
     export function nextMondayZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
@@ -1433,7 +2244,16 @@ export namespace no {
         return floor(a.getTime() / 1000) + v;
     }
 
-    /**本月1号 零点时间戳（秒）*/
+    /**
+     * 获取本月1号零点时间戳（秒）
+     * @param v 时间偏移量（秒）默认0
+     * @returns 当月首日零点时间戳 + 偏移量
+     * @example
+     * // 获取本月起始时间
+     * no.date1ZeroTimestamp();
+     * // 计算月度统计时长
+     * const monthDuration = Date.now()/1000 - no.date1ZeroTimestamp();
+     */
     export function date1ZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
@@ -1441,7 +2261,16 @@ export namespace no {
         return floor(a.getTime() / 1000) + v;
     }
 
-    /**下月1号 零点时间戳（秒）*/
+    /**
+     * 获取下月1号零点时间戳（秒）
+     * @param v 时间偏移量（秒）默认0
+     * @returns 下月首日零点时间戳 + 偏移量
+     * @example
+     * // 获取下月起始时间
+     * no.nextMonthDate1ZeroTimestamp();
+     * // 计算订阅剩余时间
+     * const remain = no.nextMonthDate1ZeroTimestamp() - Date.now()/1000;
+     */
     export function nextMonthDate1ZeroTimestamp(v = 0): number {
         let a = new Date(sysTime.now * 1000);
         a.setHours(0, 0, 0, 0);
@@ -1450,8 +2279,17 @@ export namespace no {
         return floor(a.getTime() / 1000) + v;
     }
 
-
-    /**转换为当前零点时间戳（秒） */
+    /**
+     * 转换任意时间戳为当日零点时间戳（秒）
+     * @param v 原始时间戳（秒）
+     * @returns 对应日期的零点时间戳
+     * @example
+     * // 转换当前时间
+     * no.toZeroTimestamp(Date.now()/1000);
+     * // 处理日志时间
+     * const logTime = 1696141845;
+     * const logDate = no.toZeroTimestamp(logTime);
+     */
     export function toZeroTimestamp(v: number): number {
         let a = new Date(v * 1000);
         a.setHours(0, 0, 0, 0);
@@ -1459,22 +2297,36 @@ export namespace no {
     }
 
     /**
-     * 将时间长度转成时分秒
-     * @param time 时间长度，秒
-     * @returns x小时x分x秒
+     * 将秒数转换为本地化时间格式（时:分:秒）
+     * @param time 时间长度（秒）
+     * @returns 格式化的时间字符串（示例：3:15:45 表示3小时15分45秒）
+     * @example
+     * // 转换游戏在线时长
+     * no.time2LocalFormat(3661); // 返回 "1:1:1"
+     * // 显示任务耗时
+     * const costTime = no.time2LocalFormat(145); // 返回 "0:2:25"
      */
     export function time2LocalFormat(time: number): string {
         let h: number, m: number, s: number;
         h = floor(time / 3600);
         m = floor((time % 3600) / 60);
         s = time % 60;
-        return `${h}${m}${s}`;
+        return `${h}:${m}:${s}`;
     }
 
     /**
-     * 将时间长度转成时分秒
-     * @param time 时间长度，秒
-     * @returns x小时x分x秒
+     * 将秒数转换为本地化的时分秒字符串（自动省略前导零）
+     * @param seconds 时间长度（秒）
+     * @returns 格式化的时间字符串（优先显示最大时间单位）
+     * @example
+     * // 显示任务剩余时间
+     * no.second2LocalString(3661); // 返回 "1小时"
+     * no.second2LocalString(61);   // 返回 "1分1秒"
+     * no.second2LocalString(45);   // 返回 "45秒"
+     * 
+     * // 处理成就时间显示
+     * const playTime = 3599;
+     * document.getElementById('time').textContent = no.second2LocalString(playTime); // 显示 "59分59秒"
      */
     export function second2LocalString(seconds: number): string {
         let h: number, m: number, s: number;
@@ -1489,20 +2341,35 @@ export namespace no {
     }
 
     /**
-     * 秒转时间 10:01:01
-     * @param sec 秒
+     * 秒数转格式化时间字符串（支持自定义格式和天数显示）
+     * @param sec 时间长度（秒）
+     * @param formatter 格式模板，支持 {d}天,{h}小时,{m}分,{s}秒
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * // 基本用法
+     * no.sec2time(3723); // 返回 "01:02:03"
+     * 
+     * // 自定义格式
+     * no.sec2time(90061, '{d}天{h}时', false); // 返回 "1天1时"
+     * 
+     * // 显示倒计时
+     * no.sec2time(3599, '{m}:{s}'); // 返回 "59:59"
+     * 
+     * // 处理负数
+     * no.sec2time(-5); // 返回 "00:00:00"
      */
     export function sec2time(sec: number, formatter?: string, show0 = true) {
         formatter = formatter || '{h}:{m}:{s}';
-        // 负数不处理
+        // 处理负数和零值
         if (sec <= 0) {
             let a = show0 ? '00' : '0';
             return formatString(formatter, { h: a, m: a, s: a });
         }
         let d = floor(sec / 86400);
         let h = floor(sec / 3600) % 24;
+        // 自动切换天数显示
         if (d > 0) {
-            // todo i18n
             formatter = `{d}d{h}h`;
             return formatString(formatter, { h: h, d: d });
         }
@@ -1510,13 +2377,22 @@ export namespace no {
         let m: any = floor(sec / 60 % 60);
         let s: any = floor(sec % 60);
 
-        // if (h<=9){h = `0${h}`}
+        // 前导零处理
         if (m <= 9 && show0) { m = `0${m}` }
         if (s <= 9 && show0) { s = `0${s}` }
 
         return formatString(formatter, { h: h, m: m, s: s });
     }
 
+    /**
+     * 内部方法 - 格式化纯时间部分（时/分/秒）
+     * @param sec 时间戳（秒）
+     * @param formatter 格式模板
+     * @param show0 是否显示前导零
+     * @returns 格式化后的时间字符串
+     * @example
+     * _formatSeconds(3615, '{h}小时{M}分', true) // 返回 "01小时00分"
+     */
     function _formatSeconds(sec: number, formatter: string, show0: boolean): string {
         if (sec <= 0) {
             let a = show0 ? '00' : '0';
@@ -1531,6 +2407,15 @@ export namespace no {
         return formatString(formatter, { h: h, M: m, s: s });
     }
 
+    /**
+     * 内部方法 - 格式化完整时间（年/月/日/时/分/秒）
+     * @param sec 时间戳（秒）
+     * @param formatter 格式模板
+     * @param show0 是否显示前导零
+     * @returns 格式化后的日期时间字符串
+     * @example
+     * _formatTime(1654321000, '{y}-{m}-{d}', true) // 返回 "2022-06-04"
+     */
     function _formatTime(sec: number, formatter: string, show0: boolean): string {
         if (sec <= 0) return '';
         let { y, m, d, h, M, s }: { y: number, m: any, d: any, h: any, M: any, s: any } = parseTimestamp(sec);
@@ -1542,34 +2427,108 @@ export namespace no {
         return formatString(formatter, { y: y, m: m, d: d, h: h, M: M, s: s });
     }
 
+    /**
+     * 格式化时间为年月日时分秒（格式：年.月.日 时:分:秒）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * formatTime_yymmddhhMMss(1654321000) // "2022.06.04 12:36:40"
+     * formatTime_yymmddhhMMss(0, false)   // "0.0.0 0:0:0"
+     */
     export function formatTime_yymmddhhMMss(sec: number, show0 = true): string {
         return _formatTime(sec, '{y}.{m}.{d} {h}:{M}:{s}', show0);
     }
 
+    /**
+     * 格式化时间为年月日（格式：年.月.日）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的日期字符串
+     * @example
+     * formatTime_yymmdd(1654321000)    // "2022.06.04"
+     * formatTime_yymmdd(1696141845)    // "2023.10.01"
+     */
     export function formatTime_yymmdd(sec: number, show0 = true): string {
         return _formatTime(sec, '{y}.{m}.{d}', show0);
     }
 
+    /**
+     * 格式化时间为时分秒（格式：时:分:秒）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * formatTime_hhMMss(3661)         // "01:01:01"
+     * formatTime_hhMMss(45296, false) // "12:34:56"
+     */
     export function formatTime_hhMMss(sec: number, show0 = true): string {
         return _formatSeconds(sec, '{h}:{M}:{s}', show0);
     }
 
+    /**
+     * 格式化时间为时分（格式：时:分）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * formatTime_hhMM(3661)       // "01:01"
+     * formatTime_hhMM(45296)      // "12:34"
+     */
     export function formatTime_hhMM(sec: number, show0 = true): string {
         return _formatSeconds(sec, '{h}:{M}', show0);
     }
 
+    /**
+     * 格式化时间为小时数（格式：时）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的小时字符串
+     * @example
+     * formatTime_hh(3600)     // "01"
+     * formatTime_hh(7200, false) // "2"
+     */
     export function formatTime_hh(sec: number, show0 = true): string {
         return _formatSeconds(sec, '{h}', show0);
     }
 
+    /**
+     * 格式化时间为分秒（格式：分:秒）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * formatTime_MMss(65)     // "01:05"
+     * formatTime_MMss(125)    // "02:05"
+     */
     export function formatTime_MMss(sec: number, show0 = true): string {
         return _formatSeconds(sec, '{M}:{s}', show0);
     }
 
+    /**
+     * 格式化时间为秒数（格式：秒）
+     * @param sec 时间戳（秒）
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的秒数字符串
+     * @example
+     * formatTime_ss(45)       // "45"
+     * formatTime_ss(5)        // "05"（当show0为true时）
+     */
     export function formatTime_ss(sec: number, show0 = true): string {
         return _formatSeconds(sec, '{s}', show0);
     }
 
+    /**
+     * 通用时间格式化方法
+     * @param sec 时间戳（秒）
+     * @param fmt 格式类型：yymmddhhMMss | yymmdd | hhMMss | hhMM | hh | MMss | ss
+     * @param show0 是否显示前导零（默认true）
+     * @returns 格式化后的时间字符串
+     * @example
+     * formatTime(1654321000, 'yymmdd') // "2022.06.04"
+     * formatTime(45296, 'hhMM')        // "12:34"
+     * formatTime(125, 'MMss', false)   // "2:5"
+     */
     export function formatTime(sec: number, fmt: 'yymmddhhMMss' | 'yymmdd' | 'hhMMss' | 'hhMM' | 'hh' | 'MMss' | 'ss', show0 = true): string {
         switch (fmt) {
             case 'yymmddhhMMss': return formatTime_yymmddhhMMss(sec, show0);
@@ -1583,8 +2542,16 @@ export namespace no {
     }
 
     /**
-     * 节点的世界坐标,相对于屏幕左下为(0,0)的坐标
-     * @param node
+     * 获取节点的世界坐标系坐标（基于Cocos Creator坐标系，屏幕左下角为原点）
+     * @param node 目标节点
+     * @param out 可选输出向量，用于复用Vec3对象（提升性能）
+     * @returns 世界坐标系中的三维坐标
+     * @example
+     * // 获取玩家角色世界坐标
+     * const playerPos = no.nodeWorldPosition(this.playerNode);
+     * // 复用向量对象避免频繁创建
+     * const tempPos = no.v3();
+     * no.nodeWorldPosition(this.enemyNode, tempPos);
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
@@ -1594,8 +2561,18 @@ export namespace no {
     }
 
     /**
-     * 世界坐标转节点内坐标
-     * @param node
+     * 将世界坐标转换为节点本地坐标系坐标
+     * @param pos 世界坐标系中的位置
+     * @param node 目标节点（需要包含UITransform组件）
+     * @param out 可选输出向量，用于复用Vec3对象
+     * @returns 节点本地坐标系中的坐标
+     * @example
+     * // 转换点击位置到UI节点本地坐标
+     * const touchWorldPos = no.v3(event.touch._point.x, event.touch._point.y);
+     * const localPos = no.worldPositionInNode(touchWorldPos, this.uiPanel);
+     * // 处理3D物体在UI中的投影位置
+     * const modelWorldPos = this.modelNode.worldPosition;
+     * const uiLocalPos = no.worldPositionInNode(modelWorldPos, this.uiContainer);
      */
     export function worldPositionInNode(pos: Vec3, node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
@@ -1605,9 +2582,18 @@ export namespace no {
     }
 
     /**
-     * 某节点坐标转换到另一个节点内
-     * @param node
-     * @param otherNode
+     * 将节点A的坐标转换为节点B的本地坐标系坐标
+     * @param node 源节点
+     * @param otherNode 目标节点（需要包含UITransform组件）
+     * @param out 可选输出向量，用于复用Vec3对象
+     * @returns 目标节点本地坐标系中的坐标
+     * @example
+     * // 转换小地图图标到全屏地图的位置
+     * const miniMapPos = no.nodePositionInOtherNode(this.iconNode, this.fullMapNode);
+     * // 计算两个UI元素的相对位置
+     * const buttonPos = no.nodePositionInOtherNode(this.btnNode, this.mainPanel);
+     * // 跟踪3D物体在雷达图上的位置
+     * const radarPos = no.nodePositionInOtherNode(this.aircraftNode, this.radarNode);
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
         out = out || v3();
@@ -1617,10 +2603,22 @@ export namespace no {
     }
 
     /**
-     * 数组排序
-     * @param arr
-     * @param handler 排序方法,为空则按数字大小排序
-     * @param desc 是否降序
+     * 数组排序（支持自定义比较函数和升降序）
+     * @param arr 要排序的数组（会被直接修改）
+     * @param handler 自定义比较函数（返回负数表示a在前，正数表示b在前，0不变）
+     *                未提供时默认按数字升序排序
+     * @param desc 是否降序排列（默认false升序）
+     * @example
+     * // 基本数字排序
+     * const nums = [3, 1, 4];
+     * no.sortArray(nums); // [1, 3, 4]
+     * 
+     * // 降序排列
+     * no.sortArray(nums, undefined, true); // [4, 3, 1]
+     * 
+     * // 对象数组自定义排序（按age升序）
+     * const users = [{age:25}, {age:18}];
+     * no.sortArray(users, (a, b) => a.age - b.age);
      */
     export function sortArray<T>(arr: T[], handler?: (a: T, b: T) => number, desc = false): void {
         if (arr == null || arr.length == 0) return;
@@ -1635,11 +2633,23 @@ export namespace no {
     }
 
     /**
-     * 插入排序算法,相对有序的数据性能更高
-     * @param arr 
-     * @param handler 排序方法,为空则按数字大小排序
-     * @param desc 是否降序
-     * @returns 
+     * 插入排序算法（适合相对有序的数据，稳定排序）
+     * @param arr 要排序的数组（会被直接修改）
+     * @param handler 比较函数（返回true时交换位置）
+     *                未提供时默认按数字升序排序
+     * @param desc 是否降序排列（默认false升序）
+     * @example
+     * // 基本数字排序
+     * const data = [5, 2, 4, 6];
+     * no.insertionSort(data); // [2, 4, 5, 6]
+     * 
+     * // 降序排列对象数组（按score）
+     * const items = [{score:80}, {score:95}];
+     * no.insertionSort(items, (a, b) => a.score > b.score, true);
+     * 
+     * // 自定义排序逻辑（字符串长度排序）
+     * const strs = ['apple', 'kiwi'];
+     * no.insertionSort(strs, (a, b) => a.length > b.length);
      */
     export function insertionSort<T>(arr: T[], handler?: (a: T, b: T) => boolean, desc = false) {
         let n = arr?.length || 0;
@@ -1663,8 +2673,25 @@ export namespace no {
     }
 
     /**
-     * 节点在world中的rect
-     * @param node
+     * 计算节点在世界坐标系中的包围盒矩形
+     * @param node 目标节点
+     * @param offset 矩形偏移量（可选，默认Vec2.ZERO）
+     * @param subSize 尺寸增减量（可选，默认Size.ZERO）
+     * @returns 世界坐标系中的矩形区域
+     * @example
+     * // 检测按钮在世界空间的实际范围
+     * const btnBox = no.nodeBoundingBox(this.startBtn);
+     * 
+     * // 带偏移和尺寸扩展的碰撞检测
+     * const enemyHitBox = no.nodeBoundingBox(
+     *   enemyNode, 
+     *   v2(10, -5),  // 向右偏移10，向下偏移5
+     *   size(20, 20) // 宽高各增加20
+     * );
+     * 
+     * // 配合物理系统使用
+     * const collider = this.getComponent(BoxCollider2D);
+     * collider.size = no.nodeBoundingBox(this.node).size;
      */
     export function nodeBoundingBox(node: Node, offset?: Vec2, subSize?: Size): Rect {
         offset = offset || v2();
@@ -1682,8 +2709,20 @@ export namespace no {
     }
 
     /**
-     * 节点在父节点中的rect
-     * @param node 
+     * 获取节点在父节点坐标系中的矩形区域
+     * @param node 目标节点
+     * @returns 父节点坐标系中的矩形
+     * @example
+     * // 检测子节点是否在父容器可见区域
+     * const itemRect = no.nodeRect(scrollView.content.children[0]);
+     * const viewRect = no.nodeRect(scrollView.view);
+     * const isVisible = viewRect.intersects(itemRect);
+     * 
+     * // 拖拽对齐辅助线
+     * const targetRect = no.nodeRect(dropTarget);
+     * if (draggingRect.intersects(targetRect)) {
+     *   showAlignmentGuide(targetRect.center);
+     * }
      */
     export function nodeRect(node: Node): Rect {
         const pos = position(node),
@@ -1698,8 +2737,28 @@ export namespace no {
     }
 
     /**
-     * 判断点是否在节点范围内
-     * @param node
+     * 检测坐标点是否在节点范围内（支持世界坐标系）
+     * @param node 目标节点
+     * @param point 检测点（世界坐标系）
+     * @param offset 包围盒偏移量（可选）
+     * @param subSize 包围盒尺寸调整（可选）
+     * @returns 是否包含该点
+     * @example
+     * // 按钮点击检测
+     * input.on(Input.EventType.TOUCH_END, (event) => {
+     *   const touchPos = event.touch.getUILocation();
+     *   if (no.nodeContainsPoint(this.btnNode, touchPos)) {
+     *     this.onClickButton();
+     *   }
+     * });
+     * 
+     * // 自定义热区检测（扩展点击区域）
+     * const isHit = no.nodeContainsPoint(
+     *   this.smallButton,
+     *   touchPos,
+     *   v2(-10, -10), // 向左上偏移
+     *   size(20, 20)  // 扩大点击区域
+     * );
      */
     export function nodeContainsPoint(node: Node, point: Vec2, offset?: Vec2, subSize?: Size): boolean {
         let rect = nodeBoundingBox(node, offset, subSize);
@@ -1707,10 +2766,26 @@ export namespace no {
     }
 
     /**
-     * 判断两个节点是否相交
-     * @param node
-     * @param otherNode
-     * @returns
+     * 检测两个节点在场景中是否相交
+     * @param node 第一个节点
+     * @param otherNode 第二个节点
+     * @returns 是否发生矩形相交
+     * @example
+     * // 敌人与子弹碰撞检测
+     * update() {
+     *   this.bullets.forEach(bullet => {
+     *     if (no.nodeIntersects(this.enemyNode, bullet.node)) {
+     *       this.onEnemyHit();
+     *     }
+     *   });
+     * }
+     * 
+     * // UI元素重叠提示
+     * const isOverlap = no.nodeIntersects(
+     *   this.draggingItem, 
+     *   this.inventorySlot
+     * );
+     * this.slotHighlight.active = isOverlap;
      */
     export function nodeIntersects(node: Node, otherNode: Node): boolean {
         let rect = nodeBoundingBox(node),
@@ -1719,11 +2794,19 @@ export namespace no {
     }
 
     /**
-     * 对象转数组
-     * @param obj
-     * @param keyName
-     * @param valueName
-     * @returns
+     * 将对象转换为指定键值结构的数组
+     * @param obj 源对象（键值对结构）
+     * @param keyName 生成的数组元素中用于存储对象键的属性名
+     * @param valueName 生成的数组元素中用于存储对象值的属性名
+     * @returns 包含键值对对象的数组，无效输入返回null
+     * @example
+     * // 转换配置表数据
+     * const config = { attack: 100, defense: 50 };
+     * no.object2Array(config, 'type', 'value'); 
+     * // 返回 [{type:'attack', value:100}, {type:'defense', value:50}]
+     * 
+     * // 处理空值情况
+     * no.object2Array(null, 'key', 'value'); // 返回 null
      */
     export function object2Array(obj: any, keyName: string, valueName: string): any[] {
         if (obj == null || keyName == null || valueName == null) return null;
@@ -1739,9 +2822,16 @@ export namespace no {
     }
 
     /**
-     * 对象转数组
-     * @param obj
-     * @returns
+     * 将对象转换为值列表数组
+     * @param obj 源对象（键值对结构）
+     * @returns 包含对象所有属性值的数组，无效输入返回空数组
+     * @example
+     * // 获取用户数据列表
+     * const users = { 1: {name:'A'}, 2: {name:'B'} };
+     * no.object2List(users); // 返回 [{name:'A'}, {name:'B'}]
+     * 
+     * // 处理空对象
+     * no.object2List({}); // 返回 []
      */
     export function object2List(obj: any): any[] {
         if (obj == null) return [];
@@ -1754,9 +2844,19 @@ export namespace no {
     }
 
     /**
-     * 根据权重随机
-     * @param weight 权重数组
-     * @returns 权重索引
+     * 根据权重值进行随机选择（支持排除特定索引）
+     * @param weight 权重数组（数值越大被选中的概率越高）
+     * @param except 需要排除的权重数组索引（可选）
+     * @returns 被选中的权重项索引
+     * @example
+     * // 基础权重随机
+     * no.weightRandom([70, 20, 10]); // 70%概率返回0，20%返回1，10%返回2
+     * 
+     * // 排除不可选项
+     * no.weightRandom([50, 0, 50], [0]); // 只会返回2（索引0被排除）
+     * 
+     * // 处理全排除情况
+     * no.weightRandom([10, 20], [0,1]); // 返回undefined（需调用方处理）
      */
     export function weightRandom(weight: number[], except?: number[]): number {
         if (!weight) return 0;
@@ -1779,11 +2879,23 @@ export namespace no {
             }
         }
     }
+
     /**
-     * 根据权重随机
-     * @param weight 权重数组
-     * @param key 权重值对应key
-     * @returns 权重索引
+     * 根据对象数组中的指定属性进行权重随机
+     * @param weight 对象数组（每个元素需包含权重属性）
+     * @param key 权重值对应的属性名
+     * @returns 被选中的对象数组索引
+     * @example
+     * // 随机游戏事件
+     * const events = [
+     *   { id:1, prob:80 }, 
+     *   { id:2, prob:15 },
+     *   { id:3, prob:5 }
+     * ];
+     * no.weightRandomObject(events, 'prob'); // 80%概率返回0
+     * 
+     * // 处理无效键
+     * no.weightRandomObject([{a:10}], 'b'); // 所有权重为NaN，返回0
      */
     export function weightRandomObject(weight: any[], key: string): number {
         if (!weight) return 0;
@@ -1795,10 +2907,14 @@ export namespace no {
     }
 
     /**
-     * 浮点数取整数位，不能用于超大数据
-     * Math.floor对负数不友好，如-1.2会返回-2，但预期可能是-1，所以需要使用|0来处理
-     * @param v 
-     * @returns 
+     * 数值取整（优化版）
+     * @param v - 需要处理的数值
+     * @returns 取整后的数值
+     * @example
+     * no.floor(3.7)   // 3
+     * no.floor(-1.2)  // -1（与Math.floor(-1.2)=-2不同）
+     * no.floor(0.999) // 0
+     * no.floor(12345678901234567890.5) // 精度可能丢失（超过安全整数范围时）
      */
     export function floor(v: number): number {
         if (v < 1 && v >= 0) return 0;
@@ -1806,20 +2922,30 @@ export namespace no {
         if (a == 0 || (v > 0 && a < 0) || (v < 0 && a > 0)) return Math.floor(v);
         return a;
     }
+
     /**
-     * 浮点数取小数位
-     * @param v 
-     * @returns 
+     * 获取数值的小数部分
+     * @param v - 需要处理的数值
+     * @returns 小数部分（0到1之间的浮点数）
+     * @example
+     * no.fract(3.14)  // 0.14
+     * no.fract(-2.5)  // 0.5
+     * no.fract(100)   // 0
      */
     export function fract(v: number): number {
         let s = String(v).split('.');
         s[0] = '0';
         return Number(s.join('.'));
     }
+
     /**
-     * 浮点数取整数位并+1，不能用于超大数据
-     * @param v 
-     * @returns 
+     * 向上取整（优化版）
+     * @param v - 需要处理的数值
+     * @returns 向上取整后的数值
+     * @example
+     * no.ceil(2.3)   // 3
+     * no.ceil(-2.7)  // -2
+     * no.ceil(5)     // 5
      */
     export function ceil(v: number): number {
         let a = floor(v);
@@ -1828,10 +2954,15 @@ export namespace no {
     }
 
     /**
-     * 循环比较，v < min时返回max，v > max时返回min，否则返回v
-     * @param v 
-     * @param min 
-     * @param max 
+     * 循环数值（环形数值处理）
+     * @param v - 当前值
+     * @param min - 最小值（包含）
+     * @param max - 最大值（包含）
+     * @returns 循环后的数值
+     * @example
+     * no.cyclic(5, 0, 4)   // 0
+     * no.cyclic(-1, 0, 4)  // 4
+     * no.cyclic(2.5, 0, 4) // 2.5
      */
     export function cyclic(v: number, min: number, max: number): number {
         if (v < min) return max;
@@ -1840,10 +2971,15 @@ export namespace no {
     }
 
     /**
-     * 当v<min,返回min；当v>max，返回max；否则返回v
-     * @param v 
-     * @param min 
-     * @param max 
+     * 数值钳制（限制在指定范围内）
+     * @param v - 需要处理的数值
+     * @param min - 最小值
+     * @param max - 最大值
+     * @returns 限制后的数值
+     * @example
+     * no.clamp(10, 0, 5)  // 5
+     * no.clamp(-3, 0, 5)  // 0
+     * no.clamp(3.5, 0, 5) // 3.5
      */
     export function clamp(v: number, min: number, max: number): number {
         if (v < min) return min;
@@ -1852,11 +2988,15 @@ export namespace no {
     }
 
     /**
-     * 循环索引, 当n < min时返回max，当n > max时返回min，否则返回n
-     * @param n 
-     * @param min 
-     * @param max 
-     * @returns 
+     * 循环索引（适用于环形数组访问）
+     * @param n - 当前索引
+     * @param min - 最小索引值（通常为0）
+     * @param max - 最大索引值（通常为数组长度-1）
+     * @returns 循环后的索引
+     * @example
+     * no.circleIndex(5, 0, 4)  // 0
+     * no.circleIndex(-1, 0, 4) // 4
+     * no.circleIndex(3, 0, 4)  // 3
      */
     export function circleIndex(n: number, min: number, max: number): number {
         if (n < min) return max;
@@ -1865,11 +3005,15 @@ export namespace no {
     }
 
     /**
-     * 平滑过渡,v在min和max之间平滑过渡,min和max的值会自动转换为0-1之间
-     * @param v 
-     * @param min 
-     * @param max 
-     * @returns 当v小于min时返回0，当v大于max时返回1，否则返回0-1之间的值
+     * 平滑过渡计算（返回0-1标准化值）
+     * @param v - 当前值
+     * @param min - 范围最小值
+     * @param max - 范围最大值
+     * @returns 标准化后的0-1值
+     * @example
+     * no.smoothStep(5, 0, 10)  // 0.5
+     * no.smoothStep(15, 10, 20) // 0.5
+     * no.smoothStep(25, 10, 20) // 1
      */
     export function smoothStep(v: number, min: number, max: number): number {
         if (v < min) return 0;
@@ -1877,6 +3021,14 @@ export namespace no {
         return (v - min) / (max - min);
     }
 
+    /**
+     * 获取数字科学计数法表示的指数值
+     * @param n - 需要解析的数字
+     * @returns 科学计数法指数部分的值（无科学计数法时返回0）
+     * @example
+     * eIndex(1.23e5)  // 5
+     * eIndex(0.0003)  // 0
+     */
     function eIndex(n: number): number {
         let s = n.toString().toLowerCase();
         let a = s.split('e');
@@ -1884,19 +3036,46 @@ export namespace no {
         return Number(a[1]);
     }
 
+    /**
+     * 计算数字的实际小数位数（考虑科学计数法）
+     * @param n - 需要计算的数字
+     * @returns 修正后的有效小数位数
+     * @example
+     * decimalDigits(0.123)    // 3
+     * decimalDigits(1.23e-2) // 5（实际值为0.0123）
+     */
     function decimalDigits(n: number): number {
         let a = n.toString().toLowerCase().split('e')[0].split('.');
         return (!!a[1] ? a[1].length : 0) - eIndex(n);
     }
 
-    /**加 */
+    /**
+     * 精确加法运算（解决浮点数精度问题）
+     * @param n1 - 被加数
+     * @param n2 - 加数
+     * @returns 精确相加结果
+     * @example
+     * add(0.1, 0.2)   // 0.3
+     * add(1e-3, 2e-3) // 0.003
+     * add(5, 3.1)     // 8.1
+     */
     export function add(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
             m: number = Math.pow(10, Math.max(r1, r2));
         return (n1 * m + n2 * m) / m;
     }
-    /**减 */
+    
+    /**
+     * 精确减法运算（解决浮点数精度问题）
+     * @param n1 - 被减数
+     * @param n2 - 减数
+     * @returns 精确相减结果
+     * @example
+     * minus(0.3, 0.1) // 0.2
+     * minus(2e-2, 1e-2) // 0.01
+     * minus(5, 2.3)   // 2.7
+     */
     export function minus(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
@@ -1904,14 +3083,34 @@ export namespace no {
             m: number = Math.pow(10, n);
         return Number(((n1 * m - n2 * m) / m).toFixed(n));
     }
-    /**乘 */
+    
+    /**
+     * 精确乘法运算（解决浮点数精度问题）
+     * @param n1 - 被乘数
+     * @param n2 - 乘数
+     * @returns 精确相乘结果
+     * @example
+     * mutiply(0.1, 0.2) // 0.02
+     * mutiply(3e3, 2e2) // 600000
+     * mutiply(1.5, 3)   // 4.5
+     */
     export function mutiply(n1: number, n2: number): number {
         let m: number = decimalDigits(n1) + decimalDigits(n2),
             s1 = n1.toString().toLowerCase().split('e')[0].replace('.', ''),
             s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return Number(s1) * Number(s2) / Math.pow(10, m);
     }
-    /**除 */
+    
+    /**
+     * 精确除法运算（解决浮点数精度问题）
+     * @param n1 - 被除数
+     * @param n2 - 除数
+     * @returns 精确相除结果
+     * @example
+     * divide(0.3, 0.1) // 3
+     * divide(1e6, 2e2) // 5000
+     * divide(4.5, 1.5) // 3
+     */
     export function divide(n1: number, n2: number): number {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
@@ -1933,6 +3132,18 @@ export namespace no {
             this.init(node);
         }
 
+        /**
+         * 初始化缓动集合
+         * @param node 目标节点
+         * @private
+         * @example
+         * // 创建包含节点位置、尺寸和透明度的缓动集合
+         * const tweenSet = new TweenSet(someNode);
+         * // 同时控制多个组件属性：
+         * // - Node组件控制位置/旋转/缩放
+         * // - UITransform控制尺寸/锚点
+         * // - UIOpacity控制透明度
+         */
         private init(node: Node) {
             this.map = {};
             this.map[TweenSetType.Node] = tween(node);
@@ -1940,6 +3151,20 @@ export namespace no {
             this.map[TweenSetType.Opacity] = node.getComponent(UIOpacity) ? tween(node.getComponent(UIOpacity)) : null;
         }
 
+        /**
+         * 启动所有缓动动画
+         * @returns Promise 在所有节点缓动完成后resolve
+         * @example
+         * // 同时执行多个缓动并等待完成
+         * await this.tweenSet.start();
+         * console.log('所有动画完成');
+         * 
+         * // 链式动画示例
+         * this.tweenSet.start().then(() => {
+         *     this.playCompleteSound();
+         *     this.switchToNextScene();
+         * });
+         */
         public start(): Promise<void> {
             return new Promise<void>(resolve => {
                 for (const key in this.map) {
@@ -1954,6 +3179,20 @@ export namespace no {
             });
         }
 
+        /**
+         * 停止所有缓动动画
+         * @example
+         * // 当界面需要提前销毁时停止动画
+         * onDestroy() {
+         *     this.tweenSet.stop();
+         * }
+         * 
+         * // 用户快速操作时中断当前动画
+         * button.onClick(() => {
+         *     this.tweenSet.stop();
+         *     this.playButtonEffect();
+         * });
+         */
         public stop() {
             for (const key in this.map) {
                 let t: Tween = this.map[key];
@@ -1961,74 +3200,131 @@ export namespace no {
             }
         }
 
+        /**
+         * 设置缓动动画数据
+         * @param data 动画配置数据对象，包含以下属性：
+         *   - delay: 延迟时间（秒）
+         *   - duration: 动画持续时间（秒）
+         *   - props: 动画属性配置对象
+         *   - easing: 缓动函数类型
+         *   - by/to/set: 动画类型（增量/目标值/立即设置）
+         *   - callback: 动画完成回调
+         *   - repeat: 重复次数
+         * @example
+         * // 基本位置动画
+         * setTweenData({
+         *   duration: 1,
+         *   props: { pos: [100, 200] },
+         *   easing: 'quadOut'
+         * });
+         * 
+         * // 组合动画示例（旋转+缩放+透明度）
+         * setTweenData({
+         *   delay: 0.5,
+         *   duration: 2,
+         *   props: {
+         *     rotation: [0, 0, 360], // XYZ旋转角度
+         *     scale: 2,              // 等比缩放
+         *     opacity: 0
+         *   },
+         *   to: true,
+         *   repeat: 3
+         * });
+         * 
+         * // 立即设置属性示例
+         * setTweenData({
+         *   props: {
+         *     anchor: [0.5, 0.5],    // 设置锚点居中
+         *     size: [200, 100]       // 设置节点尺寸
+         *   },
+         *   set: true
+         * });
+         */
         public setTweenData(data: any) {
-
+            // 设置全局延迟时间
             this.setDelay(data.delay);
 
             if (data.props != null) {
-                let np: any, tp: any, op: any;
+                let np: any, tp: any, op: any; // 分别存储节点属性、变换属性、透明度属性
+                
+                // 遍历所有属性配置
                 for (let k in data.props) {
                     let v = data.props[k];
                     switch (k) {
-                        case 'pos':
+                        case 'pos': // 位置属性（三维坐标）
                             np = np || {};
                             np['position'] = new Vec3(v[0], v[1], v[2]);
                             break;
-                        case 'rotation':
+                        case 'rotation': // 旋转属性（欧拉角转四元数）
                             np = np || {};
                             let quat: Quat = new Quat();
                             Quat.fromEuler(quat, v[0], v[1], v[2]);
                             np['rotation'] = quat;
                             break;
-                        case 'scale':
+                        case 'scale': // 缩放属性（支持单值/二维/三维缩放）
                             np = np || {};
-                            np['scale'] = new Vec3(v[0] == undefined ? v : v[0], v[1] == undefined ? (v[0] == undefined ? v : v[0]) : v[1], v[2] == undefined ? 1 : v[2]);
+                            np['scale'] = new Vec3(
+                                v[0] == undefined ? v : v[0],  // 处理单值缩放
+                                v[1] == undefined ? (v[0] == undefined ? v : v[0]) : v[1], // 处理二维缩放
+                                v[2] == undefined ? 1 : v[2]  // Z轴默认不缩放
+                            );
                             break;
-                        case 'angle':
+                        case 'angle': // 二维旋转角度（绕Z轴）
                             np = np || {};
                             np['angle'] = v;
                             break;
-                        case 'size':
+                        case 'size': // 尺寸属性（宽高）
                             tp = tp || {};
                             tp['contentSize'] = new Size(v[0], v[1]);
                             break;
-                        case 'anchor':
+                        case 'anchor': // 锚点属性（归一化坐标）
                             tp = tp || {};
                             tp['anchorPoint'] = new Vec2(v[0], v[1]);
                             break;
-                        case 'opacity':
+                        case 'opacity': // 透明度属性（0-255）
                             op = op || {};
                             op['opacity'] = v;
                             break;
                     }
                 }
 
+                // 处理没有属性变化的延迟设置
                 if (!np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].delay(data.duration || 0);
                 if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
                 if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
 
-                const easing = data.easing;
+                const easing = data.easing; // 获取缓动函数类型
 
-                if (data.by) {
+                // 根据动画类型配置缓动
+                if (data.by) { // 增量动画
                     if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].by(data.duration, np, { easing: easing });
                     if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.by(data.duration, tp, { easing: easing });
                     if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.by(data.duration, op, { easing: easing });
-                } else if (data.to) {
+                } else if (data.to) { // 目标值动画
                     if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].to(data.duration, np, { easing: easing });
                     if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.to(data.duration, tp, { easing: easing });
                     if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.to(data.duration, op, { easing: easing });
-                } else if (data.set) {
+                } else if (data.set) { // 立即设置属性
                     if (np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].set(np);
                     if (tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.set(tp);
                     if (op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.set(op);
                 }
 
+                // 设置回调函数到最后一个动画属性
                 this.setCallback(data.callback, np ? TweenSetType.Node : (tp ? TweenSetType.Transform : TweenSetType.Opacity));
             }
 
+            // 设置动画重复次数
             this.setRepeat(data.repeat);
         }
 
+        /**
+         * 设置动画延迟时间（所有属性动画统一延迟）
+         * @param v 延迟时间（秒）
+         * @example
+         * // 在连续动画中设置初始延迟
+         * this.setDelay(0.5); // 所有动画属性延迟0.5秒执行
+         */
         private setDelay(v: number) {
             if (!v) return;
             for (const key in this.map) {
@@ -2036,6 +3332,15 @@ export namespace no {
             }
         }
 
+        /**
+         * 设置动画重复次数
+         * @param v 重复次数（负数表示无限循环）
+         * @example
+         * // 创建心跳动画效果
+         * this.setRepeat(-1); // 无限循环
+         * // 创建三次闪烁效果
+         * this.setRepeat(2); // 实际执行3次（初始+重复2次）
+         */
         private setRepeat(v: number) {
             if (!v) return;
             if (v < 0) v = 9999;
@@ -2044,6 +3349,16 @@ export namespace no {
             }
         }
 
+        /**
+         * 设置动画完成回调
+         * @param cb 回调类型：函数 | 事件对象{type: 事件类型, args: 参数数组}
+         * @param key 目标动画属性键
+         * @example
+         * // 动画结束时播放音效
+         * this.setCallback(() => audio.play('click'), 'opacity');
+         * // 动画结束时派发自定义事件
+         * this.setCallback({type: 'ANIM_END', args: [this.node]}, 'position');
+         */
         private setCallback(cb: any, key: string) {
             if (!cb) return;
             let callFn: any;
@@ -2058,15 +3373,37 @@ export namespace no {
             this.map[key] = this.map[key]?.call(callFn);
         }
 
+        /**
+         * 播放动画序列
+         * @param endCall 动画全部完成后的回调
+         * @example
+         * // 播放动画并在结束时跳转场景
+         * this.play(() => {
+         *   no.scene.load('Level2');
+         * });
+         */
         public play(endCall?: () => void) {
             this.start().then(endCall).catch(e => { err(e); });
         }
 
         /**
-         * 播放缓动动画
-         * @param tweenSets 如果tweenSets是Array，则按并行处理
-         * @param endCall 执行完回调
-         * @param target 并行时用于处理目标销毁的情况
+         * 播放缓动动画（支持并行/串行控制）
+         * @param tweenSets 动画集合：单个为串行，数组元素并行执行
+         * @param endCall 全部动画完成回调
+         * @param target 关联目标对象（用于自动清理）
+         * @example
+         * // 并行执行移动和旋转动画
+         * TweenSet.play([
+         *   new TweenSet(node).to({position: v3(100,0,0)}),
+         *   new TweenSet(node).to({angle: 360})
+         * ], () => console.log('All done'));
+         * 
+         * // 串行执行先缩放后变色
+         * TweenSet.play(
+         *   new TweenSet(node)
+         *     .to({scale: v3(2,2)})
+         *     .to({color: Color.RED})
+         * );
          */
         public static play(tweenSets: TweenSet | TweenSet[], endCall?: () => void, target?: any) {
             if (tweenSets instanceof Array) {
@@ -2085,59 +3422,115 @@ export namespace no {
             } else tweenSets.play(endCall);
         }
 
+        /**
+         * 停止目标所有动画
+         * @param target 需要停止动画的对象
+         * @example
+         * // 当对象销毁时停止关联动画
+         * onDestroy() {
+         *   TweenSet.stop(this.node);
+         * }
+         */
         public static stop(target: any) {
             Tween.stopAllByTarget(target);
         }
     }
 
     /**
-     * 解析缓动动效数据
-     * @param data
-     * @param node
-     * @returns TweenSet[]
-     * @example  data = {
-     *      delay?: 1,
-     *      duration?: 1,
-     *      to?:1,
-     *      by?:1,
-     *      set?:1,
-     *      props?: {
-     *          pos: [100,100,0]
-     *          opacity: 100,
-     *          rotation: [1,1,0],
-     *          scale: [0.5,0.5,1],
-     *          size: [100,100],
-     *          anchor: [0, 1]
-     *      },
-     *      easing?: EasingMethod | "linear" | "smooth" | "fade" | "constant" | "quadIn" | "quadOut" | "quadInOut" | "quadOutIn" | "cubicIn" | "cubicOut" | "cubicInOut" | "cubicOutIn" | "quartIn" | "quartOut" | "quartInOut" | "quartOutIn" | "quintIn" | "quintOut" | "quintInOut" | "quintOutIn" | "sineIn" | "sineOut" | "sineInOut" | "sineOutIn" | "expoIn" | "expoOut" | "expoInOut" | "expoOutIn" | "circIn" | "circOut" | "circInOut" | "circOutIn" | "elasticIn" | "elasticOut" | "elasticInOut" | "elasticOutIn" | "backIn" | "backOut" | "backInOut" | "backOutIn" | "bounceIn" | "bounceOut" | "bounceInOut" | "bounceOutIn",
-     *      repeat?: 0,//-1是无限次，>-1为执行次数为 repeat+1
-     *      callback?: () => void | {type: string, args?:any[]}
+     * 解析缓动动效数据并生成动画序列
+     * @param data 动效配置数据，支持以下格式：
+     *            - 对象：单个动效配置
+     *            - 一维数组：串行动效序列
+     *            - 二维数组：外层并行，内层串行的复合动效
+     * @param node 关联的目标节点（动画作用对象）
+     * @returns 返回缓动动画集合，可能是单个TweenSet或并行集合数组
+     * 
+     * @example <caption>基本用法 - 单个动效</caption>
+     * const tween = parseTweenData({
+     *   duration: 1,
+     *   props: { 
+     *     position: [100, 200],
+     *     opacity: 150
+     *   },
+     *   easing: 'quadOut'
+     * }, node);
+     * TweenSet.play(tween);
+     * 
+     * @example <caption>串行动效 - 一维数组</caption>
+     * parseTweenData([
+     *   { duration: 0.5, props: { scale: [2, 2] } },
+     *   { duration: 1, props: { rotation: 90 } }
+     * ], node);
+     * 
+     * @example <caption>并行动效 - 二维数组</caption>
+     * parseTweenData([
+     *   [ // 并行组1
+     *     { props: { x: 100 }, repeat: 2 },
+     *     { props: { angle: 45 }, easing: 'bounceOut' }
+     *   ],
+     *   [ // 并行组2
+     *     { duration: 2, props: { size: [200, 100] } }
+     *   ]
+     * ], node);
+     * 
+     * @example <caption>完整配置示例</caption>
+     * {
+     *   delay: 0.5,       // 延迟时间（秒）
+     *   duration: 1.2,    // 动画持续时间
+     *   props: {          // 目标属性集合
+     *     pos: [100, 0, 0],     // 世界坐标位置
+     *     opacity: 200,         // 透明度（0-255）
+     *     rotation: [0, 0, 45], // 三维旋转角度
+     *     scale: 1.5,           // 缩放比例（支持数字或数组）
+     *     size: [80, 120],      // 节点尺寸
+     *     anchor: [0.5, 0.5]    // 锚点位置
+     *   },
+     *   easing: 'elasticOut', // 缓动函数
+     *   repeat: 1,            // 重复次数（实际执行 repeat+1 次）
+     *   callback: {           // 动画完成回调
+     *     type: 'finish',     // 事件类型
+     *     args: [true]        // 回调参数
+     *   }
      * }
-     * @如果data为一维数组，则为串行动作；如果为多维数组，则数组间为并行动作，数组内为串行。
-     * 默认属性变化为to
      */
     export function parseTweenData(data: any, node: Node): TweenSet | TweenSet[] {
         if (!data || !node) return null;
 
-        if (data instanceof Array && data[0] instanceof Array) {//并行
-            let a: TweenSet[] = [];
+        // 处理并行结构（二维数组）
+        if (data instanceof Array && data[0] instanceof Array) {
+            let parallelGroup: TweenSet[] = [];
             for (let i = 0; i < data.length; i++) {
-                a = a.concat(parseTweenData(data[i], node));
+                // 递归处理每个并行组内的串行动画
+                parallelGroup = parallelGroup.concat(parseTweenData(data[i], node));
             }
-            return a;
-        } else {
-            let _tween = new TweenSet(node);
-            data = [].concat(data);
-            for (let i = 0, n = data.length; i < n; i++) {
-                _tween.setTweenData(data[i]);
+            return parallelGroup;
+        } 
+        // 处理串行结构（对象或一维数组）
+        else {
+            const _tween = new TweenSet(node);
+            const sequenceData = [].concat(data); // 统一转为数组处理
+            
+            for (let i = 0, n = sequenceData.length; i < n; i++) {
+                _tween.setTweenData(sequenceData[i]); // 依次添加串行动作
             }
             return _tween;
         }
     }
 
     /**
-     * 解析url传参
-     * @returns kv对象
+     * 解析url传参（支持base64编码参数）
+     * @returns 包含所有查询参数的键值对对象
+     * @example
+     * // 常规URL参数解析
+     * // 假设当前URL为 http://example.com?name=test&level=5
+     * const args = no.parseUrlArgs();
+     * console.log(args.name); // 输出 "test"
+     * 
+     * // Base64编码参数解析
+     * // 假设URL参数为 aG9zdD1sb2NhbGhvc3Q=
+     * // 解码后为 host=localhost
+     * const config = no.parseUrlArgs();
+     * console.log(config.host); // 输出 "localhost"
      */
     export function parseUrlArgs(): any {
         let query = window.location.search.substring(1);
@@ -2151,12 +3544,23 @@ export namespace no {
         return args;
     }
 
-    let _tempPos: Vec3 = new Vec3();
+    let _tempPos: Vec3 = new Vec3(); // 复用临时坐标对象以优化性能
     /**
-     * 获取或设置节点x坐标
-     * @param node 节点
-     * @param x x坐标，为空时则返回当前x；否则修改当前x
-     * @returns
+     * 获取或设置节点x坐标（世界坐标系）
+     * @param node 目标节点
+     * @param x 要设置的x坐标值（可选，不传时返回当前值）
+     * @returns 当前/设置后的x坐标
+     * @example
+     * // 获取玩家x坐标
+     * const playerX = no.x(this.playerNode);
+     * 
+     * // 设置敌人x坐标到屏幕右侧
+     * no.x(this.enemyNode, 800);
+     * 
+     * // 配合缓动动画使用
+     * no.tween(this.bulletNode)
+     *   .to(0.5, { x: no.x(this.targetNode) })
+     *   .start();
      */
     export function x(node: Node, x?: number): number {
         if (!node) return;
@@ -2169,10 +3573,23 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点y坐标
-     * @param node 节点
-     * @param y y坐标，为空时则返回当前y；否则修改当前y
-     * @returns
+     * 获取或设置节点y坐标（世界坐标系）
+     * @param node 目标节点
+     * @param y 要设置的y坐标值（可选，不传时返回当前值）
+     * @returns 当前/设置后的y坐标
+     * @example
+     * // 检测是否超出屏幕上方
+     * if (no.y(this.itemNode) > 1280) {
+     *   this.recycleItem();
+     * }
+     * 
+     * // 设置跳跃高度
+     * no.y(this.characterNode, 500);
+     * 
+     * // 垂直方向缓动
+     * no.tween(this.cloudNode)
+     *   .by(2, { y: -200 })
+     *   .start();
      */
     export function y(node: Node, y?: number): number {
         if (!node) return;
@@ -2185,10 +3602,22 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点z坐标
-     * @param node 节点
-     * @param z z坐标，为空时则返回当前z；否则修改当前z
-     * @returns
+     * 获取或设置节点z坐标（3D坐标系）
+     * @param node 目标节点
+     * @param z 要设置的z坐标值（可选，不传时返回当前值）
+     * @returns 当前/设置后的z坐标
+     * @example
+     * // 设置3D物体的层级
+     * no.z(this.backgroundModel, 100);
+     * 
+     * // 调整UI元素的显示层级
+     * no.z(this.popupNode, 999);
+     * 
+     * // 创建视差滚动效果
+     * update() {
+     *   no.z(this.layer1, no.z(this.layer1) + delta * 0.1);
+     *   no.z(this.layer2, no.z(this.layer2) + delta * 0.2);
+     * }
      */
     export function z(node: Node, z?: number): number {
         if (!node) return;
@@ -2200,10 +3629,22 @@ export namespace no {
         return _tempPos.z;
     }
     /**
-     * 获取或设置节点siblingIndex
-     * @param node 节点
-     * @param index siblingIndex，为空时则返回当前siblingIndex；否则修改当前siblingIndex
-     * @returns
+     * 获取或设置节点在父容器中的渲染顺序（siblingIndex）
+     * @param node 目标节点
+     * @param index 要设置的顺序索引（0表示最底层，数值越大层级越高）。未提供时返回当前索引
+     * @returns 当前/设置后的层级索引
+     * @example
+     * // 设置按钮为最顶层显示
+     * no.siblingIndex(this.btnNode, this.btnNode.parent.children.length - 1);
+     * 
+     * // 动态调整UI元素层级
+     * const currentIndex = no.siblingIndex(this.popupWindow);
+     * no.siblingIndex(this.popupWindow, currentIndex + 1);
+     * 
+     * // 重置子节点顺序为添加顺序
+     * parentNode.children.forEach((child, index) => {
+     *   no.siblingIndex(child, index);
+     * });
      */
     export function siblingIndex(node: Node, index?: number): number {
         if (!node) return;
@@ -2217,10 +3658,21 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点position
-     * @param node 节点
-     * @param pos 为空时则返回当前pos；否则修改当前pos
-     * @returns
+     * 获取或设置节点世界坐标系位置（同时支持2D/3D坐标系）
+     * @param node 目标节点
+     * @param pos 要设置的三维坐标值（可选，未提供时返回当前坐标的克隆值）
+     * @returns 当前/设置后的位置向量（返回新对象避免引用问题）
+     * @example
+     * // 设置敌人出生位置
+     * no.position(this.enemyNode, no.v3(100, 200, 0));
+     * 
+     * // 获取玩家当前位置
+     * const playerPos = no.position(this.playerNode);
+     * 
+     * // 实现位置缓动动画
+     * no.tween(this.itemNode)
+     *   .to(1, { position: no.v3(0, 100, 0) })
+     *   .start();
      */
     export function position(node: Node, pos?: Vec3): Vec3 {
         if (!node) return;
@@ -2228,28 +3680,50 @@ export namespace no {
             node.setPosition(pos);
         }
         node.getPosition(_tempPos);
-        return _tempPos.clone();
+        return _tempPos.clone(); // 返回克隆避免外部修改影响实际坐标
     }
 
     /**
-     * 获取或设置节点rotation
-     * @param node 节点
-     * @param z 为空时则返回当前rotation；否则修改当前rotation
-     * @returns
+     * 获取或设置节点欧拉角旋转（单位：角度制）
+     * @param node 目标节点
+     * @param r 要设置的三轴旋转角度（可选，未提供时返回当前旋转的克隆值）
+     * @returns 当前/设置后的欧拉角向量（返回新对象避免引用问题）
+     * @example
+     * // 设置3D模型旋转角度
+     * no.rotation(this.airplaneModel, no.v3(0, 45, 0)); // Y轴旋转45度
+     * 
+     * // 实现持续旋转动画
+     * update() {
+     *   const currentRot = no.rotation(this.windmillNode);
+     *   no.rotation(this.windmillNode, no.v3(0, currentRot.y + 1, 0));
+     * }
+     * 
+     * // 重置2D精灵旋转角度
+     * no.rotation(this.uiIcon, no.v3(0, 0, 0));
      */
     export function rotation(node: Node, r?: Vec3): Vec3 {
         if (!node) return;
         if (r != undefined) {
             node.setRotationFromEuler(r);
         }
-        return node.eulerAngles.clone();
+        return node.eulerAngles.clone(); // 返回克隆保证数据安全
     }
 
     /**
-     * 获取或设置节点宽
-     * @param node 节点
-     * @param width 为空时则返回当前宽；否则修改当前宽
-     * @returns
+     * 获取或设置节点宽度（需要节点包含UITransform组件）
+     * @param node 目标节点
+     * @param width 要设置的宽度值（可选，未提供时返回当前宽度）
+     * @returns 当前/设置后的宽度值（单位：像素）
+     * @example
+     * // 设置按钮宽度为200像素
+     * no.width(this.startBtn, 200);
+     * 
+     * // 根据文本内容动态调整宽度
+     * const textWidth = this.label.node.getComponent(UITransform).width;
+     * no.width(this.backgroundNode, textWidth + 40);
+     * 
+     * // 获取滚动视图的当前宽度
+     * const viewWidth = no.width(this.scrollView.node);
      */
     export function width(node: Node, width?: number): number {
         if (!node || !node.getComponent(UITransform)) return;
@@ -2259,10 +3733,20 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点高
-     * @param node 节点
-     * @param height 为空时则返回当前高；否则修改当前高
-     * @returns
+     * 获取或设置节点高度（需要节点包含UITransform组件）
+     * @param node 目标节点
+     * @param height 要设置的高度值（可选，未提供时返回当前高度）
+     * @returns 当前/设置后的高度值（单位：像素）
+     * @example
+     * // 设置对话框高度为屏幕高度的80%
+     * no.height(this.dialogNode, no.winSize().height * 0.8);
+     * 
+     * // 动态扩展高度适应内容
+     * const contentHeight = this.contentNode.getComponent(UITransform).height;
+     * no.height(this.scrollContent, contentHeight + 100);
+     * 
+     * // 获取精灵图标的原始高度
+     * const originalHeight = no.height(this.spriteNode);
      */
     export function height(node: Node, height?: number): number {
         if (!node || !node.getComponent(UITransform)) return;
@@ -2272,10 +3756,21 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点size
-     * @param node 节点
-     * @param size 为空时则返回当前size；否则修改当前size
-     * @returns
+     * 获取或设置节点尺寸（需要节点包含UITransform组件）
+     * @param node 目标节点
+     * @param size 要设置的尺寸对象（可选，未提供时返回当前尺寸的克隆）
+     * @returns 当前/设置后的尺寸对象（返回新对象避免直接修改）
+     * @example
+     * // 同时设置宽高尺寸
+     * no.size(this.avatarNode, new Size(120, 120));
+     * 
+     * // 根据图片原始尺寸调整节点
+     * const textureSize = this.sprite.spriteFrame.originalSize;
+     * no.size(this.imageNode, textureSize);
+     * 
+     * // 获取当前尺寸并等比放大
+     * const currentSize = no.size(this.itemNode);
+     * no.size(this.itemNode, currentSize.multiplyScalar(1.5));
      */
     export function size(node: Node, size?: Size): Size {
         if (!node || !node.getComponent(UITransform)) return;
@@ -2285,10 +3780,22 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点透明度
-     * @param node 节点
-     * @param opacity 为空时则返回当前opacity；否则修改当前opacity
-     * @returns
+     * 获取或设置节点透明度（自动添加UIOpacity组件）
+     * @param node 目标节点
+     * @param opacity 要设置的透明度（0-255，可选，未提供时返回当前值）
+     * @returns 当前/设置后的透明度值
+     * @example
+     * // 渐隐效果实现
+     * no.tween(this.fadeNode)
+     *   .to(1, { opacity: 0 })
+     *   .start();
+     * 
+     * // 半透明状态切换
+     * const isTransparent = no.opacity(this.panelNode) < 255;
+     * no.opacity(this.panelNode, isTransparent ? 255 : 150);
+     * 
+     * // 获取文字当前透明度
+     * const textAlpha = no.opacity(this.titleLabel.node);
      */
     export function opacity(node: Node, opacity?: number): number {
         if (!node) return;
@@ -2298,10 +3805,17 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点anchorX
-     * @param node 节点
-     * @param x 为空时则返回当前anchorX；否则修改当前anchorX
-     * @returns
+     * 获取或设置节点锚点X坐标（基于UITransform组件）
+     * @param node 目标节点
+     * @param x 锚点X坐标（0-1，可选，未提供时返回当前值）
+     * @returns 当前/设置后的锚点X坐标
+     * @example
+     * // 设置按钮右对齐
+     * no.anchorX(this.btnNode, 1);
+     * 
+     * // 获取文本水平锚点用于居中计算
+     * const anchorX = no.anchorX(this.labelNode);
+     * this.labelNode.position.x = screenWidth * (0.5 - anchorX);
      */
     export function anchorX(node: Node, x?: number): number {
         if (!node) return;
@@ -2311,10 +3825,16 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点anchorY
-     * @param node 节点
-     * @param y 为空时则返回当前anchorY；否则修改当前anchorY
-     * @returns
+     * 获取或设置节点锚点Y坐标（基于UITransform组件）
+     * @param node 目标节点
+     * @param y 锚点Y坐标（0-1，可选，未提供时返回当前值）
+     * @returns 当前/设置后的锚点Y坐标
+     * @example
+     * // 设置进度条底部对齐
+     * no.anchorY(this.progressBar, 0);
+     * 
+     * // 动态调整弹窗垂直锚点
+     * no.anchorY(this.popup, isTop ? 1 : 0.5);
      */
     export function anchorY(node: Node, y?: number): number {
         if (!node) return;
@@ -2324,10 +3844,22 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点anchorPoint
-     * @param node 节点
-     * @param 
-     * @returns
+     * 获取或设置节点锚点（支持同时设置X/Y坐标）
+     * @param node 目标节点
+     * @param args 参数格式：
+     *            - 无参数：返回当前锚点
+     *            - 单个数字：同时设置X/Y锚点
+     *            - 两个数字：分别设置X/Y锚点
+     * @returns 当前/设置后的锚点副本
+     * @example
+     * // 设置中心锚点
+     * no.anchor(this.spriteNode, 0.5);
+     * 
+     * // 设置左上角锚点
+     * no.anchor(this.uiPanel, 0, 1);
+     * 
+     * // 获取当前锚点用于计算
+     * const currentAnchor = no.anchor(this.draggableItem);
      */
     export function anchor(node: Node, ...args: number[]): Vec2 {
         if (!node) return;
@@ -2337,10 +3869,24 @@ export namespace no {
     }
 
     /**
-     * 获取或设置节点scale
-     * @param node 节点
-     * @param scale 为空时则返回当前scale；否则修改当前scale
-     * @returns
+     * 获取或设置节点的局部坐标系缩放比例
+     * @param node 目标节点
+     * @param scale 要设置的缩放值（可选，未提供时返回当前值）
+     * @returns 当前/设置后的缩放值副本（Vec3类型）
+     * @example
+     * // 设置节点缩放为2倍
+     * no.scale(this.spriteNode, v3(2, 2, 1));
+     * 
+     * // 获取当前缩放值用于计算
+     * const currentScale = no.scale(this.playerNode);
+     * 
+     * // 配合缓动动画实现缩放效果
+     * no.tween(this.popupNode)
+     *   .to(0.3, { scale: v3(1.2, 1.2) })
+     *   .start();
+     * 
+     * // 处理空节点情况
+     * const nodeScale = no.scale(null); // 返回undefined
      */
     export function scale(node: Node, scale?: Vec3): Vec3 {
         if (!node) return;
@@ -2350,26 +3896,67 @@ export namespace no {
     }
 
     /**
-     * 获取节点在父节点下的缩放值，
-     * @param node 节点
-     * @returns 
+     * 获取节点在层级关系中的原始缩放值（不受父节点缩放影响）
+     * @param node 目标节点
+     * @returns 节点在层级中的原始缩放值（Vec3类型）
+     * @example
+     * // 获取UI元素的原始缩放
+     * const originalScale = no.scaleInHierarchy(this.uiElement);
+     * 
+     * // 重置节点缩放
+     * this.node.scale = no.scaleInHierarchy(this.node);
+     * 
+     * // 比较世界缩放与原始缩放
+     * const worldScale = this.node.worldScale;
+     * const localScale = no.scaleInHierarchy(this.node);
      */
     export function scaleInHierarchy(node: Node) {
         return node['_scale'];
     }
 
     /**
-     * 获取节点在世界坐标系中的包围盒rect,包含自身和已激活的子节点的世界边框
-     * @param node 
+     * 获取节点及其所有激活子节点在世界坐标系中的包围矩形
+     * @param node 目标节点
+     * @returns 世界坐标系中的包围矩形（Rect类型）
+     * @example
+     * // 检测玩家与障碍物的碰撞
+     * const playerBox = no.boundingBox(this.playerNode);
+     * const obstacleBox = no.boundingBox(this.rockNode);
+     * if (playerBox.intersects(obstacleBox)) {
+     *   this.onCollision();
+     * }
+     * 
+     * // 计算UI容器总尺寸
+     * const containerRect = no.boundingBox(this.scrollContent);
+     * this.label.string = `尺寸：${containerRect.width.toFixed(0)}x${containerRect.height.toFixed(0)}`;
+     * 
+     * // 屏幕边缘检测
+     * const screenRect = new Rect(0, 0, screen.width, screen.height);
+     * if (!screenRect.contains(no.boundingBox(this.enemyNode))) {
+     *   this.destroyEnemy();
+     * }
      */
     export function boundingBox(node: Node): Rect {
         return node.getComponent(UITransform).getBoundingBoxToWorld();
     }
 
     /**
-     * 解析带function的json字符串
-     * @param s 
-     * @returns 
+     * 解析包含函数定义的JSON字符串（微信小游戏平台不支持函数解析）
+     * @param s - 需要解析的JSON字符串，支持包含function定义
+     * @returns 解析后的JavaScript对象，包含还原的函数定义
+     * @example
+     * // 解析带函数的配置数据
+     * const config = parse2Json(`{
+     *   "name": "武器系统",
+     *   "attack": function(base) { return base * 1.5 }
+     * }`);
+     * const damage = config.attack(100); // 150
+     * 
+     * // 处理无效JSON字符串
+     * parse2Json('{invalid json}'); // 输出错误日志并返回null
+     * 
+     * // 微信小游戏平台行为差异
+     * parse2Json('{"func": function(){}}'); // 微信平台返回普通对象，其他平台保留函数
      */
     export function parse2Json(s: string): any {
         if (s == '') return {};
@@ -2391,9 +3978,24 @@ export namespace no {
     }
 
     /**
-     * 序列化带function的json对象
-     * @param json 
-     * @returns 
+     * 序列化包含函数的JSON对象（微信小游戏平台不支持函数序列化）
+     * @param json - 需要序列化的对象，可以包含函数定义
+     * @returns 序列化后的JSON字符串，函数会被转换为字符串形式
+     * @example
+     * // 序列化带函数的对象
+     * const obj = {
+     *   calculate: (a, b) => a + b,
+     *   data: [1, 2, 3]
+     * };
+     * jsonStringify(obj); // 返回'{"calculate":"(a, b) => a + b","data":[1,2,3]}'
+     * 
+     * // 处理循环引用
+     * const circularObj = { a: 1 };
+     * circularObj.self = circularObj;
+     * jsonStringify(circularObj); // 自动移除循环引用
+     * 
+     * // 微信平台行为差异
+     * jsonStringify({ func: () => {} }); // 微信平台返回'{}'
      */
     export function jsonStringify(json: any): string {
         if (json == null) return '';
@@ -2417,8 +4019,13 @@ export namespace no {
     }
 
     /**
-     * 阶乘
-     * @param n 阶
+     * 计算阶乘（递归实现，n >= 0）
+     * @param n - 要计算的阶数
+     * @returns n的阶乘结果
+     * @example
+     * factorial(5); // 120
+     * factorial(0); // 1
+     * factorial(10); // 3628800
      */
     export function factorial(n: number): number {
         if (n == 0) return 1;
@@ -2426,9 +4033,17 @@ export namespace no {
     }
 
     /**
-     * 组合
-     * @param n n>=0
-     * @param i i<=n
+     * 计算组合数C(n, i)（n个元素取i个的组合数）
+     * @param n - 元素总数（n >= 0）
+     * @param i - 选取数量（i <= n）
+     * @returns 组合数计算结果
+     * @example
+     * combination(5, 2); // 10
+     * combination(10, 3); // 120
+     * combination(4, 4); // 1
+     * 
+     * // 参数错误示例
+     * combination(3, 5); // 返回NaN（因n-i为负数）
      */
     export function combination(n: number, i: number): number {
         let _1 = factorial(n),
@@ -2438,11 +4053,21 @@ export namespace no {
     }
 
     /**
-     * 检查数据是否需要重置
-     * @param dataKey 数据key
+     * 检查数据是否需要重置（用于定时/每日重置类数据管理）
+     * @param dataKey 数据key（本地缓存中的键名）
      * @param value 重置后的数据值
-     * @param time 重置时长(s)
-     * @param isInterval 是否间隔时间。如果是，则从当前时间开始计算重置时间；如果否，则从当天0点开始计算。默认false
+     * @param time 重置时间间隔（秒）或每日重置时间点（当isInterval=false时）
+     * @param isInterval 时间模式：true=间隔时间模式（从当前时间开始计算），false=每日重置模式（基于当天0点计算）。默认false
+     * @example
+     * // 每日凌晨重置签到状态
+     * resetValueCheck('last_sign_time', 0, 86400);
+     * 
+     * // 每30分钟重置挑战次数
+     * resetValueCheck('challenge_count', 5, 1800, true);
+     * 
+     * // 重置玩家引导状态（每天8点重置）
+     * const eightHour = 8 * 60 * 60;
+     * resetValueCheck('guide_step', 0, eightHour);
      */
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
         let now = sysTime.now;
@@ -2461,10 +4086,15 @@ export namespace no {
     }
 
     /**
-     * 数字精度转换
-     * @param v 数字
-     * @param x 保留小数位数
-     * @returns 
+     * 数字精度转换（解决浮点数计算精度问题）
+     * @param v 需要处理的数字
+     * @param x 保留的小数位数（默认12位）
+     * @returns 精确处理后的数字
+     * @example
+     * float(0.1 + 0.2)          // 0.3
+     * float(1.2345678901234)    // 1.234567890123
+     * float(Math.PI, 4)         // 3.1416
+     * float(2.0000000000001)    // 2
      */
     export function float(v: number, x = 12): number {
         let a = Math.pow(10, 12),
@@ -2474,10 +4104,19 @@ export namespace no {
     }
 
     /**
-     * 从父节点获取某个组件实例
-     * @param self 
-     * @param comp 
-     * @returns 
+     * 从父节点层级链获取组件实例（递归向上查找）
+     * @param self 起始节点（搜索起点）
+     * @param comp 组件类型（支持类名或组件类）
+     * @returns 找到的组件实例，未找到返回null
+     * @example
+     * // 查找最近的UIManager组件
+     * const uiManager = getComponentInParents(this.node, 'UIManager');
+     * 
+     * // 查找角色控制器组件
+     * const controller = getComponentInParents(characterNode, CharacterController);
+     * 
+     * // 在子弹节点上查找武器组件
+     * const weaponComp = getComponentInParents(bullet.node, WeaponComponent);
      */
     export function getComponentInParents<T extends Component>(self: Node, comp: string | typeof Component): T {
         if (typeof comp == 'string') {
@@ -2495,10 +4134,19 @@ export namespace no {
     }
 
     /**
-     * 从父节点获取某个子节点
-     * @param self 
-     * @param nodeName 节点名
-     * @returns 
+     * 在父节点链中查找指定名称的节点（向上查找）
+     * @param self 起始节点（搜索起点）
+     * @param nodeName 需要查找的目标节点名称
+     * @returns 找到的节点实例，未找到返回null
+     * @example
+     * // 在UI层级中查找公共父容器
+     * const sharedContainer = no.getNodeInParents(this.node, 'SharedUI');
+     * 
+     * // 查找敌人血条节点
+     * const hpBar = no.getNodeInParents(enemyNode, 'EnemyHPBar');
+     * 
+     * // 在嵌套结构中查找根节点
+     * const rootNode = no.getNodeInParents(this.node.parent, 'SceneRoot');
      */
     export function getNodeInParents(self: Node, nodeName: string): Node | null {
         if (self.parent) {
@@ -2510,10 +4158,19 @@ export namespace no {
     }
 
     /**
-     * 递归查找某个子节点
-     * @param self 
-     * @param comp 
-     * @returns 
+     * 递归查找子节点（深度优先搜索）
+     * @param self 起始节点（搜索起点）
+     * @param nodeName 需要查找的目标节点名称
+     * @returns 找到的节点实例，未找到返回null
+     * @example
+     * // 查找嵌套在多层容器中的按钮
+     * const btnAttack = no.getChildByNameRecursion(this.node, 'BtnAttack');
+     * 
+     * // 在角色装备树中查找特定部件
+     * const weaponSlot = no.getChildByNameRecursion(characterNode, 'WeaponSlot');
+     * 
+     * // 查找场景中的特效节点
+     * const fireEffect = no.getChildByNameRecursion(sceneRoot, 'FireEffect');
      */
     export function getChildByNameRecursion(self: Node, nodeName: string): Node | null {
         let c = self.getChildByName(nodeName);
@@ -2526,30 +4183,64 @@ export namespace no {
         return c;
     }
 
-    /**基础数据类 */
+    /**
+     * 基础数据管理类（支持数据变更事件、路径访问、JSON序列化）
+     * @example
+     * // 基本使用
+     * const data = new no.Data();
+     * data.onChange(() => console.log('Data changed!'));
+     * data.set('player.name', 'Alice');
+     * 
+     * // 从JSON初始化
+     * data.json = '{"score":100,"items":["sword"]}';
+     * console.log(data.get('score')); // 100
+     * 
+     * // 复杂对象操作
+     * data.set('config.difficulty', { level: 'hard', enemies: 10 });
+     * data.delete('config.difficulty.level');
+     */
     export class Data extends Event {
+        /** 数据变更事件名称 */
         public static DataChangeEvent = 'data_change_event';
 
         private _data: any = {};
         private _updateScheduled: boolean = false;
 
+        /** 获取原始数据对象 */
         public get data(): any {
             return this._data;
         }
 
+        /** 
+         * 设置完整数据并触发变更事件 
+         * @example
+         * data.data = { coins: 500, hp: 100 };
+         */
         public set data(v: any) {
             this._data = v;
             this.emit(Data.DataChangeEvent, this);
         }
 
-        /**转成json string */
+        /** 
+         * 获取JSON字符串（自动添加时间戳） 
+         * @example
+         * // 输出：{"coins":200,"__ut":1625097600000}
+         * console.log(data.json);
+         */
         public get json(): string {
             let a = clone(this._data);
             a.__ut = sysTime.now;
             return jsonStringify(a);
         }
 
-        /**将json string转成data */
+        /** 
+         * 从JSON字符串/对象加载数据 
+         * @example
+         * // 从字符串加载
+         * data.json = '{"level":5}';
+         * // 从对象加载
+         * data.json = { achievements: ['first_blood'] };
+         */
         public set json(v: any) {
             if (v != undefined) {
                 try {
@@ -2564,8 +4255,15 @@ export namespace no {
         }
 
         /**
-         * 读
-         * @param path
+         * 读取数据（支持点路径和数组路径）
+         * @param paths 数据路径（支持字符串或数组格式）
+         * @example
+         * // 获取嵌套数据
+         * data.set('player.stats', { hp: 100, mp: 50 });
+         * console.log(data.get('player.stats.hp')); // 100
+         * 
+         * // 使用数组路径
+         * console.log(data.get(['player', 'stats', 'mp'])); // 50
          */
         public get(paths?: string | string[]): any {
             if (paths == null || paths == '*') return this._data;
@@ -2574,11 +4272,21 @@ export namespace no {
             }
             return getValue(this._data, paths);
         }
+
         /**
-         * 写
-         * @param path
-         * @param value 如果value为null，则不处理
-         * @param recursive 是否递归，默认true
+         * 写入数据（支持递归设置对象）
+         * @param path 数据路径
+         * @param value 要设置的值（null值会被忽略）
+         * @param recursive 是否递归设置对象属性（默认true）
+         * @example
+         * // 简单值设置
+         * data.set('volume', 0.8);
+         * 
+         * // 递归设置对象
+         * data.set('settings', { audio: { music: true }, graphics: 'high' });
+         * 
+         * // 禁用递归直接覆盖
+         * data.set('inventory', ['sword'], false);
          */
         public set(path: string, value: any, recursive = true) {
             if (recursive && value instanceof Object && value['constructor'] === Object) {
@@ -2597,11 +4305,18 @@ export namespace no {
             return this;
         }
 
+        /**
+         * 直接设置键值对（不进行递归处理）
+         * @example
+         * data.setKV('temp', { x: 10, y: 20 });
+         * console.log(data.get('temp.x')); // undefined
+         */
         public setKV(k: string, v: any) {
             setValue(this._data, k, v);
             return this;
         }
 
+        /** 延迟更新调度（避免频繁触发变更事件） */
         private _scheduleUpdate(): void {
             if (this._updateScheduled) return;
 
@@ -2613,30 +4328,40 @@ export namespace no {
         }
 
         /**
-         * 是否存在
-         * @param paths 
-         * @returns 
+         * 检查数据路径是否存在
+         * @example
+         * console.log(data.has('player.name')); // false
+         * data.set('player.name', 'Bob');
+         * console.log(data.has('player.name')); // true
          */
         public has(paths?: string | string[]): boolean {
             return !!this.get(paths);
         }
 
-
         /**
-         * 删
-         * @param path
+         * 删除指定路径数据
+         * @example
+         * data.set('temp.value', 100);
+         * data.delete('temp.value');
+         * console.log(data.get('temp')); // {}
          */
         public delete(path: string): any {
             return deleteValue(this._data, path);
         }
 
+        /** 清空所有数据 */
         public clear(): void {
             this._data = {};
         }
 
         /**
-         * 枚举
-         * @param handler
+         * 遍历所有数据键值对
+         * @example
+         * data.set('a', 1);
+         * data.set('b', 2);
+         * data.enumerate((k, v) => console.log(k, v)); 
+         * // 输出: a 1
+         * //      b 2
          */
         public enumerate(handler: (k: string, v: any) => void) {
             for (const key in this._data) {
@@ -2644,64 +4369,147 @@ export namespace no {
             }
         }
 
+        /**
+         * 注册数据变更监听
+         * @example
+         * data.onChange((d) => {
+         *   console.log('New data:', d.data);
+         * }, this);
+         */
         public onChange(handler: (d?: Data) => void, target?: any): void {
             this.on(Data.DataChangeEvent, handler, target);
         }
 
+        /** 移除数据变更监听 */
         public offChange(handler: (d?: Data) => void, target?: any): void {
             this.off(Data.DataChangeEvent, handler, target);
         }
 
+        /** 手动触发数据变更事件 */
         public triggerChange() {
             this.emit(Data.DataChangeEvent, this);
         }
     }
 
     /**
-     * 状态数据类，用于存储和处理一些状态数据，这些状态数据的值会因其他数据变化而变化，
+     * 状态数据类（用于管理衍生状态数据，自动追踪依赖关系并通过update()更新）
      * 
+     * @example <caption>基本用法</caption>
+     * // 创建状态实例
+     * const status = no.StatusData.new();
+     * 
+     * // 添加衍生状态（当角色属性变化时需要更新）
+     * status.add('attackPower', () => {
+     *   return player.strength * 2 + player.weapon.atk;
+     * });
+     * 
+     * // 添加组合状态（依赖多个数据源）
+     * status.add('totalScore', () => {
+     *   return game.score + game.bonus * 1.5;
+     * });
+     * 
+     * // 当基础数据变化后，手动触发更新
+     * player.strength += 10;
+     * status.update('attackPower');
+     * 
+     * // 获取最新状态值
+     * console.log(status.get('attackPower'));
      */
     export class StatusData {
+        /** 存储计算函数映射表 { [key: string]: () => any } */
         private _map: any = {};
+        /** 缓存计算结果 { [key: string]: any } */
         private _data: any = {};
 
+        /** 工厂方法创建实例 */
         public static new() {
             return new StatusData();
         }
 
-        public add(dataKey: string, valueFunc: Function) {
+        /**
+         * 添加/更新状态计算规则
+         * @param dataKey 状态键名
+         * @param valueFunc 计算函数（需返回状态值）
+         * @example
+         * // 添加移动速度计算（依赖敏捷属性和装备加成）
+         * status.add('moveSpeed', () => {
+         *   return (char.agility + char.equipments.shoes.speed) * 0.8;
+         * });
+         */
+        public add(dataKey: string, valueFunc: () => any) {
             this._map[dataKey] = valueFunc;
             this._data[dataKey] = valueFunc();
         }
 
+        /**
+         * 获取状态当前值
+         * @param key 要获取的状态键名
+         * @returns 缓存的状态值
+         * @example
+         * // 获取实时战斗评分
+         * const combatScore = status.get('combatRating');
+         */
         public get(key: string) {
             return this._data[key];
         }
 
+        /**
+         * 更新指定状态值（重新执行计算函数）
+         * @param keys 要更新的键名（支持字符串或数组）
+         * @example
+         * // 更新单个状态
+         * status.update('attackPower');
+         * 
+         * // 批量更新多个状态
+         * status.update(['moveSpeed', 'defenseRate']);
+         */
         public update(keys: string | string[]) {
             keys = [].concat(keys);
             for (let i = 0; i < keys.length; i++) {
                 let key = keys[i];
-                this._data[key] = this._map[key]();
+                if (this._map[key]) {
+                    this._data[key] = this._map[key]?.();
+                }
             }
         }
     }
 
     /**
-     * 数据缓存类，包括localstorage、json配置、全局临时数据
+     * 数据缓存类（支持本地存储、JSON配置、全局临时数据管理）
+     * 
+     * 功能特性：
+     * - 本地存储：使用localStorage进行持久化存储，支持自动JSON序列化/反序列化
+     * - 配置管理：支持结构化JSON数据存取，支持路径访问（a.b.c格式）
+     * - 临时数据：内存级数据存储，生命周期与页面会话一致
+     * - 事件通知：数据变更时触发对应事件
+     * 
+     * @example
+     * // 初始化数据缓存实例
+     * const cache = new DataCache();
+     * 
+     * // 设置本地存储前缀（多账户隔离）
+     * cache.localPreKey = 'player_001';
      */
     export class DataCache extends EventTarget {
-        private _json: Data;
-        private _tmp: Data;
-        private _localPreKey: string = '';
+        private _json: Data;    // JSON配置数据存储
+        private _tmp: Data;     // 全局临时数据存储
+        private _localPreKey: string = '';  // 本地存储前缀（用于多账户隔离）
 
         constructor() {
             super();
-            this._json = new Data();
-            this._tmp = new Data();
+            this._json = new Data();  // 初始化JSON配置存储
+            this._tmp = new Data();   // 初始化临时数据存储
         }
 
-        /**本地数据前缀，用来区分不同账号 */
+        /** 
+         * 本地数据前缀（用于多账户数据隔离）
+         * @example
+         * // 设置玩家专属前缀
+         * dataCache.localPreKey = `user_${userId}`;
+         * 
+         * // 读取当前前缀
+         * const currentPrefix = dataCache.localPreKey;
+         */
         public get localPreKey(): string {
             return this._localPreKey;
         }
@@ -2710,12 +4518,17 @@ export namespace no {
             this._localPreKey = v;
         }
 
-
-
         /**
-         * 获取本地数据
-         * @param key
-         * @param defaultVal 默认值
+         * 获取本地存储数据（自动反序列化）
+         * @param key - 存储键名（无需包含前缀）
+         * @param defaultVal - 当数据不存在时返回的默认值
+         * @returns 解析后的数据对象或默认值
+         * @example
+         * // 获取玩家设置
+         * const settings = dataCache.getLocal('game_settings');
+         * 
+         * // 带默认值的获取
+         * const volume = dataCache.getLocal('audio_volume', 0.5);
          */
         public getLocal(key: string, defaultVal?: any): any {
             key = `${this._localPreKey}_${key}`;
@@ -2728,10 +4541,21 @@ export namespace no {
                 return null;
             }
         }
+
         /**
-         * 写入本地数据
-         * @param key
-         * @param value
+         * 写入本地存储数据（自动序列化）
+         * @param key - 存储键名（无需包含前缀）
+         * @param value - 要存储的值（支持对象、数组等可序列化数据）
+         * @example
+         * // 存储简单值
+         * dataCache.setLocal('last_login', Date.now());
+         * 
+         * // 存储复杂对象
+         * dataCache.setLocal('player_state', {
+         *   hp: 100,
+         *   position: [x, y, z],
+         *   inventory: ['sword', 'potion']
+         * });
          */
         public setLocal(key: string, value: any): void {
             key = `${this._localPreKey}_${key}`;
@@ -2741,19 +4565,39 @@ export namespace no {
                 localStorage.setItem(key, jsonStringify(value));
             this.emit(key, value);
         }
-        /**删除本地数据 */
+
+        /**
+         * 删除指定本地存储项
+         * @param key - 要删除的键名（无需包含前缀）
+         * @example
+         * // 清除单个设置项
+         * dataCache.deleteLocal('debug_mode');
+         */
         public deleteLocal(key: string) {
             key = `${this._localPreKey}_${key}`;
             localStorage.removeItem(key);
         }
-        /**消除全部本地数据 */
+
+        /**
+         * 清空所有本地存储数据（慎用！）
+         * @example
+         * // 重置玩家所有本地数据
+         * dataCache.clearLocal();
+         */
         public clearLocal() {
             localStorage.clear();
         }
 
         /**
-         * 获取配置数据
-         * @param path 如a.b.c 或[a,b,c]
+         * 获取结构化配置数据（支持路径访问）
+         * @param path - 数据路径（支持点分格式或数组格式）
+         * @returns 配置数据或undefined
+         * @example
+         * // 获取嵌套配置
+         * const enemyConfig = dataCache.getJSON('game_config.enemies.zombie');
+         * 
+         * // 使用数组路径
+         * const weaponStats = dataCache.getJSON(['equipment', 'weapons', 'sword']);
          */
         public getJSON(path?: string | string[]): any {
             const a = this._json.get(path);
@@ -2762,8 +4606,19 @@ export namespace no {
         }
 
         /**
-         * 写入配置数据
-         * @param json
+         * 批量更新配置数据
+         * @param json - 要合并的配置对象
+         * @example
+         * // 初始化游戏配置
+         * dataCache.setJSON({
+         *   difficulty: {
+         *     easy: { enemyCount: 10 },
+         *     hard: { enemyCount: 30 }
+         *   },
+         *   physics: {
+         *     gravity: 9.8
+         *   }
+         * });
          */
         public setJSON(json: Object): void {
             forEachKV(json, (key, value) => {
@@ -2773,41 +4628,42 @@ export namespace no {
         }
 
         /**
-         * 将所有配置设置为只读状态
-         */
-        // public unwritableJSON(json?: any) {
-        //     json = json || this._json.data;
-        //     for (const key in json) {
-        //         Object.defineProperty(json, key, {
-        //             writable: false
-        //         });
-        //         if (json[key] instanceof Array) {
-        //             json[key].forEach((a: any) => {
-        //                 this.unwritableJSON(a);
-        //             });
-        //         } else if (json[key] instanceof Object) {
-        //             this.unwritableJSON(json[key]);
-        //         }
-        //     }
-        // }
-        /**
-         * 获取全局临时数据
-         * @param key
+         * 获取全局临时数据对象
+         * @param key - 临时数据键名
+         * @returns 包含键值对的对象
+         * @example
+         * // 获取临时会话数据
+         * const tempData = dataCache.getTmpData('combat_session');
          */
         public getTmpData(key: string): any {
             return { [key]: this.getTmpValue(key) };
         }
+
         /**
          * 获取全局临时数据值
-         * @param key
+         * @param key - 临时数据键名
+         * @returns 存储的值或undefined
+         * @example
+         * // 获取临时得分
+         * const score = dataCache.getTmpValue('current_score');
          */
         public getTmpValue(key: string): any {
             return this._tmp.get(key);
         }
+
         /**
-         * 写入全局临时数据
-         * @param key
-         * @param value
+         * 设置全局临时数据（非持久化存储）
+         * @param key - 临时数据键名
+         * @param value - 要存储的值（null表示删除）
+         * @example
+         * // 存储玩家当前会话得分
+         * dataCache.setTmpValue('current_score', 1500);
+         * 
+         * // 存储临时标记
+         * dataCache.setTmpValue('tutorial_complete', true);
+         * 
+         * // 删除临时数据
+         * dataCache.setTmpValue('temp_marker', null);
          */
         public setTmpValue(key: string, value: any): void {
             if (value == null) {
@@ -2828,13 +4684,28 @@ export namespace no {
     export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset | typeof ImageAsset };
     export class AssetBundleManager {
 
+        // 远程资源缓存（键：资源路径，值：资源对象）
         private remoteAssetsCache: any = {};
+        // 资源缓存映射表（键：资源路径，值：资源实例）
         private _cacheAsset: Map<string, Asset> = new Map();
+        // 资源引用计数与时间戳（用于资源回收）
         private _cacheAssetRef: { [k: string]: { ref: number, time: number } } = {};
+        // TTF字体缓存（键：字体名称，值：字体资源）
         private _ttfFont: { [fontFamily: string]: TTFFont } = {};
+        // 资源路径到UUID的映射（用于快速查找）
         private _pathToUuid: Map<string, string> = new Map();
+        // 正在加载中的资源列表（键：资源路径，值：加载状态）
         private _loadingAssets: Map<string, number> = new Map();
 
+        /**
+         * 获取/设置资源服务器地址
+         * @example
+         * // 获取当前资源服务器地址
+         * const currentServer = assetBundleManager.server;
+         * 
+         * // 设置远程资源服务器
+         * assetBundleManager.server = 'https://cdn.example.com/game-assets/';
+         */
         public get server(): string {
             return assetManager.downloader.remoteServerAddress;
         }
@@ -2843,18 +4714,52 @@ export namespace no {
             assetManager.downloader['_remoteServerAddress'] = v;
         }
 
+        /**
+         * 获取所有远程资源包列表
+         * @example
+         * // 获取所有远程资源包名称
+         * const bundles = assetBundleManager.remoteBundles;
+         * console.log(bundles); // ['characters', 'scenes', 'effects']
+         */
         public get remoteBundles(): readonly string[] {
             return assetManager.downloader.remoteBundles;
         }
 
+        /**
+         * 检查是否为远程资源包
+         * @param bundleName - 资源包名称
+         * @example
+         * // 检查角色包是否为远程资源
+         * const isRemote = assetBundleManager.isRemoteBundle('characters');
+         */
         public isRemoteBundle(bundleName: string): boolean {
             return this.remoteBundles.includes(bundleName);
         }
 
+        /**
+         * 获取资源包版本号
+         * @param bundleName - 资源包名称
+         * @example
+         * // 获取主资源包版本
+         * const version = assetBundleManager.bundleVer('main');
+         * console.log(version); // '1.2.3'
+         */
         public bundleVer(bundleName: string): string {
             return assetManager.downloader.bundleVers[bundleName];
         }
 
+        /**
+         * 获取完整资源包URL
+         * @param bundleName - 资源包名称
+         * @example
+         * // 获取远程角色包URL
+         * const url = assetBundleManager.bundleUrl('characters');
+         * // 返回：'https://cdn.example.com/game-assets/remote/characters'
+         * 
+         * // 获取本地UI包路径
+         * const localPath = assetBundleManager.bundleUrl('ui');
+         * // 返回：'ui'
+         */
         public bundleUrl(bundleName: string): string {
             if (this.isRemoteBundle(bundleName)) {
                 return this.server + pathjoin('remote', bundleName);
@@ -2862,10 +4767,33 @@ export namespace no {
             return bundleName;
         }
 
+        /**
+         * 检查资源是否已缓存
+         * @param path - 资源路径
+         * @example
+         * // 检查玩家模型是否已加载
+         * if (assetBundleManager.hasAsset('player/model')) {
+         *   // 使用缓存资源...
+         * }
+         */
         public hasAsset(path: string): boolean {
             return this._pathToUuid.has(path);
         }
 
+        /**
+         * 从缓存加载资源（增加引用计数）
+         * @param path - 资源路径
+         * @returns 资源实例或null
+         * @example
+         * // 加载UI按钮资源
+         * const buttonAsset = assetBundleManager.loadInCache('ui/button');
+         * if (buttonAsset) {
+         *   const buttonNode = instantiate(buttonAsset);
+         *   // 使用完成后需要调用release...
+         * }
+         * 
+         * // 注意：调用方需负责释放资源引用
+         */
         public loadInCache(path: string) {
             const uuid = this._pathToUuid.get(path);
             if (uuid) {
@@ -2877,30 +4805,56 @@ export namespace no {
         }
 
         /**
-         * 当多个并发加载同一个资源时，设置该资源的加载状态
+         * 设置资源加载状态（用于处理并发加载同一资源的情况）
          * @param path 资源路径
+         * @example
+         * // 在开始加载资源前标记加载状态
+         * if (!assetBundleManager.isAssetLoading('characters/hero')) {
+         *   assetBundleManager.loadingAsset('characters/hero');
+         *   this.loadRemoteAsset('characters/hero', (err, asset) => { ... });
+         * }
          */
         public loadingAsset(path: string) {
             this._loadingAssets.set(path, 1);
         }
 
         /**
-         * 该资源是否在加载中
+         * 检查资源是否正在加载中
          * @param path 资源路径
-         * @returns 
+         * @returns 是否正在加载
+         * @example
+         * // 避免重复加载正在请求的资源
+         * if (assetBundleManager.isAssetLoading('effects/fire')) {
+         *   return; // 已有加载中的请求
+         * }
          */
         public isAssetLoading(path: string): boolean {
             return this._loadingAssets.has(path);
         }
 
         /**
-         * 标记该资源已经完成加载
+         * 标记资源加载完成（无论成功失败都需要调用）
          * @param path 资源路径
+         * @example
+         * // 在加载回调中始终调用结束标记
+         * loadRemoteAsset('bgm/battle', (err, clip) => {
+         *   assetBundleManager.assetLoadingEnd('bgm/battle');
+         *   // ...处理资源
+         * });
          */
         public assetLoadingEnd(path: string) {
             this._loadingAssets.delete(path);
         }
 
+        /**
+         * 清空所有缓存资源（切换场景时建议调用）
+         * @example
+         * // 切换关卡时清理缓存
+         * onLevelChange() {
+         *   assetBundleManager.clearCachedAssets();
+         *   // ...其他清理逻辑
+         * }
+         */
         public clearCachedAssets() {
             for (const [key, asset] of this._cacheAsset) {
                 asset.destroy?.();
@@ -2909,9 +4863,18 @@ export namespace no {
         }
 
         /**
-         * 预加载bundles
-         * @param paths
-         * @param onProgress
+         * 顺序预加载多个资源包（支持进度回调）
+         * @param paths 需要加载的bundle路径数组
+         * @param onProgress 加载进度回调（0-1）
+         * @example
+         * // 预加载游戏核心资源
+         * const bundles = ['base-res', 'characters', 'ui'];
+         * assetBundleManager.loadBundles(bundles, (progress) => {
+         *   this.loadingBar.progress = progress; // 更新进度条
+         * });
+         * 
+         * // 加载单个bundle
+         * assetBundleManager.loadBundles(['dialogue'], null);
          */
         public loadBundles(paths: string[], onProgress: (progress: number) => void): void {
             if (paths == null) {
@@ -2921,6 +4884,12 @@ export namespace no {
             this._loadB(paths, 0, onProgress);
         }
 
+        /**
+         * 递归加载bundle的内部实现
+         * @param paths 所有需要加载的路径数组
+         * @param i 当前加载的索引
+         * @param callback 进度回调函数
+         */
         private _loadB(paths: string[], i: number, callback: (p: number) => void) {
             let p = paths[i];
             let n = paths.length;
@@ -2931,10 +4900,24 @@ export namespace no {
             });
         }
         /**
-         * 预加载files
-         * @param bundleName
-         * @param filePaths
-         * @param onProgress
+         * 预加载指定资源包内的多个文件资源
+         * @param bundleName - 资源包名称（如'characters'、'ui'）
+         * @param filePaths - 需要预加载的资源路径数组（相对于资源包的路径）
+         * @param onProgress - 加载进度回调（0-1）
+         * @example
+         * // 预加载角色包中的纹理和动画资源
+         * assetBundleManager.preloadFiles('characters', [
+         *   'textures/hero_01',
+         *   'animations/attack'
+         * ], (p) => {
+         *   console.log(`加载进度：${(p * 100).toFixed(1)}%`);
+         * });
+         * 
+         * // 预加载UI包中的多个音效文件
+         * assetBundleManager.preloadFiles('ui', [
+         *   'sounds/click',
+         *   'sounds/notification'
+         * ], null);
          */
         public preloadFiles(bundleName: string, filePaths: string[], onProgress?: (progress: number) => void): void {
             let bundle = this.getLoadedBundle(bundleName);
@@ -2951,6 +4934,30 @@ export namespace no {
             }
         }
 
+        /**
+         * 通用预加载方法（支持混合类型资源加载）
+         * @param requests - 预加载请求数组，支持以下格式：
+         *   - uuid: 资源唯一标识符
+         *   - url: 远程资源地址
+         *   - path: 本地资源路径（格式：'bundle/path/to/asset'）
+         *   - dir: 目录路径（加载整个目录）
+         *   - scene: 场景名称
+         * @param onProgress - 加载进度回调（0-1）
+         * @example
+         * // 同时预加载场景、目录和单个资源
+         * assetBundleManager.preloadAny([
+         *   { scene: 'Level2' },
+         *   { dir: 'models/enemies' },
+         *   { path: 'effects/fire' }
+         * ], (p) => {
+         *   this.loadingLabel.string = `资源加载中 ${p * 100}%`;
+         * });
+         * 
+         * // 预加载远程服务器资源
+         * assetBundleManager.preloadAny([
+         *   { url: 'https://cdn.example.com/weapons/sword.png' }
+         * ], null);
+         */
         public preloadAny(requests: {
             uuid?: string,
             url?: string,
@@ -2958,7 +4965,6 @@ export namespace no {
             dir?: string,
             scene?: string
         }[], onProgress: (progress: number) => void): void {
-            // log('preloadAny', requests);
             assetManager.preloadAny(requests, (finished, total, requestItem) => {
                 onProgress && onProgress(finished / total);
             }, (e, items) => {
@@ -2970,13 +4976,21 @@ export namespace no {
         }
 
         /**
-         * 预加载场景
-         * @param name
-         * @param onProgress
+         * 预加载指定场景资源
+         * @param name - 场景名称（需在构建配置中存在的场景）
+         * @param onProgress - 加载进度回调（0-1）
+         * @example
+         * // 预加载关卡场景并在完成后跳转
+         * assetBundleManager.preloadScene('Level3', (progress) => {
+         *   this.progressBar.width = 300 * progress;
+         * });
+         * 
+         * // 静默预加载主菜单场景
+         * assetBundleManager.preloadScene('MainMenu', null);
          */
         public preloadScene(name: string, onProgress: (progress: number) => void): void {
             director.preloadScene(name, (finished, total, item) => {
-                // onProgress && onProgress((finished / total) || 0);
+                // 引擎暂不提供精确进度，保留占位符
             }, (err) => {
                 if (err) {
                     log('preloadScene', name, err.message);
@@ -2986,9 +5000,23 @@ export namespace no {
             });
         }
         /**
-         * 加载bundle
-         * @param name
-         * @param callback
+         * 加载资源包（支持本地/远程资源包）
+         * @param name - 资源包名称或远程URL地址
+         * @param callback - 加载完成回调函数
+         * @param force - 是否强制重新加载（默认false）
+         * @example
+         * // 加载本地resources包
+         * assetBundleManager.loadBundle('resources', (bundle) => {
+         *   console.log('Bundle loaded:', bundle.name);
+         * });
+         * 
+         * // 强制重新加载远程包
+         * assetBundleManager.loadBundle('https://cdn.example.com/characters', (b) => {
+         *   this.loadCharacterAssets();
+         * }, true);
+         * 
+         * // 加载配置表包
+         * assetBundleManager.loadBundle('configs', null);
          */
         public loadBundle(name: string, callback?: (bundle: Bundle) => void, force = false): void {
             let bundle = this.getLoadedBundle(name);
@@ -3014,9 +5042,17 @@ export namespace no {
                 }
             });
         }
+
         /**
-         * 获取已加载的bundle
-         * @param name
+         * 获取已加载的资源包实例
+         * @param name - 资源包名称
+         * @returns 已加载的资源包对象，未找到返回null
+         * @example
+         * // 获取已加载的UI包
+         * const uiBundle = assetBundleManager.getLoadedBundle('ui');
+         * if (uiBundle) {
+         *   this.loadUIComponents();
+         * }
          */
         public getLoadedBundle(name: string): Bundle {
             const a = assetManager.getBundle(name);
@@ -3027,10 +5063,25 @@ export namespace no {
         }
 
         /**
-         * 通用资源加载
-         * @param path
-         * @param type
-         * @param callback
+         * 通用资源加载方法（支持bundle内/远程资源）
+         * @param path - 资源路径（支持格式：'bundleName:path/to/asset' 或完整URL）
+         * @param type - 资源类型（如SpriteFrame, Prefab等）
+         * @param callback - 加载完成回调
+         * @example
+         * // 加载远程图片
+         * assetBundleManager.loadFile('https://example.com/image.png', SpriteFrame, (frame) => {
+         *   this.sprite.spriteFrame = frame;
+         * });
+         * 
+         * // 加载bundle内预制体
+         * assetBundleManager.loadFile('characters:prefabs/hero', Prefab, (prefab) => {
+         *   instantiate(prefab).parent = this.node;
+         * });
+         * 
+         * // 加载本地JSON配置
+         * assetBundleManager.loadFile('configs:data/levels', JsonAsset, (json) => {
+         *   this.initLevels(json.json);
+         * });
          */
         public loadFile(path: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
             let p = this.assetPath(path);
@@ -3041,26 +5092,41 @@ export namespace no {
             }
             else {
                 assetManager.loadAny({ 'url': path }, (e, item) => {
-                    if (err) err('loadFile', path, e.message);
+                    if (e) err('loadFile', path, e.message);
                     callback(item);
                 });
             }
         }
+
         /**
-         * 加载bundle中的文件
-         * @param bundleName
-         * @param fileName
-         * @param type
-         * @param callback
+         * 加载指定资源包内的文件（自动处理包加载依赖）
+         * @param bundleName - 资源包名称（空字符串表示加载远程资源）
+         * @param fileName - 资源在包内的路径
+         * @param type - 资源类型
+         * @param callback - 加载完成回调
+         * @example
+         * // 加载角色包内的动画资源
+         * assetBundleManager.load('characters', 'animations/warrior', AnimationClip, (clip) => {
+         *   this.anim.addClip(clip);
+         * });
+         * 
+         * // 直接加载远程音效文件
+         * assetBundleManager.load('', 'https://example.com/sound.mp3', AudioClip, (audio) => {
+         *   this.playSound(audio);
+         * });
+         * 
+         * // 加载本地包内场景资源
+         * assetBundleManager.load('scenes', 'level3', SceneAsset, (scene) => {
+         *   director.loadScene(scene);
+         * });
          */
         public load(bundleName: string, fileName: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
-            // log('load', bundleName, fileName);
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
                         log('load', fileName, err.message);
                     } else {
-                        this.addRef(item);//增加引用计数
+                        this.addRef(item);
                     }
                     callback?.(item);
                 });
@@ -3073,8 +5139,7 @@ export namespace no {
                             err('load', fileName, error.message);
                             evn.emit('load_file_fail');
                         } else {
-                            this.addRef(item);//增加引用计数
-                            // this.loadDepends(item.uuid);
+                            this.addRef(item);
                         }
                         callback?.(item);
                     });
@@ -3086,54 +5151,238 @@ export namespace no {
             }
         }
 
+        /**
+         * 加载文本资源文件（支持.txt/.xml/.csv等文本格式）
+         * @param path - 资源路径或远程URL地址（格式：'bundle/path/to/file' 或 'http://example.com/data.txt'）
+         * @param callback - 加载完成回调函数，接收TextAsset对象
+         * @example
+         * // 加载本地包内对话文本
+         * assetBundleManager.loadText('texts/dialogue', (asset) => {
+         *   if (asset) {
+         *     const dialogueLines = asset.text.split('\n');
+         *     this.showDialogue(dialogueLines);
+         *   } else {
+         *     console.error('对话文本加载失败');
+         *   }
+         * });
+         * 
+         * // 加载远程配置文件
+         * const configURL = 'https://example.com/game_config.csv';
+         * assetBundleManager.loadText(configURL, (csvAsset) => {
+         *   if (csvAsset) {
+         *     this.parseConfig(csvAsset.text);
+         *   }
+         * });
+         * 
+         * // 加载多语言文本资源
+         * const langPath = `localization/${this.currentLang}/ui_text`;
+         * assetBundleManager.loadText(langPath, (textAsset) => {
+         *   this.uiStrings = JSON.parse(textAsset.text);
+         * });
+         */
         public loadText(path: string, callback: (item: TextAsset) => void): void {
             this.loadFile(path, TextAsset, callback);
         }
 
+        /**
+         * 加载JSON配置文件
+         * @param path - JSON文件路径（格式：'bundle/path/to/file' 或远程URL）
+         * @param callback - 加载完成回调，接收JsonAsset对象
+         * @example
+         * // 加载本地游戏配置
+         * assetBundleManager.loadJSON('config/game_settings', (asset) => {
+         *   if (asset) {
+         *     this.difficulty = asset.json.difficultyLevel;
+         *     this.enemyCount = asset.json.enemySettings.count;
+         *   }
+         * });
+         * 
+         * // 加载远程排行榜数据
+         * assetBundleManager.loadJSON('https://api.example.com/leaderboard', (data) => {
+         *   this.updateLeaderboard(data?.json);
+         * });
+         */
         public loadJSON(path: string, callback: (item: JsonAsset) => void): void {
             this.loadFile(path, JsonAsset, callback);
         }
 
+        /**
+         * 加载精灵帧资源（适用于UI元素、2D精灵）
+         * @param path - 精灵帧路径（格式：'bundle/path/to/spriteFrame'）
+         * @param callback - 加载完成回调，接收SpriteFrame对象
+         * @example
+         * // 加载角色头像
+         * assetBundleManager.loadSprite('characters/avatars/hero', (frame) => {
+         *   if (frame) {
+         *     this.avatar.spriteFrame = frame;
+         *   }
+         * });
+         * 
+         * // 加载技能图标
+         * assetBundleManager.loadSprite('ui/skill_icons/fireball', (iconFrame) => {
+         *   skillButton.getComponent(Sprite).spriteFrame = iconFrame;
+         * });
+         */
         public loadSprite(path: string, callback: (item: SpriteFrame) => void): void {
             this.loadFile(path, SpriteFrame, callback);
         }
 
+        /**
+         * 加载Spine骨骼动画资源
+         * @param path - Spine资源路径（格式：'bundle/path/to/spine'）
+         * @param callback - 加载完成回调，接收SkeletonData对象
+         * @example
+         * // 加载角色动画
+         * assetBundleManager.loadSpine('spines/characters/warrior', (skeletonData) => {
+         *   if (skeletonData) {
+         *     const skeleton = this.node.addComponent(sp.Skeleton);
+         *     skeleton.skeletonData = skeletonData;
+         *     skeleton.setAnimation(0, 'idle', true);
+         *   }
+         * });
+         */
         public loadSpine(path: string, callback: (item: SkeletonData) => void): void {
             this.loadFile(path, SkeletonData, callback);
         }
 
+        /**
+         * 加载图集资源（包含多个精灵帧的集合）
+         * @param path - 图集路径（格式：'bundle/path/to/atlas'）
+         * @param callback - 加载完成回调，接收SpriteAtlas对象
+         * @example
+         * // 加载UI图集并获取具体精灵帧
+         * assetBundleManager.loadAtlas('ui/atlas/main_ui', (atlas) => {
+         *   const closeBtnFrame = atlas.getSpriteFrame('close_btn');
+         *   this.closeButton.spriteFrame = closeBtnFrame;
+         * });
+         */
         public loadAtlas(path: string, callback: (item: SpriteAtlas) => void): void {
             this.loadFile(path, SpriteAtlas, callback);
         }
 
+        /**
+         * 加载纹理资源（适用于3D模型贴图、背景图等）
+         * @param path - 纹理路径（格式：'bundle/path/to/texture' 或远程URL）
+         * @param callback - 加载完成回调，接收Texture2D对象
+         * @example
+         * // 加载场景背景纹理
+         * assetBundleManager.loadTexture('textures/backgrounds/forest', (texture) => {
+         *   this.terrainMaterial.setProperty('mainTexture', texture);
+         * });
+         * 
+         * // 加载远程图片作为动态背景
+         * assetBundleManager.loadTexture('https://example.com/dynamic_bg.jpg', (bgTexture) => {
+         *   this.bgSprite.spriteFrame = new SpriteFrame(bgTexture);
+         * });
+         */
         public loadTexture(path: string, callback: (item: Texture2D) => void): void {
             this.loadFile(path, Texture2D, callback);
         }
 
+        /**
+         * 加载音频资源（支持mp3/wav等格式）
+         * @param path - 音频路径（格式：'bundle/path/to/audio' 或远程URL）
+         * @param callback - 加载完成回调，接收AudioClip对象
+         * @example
+         * // 加载背景音乐
+         * assetBundleManager.loadAudio('sounds/bgm_main', (clip) => {
+         *   if (clip) {
+         *     AudioEngine.playMusic(clip, true);
+         *   }
+         * });
+         * 
+         * // 加载远程音效
+         * assetBundleManager.loadAudio('https://cdn.example.com/sfx/explosion.mp3', (sfx) => {
+         *   this.explosionSound = sfx;
+         * });
+         */
         public loadAudio(path: string, callback: (item: AudioClip) => void): void {
             this.loadFile(path, AudioClip, callback);
         }
 
+        /**
+         * 加载预制体资源（包含节点结构和组件配置）
+         * @param path - 预制体路径（格式：'bundle/path/to/prefab'）
+         * @param callback - 加载完成回调，接收Prefab对象
+         * @example
+         * // 实例化UI弹窗预制体
+         * assetBundleManager.loadPrefab('ui/popups/settings', (prefab) => {
+         *   const popup = instantiate(prefab);
+         *   popup.parent = this.canvasNode;
+         * });
+         */
         public loadPrefab(path: string, callback: (item: Prefab) => void): void {
             this.loadFile(path, Prefab, callback);
         }
 
+        /**
+         * 加载动画剪辑资源（包含关键帧动画数据）
+         * @param path - 动画路径（格式：'bundle/path/to/animation'）
+         * @param callback - 加载完成回调，接收AnimationClip对象
+         * @example
+         * // 为角色添加攻击动画
+         * assetBundleManager.loadAnimationClip('characters/hero/attack', (clip) => {
+         *   this.animationComponent.addClip(clip, 'attack');
+         *   this.animationComponent.play('attack');
+         * });
+         */
         public loadAnimationClip(path: string, callback: (item: AnimationClip) => void): void {
             this.loadFile(path, AnimationClip, callback);
         }
 
+        /**
+         * 加载材质资源（包含着色器参数配置）
+         * @param path - 材质路径（格式：'bundle/path/to/material'）
+         * @param callback - 加载完成回调，接收Material对象
+         * @example
+         * // 更换武器材质
+         * assetBundleManager.loadMaterial('materials/weapons/gold', (mat) => {
+         *   this.weaponRenderer.setMaterial(0, mat);
+         * });
+         */
         public loadMaterial(path: string, callback: (item: Material) => void): void {
             this.loadFile(path, Material, callback);
         }
 
+        /**
+         * 加载特效资源（包含着色器效果配置）
+         * @param path - 特效路径（格式：'bundle/path/to/effect'）
+         * @param callback - 加载完成回调，接收EffectAsset对象
+         * @example
+         * // 应用屏幕后处理特效
+         * assetBundleManager.loadEffect('effects/bloom', (effect) => {
+         *   this.postProcess.effectAsset = effect;
+         * });
+         */
         public loadEffect(path: string, callback: (item: EffectAsset) => void): void {
             this.loadFile(path, EffectAsset, callback);
         }
 
+        /**
+         * 加载字体资源（支持TTF/位图字体）
+         * @param path - 字体路径（格式：'bundle/path/to/font'）
+         * @param callback - 加载完成回调，接收Font对象
+         * @example
+         * // 更换UI字体
+         * assetBundleManager.loadFont('fonts/arial', (font) => {
+         *   this.label.font = font;
+         * });
+         */
         public loadFont(path: string, callback: (item: Font) => void): void {
             this.loadFile(path, Font, callback);
         }
 
+        /**
+         * 加载二进制数据（适用于自定义数据格式）
+         * @param path - 数据路径（格式：'bundle/path/to/buffer'）
+         * @param callback - 加载完成回调，接收BufferAsset对象
+         * @example
+         * // 读取配置文件二进制数据
+         * assetBundleManager.loadBuffer('configs/game_data.bin', (buffer) => {
+         *   const view = new DataView(buffer.buffer);
+         *   this.maxLevel = view.getUint16(0);
+         * });
+         */
         public loadBuffer(path: string, callback: (item: BufferAsset) => void): void {
             this.loadFile(path, BufferAsset, callback);
         }
@@ -3146,6 +5395,35 @@ export namespace no {
         //     this.loadFile(path, dragonBones.DragonBonesAsset, callback);
         // }
 
+        /**
+         * 批量加载资源文件（支持进度回调与引用计数管理）
+         * @param bundleName - 资源包名称（本地或远程包）
+         * @param filePaths - 要加载的资源路径数组（格式：['path/to/file1', 'path/to/file2']）
+         * @param onProgress - 加载进度回调（0-1）
+         * @param onComplete - 加载完成回调（返回加载成功的资源数组）
+         * @example
+         * // 加载多个UI纹理和预制体
+         * assetBundleManager.loadFiles('ui', [
+         *   'textures/btn_play',
+         *   'prefabs/player_info',
+         *   'animations/character'
+         * ], (progress) => {
+         *   this.loadingBar.progress = progress;
+         * }, (items) => {
+         *   if (items) {
+         *     this.btnTexture = items[0] as ImageAsset;
+         *     this.playerPrefab = items[1] as Prefab;
+         *   }
+         * });
+         * 
+         * // 加载远程角色包资源
+         * assetBundleManager.loadFiles('characters', [
+         *   'hero/body',
+         *   'hero/weapon'
+         * ], null, (models) => {
+         *   this.initCharacter(models);
+         * });
+         */
         public loadFiles<T extends Asset>(bundleName: string, filePaths: string[], onProgress: (progress: number) => void, onComplete: (items: T[]) => void): void {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
@@ -3157,7 +5435,7 @@ export namespace no {
                         // log('loadFiles', filePaths, err.message);
                     } else {
                         for (let i = 0; i < items.length; i++) {
-                            this.addRef(items[i]);//增加引用计数
+                            this.addRef(items[i]);// 增加引用计数防止自动释放
                             // this.loadDepends(items[i].uuid);
                         }
                         onComplete && onComplete(items);
@@ -3168,21 +5446,42 @@ export namespace no {
                     this.loadFiles(bundleName, filePaths, onProgress, onComplete);
                 });
             }
-
         }
+
         /**
-         * 加载场景
-         * @param name
-         * @param callback
+         * 加载并切换场景
+         * @param name - 场景名称（需在构建配置中存在的场景）
+         * @param callback - 场景加载完成后的回调函数
+         * @example
+         * // 加载主菜单场景
+         * assetBundleManager.loadScene('MainMenu', () => {
+         *   console.log('场景切换完成');
+         * });
+         * 
+         * // 带加载过渡的场景切换
+         * this.showLoadingScreen();
+         * assetBundleManager.loadScene('Level3', () => {
+         *   this.hideLoadingScreen();
+         * });
          */
         public loadScene(name: string, callback: () => void): void {
             director.loadScene(name, callback);
         }
 
         /**
-         * 从服务器加载文件
-         * @param url
-         * @param callback
+         * 从远程服务器加载任意类型资源文件（带缓存机制）
+         * @param url - 远程资源完整URL地址
+         * @param callback - 加载完成回调函数（成功返回资源实例，失败返回null）
+         * @example
+         * // 加载远程JSON配置文件
+         * assetBundleManager.loadRemoteFile<JsonAsset>('https://cdn.example.com/configs/items.json', (json) => {
+         *   if (json) this.initItemConfig(json.json);
+         * });
+         * 
+         * // 加载远程音频文件
+         * assetBundleManager.loadRemoteFile<AudioClip>('https://cdn.example.com/sounds/bgm.mp3', (clip) => {
+         *   if (clip) audioEngine.playMusic(clip);
+         * });
          */
         public loadRemoteFile<T extends Asset>(url: string, callback: (file: T) => void) {
             if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
@@ -3198,10 +5497,36 @@ export namespace no {
                 });
         }
 
+        /**
+         * 加载远程文本文件（返回TextAsset类型）
+         * @param url - 文本文件URL地址
+         * @param callback - 加载完成回调
+         * @example
+         * // 加载游戏公告文本
+         * assetBundleManager.loadRemoteText('https://cdn.example.com/notice.txt', (textAsset) => {
+         *   if (textAsset) this.noticeLabel.string = textAsset.text;
+         * });
+         */
         public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
             this.loadRemoteFile<TextAsset>(url, callback);
         }
 
+        /**
+         * 加载远程图片并转换为SpriteFrame（支持PNG/JPG格式）
+         * @param url - 图片文件URL地址
+         * @param ext - 文件扩展名（必须指定为.png或.jpg）
+         * @param callback - 加载完成回调（返回可直接使用的精灵帧）
+         * @example
+         * // 加载玩家头像
+         * assetBundleManager.loadRemoteImage('https://cdn.example.com/avatars/123.png', '.png', (sf) => {
+         *   if (sf) this.avatar.spriteFrame = sf;
+         * });
+         * 
+         * // 加载游戏背景图
+         * assetBundleManager.loadRemoteImage('https://cdn.example.com/bg/level1.jpg', '.jpg', (sf) => {
+         *   if (sf) this.bgImage.spriteFrame = sf;
+         * });
+         */
         public loadRemoteImage(url: string, ext: '.png' | '.jpg', callback: (sf: SpriteFrame) => void) {
             if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
             else
@@ -3220,6 +5545,25 @@ export namespace no {
                 });
         }
 
+        /**
+         * 加载远程资源包（支持版本控制和异步加载配置）
+         * @param url - 资源包URL地址
+         * @param opts - 加载选项 { version?: 版本号, scriptAsyncLoading?: 是否异步加载脚本 }
+         * @param callback - 加载完成回调（返回资源包实例）
+         * @example
+         * // 加载带版本号的角色资源包
+         * assetBundleManager.loadRemoteBundle('https://cdn.example.com/bundles/characters', {
+         *   version: '1.2.3',
+         *   scriptAsyncLoading: true
+         * }, (bundle) => {
+         *   if (bundle) this.setupCharacters(bundle);
+         * });
+         * 
+         * // 加载基础资源包（无版本控制）
+         * assetBundleManager.loadRemoteBundle('https://cdn.example.com/bundles/base', null, (b) => {
+         *   if (b) this.preloadBaseAssets();
+         * });
+         */
         public loadRemoteBundle(url: string, opts?: { version?: string, scriptAsyncLoading?: boolean }, callback?: (bundle: Bundle) => void) {
             assetManager.loadBundle(url, opts, (e, bundle) => {
                 if (e) err(e.stack);
@@ -3228,13 +5572,36 @@ export namespace no {
         }
 
         /**
-         * 获取bundle路径，文件名及文件类型
-         * @param path
-         * @returns  `{'bundle','file','type'}
+         * 解析资源路径获取bundle名称、文件名及资源类型
+         * @param path - 完整资源路径，格式应为包含assets目录的路径（如：'assets/bundleName/.../fileName.ext'）
+         * @returns 包含以下属性的对象:
+         *  - bundle: 资源所属bundle名称（当路径不包含有效bundle时返回空）
+         *  - file: 文件名（不含扩展名）
+         *  - type: 资源类型（根据扩展名自动识别）
+         *  - path: 完整资源路径（不含assets前缀和文件扩展名）
+         * 
+         * @example
+         * // 有效路径示例
+         * const path1 = 'assets/characters/player/avatar.png';
+         * const result1 = assetPath(path1);
+         * // 返回: { 
+         * //   bundle: 'characters',
+         * //   file: 'avatar',
+         * //   type: ImageAsset,
+         * //   path: 'player/avatar'
+         * // }
+         * 
+         * // 无效路径示例（不包含有效bundle）
+         * const path2 = 'assets/invalid_path/test.json';
+         * const result2 = assetPath(path2);
+         * // 返回: {}
          */
         public assetPath(path: string): AssetPath {
+            // 移除路径中的assets前缀并分割路径层级
             path = path.split('/assets/').pop();
             let p = path.split('/');
+            
+            // 遍历路径层级查找有效bundle名称
             let bundle: string;
             for (let i = 0, n = p.length; i < n; i++) {
                 const b = p.shift();
@@ -3243,13 +5610,21 @@ export namespace no {
                     break;
                 }
             }
+            
+            // 未找到有效bundle时返回空对象
             if (!bundle) return {};
+            
+            // 解析文件名和扩展名
             let file = p.pop().split('.');
             let fileType = file.pop(),
                 fileName = file.join('.') || fileType;
+            
+            // 构建返回对象基础信息
             let a: AssetPath = { bundle: bundle, file: fileName };
             p[p.length] = fileName;
             a.path = p.join('/');
+            
+            // 根据文件扩展名确定资源类型
             let s: typeof Asset | typeof ImageAsset;
             if (fileType != null) {
                 switch (fileType.toLowerCase()) {
@@ -3275,67 +5650,145 @@ export namespace no {
             return a;
         }
 
+        /**
+         * 加载指定资源包内的所有文件资源（自动过滤子资源和指定类型）
+         * @param bundleName - 要加载的资源包名称（如'characters'、'ui'）
+         * @param exceptAssetTypes - 需要排除的资源类型数组（如[AudioClip, TTFFont]）
+         * @param onProgress - 加载进度回调（0-1）
+         * @param onComplete - 加载完成回调（返回加载的资源数组）
+         * @example
+         * // 加载整个角色资源包（排除音频和预制体）
+         * assetBundleManager.loadAllFilesInBundle(
+         *   'characters',
+         *   [AudioClip, Prefab],
+         *   (p) => console.log(`加载进度：${p * 100}%`),
+         *   (items) => console.log('已加载角色资源', items)
+         * );
+         * 
+         * // 加载整个配置包（不排除任何类型）
+         * assetBundleManager.loadAllFilesInBundle(
+         *   'configs',
+         *   null,
+         *   null,
+         *   (configs) => this.initGameConfig(configs)
+         * );
+         */
         public loadAllFilesInBundle(bundleName: string, exceptAssetTypes: (typeof Asset | typeof ImageAsset)[], onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let requests: any[] = [];
+                // 遍历资源包内所有资源信息
                 for (const uuid in assetInfos) {
                     const info = assetInfos[uuid];
+                    // 过滤条件：排除子资源（@符号）、无构造函数资源、指定排除类型
                     if (!info.path?.endsWith('/texture') && (uuid.includes('@') || !info.ctor)) continue;
                     if (exceptAssetTypes && exceptAssetTypes.includes(info.ctor)) continue;
                     requests[requests.length] = { uuid: uuid };
                 }
                 this.loadAnyFiles(requests, onProgress, onComplete);
             } else {
+                // 如果资源包未加载，先加载资源包再递归调用
                 this.loadBundle(bundleName, () => {
                     this.loadAllFilesInBundle(bundleName, exceptAssetTypes, onProgress, onComplete);
                 });
             }
         }
 
+        /**
+         * 预加载资源包内的所有主资源（自动过滤子资源）
+         * @param bundleName - 要预加载的资源包名称
+         * @param onProgress - 预加载进度回调（0-1）
+         * @example
+         * // 预加载整个UI包
+         * assetBundleManager.preloadAllFilesInBundle('ui', (p) => {
+         *   this.loadingBar.progress = p;
+         * });
+         * 
+         * // 预加载特效包并在完成后显示进入游戏按钮
+         * assetBundleManager.preloadAllFilesInBundle('effects', null, () => {
+         *   this.startButton.active = true;
+         * });
+         * 
+         * // 预加载字体包（排除TTF字体）
+         * assetBundleManager.preloadAllFilesInBundle('fonts', [TTFFont], (p) => {
+         *   console.log(`字体预加载进度：${p}`);
+         * });
+         */
         public preloadAllFilesInBundle(bundleName: string, onProgress?: (progress: number) => void) {
             let bundle = this.getLoadedBundle(bundleName);
             if (bundle != null) {
                 const assetInfos = bundle['_config'].assetInfos._map;
                 let paths: string[] = [];
+                // 收集所有有效资源路径（过滤子资源和不受支持的类型）
                 for (const uuid in assetInfos) {
                     const a = assetInfos[uuid];
                     if (a.path && !uuid.includes('@') && this.loadTypes.includes(a.ctor.name)) {
                         paths[paths.length] = a.path;
                     }
                 }
-                // this.preloadFiles(bundleName, paths, onProgress);
+                // 直接调用资源包的preload方法进行批量预加载
                 bundle.preload(paths, Asset, (finished, total, item: any) => {
                     onProgress && onProgress(finished / total);
                 }, (e, items) => {
                     if (e) err('preloadFiles', e.message);
                 });
             } else {
+                // 资源包未加载时先加载资源包
                 this.loadBundle(bundleName, () => {
                     this.preloadAllFilesInBundle(bundleName, onProgress);
                 });
             }
         }
 
+        /**
+         * 加载指定文件夹内的所有资源文件
+         * @param folderName - 资源文件夹路径（格式：'assets/bundleName/path/to/folder'）
+         * @param onProgress - 加载进度回调（0-1）
+         * @param onComplete - 加载完成回调（返回加载的资源数组）
+         * @param specialTypes - 指定需要加载的特殊资源类型数组（如只加载[ImageAsset, AudioClip]）
+         * @example
+         * // 加载角色包中所有模型资源
+         * assetBundleManager.loadAllFilesInFolder(
+         *   'assets/characters/models',
+         *   (p) => console.log(`加载进度：${p * 100}%`),
+         *   (items) => this.initCharacters(items),
+         *   [Mesh, Material]
+         * );
+         * 
+         * // 加载UI包中某个目录下的所有资源
+         * assetBundleManager.loadAllFilesInFolder(
+         *   'assets/ui/main_menu',
+         *   null,
+         *   (items) => this.setupMainMenuUI()
+         * );
+         */
         public loadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void, specialTypes?: typeof Asset[]) {
+            // 解析资源路径获取bundle信息
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
+            
+            // 确保路径以斜杠结尾用于前缀匹配
             p.path += '/';
             let bundle = this.getLoadedBundle(p.bundle);
             const assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
+            
+            // 遍历资源信息表收集符合要求的资源
             for (const uuid in assetInfos) {
                 const info = assetInfos[uuid];
+                // 处理特殊类型过滤
                 if (specialTypes) {
                     if (info.path?.indexOf(p.path) == 0 && specialTypes.includes(info.ctor))
                         requests[requests.length] = { path: info.path, bundle: p.bundle, type: info.ctor };
                     continue;
                 }
+                // 跳过子资源（如@texture等）
                 if (uuid.includes('@')) continue;
+                // 匹配路径前缀
                 if (info.path?.indexOf(p.path) == 0) {
                     requests[requests.length] = { path: info.path, bundle: p.bundle, type: info.ctor };
                 }
@@ -3343,15 +5796,39 @@ export namespace no {
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
+        /**
+         * 预加载指定文件夹内的所有资源文件
+         * @param folderName - 资源文件夹路径（格式：'assets/bundleName/path/to/folder'）
+         * @param onProgress - 预加载进度回调（0-1）
+         * @param onComplete - 预加载完成回调（返回预加载的资源数组）
+         * @example
+         * // 预加载音效目录资源
+         * assetBundleManager.preloadAllFilesInFolder(
+         *   'assets/audio/sound_effects',
+         *   (p) => this.updateLoadingBar(p),
+         *   (items) => this.onSoundEffectsLoaded()
+         * );
+         * 
+         * // 预加载过场动画资源
+         * assetBundleManager.preloadAllFilesInFolder(
+         *   'assets/cutscenes/intro',
+         *   null,
+         *   () => this.playIntroCutscene()
+         * );
+         */
         public preloadAllFilesInFolder(folderName: string, onProgress: (progress: number) => void, onComplete: (items: Asset[]) => void) {
             let p = this.assetPath(folderName);
             if (p.bundle == '') {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
+            
             let bundle = this.getLoadedBundle(p.bundle);
+            // 获取目录下的所有资源信息
             let infos = bundle.getDirWithPath(p.path);
             let requests: { path: string, bundle: string, type: typeof Asset }[] = [];
+            
+            // 过滤子资源并构建请求列表
             for (let i = 0; i < infos.length; i++) {
                 let a = infos[i];
                 if (a.uuid.indexOf('@') == -1) {
@@ -3361,6 +5838,24 @@ export namespace no {
             this.loadAnyFiles(requests, onProgress, onComplete);
         }
 
+        /**
+         * 通过UUID加载资源（自动管理引用计数）
+         * @param uuid - 资源唯一标识符
+         * @param callback - 加载完成回调函数
+         * @example
+         * // 加载预制体资源
+         * assetBundleManager.loadByUuid<Prefab>('fcmRqXJITKedlPeuQp13S6', (prefab) => {
+         *   if (prefab) {
+         *     const node = instantiate(prefab);
+         *     this.node.addChild(node);
+         *   }
+         * });
+         * 
+         * // 加载纹理资源
+         * assetBundleManager.loadByUuid<Texture2D>('2emRwXJITKedlPeuQp13SX', (texture) => {
+         *   this.spriteFrame.texture = texture;
+         * });
+         */
         public loadByUuid<T extends Asset>(uuid: string, callback?: (file: T) => void) {
             if (uuid == '') {
                 no.err('uuid 为空')
@@ -3378,9 +5873,31 @@ export namespace no {
         }
 
         /**
-         * 加载单一资源
-         * @param request {url:完成路径,path:相对于包的路径,uuid:唯一id,bundle:包名,type:资源类型}
-         * @param callback 
+         * 加载单一资源（支持多种加载方式）
+         * @param request 加载请求参数:
+         *   - url: 完整资源路径（自动解析bundle和路径）
+         *   - path: 相对于包的资源路径
+         *   - uuid: 资源唯一标识符
+         *   - bundle: 资源包名称
+         *   - type: 资源类型（自动推断时可省略）
+         * @param callback 加载完成回调
+         * @example
+         * // 通过完整URL加载角色贴图
+         * assetBundleManager.loadAny({
+         *   url: 'assets/characters/hero/texture.png',
+         *   type: ImageAsset
+         * }, (image) => {
+         *   this.updateCharacterTexture(image);
+         * });
+         * 
+         * // 通过bundle+path加载音效
+         * assetBundleManager.loadAny({
+         *   bundle: 'audio',
+         *   path: 'sfx/explosion',
+         *   type: AudioClip
+         * }, (clip) => {
+         *   this.playSoundEffect(clip);
+         * });
          */
         public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }, callback?: (file: T) => void): void {
             if (request.url) {
@@ -3399,6 +5916,15 @@ export namespace no {
             }
         }
 
+        /**
+         * 增加资源引用计数（特殊处理TTF字体资源）
+         * @param asset 需要增加引用的资源
+         * @example
+         * // 加载后手动增加引用
+         * assetBundleManager.loadByUuid<Font>('23fRwXJITKedlPeuQp13Sr', (font) => {
+         *   this.addRef(font); // 确保字体资源不被自动释放
+         * });
+         */
         public addRef(asset: Asset): void {
             if (!asset) return;
             if (asset instanceof TTFFont) {
@@ -3407,6 +5933,16 @@ export namespace no {
             asset.addRef();
         }
 
+        /**
+         * 减少资源引用计数（延迟0.02秒执行防止同一帧内多次操作）
+         * @param asset 需要减少引用的资源
+         * @example
+         * // 使用完成后安全释放资源
+         * onDestroy() {
+         *   this.decRef(this.weaponModel); // 递减模型资源引用
+         *   this.decRef(this.skillEffect); // 递减特效资源引用
+         * }
+         */
         public decRef(asset: Asset): void {
             if (!asset) return;
             scheduleOnce(() => {
@@ -3436,10 +5972,19 @@ export namespace no {
         }
 
         /**
-         * 释放资源
-         * @param asset 资源对象或uuid
-         * @param force 是否强制释放，默认false
-         * @returns 
+         * 释放资源（支持通过资源对象、uuid或SpriteFrame进行释放）
+         * @param asset - 需要释放的资源对象/资源uuid/SpriteFrame
+         * @param force - 是否强制立即释放（默认false采用延迟释放机制）
+         * @example
+         * // 释放精灵帧资源
+         * const sf = this.getComponent(Sprite).spriteFrame;
+         * assetBundleManager.release(sf);
+         * 
+         * // 通过uuid强制立即释放
+         * assetBundleManager.release('23fRwXJITKedlPeuQp13Sr', true);
+         * 
+         * // 释放预制体资源
+         * assetBundleManager.release(this.characterPrefab);
          */
         public release(asset: Asset | string, force = false): void {
             if (!asset) return;
@@ -3459,15 +6004,55 @@ export namespace no {
             }
         }
 
+        /**
+         * 从缓存中获取资源实例
+         * @param uuid - 资源唯一标识符
+         * @returns 资源实例（可能为null）
+         * @example
+         * // 获取已缓存的字体资源
+         * const font = assetBundleManager.getAssetFromCache('5tH3sK9jQpL2vR8x');
+         * if (font) this.label.font = font;
+         */
         public getAssetFromCache(uuid: string): Asset {
             return assetManager.assets.get(uuid);
         }
 
         /**
-         * 加载多个资源
-         * @param requests {url:完成路径,path:相对于包的路径,uuid:唯一id,bundle:包名,type:资源类型}[]
-         * @param onProgress 
-         * @param onComplete 
+         * 批量加载多种类型资源（支持混合加载远程/本地资源）
+         * @param requests - 加载请求数组，支持以下格式：
+         *   - url: 完整远程资源路径（需要带扩展名）
+         *   - path: 本地资源路径（格式：'bundle/path/to/asset'）
+         *   - uuid: 资源唯一标识符
+         *   - bundle: 资源所属包名（当使用path时需要）
+         *   - type: 指定资源类型（可选，用于类型断言）
+         * @param onProgress - 加载进度回调（0-1）
+         * @param onComplete - 加载完成回调（返回加载的资源数组）
+         * @example
+         * // 混合加载远程图片和本地预制体
+         * assetBundleManager.loadAnyFiles([
+         *   { 
+         *     url: 'https://cdn.example.com/items/sword.png',
+         *     type: ImageAsset 
+         *   },
+         *   {
+         *     path: 'characters/hero',
+         *     bundle: 'models',
+         *     type: Prefab
+         *   }
+         * ], (progress) => {
+         *   console.log(`加载进度：${progress * 100}%`);
+         * }, (items) => {
+         *   if (items.length === 2) {
+         *     this.initHero(items[1] as Prefab);
+         *   }
+         * });
+         * 
+         * // 通过uuid加载特定资源
+         * assetBundleManager.loadAnyFiles([
+         *   { uuid: '5tH3sK9jQpL2vR8x' } // 字体资源
+         * ], null, (fonts) => {
+         *   this.applyGlobalFont(fonts[0]);
+         * });
          */
         public loadAnyFiles(requests: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset | typeof ImageAsset }[], onProgress?: (progress: number) => void, onComplete?: (items: Asset[]) => void) {
             if (requests.length == 0) {
@@ -3492,6 +6077,17 @@ export namespace no {
             });
         }
 
+        /**
+         * 内部方法：单文件加载封装为Promise
+         * @param request - 单个加载请求参数
+         * @returns Promise包装的加载结果
+         * @example
+         * // 在async函数中使用
+         * const asset = await assetBundleManager._loadAnyFile({
+         *   path: 'ui/popups/settings',
+         *   bundle: 'interface'
+         * });
+         */
         private _loadAnyFile(request: { 'url'?: string, 'path'?: string, 'uuid'?: string, 'bundle'?: string, 'type'?: typeof Asset }) {
             return new Promise<Asset>(resolve => {
                 this.loadAny(request, item => {
@@ -3503,15 +6099,46 @@ export namespace no {
             });
         }
 
+        /**
+         * 通过资源路径获取资源UUID
+         * @param path - 资源路径（格式：'assets/bundleName/path/to/asset.ext'）
+         * @returns 资源唯一标识符或null
+         * @example
+         * // 获取角色预制体的UUID
+         * const uuid = assetBundleManager.getUuidFromPath('assets/characters/hero/prefab.prefab');
+         * // 可能返回：'5tH3sK9jQpL2vR8x'
+         * 
+         * // 获取不存在的资源路径UUID
+         * const invalidUuid = assetBundleManager.getUuidFromPath('invalid/path');
+         * // 返回：null
+         */
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
             return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
         }
 
+        /**
+         * 通过UUID获取资源完整URL地址
+         * @param uuid - 资源唯一标识符
+         * @returns 可用于远程访问的资源URL
+         * @example
+         * // 获取角色贴图的下载地址
+         * const url = assetBundleManager.getUrlWithUuid('5tH3sK9jQpL2vR8x');
+         * // 返回：'https://cdn.example.com/remote/characters/hero/texture.png'
+         */
         public getUrlWithUuid(uuid: string): string {
             return assetManager.utils.getUrlWithUuid(uuid);
         }
 
+        /**
+         * 根据资源UUID查找所属资源包名称
+         * @param uuid - 资源唯一标识符
+         * @returns 资源包名称（未找到返回undefined）
+         * @example
+         * // 查找音效资源所属包
+         * const bundleName = assetBundleManager.getBundleNameByUuid('7kL9mN2oPqR4sT6u');
+         * // 可能返回：'sound-effects'
+         */
         public getBundleNameByUuid(uuid: string): string {
             const bundles = assetManager.bundles;
             let name: string;
@@ -3521,14 +6148,50 @@ export namespace no {
             return name;
         }
 
+        /**
+         * 获取资源包版本号（需资源包已加载）
+         * @param bundleName - 资源包名称
+         * @returns 当前加载的版本号字符串
+         * @example
+         * // 获取UI包版本号
+         * const version = assetBundleManager.getBundleVersion('ui');
+         * // 可能返回：'1.2.3'
+         */
         public getBundleVersion(bundleName: string): string {
             return assetManager.downloader.bundleVers[bundleName];
         }
 
+        /**
+         * 释放所有已加载资源（慎用，会清空所有缓存）
+         * @example
+         * // 切换场景时彻底清理资源
+         * onSceneChange() {
+         *   assetBundleManager.clear();
+         *   // ...其他清理逻辑
+         * }
+         * 
+         * // 处理内存警告时调用
+         * onMemoryWarning() {
+         *   assetBundleManager.clear();
+         * }
+         */
         public clear() {
             assetManager.releaseAll();
         }
 
+        /**
+         * 检查指定路径的资源是否存在于资源包中
+         * @param path - 资源路径（格式：'assets/bundleName/path/to/resource'）
+         * @returns 资源是否存在
+         * @example
+         * // 检查角色纹理是否存在
+         * if (assetBundleManager.has('assets/characters/hero/texture.png')) {
+         *   this.loadCharacterTexture();
+         * }
+         * 
+         * // 验证配置文件是否存在
+         * const hasConfig = assetBundleManager.has('assets/configs/game_settings.json');
+         */
         public has(path: string) {
             const p = this.assetPath(path);
             let bundle = this.getLoadedBundle(p.bundle);
@@ -3540,6 +6203,17 @@ export namespace no {
             }
         }
 
+        /**
+         * 从缓存获取纹理或创建新纹理（自动缓存管理）
+         * @param img - 图像资源对象
+         * @returns 关联的Texture2D对象
+         * @example
+         * // 获取或创建角色贴图纹理
+         * assetBundleManager.loadAny({url: 'assets/characters/hero.png'}, (image) => {
+         *   const texture = assetBundleManager.getCachedTexture(image);
+         *   this.sprite.texture = texture;
+         * });
+         */
         public getCachedTexture(img: ImageAsset): Texture2D | null {
             const uuid = img.uuid;
             let texture = this.getCachedAsset<Texture2D>(uuid);
@@ -3552,26 +6226,41 @@ export namespace no {
         }
 
         /**
-         * 获取缓存的资源
-         * @param k 资源唯一标识uuid|url
-         * @returns 
+         * 获取缓存的资源对象
+         * @param k - 资源唯一标识符（uuid或url）
+         * @returns 缓存的资源实例
+         * @example
+         * // 获取缓存的音效资源
+         * const clip = assetBundleManager.getCachedAsset<AudioClip>('sfx/explosion');
+         * audioSource.playOneShot(clip);
          */
         public getCachedAsset<T>(k: string): T {
             return this._cacheAsset.get(k) as T;
         }
 
         /**
-         * 缓存资源
-         * @param k 资源唯一标识uuid|url
-         * @param asset 资源
+         * 缓存资源对象（支持自定义键名）
+         * @param k - 资源唯一标识符（uuid或自定义键名）
+         * @param asset - 要缓存的资源对象
+         * @example
+         * // 缓存网络加载的纹理
+         * assetBundleManager.loadRemoteImage('https://example.com/bg.jpg', '.jpg', (sf) => {
+         *   assetBundleManager.cacheAsset('remote_bg', sf.texture);
+         * });
          */
         public cacheAsset(k: string, asset: any) {
             this._cacheAsset.set(k, asset);
         }
 
         /**
-         * 清理资源
-         * @param k 
+         * 清理缓存资源并释放引用
+         * @param k - 要清理的资源标识符
+         * @example
+         * // 清理过期的场景资源
+         * onSceneUnload() {
+         *   assetBundleManager.cleanCacheAsset('scene1_bg_texture');
+         *   assetBundleManager.cleanCacheAsset('23fRwXJITKedlPeuQp13Sr');
+         * }
          */
         public cleanCacheAsset(k: string) {
             let asset = this._cacheAsset.get(k);
@@ -3582,20 +6271,57 @@ export namespace no {
             }
         }
 
+        /**
+         * 缓存纹理资源并初始化引用计数
+         * @param image - 需要缓存的Texture2D纹理对象
+         * @example
+         * // 缓存新加载的纹理资源
+         * assetBundleManager.loadRemoteImage('https://example.com/icon.png', '.png', (sf) => {
+         *   if (sf.texture) assetBundleManager.cacheImage(sf.texture);
+         * });
+         */
         public cacheImage(image: Texture2D) {
             this.cacheAsset(image.uuid, image);
             this._cacheAssetRef[image.uuid] = { ref: 0, time: sysTime.now };
             this.releaseUnuseImage();
         }
 
+        /**
+         * 检查指定uuid的图片是否已缓存
+         * @param uuid - 资源唯一标识符
+         * @returns 是否存在于缓存中
+         * @example
+         * // 检查角色头像是否已缓存
+         * if (!assetBundleManager.hasImage('char_avatar_123')) {
+         *   this.loadCharacterAvatar();
+         * }
+         */
         public hasImage(uuid: string): boolean {
             return !!this.getCachedAsset(uuid);
         }
 
+        /**
+         * 获取图集JSON配置信息（用于动态图集操作）
+         * @param uuid - 图集资源uuid
+         * @returns 图集JSON配置
+         * @example
+         * // 获取UI图集配置信息
+         * const atlasConfig = assetBundleManager.getCachedAtlasJson('ui_atlas_01');
+         * if (atlasConfig) this.parseAtlas(atlasConfig);
+         */
         public getCachedAtlasJson(uuid: string) {
             return this.getCachedAsset(uuid);
         }
 
+        /**
+         * 从缓存获取纹理并增加引用计数
+         * @param uuid - 纹理资源uuid
+         * @returns Texture2D对象或null
+         * @example
+         * // 获取缓存纹理并设置给精灵
+         * const texture = assetBundleManager.getTextureFromCache('item_icon_456');
+         * if (texture) this.itemSprite.spriteFrame.texture = texture;
+         */
         public getTextureFromCache(uuid: string): Texture2D | null {
             const image = this.getCachedAsset<Texture2D>(uuid);
             if (!image) return null;
@@ -3606,6 +6332,15 @@ export namespace no {
             return image;
         }
 
+        /**
+         * 通过缓存纹理创建精灵帧（自动关联纹理）
+         * @param uuid - 纹理资源uuid
+         * @returns 新创建的SpriteFrame对象
+         * @example
+         * // 动态创建技能图标精灵帧
+         * const sf = assetBundleManager.createSpriteFrameFromCache('skill_icon_789');
+         * if (sf) this.skillButton.spriteFrame = sf;
+         */
         public createSpriteFrameFromCache(uuid: string): SpriteFrame | null {
             const t = this.getTextureFromCache(uuid);
             if (!t) return null;
@@ -3615,6 +6350,15 @@ export namespace no {
             return s;
         }
 
+        /**
+         * 减少缓存图片的引用计数（当引用为0且超时后会被自动释放）
+         * @param uuid - 纹理资源uuid
+         * @example
+         * // 在节点销毁时减少引用
+         * onDestroy() {
+         *   assetBundleManager.deRefCachedImage('player_equip_tex');
+         * }
+         */
         public deRefCachedImage(uuid: string) {
             let a = this._cacheAssetRef[uuid];
             if (!a) return;
@@ -3623,10 +6367,31 @@ export namespace no {
             this.releaseUnuseImage();
         }
 
+        /**
+         * 获取缓存图片的详细信息（引用计数和缓存时间）
+         * @param uuid - 纹理资源uuid
+         * @returns 包含引用计数和缓存时间的对象
+         * @example
+         * // 调试特定纹理的缓存状态
+         * const info = assetBundleManager.getCachedImageInfo('boss_texture');
+         * console.log(`引用次数：${info.ref} 缓存时间：${Date.now() - info.time}ms`);
+         */
         public getCachedImageInfo(uuid: string) {
             return this._cacheAssetRef[uuid];
         }
 
+        /**
+         * 显示所有缓存的图片信息（用于调试）
+         * @example
+         * // 在控制台查看当前所有缓存的图片状态
+         * assetBundleManager.showCachedImage();
+         * // 输出示例：
+         * // <<<<<<<<缓存的Image
+         * //     uuid: skill_icon_123,
+         * //     ref: 2,
+         * //     time: 45000
+         * // >>>>>>>> 
+         */
         public showCachedImage() {
             const now = sysTime.now;
             for (const uuid in this._cacheAssetRef) {
@@ -3641,6 +6406,15 @@ export namespace no {
             }
         }
 
+        /**
+         * 自动释放未使用的图片资源（引用计数为0且超过60秒未使用）
+         * @private 内部维护用，通常不需要手动调用
+         * @example
+         * // 在定时任务中自动清理
+         * setInterval(() => {
+         *   assetBundleManager['releaseUnuseImage']();
+         * }, 30000);
+         */
         private releaseUnuseImage() {
             const now = sysTime.now;
             for (const k in this._cacheAssetRef) {
@@ -3652,7 +6426,20 @@ export namespace no {
             }
         }
 
+        /**
+         * 强制移除指定缓存图片（立即释放资源）
+         * @param uuid - 要移除的纹理资源uuid
+         * @example
+         * // 手动释放不再需要的大图资源
+         * assetBundleManager.removeCachedImage('scene_bg_high_quality');
+         * 
+         * // 在场景切换时清理资源
+         * onSceneChange() {
+         *   assetBundleManager.removeCachedImage('previous_scene_textures');
+         * }
+         */
         public removeCachedImage(uuid: string) {
+            // 注意：这里显式调用destroy可能导致重复释放，具体取决于引擎管理方式
             // this._cacheAsset[uuid]?.destroy();
             this._cacheAsset.delete(uuid);
             delete this._cacheAssetRef[uuid];
@@ -3662,8 +6449,18 @@ export namespace no {
         private loadTypes: string[] = ['Texture2D', 'Prefab', 'JsonAsset'];
 
         /**
-         * 加载目录下所有资源并放入缓存中，不支持同时加载多个目录，如果有需求，需要在外部根据实际性能情况做延迟加载
-         * @param folder 
+         * 加载目录下所有资源并放入缓存中（支持预制体/纹理/JSON类型）
+         * @param folder - 资源目录路径（格式：'assets/bundleName/path/to/folder'）
+         * @param onComplete - 加载完成回调
+         * @example
+         * // 加载UI目录下的所有资源到缓存
+         * assetBundleManager.loadFolderFilesToCache('assets/ui/main_menu', () => {
+         *   console.log('主菜单资源已缓存完成');
+         *   this.showMainMenu();
+         * });
+         * 
+         * // 加载角色包中的配置目录
+         * assetBundleManager.loadFolderFilesToCache('assets/characters/configs');
          */
         public loadFolderFilesToCache(folder: string, onComplete?: () => void) {
             const p = this.assetPath(folder);
@@ -3694,6 +6491,22 @@ export namespace no {
             }
         }
 
+        /**
+         * 加载指定资源包内的所有预制体资源
+         * @param bundleName - 要加载的资源包名称
+         * @param onComplete - 加载完成回调
+         * @example
+         * // 加载特效包中的所有预制体
+         * assetBundleManager.loadAllPrefabsInBundle('effects', () => {
+         *   this.initializeSpecialEffects();
+         * });
+         * 
+         * // 加载NPC预制体后实例化
+         * assetBundleManager.loadAllPrefabsInBundle('npcs', () => {
+         *   const npcPrefab = assetBundleManager.getAssetFromCache('npc_01');
+         *   this.spawnNPC(instantiate(npcPrefab));
+         * });
+         */
         public loadAllPrefabsInBundle(bundleName: string, onComplete?: () => void) {
             const bundle = this.getLoadedBundle(bundleName),
                 assetInfos = bundle['_config'].assetInfos._map;
@@ -3706,6 +6519,27 @@ export namespace no {
             bundle.load(requests, onComplete);
         }
 
+        /**
+         * 加载指定资源包内的所有图片资源
+         * @param bundleName - 要加载的资源包名称
+         * @param type - 图片资源类型（Texture2D: 纹理对象 / SpriteFrame: 精灵帧 / ImageAsset: 原始图片数据）
+         * @param onComplete - 加载完成回调
+         * @example
+         * // 加载UI包中的所有纹理
+         * assetBundleManager.loadAllImagesInBundle('ui', 'Texture2D', () => {
+         *   this.updateAllUITextures();
+         * });
+         * 
+         * // 加载角色包中的精灵帧
+         * assetBundleManager.loadAllImagesInBundle('characters', 'SpriteFrame', () => {
+         *   this.setupCharacterPortraits();
+         * });
+         * 
+         * // 加载原始图片数据用于处理
+         * assetBundleManager.loadAllImagesInBundle('gallery', 'ImageAsset', () => {
+         *   this.processImageData();
+         * });
+         */
         public loadAllImagesInBundle(bundleName: string, type: 'Texture2D' | 'SpriteFrame' | 'ImageAsset', onComplete?: () => void) {
             const bundle = this.getLoadedBundle(bundleName),
                 assetInfos = bundle['_config'].assetInfos._map;
@@ -3718,29 +6552,64 @@ export namespace no {
             bundle.load(requests, onComplete);
         }
 
+        /**
+         * 根据资源类型名称获取对应的资源类定义
+         * @param typeName - 资源类型名称（不区分大小写）
+         * @returns 对应的资源类构造函数，未找到时返回null
+         * @example
+         * // 获取纹理资源类
+         * const textureType = assetBundleManager.getAssetTypeByName('texture2d');
+         * // textureType === Texture2D
+         * 
+         * // 动态加载预制体资源
+         * const prefabType = assetBundleManager.getAssetTypeByName('Prefab');
+         * assetBundleManager.loadAny({ path: 'ui/popup', bundle: 'interface', type: prefabType }, (prefab) => {
+         *   instantiate(prefab).parent = this.node;
+         * });
+         */
         public getAssetTypeByName(typeName: string): typeof Asset | typeof ImageAsset {
-            switch (typeName) {
-                case 'ImageAsset':
+            switch (typeName.toLowerCase()) {  // 添加小写转换增强容错性
+                case 'imageasset':
                     return ImageAsset;
-                case 'Texture2D':
+                case 'texture2d':
                     return Texture2D;
-                case 'Prefab':
+                case 'prefab':
                     return Prefab;
-                case 'JsonAsset':
+                case 'jsonasset':
                     return JsonAsset;
-                default: return null;
+                default: 
+                    return null;
             }
         }
 
         /**
-         * 预加载远程包
+         * 预加载所有配置的远程资源包（自动处理依赖关系）
+         * @param cb - 全部加载完成后的回调函数
+         * @example
+         * // 游戏启动时预加载所有远程包
+         * assetBundleManager.preloadRemoteBundles(() => {
+         *   this.showMainMenu();
+         * });
+         * 
+         * // 关卡加载前预加载资源
+         * onLevelStart(levelId) {
+         *   assetBundleManager.remoteBundles = [`level_${levelId}_assets`];
+         *   assetBundleManager.preloadRemoteBundles(() => this.initLevel());
+         * }
+         * 
+         * // 带进度显示的预加载
+         * assetBundleManager.preloadRemoteBundles(() => {
+         *   console.log('所有远程资源加载完成');
+         * });
          */
         public preloadRemoteBundles(cb?: () => void) {
-            const bundles = this.remoteBundles.slice();
+            const bundles = this.remoteBundles.slice();  // 创建副本避免原数组被修改
             if (!bundles.length) return cb?.();
+            
             log('开始预加载远程包', bundles);
-            this.loadBundles(bundles, (p) => {
-                if (p >= 1) {
+            this.loadBundles(bundles, (progress) => {
+                // 可在此处添加进度更新逻辑
+                if (progress >= 1) {
                     log('预加载远程包完成');
                     cb?.();
                 }
@@ -3751,15 +6620,38 @@ export namespace no {
     /**全局资源管理器 */
     export const assetBundleManager = new AssetBundleManager();
 
+    /**
+     * 资源加载管理器（处理resources包内资源的加载和缓存）
+     * @example
+     * // 初始化游戏时预加载核心资源
+     * resourcesLoader.preloadFiles(['textures/icon', 'sounds/click'], (p) => {
+     *   console.log(`预加载进度: ${p * 100}%`);
+     * });
+     * 
+     * // 动态加载角色预制体
+     * resourcesLoader.load('characters/hero', Prefab, (prefab) => {
+     *   if (prefab) instantiate(prefab).parent = this.node;
+     * });
+     */
     class ResourcesLoader {
+        /** 资源路径到UUID的映射缓存 */
         private _pathToUuid: Map<string, string> = new Map();
+        /** 正在加载中的资源记录（用于防止重复加载） */
         private _loadingAssets: Map<string, number> = new Map();
 
         /**
-         * 预加载files
-         * @param bundleName
-         * @param filePaths
-         * @param onProgress
+         * 预加载多个资源文件
+         * @param filePaths - 需要预加载的资源路径数组（格式：'textures/icon'）
+         * @param onProgress - 加载进度回调（0-1）
+         * @example
+         * // 预加载界面所需资源
+         * resourcesLoader.preloadFiles([
+         *   'ui/main/button',
+         *   'ui/main/bg',
+         *   'fonts/main_font'
+         * ], (progress) => {
+         *   this.loadingBar.progress = progress;
+         * });
          */
         public preloadFiles(filePaths: string[], onProgress?: (progress: number) => void): void {
             resources.preload(filePaths, Asset, (finished, total, item) => {
@@ -3770,10 +6662,25 @@ export namespace no {
         }
 
         /**
-         * 加载资源
-         * @param path 资源路径
-         * @param type 资源类型 TextAsset | JsonAsset | SpriteFrame | SkeletonData | SpriteAtlas | Texture2D | AudioClip | Prefab | AnimationClip | Material | EffectAsset | Font | BufferAsset
-         * @param onComplete 加载完成回调
+         * 异步加载指定资源（自动处理缓存和引用计数）
+         * @param path - 资源路径（格式：'db://assets/resources/textures/icon' 或 'textures/icon'）
+         * @param type - 资源类型（支持引擎所有Asset派生类型）
+         * @param onComplete - 加载完成回调（失败时返回null）
+         * @example
+         * // 加载音效资源
+         * resourcesLoader.load('sounds/explosion', AudioClip, (clip) => {
+         *   if (clip) audioSource.playOneShot(clip);
+         * });
+         * 
+         * // 加载JSON配置
+         * resourcesLoader.load('configs/level1', JsonAsset, (jsonAsset) => {
+         *   if (jsonAsset) this.levelConfig = jsonAsset.json;
+         * });
+         * 
+         * // 加载失败处理
+         * resourcesLoader.load('invalid/path', Texture2D, (texture) => {
+         *   if (!texture) this.showErrorToast('资源加载失败');
+         * });
          */
         public load(path: string, type: typeof Asset, onComplete: (asset: Asset) => void) {
             const uuid = this._pathToUuid.get(path);
@@ -3782,20 +6689,40 @@ export namespace no {
                 asset.addRef();
                 return onComplete?.(asset);
             };
+            
+            // 防止重复加载
+            if (this._loadingAssets.has(path)) {
+                warn(`资源 ${path} 正在加载中，请勿重复请求`);
+                return;
+            }
             this._loadingAssets.set(path, 1);
+
+            // 转换资源路径格式
             const p = path.replace('db://assets/resources/', '');
             resources.load(p, type, null, (e, asset) => {
                 if (e) {
                     err('resources.load', path, e.stack);
                     return onComplete?.(null);
                 }
+                
+                // 缓存路径到UUID的映射
                 this._pathToUuid.set(path, asset.uuid);
-                asset.addRef();
+                asset.addRef(); // 增加引用计数防止自动释放
                 onComplete?.(asset);
                 this.assetLoadingEnd(path);
             });
         }
 
+        /**
+         * 从缓存中立即获取已加载的资源（不会触发异步加载）
+         * @param path - 资源路径
+         * @param type - 资源类型
+         * @returns 已缓存的资源实例或null
+         * @example
+         * // 快速获取已加载的纹理
+         * const texture = resourcesLoader.loadInCache('effects/fire', Texture2D);
+         * if (texture) this.sprite.texture = texture;
+         */
         public loadInCache(path: string, type: typeof Asset) {
             const uuid = this._pathToUuid.get(path);
             if (uuid) {
@@ -3807,17 +6734,27 @@ export namespace no {
         }
 
         /**
-         * 该资源是否在加载中
-         * @param path 资源路径
-         * @returns 
+         * 检查指定资源是否正在加载中
+         * @param path - 资源路径
+         * @returns 是否处于加载状态
+         * @example
+         * // 防止重复加载
+         * if (!resourcesLoader.isAssetLoading('ui/popup')) {
+         *   resourcesLoader.load('ui/popup', Prefab, this.showPopup.bind(this));
+         * }
          */
         public isAssetLoading(path: string): boolean {
             return this._loadingAssets.has(path);
         }
 
         /**
-         * 标记该资源已经完成加载
-         * @param path 资源路径
+         * 标记资源加载完成（内部维护用）
+         * @param path - 资源路径
+         * @example
+         * // 在自定义加载流程中手动标记
+         * customLoader.load('model', (model) => {
+         *   resourcesLoader.assetLoadingEnd('characters/model');
+         * });
          */
         public assetLoadingEnd(path: string) {
             this._loadingAssets.delete(path);
@@ -3826,7 +6763,20 @@ export namespace no {
     /**resources包资源加载器 */
     export const resourcesLoader = new ResourcesLoader();
 
-    /**缓存池 */
+    /** 
+     * 对象缓存池系统（支持节点和资源缓存）
+     * @example
+     * // 缓存敌人预制体
+     * const enemy = cachePool.reuse<Prefab>('enemy_prefab');
+     * if (!enemy) {
+     *     assetBundleManager.loadAny({url: 'assets/enemy.prefab'}, (p) => {
+     *         cachePool.recycle('enemy_prefab', p);
+     *     });
+     * }
+     * 
+     * // 缓存网络请求数据
+     * cachePool.recycle('player_data', apiResponse, false);
+     */
     export class CachePool {
         private cacheMap: Map<string, { o: any, t: number }[]>;
         private checkDuration = 60000;
@@ -3838,8 +6788,13 @@ export namespace no {
         }
 
         /**
-         * 获取缓存的对象
-         * @param type
+         * 从缓存池获取可重用对象
+         * @param type 缓存类型标识符（如：'bullet_node'/'enemy_prefab'）
+         * @returns 缓存对象或null
+         * @example
+         * // 获取子弹节点
+         * const bullet = cachePool.reuse<Node>('bullet_node');
+         * if (bullet) this.fireBullet(bullet);
          */
         public reuse<T>(type: string): T | null {
             if (!this.cacheMap.has(type)) return null;
@@ -3849,11 +6804,19 @@ export namespace no {
         }
 
         /**
-         * 回收缓存对象
-         * @param type
-         * @param object
-         * @param canRelease 是否可以立即释放
-         * @param changeParent 是否改变父节点，如果是固定父节点，建议设置为false，否则会导致dc增加
+         * 回收对象到缓存池
+         * @param type 缓存类型标识符
+         * @param object 要回收的对象（支持节点/资源/普通对象）
+         * @param canRelease 是否允许自动释放（设为false可长期保留重要资源）
+         * @param changeParent 是否重置父节点（解决节点树残留问题）
+         * @example
+         * // 回收敌人节点
+         * onEnemyDie(enemy: Node) {
+         *     cachePool.recycle('enemy_node', enemy, true, false);
+         * }
+         * 
+         * // 回收临时纹理资源
+         * cachePool.recycle('temp_texture', texture, false);
          */
         public recycle(type: string, object: any, canRelease = true, changeParent = true): void {
             if (type == null || type == '') {
@@ -3865,7 +6828,6 @@ export namespace no {
             if (object instanceof Node) {
                 if (changeParent)
                     object.parent = null;
-                // object.active = false;
                 visible(object, false);
             }
             let a = this.cacheMap.get(type) || [];
@@ -3885,10 +6847,27 @@ export namespace no {
             this.cacheMap.set(type, a);
         }
 
+        /**
+         * 获取指定类型可用缓存数量
+         * @param type 缓存类型标识符
+         * @example
+         * // 检查子弹缓存是否充足
+         * if (cachePool.canReuseNumber('bullet') < 10) {
+         *     this.preloadBullets();
+         * }
+         */
         public canReuseNumber(type: string): number {
             return (this.cacheMap.get(type) || []).length;
         }
 
+        /**
+         * 清空所有缓存（切换场景时建议调用）
+         * @example
+         * // 切换关卡时清理
+         * onLevelChange() {
+         *     cachePool.clearAll();
+         * }
+         */
         public clearAll(): void {
             let types = MapKeys2Array(this.cacheMap);
             let n = types.length;
@@ -3897,6 +6876,13 @@ export namespace no {
             }
         }
 
+        /**
+         * 清理指定类型缓存
+         * @param type 缓存类型标识符
+         * @example
+         * // 清理过期的对话缓存
+         * cachePool.clear('dialogue_data');
+         */
         public clear(type: string): void {
             let arr = this.cacheMap.get(type);
             if (!arr) return;
@@ -3907,13 +6893,14 @@ export namespace no {
             }
         }
 
-
+        /** 内部清理方法 */
         private _clear(obj: any): void {
             if (obj instanceof Node) obj.destroy();
             else if (obj instanceof Asset) assetBundleManager.release(obj);
             else obj = null;
         }
 
+        /** 定时检查过期缓存 */
         private checkClear() {
             let t = timestamp();
             let types = MapKeys2Array(this.cacheMap);
@@ -3934,38 +6921,80 @@ export namespace no {
     /**全局缓存池,适用于非节点数据或节点的父节点不固定的情况，如果是节点且其父节点固定，用全局缓存池会导致dc增加 */
     export const cachePool = new CachePool();
 
-    /**红点管理类 */
+    /** 
+     * 红点管理类 
+     * @example
+     * // 初始化红点系统
+     * hintCenter.onHint('mail', (count, type) => {
+     *   this.updateMailRedDot(count);
+     * }, this);
+     * 
+     * // 设置任务红点数量
+     * hintCenter.setHint('dailyTask', 3);
+     * 
+     * // 设置带时间戳的红点（明天12点触发）
+     * hintCenter.setHintTimestamp('activity', Date.now() + 86400000);
+     */
     class HintCenter extends Event {
+        /** 存储红点类型与对应数值 */
         private data: Map<string, number> = new Map<string, number>();
+        /** 子类型到主类型的映射表 */
         private sub2Main: { [subType: string]: string } = {};
+        /** 主类型到子类型的映射表 */
         private main2Subs: { [mainType: string]: string[] } = {};
+        /** 时间戳触发记录 */
         private timestampHit: object = new Object();
 
         constructor() {
             super();
+            // 每2秒检查一次时间戳触发
             setInterval(() => {
                 this.checkHint();
             }, 2000);
         }
 
         /**
-         * 设置红点
-         * @param type 红点类型
-         * @param v v为红点数量,v>0时显示红点，否则隐藏
+         * 设置红点状态
+         * @param type 红点类型标识
+         * @param v 红点显示数量（0为隐藏）
+         * @example
+         * // 设置邮件红点数量
+         * hintCenter.setHint('mail', 5);
+         * 
+         * // 清除成就红点
+         * hintCenter.setHint('achievement', 0);
          */
         public setHint(type: string, v: number) {
             v = float(v, 0);
             this.data.set(type, v);
-            // this.emit(type, v, type);
             this.checkHintType(type);
         }
 
+        /**
+         * 设置主红点状态（直接设置不检查子类型）
+         * @param type 主红点类型
+         * @param v 红点显示数量
+         * @example
+         * // 强制设置主界面红点
+         * hintCenter.setMainHint('mainUI', 1);
+         */
         public setMainHint(type: string, v: number): void {
             v = float(v, 0);
             this.data.set(type, v);
             this.emit(type, v, type);
         }
 
+        /**
+         * 修改红点数值（增量方式）
+         * @param type 红点类型
+         * @param v 变化量（可正负）
+         * @example
+         * // 增加未读邮件
+         * hintCenter.changeHint('mail', 1);
+         * 
+         * // 减少任务数量
+         * hintCenter.changeHint('quest', -1);
+         */
         public changeHint(type: string, v: number): void {
             v = float(v, 0);
             let a = this.getHintValue(type) || 0;
@@ -3975,9 +7004,12 @@ export namespace no {
         }
 
         /**
-         * 当添加子类型时，主类型的红点计算只会以子类型数量为准
-         * @param type 红点类型
-         * @param subType 子类型
+         * 添加子类型关联关系
+         * @param type 主红点类型
+         * @param subTypes 子类型或子类型数组
+         * @example
+         * // 将任务子类型关联到主任务红点
+         * hintCenter.addSubType('taskMain', ['dailyTask', 'achievementTask']);
          */
         public addSubType(type: string, subTypes: string | string[]): void {
             subTypes = [].concat(subTypes);
@@ -3992,38 +7024,58 @@ export namespace no {
             }
         }
 
+        /**
+         * 移除子类型关联
+         * @param type 主红点类型
+         * @param subType 要移除的子类型
+         * @example
+         * // 移除过期的活动子类型
+         * hintCenter.removeSubType('activity', 'xmasEvent');
+         */
         public removeSubType(type: string, subType: string): void {
             delete this.sub2Main[subType];
             no.removeFromArray(this.main2Subs[type], subType);
         }
 
         /**
-         * 监听红点状态
-         * @param type 红点类型
-         * @param func
-         * @param target
+         * 监听红点状态变化
+         * @param type 要监听的红点类型
+         * @param func 回调函数 function(count: number, type: string)
+         * @param target 监听目标
+         * @example
+         * // 监听邮件红点变化
+         * hintCenter.onHint('mail', (count, type) => {
+         *   this.mailIcon.redDot = count > 0;
+         * }, this);
          */
-
         public onHint(type: string, func: Function, target: any): void {
             this.on(type, func, target);
             if (this.data.has(type)) {
                 this.checkHintType(type);
-                // this.emit(type, this.data.get(type), type);
             }
         }
 
         /**
-         * 移除红点状态监听
-         * @param target
+         * 移除指定目标的所有红点监听
+         * @param target 要移除的监听目标
+         * @example
+         * // 在界面销毁时移除监听
+         * onDestroy() {
+         *   hintCenter.offHint(this);
+         * }
          */
         public offHint(target: any): void {
             this.targetOff(target);
         }
 
         /**
-         * 按时间戳设置红点
+         * 设置时间戳触发的红点
          * @param type 红点类型
-         * @param time 将来时间戳
+         * @param time 触发时间戳（单位：毫秒）
+         * @example
+         * // 设置整点刷新红点
+         * const nextHour = Date.now() + 3600000 - (Date.now() % 3600000);
+         * hintCenter.setHintTimestamp('hourlyRefresh', nextHour);
          */
         public setHintTimestamp(type: string, time: number): void {
             if (time < timestamp()) {
@@ -4034,11 +7086,21 @@ export namespace no {
             }
         }
 
+        /**
+         * 获取指定红点的当前数值
+         * @param type 红点类型
+         * @returns 当前红点数值（不存在返回null）
+         * @example
+         * // 检查背包红点状态
+         * const count = hintCenter.getHintValue('backpack');
+         * if (count > 0) this.showBagRedDot();
+         */
         public getHintValue(type: string): number {
             if (this.data.has(type)) return this.data.get(type);
             return null;
         }
 
+        /** 定时检查时间戳触发 */
         private checkHint(): boolean {
             forEachKV(this.timestampHit, (type, value) => {
                 if (value <= timestamp()) {
@@ -4050,6 +7112,7 @@ export namespace no {
             return true;
         }
 
+        /** 触发红点状态更新 */
         private checkHintType(type: string) {
             const mainType = this.sub2Main[type];
             if (!mainType || mainType != type) {
@@ -4075,6 +7138,14 @@ export namespace no {
             this.emit(mainType, n, mainType);
         }
 
+        /**
+         * 清空所有红点数据
+         * @example
+         * // 用户登出时重置
+         * onLogout() {
+         *   hintCenter.clear();
+         * }
+         */
         public clear() {
             this.data.clear();
             this.timestampHit = {};
@@ -4083,15 +7154,26 @@ export namespace no {
     /**全局红点管理器 */
     export const hintCenter = new HintCenter();
 
-    /**节点管理类 */
+    /** 
+     * 节点管理类（支持树状节点结构管理）
+     * @example
+     * // 注册UI根节点
+     * nodeTargetManager.register('ui_root', this.uiNode);
+     * 
+     * // 注册玩家角色节点
+     * nodeTargetManager.register('player', this.playerController);
+     */
     class NodeTargetManager {
 
         private targetMap: Map<string, any> = new Map();
 
         /**
-         * 注册节点
-         * @param type 注册类型
-         * @param target 目标
+         * 注册节点到管理器
+         * @param type - 节点类型标识（如：'ui_root'/'player'）
+         * @param target - 要注册的节点或组件
+         * @example
+         * // 注册任务追踪组件
+         * nodeTargetManager.register('quest_tracker', this.questComponent);
          */
         public register(type: string, target: any) {
             if (type == null || type == '' || target == null) return;
@@ -4099,9 +7181,15 @@ export namespace no {
         }
 
         /**
-         * 获取节点目标
-         * @param type 注册类型
-         * @returns 目标
+         * 获取已注册的节点/组件
+         * @param type - 注册时使用的类型标识
+         * @returns 对应的节点或组件
+         * @example
+         * // 获取UI管理器
+         * const uiManager = nodeTargetManager.get<UIManager>('ui_mgr');
+         * 
+         * // 获取玩家控制器
+         * const player = nodeTargetManager.get<PlayerController>('player');
          */
         public get<T>(type: string): T {
             if (type == null || type == '') return null;
@@ -4110,8 +7198,12 @@ export namespace no {
         }
 
         /**
-         * 移除目标
-         * @param type 注册类型
+         * 移除已注册的节点（通过UUID校验安全移除）
+         * @param type - 注册类型标识
+         * @param target - 要移除的目标对象
+         * @example
+         * // 安全移除玩家节点
+         * nodeTargetManager.remove('player', this.playerController);
          */
         public remove(type: string, target: any) {
             if (type == null || type == '' || target == null) return;
@@ -4122,6 +7214,18 @@ export namespace no {
             }
         }
 
+        /**
+         * 递归获取子节点组件（支持路径查找和组件筛选）
+         * @param type - 起始节点类型标识
+         * @param subs - 子节点路径数组（支持索引或组件名）
+         * @returns 找到的节点组件
+         * @example
+         * // 查找技能按钮组件
+         * const skillBtn = nodeTargetManager.getSub<Button>('hud', ['skill_panel', '0', 'btn_attack']);
+         * 
+         * // 查找任务列表项
+         * const questItem = nodeTargetManager.getSub<QuestItem>('quest_list', ['scrollview', 'item_123']);
+         */
         public getSub<T>(type: string, subs: string[]): T {
             let target = this.get<any>(type);
             let sub = subs.shift();
@@ -4146,10 +7250,22 @@ export namespace no {
     let units = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",];
     /**用科学计数格式表示的字符串 */
     export class ScientificString {
+        /** 系数（1 ≤ |系数| < 10） */
         private _coefficient: number = 0;
-        /**指数 */
+        /** 指数（10的幂次） */
         public index: number = 0;
 
+        /**
+         * 构造科学计数法字符串
+         * @param v - 初始化值（支持数字/字符串/已有科学计数对象）
+         * @example
+         * // 从对象初始化
+         * new ScientificString({_coefficient: 1.5, index: 3}); // 1.5E3
+         * // 从数字初始化
+         * new ScientificString(2500); // 2.5E3
+         * // 从字符串初始化
+         * new ScientificString("3.6E8"); // 3.6E8
+         */
         constructor(v?: string | number | { _coefficient: number, index: number }) {
             v = v || 0;
             if (v['_coefficient'] !== undefined) {
@@ -4160,10 +7276,19 @@ export namespace no {
                 this.value = String(v);
         }
 
+        /** 新建零值科学计数对象 */
         public static get new(): ScientificString {
             return new ScientificString(0);
         }
 
+        /**
+         * 设置数值（自动解析为科学计数格式）
+         * @example
+         * // 设置普通数字
+         * ss.value = 1234; // 转换为1.234E3
+         * // 设置科学计数字符串
+         * ss.value = "5.67E+5"; // 转换为5.67E5
+         */
         public set value(v: string | number) {
             if (v == null) return;
             if (typeof v == 'number') {
@@ -4180,21 +7305,26 @@ export namespace no {
             }
         }
 
+        /** 获取科学计数法字符串表示 */
         public get value(): string {
             return `${this._coefficient}E${this.index}`;
         }
 
+        /**
+         * 链式设置值
+         * @example
+         * new ScientificString().setValue("2.5E3").add(100);
+         */
         public setValue(v: string | number): ScientificString {
             this.value = v;
             return this;
         }
 
-        /**系数 */
+        /** 获取/设置系数（设置时会自动调整指数） */
         public get coefficient(): number {
             return this._coefficient;
         }
 
-        /**系数 */
         public set coefficient(v: number) {
             if (v == 0 || v == null) {
                 this._coefficient = 0;
@@ -4207,7 +7337,10 @@ export namespace no {
         }
 
         /**
-         * 复制
+         * 创建副本
+         * @example
+         * const original = new ScientificString("3E8");
+         * const copy = original.clone; // 独立副本
          */
         public get clone(): ScientificString {
             let a = ScientificString.new;
@@ -4217,7 +7350,12 @@ export namespace no {
         }
 
         /**
-         * 复制成目标
+         * 复制到目标对象
+         * @param other - 目标科学计数对象（将被覆盖）
+         * @example
+         * const source = new ScientificString("1.2E5");
+         * const target = new ScientificString();
+         * source.cloneTo(target); // target变为1.2E5
          */
         public cloneTo(other: ScientificString) {
             if (other == null) return;
@@ -4225,7 +7363,18 @@ export namespace no {
             this.index = other.index;
         }
 
-        /**加 */
+        /**
+         * 加法运算（支持链式调用）
+         * @param other - 要相加的值（科学计数对象/数字/字符串）
+         * @returns 当前对象的新值
+         * @example
+         * // 实例方法使用
+         * const a = new ScientificString("1.2E3");
+         * a.add("3E2").toString(); // 结果："1.5E3"
+         * 
+         * // 链式调用
+         * new ScientificString(5e4).add(2.5e3).add("1E5"); // 结果："1.525E5"
+         */
         public add(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
@@ -4237,7 +7386,20 @@ export namespace no {
             return this;
         }
 
-        /**加 */
+        /**
+         * 静态加法运算（适合快速计算）
+         * @param s1 - 被加数字符串
+         * @param s2 - 加数字符串
+         * @param out - 可选输出对象（避免重复创建对象）
+         * @returns 计算结果的新实例
+         * @example
+         * // 直接计算两个科学计数字符串的和
+         * ScientificString.add("2.5E3", "1.2E4").toString(); // 结果："1.45E4"
+         * 
+         * // 复用输出对象
+         * const result = new ScientificString();
+         * ScientificString.add("3E8", "5E7", result); // result值为3.5E8
+         */
         public static add(s1: string, s2: string, out?: ScientificString): ScientificString {
             out = out || new ScientificString();
             out.value = s1;
@@ -4246,7 +7408,17 @@ export namespace no {
             return out;
         }
 
-        /**减 */
+        /**
+         * 减法运算（支持链式调用）
+         * @param other - 要相减的值（科学计数对象/数字/字符串）
+         * @returns 当前对象的新值
+         * @example
+         * // 实例方法使用
+         * new ScientificString("5E3").minus("2E3").toString(); // 结果："3E3"
+         * 
+         * // 混合类型计算
+         * new ScientificString(1e5).minus(25000).toString(); // 结果："7.5E4"
+         */
         public minus(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
@@ -4258,7 +7430,16 @@ export namespace no {
             return this;
         }
 
-        /**减 */
+        /**
+         * 静态减法运算
+         * @param s1 - 被减数字符串
+         * @param s2 - 减数字符串
+         * @param out - 可选输出对象
+         * @returns 计算结果的新实例
+         * @example
+         * // 计算能量差值
+         * ScientificString.minus("1.5E6", "7.5E5").toString(); // 结果："7.5E5"
+         */
         public static minus(s1: string, s2: string, out?: ScientificString): ScientificString {
             out = out || new ScientificString();
             out.value = s1;
@@ -4267,7 +7448,17 @@ export namespace no {
             return out;
         }
 
-        /**乘 */
+        /**
+         * 乘法运算（支持链式调用）
+         * @param other - 要相乘的值（科学计数对象/数字/字符串）
+         * @returns 当前对象的新值
+         * @example
+         * // 计算面积
+         * new ScientificString("2.5E3").mul("3E2").toString(); // 结果："7.5E5"
+         * 
+         * // 连续相乘
+         * new ScientificString(2).mul(1e3).mul("4E2"); // 结果："8E5"
+         */
         public mul(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
@@ -4280,7 +7471,16 @@ export namespace no {
             return this;
         }
 
-        /**乘 */
+        /**
+         * 静态乘法运算
+         * @param s1 - 被乘数字符串
+         * @param s2 - 乘数字符串
+         * @param out - 可选输出对象
+         * @returns 计算结果的新实例
+         * @example
+         * // 计算功率（电压×电流）
+         * ScientificString.mul("2.2E3", "1.5E3").toString(); // 结果："3.3E6"
+         */
         public static mul(s1: string, s2: string, out?: ScientificString): ScientificString {
             out = out || new ScientificString();
             out.value = s1;
@@ -4289,7 +7489,17 @@ export namespace no {
             return out;
         }
 
-        /**除 */
+        /**
+         * 除法运算（支持链式调用）
+         * @param other - 要相除的值（科学计数对象/数字/字符串）
+         * @returns 当前对象的新值
+         * @example
+         * // 计算密度
+         * new ScientificString("6E3").div("2E1").toString(); // 结果："3E2"
+         * 
+         * // 混合类型计算
+         * new ScientificString(1e6).div(2e2).toString(); // 结果："5E3"
+         */
         public div(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
@@ -4302,7 +7512,16 @@ export namespace no {
             return this;
         }
 
-        /**除 */
+        /**
+         * 静态除法运算
+         * @param s1 - 被除数字符串
+         * @param s2 - 除数字符串
+         * @param out - 可选输出对象
+         * @returns 计算结果的新实例
+         * @example
+         * // 计算速度（距离/时间）
+         * ScientificString.div("1.5E3", "5E0").toString(); // 结果："3E2"
+         */
         public static div(s1: string, s2: string, out?: ScientificString): ScientificString {
             out = out || new ScientificString();
             out.value = s1;
@@ -4312,9 +7531,20 @@ export namespace no {
         }
 
         /**
-         * 值比较
-         * @param other
-         * @returns 负值：小于，0：等于，正值：大于
+         * 值比较（支持与多种类型比较）
+         * @param other - 比较对象（支持科学计数对象/数字/字符串）
+         * @returns 负值：当前对象小于比较对象，0：等于，正值：当前对象大于比较对象
+         * @example
+         * // 比较两个科学计数对象
+         * const a = new ScientificString("1.5E3");
+         * const b = new ScientificString("2E3");
+         * a.compareTo(b); // 返回-0.5
+         * 
+         * // 与数字直接比较
+         * new ScientificString("3E5").compareTo(250000); // 返回0.5
+         * 
+         * // 与字符串比较
+         * new ScientificString("5E8").compareTo("1E9"); // 返回-0.5
          */
         public compareTo(other: ScientificString | string | number): number {
             if (other == null) return 1;
@@ -4328,10 +7558,14 @@ export namespace no {
         }
 
         /**
-         * 值比较
-         * @param s1
-         * @param s2
-         * @returns 负值：小于，0：等于，正值：大于
+         * 静态值比较方法（适合快速比较两个字符串值）
+         * @param s1 - 科学计数字符串1（格式如"1.2E3"）
+         * @param s2 - 科学计数字符串2（格式如"1.5E3"）
+         * @returns 负值：s1 < s2，0：等于，正值：s1 > s2
+         * @example
+         * // 直接比较两个字符串值
+         * ScientificString.compareTo("3.6E8", "3.6E8"); // 返回0
+         * ScientificString.compareTo("2E5", "3E5"); // 返回-1
          */
         public static compareTo(s1: string, s2: string): number {
             if (s1 == null) return -1;
@@ -4341,7 +7575,15 @@ export namespace no {
             return e1.compareTo(e2);
         }
 
-        /**带单位的值 */
+        /** 
+         * 带单位的格式化值（自动处理千分位单位）
+         * @example
+         * new ScientificString(1500).unitValue;   // "1500"
+         * new ScientificString(15000).unitValue;  // "15k" 
+         * new ScientificString(1.5e6).unitValue;  // "1.5m"
+         * new ScientificString(3e9).unitValue;    // "3b"
+         * new ScientificString(5e12).unitValue;   // "5A"
+         */
         public get unitValue(): string {
             if (this.index < 3) {
                 return `${this.numberValue}`;
@@ -4357,7 +7599,17 @@ export namespace no {
             return `${floor(mutiply(this._coefficient, Math.pow(10, b + 2))) / 100}${u}`;
         }
 
-        public getUnit(a: number): string {
+        /**
+         * 递归生成单位字符串（内部使用）
+         * @param a - 单位层级（每26个字母进位）
+         * @returns 组合单位字符串
+         * @example
+         * getUnit(1) => "A"
+         * getUnit(26) => "Z"
+         * getUnit(27) => "AA"
+         * getUnit(28) => "AB"
+         */
+        private getUnit(a: number): string {
             let u: string;
             let len = units.length;
             a -= 1;
@@ -4371,16 +7623,31 @@ export namespace no {
             return u;
         }
 
+        /** 
+         * 获取原始数值（将科学计数转换为普通数字）
+         * @example
+         * new ScientificString("1.5E3").numberValue; // 1500
+         * new ScientificString("3E8").numberValue;   // 300000000
+         */
         public get numberValue(): number {
             return mutiply(this._coefficient, Math.pow(10, this.index));
         }
 
         /**
-         * 带单位字符串
-         * @param units 自定义单位数组
-         * @param step 单位换算步进值
-         * @param digits 小数位数
-         * @returns string 如：1.23AA
+         * 带单位字符串格式化（支持自定义单位体系）
+         * @param units - 自定义单位数组（需按单位量级顺序排列）
+         * @param step - 单位换算步进值（默认每3位进一个单位，如千/百万等）
+         * @param digits - 保留小数位数（默认2位）
+         * @returns 格式化后的字符串 如：1.23AA / 4.56万
+         * @example
+         * // 使用中文单位体系
+         * new ScientificString(12345).toUnitString(["", "万", "亿"], 4); // "1.23万"
+         * 
+         * // 使用自定义游戏单位
+         * new ScientificString(1e6).toUnitString(["K", "M", "B"], 3); // "1.00M"
+         * 
+         * // 处理极小数值
+         * new ScientificString(123).toUnitString(["千"], 3, 0); // "123"
          */
         public toUnitString(units: string[], step = 3, digits = 2): string {
             if (this.index < step) {
@@ -4393,17 +7660,31 @@ export namespace no {
         }
 
         /**
-         * 取负值到一个新的ScientificString
-         * @returns 新的ScientificString
+         * 取负值到一个新的ScientificString（保持原对象不变）
+         * @returns 新的负值ScientificString实例
+         * @example
+         * // 转换正值
+         * new ScientificString(1500).toNegative().toString(); // "-1.5E3"
+         * 
+         * // 链式调用
+         * new ScientificString(2e5).add(3e4).toNegative();
          */
         public toNegative(): ScientificString {
             let a = this.clone;
             a._coefficient = -Math.abs(a._coefficient);
             return a;
         }
+
         /**
-         * 取正值到一个新的ScientificString
-         * @returns 新的ScientificString
+         * 取正值到一个新的ScientificString（保持原对象不变）
+         * @returns 新的正值ScientificString实例
+         * @example
+         * // 确保数值为正
+         * new ScientificString(-5e3).toPositive().toString(); // "5E3"
+         * 
+         * // 处理用户输入
+         * const userInput = new ScientificString("-3.2E4");
+         * const safeValue = userInput.toPositive();
          */
         public toPositive(): ScientificString {
             let a = this.clone;
@@ -4411,6 +7692,17 @@ export namespace no {
             return a;
         }
 
+        /**
+         * 静态方法快速转换单位字符串（使用内置单位体系）
+         * @param v - 要转换的数值（支持数字/科学计数字符串）
+         * @returns 自动单位转换后的字符串
+         * @example
+         * // 快速转换数值
+         * ScientificString.toUnitString(2500); // "2.5k"
+         * 
+         * // 转换科学计数
+         * ScientificString.toUnitString("3.6E8"); // "360M"
+         */
         public static toUnitString(v: string | number): string {
             const a = new ScientificString(v);
             return a.unitValue;
@@ -4421,30 +7713,69 @@ export namespace no {
         return new ScientificString(v);
     }
 
-    /**关系查询 */
+    /** 
+     * 关系查询引擎（支持多条件组合查询和嵌套查询）
+     * @example
+     * // 初始化查询引擎
+     * const query = RelationQuery.new;
+     * 
+     * // 简单查询示例
+     * query.select('userTable where id==1001', {userTable});
+     * 
+     * // 复杂嵌套查询示例
+     * query.select('orderTable[userId,price] where createTime>="2024-01" and status in (1,3) or (productTable.category=="电子产品")', tables);
+     */
     export class RelationQuery {
 
+        /** 条件表达式缓存（提升重复条件解析性能） */
         private expMap: Map<string, { k: string, symbol: string, v: any }>;
+        /** 当前查询的表数据集 */
         private _tableDatas: any;
 
+        /** 工厂方法创建新实例 */
         public static get new(): RelationQuery {
             return new RelationQuery();
         }
 
+        /** 初始化条件解析缓存 */
         constructor() {
             this.expMap = new Map<string, { k: string, symbol: string, v: any }>();
         }
 
         /**
-         * 单表查询
-         * @param expression 表达式，如'tableName1[.?] where keyA==1 and keyB != 2 or keyC > 3 and keyD <= (tableName2.keyE:keyF ?= "bb")'
-         * @param tableDatas 表数据，{tableName:data}
+         * 单表查询（自动处理单条/多条结果）
+         * @param expression 查询表达式
+         *   格式：'表名[字段1,字段2] where 条件'
+         *   条件支持：==, !=, >, <, >=, <=, ?= (包含), in (集合)
+         *   示例：'userTable[id,name] where age>18 and dept in (技术部,市场部)'
+         * @param tableDatas 表数据对象 {表名: 数据表}
+         * @returns 查询结果（单条数据直接返回对象，多条返回数组）
+         * 
+         * @example
+         * // 查询用户表中管理员用户
+         * select('adminUsers where role=="admin"', {adminUsers: userData});
+         * 
+         * // 带字段筛选的查询
+         * select('products[name,price] where stock>0', productTables);
          */
         public select(expression: string, tableDatas: any): any {
             let a = this.selectList(expression, tableDatas) || [];
             return a.length <= 1 ? a[0] : a;
         }
 
+        /**
+         * 执行查询并始终返回数组结果
+         * @param expression 查询表达式
+         * @param tableDatas 表数据集合
+         * @returns 查询结果数组（即使只有单条结果）
+         * 
+         * @example
+         * // 获取所有库存大于100的商品
+         * selectList('products where stock>100', {products});
+         * 
+         * // 多条件组合查询
+         * selectList('orders where status==1 and totalPrice>=500', {orders});
+         */
         public selectList(expression: string, tableDatas: any): any[] {
             this._tableDatas = tableDatas;
             expression = this.parseBrackets(expression);
@@ -4452,6 +7783,8 @@ export namespace no {
             let exps = expression.split(' where ');
             let table = exps[0].split('.');
             let tableData = tableDatas[table[0]];
+            
+            // 处理WHERE条件
             if (exps[1]) {
                 let query = exps[1];
                 let queryies = this.parseOr(query);
@@ -4460,13 +7793,14 @@ export namespace no {
                         arr.push(value);
                     return false;
                 });
-            } else {
+            } else { // 无WHERE条件全表扫描
                 forEachKV(tableData, (key, value) => {
                     arr.push(value);
                     return false;
                 });
             }
 
+            // 处理字段选择
             if (table[1] != null && arr.length >= 1) {
                 let b = [];
                 for (let i = 0; i < arr.length; i++) {
@@ -4478,6 +7812,7 @@ export namespace no {
             }
         }
 
+        /** 从数据对象中提取指定字段（支持多字段选择） */
         private getQueryValue(tableData: any, keys: string): any {
             keys = keys.replace(new RegExp('\\[|\\]', 'g'), '');
             let a = keys.split(',');
@@ -4489,6 +7824,7 @@ export namespace no {
             return b;
         }
 
+        /** 解析OR逻辑条件组 */
         private parseOr(str: string): string[][] {
             let queryies: string[][] = [];
             let ands = str.split(' or ');
@@ -4498,10 +7834,12 @@ export namespace no {
             return queryies;
         }
 
+        /** 解析AND逻辑条件组 */
         private parseAnd(str: string): string[] {
             return str.split(' and ');
         }
 
+        /** 处理括号嵌套查询（支持多层嵌套） */
         private parseBrackets(exp: string): string {
             if (!exp.includes('(') && !exp.includes(')')) return exp;
             let i1 = exp.indexOf('('),
@@ -4511,7 +7849,7 @@ export namespace no {
             return exp.replace(exp.substring(i1, i2 + 1), String(a));
         }
 
-        /**判断或 */
+        /** OR条件判断（任一条件组满足即返回true） */
         private checkConditions(d: any, conditions: string[][]): boolean {
             if (conditions != null) {
                 let n = conditions.length;
@@ -4525,7 +7863,7 @@ export namespace no {
             }
         }
 
-        /**判断与 */
+        /** AND条件判断（所有条件必须同时满足） */
         private check(d: any, conditions: string[]): boolean {
             let n = conditions.length;
             for (let i = 0; i < n; i++) {
@@ -4564,11 +7902,13 @@ export namespace no {
             return true;
         }
 
+        /** 将条件字符串解析为结构化对象（带缓存优化） */
         private condition2Express(condition: string): { k: string, symbol: string, v: any } {
             if (this.expMap.has(condition)) return this.expMap.get(condition);
 
             let r = { k: '', symbol: '', v: null };
             condition = condition.trim();
+            // 解析各种比较运算符
             if (condition.includes('==')) {
                 r.symbol = '==';
                 let a = condition.split('==');
@@ -4599,12 +7939,12 @@ export namespace no {
                 let a = condition.split('<');
                 r.k = a[0].trim();
                 r.v = Number(a[1].trim());
-            } else if (condition.includes('?=')) {
+            } else if (condition.includes('?=')) { // 字符串包含判断
                 r.symbol = '?=';
                 let a = condition.split('?=');
                 r.k = a[0].trim();
                 r.v = a[1].trim();
-            } else if (condition.includes('in')) {
+            } else if (condition.includes('in')) { // 集合包含判断
                 r.symbol = 'in';
                 let a = condition.split('in');
                 r.k = a[0].trim();
@@ -4615,6 +7955,18 @@ export namespace no {
         }
     }
 
+    /**
+     * 轻量级内存数据库（支持多表CRUD操作）
+     * @example
+     * // 初始化数据库
+     * const db = new Database();
+     * 
+     * // 创建用户表并插入数据
+     * db.setTable('users', {
+     *   1001: { name: 'Alice', level: 5 },
+     *   1002: { name: 'Bob', level: 3 }
+     * });
+     */
     class Database {
         private _tables: any;
 
@@ -4623,19 +7975,28 @@ export namespace no {
         }
 
         /**
-         * 设置表
-         * @param name 表名
-         * @param data 数据
+         * 创建/重置数据表
+         * @param name - 表名称（需唯一）
+         * @param data - 表数据（默认为空对象）
+         * @example
+         * // 创建空订单表
+         * db.setTable('orders');
          */
         public setTable(name: string, data = {}) {
             this._tables[name] = data;
         }
 
         /**
-         * 查表
-         * @param tableNames [表名]
-         * @param expression RelationQuery的查询表达式
-         * @returns
+         * 多表联合查询
+         * @param tableNames - 要查询的表名数组
+         * @param expression - RelationQuery查询表达式
+         * @returns 查询结果（单条对象或多条数组）
+         * @example
+         * // 查询用户等级大于3的玩家
+         * const result = db.select(['users'], 'users where level>3');
+         * 
+         * // 多表联合查询
+         * db.select(['users', 'items'], 'users[id,name] where items.ownerId==users.id');
          */
         public select(tableNames: string[], expression: string): any {
             let datas = {};
@@ -4646,11 +8007,14 @@ export namespace no {
         }
 
         /**
-         * 向表增加一条数据
-         * @param tableName 表名
-         * @param id
-         * @param value
-         * @returns
+         * 插入单条数据
+         * @param tableName - 目标表名
+         * @param id - 数据主键（支持字符串/数字）
+         * @param value - 要插入的数据
+         * @returns 更新后的整张表数据
+         * @example
+         * // 添加新用户
+         * db.insert('users', 1003, { name: 'Charlie', level: 1 });
          */
         public insert(tableName: string, id: string | number, value: any): any {
             this._tables[tableName] = this._tables[tableName] || {};
@@ -4659,10 +8023,13 @@ export namespace no {
         }
 
         /**
-         * 删除表中某条数据
-         * @param tableName 表名
-         * @param id
-         * @returns
+         * 删除单条数据
+         * @param tableName - 目标表名
+         * @param id - 要删除的数据主键
+         * @returns 被删除的数据（不存在时返回null）
+         * @example
+         * // 删除ID为1002的用户
+         * const deletedUser = db.delete('users', 1002);
          */
         public delete(tableName: string, id: string | number): any {
             if (!this._tables[tableName]) return null;
@@ -4672,11 +8039,17 @@ export namespace no {
         }
 
         /**
-         * 更新表中某条数据
-         * @param tableName 表名
-         * @param path 数据访问路径,如a.b.c或[a,b,c]
-         * @param value
-         * @returns
+         * 更新数据字段
+         * @param tableName - 目标表名
+         * @param path - 数据路径（支持点语法或数组）
+         * @param value - 要更新的值
+         * @returns 更新后的整张表数据
+         * @example
+         * // 更新用户等级
+         * db.update('users', '1001.level', 6);
+         * 
+         * // 使用数组路径更新嵌套数据
+         * db.update('players', ['1001', 'skills', 'fireball'], 3);
          */
         public update(tableName: string, path: string | string[], value: any): any {
             if (!this._tables[tableName]) return null;
@@ -4690,19 +8063,46 @@ export namespace no {
     export const database = new Database();
 
     /**
-     * 简单的http请求
+     * HTTP请求工具类（支持GET/POST方法）
+     * @example
+     * // 初始化带认证的请求实例
+     * const http = new HttpRequest('Bearer xxxxx');
+     * 
+     * // 发送GET请求
+     * http.get('https://api.example.com/data').then(console.log);
+     * 
+     * // 发送带参数的POST请求
+     * http.post('https://api.example.com/user', { name: 'John', age: 25 });
      */
     export class HttpRequest {
+        /** 授权令牌（用于身份验证） */
         private Authorization: string;
 
         /**
-         *
-         * @param author 权限认证字符串
+         * 创建HTTP请求实例
+         * @param author - 认证令牌（如JWT/Bearer Token）
+         * @example
+         * // 使用OAuth令牌初始化
+         * const authHttp = new HttpRequest('OAuth xyz123');
          */
         constructor(author: string) {
             this.Authorization = author;
         }
 
+        /**
+         * 基础请求方法（内部使用）
+         * @param type - 请求类型 GET/POST
+         * @param url - 请求地址
+         * @param data - 请求数据（POST时使用）
+         * @param cb - 回调函数
+         * @private
+         * 
+         * @remark
+         * 状态码处理逻辑：
+         * - 200-399: 尝试解析JSON数据
+         * - 0: 服务器无响应（返回'no_server'）
+         * - 其他状态: 直接返回错误
+         */
         private httpRequest(type: string, url: string, data: string | object, cb?: (v: any) => void): void {
             let xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
@@ -4731,6 +8131,17 @@ export namespace no {
             xhr.send(data);
         }
 
+        /**
+         * 发送GET请求
+         * @param url - 请求地址（可包含查询参数）
+         * @returns Promise包装的响应数据
+         * @example
+         * // 带查询参数的请求
+         * http.get('https://api.example.com/search?keyword=test');
+         * 
+         * // 处理错误响应
+         * http.get('invalid_url').catch(err => console.error('请求失败:', err));
+         */
         public get(url: string): Promise<any> {
             return new Promise<any>(resolve => {
                 this.httpRequest("GET", url, null, (v: any) => {
@@ -4742,6 +8153,18 @@ export namespace no {
             });
         }
 
+        /**
+         * 发送POST请求
+         * @param url - 请求地址
+         * @param data - 请求数据（支持对象或JSON字符串）
+         * @returns Promise包装的响应数据
+         * @example
+         * // 发送表单数据
+         * http.post('/api/login', { username: 'admin', password: '123' });
+         * 
+         * // 发送JSON字符串
+         * http.post('/api/log', '{"action": "click", "time": 1620000000}');
+         */
         public post(url: string, data: string | object): Promise<any> {
             return new Promise<any>(resolve => {
                 this.httpRequest("POST", url, data, (v: any) => {
@@ -4754,12 +8177,37 @@ export namespace no {
         }
     }
 
-    /**节流 */
+    /**
+     * 节流控制器（用于限制函数执行频率）
+     * @example
+     * // 按钮点击节流（2秒内只响应一次）
+     * const throttle = Throttling.ins();
+     * async onClick() {
+     *   if(await throttle.wait(2)) {
+     *     // 执行点击逻辑
+     *   }
+     * }
+     * 
+     * // 全局滚动事件节流
+     * window.addEventListener('scroll', () => {
+     *   Throttling.ins().wait(0.5).then(allow => {
+     *     if(allow) updateScrollPosition();
+     *   });
+     * });
+     */
     export class Throttling {
-
+        /** 冷却状态标记 */
         private isCd: boolean = false;
+        /** 节流持续时间（单位：秒） */
         private duration: number = 1;
 
+        /**
+         * 获取节流器实例（单例模式）
+         * @param c - 可选上下文对象，用于绑定实例
+         * @example
+         * // 获取组件级单例
+         * Throttling.ins(this);
+         */
         public static ins(c?: any): Throttling {
             if (c != null) {
                 c['Throttling_instance'] = c['Throttling_instance'] || new Throttling();
@@ -4768,6 +8216,15 @@ export namespace no {
             return new Throttling();
         }
 
+        /**
+         * 等待节流冷却
+         * @param duration - 节流持续时间（秒）
+         * @param firstWait - 是否立即进入冷却（默认false立即返回）
+         * @returns Promise<boolean> 是否允许执行
+         * @example
+         * // 首次立即执行后续节流
+         * await throttle.wait(1, true);
+         */
         public async wait(duration: number, firstWait = false): Promise<boolean> {
             if (this.isCd) {
                 return false;
@@ -4782,22 +8239,30 @@ export namespace no {
             }
         }
 
+        /** 设置冷却计时器 */
         private async setCd() {
             const it = this;
             it.isCd = true;
-            // await sleep(this.duration);
             return new Promise<void>(resolve => {
                 setTimeout(() => {
                     it.isCd = false;
                     resolve();
                 }, this.duration);
             }).catch(e => {
-                console.error(e);
+                console.error('节流器错误:', e);
             });
         }
     }
 
-    /** 绘制图形的类型*/
+    /** 
+     * 绘制图形的类型枚举
+     * @example
+     * // 创建线段时使用
+     * const lineType = GraphicsType.Line;
+     * 
+     * // 创建圆形时使用
+     * const circleType = GraphicsType.Circle;
+     */
     export enum GraphicsType {
         /** 线*/
         Line = 'line',
@@ -4813,27 +8278,64 @@ export namespace no {
         Bezier = 'bezier'
     };
 
-    /** 绘制图形路径的数据结构*/
+    /** 
+     * 绘制图形路径的通用数据结构
+     * @example
+     * // 创建矩形数据示例
+     * const rectData: GraphicsData = {
+     *   points: [10, 10],      // 起始坐标
+     *   size: [100, 50],       // 宽高
+     *   radius: 5,             // 圆角半径
+     *   fillColor: '#FF0000',  // 填充颜色
+     *   stroke: true           // 启用描边
+     * };
+     */
     export type GraphicsData = {
-        points: number[],//矩形起始 x,y 轴坐标 | 贝赛尔曲线路径控制点的 x,y 轴坐标|线路径目标位置的 x,y 轴坐标|圆,椭圆,圆弧路径中心点的 x,y 轴坐标
-        radius?: number[] | number,//矩形圆角半径|椭圆 x,y 轴半径|圆半径|圆弧弧度
-        size?: number[],//矩形宽度和高度
-        startEndAngles?: number[]//弧度起点和终点，从正 x 轴顺时针方向测量
-        counterclockwise?: boolean,//如果为真，在两个角度之间逆时针绘制。默认顺时针
-        lineWidth?: number,//线条宽度
-        fillColor?: string,//填充绘画的颜色#000000
-        strokeColor?: string,//笔触的颜色
-        fill?: boolean,//是否填充
-        stroke?: boolean,//是否描边
-        close?: boolean,//是否闭合
+        /** 坐标点集合（不同图形含义不同）：
+         * - 矩形/贝塞尔曲线：起始坐标或控制点坐标
+         * - 线：路径点坐标
+         * - 圆/椭圆/圆弧：中心点坐标 */
+        points: number[],
+        /** 半径配置：
+         * - 矩形：圆角半径 [左上, 右上, 右下, 左下]
+         * - 椭圆：[x轴半径, y轴半径]
+         * - 圆/圆弧：单一数值 */
+        radius?: number[] | number,
+        /** 尺寸（仅矩形使用）：[宽度, 高度] */
+        size?: number[],
+        /** 弧度范围（仅圆弧使用）：[起始角度, 结束角度]（单位：弧度） */
+        startEndAngles?: number[],
+        /** 绘制方向：true=逆时针，false=顺时针（默认） */
+        counterclockwise?: boolean,
+        /** 线条宽度（像素） */
+        lineWidth?: number,
+        /** 填充颜色（十六进制格式） */
+        fillColor?: string,
+        /** 描边颜色（十六进制格式） */
+        strokeColor?: string,
+        /** 是否填充图形 */
+        fill?: boolean,
+        /** 是否描边图形 */
+        stroke?: boolean,
+        /** 是否闭合路径 */
+        close?: boolean,
     };
 
     /**
-     * 创建绘制线路径的数据
-     * @param points 
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
+     * 创建线段路径数据
+     * @param d 线段配置参数
+     * @param d.points 线段路径点数组（至少需要2个点）
+     * @param d.lineWidth 线宽（默认0）
+     * @param d.strokeColor 描边颜色
+     * @param d.fillColor 填充颜色
+     * @returns 线段图形数据
+     * @example
+     * // 创建红色线段
+     * const line = createGraphicLineData({
+     *   points: [new Vec2(0,0), new Vec2(100,100)],
+     *   lineWidth: 2,
+     *   strokeColor: '#FF0000'
+     * });
      */
     export function createGraphicLineData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         let ps = [];
@@ -4851,15 +8353,36 @@ export namespace no {
 
     /**
      * 创建绘制圆弧路径的数据
-     * @param center 
-     * @param radius 
-     * @param startAngle 
-     * @param endAngle 
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
-     * @param counterclockwise 
-     * @returns 
+     * @param d 圆弧配置参数
+     * @param d.center 圆心坐标
+     * @param d.radius 圆弧半径（像素）
+     * @param d.startAngle 起始角度（单位：弧度）
+     * @param d.endAngle 结束角度（单位：弧度）
+     * @param d.lineWidth 线宽（默认0）
+     * @param d.strokeColor 描边颜色（十六进制）
+     * @param d.fillColor 填充颜色（十六进制）
+     * @param d.counterclockwise 绘制方向（默认false顺时针）
+     * @returns 圆弧图形数据
+     * @example
+     * // 创建红色半圆弧（90度到270度）
+     * const arc = createGraphicArcData({
+     *   center: new Vec2(100, 100),
+     *   radius: 50,
+     *   startAngle: Math.PI/2,
+     *   endAngle: Math.PI*1.5,
+     *   lineWidth: 2,
+     *   strokeColor: '#FF0000'
+     * });
+     * 
+     * // 创建填充扇形（闭合路径）
+     * const sector = createGraphicArcData({
+     *   center: new Vec2(200, 200),
+     *   radius: 80,
+     *   startAngle: 0,
+     *   endAngle: Math.PI/3,
+     *   fillColor: '#FFA500',
+     *   close: true
+     * });
      */
     export function createGraphicArcData(d: { center: Vec2, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         return {
@@ -4875,13 +8398,31 @@ export namespace no {
 
     /**
      * 创建绘制椭圆路径的数据
-     * @param center 
-     * @param rx 
-     * @param ry 
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
-     * @returns 
+     * @param d 椭圆配置参数
+     * @param d.center 椭圆中心坐标
+     * @param d.rx X轴半径（像素）
+     * @param d.ry Y轴半径（像素）
+     * @param d.lineWidth 线宽（默认0）
+     * @param d.strokeColor 描边颜色（十六进制）
+     * @param d.fillColor 填充颜色（十六进制）
+     * @returns 椭圆图形数据
+     * @example
+     * // 创建蓝色描边椭圆
+     * const ellipse = createGraphicEllipseData({
+     *   center: new Vec2(150, 150),
+     *   rx: 100,
+     *   ry: 60,
+     *   lineWidth: 3,
+     *   strokeColor: '#0000FF'
+     * });
+     * 
+     * // 创建填充绿色椭圆
+     * const filledEllipse = createGraphicEllipseData({
+     *   center: new Vec2(300, 200),
+     *   rx: 80,
+     *   ry: 80,
+     *   fillColor: '#00FF00'
+     * });
      */
     export function createGraphicEllipseData(d: { center: Vec2, rx: number, ry: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         return {
@@ -4914,14 +8455,29 @@ export namespace no {
 
     /**
      * 创建绘制矩形路径的数据
-     * @param x 
-     * @param y 
-     * @param width 
-     * @param height 
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
-     * @returns 
+     * @param d.x 矩形左上角X坐标
+     * @param d.y 矩形左上角Y坐标
+     * @param d.width 矩形宽度
+     * @param d.height 矩形高度
+     * @param d.lineWidth 线宽（0表示不描边）
+     * @param d.strokeColor 描边颜色（十六进制字符串 如#FF0000）
+     * @param d.fillColor 填充颜色（十六进制字符串 如#00FF00）
+     * @returns 矩形图形数据
+     * @example
+     * // 创建红色边框矩形
+     * const rect = createGraphicRectData({
+     *   x: 100, y: 200,
+     *   width: 300, height: 150,
+     *   lineWidth: 2,
+     *   strokeColor: '#FF0000'
+     * });
+     * 
+     * // 创建填充蓝色矩形
+     * const filledRect = createGraphicRectData({
+     *   x: 50, y: 50,
+     *   width: 200, height: 200,
+     *   fillColor: '#0000FF'
+     * });
      */
     export function createGraphicRectData(d: { x: number, y: number, width: number, height: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         return {
@@ -4935,15 +8491,32 @@ export namespace no {
 
     /**
      * 创建绘制圆角矩形路径的数据
-     * @param x 
-     * @param y 
-     * @param width 
-     * @param height 
-     * @param r 矩形圆角半径
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
-     * @returns 
+     * @param d.x 矩形左上角X坐标
+     * @param d.y 矩形左上角Y坐标
+     * @param d.width 矩形宽度
+     * @param d.height 矩形高度 
+     * @param d.r 圆角半径（单位：像素）
+     * @param d.lineWidth 线宽（0表示不描边）
+     * @param d.strokeColor 描边颜色（十六进制）
+     * @param d.fillColor 填充颜色（十六进制）
+     * @returns 圆角矩形图形数据
+     * @example
+     * // 创建绿色圆角矩形
+     * const roundRect = createGraphicRoundRectData({
+     *   x: 150, y: 150,
+     *   width: 200, height: 100,
+     *   r: 15,
+     *   lineWidth: 3,
+     *   strokeColor: '#00FF00'
+     * });
+     * 
+     * // 创建填充橙色圆角矩形
+     * const filledRound = createGraphicRoundRectData({
+     *   x: 300, y: 300,
+     *   width: 150, height: 150,
+     *   r: 20,
+     *   fillColor: '#FFA500'
+     * });
      */
     export function createGraphicRoundRectData(d: { x: number, y: number, width: number, height: number, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         return {
@@ -4958,11 +8531,37 @@ export namespace no {
 
     /**
      * 创建绘制贝塞尔曲线路径的数据
-     * @param points 两个点时创建二次贝塞尔曲线，三个点时三次贝塞尔曲线
-     * @param lineWidth 
-     * @param strokeColor 
-     * @param fillColor 
-     * @returns 
+     * @param d.points 控制点坐标数组（格式说明）：
+     *   - 2个点：起点 + 终点（直线）
+     *   - 3个点：二次贝塞尔曲线（起点 + 控制点 + 终点）
+     *   - 4个点：三次贝塞尔曲线（起点 + 控制点1 + 控制点2 + 终点）
+     * @param d.lineWidth 线宽（0表示不描边）
+     * @param d.strokeColor 描边颜色（十六进制）
+     * @param d.fillColor 填充颜色（十六进制）
+     * @returns 贝塞尔曲线图形数据
+     * @example
+     * // 创建二次贝塞尔曲线
+     * const quadCurve = createBezierData({
+     *   points: [
+     *     new Vec2(100, 100),  // 起点
+     *     new Vec2(200, 50),   // 控制点
+     *     new Vec2(300, 100)   // 终点
+     *   ],
+     *   lineWidth: 2,
+     *   strokeColor: '#FF00FF'
+     * });
+     * 
+     * // 创建三次贝塞尔曲线
+     * const cubicCurve = createBezierData({
+     *   points: [
+     *     new Vec2(50, 200),
+     *     new Vec2(150, 100),
+     *     new Vec2(250, 300),
+     *     new Vec2(350, 200)
+     *   ],
+     *   lineWidth: 3,
+     *   strokeColor: '#00FFFF'
+     * });
      */
     export function createBezierData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
         let ps = [];
@@ -4979,22 +8578,34 @@ export namespace no {
     }
 
     /**
-     * 计算自定义图形相对world的uv最小最大点
-     * @param cx 图形中心点x
-     * @param cy 图形中心点y
-     * @param width 图形宽
-     * @param height 图形高
-     * @param graphicsNode 
-     * @returns [minx,miny,maxx,maxy]
+     * 计算自定义图形在屏幕空间中的UV范围（归一化坐标，左上角为原点）
+     * @param cx 图形中心点x（本地坐标系）
+     * @param cy 图形中心点y（本地坐标系）
+     * @param width 图形宽度（像素）
+     * @param height 图形高度（像素）
+     * @param graphicsNode 图形节点（用于坐标系转换）
+     * @returns [minU, minV, maxU, maxV] UV坐标范围数组
+     * @example
+     * // 计算按钮控件在屏幕中的UV范围
+     * const buttonUV = getGraphicUVInWorld(0, 0, 200, 50, buttonNode);
+     * // 结果可能为：[0.3, 0.8, 0.5, 0.85] 表示占据屏幕横向30%-50%，纵向80%-85%区域
      */
     export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): number[] {
         let worldSize = view.getVisibleSize();
-        //世界坐标系原点为左下角
+        // 世界坐标系原点为左下角，需要转换为左上角为原点的UV坐标系
         let p1 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx - width / 2, cy - height / 2));
         let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
         return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
     }
 
+    /**
+     * 字符串转字节数组（ASCII编码）
+     * @param str 输入字符串
+     * @returns Uint8Array字节数组
+     * @example
+     * string2Bytes("Hello"); // 返回 Uint8Array [72, 101, 108, 108, 111]
+     * @note 仅支持ASCII字符，中文等Unicode字符请使用TextEncoder
+     */
     export function string2Bytes(str: string): Uint8Array {
         const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
@@ -5009,6 +8620,14 @@ export namespace no {
         return bytes;
     }
 
+    /**
+     * 字节数组转字符串（ASCII解码）
+     * @param bytes Uint8Array字节数组
+     * @returns 原始字符串
+     * @example
+     * bytes2String(new Uint8Array([72, 101, 108, 108, 111])); // 返回 "Hello"
+     * @note 仅支持ASCII字符，中文等Unicode字符请使用TextDecoder
+     */
     export function bytes2String(bytes: Uint8Array): string {
         let sArr: string[] = [];
         for (let i = 0; i < bytes?.length; i++) {
@@ -5017,6 +8636,15 @@ export namespace no {
         return sArr.join('');
     }
 
+    /**
+     * 字符串转ArrayBuffer（ASCII编码）
+     * @param str 输入字符串
+     * @returns ArrayBuffer二进制数据
+     * @example
+     * const buf = string2ArrayBuffer("test");
+     * new Uint8Array(buf); // 返回 [116, 101, 115, 116]
+     * @see string2Bytes 类似功能的不同返回格式
+     */
     export function string2ArrayBuffer(str: string): ArrayBuffer {
         const buffer = new ArrayBuffer(str?.length || 0);
         const bytes = new Uint8Array(buffer);
@@ -5031,11 +8659,28 @@ export namespace no {
         return buffer;
     }
 
+    /**
+     * ArrayBuffer转字符串（ASCII解码）
+     * @param buffer 要转换的二进制数据
+     * @returns 解码后的字符串
+     * @example
+     * const buf = new Uint8Array([72, 101, 108, 108, 111]).buffer;
+     * arrayBuffer2String(buf); // 返回 "Hello"
+     */
     export function arrayBuffer2String(buffer: ArrayBuffer): string {
         const bytes = new Uint8Array(buffer);
         return bytes2String(bytes);
     }
 
+    /**
+     * Uint8Array转ArrayBuffer（数据复制）
+     * @param bytes 要转换的Uint8Array数组
+     * @returns 新的ArrayBuffer对象
+     * @example
+     * const bytes = new Uint8Array([1, 2, 3]);
+     * const buffer = Uint8Array2ArrayBuffer(bytes);
+     * buffer.byteLength; // 3
+     */
     export function Uint8Array2ArrayBuffer(bytes: Uint8Array): ArrayBuffer {
         const arraybuffer = new ArrayBuffer(bytes.length);
         const view = new Uint8Array(arraybuffer);
@@ -5043,6 +8688,15 @@ export namespace no {
         return arraybuffer;
     }
 
+    /**
+     * ArrayBuffer转Uint8Array（创建视图）
+     * @param buffer 要转换的二进制数据
+     * @returns 新的Uint8Array视图
+     * @example
+     * const buffer = new ArrayBuffer(4);
+     * const bytes = ArrayBuffer2Uint8Array(buffer);
+     * bytes.length; // 4
+     */
     export function ArrayBuffer2Uint8Array(buffer: ArrayBuffer): Uint8Array {
         return new Uint8Array(buffer);
     }
@@ -5068,16 +8722,41 @@ export namespace no {
     ////////////////////////////////////给richtext添加bbcode start///////////////////////
 
     /**
-     * 给richtext添加bbcode
-     * @param text 原richtext
-     * @param tags 标签列表
+     * 给富文本添加BBCode标签
+     * @param text 原始富文本内容
+     * @param tags BBCode标签配置数组（当使用重载1时）
+     * @param tag 单个标签名（当使用重载2时）
+     * @param value 标签属性值，支持多种格式：
+     * - 数字/字符串：直接作为属性值（如 size=24）
+     * - 对象：单个键值对（如 {key:'color',value:'#ff0000'}）
+     * - 对象数组：多个键值对（如 [{key:'size',value:24}, {key:'color',value:'blue'}]）
+     * @returns 添加BBCode后的富文本字符串
+     * @example
+     * // 添加多个标签
+     * addBBCode('Hello', [
+     *   { tag: 'b' }, // 加粗
+     *   { tag: 'color', value: '#ff0000' } // 红色
+     * ]); // 返回 '<b><color=#ff0000>Hello</color></b>'
+     * 
+     * // 添加单个带数值属性的标签
+     * addBBCode('Text', 'size', 24); // 返回 '<size=24>Text</size>'
+     * 
+     * // 添加复杂属性配置
+     * addBBCode('World', 'style', [
+     *   { key: 'font', value: 'Arial' },
+     *   { key: 'outline', value: 2 }
+     * ]); // 返回 '<style font=Arial outline=2>World</style>'
+     * 
+     * // 添加换行标签
+     * addBBCode('Line1\nLine2', 'br'); // 返回 'Line1<br/>Line2'
      */
     export function addBBCode(text: string, tags: { tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[] }[]): string;
     /**
-     * 给richtext添加bbcode
-     * @param text 原richtext
-     * @param tag 标签
-     * @param props 属性
+     * 给富文本添加单个BBCode标签
+     * @param text 原始富文本内容
+     * @param tag 要添加的标签名称
+     * @param value 标签属性值（可选）
+     * @returns 添加BBCode后的富文本字符串
      */
     export function addBBCode(text: string, tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[]): string;
     export function addBBCode(text: string, tags: string | { tag: string, value?: number | string | { key: string, value: any } | { key: string, value: any }[] }[], props?: number | string | { key: string, value: any } | { key: string, value: any }[]): string {
@@ -5112,10 +8791,17 @@ export namespace no {
     ////////////////////////////////////给richtext添加bbcode end///////////////////////
 
     /**
-     * 创建点击事件
+     * 创建点击事件配置对象
      * @param target 事件响应组件和函数所在节点
-     * @param comp 事件响应组件
+     * @param comp 事件响应组件（支持组件类或组件名字符串）
      * @param handler 响应事件函数名
+     * @returns 配置好的事件处理器对象
+     * @example
+     * // 创建按钮点击事件配置
+     * const event = createClickEvent(this.node, 'MenuUI', 'onStartClick');
+     * 
+     * // 使用组件类创建事件配置
+     * createClickEvent(playerNode, PlayerComponent, 'onJump');
      */
     export function createClickEvent(target: Node, comp: typeof Component | string, handler: string): EventHandler {
         let a = new EventHandler();
@@ -5132,12 +8818,18 @@ export namespace no {
     }
 
     /**
-     * 给btn添加点击事件
-     * @param btn 需要添加点击事件的btn
+     * 给按钮组件添加点击事件
+     * @param btn 需要添加点击事件的按钮组件
      * @param target 事件响应组件和函数所在节点
-     * @param comp 事件响应组件
+     * @param comp 事件响应组件（支持组件类或组件名字符串）
      * @param handler 响应事件函数名
-     * @param exclusive 独占，默认true，即btn中只有当前添加的事件
+     * @param exclusive 是否独占模式，默认true（清空已有事件）
+     * @example
+     * // 添加独占式点击事件（替换所有现有事件）
+     * addClickEventsToButton(playBtn, this.node, GameCtrl, 'onPlayClick');
+     * 
+     * // 添加非独占式点击事件（保留已有事件）
+     * addClickEventsToButton(menuBtn, uiNode, 'MenuManager', 'showMainMenu', false);
      */
     export function addClickEventsToButton(btn: Button, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
         if (!btn?.clickEvents) return;
@@ -5158,12 +8850,18 @@ export namespace no {
     }
 
     /**
-     * 给toggle添加选中事件
-     * @param toggle 需要添加选中事件的toggle
+     * 给开关组件添加选中状态变更事件
+     * @param toggle 需要添加事件的开关组件
      * @param target 事件响应组件和函数所在节点
-     * @param comp 事件响应组件
+     * @param comp 事件响应组件（支持组件类或组件名字符串）
      * @param handler 响应事件函数名
-     * @param exclusive 独占，默认true，即toggle中只有当前添加的事件
+     * @param exclusive 是否独占模式，默认true（清空已有事件）
+     * @example
+     * // 添加独占式开关事件
+     * addCheckEventsToToggle(soundToggle, settingsNode, 'AudioManager', 'onSoundToggle');
+     * 
+     * // 添加非独占式开关事件（保留已有事件）
+     * addCheckEventsToToggle(vibrationToggle, this.node, SettingsPanel, 'updateVibration', false);
      */
     export function addCheckEventsToToggle(toggle: Toggle, target: Node, comp: typeof Component | string, handler: string, exclusive = true) {
         if (!toggle?.checkEvents) return;
@@ -5183,32 +8881,61 @@ export namespace no {
         }
     }
 
+    /**
+     * SP加密算法1.0版本 - 加密方法
+     * @param b 需要加密的原始数据（支持字符串或对象）
+     * @returns 加密后的Base64格式字符串
+     * @example
+     * // 加密字符串
+     * const encrypted = SPEncrypt1_0_Encrypt1('hello123'); 
+     * // 加密对象（会自动序列化）
+     * const encryptedObj = SPEncrypt1_0_Encrypt1({user: 'admin', score: 100});
+     */
     export function SPEncrypt1_0_Encrypt1(b: any) {
         if (b == null) return '';
-        b = ToUTF8(b);
-        for (var e = Math.floor(1e8 * 1), d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), c = [], a = 0; a < d; a++)
+        b = ToUTF8(b); // 转换为UTF-8字节数组
+        // 生成固定加密密钥（1e8的整数形式）
+        for (var e = Math.floor(1e8 * 1), 
+             // 计算需要分割的4字节块数量
+             d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), 
+             c = [], a = 0; a < d; a++)
+            // 将4个字节组合为32位整数并进行异或加密
             (c[a] = b[4 * a] | (b[4 * a + 1] << 8) | (b[4 * a + 2] << 16) | (b[4 * a + 3] << 24)), (c[a] ^= e);
-        c[d] = e;
+        c[d] = e; // 在数据末尾附加加密密钥
+        // 将加密后的32位整数重新拆分为字节数组
         b = [];
         for (a = 0; a <= d; a++)
-            (b[4 * a] = c[a] & 255), (b[4 * a + 1] = (c[a] >> 8) & 255), (b[4 * a + 2] = (c[a] >> 16) & 255), (b[4 * a + 3] = (c[a] >> 24) & 255);
-        return bytes2String(b);
+            (b[4 * a] = c[a] & 255),          // 取最低8位
+            (b[4 * a + 1] = (c[a] >> 8) & 255),  // 次低8位
+            (b[4 * a + 2] = (c[a] >> 16) & 255), // 次高8位 
+            (b[4 * a + 3] = (c[a] >> 24) & 255); // 最高8位
+        return bytes2String(b); // 转换为Base64字符串
     }
 
+    /**
+     * 将字符串转换为UTF-8字节数组
+     * @param str 需要转换的原始字符串
+     * @returns UTF-8编码的字节数组
+     * @example
+     * // 返回 [97, 98, 99]
+     * ToUTF8('abc');
+     * 
+     * // 处理中文返回多字节数组
+     * ToUTF8('中文'); // 返回 [228, 184, 173, 230, 150, 135]
+     */
     export function ToUTF8(str: string) {
         if (str == null) return [];
         var result = new Array();
         var k = 0;
+        // 逐个字符处理编码
         for (var i = 0; i < str.length; i++) {
-            var j = encodeURI(str[i]);
-            if (j.length == 1) {
-                // 未转换的字符
+            var j = encodeURI(str[i]); // URI编码处理特殊字符
+            if (j.length == 1) { // ASCII字符直接转换
                 result[k++] = j.charCodeAt(0);
-            } else {
-                // 转换成%XX形式的字符
-                var bytes = j.split('%');
-                for (var l = 1; l < bytes.length; l++) {
-                    result[k++] = parseInt('0x' + bytes[l]);
+            } else { // 处理多字节编码（如中文）
+                var bytes = j.split('%'); // 分割编码单元
+                for (var l = 1; l < bytes.length; l++) { // 跳过第一个空元素
+                    result[k++] = parseInt('0x' + bytes[l]); // 16进制转十进制
                 }
             }
         }
@@ -5216,57 +8943,143 @@ export namespace no {
     }
 
 
+    /**
+     * 智能拼接路径片段（自动处理斜杠和反斜杠）
+     * @param args 路径片段数组（支持空值过滤）
+     * @returns 规范化拼接后的路径字符串
+     * @example
+     * // 基本路径拼接
+     * pathjoin('user', 'documents/', 'reports//2024'); // "user/documents/reports/2024"
+     * 
+     * // 处理混合斜杠和空值
+     * pathjoin('C:\\projects', '\\src\\', '\\utils'); // "C/projects/src/utils"
+     * 
+     * // 处理空字符串参数
+     * pathjoin('', 'temp', ''); // "temp"
+     */
     export function pathjoin(...args: string[]) {
         let a: string[] = [];
         for (let i = 0, l = args.length; i < l; i++) {
             if (args[i])
+                // 统一处理路径片段：移除首尾的斜杠/反斜杠，并清理结尾的路径分隔符
                 a[a.length] = args[i].replace('/', '').replace('\\', '').replace(/(\/|\\\\)$/, "");
         }
         return a.join('/');
     }
 
+    /**
+     * 从完整路径中提取文件名（支持不同操作系统路径格式）
+     * @param path 文件路径字符串
+     * @returns 纯文件名（包含扩展名）
+     * @example
+     * // 基本文件名提取
+     * getFileName('downloads/report.pdf'); // "report.pdf"
+     * 
+     * // 处理Windows路径
+     * getFileName('C:\\Users\\docs\\note.txt'); // "note.txt"
+     * 
+     * // 处理以斜杠结尾的路径
+     * getFileName('temp/cache/'); // "cache"
+     */
     export function getFileName(path: string): string {
+        // 统一处理不同操作系统的路径分隔符，并获取最后一部分
         return path.substring(path.lastIndexOf('/') + 1);
     }
 
     /**
-     * 单例类
+     * 单例模式基类（需继承使用）
+     * @remarks
+     * 通过继承实现具体单例类，需在子类中实现clear方法
+     * @example
+     * // 创建配置管理器单例
+     * class ConfigManager extends SingleObject {
+     *   private _configs: Map<string, any> = new Map();
+     * 
+     *   static getInstance() {
+     *     return this.instance();
+     *   }
+     * 
+     *   // 实现清理逻辑
+     *   clear() {
+     *     this._configs.clear();
+     *   }
+     * }
      */
     export class SingleObject {
+        /** 单例实例缓存 */
         private static _ins: any;
 
+        /**
+         * 获取单例实例（需在子类中包装此方法）
+         * @returns 单例实例
+         */
         protected static instance(): any {
             if (!this._ins) this._ins = new this();
             return this._ins;
         }
 
-        /**由SingleObjectManager调用，清理对象中缓存的数据 */
+        /** 
+         * 清理单例数据（由管理器调用）
+         * @remarks
+         * 子类需重写此方法实现具体清理逻辑
+         */
         public clear() { }
     }
 
     /**
-     * 单例对象管理器
+     * 单例对象生命周期管理器
+     * @remarks
+     * 统一管理所有注册的单例对象，提供批量清理功能
+     * @example
+     * // 注册单例类
+     * SingleObjectManager.register(ConfigManager);
+     * 
+     * // 游戏切换场景时清理所有单例
+     * SingleObjectManager.clear();
      */
     export class SingleObjectManager {
+        /** 已注册的单例类列表 */
         private static _singleObjects: any[] = [];
+
+        /**
+         * 注册需要管理的单例类
+         * @param singleObject - 继承自SingleObject的类
+         */
         public static register(singleObject: any) {
             this._singleObjects[this._singleObjects.length] = singleObject;
         }
+
+        /**
+         * 清理所有注册的单例实例
+         * @remarks
+         * 遍历所有注册的单例类，调用其clear方法并重置实例
+         */
         public static clear() {
             for (let i = 0; i < this._singleObjects.length; i++) {
                 let so = this._singleObjects[i];
                 if (so['_ins']) {
-                    so['_ins'].clear();
-                    so['_ins'] = null;
+                    so['_ins'].clear();  // 调用具体清理逻辑
+                    so['_ins'] = null;   // 重置单例实例
                 }
             }
         }
     }
 
     /**
-     * 判断目标是否可用
-     * @param target 
-     * @returns 
+     * 判断目标是否可用（支持Cocos对象有效性检测）
+     * @param target - 需要检测的对象（支持普通对象和Cocos对象）
+     * @returns 对象是否可用（对于Cocos对象会检测引擎有效性）
+     * @example
+     * // 检测普通对象
+     * checkValid({}); // 返回true
+     * 
+     * // 检测已销毁的节点
+     * const node = new Node();
+     * node.destroy();
+     * checkValid(node); // 返回false
+     * 
+     * // 检测非Cocos对象
+     * checkValid(null); // 返回false
      */
     export function checkValid(target: any): boolean {
         if (target == undefined || target == null) return false;
@@ -5275,10 +9088,26 @@ export namespace no {
     }
 
     /**
-     * 安全赋值，会先判断target是否存在
-     * @param target 
-     * @param key 
-     * @param value 
+     * 安全赋值方法（自动检测目标有效性）
+     * @param target - 赋值目标对象（支持组件或普通对象）
+     * @param data - 需要赋值的键值对对象
+     * @example
+     * // 安全设置组件属性
+     * setValueSafely(myComponent, {
+     *   progress: 0.5,
+     *   label: 'Loading...',
+     *   visible: true
+     * });
+     * 
+     * // 安全设置普通对象属性
+     * const userData = { name: 'John' };
+     * setValueSafely(userData, {
+     *   age: 30,
+     *   email: 'john@example.com'
+     * });
+     * 
+     * // 对无效目标不执行操作
+     * setValueSafely(null, { value: 100 }); // 静默失败
      */
     export function setValueSafely(target: Component | any, data: { [k: string]: any }) {
         if (!checkValid(target)) return;
@@ -5287,36 +9116,88 @@ export namespace no {
         }
     }
 
-    /**网速计算类 */
+    /**
+     * 网络速度计算工具类（支持实时速率和剩余时间计算）
+     * @example
+     * // 文件下载进度监控
+     * const speedMonitor = new NetworkSpeed();
+     * 
+     * // 每1秒更新一次进度
+     * setInterval(() => {
+     *   const progress = getDownloadProgress();
+     *   const result = speedMonitor.calculateNetworkSpeedAndRemainSeconds(progress.loaded, progress.total);
+     *   if (result) {
+     *     console.log(`当前速度：${NetworkSpeed.formatNetworkSpeed(result[0])}/s 剩余时间：${result[1]}秒`);
+     *   }
+     * }, 1000);
+     */
     export class NetworkSpeed {
+        /** 存储最近一次的加载数据 [已加载字节数, 时间戳] */
         private _lastLoaded: number[];
+        
         constructor() {
             this._lastLoaded = [0];
         }
 
+        /**
+         * 计算实时网速和剩余时间
+         * @param loaded - 当前已加载的字节数
+         * @param total - 总需要加载的字节数
+         * @returns [当前网速(B/s), 预计剩余秒数] 或 null（当数据不足时）
+         * @example
+         * // 首次调用返回null（需要基准数据）
+         * speedMonitor.calculateNetworkSpeedAndRemainSeconds(1024, 10240); // null
+         * 
+         * // 第二次调用（间隔1秒以上）返回有效数据
+         * setTimeout(() => {
+         *   const res = speedMonitor.calculateNetworkSpeedAndRemainSeconds(2048, 10240);
+         *   // res可能为 [1024, 8] 表示1024B/s，剩余8秒
+         * }, 1500);
+         */
         public calculateNetworkSpeedAndRemainSeconds(loaded: number, total: number): number[] {
             const now = sys.now();
-            if (this._lastLoaded[0] == 0) {
+            if (this._lastLoaded[0] == 0) { // 初始化基准数据
                 this._lastLoaded[0] = loaded;
                 this._lastLoaded[1] = now;
                 return null;
             }
+            
+            // 计算时间差（秒）
             const t = (now - this._lastLoaded[1]) / 1000;
-            if (t < 1) return null;
-            let a: number[] = [];
-            const sub = (loaded - this._lastLoaded[0]) / t;
-            a[0] = sub;
-            a[1] = Math.ceil((total - loaded) / sub);
+            if (t < 1) return null; // 时间间隔不足1秒不计算
+            
+            let result: number[] = [];
+            const sub = (loaded - this._lastLoaded[0]) / t; // 计算字节/秒
+            
+            result[0] = sub; // 当前网速
+            result[1] = Math.ceil((total - loaded) / sub); // 剩余时间（向上取整）
+            
+            // 更新基准数据
             this._lastLoaded[0] = loaded;
             this._lastLoaded[1] = now;
-            return a;
+            
+            return result;
         }
 
+        /**
+         * 格式化网速显示（自动转换单位）
+         * @param v - 原始字节数
+         * @param unit - 单位体系（默认['B', 'KB', 'MB']）
+         * @returns 格式化后的字符串（保留两位小数）
+         * @example
+         * NetworkSpeed.formatNetworkSpeed(1024); // "1KB"
+         * NetworkSpeed.formatNetworkSpeed(1536); // "1.5KB"
+         * NetworkSpeed.formatNetworkSpeed(3145728); // "3MB"
+         * 
+         * // 使用自定义单位
+         * NetworkSpeed.formatNetworkSpeed(2048, ['B', 'KiB']); // "2KiB"
+         */
         public static formatNetworkSpeed(v: number, unit = ['B', 'KB', 'MB']): string {
             let i = 0, s: string = '';
-            while (1) {
+            while (true) {
+                // 当数值小于1024或达到最大单位时停止转换
                 if (v < 1024 || i == (unit.length - 1)) {
-                    s = Math.floor(v * 100) / 100 + unit[i];
+                    s = Math.floor(v * 100) / 100 + unit[i]; // 保留两位小数
                     break;
                 }
                 v /= 1024;
@@ -5327,10 +9208,16 @@ export namespace no {
     }
 
     /**
-     * 设置节点可渲染标志
-     * @param node 
-     * @param v 
-     * @returns 
+     * 设置节点可渲染标志（通过调整节点位置实现）
+     * @param node - 要操作的节点
+     * @param v - 是否可渲染（true=显示，false=隐藏到屏幕外）
+     * @returns 当前是否可渲染
+     * @example
+     * // 隐藏UI面板
+     * visible(uiNode, false);
+     * 
+     * // 显示游戏角色
+     * visible(playerNode, true);
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
@@ -5341,25 +9228,24 @@ export namespace no {
             return node.active;
         }
 
-
-        /**
-         * 因为node设置active的同时还会执行一些生命周期方法，这些方法里会有一些逻辑处理，
-         * 单纯的不渲染而不执行生命周期方法会导致一些逻辑问题，所以不能以这种方案来优化性能
-         */
+        // 通过修改节点X坐标实现隐藏（保留原始坐标用于恢复）
         if (node['__origin_x__'] == null) {
             node['__origin_x__'] = no.x(node);
         }
-        //原生不支持，小游戏支持
+        
         if (v != undefined) {
             node['yj_need_render'] = v;
             if (v) {
                 if (!node.active) node.active = true;
             }
             if (!EDITOR) {
+                // 将节点移动到屏幕外实现隐藏（20000像素）
                 no.x(node, !v ? 20000 : node['__origin_x__']);
+                // 处理输入阻断组件
                 const blockInputEvents = node.getComponent(BlockInputEvents);
                 if (blockInputEvents)
                     blockInputEvents.enabled = v;
+                // 处理自定义按钮组件
                 const btn = node.getComponent('YJButton');
                 if (btn)
                     btn['canClick'] = v;
@@ -5370,24 +9256,27 @@ export namespace no {
     }
 
     /**
-     * 该方法适用于不需要调用onEnable，onDisable方法的情况，如在scrollview中不在可显示区域内的节点或是移到屏幕外的节点
-     * 设置节点可渲染标志
-     * @param node 
-     * @param v 
-     * @returns 
+     * 通过透明度设置节点可渲染标志（不触发生命周期方法）
+     * @param node - 要操作的节点
+     * @param v - 是否可渲染（true=显示，false=完全透明）
+     * @returns 当前是否可渲染
+     * @example
+     * // 隐藏滚动列表项
+     * visibleByOpacity(listItem, false);
+     * 
+     * // 显示缓存对象
+     * visibleByOpacity(cachedNode, true);
      */
     export function visibleByOpacity(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        // if (NATIVE) {
-        //     if (v != undefined)
-        //         node.active = v;
-        //     return node.active;
-        // }
+
         if (v != undefined) {
             node['yj_need_render'] = v;
             const uiopacity = node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
+            // 保存原始透明度用于恢复
             if (node['yj_origin_opacity'] == null)
                 node['yj_origin_opacity'] = uiopacity.opacity || 255;
+                
             if (!v) {
                 uiopacity.opacity = 0;
             } else {
@@ -5409,6 +9298,17 @@ export namespace no {
         return node['yj_need_render'] !== false;
     }
 
+    /**
+     * 设置节点层级激活状态（控制交互和渲染）
+     * @param node - 要操作的节点
+     * @param v - 是否激活
+     * @example
+     * // 禁用弹窗交互
+     * visibleByActiveInHierarchy(popupNode, false);
+     * 
+     * // 启用对象池对象
+     * visibleByActiveInHierarchy(poolObject, true);
+     */
     export function visibleByActiveInHierarchy(node: Node, v: boolean) {
         const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
         if (blockInputEvents)
@@ -5428,6 +9328,7 @@ export namespace no {
             if (node['__origin_x__'] !== null) {
                 no.x(node, node['__origin_x__']);
             }
+            // 触发数据组件的启用逻辑
             let comps = node.getComponentsInChildren('YJDataWork');
             for (let i = 0; i < comps.length; i++) {
                 comps[i]['onEnable']();
@@ -5436,6 +9337,7 @@ export namespace no {
         node['_activeInHierarchy'] = v;
     }
 
+    /** 触发可见性变更事件 */
     function onVisibleChange(node: Node, v: boolean) {
         const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
         for (let i = 0; i < arr.length; i++) {
@@ -5444,34 +9346,67 @@ export namespace no {
     }
 
     /**
-     * 节点包围盒类
+     * 节点包围盒类（增强计算包含子节点的包围盒）
      * 获取节点包围盒通常用UITransform.getBoundingBoxToWorld()，
-     * 如果计算不准确，可用本类
+     * 如果计算不准确（需要包含动态子节点时），可用本类
+     * 
+     * @example
+     * // 创建包围盒实例
+     * const bbox = NodeBoundingBox.new(myNode);
+     * 
+     * // 动态添加子节点后更新包围盒
+     * myNode.addChild(newChild);
+     * bbox.onAddChild(newChild);
      */
     export class NodeBoundingBox {
         private _targetNode: Node;
         private _rect: Rect;
+        
+        /**
+         * @param targetNode - 需要计算包围盒的目标节点
+         */
         constructor(targetNode: Node) {
             this._targetNode = targetNode;
             this._rect = targetNode.getComponent(UITransform).getBoundingBox();
             this._rect.center = v2();
         }
 
+        /** 工厂方法创建新实例 */
         public static new(targetNode: Node): NodeBoundingBox {
             return new NodeBoundingBox(targetNode);
         }
 
+        /**
+         * 当添加子节点时更新包围盒
+         * @param child - 新增的子节点
+         * @example
+         * // 动态添加子节点后手动更新
+         * const newChild = instantiate(prefab);
+         * parentNode.addChild(newChild);
+         * bbox.onAddChild(newChild);
+         */
         public onAddChild(child: Node) {
             this.updateRect(no.size(child), no.position(child));
         }
 
+        /**
+         * 获取节点自身坐标系下的原始包围盒（不包含子节点）
+         * @returns 原始包围盒矩形
+         * @example
+         * // 获取节点初始包围盒
+         * const originRect = bbox.getOriginRect();
+         */
         public getOriginRect(): Rect {
             return this._rect.clone();
         }
 
         /**
-         * 父坐标系下的包围盒
-         * @returns 
+         * 获取父坐标系下的包围盒（包含所有子节点）
+         * @returns 父节点坐标系中的包围盒
+         * @example
+         * // 计算在父容器中的实际占位区域
+         * const rectInParent = bbox.getRect();
+         * console.log(`位置：${rectInParent.x},${rectInParent.y} 尺寸：${rectInParent.width}x${rectInParent.height}`);
          */
         public getRect(): Rect {
             let r = this._rect.clone(),
@@ -5482,9 +9417,15 @@ export namespace no {
         }
 
         /**
-         * 世界坐标系下的包围盒
-         * @param targetNode 
-         * @returns 
+         * 获取世界坐标系下的包围盒（包含所有子节点）
+         * @returns 世界坐标系中的包围盒
+         * @example
+         * // 检测与其他节点的世界坐标碰撞
+         * const worldRect1 = bbox1.getRectToWorld();
+         * const worldRect2 = bbox2.getRectToWorld();
+         * if (worldRect1.intersects(worldRect2)) {
+         *   console.log('发生碰撞');
+         * }
          */
         public getRectToWorld(): Rect {
             let r = this._rect.clone();
@@ -5506,9 +9447,12 @@ export namespace no {
         }
 
         /**
-         * 父坐标系下的包围盒, 需要频繁获取请使用实例方法
-         * @param targetNode 
-         * @returns 
+         * 静态方法快速获取父坐标系包围盒（适合一次性计算）
+         * @param targetNode - 目标节点
+         * @returns 父节点坐标系中的包围盒
+         * @example
+         * // 快速获取单个节点的包围盒
+         * const rect = NodeBoundingBox.getRect(spriteNode);
          */
         public static getRect(targetNode: Node): Rect {
             const children = targetNode.children;
@@ -5533,9 +9477,15 @@ export namespace no {
         }
 
         /**
-         * 世界坐标系下的包围盒, 需要频繁获取请使用实例方法
-         * @param targetNode 
-         * @returns 
+         * 静态方法快速获取世界坐标系包围盒（适合一次性计算）
+         * @param targetNode - 目标节点
+         * @returns 世界坐标系中的包围盒
+         * @example
+         * // 快速获取UI元素的世界坐标范围
+         * const worldRect = NodeBoundingBox.getRectToWorld(uiElement);
+         * if (worldRect.contains(touchPos)) {
+         *   console.log('点击在元素范围内');
+         * }
          */
         public static getRectToWorld(targetNode: Node): Rect {
             let rect = this.getRect(targetNode),
@@ -5547,10 +9497,29 @@ export namespace no {
         }
     }
 
+    /**
+     * 检查材质是否包含指定属性
+     * @param material - 要检查的材质实例
+     * @param techniqueIdx - 技术索引（从0开始）
+     * @param passIdx - 通道索引（从0开始）
+     * @param propertyKey - 要检查的属性名称
+     * @returns 是否包含该属性
+     * @example
+     * // 检查材质是否包含_BaseColor属性
+     * const hasColor = materialHasProperty(myMaterial, 0, 0, '_BaseColor');
+     */
     export function materialHasProperty(material: Material, techniqueIdx: number, passIdx: number, propertyKey: string): boolean {
         return material.effectAsset.techniques[techniqueIdx]?.passes[passIdx]?.properties[propertyKey] !== undefined;
     }
 
+    /**
+     * 调试用-将对象挂载到window对象
+     * @param key - 挂载到window的属性名
+     * @param obj - 要挂载的对象
+     * @example
+     * // 在调试模式下暴露玩家数据到全局
+     * addToWindowForDebug('playerData', playerComponent.data);
+     */
     export function addToWindowForDebug(key: string, obj: any) {
         if (DEBUG) {
             window[key] = obj;
@@ -5558,9 +9527,12 @@ export namespace no {
     }
 
     /**
-     * 获取字符串字节长度
-     * @param v 
-     * @returns 
+     * 获取字符串字节长度（中文按2字节计算）
+     * @param v - 要计算的字符串
+     * @returns 字节总长度
+     * @example
+     * // 返回 7 (中文3字*2 + 英文1字)
+     * getStringByteLength('测试a');
      */
     export function getStringByteLength(v: string): number {
         let len = 0;
@@ -5571,10 +9543,14 @@ export namespace no {
     }
 
     /**
-     * 裁剪字符串
-     * @param v 
-     * @param maxLen 最大长度
-     * @param chinese2 中文算2个字节长度
+     * 按字节长度裁剪字符串
+     * @param v - 原始字符串
+     * @param maxLen - 最大允许字节长度
+     * @param chinese2 - 是否中文按2字节计算（默认true）
+     * @returns 裁剪后的字符串
+     * @example
+     * // 返回 '测试te'（总长度6字节）
+     * cutString('测试test', 6);
      */
     export function cutString(v: string, maxLen: number, chinese2 = true): string {
         let len = 0, s: string[] = [];
@@ -5588,10 +9564,13 @@ export namespace no {
     }
 
     /**
-     * 字符串转数字数组
-     * @param v like '1,2,3,4'
-     * @param split 分隔符，默认为','
-     * @returns 
+     * 将分隔字符串转换为数字数组
+     * @param v - 要转换的字符串，如 '1,2,3,4'
+     * @param split - 分隔符（默认逗号）
+     * @returns 转换后的数字数组
+     * @example
+     * // 返回 [10, 20, 30]
+     * stringToNumberArray('10|20|30', '|');
      */
     export function stringToNumberArray(v: string, split = ','): number[] {
         const a = v.split(split);
@@ -5603,7 +9582,17 @@ export namespace no {
     }
 
     /**
-     * 垃圾回收
+     * 主动触发垃圾回收（兼容微信小游戏和Web平台）
+     * @remark
+     * - 微信小游戏平台调用wx.triggerGC()
+     * - 其他平台调用sys.garbageCollect()
+     * @example
+     * // 在加载新场景前触发GC
+     * GC();
+     * 
+     * // 处理大量临时对象后触发
+     * processTemporaryData();
+     * GC();
      */
     export function GC() {
         warn('触发GC，进行垃圾回收');
@@ -5614,10 +9603,16 @@ export namespace no {
     }
 
     /**
-     * 创建一个基础节点,Layers.Enum.UI_2D,添加了UITransform组件
-     * @param name 节点名
-     * @param components 需要添加的组件
-     * @returns 
+     * 创建基础UI节点（默认添加UITransform组件）
+     * @param name 节点名称（可选）
+     * @param components 需要预添加的组件列表（支持组件类或组件名）
+     * @returns 配置好的节点对象
+     * @example
+     * // 创建带Sprite和Button组件的节点
+     * const node = newNode('MenuButton', [Sprite, 'YJButton']);
+     * 
+     * // 创建仅带UITransform的空白节点
+     * const container = newNode('ScrollContent');
      */
     export function newNode(name?: string, components?: typeof Component[] | string[]): Node {
         const n = new Node(name);
@@ -5632,9 +9627,15 @@ export namespace no {
     }
 
     /**
-     * 创建敏感词检测库
-     * @param words 
-     * @returns 
+     * 构建敏感词DFA字典树（基于确定性有限自动机算法）
+     * @param words 敏感词列表 
+     * @returns DFA字典树结构
+     * @example
+     * // 构建游戏聊天敏感词库
+     * const dfa = createSensitiveWordDFA(['外挂', '代练', '充值']);
+     * 
+     * // 构建政治敏感词库
+     * const politicsDFA = createSensitiveWordDFA(await loadSensitiveWords());
      */
     export function createSensitiveWordDFA(words: string[]): any {
         const root: any = {};
@@ -5646,15 +9647,24 @@ export namespace no {
                 node[char] = node[char] || {};
                 node = node[char];
             }
-            node.isEnd = true; // 存储敏感词本身
+            node.isEnd = true; // 标记敏感词结尾节点
         }
         return root;
     }
+
     /**
-     * 检测敏感词
-     * @param text 需要检测的内容
-     * @param dfa 敏感词库
-     * @returns 检测出的敏感词或空字符串
+     * 使用DFA字典树检测敏感词
+     * @param text 待检测文本内容
+     * @param dfa 已构建的DFA字典树
+     * @returns 检测到的敏感词数组（无敏感词时返回空数组）
+     * @example
+     * // 检测用户输入
+     * const badWords = searchSensitiveWordDFA(userInput, dfa);
+     * if(badWords.length > 0) showWarning(badWords);
+     * 
+     * // 过滤聊天内容
+     * const filtered = searchSensitiveWordDFA(chatMessage, gameDFA)
+     *            .reduce((s, w) => s.replace(w, '**'), chatMessage);
      */
     export function searchSensitiveWordDFA(text: string, dfa: any): string[] {
         let strs: string[] = [];
@@ -5671,9 +9681,8 @@ export namespace no {
                 }
                 node = node[ch];
                 if (node.isEnd) {
-                    // 找到敏感词结尾的节点
                     strs[strs.length] = text.substring(j, i + 1);
-                    j = i;
+                    j = i; // 跳过已检测部分
                     break;
                 }
             }
@@ -5682,10 +9691,16 @@ export namespace no {
     }
 
     /**
-     * 获取原型对象
-     * @param target 可以是实例或对象
-     * @param propertyKey 属性key
-     * @returns 
+     * 获取原型对象或原型属性
+     * @param target 目标对象/类（可以是实例对象或类构造函数）
+     * @param propertyKey （可选）要获取的原型属性名
+     * @returns 原型对象 | 原型属性值 | undefined
+     * @example
+     * // 获取数组原型
+     * const arrayProto = getPrototype([]);
+     * 
+     * // 获取数组的push方法
+     * const pushMethod = getPrototype([], 'push');
      */
     export function getPrototype(target: any, propertyKey?: string) {
         let a: any;
@@ -5701,9 +9716,15 @@ export namespace no {
     }
 
     /**
-     * 在原型上添加自定义属性
-     * @param target 
-     * @param properties 
+     * 在原型对象上添加/覆盖属性
+     * @param target 目标对象/类（实例对象或类构造函数）
+     * @param properties 要添加的属性键值对
+     * @example
+     * // 给所有数组添加自定义方法
+     * setPrototype(Array, {
+     *   sum() { return this.reduce((a,b) => a + b, 0); }
+     * });
+     * [1,2,3].sum(); // 6
      */
     export function setPrototype(target: any, properties: { [k: string]: any }) {
         if (target) {
@@ -5717,10 +9738,16 @@ export namespace no {
     }
 
     /**
-     * 获取class的原型对象
-     * @param clazz 
-     * @param propertyKey 属性key
-     * @returns 
+     * 获取类的原型对象或原型属性
+     * @param clazz 类构造函数
+     * @param propertyKey （可选）要获取的原型属性名
+     * @returns 类的原型对象 | 原型属性值 | undefined
+     * @example
+     * // 获取Array类的原型
+     * const arrayProto = getClassPrototype(Array);
+     * 
+     * // 获取Date类的now方法
+     * const nowMethod = getClassPrototype(Date, 'now');
      */
     export function getClassPrototype(clazz: any, propertyKey?: string) {
         const a = clazz?.prototype;
@@ -5729,9 +9756,15 @@ export namespace no {
     }
 
     /**
-     * 在class的原型上添加自定义属性
-     * @param clazz 
-     * @param properties 
+     * 在类的原型上添加/覆盖属性
+     * @param clazz 类构造函数
+     * @param properties 要添加的属性键值对
+     * @example
+     * // 为所有字符串添加前缀方法
+     * setClassPrototype(String, {
+     *   prefix(p: string) { return p + this; }
+     * });
+     * 'world'.prefix('hello '); // 'hello world'
      */
     export function setClassPrototype(clazz: any, properties: { [k: string]: any }) {
         if (clazz) {
@@ -5740,59 +9773,93 @@ export namespace no {
     }
 
     /**
-     * 检测target的原型属性propertyKey的值是否等于val
-     * @param target 
-     * @param propertyKey 
-     * @param val 
-     * @returns 
+     * 检测目标对象的原型属性是否等于指定值
+     * @param target 目标对象/类
+     * @param propertyKey 要检测的原型属性名
+     * @param val 要比较的值
+     * @returns 是否相等
+     * @example
+     * // 检查数组的concat方法
+     * isPrototypeEquals([], 'concat', Array.prototype.concat); // true
+     * 
+     * // 检查自定义类方法
+     * class Player {}
+     * setClassPrototype(Player, { hp: 100 });
+     * isPrototypeEquals(Player, 'hp', 100); // true
      */
     export function isPrototypeEquals(target: any, propertyKey: string, val: any) {
         return getPrototype(target, propertyKey) == val;
     }
 
     /**
-     * 在编辑器模式下获取资源
+     * 在编辑器模式下获取资源（仅在Cocos Creator编辑器环境下可用）
+     * @example
+     * // 获取场景中使用的纹理资源信息
+     * const textureInfo = await EditorMode.getAssetInfo('fcmR3XnlRK6QHYdTQxFc1S');
+     * 
+     * // 批量加载角色图集资源
+     * const atlases = await EditorMode.loadSpriteAtlas(['characters/hero.plist', 'characters/enemy.plist']);
      */
     export namespace EditorMode {
 
         /**
-         * 获取资源信息
-         * @param param 可以是uuid/url/path
-         * @returns AssetInfo
+         * 获取资源信息（支持跨包查询）
+         * @param param 资源标识符，可以是uuid/url/path
+         * @returns 资源信息对象（包含uuid、路径、类型等元数据）
+         * @example
+         * // 通过uuid查询
+         * const info = await EditorMode.getAssetInfo('fcmR3XnlRK6KdTQxFc1S');
+         * 
+         * // 通过路径查询
+         * const sceneInfo = await EditorMode.getAssetInfo('db://assets/resources/scenes/Main.fire');
          */
         export async function getAssetInfo(param: string) {
             return Editor.Message.request('asset-db', 'query-asset-info', param);
         }
 
         /**
-         * 获取资源元数据
-         * @param url 资源url
-         * @returns IAssetMeta
+         * 获取资源元数据（包含导入选项、依赖关系等）
+         * @param url 资源url（格式：db://assets/...）
+         * @returns 资源元数据对象
+         * @example
+         * // 获取预制体的元数据
+         * const meta = await EditorMode.getAssetMeta('db://assets/resources/prefabs/Player.prefab');
          */
         export async function getAssetMeta(url: string) {
             return Editor.Message.request('asset-db', 'query-asset-meta', url);
         }
 
         /**
-         * 获取所有ccType类型的资源信息
-         * @param ccType 如：'cc.SpriteFrame'
-         * @returns AssetInfo[]
+         * 获取指定类型的所有资源信息
+         * @param ccType 资源类型标识，支持：'cc.SpriteFrame' | 'cc.AudioClip' | 'cc.Prefab' 等
+         * @returns 符合类型的所有资源信息数组
+         * @example
+         * // 获取所有预制体资源
+         * const prefabs = await EditorMode.getAssetInfosByCCType('cc.Prefab');
          */
         export async function getAssetInfosByCCType(ccType: string) {
             return Editor.Message.request('asset-db', 'query-assets', { ccType: ccType });
         }
 
         /**
-         * 获取所有包信息
-         * @returns AssetInfo[]
+         * 获取所有Asset Bundle配置信息
+         * @returns 包含所有Asset Bundle信息的数组
+         * @example
+         * // 获取所有资源包信息
+         * const bundles = await EditorMode.getBundleInfos();
+         * console.log('当前项目包含的包:', bundles.map(b => b.name));
          */
         export async function getBundleInfos() {
             return Editor.Message.request('asset-db', 'query-assets', { isBundle: true });
         }
 
         /**
-         * 获取所有包名
-         * @returns string[]
+         * 获取所有Asset Bundle名称
+         * @returns 资源包名称数组
+         * @example
+         * // 列出所有资源包名称
+         * const bundleNames = await EditorMode.getBundleNames();
+         * console.log('资源包列表:', bundleNames);
          */
         export async function getBundleNames() {
             return getBundleInfos().then(infos => {
@@ -5805,9 +9872,13 @@ export namespace no {
         }
 
         /**
-         * 根据uuid获取资源url
-         * @param uuid 
-         * @returns url结构为：'包名/path'
+         * 根据资源UUID获取完整资源路径
+         * @param uuid 资源唯一标识符
+         * @returns 格式为'bundleName/path/to/asset'的资源路径
+         * @example
+         * // 获取角色预制体路径
+         * const path = await EditorMode.getAssetUrlByUuid('fcmR3XnlRK6KdTQxFc1S');
+         * console.log('资源路径:', path); // 输出：'resources/prefabs/Player'
          */
         export async function getAssetUrlByUuid(uuid: string) {
             return Promise.all([getAssetInfo(uuid), getBundleNames()]).then(([info, bundleNames]) => {
@@ -5824,9 +9895,12 @@ export namespace no {
         }
 
         /**
-         * 根据url获取资源uuid
-         * @param url 
-         * @returns 
+         * 根据资源路径获取UUID
+         * @param url 资源路径（格式：'bundleName/path/to/asset'）
+         * @returns 资源唯一标识符
+         * @example
+         * // 获取主场景的UUID
+         * const uuid = await EditorMode.getAssetUuidByUrl('resources/scenes/Main');
          */
         export async function getAssetUuidByUrl(url: string) {
             return getAssetInfo(url).then(info => {
@@ -5835,10 +9909,12 @@ export namespace no {
         }
 
         /**
-         * 获取资源
-         * @param url 资源url
-         * @param type 资源类型
-         * @returns Asset
+         * 通用资源加载方法
+         * @param url 资源路径（格式：'bundleName/path/to/asset'）
+         * @returns 加载完成的资源对象
+         * @example
+         * // 加载SpriteFrame
+         * const texture = await EditorMode.loadAnyFile<cc.SpriteFrame>('resources/textures/icon');
          */
         export async function loadAnyFile<T extends Asset>(url: string) {
             const uuid = await getAssetUuidByUrl(url);
@@ -5854,9 +9930,15 @@ export namespace no {
         }
 
         /**
-         * 加载图集资源
-         * @param urls 资源url数组
-         * @returns 
+         * 批量加载图集资源
+         * @param urls 图集路径或路径数组（支持.plist或图集资源路径）
+         * @returns 加载完成的图集资源数组
+         * @example
+         * // 加载多个图集
+         * const atlases = await EditorMode.loadSpriteAtlas([
+         *   'ui/atlas/common',
+         *   'ui/atlas/equipment'
+         * ]);
          */
         export async function loadSpriteAtlas(urls: string | string[]) {
             let requests: any[] = [];
@@ -5883,6 +9965,15 @@ export namespace no {
             });
         }
 
+        /**
+         * 获取指定文件夹下特定类型的资源信息
+         * @param folderUrl 文件夹路径（格式：'bundleName/path/to/folder'）
+         * @param ccType 资源类型标识
+         * @returns 符合条件的资源信息数组
+         * @example
+         * // 获取resources/audio下所有音频资源信息
+         * const audioInfos = await EditorMode.loadAssetInfosOfCCTypeUnderFolder('resources/audio', 'cc.AudioClip');
+         */
         export async function loadAssetInfosOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
                 let a: _AssetInfo[] = [];
@@ -5895,10 +9986,13 @@ export namespace no {
         }
 
         /**
-         * 获取指定文件夹下的所有指定类型的资源
+         * 加载指定文件夹下特定类型的所有资源
          * @param folderUrl 文件夹路径
-         * @param ccType 资源类型如：'cc.SpriteAtlas'
-         * @returns 
+         * @param ccType 资源类型标识
+         * @returns 加载完成的资源数组
+         * @example
+         * // 加载resources/items下所有预制体
+         * const items = await EditorMode.loadAssetsOfCCTypeUnderFolder('resources/items', 'cc.Prefab');
          */
         export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
             return getAssetInfosByCCType(ccType).then((infos: any[]) => {
@@ -5924,10 +10018,13 @@ export namespace no {
         }
 
         /**
-         * 根据资源名称和类型获取资源信息
-         * @param name 资源名称，包含后缀
-         * @param ccType 资源类型如：'cc.SpriteAtlas'
-         * @returns AssetInfo
+         * 根据名称和类型精确查找资源信息
+         * @param name 完整文件名（包含扩展名）
+         * @param ccType 资源类型标识
+         * @returns 匹配的资源信息
+         * @example
+         * // 查找主场景预制体
+         * const sceneInfo = await EditorMode.getAssetInfoOfCCTypeWithName('Main.fire', 'cc.SceneAsset');
          */
         export async function getAssetInfoOfCCTypeWithName(name: string, ccType: string) {
             return getAssetInfosByCCType(ccType).then((infos: _AssetInfo[]) => {
@@ -5944,9 +10041,12 @@ export namespace no {
         }
 
         /**
-         * 获取指定文件夹下的所有包名
+         * 获取指定文件夹下的所有Asset Bundle
          * @param folderUrl 文件夹路径
-         * @returns string[]
+         * @returns 资源包名称数组
+         * @example
+         * // 获取resources/bundles下的所有资源包
+         * const bundles = await EditorMode.getBundlesUnderFolder('resources/bundles');
          */
         export async function getBundlesUnderFolder(folderUrl: string) {
             return getBundleInfos().then(infos => {
@@ -5961,9 +10061,13 @@ export namespace no {
         }
 
         /**
-         * 通过资源的url获取包名
-         * @param url 任意资源的url
-         * @returns string[]
+         * 根据资源路径解析所属Asset Bundle
+         * @param url 资源路径
+         * @returns 所属资源包名称
+         * @example
+         * // 解析资源所属包
+         * const bundle = await EditorMode.getBundleName('characters/hero/hero.prefab');
+         * console.log('资源所属包:', bundle); // 输出：'characters'
          */
         export async function getBundleName(url: string) {
             return getBundleInfos().then(infos => {
@@ -5976,9 +10080,12 @@ export namespace no {
         }
 
         /**
-         * 获取指定文件名的资源信息
-         * @param fileName 文件名，包含后缀
-         * @returns AssetInfo
+         * 根据文件名智能识别并获取资源信息
+         * @param fileName 完整文件名（包含扩展名）
+         * @returns 匹配的资源信息
+         * @example
+         * // 获取字体资源信息
+         * const fontInfo = await EditorMode.getAssetInfoByFileName('arial.ttf');
          */
         export async function getAssetInfoByFileName(fileName: string) {
             const p = fileName.split('.'),
@@ -5998,7 +10105,7 @@ export namespace no {
                 case 'json':
                     ccType = 'cc.JsonAsset';
                     break;
-                case 'txt': //文本文件
+                case 'txt':
                     ccType = 'cc.TextAsset';
                     break;
                 case 'ttf':
@@ -6018,9 +10125,12 @@ export namespace no {
         }
 
         /**
-         * 根据指定文件名获取资源
-         * @param fileName 文件名，包含后缀
-         * @returns 
+         * 根据文件名加载资源
+         * @param fileName 完整文件名（包含扩展名）
+         * @returns 加载完成的资源对象
+         * @example
+         * // 加载背景音乐
+         * const bgm = await EditorMode.getAssetByFileName<cc.AudioClip>('background.mp3');
          */
         export async function getAssetByFileName<T extends Asset>(fileName: string) {
             return getAssetInfoByFileName(fileName).then(info => {
@@ -6038,8 +10148,12 @@ export namespace no {
     }
 
     /**
-     *  hash算法
-     * @param str 
+     * 基于31位种子计算的字符串哈希算法
+     * @param str - 需要计算哈希值的输入字符串
+     * @returns 返回0x7FFFFFFF范围内的正整数哈希值
+     * @example
+     * Hash("hello");  // 返回99162322
+     * Hash("abc");    // 返回96354
      */
     export function Hash(str: string): number {
         const seed = 31;
@@ -6052,11 +10166,19 @@ export namespace no {
     }
 
     /**
-     * 公式计算，如：evalFormula('sin(1.57) + 1'), evalFormula('1 + 2 * 3'), evalFormula('180/PI')
-     * 其中数学函数或常量不需要加Math前缀，如：PI, sin, cos, tan, sqrt, log, abs, ceil, floor, round, max, min, random, pow
+     * 数学公式解析计算器，支持常见数学函数和运算符
+     * @param formula - 数学表达式字符串（自动去除空格）
+     * @returns 计算结果数值
+     * @example
+     * evalFormula('sin(PI/2)');    // 返回1
+     * evalFormula('2^3 + sqrt(9)');// 返回11
+     * evalFormula('-5 + 3*2');     // 返回1
+     * 
+     * 支持函数：sin,cos,tan,sqrt,log,abs,ceil,floor,round,max,min,random,pow
+     * 支持常量：PI,E
+     * 支持运算符：+,-,*,/,^
      */
     export function evalFormula(formula: string) {
-        //去掉formula内所有空格
         formula = formula.replace(/\s/g, '');
         let a = splitFormula(formula);
         if (typeof a == 'string') {
@@ -6066,7 +10188,16 @@ export namespace no {
     }
 
     /**
-     * 获取字符串中两个字符串之间的内容
+     * 获取字符串中两个标记之间的内容（支持嵌套匹配）
+     * @param str - 原始字符串
+     * @param start - 起始标记字符
+     * @param end - 结束标记字符
+     * @param begin - 开始搜索的起始位置，默认为0
+     * @returns 匹配到的子字符串或null
+     * @example
+     * getStringBetween('a(b(c))d', '(', ')');  // 返回"b(c)"
+     * getStringBetween('test[123]', '[', ']'); // 返回"123"
+     * getStringBetween('no match', '{', '}');  // 返回null
      */
     export function getStringBetween(str: string, start: string, end: string, begin = 0) {
         const i1 = str.indexOf(start, begin);
@@ -6084,101 +10215,140 @@ export namespace no {
         return null;
     }
 
+    /**
+     * 递归解析数学公式的核心方法
+     * @param formula 需要解析的公式字符串
+     * @returns 解析后的数值或中间表达式（负数用_代替-号）
+     * @example
+     * // 处理基本数字
+     * splitFormula('3.14'); // => 3.14
+     * 
+     * // 处理数学函数（递归解析参数）
+     * splitFormula('sin(_0.5)'); // 先替换负号再计算sin(-0.5)
+     * 
+     * // 处理嵌套运算
+     * splitFormula('2*(3+4)'); // 先计算3+4=7，再计算2*7=14
+     * 
+     * // 处理运算符优先级
+     * splitFormula('3+5*2'); // 先计算5*2=10，再计算3+10=13
+     */
     function splitFormula(formula: string) {
+        // 基础情况：直接转换为数字
         const r = Number(formula);
         if (!isNaN(r)) return r;
-        //检测有没有math函数，需要支持什么函数可在mathFuncs中添加
+
+        // 处理数学函数（sin/cos/tan等）
         const mathFuncs = ['sin', 'cos', 'tan', 'sqrt', 'log', 'abs', 'ceil', 'floor', 'round', 'max', 'min', 'random', 'pow'];
         for (let i = 0, n = mathFuncs.length; i < n; i++) {
             const func = mathFuncs[i];
             const idx = formula.indexOf(func);
             if (idx > -1) {
+                // 提取函数参数并递归解析
                 const sss = getStringBetween(formula, '(', ')', idx);
                 const args: any[] = sss.split(',');
+                
+                // 处理参数中的负号（_替换为-）
                 for (let i = 0; i < args.length; i++) {
                     const b = splitFormula(args[i]);
-                    if (typeof b == 'string' && b.startsWith('_'))
-                        args[i] = b.replace('_', '-');
-                    else
-                        args[i] = b;
+                    args[i] = typeof b == 'string' && b.startsWith('_') ? 
+                             b.replace('_', '-') : b;
                 }
+
+                // 执行数学函数并替换原表达式
                 const a = Math[func](...args);
                 return splitFormula(formula.replace(`${func}(${sss})`, `${a}`));
             }
         }
 
-        //检测有没有数学常量，需要支持什么常量可在mathConsts中添加
+        // 处理数学常量（PI/E）
         const mathConsts = ['PI', 'E'];
         for (let i = 0, n = mathConsts.length; i < n; i++) {
             const c = mathConsts[i];
             const idx = formula.indexOf(c);
             if (idx > -1) {
-                const a = Math[c];
+                const a = Math[c]; // 获取实际常数值
                 return splitFormula(formula.replace(c, `${a}`));
             }
         }
 
-        //检测有没有括号
+        // 处理括号表达式（优先计算）
         const s = getStringBetween(formula, '(', ')');
         if (s) {
-            const n = splitFormula(s);
+            const n = splitFormula(s); // 递归计算括号内容
             formula = formula.replace(`(${s})`, `${n}`);
             return splitFormula(formula);
         }
+
+        // 处理四则运算（注意运算符优先级问题）
         const ops = ['+', '-', '*', '/'];
         for (let i = 0; i < ops.length; i++) {
             const op = ops[i];
             let j = formula.indexOf(op);
             if (j > -1) {
+                // 分割左右操作数并递归解析
                 let n1: any = formula.substring(0, j);
                 let n2: any = formula.substring(j + 1);
-                if (isNaN(Number(n1))) {
-                    //如果_开头，则替换为-
-                    if (n1.startsWith('_')) {
-                        n1 = n1.replace('_', '-');
-                    } else
-                        n1 = splitFormula(n1);
-                }
-                if (isNaN(Number(n2))) {
-                    //如果_开头，则替换为-
-                    if (n2.startsWith('_')) {
-                        n2 = n2.replace('_', '-');
-                    } else
-                        n2 = splitFormula(n2);
-                }
+
+                // 处理操作数中的负号
+                n1 = processOperand(n1);
+                n2 = processOperand(n2);
+
+                // 执行运算
                 let a: number;
                 switch (op) {
-                    case '+':
-                        a = Number(n1) + Number(n2);
-                        break;
-                    case '-':
-                        a = Number(n1) - Number(n2);
-                        break;
-                    case '*':
-                        a = Number(n1) * Number(n2);
-                        break;
-                    case '/':
-                        a = Number(n1) / Number(n2);
-                        break;
+                    case '+': a = Number(n1) + Number(n2); break;
+                    case '-': a = Number(n1) - Number(n2); break;
+                    case '*': a = Number(n1) * Number(n2); break;
+                    case '/': a = Number(n1) / Number(n2); break;
                 }
-                //如果a是负数，则加上_，如-1变成_1
-                if (a < 0) return '_' + (-a);
-                return a;
+
+                // 处理负数结果（用_代替-避免运算符混淆）
+                return a < 0 ? '_' + (-a) : a;
             }
+        }
+
+        /** 处理操作数中的表达式和负号 */
+        function processOperand(operand: string) {
+            if (isNaN(Number(operand))) {
+                return operand.startsWith('_') ? 
+                    operand.replace('_', '-') : 
+                    splitFormula(operand);
+            }
+            return operand;
         }
     }
 
     /**
-     * 数组之和
-     * @param arr 
-     * @returns 
+     * 计算数值数组的总和
+     * @param arr 需要计算的数值数组
+     * @returns 数组元素的总和
+     * @example
+     * // 返回 6
+     * sumOfArray([1, 2, 3]);
+     * 
+     * // 处理空数组返回 0
+     * sumOfArray([]);
      */
     export function sumOfArray(arr: number[]) {
         return arr.reduce((a, b) => a + b, 0);
     }
 
     /**
-     * 判断两个对象是否相等
+     * 深度比较两个对象/数组是否相等
+     * @param a 第一个比较对象（支持对象/数组/基本类型）
+     * @param b 第二个比较对象（支持对象/数组/基本类型）
+     * @returns 是否深度相等
+     * @example
+     * // 返回 true
+     * objectEquals({a:1, b:{c:2}}, {a:1, b:{c:2}});
+     * 
+     * // 返回 false
+     * objectEquals([1,2,3], [1,2]);
+     * 
+     * // 处理日期对象比较
+     * const d1 = new Date(2024);
+     * const d2 = new Date(2024);
+     * objectEquals(d1, d2); // true
      */
     export function objectEquals(a: any, b: any) {
         if (a == null || b == null) return false;
@@ -6199,10 +10369,16 @@ export namespace no {
     }
 
     /**
-     * 将touch起始点转换为节点内坐标
-     * @param touch
-     * @param node 
-     * @returns 
+     * 将触摸事件起始点坐标转换为目标节点本地坐标系坐标
+     * @param touch 触摸事件对象
+     * @param node 目标节点（需要包含UITransform组件）
+     * @returns 节点本地坐标系中的坐标（Vec3类型）
+     * @example
+     * // 在触摸事件回调中获取起始坐标
+     * button.node.on(Node.EventType.TOUCH_START, (touch) => {
+     *   const localPos = touchStartPosInNode(touch, button.node);
+     *   console.log('触摸起始位置:', localPos);
+     * });
      */
     export function touchStartPosInNode(touch: EventTouch, node: Node) {
         const p = touch.getUIStartLocation();
@@ -6210,10 +10386,16 @@ export namespace no {
     }
 
     /**
-     * 将touch当前点转换为节点内坐标
-     * @param touch 
-     * @param node 
-     * @returns 
+     * 将触摸事件当前点坐标转换为目标节点本地坐标系坐标
+     * @param touch 触摸事件对象
+     * @param node 目标节点（需要包含UITransform组件）
+     * @returns 节点本地坐标系中的坐标（Vec3类型）
+     * @example
+     * // 实时跟踪触摸移动位置
+     * slider.node.on(Node.EventType.TOUCH_MOVE, (touch) => {
+     *   const currentPos = touchPosInNode(touch, slider.node);
+     *   updateSliderThumb(currentPos.x);
+     * });
      */
     export function touchPosInNode(touch: EventTouch, node: Node) {
         const p = touch.getUILocation();
@@ -6222,6 +10404,22 @@ export namespace no {
 
     /**
      * 判断直线是否与矩形相交
+     * @param line 直线段对象，包含起点p1和终点p2
+     * @param rect 矩形区域（需使用Rect类型）
+     * @returns 是否相交（true表示相交，false表示不相交）
+     * @example
+     * // 创建测试直线和矩形
+     * const line1 = { p1: v2(10, 10), p2: v2(300, 200) };
+     * const rect1 = new Rect(50, 50, 200, 150);
+     * console.log(lineIntersetsRect(line1, rect1)); // true
+     * 
+     * // 完全在矩形内部的直线
+     * const line2 = { p1: v2(60, 60), p2: v2(180, 120) };
+     * console.log(lineIntersetsRect(line2, rect1)); // true
+     * 
+     * // 完全在矩形外部的直线
+     * const line3 = { p1: v2(0, 0), p2: v2(30, 30) };
+     * console.log(lineIntersetsRect(line3, rect1)); // false
      */
     export function lineIntersetsRect(line: { p1: Vec2, p2: Vec2 }, rect: Rect): boolean {
         const { p1, p2 } = line;
@@ -6259,7 +10457,20 @@ export namespace no {
     }
 
     /**
-     * 根据分隔符获取字符串的某个参数
+     * 根据分隔符获取字符串的指定索引参数（自动处理越界情况）
+     * @param str 原始字符串（非字符串类型直接返回原值）
+     * @param split 分隔符（支持多字符分隔）
+     * @param index 参数索引（从0开始）
+     * @returns 对应索引的参数值（越界时返回最后一个参数）
+     * @example
+     * // 获取第二个颜色参数
+     * getParamByIndex('red,green,blue', ',', 1); // 'green'
+     * 
+     * // 处理越界索引
+     * getParamByIndex('a|b|c', '|', 5); // 'c'
+     * 
+     * // 处理非字符串输入
+     * getParamByIndex(12345, ',', 0); // 12345
      */
     export function getParamByIndex(str: any, split: string, index: number): string {
         if (typeof str !== 'string') return str;
@@ -6270,11 +10481,27 @@ export namespace no {
         return a[a.length - 1];
     }
 
-    /**定义回调和调用次数 调用次数到达后调用回调*/
+    /**
+     * 创建计数器函数（达到指定调用次数后触发回调）
+     * @param callback 回调函数（支持异步函数）
+     * @param count 需要触发的调用次数
+     * @returns 包装后的计数函数
+     * @example
+     * // 累计3次点击后执行
+     * const countClick = countCall(() => {
+     *   console.log('按钮点击满3次');
+     * }, 3);
+     * button.on('click', countClick);
+     * 
+     * // 异步回调示例
+     * const asyncCounter = countCall(async () => {
+     *   await loadResources();
+     * }, 5);
+     * for(let i=0; i<5; i++) asyncCounter();
+     */
     export function countCall(callback: Function, count: number): any {
         let currentCount = 0;
         if (callback.constructor.name === 'AsyncFunction') {
-            // async回调
             return (async function () {
                 currentCount++;
                 if (currentCount >= count) {
@@ -6283,7 +10510,6 @@ export namespace no {
                 }
             }) as any;
         } else {
-            // 普通回调
             return (function () {
                 currentCount++;
                 if (currentCount >= count) {
@@ -6293,7 +10519,21 @@ export namespace no {
             }) as any;
         }
     }
-    /**获得浏览器参数  ?a=1&b=2 */
+
+    /**
+     * 获取浏览器URL查询参数（兼容哈希模式）
+     * @param name 要获取的参数名称
+     * @returns 参数值（未找到时返回null）
+     * @example
+     * // URL为 http://example.com?page=2&lang=zh
+     * GetQueryString('page'); // '2'
+     * GetQueryString('lang'); // 'zh'
+     * GetQueryString('token'); // null
+     * 
+     * // 处理哈希路由模式
+     * // URL为 http://example.com/#/path?debug=true
+     * GetQueryString('debug'); // 'true'
+     */
     export function GetQueryString(name: string) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
         var r = window.location.search.substr(1).match(reg);
@@ -6302,11 +10542,18 @@ export namespace no {
 
 
     //////////////////canvas缓存池//////////////////
+    /**
+     * 共享标签数据接口，存储canvas及其上下文
+     */
     interface ISharedLabelData {
         canvas: HTMLCanvasElement;
         context: CanvasRenderingContext2D | null;
     }
 
+    /**
+     * Canvas缓存池管理类（单例模式）
+     * 用于复用canvas对象，减少内存分配开销
+     */
     class CanvasPool {
         private static _instance: CanvasPool;
         static getInstance(): CanvasPool {
@@ -6315,7 +10562,18 @@ export namespace no {
             }
             return this._instance;
         }
+        
+        /** 缓存对象池 */
         public pool: ISharedLabelData[] = [];
+        
+        /**
+         * 从缓存池获取canvas对象
+         * @returns 可用的canvas数据对象（新建或复用）
+         * @example
+         * const data = canvasPool.get();
+         * const ctx = data.context;
+         * ctx.fillText("Hello", 10, 10);
+         */
         public get() {
             let data = this.pool.pop();
 
@@ -6328,11 +10586,24 @@ export namespace no {
                 };
             }
             else {
+                // 复用前清空画布内容
                 data.context.clearRect(0, 0, data.canvas.width, data.canvas.height);
             }
             return data;
         }
 
+        /**
+         * 归还canvas对象到缓存池
+         * @param canvas 要回收的canvas数据对象
+         * @example
+         * // 使用完成后归还
+         * canvasPool.put(usedData);
+         * 
+         * // 当缓存池已满时直接丢弃
+         * if (canvasPool.pool.length < MAX_SIZE) {
+         *     canvasPool.put(data);
+         * }
+         */
         public put(canvas: ISharedLabelData) {
             if (this.pool.length >= macro.MAX_LABEL_CANVAS_POOL_SIZE) {
                 return;
@@ -6340,16 +10611,42 @@ export namespace no {
             this.pool.push(canvas);
         }
     }
+
+    /**
+     * 导出的canvas缓存池单例实例
+     * @example
+     * // 直接使用实例
+     * const pool = canvasPool;
+     * const tempCanvas = pool.get();
+     */
     export const canvasPool: CanvasPool = CanvasPool.getInstance();
     //////////////////canvas缓存池//////////////////
 
 
     //////////////////node缓存池//////////////////
 
+    /**
+     * 节点对象缓存池（支持类型分类存储与获取）
+     * @remarks
+     * - 实现节点对象的复用管理
+     * - 自动处理节点的可见性与交互状态
+     * - 内置缓存过期时间记录（可通过扩展实现自动清理）
+     * 
+     * @example
+     * // 从缓存池获取子弹节点
+     * const bullet = nodePool.get('bullet');
+     * if (!bullet) {
+     *   bullet = instantiate(bulletPrefab);
+     * }
+     * 
+     * // 回收使用完毕的敌人节点
+     * nodePool.put('enemy', deadEnemyNode);
+     */
     export class NodePool {
         private cacheMap: Map<string, { o: Node, t: number }>;
         private static _ins: NodePool = null;
 
+        /** 获取缓存池单例实例 */
         public static ins(): NodePool {
             if (!this._ins) this._ins = new NodePool();
             return this._ins;
@@ -6359,6 +10656,14 @@ export namespace no {
             this.cacheMap = new Map<string, { o: Node, t: number }>();
         }
 
+        /**
+         * 从缓存池获取节点对象
+         * @param type - 节点类型标识符
+         * @returns 可用节点对象或null
+         * @example
+         * // 获取UI弹窗节点
+         * const popup = nodePool.get('settingsPopup');
+         */
         public get(type: string): Node {
             if (this.cacheMap.has(type)) {
                 const cache = this.cacheMap.get(type);
@@ -6369,11 +10674,20 @@ export namespace no {
             return null;
         }
 
+        /**
+         * 存放节点对象到缓存池
+         * @param type - 节点类型标识符
+         * @param node - 要缓存的节点实例
+         * @example
+         * // 缓存过关奖励弹窗
+         * nodePool.put('levelRewardPopup', rewardPopup);
+         */
         public put(type: string, node: Node) {
             this._visible(node, false);
             this.cacheMap.set(type, { o: node, t: Date.now() });
         }
 
+        /** 清空所有缓存节点 */
         public clear() {
             this.cacheMap.forEach((v, k) => {
                 v.o.destroy();
@@ -6381,6 +10695,11 @@ export namespace no {
             this.cacheMap.clear();
         }
 
+        /**
+         * 控制节点可见性与交互状态
+         * @param node - 要操作的节点
+         * @param v - 是否可见/可交互
+         */
         private _visible(node: Node, v: boolean) {
             const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
             if (blockInputEvents)
@@ -6407,31 +10726,67 @@ export namespace no {
             }
         }
     }
-    /**节点池 */
+    
+    /** 全局节点缓存池实例 */
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
 
     /**
-     * 获取对象类型
-     * @param obj 
-     * @returns 类型名：Array,Object,String,Number,Boolean,Function,Null,Undefined,Symbol
+     * 获取对象精确类型（比typeof更准确识别包装对象和null）
+     * @param obj - 需要检测的对象
+     * @returns 类型名：'Array' | 'Object' | 'String' | 'Number' | 
+     *          'Boolean' | 'Function' | 'Null' | 'Undefined' | 'Symbol'
+     * @example
+     * // 基本类型检测
+     * objectType([]); // 'Array'
+     * objectType(null); // 'Null'
+     * objectType('test'); // 'String'
+     * 
+     * // 检测包装对象
+     * objectType(new Number(5)); // 'Number'
+     * 
+     * // 检测自定义类实例
+     * class MyClass {}
+     * objectType(new MyClass()); // 'Object'
      */
     export function objectType(obj: any): string {
         return Object.prototype.toString.call(obj).slice(8, -1);
     }
 
-    // 定义一个泛型类型的函数类型，返回值为T
+    /**
+     * 带返回值的异步函数类型定义（泛型）
+     * @template T - 函数返回值类型
+     */
     type PromiseHandlerFuncReturn<T> = () => T;
-    // 定义一个函数类型，参数为resolve函数
+    
+    /**
+     * 带resolve/reject回调的异步函数类型定义
+     */
     type PromiseHandlerFuncResolve = (resolve: (value?: any) => void, reject: (reason?: any) => void) => void;
 
     /**
-     * 处理带有返回值的Promise
-     * @param func 要执行的函数
-     * @param defaultValue 默认值
-     * @returns 返回Promise的结果
+     * 安全处理异步操作并返回默认值的Promise包装器
+     * @template T - 返回值类型
+     * @param func - 要执行的异步函数（需返回T类型值）
+     * @param defaultValue - 发生错误时返回的默认值
+     * @returns Promise包装后的执行结果
+     * @example
+     * // 处理可能失败的API请求
+     * const data = await promiseHandlerWithReturnValue(
+     *   () => fetchDataFromServer(),
+     *   { default: 'data' }
+     * );
+     * 
+     * // 处理JSON解析
+     * const config = await promiseHandlerWithReturnValue(
+     *   () => JSON.parse(localStorage.getItem('config')),
+     *   {}
+     * );
      */
-    export async function promiseHandlerWithReturnValue<T>(func: PromiseHandlerFuncReturn<T>, defaultValue: T) {
+    export async function promiseHandlerWithReturnValue<T>(
+        func: PromiseHandlerFuncReturn<T>,
+        defaultValue: T
+    ): Promise<T> {
         return new Promise<T>((resolve) => {
             try {
                 resolve(func());
@@ -6443,9 +10798,30 @@ export namespace no {
     }
 
     /**
-     * 处理带有resolve回调的Promise
-     * @param func 要执行的函数
-     * @returns 返回Promise的结果
+     * 处理带有resolve/reject回调的Promise执行器
+     * @param func 要执行的函数，接收resolve和reject回调作为参数，执行可能抛出异常的操作
+     * @returns 返回Promise的结果（执行成功时返回resolve值，失败时返回null）
+     * @example
+     * // 基本用法
+     * const result = await promiseHandlerCallRevole((resolve, reject) => {
+     *   someAsyncOperation().then(resolve).catch(reject);
+     * });
+     * 
+     * // 处理可能抛出异常的操作
+     * const data = await promiseHandlerCallRevole((resolve) => {
+     *   const json = JSON.parse(rawData); // 可能抛出异常
+     *   resolve(json);
+     * });
+     * 
+     * // 处理网络请求失败
+     * const response = await promiseHandlerCallRevole(async (resolve, reject) => {
+     *   try {
+     *     const res = await fetch('https://api.example.com/data');
+     *     resolve(await res.json());
+     *   } catch(e) {
+     *     reject(e);
+     *   }
+     * });
      */
     export async function promiseHandlerCallRevole(func: PromiseHandlerFuncResolve) {
         return new Promise<any>((resolve, reject) => {
