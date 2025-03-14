@@ -1892,7 +1892,8 @@ export namespace no {
         let r1: number = decimalDigits(n1),
             r2: number = decimalDigits(n2),
             m: number = Math.pow(10, Math.max(r1, r2));
-        return (n1 * m + n2 * m) / m;
+        // return (n1 * m + n2 * m) / m;
+        return Math.round((n1 + n2) * m) / m;
     }
     /**减 */
     export function minus(n1: number, n2: number): number {
