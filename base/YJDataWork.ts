@@ -20,7 +20,18 @@ import { YJDataWorkManager } from './YJDataWorkManager';
 @menu('NoUi/base/YJDataWork(数据处理基类)')
 @disallowMultiple()
 export class YJDataWork extends Component {
-    @property
+    /**
+     * 自动注册子级FuckUi组件
+     * @property 设置后会立即扫描并注册所有子节点中的FuckUi组件
+     * @example
+     * // 在编辑器勾选autoRegister属性
+     * // 或在代码中设置：
+     * this.autoRegister = true;
+     */
+    @property({
+        displayName: '自动注册',
+        tooltip: '自动注册当前节点及子节点中的所有FuckUi组件\n（编辑器设置后立即生效）'
+    })
     public get autoRegister(): boolean {
         return false;
     }
@@ -47,8 +58,21 @@ export class YJDataWork extends Component {
         }
     }
 
+    /** 
+     * 需要注册的额外UI节点列表 
+     * @example 
+     * // 包含子面板的节点
+     * // 包含HUD元素的节点
+     */
     @property(Node)
     subFuckUiNodes: Node[] = [];
+
+    /** 
+     * 已注册的FuckUi组件列表 
+     * @example
+     * // 包含绑定'hp'的进度条组件
+     * // 包含绑定'gold'的文本组件
+     */
     @property({ type: FuckUi })
     subFuckUis: FuckUi[] = [];
 
@@ -57,35 +81,49 @@ export class YJDataWork extends Component {
      * 如果为true,则仅修改某key下有变更的值
      * 如果为false,则替换该key对应的全部值
      * 非差异更新性能较好,默认为true
+     * @example
+     * // 当需要更新复杂对象时建议关闭差异更新：
+     * this.onlyDiff = false;
+     * 
+     * // 当需要高效更新简单数据时保持开启：
+     * this.onlyDiff = true;
      */
     @property({ displayName: '差异更新', tooltip: '仅修改某key下有变更的值，否则替换该key对应全部值。非差异更新性能较好，默认true' })
     onlyDiff: boolean = true;
 
 
+    /**
+     * 数据键到UI组件的映射关系
+     * @example
+     * // 当'hp'值变化时，更新所有绑定该键的进度条和文本组件
+     * this._data2ui.set('hp', [progressBar, textLabel]);
+     */
     protected _data2ui: Map<string, FuckUi[]> = new Map();
 
     /**
-     * 数据存储对象
+     * 数据存储对象（使用no.js的数据管理）
+     * @example
+     * // 访问当前血量值
+     * const currentHP = this._data.get('hp');
      */
     protected _data: no.Data = new no.Data();
 
     /**
-     * 记录已改变数据的key列表
-     */
-    private changedDataKeys: string[] = [];
-
-    /**
-     * 组件是否已加载完成
+     * 组件加载状态标识
+     * @example
+     * // 在异步操作中检查组件是否已加载
+     * if (this._loaded) {
+     *     this.updateUI();
+     * }
      */
     private _loaded: boolean = false;
 
     /**
-     * 是否需要更新数据到UI
-     */
-    private _neecChangeData: boolean = false;
-
-    /**
      * 组件销毁时调用
+     * 执行资源清理和反注册操作
+     * @example
+     * // 节点销毁时自动调用
+     * node.destroy();
      */
     protected onDestroy(): void {
         YJDataWorkManager.ins().remove(this);
@@ -96,17 +134,28 @@ export class YJDataWork extends Component {
      * 组件加载时调用
      * 在编辑器中获取UI注册器组件
      * 在运行时初始化数据
+     * @example
+     * // 重写onLoad方法时需调用super.onLoad()
+     * protected onLoad() {
+     *     super.onLoad();
+     *     // 自定义初始化逻辑
+     * }
      */
     protected onLoad() {
         YJDataWorkManager.ins().add(this);
         this._loaded = true;
-        this._neecChangeData = false;
         this.init();
     }
 
     /**
      * 组件启用时调用
-     * 在运行时执行afterInit
+     * 在运行时执行afterInit进行后期初始化
+     * @example
+     * // 在组件激活时初始化玩家数据
+     * onEnable() {
+     *     super.onEnable();
+     *     this.initPlayerData();
+     * }
      */
     onEnable() {
         if (EDITOR) return;
@@ -114,8 +163,17 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 使用指定数据初始化
-     * @param d 初始数据
+     * 使用指定数据初始化组件
+     * @param d 初始数据（可以是对象或JSON字符串）
+     * @example
+     * // 初始化玩家数据
+     * const data = { hp: 100, level: 5 };
+     * this.getComponent(YJDataWork).initWithData(data);
+     * 
+     * @example
+     * // 从JSON字符串初始化
+     * const json = '{"score": 2000, "name": "player1"}';
+     * this.initWithData(JSON.parse(json));
      */
     public initWithData(d: any) {
         this.data = d;
@@ -123,8 +181,20 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 初始化，可手动执行，或在onLoad时自动执行
-     * 若希望当节点在场景中显示出来之前数据就初始化好，就要在创建节点时（加入场景前）执行init并执行数据相关操作
+     * 初始化数据组件
+     * @description 
+     * - 在组件加载时自动调用
+     * - 可手动调用进行重新初始化
+     * - 如果数据未就绪会启动定时检查（每帧检查，最多180次）
+     * @example
+     * // 手动重新初始化组件
+     * this.getComponent(YJDataWork).init();
+     * 
+     * @example
+     * // 在节点加入场景前初始化
+     * const node = instantiate(prefab);
+     * node.getComponent(YJDataWork).init();
+     * scene.addChild(node);
      */
     public init() {
         if (!this._loaded) return;
@@ -138,8 +208,12 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 检查数据是否存在
-     * 如果存在则执行afterDataInit
+     * 数据就绪检查方法
+     * @private
+     * @description 当数据加载完成后：
+     * 1. 停止定时检查
+     * 2. 执行后续初始化回调（afterDataInit）
+     * @remarks 由init方法自动调度，无需手动调用
      */
     private _checkData() {
         if (!!this.data) {
@@ -151,6 +225,10 @@ export class YJDataWork extends Component {
 
     /**
      * 获取数据对象
+     * @returns {any} 当前存储的数据对象
+     * @example
+     * // 获取玩家数据对象
+     * const playerData = this.dataWork.data;
      */
     public get data(): any {
         return this._data?.data;
@@ -158,7 +236,10 @@ export class YJDataWork extends Component {
 
     /**
      * 设置数据对象
-     * @param d 要设置的数据
+     * @param d 要设置的数据（必须是对象类型）
+     * @example
+     * // 设置初始用户数据
+     * this.dataWork.data = { name: '张三', level: 1 };
      */
     public set data(d: any) {
         if (typeof d != 'object') return;
@@ -169,8 +250,11 @@ export class YJDataWork extends Component {
 
     /**
      * 设置数据到DataWork并初始化
-     * @param t 数据对象1
-     * @param d 数据对象2,优先使用d
+     * @param t 基础数据对象（当d为空时使用）
+     * @param d 优先使用的数据对象
+     * @example
+     * // 优先使用服务器数据，没有则用本地缓存
+     * dataWork.setDataToDataWork(localData, serverData);
      */
     public setDataToDataWork(t: any, d: any) {
         this.data = d || t;
@@ -180,15 +264,24 @@ export class YJDataWork extends Component {
     /**
      * 获取指定key的值
      * @param key 数据的key
+     * @returns {any} 对应的值（不存在返回undefined）
+     * @example
+     * // 获取玩家等级
+     * const level = this.getValue('playerLevel');
      */
     public getValue(key: string): any {
         return this._data.get(key);
     }
 
     /**
-     * 设置指定key的数据,并同步到UI,如果[差异更新]为true,则仅更新有变更的数据
+     * 设置指定key的数据（支持差异更新）
      * @param key 数据的key
      * @param value 要设置的值
+     * @returns {YJDataWork} 返回自身以支持链式调用
+     * @example
+     * // 更新分数并立即同步UI
+     * this.setValue('score', 100)
+     *    .setValue('time', 60);
      */
     public setValue(key: string, value: any) {
         this.bindSubFuckUis();
@@ -198,10 +291,16 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 重置指定key的数据，并同步到UI,不会进行差异更新，会直接替换该key对应的全部值。
-     * 如果希望该key中部分数据同步到UI中，则使用该方法。
+     * 重置指定key的数据（强制全量更新）
      * @param key 数据的key
      * @param value 要设置的值
+     * @returns {YJDataWork} 返回自身以支持链式调用
+     * @example
+     * // 强制更新玩家装备数据
+     * this.resetValue('equipment', {
+     *   weapon: 'sword',
+     *   armor: 'steel'
+     * });
      */
     public resetValue(key: string, value: any) {
         this.bindSubFuckUis();
@@ -214,6 +313,11 @@ export class YJDataWork extends Component {
      * 仅更新某个key的值，不同步到ui
      * @param key 数据的key
      * @param value 要设置的值
+     * @returns {YJDataWork} 返回自身以支持链式调用
+     * @example
+     * // 临时更新调试数据但不影响UI显示
+     * this.onlyUpdateValue('debugMode', true)
+     *    .onlyUpdateValue('logLevel', 3);
      */
     public onlyUpdateValue(key: string, value: any) {
         this._data?.set(key, value, false);
@@ -224,6 +328,13 @@ export class YJDataWork extends Component {
      * 通过ui设置/修改值，会调用onUIValueChange方法
      * @param key 数据的key
      * @param value 要设置的值
+     * @example
+     * // 当输入框内容变化时调用
+     * inputField.node.on('text-changed', (input) => {
+     *    this.changeValueByUi('playerName', input.string);
+     * });
+     * 
+     * // 会自动触发onUIValueChange回调进行数据验证
      */
     public changeValueByUi(key: string, value: any) {
         this.setValue(key, value);
@@ -233,6 +344,10 @@ export class YJDataWork extends Component {
 
     /**
      * 清空所有数据
+     * @example
+     * // 重置表单数据时调用
+     * this.clear();
+     * // 会触发所有绑定UI的清除操作
      */
     public clear(): void {
         this._data.clear();
@@ -240,15 +355,15 @@ export class YJDataWork extends Component {
 
     /**
      * 将已改变的数据同步到UI
+     * @example
+     * // 批量更新后手动同步UI
+     * this.setValue('hp', 100)
+     *    .setValue('mp', 50)
+     *    .syncDataToUi();
+     * 
+     * // 适合在加载完所有数据后统一刷新UI
      */
     public syncDataToUi() {
-        // if (!this?.node?.isValid) return;
-        // if (!this?.changedDataKeys?.length) return;
-        // const keys = this.changedDataKeys.slice();
-        // this.changedDataKeys.length = 0;
-        // for (let i = 0, n = keys.length; i < n; i++) {
-        //     this.onValueChange(keys[i]);
-        // }
         for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
             const ui = this.subFuckUis[i];
             ui.syncData();
@@ -259,33 +374,30 @@ export class YJDataWork extends Component {
      * 处理数据变化,更新到对应的UI组件
      * @param key 变化的数据key
      * @param value 变化的值
+     * @example
+     * // 当hp值变化时自动更新血条UI
+     * this.onValueChange('hp', currentHP);
+     * 
+     * // 当经验值变化时自动更新经验条和等级显示
+     * this.onValueChange('exp', newExp);
      */
     private onValueChange(key: string, value?: any) {
         let ui: FuckUi[] = this.getUis(key);
         if (value == null) value = this.getValue(key);
         this.setUiData(ui, value);
-        //为提升性能，暂时不支持数组和对象子元素的更新
-        // if (value instanceof Array) {
-        //     value.forEach((v, i) => {
-        //         let ui: FuckUi[] = this.getUis(`${key}.${i}`);
-        //         this.setUiData(ui, v);
-        //     });
-        // }
-        // else if (value instanceof Object) {
-        //     if (DEBUG && value.__classname__) {
-        //         console.warn('不能传递对象类型数据：', key, value);
-        //         return;
-        //     }
-        //     for (let k in value) {
-        //         this.onValueChange(`${key}.${k}`, value[k]);
-        //     }
-        // }
     }
 
     /**
      * 设置数据到UI组件
      * @param uis UI组件列表
      * @param data 要设置的数据
+     * @remarks 会标记UI数据脏状态，若为一次性UI则自动移除绑定
+     * @example
+     * // 设置多个分数显示UI
+     * this.setUiData([scoreUI1, scoreUI2], 100);
+     * 
+     * // 设置临时提示UI并自动移除
+     * this.setUiData([tempTipUI], '奖励已获得');
      */
     private setUiData(uis: FuckUi[], data: any) {
         if (!uis?.length) return;
@@ -298,10 +410,25 @@ export class YJDataWork extends Component {
         }
     }
 
+    /**
+     * 获取绑定指定key的UI组件列表
+     * @param key 数据键
+     * @returns 对应的UI组件数组
+     * @example
+     * // 获取所有绑定金币显示的UI
+     * const goldUIs = this.getUis('gold');
+     */
     private getUis(key: string): FuckUi[] {
         return this._data2ui.get(key);
     }
 
+    /**
+     * 移除UI组件绑定
+     * @param ui 要移除的UI组件
+     * @example
+     * // 移除过期的提示UI
+     * this.remove(expiredTipUI);
+     */
     private remove(ui: FuckUi) {
         let keys = ui.bindKeys;
         for (let j = 0, n = keys.length; j < n; j++) {
@@ -314,6 +441,13 @@ export class YJDataWork extends Component {
     }
 
     private _isBound: boolean = false;
+    /**
+     * 绑定子UI组件
+     * @remarks 初始化时自动建立数据与UI的映射关系
+     * @example
+     * // 自动绑定所有子节点中的FuckUi组件
+     * this.bindSubFuckUis();
+     */
     private bindSubFuckUis() {
         if (this._isBound) return;
         this._isBound = true;
@@ -337,8 +471,14 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 初始化后调用,此时data不一定有值
-     * 子类按需实现该方法
+     * 初始化后调用（此时data不一定有值）
+     * @remarks 子类可重写该方法实现自定义初始化逻辑
+     * @example
+     * // 在子类中初始化默认值
+     * protected afterInit() {
+     *    this.setValue('hp', 100);
+     *    this.setValue('mp', 50);
+     * }
      */
     protected afterInit() {
 

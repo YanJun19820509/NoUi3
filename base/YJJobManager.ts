@@ -3,39 +3,67 @@ import { ccclass } from '../yj';
 
 /**
  * 任务优先级枚举
+ * @enum {number}
+ * @example
+ * // 使用示例：
+ * // 紧急任务（如用户输入响应）
+ * TaskPriority.IMMEDIATE
+ * // 后台预加载资源
+ * TaskPriority.IDLE
  */
 export enum TaskPriority {
-    IMMEDIATE = 0,    // 立即执行
-    HIGH = 1,         // 高优先级
-    NORMAL = 2,       // 普通优先级
-    LOW = 3,          // 低优先级
-    IDLE = 4          // 空闲时执行
+    IMMEDIATE = 0,    // 立即执行（最高优先级，下一帧立即处理）
+    HIGH = 1,         // 高优先级（重要任务，如关键资源加载）
+    NORMAL = 2,       // 普通优先级（默认任务级别）
+    LOW = 3,          // 低优先级（可延迟的后台任务）
+    IDLE = 4          // 空闲时执行（当没有更高优先级任务时处理）
 }
 
 /**
- * 任务状态
+ * 任务状态枚举
+ * @enum {number}
+ * @example
+ * // 状态转换示例：
+ * PENDING → RUNNING → COMPLETED
+ * RUNNING → PAUSED → RUNNING → CANCELED
  */
 export enum TaskStatus {
-    PENDING,    // 等待执行
-    RUNNING,    // 执行中
-    PAUSED,     // 暂停
-    COMPLETED,  // 完成
-    CANCELED    // 取消
+    PENDING,    // 等待执行（已加入队列但未开始）
+    RUNNING,    // 执行中（正在处理的任务）
+    PAUSED,     // 暂停（可恢复执行）
+    COMPLETED,  // 完成（成功结束）
+    CANCELED    // 取消（主动终止）
 }
 
 /**
  * 任务接口定义
+ * @interface ITask
+ * @example
+ * // 创建任务示例：
+ * const loadTask: ITask = {
+ *     id: 1,
+ *     priority: TaskPriority.HIGH,
+ *     execute: async () => {
+ *         await loadResources();
+ *         return true;
+ *     },
+ *     progress: 0,
+ *     status: TaskStatus.PENDING,
+ *     timeSlice: 10,    // 每帧分配10ms执行
+ *     timeout: 5000,    // 超时5秒
+ *     context: { url: 'res/texture' }
+ * };
  */
 interface ITask {
-    id: number;                           // 任务唯一ID
-    priority: TaskPriority;               // 任务优先级
-    execute: () => boolean | Promise<boolean>;  // 任务执行函数，返回是否完成
-    progress?: number;                    // 执行进度 0-1
-    status: TaskStatus;                   // 任务状态
-    timeSlice?: number;                   // 单次执行时间片(ms)
-    timeout?: number;                     // 超时时间(ms)
-    startTime?: number;                   // 开始时间
-    context?: any;                        // 任务上下文
+    id: number;                           // 任务唯一ID（自动生成）
+    priority: TaskPriority;               // 任务优先级（影响调度顺序）
+    execute: () => boolean | Promise<boolean>;  // 任务执行函数，返回true表示完成，false需要继续执行
+    progress?: number;                    // 执行进度 0-1（用于进度显示）
+    status: TaskStatus;                   // 当前任务状态（自动更新）
+    timeSlice?: number;                   // 单次执行时间片(ms)（默认16ms，保持帧率）
+    timeout?: number;                     // 超时时间(ms)（0表示不超时）
+    startTime?: number;                   // 开始时间戳（用于超时计算）
+    context?: any;                        // 任务上下文数据（可携带业务参数）
 }
 
 /**

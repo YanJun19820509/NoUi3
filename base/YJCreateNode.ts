@@ -21,29 +21,80 @@ import { YJDataWork } from './YJDataWork';
 @ccclass('YJCreateNode')
 @menu('NoUi/base/YJCreateNode(创建节点)')
 @executeInEditMode()
+@ccclass('YJCreateNode')
+@menu('NoUi/base/YJCreateNode(创建节点)')
+@executeInEditMode()
+/**
+ * 节点创建组件
+ * @description 提供节点创建和对象池复用功能，支持预制体加载和模板节点实例化
+ * @example
+ * // 编辑器配置示例：
+ * // - LoadPrefab: 配置预制体加载组件
+ * // - TempNode: 设置模板节点（优先于预制体加载）
+ * // - Target: 设置新节点的父节点
+ * // - AutoCreate: 勾选后会在游戏启动时自动创建
+ * 
+ * @example
+ * // 代码调用示例：
+ * const creator = this.getComponent(YJCreateNode);
+ * const newNode = await creator.createNode();
+ * newNode.setPosition(100, 50);
+ */
 export class YJCreateNode extends Component {
+    /** 预制体加载组件（用于异步加载预制体） */
     @property({ type: YJLoadPrefab })
     loadPrefab: YJLoadPrefab = null;
+    
+    /** 模板节点（优先使用，直接实例化） */
     @property({ type: Node })
     tempNode: Node = null;
 
+    /** 新节点父级目标 */
     @property({ type: Node })
     target: Node = null;
 
+    /** 是否自动创建 */
     @property
     autoCreate: boolean = false;
 
+    /** 缓存回收类型（从YJCacheObject组件获取） */
     private _recycleType: string;
 
+    /**
+     * 生命周期方法：处理自动创建逻辑
+     * @remarks 在编辑器模式下不执行
+     */
     start() {
         if (EDITOR) return;
         this.autoCreate && this.a_create();
     }
 
+    /**
+     * 公开的创建入口方法
+     * @example
+     * // 通过按钮事件触发创建
+     * button.node.on('click', () => this.getComponent(YJCreateNode).a_create());
+     */
     public a_create() {
         this.createNode();
     }
 
+    /**
+     * 核心创建方法
+     * @returns 新创建的节点Promise
+     * @remarks 创建流程：
+     * 1. 优先从对象池获取可用节点
+     * 2. 使用模板节点实例化或加载预制体
+     * 3. 异步加载依赖资源
+     * 4. 初始化数据组件
+     * 5. 缓存回收类型
+     * 6. 设置节点层级和可见性
+     * 
+     * @example
+     * // 创建并配置节点
+     * const node = await this.createNode();
+     * node.getComponent(YJCacheObject).recycleType = 'bullet';
+     */
     public async createNode(): Promise<Node> {
         // 1. 优先从对象池获取
         if (this._recycleType) {
@@ -97,6 +148,10 @@ export class YJCreateNode extends Component {
     }
 
     ///////////////////////////EDITOR///////////////
+    /**
+     * 编辑器模式初始化
+     * @remarks 自动获取必要组件引用
+     */
     onLoad() {
         if (!EDITOR) return;
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);

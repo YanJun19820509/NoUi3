@@ -17,27 +17,59 @@ import { YJDataWork } from './YJDataWork';
  */
 
 
+/**
+ * 数据初始化配置项
+ * @description 定义需要初始化的数据项配置
+ * @example
+ * // 示例配置：
+ * { key: 'playerName', type: SimpleValueType.String, value: '新手玩家' }
+ * { key: 'isVIP', type: SimpleValueType.Boolean, value: 'true' }
+ */
 @ccclass('InitDataWorkInfo')
 export class InitDataWorkInfo {
+    /** 数据键名（对应YJDataWork中的数据字段） */
     @property
     key: string = '';
+    /** 数据类型枚举 */
     @property({ type: Enum(SimpleValueType) })
     type: SimpleValueType = SimpleValueType.String;
+    /** 字符串形式的数据值（根据类型自动转换） */
     @property
     value: string = '';
 }
 
+/**
+ * 数据初始化组件
+ * @description 用于在节点加载时自动初始化YJDataWork数据
+ * @example 
+ * // 编辑器配置示例：
+ * // 1. 添加YJDataWork组件到节点
+ * // 2. 添加本组件到同一节点
+ * // 3. 在datas中配置需要初始化的数据项
+ * 
+ * @example
+ * // 代码调用示例：
+ * // 手动触发数据初始化
+ * this.getComponent(YJInitDataWork).setData2DataWork();
+ */
 @ccclass('YJInitDataWork')
 @executeInEditMode()
 @requireComponent(YJDataWork)
 export class YJInitDataWork extends Component {
+    /** 关联的YJDataWork组件（自动从父节点获取） */
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
+    /** 初始化数据配置列表 */
     @property({ type: InitDataWorkInfo })
     datas: InitDataWorkInfo[] = [];
+    /** 是否在加载时自动初始化数据 */
     @property
     autoSet: boolean = true;
 
+    /**
+     * 组件加载时处理
+     * @description 编辑器模式下自动查找父节点数据组件，运行时自动初始化数据
+     */
     onLoad() {
         if (EDITOR) {
             if (!this.dataWork)
@@ -47,6 +79,10 @@ export class YJInitDataWork extends Component {
         this.autoSet && this.setData2DataWork();
     }
 
+    /**
+     * 执行数据初始化
+     * @description 将配置数据转换为实际类型并设置到YJDataWork
+     */
     private setData2DataWork() {
         let d: any = {};
         for (let i = 0; i < this.datas.length; i++) {
