@@ -18,102 +18,178 @@ import { YJDataWork } from 'NoUi3/base/YJDataWork';
  */
 
 @ccclass('SetDynamicMap')
+/**
+ * 动态地图组件
+ * 
+ */
 export class SetDynamicMap extends FuckUi {
     /**
      * 元素模板节点
      * 元素模板内不需要SetPosition组件，也不需要添加设置坐标的逻辑，本组件内会主动按需要修改子元素的坐标
+     * @example 
+     * // 模板节点应包含以下组件：
+     * // - Sprite 组件用于显示地砖外观
+     * // - YJDataWork 组件用于数据驱动（可选）
+     * // 预制体示例：地砖预制体包含图片组件和数据处理组件
      */
     @property({ type: Node, displayName: '元素模板', tooltip: '元素模板内不需要SetPosition组件，也不需要添加设置坐标的逻辑，本组件内会主动按需要修改子元素的坐标' })
     template: Node = null;
+
     /**
      * 可见区域的网格行列数[列数,行数]
+     * @description 根据视口尺寸和地砖尺寸计算得出，用于确定需要渲染的网格范围
+     * @example 当视口为 1280x720，地砖尺寸为 64 时，计算结果为 [12, 8] 表示横向12列，纵向8行
      */
     private _gridColRow: number[] = [];
+
     /**
-     * 地图数据,key为uv坐标字符串,value为地砖信息
+     * 地图数据集合，使用UV坐标作为键值
+     * @key UV坐标字符串，格式："u_v"（如："3_5"）
+     * @value 地砖信息对象，包含坐标、类型等自定义属性
+     * @example 
+     * new Map([
+     *   ["2_3", {x: 2, y: 3, type: "grass"}],
+     *   ["2_4", {x: 2, y: 4, type: "water"}]
+     * ])
      */
     private _tileMap: Map<string, any> = new Map();
+
     /**
-     * 地砖尺寸
+     * 单个地砖的尺寸（单位：像素）
+     * @description 用于计算坐标转换和布局
+     * @example 64 表示 64x64 像素的地砖
      */
     private _tileSize: number;
+
     /**
-     * 地砖节点映射,key为uv坐标字符串,value为地砖节点
+     * 地砖节点映射表，用于快速查找指定坐标的节点
+     * @key UV坐标字符串，格式同_tileMap
+     * @value 对应的节点实例
+     * @example 
+     * 当需要获取(2,3)坐标的地砖节点时：
+     * const node = this._tileNodeMap.get("2_3");
      */
     private _tileNodeMap: Map<string, Node> = new Map();
+
     /**
-     * 临时向量,用于设置位置
+     * 临时三维向量，用于优化位置计算（避免频繁创建新对象）
+     * @example 计算(3,5)坐标的位置：
+     * this._tempV3.set(3 * tileSize, 5 * tileSize, 0);
      */
     private _tempV3: Vec3 = v3();
+
     /**
-     * 延迟显示的节点列表
+     * 延迟显示的节点队列，用于优化批量操作时的性能
+     * @description 在完成所有位置计算后统一显示节点，避免中间态渲染
+     * @example 当地图移动时，先将新节点加入此队列，移动结束后统一显示
      */
     private _lateShowNodes: Node[] = [];
 
+    /**
+     * 地砖节点对象池，用于复用已创建的地砖节点
+     * @description 存储所有已创建的地砖节点，当地图移动时重复利用不可见区域的节点
+     * @example 当地图向右移动时，左侧移出视口的节点会被回收并用于右侧新区域
+     */
     private _tileNodes: Node[] = [];
-    /** 当前位置 */
+
+    /**
+     * 当前地图视口的中心位置（世界坐标）
+     * @description 用于计算视口范围内的地砖坐标
+     * @example v3(120, 80, 0) 表示视口中心位于世界坐标(120,80)的位置
+     */
     private _curPos: Vec3;
 
     /**
-     * 数据变化时调用
-     * @param data 新的数据
+     * 数据变化时调用，处理不同类型的地图数据更新
+     * @param data 新的地图数据，包含以下可选参数：
+     * - tileSize: 单个地砖像素尺寸（需为2的幂次方）
+     * - tileInfos: 全量地砖数据数组（用于初始化或全量更新）
+     * - tileChangeInfos: 增量地砖变更数据数组（用于局部更新）
+     * - startPos: 初始地图位置[x,y]（世界坐标系）
+     * - moveBy: 相对移动偏移量[x,y]
+     * 
+     * @example 典型数据格式：
+     * {
+     *   tileSize: 64,
+     *   tileInfos: [
+     *     {x: 100, y: 200, type: "grass", walkable: true},
+     *     {x: 164, y: 200, type: "water", depth: 1.5}
+     *   ],
+     *   startPos: [1024, 768],
+     *   moveBy: [32, -16]
+     * }
      */
     protected onDataChange(data: any) {
         const { tileSize, tileInfos, startPos, moveBy, tileChangeInfos } = data;
+        
+        // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
             const s = view.getVisibleSize();
-            //以tileSize为单元格长宽，计算可见区域需要格子的行列数
+            // 计算可见区域网格行列数：横向列数 = 可见宽度/(tileSize*2) + 缓冲列
+            // 例如：tileSize=64，屏幕宽1280 => 1280/(64*2)=10，+2缓冲 => 总12列
             this._gridColRow = [Math.ceil(s.width / tileSize / 2) + 2, Math.ceil(s.height / tileSize / 2) + 2];
             this._tileSize = tileSize;
-            //清除数据源内的tileSize，避免重复设置
-            this.clearDataValue(`${this.bind_keys}.tileSize`);
+            this.clearDataValue(`${this.bind_keys}.tileSize`); // 清除已处理的数据标记
         }
+
+        // 全量地砖数据更新（通常用于地图初始化或重置）
         if (tileInfos) {
+            // 清空现有数据
             this._tileNodeMap.clear();
             this._tileMap.clear();
+
+            // 停用所有现有节点（后续会复用）
             for (let i = 0, n = this._tileNodes.length; i < n; i++) {
                 const item = this._tileNodes[i];
-                item['_activeInHierarchy'] = false;
+                item['_activeInHierarchy'] = false; // 优化性能的隐藏方式
             }
+
+            // 构建新的地砖数据映射表
             for (let i = 0, n = tileInfos.length; i < n; i++) {
                 const tileInfo = tileInfos[i];
-                const uv = this.xyToUv(tileInfo.x, tileInfo.y);
-                this._tileMap.set(`${uv[0]}_${uv[1]}`, tileInfo);
+                const uv = this.xyToUv(tileInfo.x, tileInfo.y); // 转换世界坐标到UV坐标
+                this._tileMap.set(`${uv[0]}_${uv[1]}`, tileInfo); // 使用"u_v"格式作为键
             }
-            //清除数据源内的tileInfos，避免重复设置
             this.clearDataValue(`${this.bind_keys}.tileInfos`);
         }
+
+        // 增量地砖变更处理（适用于动态更新部分地砖）
         if (tileChangeInfos) {
             for (let i = 0, n = tileChangeInfos.length; i < n; i++) {
                 const tileChangeInfo = tileChangeInfos[i];
                 const uv = this.xyToUv(tileChangeInfo.x, tileChangeInfo.y);
                 const key = `${uv[0]}_${uv[1]}`;
+                
+                // 更新数据存储
                 this._tileMap.set(key, tileChangeInfo);
+                
+                // 如果对应节点已存在，立即更新显示
                 if (this._tileNodeMap.has(key)) {
                     const node = this._tileNodeMap.get(key);
                     let a = node.getComponent(YJDataWork) || node.getComponentInChildren(YJDataWork);
                     if (a) {
-                        a.initWithData(tileChangeInfo);
+                        a.initWithData(tileChangeInfo); // 触发子节点的数据更新
                     }
                 }
             }
-            //清除数据源内的tileChangeInfos，避免重复设置
             this.clearDataValue(`${this.bind_keys}.tileChangeInfos`);
         }
+
+        // 初始位置设置（通常用于地图初始化或重置位置）
         if (startPos) {
-            if (!this._curPos) {
-                this._curPos = v3();
-            }
-            this._curPos.set(startPos[0], startPos[1], 0);
-            no.position(this.node, this._curPos);
+            if (!this._curPos) this._curPos = v3(); // 初始化位置对象
+            this._curPos.set(startPos[0], startPos[1], 0); // 设置Z轴为0（2D场景）
+            no.position(this.node, this._curPos); // 应用节点位置
             this.clearDataValue(`${this.bind_keys}.startPos`);
-            this.setTiles();
+            this.setTiles(); // 触发地砖布局
         }
+
+        // 相对移动处理（适用于平滑滚动效果）
         if (moveBy) {
-            this._curPos.add3f(moveBy[0], moveBy[1], 0);
-            no.position(this.node, this._curPos);
+            this._curPos.add3f(moveBy[0], moveBy[1], 0); // 累加偏移量
+            no.position(this.node, this._curPos); // 更新节点位置
             this.clearDataValue(`${this.bind_keys}.moveBy`);
-            this.setTiles();
+            this.setTiles(); // 重新计算可见地砖
         }
     }
 
@@ -121,48 +197,69 @@ export class SetDynamicMap extends FuckUi {
      * 设置地砖
      * 根据当前位置计算可见区域内的地砖,并创建或移动地砖节点
      */
+    /**
+     * 设置动态地图瓦片
+     * @description 根据当前节点位置计算可见区域，创建或复用瓦片节点
+     * 实现逻辑：
+     * 1. 计算以当前位置为中心的可见区域UV坐标
+     * 2. 首次运行创建所有可见瓦片节点
+     * 3. 后续运行复用不可见区域节点到新位置（对象池模式）
+     * 
+     * @example 可见区域计算示例：
+     * 当_gridColRow为[2,3]时，可见范围：
+     * u方向：当前u-2 到 u+2
+     * v方向：当前v-3 到 v+3
+     * 共生成 (2*2+1)*(2*3+1) = 5*7=35 个UV坐标
+     */
     private setTiles() {
         if (!this._gridColRow.length) return;
+        
+        // 获取节点位置并转换为世界坐标（取反处理）
         const pos = this.node.position;
-        //节点坐标与在屏幕中心显示的坐标相反
-        const x = -pos.x;
-        const y = -pos.y;
-        const uv = this.xyToUv(x, y);
-        const visibleUv: string[] = [];
-        //以当前位置为中心，计算可见区域内的uv坐标
+        const x = -pos.x; // 转换为世界坐标系X
+        const y = -pos.y; // 转换为世界坐标系Y
+        const uv = this.xyToUv(x, y); // 计算中心点UV坐标
+        const visibleUv: string[] = []; // 存储可见区域的UV键值
+
+        // 生成可见区域UV坐标集合
         for (let i = -this._gridColRow[0]; i <= this._gridColRow[0]; i++) {
             for (let j = -this._gridColRow[1]; j <= this._gridColRow[1]; j++) {
-                const u = uv[0] + i;
-                const v = uv[1] + j;
-                visibleUv[visibleUv.length] = `${u}_${v}`;
+                const u = uv[0] + i;  // 横向扩展网格
+                const v = uv[1] + j;  // 纵向扩展网格
+                visibleUv.push(`${u}_${v}`); // 生成UV键格式如"1_-2"
             }
         }
 
+        // 首次创建流程
         if (this._tileNodeMap.size == 0) {
-            // 首次创建地砖
             for (let i = 0, n = visibleUv.length; i < n; i++) {
                 const key = visibleUv[i];
                 const data = this._tileMap.get(key);
                 if (data) {
-                    let item = this._tileNodes[i];
-                    if (!item) {
-                        item = instantiate(this.template);
+                    // 使用对象池获取或创建节点
+                    let item = this._tileNodes[i] || instantiate(this.template);
+                    if (!item.parent) {
                         item.parent = this.node;
                         no.visible(item, true);
                         this._tileNodes.push(item);
                     }
+                    
+                    // 初始化节点数据
                     this._tileNodeMap.set(key, item);
-                    let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                    if (a) {
-                        a.initWithData(data);
+                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                    if (dataWork) {
+                        dataWork.initWithData(data); // 示例数据格式：{x: 100, y: 200, type: 'grass'}
                     }
+                    
+                    // 设置节点位置并标记延迟显示
                     this._tempV3.set(data.x, data.y, 0);
                     no.position(item, this._tempV3);
                     this._lateShowNodes.push(item);
                 }
             }
-        } else {
-            // 复用已有地砖节点
+        } 
+        // 节点复用流程
+        else {
             const needMoveTileNode: Node[] = [];
             const entries = Array.from(this._tileNodeMap.entries());
             //遍历子节点，将不可见的节点加入到needMoveTileNode列表中
@@ -171,7 +268,7 @@ export class SetDynamicMap extends FuckUi {
                 if (!visibleUv.includes(key)) {
                     needMoveTileNode.push(node);
                     this._tileNodeMap.delete(key);
-                    node['_activeInHierarchy'] = false;
+                    node['_activeInHierarchy'] = false; // 标记节点为可复用状态
                 }
             }
             //遍历可见区域，将needMoveTileNode中的节点移动到可见区域
@@ -180,19 +277,20 @@ export class SetDynamicMap extends FuckUi {
                 if (this._tileNodeMap.has(key)) continue;
                 const data = this._tileMap.get(key);
                 if (data) {
-                    let item = needMoveTileNode.shift();
-                    if (!item) {
-                        item = instantiate(this.template);
+                    // 优先使用回收的节点，没有则创建新节点
+                    let item = needMoveTileNode.shift() || instantiate(this.template);
+                    if (!item.parent) {
                         item.parent = this.node;
                         no.visible(item, true);
                         this._tileNodes.push(item);
-                    } else {
-                        this._lateShowNodes.push(item);
+                        this._lateShowNodes.push(item); // 新节点需要延迟激活
                     }
+                    
+                    // 更新节点数据和位置
                     this._tileNodeMap.set(key, item);
-                    let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                    if (a) {
-                        a.initWithData(data);
+                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                    if (dataWork) {
+                        dataWork.initWithData(data);
                     }
                     this._tempV3.set(data.x, data.y, 0);
                     no.position(item, this._tempV3);

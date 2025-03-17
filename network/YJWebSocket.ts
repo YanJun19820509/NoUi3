@@ -16,14 +16,33 @@ import { YJSocketInterface } from './YJSocketInterface';
  */
 
 @ccclass('YJWebSocket')
+/**
+ * WebSocket 连接实现类
+ * @implements YJSocketInterface
+ * @example
+ * // 创建WebSocket连接
+ * const ws = YJWebSocket.new('wss://echo.websocket.org');
+ * ws.onMessage = (data) => console.log('收到消息:', data);
+ * ws.connect();
+ * 
+ * // 发送消息
+ * ws.sendDataToServer(JSON.stringify({type: 'ping'}));
+ */
 export class YJWebSocket implements YJSocketInterface {
-    protected ws: any;
-    private url: string;
-    private reIniting: boolean = false;
-    private isClosed: boolean = false;
-    private isConnected: boolean = false;
-    private isWxWs: boolean = false;
+    protected ws: any; // WebSocket实例
+    private url: string; // 服务器地址
+    private reIniting: boolean = false; // 是否正在重新初始化
+    private isClosed: boolean = false; // 连接是否已关闭
+    private isConnected: boolean = false; // 是否已成功连接
+    private isWxWs: boolean = false; // 是否是微信平台WebSocket
 
+    /**
+     * 创建WebSocket实例的工厂方法
+     * @param url WebSocket服务器地址
+     * @returns 新的YJWebSocket实例
+     * @example
+     * const ws = YJWebSocket.new('wss://game-server.example.com');
+     */
     public static new(url: string): YJWebSocket {
         let a = new YJWebSocket();
         a.url = url;
@@ -31,16 +50,24 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     constructor() {
-        this['uuid'] = no.uuid();
+        this['uuid'] = no.uuid(); // 生成唯一标识
     }
 
+    /**
+     * 初始化WebSocket连接
+     * @description 根据运行平台选择不同的初始化方式：
+     * - 原生平台使用带CA证书的适配器
+     * - 微信小游戏使用wx.connectSocket
+     * - 其他平台使用标准WebSocket
+     */
     protected initWebSocket() {
         no.log('YJWebSocket initWebSocket');
-        if (JSB && native.fileUtils) {
+        if (JSB && native.fileUtils) { // 原生平台处理
             let AdapterWebSocket: any = WebSocket;
             let realPath = "cacert.pem";
             let fileUtils = native.fileUtils;
-            // 兼容3.5 和2.x引擎
+            
+            // 兼容不同引擎版本的证书路径
             let ca_cache_path = fileUtils.getWritablePath() + "cacert.pem";
             if (!fileUtils.isFileExist(ca_cache_path)) {
                 if (!fileUtils.isFileExist(realPath)) {
@@ -51,41 +78,51 @@ export class YJWebSocket implements YJSocketInterface {
                     fileUtils.writeStringToFile(content, ca_cache_path);
                 }
             }
-            // Android 必须加入CA证书才能使用wss
+            
             realPath = ca_cache_path;
             this.ws = new AdapterWebSocket(this.url, [], realPath);
             this._initWs();
         }
-        else if (sys.platform == sys.Platform.WECHAT_GAME) {
+        else if (sys.platform == sys.Platform.WECHAT_GAME) { // 微信小游戏平台
             this._createWXws();
         }
-        else {
+        else { // 标准WebSocket实现
             this.ws = new WebSocket(this.url);
             this._initWs();
         }
     }
 
+    /**
+     * 初始化WebSocket事件监听
+     * @private
+     */
     private _initWs() {
         this.ws['_uuid'] = no.uuid();
         this.isClosed = false;
-        // 在重连的时候isClosed为false导致connect的时候没有onopen就发消息，所以增加了是否连接状态
         this.isConnected = false;
+
+        // 连接建立事件
         this.ws.onopen = (event) => {
             no.log(`websocket open:${this.url}`);
             this.isClosed = false;
             this.isConnected = true;
             this.onConnect?.();
         };
+
+        // 消息接收事件
         this.ws.onmessage = (event) => {
-            // no.log("response text msg: " + event.data);
             this._onMessage(event.data);
         };
+
+        // 错误处理事件
         this.ws.onerror = (event) => {
             no.err(`websocket error:${this.url}`, this.isClosed, JSON.stringify(event));
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         };
+
+        // 连接关闭事件
         this.ws.onclose = (event) => {
             no.err(`websocket close:${this.url}`, this.isClosed, JSON.stringify(event));
             if (this.isClosed) return;
@@ -94,6 +131,10 @@ export class YJWebSocket implements YJSocketInterface {
         };
     }
 
+    /**
+     * 创建微信平台WebSocket连接
+     * @private
+     */
     private _createWXws() {
         no.log('_createWXws');
         const wx = window['wx'];
@@ -104,6 +145,7 @@ export class YJWebSocket implements YJSocketInterface {
         this.ws['_uuid'] = no.uuid();
         this.isClosed = false;
         this.isConnected = false;
+
         this.ws.onOpen((res) => {
             no.log(`websocket open:${this.url}`);
             this.isClosed = false;
@@ -131,8 +173,17 @@ export class YJWebSocket implements YJSocketInterface {
         this.isWxWs = true;
     }
 
+    /**
+     * 处理接收到的消息
+     * @private
+     * @param data 接收到的原始数据
+     * @description 支持处理多种数据格式：
+     * - 字符串
+     * - ArrayBuffer
+     * - Blob（自动转换为ArrayBuffer）
+     */
     private _onMessage(data: any) {
-        if (data == null || data == '') return;
+        if (!data) return;
         if (typeof data == 'string') this.onMessage(data);
         else if (data instanceof ArrayBuffer) this.onMessage(data);
         else if (data instanceof Blob) {
@@ -142,6 +193,12 @@ export class YJWebSocket implements YJSocketInterface {
         } else this.onMessage(data);
     }
 
+    /**
+     * 发送数据到服务器
+     * @private
+     * @param v 要发送的数据
+     * @description 处理微信平台的特殊发送格式
+     */
     private sendData(v: any) {
         if (this.isWxWs) {
             if (v instanceof Uint8Array)
@@ -153,19 +210,39 @@ export class YJWebSocket implements YJSocketInterface {
         }
     }
 
-    public onMessage(v: any) {
+    /**
+     * 消息接收回调（需重写实现）
+     * @param v 接收到的消息内容
+     * @example
+     * ws.onMessage = (data) => {
+     *   console.log('收到服务器消息:', data);
+     * };
+     */
+    public onMessage(v: any) {}
 
-    }
+    /**
+     * 连接关闭回调（需重写实现）
+     * @example
+     * ws.onClose = () => {
+     *   console.log('连接已断开');
+     * };
+     */
+    public onClose() {}
 
-    public onClose() {
-
-    }
-
+    /**
+     * 建立WebSocket连接
+     * @async
+     * @description 如果当前未连接或连接已关闭，则重新初始化连接
+     */
     public async connect() {
         if (this.ws?.readyState != WebSocket.OPEN)
             this.initWebSocket();
     }
 
+    /**
+     * 重新初始化连接
+     * @private
+     */
     private reInit() {
         if (this.reIniting) return;
         if (this.url != null) {
@@ -174,28 +251,14 @@ export class YJWebSocket implements YJSocketInterface {
         }
     }
 
-    // public async isOk(): Promise<boolean> {
-    //     if (this.isConnected) return true;
-    //     return new Promise<boolean>(resolve => {
-    //         let n = 0;
-    //         no.scheduleForever(() => {
-    //             if (this.isConnected) {
-    //                 no.unschedule(this);
-    //                 resolve(true);
-    //             } else {
-    //                 n++;
-    //                 if (n >= 20) {
-    //                     no.unschedule(this);
-    //                     resolve(false);
-    //                 }
-    //             }
-    //         }, .5, this);
-    //     });
-    // }
-
-    /**断开 */
+    /**
+     * 主动关闭连接
+     * @example
+     * ws.close(); // 主动断开WebSocket连接
+     */
     public close() {
         if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+            // 清空事件监听防止重复触发
             this.ws.onclose = () => { };
             this.ws.onerror = () => { };
             this.ws.onClose = () => { };
@@ -206,9 +269,16 @@ export class YJWebSocket implements YJSocketInterface {
     }
 
     /**
-     * 向服务器发送数据
-     * @param encryptType 加密方式
-     * @param data 
+     * 发送数据到服务器
+     * @param data 要发送的数据（支持字符串/ArrayBuffer/Uint8Array）
+     * @returns 是否发送成功
+     * @example
+     * // 发送文本消息
+     * ws.sendDataToServer('ping');
+     * 
+     * // 发送二进制数据
+     * const buffer = new Uint8Array([1,2,3]);
+     * ws.sendDataToServer(buffer);
      */
     public sendDataToServer(data: any) {
         if (this.isConnected) {
@@ -218,11 +288,20 @@ export class YJWebSocket implements YJSocketInterface {
         return false;
     }
 
+    /**
+     * 检查连接是否处于打开状态
+     * @returns 是否已建立连接
+     */
     public isOpen(): boolean {
         return this.ws?.readyState == WebSocket.OPEN;
     }
 
-    public onConnect() {
-
-    }
+    /**
+     * 连接成功回调（需重写实现）
+     * @example
+     * ws.onConnect = () => {
+     *   console.log('成功连接到服务器');
+     * };
+     */
+    public onConnect() {}
 }

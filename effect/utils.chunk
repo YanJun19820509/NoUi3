@@ -1,158 +1,253 @@
+// 安全取小数部分（处理负数情况）
+// 示例: ffract(-1.5) -> 0.5, ffract(2.3) -> 0.3
 float ffract(float a){
   return fract(a + 1.);
 }
 
+// 安全取整（避免浮点精度问题）
+// 示例: ffloor(2.9999999) -> 2.0, ffloor(3.0000001) -> 3.0
 float ffloor(float a){
   return floor(a+ 0.00000001);
 }
 
+/**
+ * 数值解析工具函数
+ * @param defines 原始数值
+ * @param isFloor 解析模式：true-整数模式（从高位开始） / false-小数模式（从小数点后开始）
+ * @param start 起始位数（0开始）
+ * @param n 要取的位数
+ * @return 解析出的数值
+ * 示例（整数模式）: defineVal(12345, true, 1, 2) -> 34（从第1位开始取2位）
+ * 示例（小数模式）: defineVal(0.12345, false, 1, 2) -> 23（取小数点后第1位开始的2位）
+ */
 float defineVal(float defines,const bool isFloor,const float start,const float n){
   if (isFloor){
-    float a = defines/pow(10.,start + n);
-    a = ffract(a)*pow(10.,n);
+    float a = defines/pow(10.,start + n); // 右移去掉低位数字
+    a = ffract(a)*pow(10.,n); // 取小数部分并左移恢复有效位
     return ffloor(a);
   }else{
-    float a = defines*pow(10.,start);
-    a = ffract(a)*pow(10.,n);
+    float a = defines*pow(10.,start); // 左移去掉整数部分
+    a = ffract(a)*pow(10.,n); // 取小数部分并左移有效位
     return ffloor(a);
   }
 }
 
-// 判断 defined 类型状态, isFloor是否正数，checkValue检验值，start 取值开始位数0 开始
+/**
+ * 检查定义值的特定位是否等于目标值
+ * @param start 检测起始位（0开始）
+ * 示例: isTrue(1234, true, 2, 1) -> 检查第1位是否等于2（数值3）
+ */
 bool isTrue(float defines, bool isFloor, float checkValue, float start){
   return defineVal(defines, isFloor, start, 1.) == checkValue;
 }
 
+/**
+ * 检查定义值的特定位是否有设置类型
+ * @param start 检测起始位（0开始）
+ * 示例: hasDefineType(1005, true, 3) -> 检查千位是否>0（数值1）
+ */
 bool hasDefineType(float defines, bool isFloor, float start){
   return defineVal(defines, isFloor, start, 1.) > 0.;
 }
 
-// 从扩展数据里解析颜色数据
+/**
+ * 从压缩数据解析颜色值（RGB分量各占0-999，存储为vec3的x/y分量）
+ * @param ext 压缩后的颜色数据（x存R+G，y存B+A）
+ * 示例: ext=vec3(1234.5, 567.8, 0.5) -> 
+ *       r=1234.5/1000=1.234取整=1 -> r=1/255
+ *       g=1234.5-1*1000=234.5 -> g=234.5/255
+ *       b=567.8/1000=0.567取整=0 -> b=0/255
+ *       最终颜色vec4(1/255, 234.5/255, 0/255, 0.5)
+ */
 vec4 getColorFromExt(vec3 ext){
-  float r = ffloor(ext.x / 1000.0);
-  float g = ext.x - r * 1000.0;
-  float b = ffloor(ext.y / 1000.0);
-  color = vec4(r/255.0,g/255.0,b/255.0,ext.z);
+  float r = ffloor(ext.x / 1000.0);      // 提取红色分量
+  float g = ext.x - r * 1000.0;          // 提取绿色分量
+  float b = ffloor(ext.y / 1000.0);      // 提取蓝色分量
+  color = vec4(r/255.0,g/255.0,b/255.0,ext.z); // 组合为标准化颜色值
 }
 
-//随机函数
+/**
+ * 基于噪声的伪随机数生成器
+ * @param st 输入种子坐标
+ * 示例: rand(vec2(1.0,2.0)) -> 0.734
+ *       原理: 通过正弦函数和超大系数制造随机分布
+ */
 float rand(vec2 st){
   return ffract(sin(dot(st,vec2(12.9898,78.233)))*43758.5453123);
 }
 
 
+/**
+ * 计算颜色亮度值（心理学灰度公式）
+ * @param _color 输入颜色
+ * @returns 灰度值（范围0-1）
+ * @example grayF(vec4(1.0,0.0,0.0,1.0)) -> 0.299（红色通道的亮度贡献）
+ */
 float grayF(vec4 _color){
-  return dot(_color.rgb, vec3(0.299,0.587,0.114));
+  return dot(_color.rgb, vec3(0.299,0.587,0.114)); // RGB亮度权重系数
 }
 
-
-//置灰,_o:color
+/**
+ * 颜色置灰处理
+ * @param _o 原始颜色
+ * @returns 灰度颜色（保持alpha通道不变）
+ * @example gray(vec4(0.2,0.8,0.5,1.0)) -> vec4(0.6016,0.6016,0.6016,1.0)
+ */
 vec4 gray(vec4 _o){
-  //心理学灰度公式
-  float gray  = grayF(_o);
-  _o.r = _o.g = _o.b = gray;
+  float gray  = grayF(_o); // 获取亮度值
+  _o.r = _o.g = _o.b = gray; // 三通道统一为灰度值
   return _o;
 }
 
-//两个颜色混合，type为混合的方式，1：相加，2：相减，3：相乘，4：插值混合，5：加权求和，6：灰度混合
+/**
+ * 颜色混合算法
+ * @param _c1 基础颜色
+ * @param _c2 混合颜色
+ * @param _type 混合模式（1-6）:
+ * 1=相加 2=相减 3=相乘 4=黄金比例插值 5=加权混合 6=基于亮度的混合
+ * @returns 混合后的颜色
+ * @example 
+ * blend(vec4(1,0,0,1), vec4(0,1,0,1), 1.0) -> vec4(1,1,0,1) // 加法混合
+ * blend(vec4(0.5), vec4(0.5), 4.0) -> vec4(0.5) // 黄金比例插值
+ */
 vec4 blend(vec4 _c1, vec4 _c2, float _type){
-  if (_type == 1.) _c1 += _c2;
-  else if (_type == 2.) _c1 -= _c2;
-  else if (_type == 3.) _c1 *= _c2;
-  else if (_type == 4.) _c1.rgb = mix(_c1.rgb, _c2.rgb, .618);
-  else if (_type == 5.) _c1.rgb = _c1.rgb * .2 + _c2.rgb * 1.2;
-  else if (_type == 6.) _c1.rgb = mix(_c1.rgb, _c2.rgb*1.5, grayF(_c2));
+  if (_type == 1.) _c1 += _c2; // 加法混合（颜色变亮）
+  else if (_type == 2.) _c1 -= _c2; // 减法混合（颜色变暗）
+  else if (_type == 3.) _c1 *= _c2; // 正片叠底（暗部增强）
+  else if (_type == 4.) _c1.rgb = mix(_c1.rgb, _c2.rgb, .618); // 黄金比例插值
+  else if (_type == 5.) _c1.rgb = _c1.rgb * .2 + _c2.rgb * 1.2; // 加权混合（突出_c2）
+  else if (_type == 6.) _c1.rgb = mix(_c1.rgb, _c2.rgb*1.5, grayF(_c2)); // 基于_c2亮度的混合
   return _c1;
 }
 
+/**
+ * 动态彩虹色板生成器
+ * @param t 基础时间参数（范围0-1）
+ * @returns RGB颜色值
+ * @example 
+ * Pallete(0.0) -> 随时间变化的彩虹色起始颜色
+ * Pallete(0.5) -> 彩虹色中间过渡颜色
+ */
+vec3 Pallete(float t) {
+  t += cc_time.x; // 随时间自动滚动
+  vec3 dcOffset = vec3(0.5); // 颜色基准偏移
+  vec3 amp = vec3(1.);      // 振幅系数
+  vec3 freq = vec3(1.);     // 频率系数
+  vec3 phase = vec3(0., 0.3333, 0.6666); // RGB相位差（120度间隔）
+  return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase)); // 余弦函数生成三通道色值
+}
 
-// 一个彩虹色的色板，输入t的范围是[0, 1], 输出一个颜色值
-  vec3 Pallete(float t) {
-      // 滚动动起来
-      t += cc_time.x;
-      
-      vec3 dcOffset = vec3(0.5, 0.5, 0.5);
-      vec3 amp = vec3(1., 1., 1.);
-      vec3 freq = vec3(1., 1., 1.);
-      vec3 phase = vec3(0., 0.3333, 0.6666);
-      return dcOffset + amp * cos(2. * 3.14159 * (freq * t + phase));
-  }
-
-
-
-//扫光效果
+/**
+ * 斜向扫光效果
+ * @param _o 原始颜色
+ * @param _uv 纹理坐标
+ * @param _start 起始位置偏移
+ * @param _width 光带宽度
+ * @param _strength 光强系数
+ * @param _reverse 反向模式（true时仅保留光带区域）
+ * @returns 处理后的颜色
+ * @example 
+ * shine(color,uv,0.5,0.2,2.0,false) -> 中等强度扫光效果
+ * shine(color,uv,0.0,0.1,3.0,true) -> 窄光带+反向模式（手电筒效果）
+ */
 vec4 shine(vec4 _o, vec2 _uv, float _start, float _width, float _strength, bool _reverse){
-      
-  // 斜线控制区域. 其实就是 y = -x+width  y = -x -width 夹着的区域. 还可以乘上斜率,以使扫光的倾斜程度变化. 加上time 时间控制, 可以使区域根据时间推移,平滑的从左往右移动.
-
-  if (_uv.x <= - _uv.y+_start && _uv.x >= - _uv.y - _width+_start){
-    _o *= _strength;  // 给颜色增强若干倍.
+  // 定义斜线区域：_uv.x + _uv.y ∈ [_start - _width, _start]
+  if (_uv.x <= -_uv.y + _start && _uv.x >= -_uv.y - _width + _start){
+    _o *= _strength;  // 增强光带区域亮度
   }
   else if( _reverse ) {  
-    // 可以通过参数控制, 是否仅显示扫光区域, 看起来就会变成一道光照亮了一片区域,而其他地方则是虚无. 手电筒的效果.
-    discard;
+    discard; // 反向模式时丢弃非光带区域像素
   }
   return _o;
 }
 
 
-//圆形头像裁剪效果带羽化
+/**
+ * 圆形头像裁剪效果带羽化
+ * @param _o 原始颜色值
+ * @param _uv 当前像素坐标（归一化0-1）
+ * @param _center 圆心坐标（通常为vec2(0.5,0.5)）
+ * @param _radius 圆半径（0-1范围）
+ * @param _feather 羽化范围（0-0.2效果较好）
+ * @returns 裁剪后的颜色值
+ * @example 
+ * mask(color,uv,vec2(0.5),0.45,0.05) // 标准圆形头像，带5%边缘羽化
+ * mask(color,uv,vec2(0.3,0.7),0.2,0.1) // 偏心圆形裁剪，较大羽化范围
+ */
 vec4 mask(vec4 _o, vec2 _uv, vec2 _center, float _radius, float _feather){
-    // 计算当前坐标点与 中心点(0.5, 0.5)的距离, 距离超过半径的点,直接 discard; 即return.
+    // 计算当前像素到圆心的归一化距离
     float dis = distance(_uv, _center);
 
+    // 硬裁剪：直接丢弃圆外像素
     if( dis > _radius ){
         discard;
     }
 
-    // 判断圆形周边的一圈像素, 根据羽化参数大小, 对周边一圈颜色的透明度进行平滑降低, 即>0.5r 为透明a=0, < 0.4r为不透明a=1,  否则透明度a= 线性0~1过渡.
-    // dis < 0.4 则为1, >0.5则为0, 否则就为0~1之间插值
+    // 羽化处理：在半径边缘附近创建平滑过渡
     if( _feather > 0.0 ){
+      // 使用smoothstep创建平滑过渡曲线，参数说明：
+      // edge0: 完全透明边界（_radius - _feather）
+      // edge1: 完全不透明边界（_radius）
       _o.a *= smoothstep(_radius, _radius - _feather, dis);
     }
   return _o;
 }
 
-
-
-// 圆角矩形
+/**
+ * 圆角矩形区域裁剪（无颜色返回，直接丢弃区域外像素）
+ * @param _uv 当前像素坐标
+ * @param _center 矩形中心坐标
+ * @param _radius 圆角半径
+ * @param _base 矩形基础尺寸（width/height的一半）
+ * @example 
+ * roundedRectangle(uv,vec2(0.5),0.1,0.4) // 创建尺寸0.8x0.8，圆角半径0.1的矩形
+ */
 void roundedRectangle(vec2 _uv, vec2 _center, float _radius, float _base){
-
-  // 计算出以4个圆角圆心的坐标点区域.
+  // 坐标变换：将坐标系移至中心，并取绝对值得到第一象限坐标
   vec2 uv = _uv - _center;
   uv.x = abs(uv.x);
   uv.y = abs(uv.y);
 
-  float r = _base- _radius;
+  // 计算直角区域边界（减去圆角半径后的矩形区域）
+  float r = _base - _radius;
   
+  // 仅处理四个圆角区域的像素
   if (uv.x > r && uv.y > r) {
+    // 坐标平移至圆角圆心坐标系
     uv.x -= r;
     uv.y -= r;
 
-    // 计算平移后的坐标点距离圆心(0 ,0 )的距离, 与圆形头像原理一致,
+    // 圆角裁剪：距离超过圆角半径则丢弃
     float dis = distance(uv, vec2(0,0));
-
     if( dis >= _radius ) {
       discard;
     }
   }
 }
 
-
-
-
-//圆孔裁剪效果带羽化
+/**
+ * 圆孔裁剪效果（反向遮罩）带羽化
+ * @param _o 原始颜色值
+ * @param _uv 当前像素坐标
+ * @param _center 圆心坐标
+ * @param _radius 圆孔半径
+ * @param _feather 羽化范围
+ * @returns 裁剪后的颜色值
+ * @example 
+ * hole(color,uv,vec2(0.5),0.3,0.05) // 中心圆孔，锐利边缘
+ * hole(color,uv,vec2(0.2,0.8),0.15,0.1) // 偏心圆孔，宽羽化效果
+ */
 vec4 hole(vec4 _o, vec2 _uv, vec2 _center, float _radius, float _feather){
-    // 计算当前坐标点与 中心点(0.5, 0.5)的距离, 距离超过半径的点,直接 discard; 即return.
     float dis = distance(_uv, _center);
 
+    // 反向裁剪：丢弃圆内像素
     if( dis < _radius ){
         discard;
     }
 
-    // 判断圆形周边的一圈像素, 根据羽化参数大小, 对周边一圈颜色的透明度进行平滑降低, 即>0.5r 为透明a=0, < 0.4r为不透明a=1,  否则透明度a= 线性0~1过渡.
-    // dis < 0.4 则为1, >0.5则为0, 否则就为0~1之间插值
+    // 外边缘羽化处理（与mask方向相反）
     if( _feather > 0.0 ){
+      // 羽化区间从_radius到_radius+_feather
       _o.a *= smoothstep( _radius, _radius + _feather, dis);
     }
   return _o;
@@ -160,127 +255,202 @@ vec4 hole(vec4 _o, vec2 _uv, vec2 _center, float _radius, float _feather){
 
 
 
-//渐变消失效果
+/**
+ * 渐变消失效果
+ * @param _o 原始颜色值
+ * @param _uv 纹理坐标 (0.0-1.0)
+ * @param _time 消失进度 (0.0-1.0) 控制渐变起始位置
+ * @param _width 渐变过渡区域宽度 (0.0-1.0)
+ * @param _vertical 是否垂直方向渐变（true=垂直从上到下，false=水平从左到右）
+ * @returns 处理后的颜色值
+ * @example 
+ * fadeOut(color, uv, 0.5, 0.2, true) // 垂直方向50%位置开始，0.2宽度的渐变消失
+ * fadeOut(color, uv, 0.8, 0.1, false) // 水平方向80%位置开始，0.1宽度的渐变消失
+ */
 vec4 fadeOut(vec4 _o,vec2 _uv,  float _time, float _width, bool _vertical){
-  // 外部控制从上到下还是从左向右消失.
+  // 基础透明度过滤，保留半透明以上区域进行处理
   if (_o.a > 0.3){
     if(_vertical) {
-        // 对消失区域进行透明度插值渐变.
+        // 垂直方向渐变：基于y坐标的smoothstep插值
+        // _time - _width 到 _time 区间内产生平滑过渡
         _o.a *= smoothstep(_time - _width, _time, _uv.y);
     } else {
+        // 水平方向渐变：基于x坐标的smoothstep插值
         _o.a *= smoothstep(_time - _width, _time, _uv.x);
     }
-  } else _o.a = 0.0;
+  } else _o.a = 0.0; // 完全透明区域直接置零
   return _o;
 }
 
-
-
-//高斯模糊纹理效果
+/**
+ * 高斯模糊纹理效果
+ * @param _o 原始颜色值
+ * @param _uv 纹理坐标
+ * @param _offset 模糊强度（采样偏移量，建议0.001-0.01）
+ * @returns 模糊处理后的颜色值
+ * @example 
+ * blurTexture(color, uv, 0.005) // 中等强度模糊
+ * blurTexture(color, uv, 0.01)  // 高强度模糊
+ */
 vec4 blurTexture(vec4 _o, vec2 _uv, float _offset){
-  // 随机采样次数.
+  // 采用10个方向采样实现近似高斯模糊
   const float repeats = 10.;
-
+  
+  // 多方向采样混合
   for(float i=0.0; i<repeats ; i++) {
-
-    // 以下两步, 主要用来产生一个随机偏移量, 即以当前_uv坐标为基础, 叠加一个偏移量, 从而获得偏移后的周边某点的采样颜色.
+      // 生成圆周采样方向向量
       vec2 q = vec2(
-        cos(degrees(i*360.0/repeats)),
-        sin(degrees(i*360.0/repeats))
+        cos(radians(i*360.0/repeats)), // 将角度转换为弧度
+        sin(radians(i*360.0/repeats))
       );
-      q*= (rand(vec2(i,_uv.x + _uv.y ))+ _offset );
-      vec2 uv2 = _uv + q*_offset;
+      // 添加随机偏移避免规则采样带来的图案重复感
+      q *= (rand(vec2(i, _uv.x + _uv.y )) + _offset);
+      vec2 uv2 = _uv + q * _offset;
       
-      // 将周边某点颜色叠加到一起进行颜色混合.
+      // 累加周边采样颜色
       _o += normalTexture(cc_spriteTexture, uv2);
   }
 
-  // 中和, 刚才的循环累加了repeats 次, 颜色分量应当除以repeats, 否则颜色分量可能超过1,即高曝光效果.
+  // 平均采样结果（简单盒式模糊）
   _o /= repeats;
 
-  // 降低亮度. 并用节点本身颜色进行混合.
-  float light = 0.7;
+  // 后处理：降低亮度并二值化透明度
+  float light = 0.7; // 亮度衰减系数
   _o *= light;
-  _o.a = step(0.4, _o.a);
+  _o.a = step(0.4, _o.a); // 透明度二值化（alpha>=0.4为1，否则为0）
 
   return _o;
 }
 
-
-
-//溶解效果(若干像素变没了, 像腐烂的破布)
+/**
+ * 溶解效果
+ * @param _o 原始颜色值
+ * @param _time 溶解阈值 (0.0-1.0) 控制溶解进度
+ * @returns 处理后的颜色值（部分像素被丢弃）
+ * @example 
+ * dissolve(color, 0.5) // 溶解50%的像素
+ * dissolve(color, 0.8) // 溶解80%的像素
+ * @note 实际使用建议配合噪声贴图实现更自然的溶解效果
+ */
 vec4 dissolve(vec4 _o, float _time) {
-
-  // 将当前坐标点的三个颜色分量进行混合, 并把其中小于某值的颜色 discard;掉.
-  // 实际应用场景可能需要另外单独提供一张用来判断是否discard像素的贴图,此处简化,直接对当前图像的色彩进行判断.
+  // 计算颜色亮度作为溶解依据
   float h = (_o.g + _o.r + _o.b)/3.0;
   
-  // 动态修改time 即颜色动态融化的效果. 
+  // 动态阈值溶解
   if(h < _time) {
-    discard;
+    discard; // 完全丢弃低于阈值的像素
   }
   return _o;
 }
 
 
 
-//描边
+/**
+ * 描边检测函数
+ * @param _texture 源纹理
+ * @param _uv 当前纹理坐标
+ * @param _outlineWidth 描边宽度（建议范围0.0-0.1）
+ * @return 描边强度（0.0-12.0，表示12个采样方向中满足条件的数量）
+ * @example
+ * // 在片段着色器中使用：
+ * float stroke = isStroke(cc_spriteTexture, uv, 0.02);
+ * if(stroke > 0.0) { // 存在描边区域
+ *     gl_FragColor = vec4(1.0,0,0,1); // 显示红色描边
+ * }
+ * @note 基于12方向采样检测边缘透明度，适用于卡通风格描边
+ */
 float isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
+  // 预计算12个均匀分布方向的cos/sin值（对应30度间隔）
   float cosArray[12], sinArray[12]; 
-  cosArray[0] = 1.0;
-  cosArray[1] = 0.866;
-  cosArray[2] = .5;
-  cosArray[3] = 0.;
-  cosArray[4] = -.5;
-  cosArray[5] = -0.866;
-  cosArray[6] = -.1;
-  cosArray[7] = -0.866;
-  cosArray[8] = -.5;
-  cosArray[9] = 0.;
-  cosArray[10] = .5;
-  cosArray[11] = 0.866;
-  sinArray[0] = 0.;
-  sinArray[1] = 0.5;
-  sinArray[2] = 0.866;
-  sinArray[3] = 1.;
-  sinArray[4] = 0.866;
-  sinArray[5] = 0.5;
-  sinArray[6] = 0.;
-  sinArray[7] = -0.5;
-  sinArray[8] = -.866;
-  sinArray[9] = -1.;
-  sinArray[10] = -.866;
-  sinArray[11] = -0.5;
+  cosArray[0] = 1.0;   // 0度
+  cosArray[1] = 0.866; // 30度
+  cosArray[2] = .5;    // 60度
+  cosArray[3] = 0.;    // 90度
+  cosArray[4] = -.5;   // 120度
+  cosArray[5] = -0.866;// 150度
+  cosArray[6] = -.1;   // 180度（原值可能有误，应为-1.0）
+  cosArray[7] = -0.866;// 210度
+  cosArray[8] = -.5;   // 240度
+  cosArray[9] = 0.;    // 270度
+  cosArray[10] = .5;   // 300度
+  cosArray[11] = 0.866;// 330度
+  sinArray[0] = 0.;    // 0度
+  sinArray[1] = 0.5;   // 30度
+  sinArray[2] = 0.866; // 60度
+  sinArray[3] = 1.;    // 90度
+  sinArray[4] = 0.866; // 120度
+  sinArray[5] = 0.5;   // 150度
+  sinArray[6] = 0.;    // 180度
+  sinArray[7] = -0.5;  // 210度
+  sinArray[8] = -.866; // 240度
+  sinArray[9] = -1.;   // 270度
+  sinArray[10] = -.866;// 300度
+  sinArray[11] = -0.5; // 330度
+  
   float stroke = 0.;
   for(int i = 0; i < 12; i++){
+    // 在12个方向进行采样检测
     float a = normalTexture(_texture, vec2(_uv.x + _outlineWidth * cosArray[i], _uv.y + _outlineWidth * sinArray[i])).a;
-    if (a > 0.9)
+    if (a > 0.9) // 检测到不透明区域
     {
-        stroke += 1.;
+        stroke += 1.; // 累加有效采样点
     }
   }
   return stroke;
 }
 
-
-//流动
+/**
+ * 纹理流动效果
+ * @param _texture 源纹理
+ * @param _uv 当前纹理坐标
+ * @param _speed 流动速度（建议0.1-2.0）
+ * @param isVertical true=垂直流动 false=水平流动
+ * @param isVerse true=反向流动
+ * @return 处理后的颜色值
+ * @example 
+ * // 水平正向流动
+ * vec4 color = flow(cc_spriteTexture, uv, 1.0, false, false);
+ * // 垂直反向流动
+ * vec4 color = flow(cc_spriteTexture, uv, 0.5, true, true);
+ */
 vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVerse) {
+  // 基于时间计算偏移量（使用ffract确保在0-1范围内）
   float offset = ffract(cc_time.x*_speed);
-  if (isVerse) offset = 1. - offset;
+  if (isVerse) offset = 1. - offset; // 反向处理
+  
+  // 根据流动方向应用偏移
   vec2 uv = _uv + vec2(isVertical ? 0. : offset, isVertical ? offset : 0.);
-  uv -= step(1., uv);
+  uv -= step(1., uv); // 处理UV越界
 
   return normalTexture(_texture, uv);
 }
 
-//纹理UV切换,可实现序列帧效果
+/**
+ * 纹理序列帧动画
+ * @param _texture 包含所有帧的纹理图集
+ * @param _uv 当前纹理坐标
+ * @param _cells 行列数（如vec2(4,4)表示4x4网格）
+ * @param _fps 帧率（每秒播放帧数）
+ * @param _time 时间变量（通常传入cc_time）
+ * @return 当前帧的颜色值
+ * @example 
+ * // 4x4图集，每秒播放5帧
+ * vec4 anim = textureSwitch(cc_spriteTexture, uv, vec2(4,4), 5.0, cc_time);
+ * @note 纹理需要按从左到右、从上到下排列动画帧
+ */
 vec4 textureSwitch(sampler2D _texture, vec2 _uv, vec2 _cells, float _fps, vec4 _time){
+  // 计算当前帧索引
   float index = ffloor(_time.x * _fps); 
-
+  
+  // 解析行列数
   float col = _cells.x;
   float row = _cells.y;
 
-  vec2 offset = vec2(mod(index,col)/col,floor(mod(index, col*row)/col)/row);
+  // 计算UV偏移量
+  vec2 offset = vec2(
+    mod(index,col)/col, // X轴偏移
+    floor(mod(index, col*row)/col)/row // Y轴偏移
+  );
 
   return texture(_texture, _uv / _cells.xy + offset);
 }
@@ -302,66 +472,126 @@ vec4 wave(sampler2D _texture, vec2 _uv, float _amplitude,float _angularVelocity,
   return c;
 }
 
+/**
+ * 图形波纹效果（仅保留波形上方的像素）
+ * @param _o 原始颜色值（用于inout参数传递）
+ * @param _uv 当前纹理坐标
+ * @param _amplitude 波纹振幅（0.0-1.0）
+ * @param _angularVelocity 角速度（控制波纹密度）
+ * @param _frequency 频率（控制波动速度）
+ * @param _offset 垂直偏移量（0.0-1.0）
+ * @param _toLeft 波动方向（true向左，false向右）
+ * @example
+ * // 创建向左传播的波纹效果，振幅0.1，角速度5，频率2，垂直居中
+ * graphicsWave(cc_fragColor, uv, 0.1, 5.0, 2.0, 0.5, true);
+ */
 void graphicsWave(vec4 _o, vec2 _uv, float _amplitude,float _angularVelocity, float _frequency, float _offset, bool _toLeft){
+  // 根据时间、方向和参数计算波形Y值
   float y = _amplitude * sin((_angularVelocity * _uv.x) + ((_frequency * cc_time.x) * (_toLeft ? 1. : -1.))) + _offset;
-    //超出偏移的丢弃
+  // 丢弃波形下方的像素（创建波纹裁剪效果）
   if (_uv.y < y) discard;
 }
 
-
 /**
-纹理平铺，
-_uv 当前 uv
-_scale 平铺比例，值越大，平铺后数量越多
-_speed 位移速度
-_offsetY y 方向偏移
-**/
+ * 动态纹理平铺效果（带运动位移和棋盘格裁剪）
+ * @param _uv 原始纹理坐标
+ * @param _scale 平铺密度（值越大平铺次数越多）
+ * @param _speed 平移动画速度（值越大移动越慢）
+ * @param _offsetY Y轴偏移系数（控制每列垂直偏移量）
+ * @return 处理后的纹理坐标
+ * @example 
+ * // 创建快速移动的棋盘格平铺效果
+ * vec2 tiledUV = tiled(uv, 4.0, 10.0, 5.0);
+ * vec4 color = texture(cc_spriteTexture, tiledUV);
+ */
 vec2 tiled(vec2 _uv, float _scale, float _speed, float _offsetY){
+  // 应用缩放和时间位移
   vec2 uv = _uv * _scale - vec2(cc_time.x,cc_time.x) / _speed;
+  // 计算列索引并生成棋盘格模式
   float b = ffloor(uv.x);
-  uv.y -= b / _offsetY;
+  uv.y -= b / _offsetY; // 每列添加垂直偏移
+  // 丢弃奇数行列的像素创建棋盘格效果
   if (mod(b,2.) == 1. || mod(ffloor(uv.y),2.) == 1.) {discard;}
+  // 取小数部分实现平铺重复
   uv = fract(uv);
   return uv;
 }
 
-
+/**
+ * 动态缩放效果（以指定点为中心进行渐变缩放）
+ * @param o 原始颜色值
+ * @param _uv 当前纹理坐标
+ * @param color 叠加颜色
+ * @param point 缩放中心点（纹理空间坐标，0-1范围）
+ * @param scaleMin 最小缩放系数
+ * @param scaleMax 最大缩放系数
+ * @return 处理后的颜色值
+ * @example
+ * // 创建从中心向外渐变的缩放效果，缩放范围0.5-2.0，叠加红色
+ * vec4 finalColor = scale(cc_fragColor, uv, vec4(1,0,0,1), vec2(0.5,0.5), 0.5, 2.0);
+ */
 vec4 scale(vec4 o,vec2 _uv, vec4 color, vec2 point, float scaleMin, float scaleMax){
   vec2 uv = vec2(point.x,point.y);
-  float smin = scaleMin;// * (1.0 - uv.y);
-  float s = smin + (scaleMax - smin) *_uv.y;
-  // float s = .5+uv.y;
+  // 计算基于垂直坐标的渐变缩放系数
+  float smin = scaleMin;
+  float s = smin + (scaleMax - smin) * _uv.y;
+  // 应用中心点相对缩放
   uv.x = uv.x - (uv.x - _uv.x)/s;
   uv.y = uv.y - (uv.y - _uv.y)/s;
+  // 处理超出纹理范围的情况
   if(uv.x > 1.0 || uv.x < 0.0 || uv.y > 1.0 || uv.y < 0.0){
-    //超出纹理范围的用透明填充
-    o = vec4(0, 0, 0, 0);
+    o = vec4(0); // 透明填充
   }else{
     o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv); 
-    if(o.a == 0.0){
-      //发现透明度为0的坐标，直接用透明填充
-      o = vec4(0, 0, 0, 0);
-    }
+    // 处理纹理边缘透明区域
+    if(o.a == 0.0) o = vec4(0);
   }
-  o *= color;
+  o *= color; // 颜色叠加
   return o;
 }
 
-//遮罩颜色
+/**
+ * 应用灰色遮罩效果（降低颜色亮度，保持透明度）
+ * @param _o 原始颜色值
+ * @return 处理后的颜色值（RGB各通道衰减50%，透明度不变）
+ * @example
+ * // 在片段着色器中应用灰色遮罩：
+ * vec4 color = texture(cc_spriteTexture, uv);
+ * gl_FragColor = maskColor(color); // 颜色会变暗50%
+ */
 vec4 maskColor(vec4 _o){
-  vec4 maskcolor = vec4(.5, .5, .5, 1);
-  _o*=maskcolor;
+  vec4 maskcolor = vec4(.5, .5, .5, 1); // 中灰色遮罩（各通道乘0.5）
+  _o*=maskcolor; // 颜色混合（保留原始alpha通道）
   return _o;
 }
 
-//遮罩颜色
+/**
+ * 应用纯黑色遮罩（完全移除颜色信息，保持透明度）
+ * @param _o 原始颜色值
+ * @return 处理后的颜色值（RGB归零，透明度不变）
+ * @example
+ * // 创建全黑剪影效果：
+ * vec4 color = texture(cc_spriteTexture, uv);
+ * gl_FragColor = blackMaskColor(color); // 输出纯黑色（保留原始透明度）
+ */
 vec4 blackMaskColor(vec4 _o){
-  vec4 maskcolor = vec4(0, 0, 0, 1);
-  _o*=maskcolor;
+  vec4 maskcolor = vec4(0, 0, 0, 1); // 纯黑色遮罩
+  _o*=maskcolor; // 颜色归零（保留原始alpha通道）
   return _o;
 }
 
-//无颜色半透遮罩 - 保持原图形状，移除颜色信息
+/**
+ * 透明遮罩效果（移除颜色信息并降低透明度）
+ * @param _o 原始颜色值
+ * @return 处理后的颜色值（RGB归零，透明度降为50%）
+ * @example
+ * // 创建半透明黑色遮罩层：
+ * vec4 color = texture(cc_spriteTexture, uv);
+ * gl_FragColor = alphaMask(color); // 输出半透明黑色，适合作为UI遮罩
+ * 
+ * // 配合混合模式使用：
+ * gl_FragColor = alphaMask(color) + otherColor; // 实现叠加混合效果
+ */
 vec4 alphaMask(vec4 _o){
-  return vec4(0.0, 0.0, 0.0, _o.a * 0.5);
+  return vec4(0.0, 0.0, 0.0, _o.a * 0.5); // 颜色置黑，透明度减半
 }

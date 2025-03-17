@@ -35,6 +35,11 @@ export type YJGoToInfo = {
 
 @ccclass('YJGoToConfigDelegate')
 export class YJGoToConfigDelegate extends Component {
+    /**
+     * 根据别名获取配置信息
+     * @param alias 配置别名
+     * @returns 配置信息或null
+     */
     public getInfoByAlias(alias: string): YJGoToInfo {
         return null;
     }

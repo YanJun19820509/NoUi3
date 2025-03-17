@@ -36,36 +36,58 @@ import { no } from '../no';
  * // - delay 设置为 1000
  */
 export class YJAutoCall extends Component {
+    /** 执行延时（单位：毫秒，实际会转换为秒数调度） */
     @property({ displayName: '延时(ms)', min: 0, step: 1 })
     delay: number = 0;
 
+    /** 要执行的事件处理器列表（支持多组件/方法回调） */
     @property(no.EventHandlerInfo)
     calls: no.EventHandlerInfo[] = [];
 
+    /** 是否在节点加载完成后自动执行（onLoad生命周期） */
     @property({ displayName: '加载时执行' })
     callOnLoad: boolean = false;
 
+    /** 是否在组件激活时自动执行（onEnable生命周期） */
     @property({ displayName: '激活时执行' })
     callOnEnable: boolean = false;
 
+    /** 是否只允许执行一次（后续调用将被忽略） */
     @property({ displayName: '仅执行一次' })
     once: boolean = false;
 
+    /** 执行状态标记（配合once属性使用） */
     private _done = false;
 
-    /** 节点加载完成时回调 */
+    /** 
+     * 节点加载完成回调 
+     * @desc 当配置callOnLoad且未开启callOnEnable时触发
+     * 避免同时开启两个自动执行配置时重复触发
+     */
     onLoad() {
         this.callOnLoad && !this.callOnEnable && this.a_call();
     }
 
-    /** 组件激活时回调 */
+    /** 
+     * 组件激活回调
+     * @desc 当配置callOnEnable时立即触发
+     * 注意：组件被反复激活/禁用时会重复触发
+     */
     onEnable() {
         this.callOnEnable && this.a_call();
     }
 
     /**
      * 执行预设回调
-     * @description 会先取消所有已安排的执行，保证只执行最新调用
+     * @description 
+     * - 取消所有已安排的执行保证最新调用有效性
+     * - 根据once属性控制单次执行逻辑
+     * @example
+     * // 动态调用示例：
+     * autoCallComp.a_call();
+     * // 延迟2秒执行：
+     * autoCallComp.delay = 2000;
+     * autoCallComp.a_call();
      */
     public a_call() {
         if (this.once && this._done) return;
@@ -76,7 +98,12 @@ export class YJAutoCall extends Component {
         }, this.delay / 1000);
     }
 
-    /** 停止所有预定回调 */
+    /**
+     * 停止所有预定回调
+     * @example
+     * // 停止正在等待执行的回调：
+     * autoCallComp.a_stop();
+     */
     public a_stop() {
         this.unscheduleAllCallbacks();
     }

@@ -45,16 +45,31 @@ export const LayerType = {
     // 9: 'top',
 };
 
+/**
+ * 层级类型描述映射表
+ * 提供字符串键和数字键两种访问方式，保持双向映射关系
+ * 示例：
+ * LayerTypeDesc.Base     // => "地图层"
+ * LayerTypeDesc[1]       // => "地图层"
+ */
 export const LayerTypeDesc = {
+    /** 基础地图层级，承载游戏主场景 */
     Base: '地图层',
+    /** 导航功能层，包含主菜单、任务栏等 */
     Navigation: '导航层',
+    /** 全屏界面层，用于设置、背包等全屏窗口 */
     Window: '全屏窗口层',
+    /** 弹窗提示层，显示对话框和系统提示 */
     Popup: '弹窗层',
+    /** 新手引导层，显示蒙版和指引箭头 */
     Guide: '引导层',
+    /** 即时消息层，显示飘字提示和状态消息 */
     Message: '消息层',
     // Menu: '菜单层',
     // Oper: '操作层',
     // Top: '顶部层',
+    
+    /** 数字键映射 - 与LayerTypeEnum保持同步 */
     1: '地图层',
     2: '导航层',
     3: '全屏窗口层',
@@ -66,12 +81,27 @@ export const LayerTypeDesc = {
     // 9: '顶部层',
 };
 
+/**
+ * 层级类型枚举定义
+ * 使用数字枚举值便于进行层级比较和排序
+ * 示例：
+ * LayerTypeEnum.Window // => 3 对应窗口层级
+ * 使用场景：
+ * 1. 控制UI层级叠加顺序
+ * 2. 管理场景切换时的层级清理
+ */
 export enum LayerTypeEnum {
+    /** 基础场景层（zIndex: 1000） */
     Base = 1,
+    /** 导航功能层（zIndex: 2000） */
     Navigation = 2,
+    /** 全屏窗口层（zIndex: 3000） */
     Window = 3,
+    /** 弹窗层（zIndex: 4000） */
     Popup = 4,
+    /** 引导层（zIndex: 5000） */
     Guide = 5,
+    /** 消息层（zIndex: 6000） */
     Message = 6,
     // Menu = 'menu',
     // Oper = 'oper',

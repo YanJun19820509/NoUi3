@@ -21,78 +21,114 @@ import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
  */
 
 @ccclass('SetMinimap')
+/**
+ * 迷你地图组件，支持全屏和局部显示，迷雾效果，点击获取地图位置
+ * @example
+ * // 编辑器配置示例：
+ * // 1. 拖入地图精灵节点到minimapSprite属性
+ * // 2. 配置图集纹理minimapImageSet和图集坐标映射minimapSetPoses
+ * // 3. 设置地砖尺寸和缩放参数
+ * // 4. 绑定角色节点用于位置同步
+ * 
+ * // 代码调用示例：
+ * // 通过数据驱动更新地图信息
+ * this.node.getComponent(SetMinimap).a_setData({
+ *     mapInfo: { width: 100, height: 100, cellSize: 32 },
+ *     tileInfos: [{type:1, x:10, y:10}, {type:2, x:11, y:10}],
+ *     startPos: [50, 50]
+ * });
+ * 
+ * // 点击事件处理示例：
+ * // 监听点击事件获取目标坐标（返回格式：{type:'moveto', pos:{x,y}, dir:方向角度}）
+ * no.EventHandlerInfo.add(this.node, 'SetMinimap', 'clickEvent', (data) => {
+ *     cc.log('Move to:', data.pos);
+ * });
+ */
 export class SetMinimap extends FuckUi {
-
-    /** 迷你地图节点 */
+    /** 迷你地图显示精灵组件（需提前拖入编辑器） */
     @property({ type: Sprite, displayName: '迷你地图节点' })
     minimapSprite: Sprite = null;
+
+    /** 迷雾效果控制器组件（可选） */
     @property({ type: SetFogOfWar, displayName: '迷雾' })
     fogOfWar: SetFogOfWar = null;
 
-    /** 迷你地图图集,图集内单图长宽相等,且应尽量小如12px */
+    /** 迷你地图图集纹理（要求：图集内单图长宽相等，推荐12-32px小图） */
     @property({ type: Texture2D, displayName: '迷你地图图集', tooltip: '迷你地图图集内单图长宽相等，且应尽量小如12px' })
     minimapImageSet: Texture2D = null;
 
-    /** 图集内单图尺寸 */
+    /** 图集内单个瓦片的像素尺寸（需与实际纹理尺寸一致） */
     @property({ displayName: '图集内单图尺寸' })
     minimapCellSize: number = 12;
 
-    /** 地砖类型与图集映射,下标对应地砖类型 */
+    /** 地砖类型与图集坐标映射表（数组下标对应地砖类型，Vec2值对应图集坐标） */
     @property({ type: Vec2, displayName: '地砖类型与图集映射', tooltip: '下标对应地砖类型' })
     minimapSetPoses: Vec2[] = [];
 
-    /** 局部显示 */
+    /** 是否局部显示模式（true: 跟随角色移动的局部地图，false: 全屏静态地图） */
     @property({ displayName: '局部显示' })
     isPart: boolean = false;
 
-    /** 放大倍数 */
+    /** 地图显示放大倍数（仅在局部显示模式生效） */
     @property({ displayName: '放大倍数', visible() { return this.isPart; } })
     scale: number = 3;
 
-    /** 角色节点 */
+    /** 角色参照节点（用于同步位置信息） */
     @property({ type: Node, displayName: '角色节点' })
     roleNode: Node = null;
 
+    /** 地图点击事件处理器（全屏模式专用） */
     @property({ type: no.EventHandlerInfo, displayName: '点击事件', visible() { return !this.isPart; } })
     clickEvent: no.EventHandlerInfo[] = [];
 
-    /** 显示迷你地图的精灵 */
-    // private _minimapSprite: Sprite = null;
-
-    /** 迷你地图缩放比例 */
-    private _minimapScale: number = 1;
-
-    /** 当前位置 */
-    private _curPos: Vec3;
-
-    /** 纹理是否需要更新 */
-    private _textureDirty: boolean = false;
-
-    /** 瓦片图集数据 */
-    private _imageSetTileData: Map<string, ArrayBufferView>;
-
+    // 以下为私有属性 ------------------------------
+    /** 动态图集纹理实例（用于实时生成地图纹理） */
     private _texture: DynamicAtlasTexture = null;
+    /** 地图缩放比例（根据cellSize自动计算） */
+    private _minimapScale: number = 1;
+    /** 当前地图中心位置（世界坐标） */
+    private _curPos: Vec3;
+    /** 纹理脏标记（true时需要更新精灵显示） */
+    private _textureDirty: boolean = false;
+    /** 瓦片纹理数据缓存（key: 地砖类型，value: 纹理buffer） */
+    private _imageSetTileData: Map<string, ArrayBufferView>;
+    /** 临时计算向量1（用于优化内存分配） */
+    private _tempV31: Vec3 = v3();
+    /** 临时计算向量2（用于优化内存分配） */
+    private _tempV32: Vec3 = v3();
 
     /**
-     * 组件加载时的初始化操作
+     * 组件加载初始化
+     * @override
      */
     onLoad() {
         super.onLoad();
-        if (!this.isPart)
+        if (!this.isPart) {
+            // 全屏模式注册点击事件
             this.minimapSprite.node.on(Node.EventType.TOUCH_END, this.onClick, this, true);
+        }
     }
 
     /**
-     * 组件销毁时的清理操作
+     * 组件销毁时清理
+     * @override
      */
     onDestroy(): void {
-        if (!this.isPart)
+        if (!this.isPart) {
             this.minimapSprite.node.off(Node.EventType.TOUCH_END, this.onClick, this, true);
+        }
+        // 释放动态纹理资源
+        this._texture?.destroy();
     }
 
     /**
-     * 数据变更处理
-     * @param data 包含地图信息、移动信息、地砖信息的数据对象
+     * 数据驱动更新处理
+     * @param data 更新数据对象，包含：
+     * - mapInfo: 地图元信息 {width, height, cellSize}
+     * - moveBy: 相对移动量 [x, y]
+     * - tileInfos: 地砖数据数组 {type, x, y}
+     * - startPos: 初始位置 [x, y]
+     * @override
      */
     protected onDataChange(data: any) {
         const { mapInfo, moveBy, tileInfos, startPos } = data;
@@ -138,10 +174,10 @@ export class SetMinimap extends FuckUi {
     }
 
     /**
-     * 初始化迷你地图
-     * @param width 地图宽度
-     * @param height 地图高度
-     * @param cellSize 单元格尺寸
+     * 初始化迷你地图基础参数
+     * @param width 游戏世界地图宽度（单位：地砖数量）
+     * @param height 游戏世界地图高度（单位：地砖数量）
+     * @param cellSize 游戏世界单个地砖尺寸（像素）
      */
     private initMinimap(width: number, height: number, cellSize: number) {
         if (!this.minimapSprite) return;
@@ -165,8 +201,11 @@ export class SetMinimap extends FuckUi {
     }
 
     /**
-     * 设置迷你地图
-     * @param tileInfos 地砖信息数组
+     * 批量绘制地图瓦片
+     * @param tileInfos 地砖数据数组，每个元素包含：
+     * - type: 地砖类型（对应minimapSetPoses下标）
+     * - x: 地砖X坐标（单位：地砖数量）
+     * - y: 地砖Y坐标（单位：地砖数量）
      */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
         if (!this.minimapSprite || tileInfos.length == 0) return;
@@ -180,10 +219,10 @@ export class SetMinimap extends FuckUi {
     }
 
     /**
-     * 绘制单个瓦片
-     * @param x 瓦片的x坐标
-     * @param y 瓦片的y坐标
-     * @param tile 瓦片类型
+     * 绘制单个瓦片到动态纹理
+     * @param x 瓦片X坐标（单位：地砖数量）
+     * @param y 瓦片Y坐标（单位：地砖数量）
+     * @param tile 瓦片类型（对应minimapSetPoses下标）
      */
     protected _drawTile(x: number, y: number, tile: number) {
         const buffer = this._imageSetTileData.get(`${0}`);
@@ -192,7 +231,7 @@ export class SetMinimap extends FuckUi {
     }
 
     /**
-     * 更新迷你地图显示
+     * 更新精灵显示（当纹理变化时调用）
      */
     protected updateMinimap() {
         if (!this._textureDirty) return;
@@ -203,7 +242,7 @@ export class SetMinimap extends FuckUi {
     }
 
     /**
-     * 设置图集瓦片数据
+     * 预生成瓦片纹理数据缓存
      */
     private setImageSetTileData() {
         this._imageSetTileData = new Map();
@@ -215,11 +254,10 @@ export class SetMinimap extends FuckUi {
         }
     }
 
-    private _tempV31: Vec3 = v3();
-    private _tempV32: Vec3 = v3();
     /**
-     * 处理点击事件，点击迷你地图获取点击位置与当前位置的相对位置，并以YJMoveHandle的数据格式返回
+     * 处理地图点击事件（全屏模式专用）
      * @param e 触摸事件对象
+     * @description 计算点击位置的世界坐标，转换为游戏世界坐标后派发事件
      */
     private onClick(e: EventTouch) {
         if (this.isPart) return;
