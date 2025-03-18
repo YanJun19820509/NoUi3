@@ -6,7 +6,8 @@ import {
     Layers,
     CCObject,
     EventTouch,
-    Toggle
+    Toggle,
+    VideoClip
 } from "./yj";
 
 
@@ -3147,6 +3148,10 @@ export namespace no {
 
         public loadAudio(path: string, callback: (item: AudioClip) => void): void {
             this.loadFile(path, AudioClip, callback);
+        }
+
+        public loadVideo(path: string, callback: (item: VideoClip) => void): void {
+            this.loadFile(path, VideoClip, callback);
         }
 
         public loadPrefab(path: string, callback: (item: Prefab) => void): void {
