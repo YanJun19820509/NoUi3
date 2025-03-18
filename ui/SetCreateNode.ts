@@ -179,11 +179,8 @@ export class SetCreateNode extends HackUi {
         
         // 清理定时器和临时数据
         this.unscheduleAllCallbacks();
-        this.a_clearData();
 
         if (this.clearOnDisable) {
-            // 非自动重建模式需要额外清理数据
-            !this.recreateOnEnable && this.a_clearData();
             
             // 销毁所有已创建节点
             for (let i = 0; i < this._items.length; i++) {

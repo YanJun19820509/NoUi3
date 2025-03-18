@@ -316,14 +316,6 @@ export class HackUi extends Component {
     }
 
     /**
-     * @已废弃 请使用clearDataValue代替
-     * @deprecated 由于直接操作数据引用存在风险，建议使用指定key清除方式
-     */
-    public a_clearData() {
-        // 保留方法用于兼容旧代码
-    }
-
-    /**
      * 重置数据状态标记
      * @作用: 将数据标记为脏数据，触发下次syncData时重新刷新UI
      * 
