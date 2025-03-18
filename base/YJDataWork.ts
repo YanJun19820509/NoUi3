@@ -1,6 +1,6 @@
 
 import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple, Node } from '../yj';
-import { FuckUi } from '../fuckui/FuckUi';
+import { HackUi } from '../ui/HackUi';
 import { no } from '../no';
 import { YJDataWorkManager } from './YJDataWorkManager';
 
@@ -37,10 +37,10 @@ export class YJDataWork extends Component {
     }
 
     public set autoRegister(v: boolean) {
-        let list = this.getComponentsInChildren(FuckUi);
+        let list = this.getComponentsInChildren(HackUi);
         for (let i = 0, n = this.subFuckUiNodes.length; i < n; i++) {
             const sub = this.subFuckUiNodes[i];
-            list = list.concat(sub.getComponentsInChildren(FuckUi));
+            list = list.concat(sub.getComponentsInChildren(HackUi));
         }
         for (let i = 0, n = list.length; i < n; i++) {
             const a = list[i];
@@ -73,8 +73,8 @@ export class YJDataWork extends Component {
      * // 包含绑定'hp'的进度条组件
      * // 包含绑定'gold'的文本组件
      */
-    @property({ type: FuckUi })
-    subFuckUis: FuckUi[] = [];
+    @property({ type: HackUi })
+    subFuckUis: HackUi[] = [];
 
     /**
      * 是否启用差异更新
@@ -98,7 +98,7 @@ export class YJDataWork extends Component {
      * // 当'hp'值变化时，更新所有绑定该键的进度条和文本组件
      * this._data2ui.set('hp', [progressBar, textLabel]);
      */
-    protected _data2ui: Map<string, FuckUi[]> = new Map();
+    protected _data2ui: Map<string, HackUi[]> = new Map();
 
     /**
      * 数据存储对象（使用no.js的数据管理）
@@ -382,7 +382,7 @@ export class YJDataWork extends Component {
      * this.onValueChange('exp', newExp);
      */
     private onValueChange(key: string, value?: any) {
-        let ui: FuckUi[] = this.getUis(key);
+        let ui: HackUi[] = this.getUis(key);
         if (value == null) value = this.getValue(key);
         this.setUiData(ui, value);
     }
@@ -399,7 +399,7 @@ export class YJDataWork extends Component {
      * // 设置临时提示UI并自动移除
      * this.setUiData([tempTipUI], '奖励已获得');
      */
-    private setUiData(uis: FuckUi[], data: any) {
+    private setUiData(uis: HackUi[], data: any) {
         if (!uis?.length) return;
         for (let i = 0, n = uis.length; i < n; i++) {
             const ui = uis[i];
@@ -418,7 +418,7 @@ export class YJDataWork extends Component {
      * // 获取所有绑定金币显示的UI
      * const goldUIs = this.getUis('gold');
      */
-    private getUis(key: string): FuckUi[] {
+    private getUis(key: string): HackUi[] {
         return this._data2ui.get(key);
     }
 
@@ -429,10 +429,10 @@ export class YJDataWork extends Component {
      * // 移除过期的提示UI
      * this.remove(expiredTipUI);
      */
-    private remove(ui: FuckUi) {
+    private remove(ui: HackUi) {
         let keys = ui.bindKeys;
         for (let j = 0, n = keys.length; j < n; j++) {
-            let a: FuckUi[] = this.getUis(keys[j]);
+            let a: HackUi[] = this.getUis(keys[j]);
             if (a) {
                 let i = a.indexOf(ui);
                 a.splice(i, 1);

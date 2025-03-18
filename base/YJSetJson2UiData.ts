@@ -1,6 +1,6 @@
 
 import { ccclass, property, menu, Component, Node } from '../yj';
-import { FuckUi } from '../fuckui/FuckUi';
+import { HackUi } from '../ui/HackUi';
 
 /**
  * Predefined variables
@@ -29,8 +29,8 @@ export class Json2UiDataInfo {
     @property({ multiline: true })
     json: string = '';
     /** 目标FuckUi组件（需要数据绑定的UI组件） */
-    @property(FuckUi)
-    ui: FuckUi = null;
+    @property(HackUi)
+    ui: HackUi = null;
 
     /**
      * 执行数据设置

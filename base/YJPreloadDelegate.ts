@@ -15,7 +15,6 @@ import { YJPreload } from './YJPreload';
  */
 
 @ccclass('YJPreloadDelegate')
-@ccclass('YJPreloadDelegate')
 export class YJPreloadDelegate extends Component {
     /**
      * 预加载开始前的回调

@@ -2,13 +2,6 @@ import { no } from "../../no";
 import { ccclass, Component, EditBox, property, Toggle } from "../../yj";
 
 /**
- * 本地缓存组件
- * 支持单选框和输入框
- * onLoad时将读取本地缓存并赋值
- * onChange时将值写入本地缓存
- */
-@ccclass('YJLocalStorage')
-/**
  * 本地存储组件
  * @核心功能
  * - 自动绑定UI组件(Toggle/EditBox)与本地存储

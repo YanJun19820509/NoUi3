@@ -18,8 +18,6 @@ import { no } from '../no';
 
 @ccclass('YJPageView')
 @menu('NoUi/fix/YJPageView(修正拖动问题)')
-@ccclass('YJPageView')
-@menu('NoUi/fix/YJPageView(修正拖动问题)')
 /**
  * 增强版PageView组件，主要功能：
  * 1. 修复原生PageView快速拖动异常问题

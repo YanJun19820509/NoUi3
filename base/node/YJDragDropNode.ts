@@ -1,6 +1,6 @@
 
 import { ccclass, property, Component, Node, EventTouch, math, UITransform, Rect, Vec3, Vec2, Vec4, v4 } from '../../yj';
-import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
+import { SetNodeTweenAction } from '../../ui/SetNodeTweenAction';
 import { no } from '../../no';
 import { YJTouchListener } from '../touch/YJTouchListener';
 import { YJNodeTarget } from './YJNodeTarget';

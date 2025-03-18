@@ -17,9 +17,6 @@ import { no } from '../../no';
 @ccclass('YJPlayVideo')
 @requireComponent(VideoPlayer)
 @executeInEditMode()
-@ccclass('YJPlayVideo')
-@requireComponent(VideoPlayer)
-@executeInEditMode()
 /**
  * 视频播放组件
  * @desc 

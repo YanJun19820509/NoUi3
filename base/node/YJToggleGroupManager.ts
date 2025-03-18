@@ -15,8 +15,7 @@ import { no } from '../../no';
  *
  */
 //无需也不能与ToggleContainer的checkEvents绑定
-@ccclass('YJToggleGroupManager')
-@menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
+
 @ccclass('YJToggleGroupManager')
 @menu('NoUi/node/YJToggleGroupManager(ToggleGroup管理)')
 /**

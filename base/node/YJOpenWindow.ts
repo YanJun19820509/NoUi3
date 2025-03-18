@@ -44,8 +44,6 @@ export class OpenWindowInfo {
 
 @ccclass('YJOpenWindow')
 @menu('NoUi/node/YJOpenWindow(打开窗口)')
-@ccclass('YJOpenWindow')
-@menu('NoUi/node/YJOpenWindow(打开窗口)')
 /**
  * 窗口管理组件
  * @remarks

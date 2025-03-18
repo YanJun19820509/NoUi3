@@ -21,10 +21,6 @@ import { YJGoToTarget } from './YJGoToTarget';
 @ccclass('YJGoToManager')
 /**
  * 跳转管理类,用于管理游戏中的功能跳转
- */
-@ccclass('YJGoToManager')
-/**
- * 跳转管理类,用于管理游戏中的功能跳转
  * @核心职责
  * - 通过配置代理获取跳转信息
  * - 管理跳转流程的生命周期

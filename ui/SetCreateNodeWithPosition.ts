@@ -1,0 +1,190 @@
+
+import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
+import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJDataWork } from '../base/YJDataWork';
+import { YJJobManager } from '../base/YJJobManager';
+import { no } from '../no';
+import { HackUi } from './HackUi';
+
+/**
+ * Predefined variables
+ * Name = SetCreateNodeWithPosition
+ * DateTime = Sat Nov 19 2022 17:28:44 GMT+0800 (中国标准时间)
+ * Author = mqsy_yj
+ * FileBasename = SetCreateNodeWithPosition.ts
+ * FileBasenameNoExtension = SetCreateNodeWithPosition
+ * URL = db://assets/NoUi3/ui/SetCreateNodeWithPosition.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
+ *
+ */
+
+@ccclass('PositionInfo')
+export class PositionInfo {
+    @property(Vec3)
+    positions: Vec3[] = [];
+}
+
+@ccclass('SetCreateNodeWithPosition')
+@executeInEditMode()
+export class SetCreateNodeWithPosition extends HackUi {
+    @property({ type: YJLoadPrefab, displayName: '元素预制体' })
+    loadPrefab: YJLoadPrefab = null;
+    @property({ type: Node, displayName: '元素模板' })
+    template: Node = null;
+    @property({ tooltip: 'disable时清除子节点' })
+    clearOnDisable: boolean = false;
+    @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
+    recreateOnEnable: boolean = false;
+
+    @property({ type: Node, displayName: '容器' })
+    container: Node = null;
+    @property({ type: PositionInfo })
+    positionTypes: PositionInfo[] = [];
+    @property({ editorOnly: true })
+    saveCurrentPositions: boolean = false;
+    @property({ editorOnly: true })
+    previewNum: number = 0;
+    @property({ editorOnly: true })
+    previewCreate: boolean = false;
+    @property({ type: no.EventHandlerInfo })
+    afterCreated: no.EventHandlerInfo[] = [];
+
+    private _isSettingData: boolean = false;
+
+    update() {
+        if (EDITOR) {
+            if (this.saveCurrentPositions) {
+                this.saveCurrentPositions = false;
+                let pos: Vec3[] = [];
+                for (let i = 0; i < this.node.children.length; i++) {
+                    const child = this.node.children[i];
+                    pos[pos.length] = child.position.clone();
+                }
+                let setted = false;
+                for (let i = 0, n = this.positionTypes.length; i < n; i++) {
+                    const info = this.positionTypes[i];
+                    if (info.positions.length == pos.length) {
+                        setted = true;
+                        info.positions = pos;
+                        break;
+                    }
+                }
+                if (!setted) {
+                    const info = new PositionInfo();
+                    info.positions = pos;
+                    this.positionTypes[this.positionTypes.length] = info;
+                }
+            }
+            if (this.previewCreate) {
+                this.previewCreate = false;
+                let posinfo = this.getPositions(this.previewNum);
+                if (!posinfo) return;
+                let size = this.template?.getComponent(UITransform).contentSize.clone() || math.size(100, 100);
+                for (let i = 0; i < posinfo.positions.length; i++) {
+                    let node = new Node();
+                    node.addComponent(UITransform).setContentSize(size);
+                    node.setPosition(posinfo.positions[i]);
+                    node.parent = this.container;
+                }
+            }
+        }
+    }
+
+    onDestroy() {
+        if (this.loadPrefab && this.template && this.template.isValid)
+            this.template.destroy();
+    }
+
+    onEnable() {
+        if (this._isSettingData) return;
+        if (this.clearOnDisable && this.recreateOnEnable) {
+            this.resetData();
+        }
+    }
+
+    onDisable() {
+        if (this._isSettingData) return;
+        this.unscheduleAllCallbacks();
+        this.a_clearData();
+        if (this.clearOnDisable) {
+            for (let i = 0; i < this.container?.children.length; i++) {
+                this.container.children[i].destroy();
+            }
+        }
+    }
+
+    protected async onDataChange(data: any) {
+        if (!this.template) {
+            this.template = await this.loadPrefab.loadPrefab();
+            if (!this?.node?.isValid) return;
+        }
+        this._isSettingData = true;
+
+        this.setItems([].concat(data));
+    }
+
+    protected setItems(data: any[]) {
+        if (!this.container) this.container = this.node;
+
+        let n = data.length;
+        let l = this.container.children.length;
+        for (let i = 0; i < l; i++) {
+            no.visible(this.container.children[i], !!data[i]);
+        }
+
+        let positionInfo = this.getPositions(n);
+        if (n > l) {
+            let max = n;
+            while (max > 0) {
+                let item = instantiate(this.template);
+                // item.active = true;
+                item.setPosition(positionInfo.positions[this.container.children.length]);
+                item.parent = this.container;
+                // no.visible(item, false);
+                max--;
+            }
+        } else if (n - l == 1) {
+            let item = instantiate(this.template);
+            // item.active = true;
+            item.setPosition(positionInfo.positions[this.container.children.length]);
+            item.parent = this.container;
+            // no.visible(item, false);
+        }
+        for (let i = 0; i < n; i++) {
+            this.setItem(data, 0, i);
+        }
+        this._isSettingData = false;
+        no.EventHandlerInfo.execute(this.afterCreated);
+    }
+
+    private setItem(data: any[], start: number, i: number) {
+        if (data[i] == null) {
+            return;
+        }
+        let item = this.container.children[start + i];
+        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            a.data = data[i];
+            a.init();
+        }
+        no.visible(item, true);
+    }
+
+    private getPositions(len: number): PositionInfo {
+        for (let i = 0, n = this.positionTypes.length; i < n; i++) {
+            const info = this.positionTypes[i];
+            if (info.positions.length == len) return info;
+        }
+        return null;
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
+        if (!this.container) this.container = this.node;
+    }
+}

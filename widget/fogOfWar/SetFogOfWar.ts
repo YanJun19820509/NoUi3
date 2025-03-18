@@ -1,5 +1,5 @@
 import { DynamicAtlasTexture } from "NoUi3/engine/atlas";
-import { FuckUi } from "NoUi3/fuckui/FuckUi";
+import { HackUi } from "NoUi3/ui/HackUi";
 import { no } from "NoUi3/no";
 import { ccclass, property, Sprite, SpriteFrame, requireComponent, size, Vec2, v2, v3 } from "NoUi3/yj";
 
@@ -30,7 +30,7 @@ import { ccclass, property, Sprite, SpriteFrame, requireComponent, size, Vec2, v
  * this.getComponent(SetFogOfWar).onDataChange({ pos: [x, y] });
  */
 @requireComponent([Sprite])
-export class SetFogOfWar extends FuckUi {
+export class SetFogOfWar extends HackUi {
     /** 可视范围半径（基于实际地图尺寸） */
     @property({ displayName: '视野半径', tooltip: '相对于实际地图的半径范围' })
     visionRadius: number = 50;

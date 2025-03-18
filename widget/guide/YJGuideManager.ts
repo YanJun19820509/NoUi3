@@ -18,7 +18,6 @@ import { Component, DEBUG, ccclass, property } from '../../yj';
 
  */
 @ccclass('YJGuideManager')
-@ccclass('YJGuideManager')
 /**
  * 新手引导系统核心管理器
  * @example

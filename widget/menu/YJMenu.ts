@@ -1,6 +1,6 @@
 import { YJHintWatcher } from "../../base/YJHintWatcher";
 import { YJToggleGroupManager } from "../../base/node/YJToggleGroupManager";
-import { FuckUi } from "../../fuckui/FuckUi";
+import { HackUi } from "../../ui/HackUi";
 import { no } from "../../no";
 import { Component, ccclass, property, Node, instantiate, Label, requireComponent, Toggle } from "../../yj";
 import { YJCharLabel } from "../charLabel/YJCharLabel";
@@ -103,7 +103,7 @@ export class YJMenu extends Component {
                 // 更新所有找到的文本组件
                 for (let j = 0; j < list.length; j++) {
                     const a = list[j];
-                    a.getComponent(FuckUi)?.a_setData(info.title);
+                    a.getComponent(HackUi)?.a_setData(info.title);
                 }
             }
 

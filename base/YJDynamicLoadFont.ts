@@ -1,8 +1,6 @@
 import { no } from "../no";
 import { Component, Font, Label, RichText, ccclass, property, requireComponent } from "../yj";
 
-//动态加载字体
-@ccclass('YJDynamicLoadFont')
 /**
  * 动态字体加载组件
  * @description 实现运行时动态加载字体资源并应用到文本组件

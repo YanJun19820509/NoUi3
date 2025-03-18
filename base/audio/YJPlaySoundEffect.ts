@@ -23,7 +23,6 @@ export enum SoundEffectType {
 }
 
 @ccclass('YJPlaySoundEffect')
-@ccclass('YJPlaySoundEffect')
 export class YJPlaySoundEffect extends Component {
     /** 
      * 音效类型

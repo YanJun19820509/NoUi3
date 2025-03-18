@@ -1,6 +1,6 @@
 
 import { ccclass, property, menu, requireComponent, executeInEditMode, Component, Node, Sprite } from '../../yj';
-import { SetEffect } from '../../fuckui/SetEffect';
+import { SetEffect } from '../../ui/SetEffect';
 import { no } from '../../no';
 
 /**

@@ -2,7 +2,7 @@
 import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3, isValid } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJFitScreen } from '../../base/YJFitScreen';
-import { SetNodeTweenAction } from '../../fuckui/SetNodeTweenAction';
+import { SetNodeTweenAction } from '../../ui/SetNodeTweenAction';
 import { no } from '../../no';
 
 /**

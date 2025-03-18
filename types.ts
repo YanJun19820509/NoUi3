@@ -1,4 +1,4 @@
-import { SetMoveAlongWithPath } from './fuckui/SetMoveAlongWithPath';
+import { SetMoveAlongWithPath } from './ui/SetMoveAlongWithPath';
 import { no } from './no';
 import { Asset, Bundle, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
 

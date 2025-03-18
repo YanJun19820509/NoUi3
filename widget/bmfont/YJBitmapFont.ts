@@ -16,9 +16,6 @@ import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManage
  *
  */
 
-@ccclass('YJBitmapFont')
-@requireComponent([Label])
-@executeInEditMode()
 /**
  * 位图字体组件，用于动态管理Label的位图字体
  * @example

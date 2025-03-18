@@ -1,5 +1,5 @@
 import { ccclass, property, view, Node, instantiate, v3, Vec3, ImageAsset, Vec2, v2, Mask, Sprite, Texture2D, size, SpriteFrame } from 'NoUi3/yj';
-import { FuckUi } from 'NoUi3/fuckui/FuckUi';
+import { HackUi } from 'NoUi3/ui/HackUi';
 import { no } from 'NoUi3/no';
 import { YJDataWork } from 'NoUi3/base/YJDataWork';
 
@@ -22,7 +22,7 @@ import { YJDataWork } from 'NoUi3/base/YJDataWork';
  * 动态地图组件
  * 
  */
-export class SetDynamicMap extends FuckUi {
+export class SetDynamicMap extends HackUi {
     /**
      * 元素模板节点
      * 元素模板内不需要SetPosition组件，也不需要添加设置坐标的逻辑，本组件内会主动按需要修改子元素的坐标

@@ -17,8 +17,6 @@ import { YJWindowManager } from './node/YJWindowManager';
 
 @ccclass('YJGameState')
 @menu('NoUi/base/YJGameState(游戏状态)')
-@ccclass('YJGameState')
-@menu('NoUi/base/YJGameState(游戏状态)')
 /**
  * 游戏状态管理组件
  * @description 处理游戏生命周期事件（后台/前台切换、内存警告）、游戏重启/退出逻辑

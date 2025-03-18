@@ -19,11 +19,6 @@ import { YJAudioManager } from './YJAudioManager';
 @menu('NoUi/audio/YJAudioPlayer(音频播放)')
 /**
  * 音频播放组件,用于播放音频剪辑
- */
-@ccclass('YJAudioPlayer')
-@menu('NoUi/audio/YJAudioPlayer(音频播放)')
-/**
- * 音频播放组件,用于播放音频剪辑
  * @特性
  * - 支持背景音乐与音效两种播放模式
  * - 自动管理音频资源路径信息

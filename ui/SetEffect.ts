@@ -1,0 +1,137 @@
+
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
+import { no } from '../no';
+import { HackUi } from './HackUi';
+import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransition';
+
+/**
+ * Predefined variables
+ * Name = SetEffect
+ * DateTime = Sat Mar 19 2022 14:44:45 GMT+0800 (中国标准时间)
+ * Author = mqsy_yj
+ * FileBasename = SetEffect.ts
+ * FileBasenameNoExtension = SetEffect
+ * URL = db://assets/NoUi3/ui/SetEffect.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
+ *
+ */
+
+/**
+ * data:{
+ * path:'filepath',
+ * defines:{key:boolean},
+ * properties:{key:any}
+ * },
+ * 
+ * 如果对graphics设置效果，请使用SetGraphicsEffect
+ */
+@ccclass('SetEffect')
+@menu('NoUi/ui/SetEffect(设置shader:object)')
+export class SetEffect extends HackUi {
+    protected _renderComp: UIRenderer;
+
+    protected onDataChange(data: any) {
+        if (!this._renderComp) {
+            this._renderComp = this.getComponent(UIRenderer);
+            if (!this._renderComp) return;
+        }
+        let { path, properties, defines }: { path: string, properties: any, defines: any } = data;
+        this.setMaterial(path, defines, properties);
+    }
+
+    protected setMaterial(path: string, defines: any, properties: any) {
+        if (!path) {
+            YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
+        }
+        else if (this._renderComp.material.effectName == `../${path}`) {
+            this.setProperties(this._renderComp.material, defines, properties);
+            this.work();
+        }
+        else if (path)
+            no.assetBundleManager.loadEffect(path, item => {
+                const material = new Material();
+                material.initialize({
+                    effectAsset: item
+                });
+                this._renderComp.material = material;
+                this.setProperties(this._renderComp.material, defines, properties);
+                this.work();
+            });
+        else this.reset();
+    }
+
+    protected setProperties(material?: Material, defines?: any, properties?: any) {
+        if (!material) return;
+        if (defines)
+            material.recompileShaders(defines);
+        if (properties)
+            for (const key in properties) {
+                if (no.materialHasProperty(material, 0, 0, key)) {
+                    let v: number | Vec2 | Vec3 | Vec4,
+                        p = [].concat(properties[key]);
+                    switch (p.length) {
+                        case 1:
+                            v = p[0];
+                            break;
+                        case 2:
+                            v = v2(p[0], p[1]);
+                            break;
+                        case 3:
+                            v = v3(p[0], p[1], p[2]);
+                            break;
+                        case 4:
+                            v = v4(p[0], p[1], p[2], p[3]);
+                            break;
+                    }
+                    material.setProperty(key, v);
+                }
+            }
+    }
+
+    //计算frame在合图中的实际rect
+    private caculateFact() {
+        //当多个组件使用同一个材质时，需要使用sharedMaterial
+        let material = this._renderComp.sharedMaterial || this._renderComp.material;
+        if (!material || !material.effectAsset) return;
+        let f: SpriteFrame, texture: Texture2D;
+        if (this._renderComp instanceof Sprite) {
+            f = this._renderComp.spriteFrame;
+            texture = f.texture as Texture2D;
+        } else if (this._renderComp instanceof Label) {
+            f = this._renderComp['_ttfSpriteFrame'];
+            if (!f) return;
+            texture = f.texture as Texture2D;
+        }
+
+        let fr = `factRect`;
+        if (no.materialHasProperty(material, 0, 0, fr))
+            material.setProperty(fr, new Vec4(f.uv[4], f.uv[5], f.uv[2] - f.uv[4], f.uv[3] - f.uv[5]));
+
+        let r = `ratio`;
+        if (no.materialHasProperty(material, 0, 0, r))
+            material.setProperty(r, texture.width / texture.height);
+    }
+
+    /**
+     * work
+     */
+    public work() {
+        if (!this._renderComp) {
+            this._renderComp = this.getComponent(UIRenderer);
+            if (!this._renderComp) return;
+        }
+        if (!this._renderComp['spriteFrame'] && !this._renderComp['_ttfSpriteFrame']) {
+            this.scheduleOnce(() => {
+                this.work();
+            }, 0);
+            return;
+        }
+        this.caculateFact();
+    }
+
+    public reset(): void {
+        this._renderComp.material = null;
+        this._renderComp.customMaterial = null;
+        this._renderComp.markForUpdateRenderData();
+    }
+}

@@ -327,8 +327,6 @@ class YJVertexColorTransitionData {
 
 @ccclass('YJVertexColorTransitionManager')
 @singleObject()
-@ccclass('YJVertexColorTransitionManager')
-@singleObject()
 /**
  * 顶点颜色过渡效果管理器（单例模式）
  * @classdesc 

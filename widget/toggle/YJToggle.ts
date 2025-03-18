@@ -27,7 +27,6 @@ import { ccclass, property, Toggle, Sprite } from '../../yj';
  * // 2. 配置checkMark属性为选中状态图标
  * // 3. 添加点击事件处理程序
  */
-@ccclass('YJToggle')
 export class YJToggle extends Toggle {
     @property({
         type: Sprite,

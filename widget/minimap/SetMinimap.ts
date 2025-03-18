@@ -1,5 +1,5 @@
 import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
-import { FuckUi } from 'NoUi3/fuckui/FuckUi';
+import { HackUi } from 'NoUi3/ui/HackUi';
 import { no } from 'NoUi3/no';
 import { ccclass, Sprite, Node, Vec2, property, SpriteFrame, Texture2D, Vec3, v3, rect, EventTouch, size } from 'NoUi3/yj';
 import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
@@ -44,7 +44,7 @@ import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
  *     cc.log('Move to:', data.pos);
  * });
  */
-export class SetMinimap extends FuckUi {
+export class SetMinimap extends HackUi {
     /** 迷你地图显示精灵组件（需提前拖入编辑器） */
     @property({ type: Sprite, displayName: '迷你地图节点' })
     minimapSprite: Sprite = null;

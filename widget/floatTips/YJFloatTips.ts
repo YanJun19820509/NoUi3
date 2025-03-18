@@ -16,7 +16,6 @@ import { EasingTypeName } from 'NoUi3/types';
  *
  */
 
-@ccclass('YJFloatTips')
 /**
  * 浮动提示组件，用于显示渐入渐出的文字提示
  * @example

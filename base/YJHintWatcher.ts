@@ -1,6 +1,6 @@
 
 import { ccclass, property, menu, Component, Node } from '../yj';
-import { SetHint } from '../fuckui/SetHint';
+import { SetHint } from '../ui/SetHint';
 import { no } from '../no';
 
 /**
@@ -15,8 +15,6 @@ import { no } from '../no';
  *
  */
 
-@ccclass('YJHintWatcher')
-@menu('NoUi/base/YJHintWatcher(红点监听)')
 @ccclass('YJHintWatcher')
 @menu('NoUi/base/YJHintWatcher(红点监听)')
 /**

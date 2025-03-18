@@ -27,9 +27,6 @@ import { YJSample2DMaterialManager } from './YJSample2DMaterialManager';
 @ccclass('YJDynamicTexture')
 @disallowMultiple()
 @executeInEditMode()
-@ccclass('YJDynamicTexture')
-@disallowMultiple()
-@executeInEditMode()
 export class YJDynamicTexture extends Component {
     /** 是否需要清除已有动态合图缓存（修改后需手动清除） */
     @property

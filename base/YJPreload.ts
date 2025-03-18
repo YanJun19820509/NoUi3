@@ -75,7 +75,6 @@ const enum PreloadState {
     LoadingScene
 }
 
-@ccclass('PrefabFileInfo')
 /**
  * 预制体文件信息配置类
  * @description 用于在编辑器中配置预制体文件信息，并自动获取资源元数据

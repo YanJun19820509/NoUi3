@@ -28,10 +28,6 @@ export class SoundEffectInfo {
 @ccclass('YJSoundEffectManager')
 /**
  * 音效管理类,用于管理游戏中的音效播放
- */
-@ccclass('YJSoundEffectManager')
-/**
- * 音效管理类,用于管理游戏中的音效播放
  * @特性
  * - 提供音效别名系统，解耦资源路径与业务逻辑
  * - 支持编辑器快速解析音频资源

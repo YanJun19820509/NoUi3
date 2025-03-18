@@ -10,14 +10,6 @@ import { PrefabInfo } from 'NoUi3/types';
  * 预制体加载组件
  * Author mqsy_yj
  * DateTime 2024/1/8
- */
-@ccclass
-@menu('NoUi/node/YJLoadPrefab(加载预制体)')
-@executeInEditMode()
-/**
- * 预制体加载组件
- * Author mqsy_yj
- * DateTime 2024/1/8
  * 
  * @remarks
  * 功能特性：

@@ -4,8 +4,6 @@ import { ccclass, Texture2D } from "../yj";
 
 @ccclass('YJTextureManager')
 @singleObject()
-@ccclass('YJTextureManager')
-@singleObject()
 class _YJTextureManager extends no.SingleObject {
     /** 纹理缓存映射表 key:资源路径 value:纹理资源对象 */
     private textureMap: { [key: string]: { texture: Texture2D, ref: number, time: number, size: number } } = {};

@@ -21,9 +21,6 @@ import { YJDataWork } from './YJDataWork';
 @ccclass('YJCreateNode')
 @menu('NoUi/base/YJCreateNode(创建节点)')
 @executeInEditMode()
-@ccclass('YJCreateNode')
-@menu('NoUi/base/YJCreateNode(创建节点)')
-@executeInEditMode()
 /**
  * 节点创建组件
  * @description 提供节点创建和对象池复用功能，支持预制体加载和模板节点实例化

@@ -1,0 +1,151 @@
+
+import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, Prefab, UITransform, math } from '../yj';
+import { YJDataWork } from '../base/YJDataWork';
+import { YJLoadAssets } from '../editor/YJLoadAssets';
+import { no } from '../no';
+import { HackUi } from './HackUi';
+
+/**
+ * Predefined variables
+ * Name = SetCreateNodeByUrl
+ * DateTime = Fri Mar 25 2022 15:10:40 GMT+0800 (中国标准时间)
+ * Author = mqsy_yj
+ * FileBasename = SetCreateNodeByUrl.ts
+ * FileBasenameNoExtension = SetCreateNodeByUrl
+ * URL = db://assets/NoUi3/ui/SetCreateNodeByUrl.ts
+ * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
+ *
+ */
+
+/**
+ * 参数 : {
+ *  url: string,
+ *  data: array
+ * }
+ */
+@ccclass('SetCreateNodeByUrl')
+@menu('NoUi/ui/SetCreateNodeByUrl(根据prefab的url动态创建节点:object)')
+@executeInEditMode()
+export class SetCreateNodeByUrl extends HackUi {
+
+    @property({ type: Node, displayName: '容器' })
+    container: Node = null;
+    @property({ tooltip: '根据子节点大小重置宽高，当子节点个数大于1时不生效' })
+    resize: boolean = false;
+    @property({ tooltip: 'disable时清除子节点' })
+    clearOnDisable: boolean = false;
+
+    private url: string;
+    private needDestroyChildrenUuid: string[] = [];
+    private isDestroied: boolean = false;
+    private prefab: Prefab;
+
+
+    onDisable() {
+        this.a_clearData();
+        if (this.clearOnDisable) {
+            this.clear(true);
+        }
+    }
+
+    onDestroy() {
+        this.isDestroied = true;
+    }
+
+    protected onDataChange(d: any) {
+        let { url, data }: { url: string, data: any[] } = d;
+        if (url && this.url != url) {
+            this.url = url;
+            no.assetBundleManager.loadPrefab(url, item => {
+                if (!this?.node?.isValid) return;
+                if (data.length == 1) this.resizeContentSize(item.data);
+                this.prefab = item;
+                this.setNeedDestroyChildren();
+                this.setItems(data).then(() => {
+                    this.clear();
+                }).catch(e => no.err('createnodebyurl', e.message));
+            });
+        } else {
+            this.setItems(data);
+        }
+    }
+
+    private async setItems(data: any[]) {
+        if (!this.prefab) return;
+        if (!this.container) this.container = this.node;
+        if (!this.container?.isValid || this.isDestroied) return;
+        let n = data.length
+        let l = this.container.children.length - this.needDestroyChildrenUuid.length;
+        if (l < n) {
+            for (let i = l; i < n; i++) {
+                let item = instantiate(this.prefab);
+                if (item.getComponent(YJLoadAssets)) {
+                    await item.getComponent(YJLoadAssets).load();
+                    if (!this?.node?.isValid) return;
+                }
+                item.active = true;
+                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                if (a) {
+                    a.data = data[i];
+                }
+                item.parent = this.container;
+
+            }
+        }
+        for (let i = 0; i < l; i++) {
+            let item = this.container.children[i];
+            if (data[i] == null) //item.active = false;
+                no.visible(item, false);
+            else {
+                no.visible(item, true);
+                // item.active = true;
+                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                if (a) {
+                    a.data = data[i];
+                    a.init();
+                }
+            }
+        }
+    }
+
+    private resizeContentSize(child: Node) {
+        if (!this.resize) return;
+        let scale = child.scale;
+        let size = child.getComponent(UITransform).contentSize.clone();
+        size.width *= scale.x;
+        size.height *= scale.y;
+        this.container.getComponent(UITransform).contentSize = size;
+    }
+
+    private clear(all = false) {
+        for (let i = 0; i < this.container?.children.length; i++) {
+            const child = this.container.children[i];
+            if (all || this.needDestroyChildrenUuid.indexOf(child.uuid) != -1)
+                child.destroy();
+        }
+        if (!this.isValid) return;
+        if (this.needDestroyChildrenUuid)
+            this.needDestroyChildrenUuid.length = 0;
+    }
+
+    private setNeedDestroyChildren() {
+        if (this.needDestroyChildrenUuid)
+            this.needDestroyChildrenUuid.length = 0;
+        for (let i = 0; i < this.container?.children.length; i++) {
+            const child = this.container.children[i];
+            this.needDestroyChildrenUuid[this.needDestroyChildrenUuid.length] = child.uuid;
+            // child.active = false;
+            no.visible(child, false);
+        }
+    }
+
+    ///////////////////////////EDITOR///////////////
+    onLoad() {
+        this.isDestroied = false;
+        super.onLoad();
+        if (!EDITOR) {
+            return;
+        }
+        if (!this.container) this.container = this.node;
+    }
+}
