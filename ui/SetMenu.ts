@@ -13,11 +13,21 @@ import { HackUi } from './HackUi';
 @requireComponent(YJMenu)
 export class SetMenu extends HackUi {
 
-    onDisable() {
-        this.a_clearData();
-    }
-
+    /**
+     * 数据变更时的回调方法
+     * @param data - 菜单配置数据，应为数组格式，每个元素包含菜单项配置
+     *        @example 
+     *        [
+     *          { title: '首页', redHintKeys?: 'home' },
+     *          { title: '设置', redHintKeys?: 'settings' }
+     *        ]
+     * @description 根据传入的数据动态创建菜单项，数据格式需符合YJMenu组件要求
+     * 会完全重建菜单，适合数据量较小的场景（建议不超过50个菜单项）
+     */
     protected onDataChange(data: any) {
-        this.getComponent(YJMenu).createMenu(data);
+        // 获取挂载的YJMenu组件实例
+        const menuComponent = this.getComponent(YJMenu);
+        // 调用菜单创建方法，传入格式化后的配置数据
+        menuComponent.createMenu(data);
     }
 }
