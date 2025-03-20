@@ -168,23 +168,25 @@ export class SetCreateNode extends FuckUi {
         let start = !this.onlyAdd ? 0 : l;
         if (immediate) {
             for (let i = start, len = data.length; i < len; i++) {
-                this.setItem(data, i, immediate);
+                this.setItem(data, i, true);
             }
-        } else if (this.uiAnim?.enabled) {
+            return;
+        }
+        if (this.uiAnim?.enabled) {
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
-                    this.setItem(data, start++, immediate);
+                    this.setItem(data, start++);
                 }
             }, 0.1, Math.ceil((data.length - start) / this.batchNum));
         } else {
             if (!this.isFirst) {
                 this.isFirst = false;
                 this.schedule(() => {
-                    this.setItem(data, start++, immediate);
+                    this.setItem(data, start++);
                 }, 0.1, data.length - start);
             } else {
                 for (let i = start, len = data.length; i < len; i++) {
-                    this.setItem(data, i, immediate);
+                    this.setItem(data, i);
                 }
             }
         }
@@ -243,7 +245,8 @@ export class SetCreateNode extends FuckUi {
             a.init();
         }
         no.visible(item, true);
-        if (this.uiAnim?.enabled && !immediate) {
+        if (immediate) return;
+        if (this.uiAnim?.enabled) {
             this.uiAnim.play(item);
         }
     }
