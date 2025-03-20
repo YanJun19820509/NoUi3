@@ -286,7 +286,16 @@ export class YJDataWork extends Component {
     public setValue(key: string, value: any) {
         this.bindSubFuckUis();
         this._data?.set(key, value, this.onlyDiff);
-        this.onValueChange(key, value);
+        return this.repeatSetValue(key);
+    }
+
+    /**
+     * 重复设置值，并触发onValueChange回调
+     * @param key 数据的key
+     * @returns {YJDataWork} 返回自身以支持链式调用
+     */
+    public repeatSetValue(key: string) {
+        this.onValueChange(key);
         return this;//支持链式写法
     }
 
@@ -305,8 +314,7 @@ export class YJDataWork extends Component {
     public resetValue(key: string, value: any) {
         this.bindSubFuckUis();
         this._data?.set(key, value, false);
-        this.onValueChange(key, value);
-        return this;//支持链式写法
+        return this.repeatSetValue(key);
     }
 
     /**
@@ -381,10 +389,9 @@ export class YJDataWork extends Component {
      * // 当经验值变化时自动更新经验条和等级显示
      * this.onValueChange('exp', newExp);
      */
-    private onValueChange(key: string, value?: any) {
+    private onValueChange(key: string) {
         let ui: HackUi[] = this.getUis(key);
-        if (value == null) value = this.getValue(key);
-        this.setUiData(ui, value);
+        this.setUiDataDirty(ui);
     }
 
     /**
@@ -394,12 +401,12 @@ export class YJDataWork extends Component {
      * @remarks 会标记UI数据脏状态，若为一次性UI则自动移除绑定
      * @example
      * // 设置多个分数显示UI
-     * this.setUiData([scoreUI1, scoreUI2], 100);
+     * this.setUiDataDirty([scoreUI1, scoreUI2], 100);
      * 
      * // 设置临时提示UI并自动移除
-     * this.setUiData([tempTipUI], '奖励已获得');
+     * this.setUiDataDirty([tempTipUI], '奖励已获得');
      */
-    private setUiData(uis: HackUi[], data: any) {
+    private setUiDataDirty(uis: HackUi[]) {
         if (!uis?.length) return;
         for (let i = 0, n = uis.length; i < n; i++) {
             const ui = uis[i];

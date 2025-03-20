@@ -38,7 +38,7 @@ export class SetCreateNode extends HackUi {
     /** 预制体加载组件（优先使用template时可不设置） */
     @property({ type: YJLoadPrefab, displayName: '元素预制体' })
     loadPrefab: YJLoadPrefab = null;
-    
+
     /** 
      * 元素模板节点（优先使用预制体时可不设置）
      * @example 
@@ -68,7 +68,7 @@ export class SetCreateNode extends HackUi {
     /** 是否限制创建数量 */
     @property({ displayName: '仅创建部分' })
     createPart: boolean = false;
-    
+
     /** 
      * 最大创建数量
      * @example 当数据源有100条时，设置createNum=5将只创建前5个节点
@@ -106,7 +106,7 @@ export class SetCreateNode extends HackUi {
      */
     @property({ tooltip: '针对有YJDynamicAtlas组件的预制体' })
     onlyOne: boolean = false;
-    
+
     /** 
      * 批量创建数量（动画优化用）
      * @description 当需要播放创建动画时，分批创建可优化性能
@@ -121,7 +121,7 @@ export class SetCreateNode extends HackUi {
      */
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
-    
+
     /** 组件启用时自动重建 */
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
     recreateOnEnable: boolean = false;
@@ -176,12 +176,12 @@ export class SetCreateNode extends HackUi {
     onDisable() {
         if (EDITOR) return; // 编辑器环境不执行
         if (this._isSettingData) return; // 数据设置中跳过
-        
+
         // 清理定时器和临时数据
         this.unscheduleAllCallbacks();
 
         if (this.clearOnDisable) {
-            
+
             // 销毁所有已创建节点
             for (let i = 0; i < this._items.length; i++) {
                 this._items[i].destroy();
@@ -196,6 +196,7 @@ export class SetCreateNode extends HackUi {
         }
     }
 
+    private _data: any[];
     /**
      * 数据变更处理
      * @param data 输入数据，支持单对象或数组格式
@@ -213,14 +214,14 @@ export class SetCreateNode extends HackUi {
         }
 
         this._isSettingData = true; // 加数据设置锁
-        
+
         // 数据标准化处理
         data = [].concat(data); // 统一转为数组
         if (this.createPart) {
             data = (data as any[]).slice(0, this.createNum); // 截取指定数量
         }
-
-        this.setItems(data); // 执行节点创建/更新
+        this._data = data;
+        this.setItems(); // 执行节点创建/更新
     }
 
     /**
@@ -240,29 +241,18 @@ export class SetCreateNode extends HackUi {
      * // 快速创建100个节点：
      * setItems(new Array(100).fill({})); // 使用JobManager优化性能
      */
-    protected setItems(data: any[]) {
+    protected setItems(immediate: boolean = false) {
         // 容器初始化检查
         if (!this.container) this.container = this.node;
         if (!this.container) {
             console.error('SetCreateNode: container is null', this.bind_keys);
             return;
         }
-
+        const data = this._data;
         // 单节点特殊处理模式
         if (this.onlyOne) {
             this.setDynamicAtlasNode(data[0]);
             return;
-        }
-
-        // 节点复用逻辑
-        const l = this._items.length;
-        if (l === 0) this._1b1 = this.isFirst; // 首次运行标记
-        
-        // 非增量模式时隐藏多余节点
-        if (!this.onlyAdd) {
-            for (let i = l - 1; i >= 0; i--) {
-                no.visible(this._items[i], !!data[i]);
-            }
         }
 
         // 空数据处理
@@ -273,10 +263,28 @@ export class SetCreateNode extends HackUi {
             return;
         }
 
+        // 节点复用逻辑
+        const l = this._items.length;
+        if (l === 0) this._1b1 = this.isFirst; // 首次运行标记
+
+        // 非增量模式时隐藏多余节点
+        if (!this.onlyAdd) {
+            for (let i = n; i < l; i++) {
+                no.visible(this._items[i], false);
+            }
+        }
+
         // 批量创建调度逻辑
         const start = !this.onlyAdd ? 0 : l; // 起始索引计算
         let dataIdx = 0; // 数据索引指针
-        
+
+        if (immediate) {
+            for (let i = 0; i < n; i++) {
+                this.setItem(data, start, dataIdx++, true);
+            }
+            return;
+        }
+
         if (this.uiAnim?.enabled || this._1b1) {
             // 动画模式/首次创建：分批次定时创建
             this._1b1 = false; // 重置首次标记
@@ -317,12 +325,12 @@ export class SetCreateNode extends HackUi {
     private initItem(item: Node) {
         // 重置节点位置到原点
         no.position(item, v3(0, 0));
-        
+
         // 需要动画效果或首次创建时创建包装容器
         if (this.uiAnim?.enabled || this.isFirst) {
             const box = no.newNode('box'); // 创建布局容器节点
             box.addComponent(UIOpacity); // 添加透明度组件用于动画效果
-            
+
             // 处理布局属性复制
             const layout = item.getComponent(Layout);
             if (!layout) {
@@ -346,7 +354,7 @@ export class SetCreateNode extends HackUi {
                 bLayout.horizontalDirection = layout.horizontalDirection;
                 bLayout.constraint = layout.constraint;
             }
-            
+
             // 保持原始锚点设置
             const a = no.anchor(item);
             no.anchor(box, a.x, a.y);
@@ -374,9 +382,9 @@ export class SetCreateNode extends HackUi {
      * setItem([data1, data2, data3], 0, 1)
      * setItem([data1, data2, data3], 0, 2)
      */
-    private setItem(data: any[], childIdxStart = 0, dataIdx = 0) {
+    private setItem(data: any[], childIdxStart = 0, dataIdx = 0, immediate: boolean = false) {
         const childIdx = childIdxStart + dataIdx;
-        
+
         // 数据越界检查
         if (dataIdx >= data.length) {
             no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
@@ -385,7 +393,7 @@ export class SetCreateNode extends HackUi {
 
         let isNew = false;
         let item = this._items[childIdx];
-        
+
         // 节点不存在时创建新实例
         if (!item) {
             item = this.initItem(instantiate(this.template));
@@ -411,7 +419,7 @@ export class SetCreateNode extends HackUi {
         }
 
         no.visible(item, true); // 确保节点可见
-
+        if (immediate) return;
         // 处理动画效果
         if (this.uiAnim?.enabled) {
             this.uiAnim.play(item); // 播放指定动画
@@ -451,7 +459,7 @@ export class SetCreateNode extends HackUi {
     protected async setDynamicAtlasNode(data: any): Promise<void> {
         if (data == null) return;
         let item = this._items[0];
-        
+
         // 节点不存在时创建新实例
         if (!item) {
             // 异步加载预制体模板
@@ -459,15 +467,15 @@ export class SetCreateNode extends HackUi {
                 this.template = await this.loadPrefab.loadPrefab();
                 if (!this?.node?.isValid) return;
             }
-            
+
             // 实例化并初始化节点
             item = instantiate(this.template);
-            
+
             // 加载依赖资源（如图片、纹理等）
             if (item.getComponent(YJLoadAssets))
                 await item.getComponent(YJLoadAssets)?.load();
             if (!this?.node?.isValid) return;
-            
+
             item = this.initItem(item);
             item.parent = this.container;
             no.visible(item, true);
@@ -497,7 +505,7 @@ export class SetCreateNode extends HackUi {
 
     /** 动画结束标志位 */
     private _aniEnd = false;
-    
+
     /**
      * 动画效果完成回调
      * @example
@@ -506,6 +514,15 @@ export class SetCreateNode extends HackUi {
      */
     public a_AnimationEffectCallback(): void {
         this._aniEnd = true;
+    }
+
+    /**
+     * 立即更新
+     * @description 立即更新数据，不使用动画效果
+     */
+    public a_immediate() {
+        this.unscheduleAllCallbacks();
+        this.setItems(true);
     }
 
     ///////////////////////////EDITOR METHODS/////////////////
@@ -518,7 +535,7 @@ export class SetCreateNode extends HackUi {
     onLoad(): void {
         super.onLoad();
         if (!EDITOR) return;
-        
+
         // 编辑器环境下自动获取组件引用
         if (!this.loadPrefab) this.loadPrefab = this.getComponent(YJLoadPrefab);
         if (!this.container) this.container = this.node; // 默认使用当前节点作为容器
