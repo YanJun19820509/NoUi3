@@ -181,22 +181,24 @@ export class YJDataWork extends Component {
      */
     public setValue(key: string, value: any) {
         this._data?.set(key, value, this.onlyDiff);
+        return this.repeatSetValue(key);
+    }
+
+    /**
+     * 重复设置指定key的值,并同步到UI
+     * @param key 数据的key
+     */
+    public repeatSetValue(key: string) {
         //过滤同一帧内同一key多次赋值的情况
         no.addToArray(this.changedDataKeys, key);
         if (!this._neecChangeData) {
             this._neecChangeData = true;
-            // this.scheduleOnce(() => {
-            //     this.setChangedDataToUi();
-            //     this._neecChangeData = false;
-            // });
             requestAnimationFrame(() => {
                 //_neecChangeData需要在setChangedDataToUi前设置为false，否则数据会异常
                 this._neecChangeData = false;
                 this.setChangedDataToUi();
             });
         }
-        // if (!this.register.isInit) this.register.init();
-        // this.onValueChange(key);
         return this;//支持链式写法
     }
 
