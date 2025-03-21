@@ -54,7 +54,7 @@ export class SetWidget extends FuckUi {
                 widget.horizontalCenter = value;
                 break;
             case 'verticalCenter':
-                widget.isAlignLeft = true;
+                widget.isAlignVerticalCenter = true;
                 widget.verticalCenter = value;
                 break;
         }
