@@ -58,6 +58,7 @@ export class SetScrollToPercent extends FuckUi {
 
     protected scrollToOffset(offset: Vec2, duration = 0) {
         if (this.scrollView == null) return;
+        this.scrollView.stopAutoScroll();
         let maxOffset = this.scrollView.getMaxScrollOffset();
         if (offset.x < 0) offset.x = 0;
         else if (offset.x > maxOffset.x) offset.x = maxOffset.x;
