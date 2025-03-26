@@ -162,6 +162,7 @@ export class SetSpine extends FuckUi {
                 spine = newSpineNode.getComponent(Skeleton);
                 this._curSpine = spine;
                 const bSpine = this.getComponent(Skeleton);
+                spine.customMaterial = bSpine.customMaterial;
                 this.defaultScale = bSpine.timeScale;
                 spine.premultipliedAlpha = bSpine.premultipliedAlpha;
                 spine.defaultCacheMode = bSpine.defaultCacheMode;
