@@ -31,35 +31,35 @@ export class SetSpine extends HackUi {
     // 是否在组件启用时自动播放动画（例如：组件初始化或重新激活时自动播放）
     @property
     autoPlayOnEnable: boolean = false;
-    
+
     // Spine资源路径（示例值："spine/hero"，对应spine/hero.json）
     @property
     spineUrl: string = '';
-    
+
     // 自动播放的动画名称（当autoPlayOnEnable为true时可见，示例："idle"）
     @property({ visible() { return this.autoPlayOnEnable; } })
     animationName: string = '';
-    
+
     // 触发开始回调的动画索引（示例："0,2" 表示第1个和第3个动画会触发开始回调）
     @property({ displayName: '支持开始回调的下标', tooltip: '当有动画播放队列时，可指定队列中某些下标的动画在开始播放时执行回调，多个下标用逗号分隔' })
     startIndexes: string = '';
-    
+
     // 动画开始事件处理器（示例：在动画开始时播放音效）
     @property({ type: no.EventHandlerInfo, displayName: '动画播放开始回调' })
     startCall: no.EventHandlerInfo = new no.EventHandlerInfo();
-    
+
     // 触发结束回调的动画索引（示例："1,3" 表示第2个和第4个动画会触发结束回调）
     @property({ displayName: '支持结束回调的下标', tooltip: '当有动画播放队列时，可指定队列中某些下标的动画在结束播放时执行回调，多个下标用逗号分隔' })
     endIndexes: string = '';
-    
+
     // 动画结束事件处理器（示例：在动画结束时切换界面）
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
-    
+
     // 是否需要在切换动画时清空轨道（用于解决某些动画切换异常问题）
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
-    
+
     // 是否允许在显示全屏界面时禁用组件（示例：设置为false可防止被全屏界面意外关闭）
     @property({ tooltip: '当显示全屏界面时，是否支持disable' })
     canDisable: boolean = true;
@@ -103,22 +103,22 @@ export class SetSpine extends HackUi {
     protected update(): void {
         // 仅在编辑器模式下执行
         if (!EDITOR) return;
-        
+
         // 获取当前节点的Spine组件
         const spine = this.getComponent(Skeleton);
-        
+
         // 检查是否需要自动获取资源路径
         if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
             // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
             no.EditorMode.getAssetUrlByUuid(spine.skeletonData.uuid).then(url => {
                 if (!url) return;
-                
+
                 // 处理资源路径格式（示例：'spine/hero'）
                 this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
-                
+
                 // 记录当前动画名称（示例：'idle'或'attack'）
                 this.animationName = spine.animation;
-                
+
                 // 清空临时设置的骨架数据，避免编辑器误保存
                 spine.skeletonData = null;
             });
@@ -158,7 +158,7 @@ export class SetSpine extends HackUi {
         // 自动播放配置检查
         if (this.autoPlayOnEnable) {
             // 触发数据变化事件初始化动画（参数格式示例）
-            this.onDataChange({ 
+            this.onDataChange({
                 path: this.curPath,       // 资源路径 
                 animation: this.animationName, // 默认动画名称
                 loop: spine.loop          // 是否循环
@@ -245,21 +245,21 @@ export class SetSpine extends HackUi {
         // 从队列获取当前动画配置
         const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
-        
+
         // 解构配置参数（带默认值）
-        let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: { 
-            path: string, 
-            skin: string, 
-            animation: string, 
-            loop: boolean, 
-            timeScale: number, 
-            loopNum: number, 
-            pause: boolean, 
-            duration: number 
+        let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: {
+            path: string,
+            skin: string,
+            animation: string,
+            loop: boolean,
+            timeScale: number,
+            loopNum: number,
+            pause: boolean,
+            duration: number
         } = data;
 
         let spine = this._curSpine;
-        
+
         // 清理逻辑：当没有指定路径和动画时销毁现有spine
         if (!path && !animation) {
             if (!spine) return;
@@ -282,7 +282,7 @@ export class SetSpine extends HackUi {
         // 需要加载新资源的情况
         if (!spine?.isValid || (path && this.curPath != path)) {
             if (!path) path = this.curPath;
-            
+
             // 异步加载spine资源
             YJSpineManager.ins.get(path).then(res => {
                 if (!res) {
@@ -294,32 +294,33 @@ export class SetSpine extends HackUi {
                     YJSpineManager.ins.set(path);
                     return;
                 }
-                
+
                 this.curPath = path;
-                
+
                 // 销毁旧spine节点（异步加载后需要重新获取引用）
                 let spine = this._curSpine;
                 spine?.node?.destroy();
-                
+
                 // 创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.parent = this.node;
                 spine = newSpineNode.getComponent(Skeleton);
                 this._curSpine = spine;
-                
+
                 // 继承基础spine组件属性
                 const bSpine = this.getComponent(Skeleton);
+                spine.customMaterial = bSpine.customMaterial;
                 this.defaultScale = bSpine.timeScale;
                 spine.premultipliedAlpha = bSpine.premultipliedAlpha;
                 spine.defaultCacheMode = bSpine.defaultCacheMode;
                 spine.enableBatch = bSpine.enableBatch;
                 spine.sockets = bSpine.sockets;
-                
+
                 // 设置骨骼数据
                 spine.skeletonData = res;
                 // 时间缩放计算（全局缩放系数 * 配置缩放系数）
                 spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
-                
+
                 // 自动设置节点尺寸
                 const width = res.getRuntimeData().width;
                 const height = res.getRuntimeData().height;
@@ -329,7 +330,7 @@ export class SetSpine extends HackUi {
 
                 // 构建动画标识（皮肤:动画名）
                 let tempStr = (skin ? (skin + ':') : '') + animation;
-                
+
                 // 播放控制逻辑
                 if (pause) {
                     this.a_pause(tempStr); // 示例：暂停动画
@@ -341,7 +342,7 @@ export class SetSpine extends HackUi {
                 } else {
                     this.a_playOnce(tempStr); // 示例：单次播放
                 }
-                
+
                 this.playDuration(duration); // 设置播放时长限制
             });
         } else if (animation != null) { // 使用现有资源播放动画
@@ -349,7 +350,7 @@ export class SetSpine extends HackUi {
             spine.node.active = true;
             // 时间缩放计算（使用默认值或当前配置值）
             spine.timeScale = ((timeScale || this.defaultScale) * this.GlobalScale);
-            
+
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
                 this.a_pause(tempStr);
@@ -382,26 +383,26 @@ export class SetSpine extends HackUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        
+
         const spine = this._curSpine;
         // 处理轨道清理（仅当组件已启用且需要清理时）
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        else 
+        else
             spine.enabled = true; // 激活组件
-        
+
         spine.loop = false; // 禁用自动循环
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
-        
+
         this.bindStartCall(spine); // 绑定开始回调
-        
+
         // 循环次数控制逻辑
         this.loopNum--;
         if (this.loopNum == 0)
             this.bindEndCall(spine); // 最后一次播放绑定结束回调
         else
             this.bindLoop1EndCall(spine); // 非最后一次绑定循环结束回调
-        
+
         this._play(spine, name, false); // 执行播放
     }
 
@@ -442,17 +443,17 @@ export class SetSpine extends HackUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        
+
         const spine = this._curSpine;
         // 处理轨道清理（仅当组件已启用且需要清理时）
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        else 
+        else
             spine.enabled = true; // 激活组件
-        
+
         spine.loop = false; // 单次播放模式
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
-        
+
         this.bindStartCall(spine); // 动画开始回调
         this.bindEndCall(spine); // 动画结束回调
         this._play(spine, name, false); // 执行播放
@@ -476,17 +477,17 @@ export class SetSpine extends HackUi {
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        
+
         const spine = this._curSpine;
         // 处理轨道清理（仅当组件已启用且需要清理时）
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        else 
+        else
             spine.enabled = true; // 激活组件
-        
+
         spine.loop = true; // 循环播放模式
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
-        
+
         this._play(spine, name, true); // 执行播放
     }
 
@@ -561,18 +562,18 @@ export class SetSpine extends HackUi {
         // 参数处理：支持事件对象或直接传动画名称
         animation = animation || e;
         if (!animation) return;
-        
+
         // 解析皮肤和动画名称（格式："皮肤:动画名"）
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
         if (name == null) return;
-        
+
         const spine = this._curSpine;
         // 处理动画轨道：当需要清除轨道且非缓存动画时执行清理
         if (spine.enabled)
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         else spine.enabled = true; // 激活组件
-        
+
         spine.loop = false; // 停止循环播放
         !!skin && spine.setSkin(skin); // 设置指定皮肤（如果存在）
     }
@@ -690,7 +691,7 @@ export class SetSpine extends HackUi {
         if (!spine.node.activeInHierarchy) return; // 节点未激活不处理
 
         // 状态无变化时提前返回
-        if (v && !this.isFullScreenHide) return; 
+        if (v && !this.isFullScreenHide) return;
         if (!v && !spine.enabled) {
             this.isFullScreenHide = false; // 重置全屏隐藏标志
             return;
