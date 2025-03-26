@@ -125,11 +125,11 @@ export class SetScrollToPercent extends HackUi {
             cs.width * per - ns.width * this.at + this.offset.x,
             cs.height * per - ns.height * this.at + this.offset.y
         );
-        
+
         // 根据滚动方向重置不需要的轴向偏移
         if (!this.scrollView.vertical) offset.y = 0;
         if (!this.scrollView.horizontal) offset.x = 0;
-        
+
         // 使用自定义时长或默认时长
         this.scrollToOffset(offset, duration ?? this.duration);
     }
@@ -147,6 +147,8 @@ export class SetScrollToPercent extends HackUi {
      */
     protected scrollToOffset(offset: Vec2, duration = 0) {
         if (!this.scrollView) return;
+        //立即停止自动滚动
+        this.scrollView.stopAutoScroll();
         // 获取最大允许偏移量
         let maxOffset = this.scrollView.getMaxScrollOffset();
         // 限制X轴偏移范围
