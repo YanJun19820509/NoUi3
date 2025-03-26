@@ -1,5 +1,5 @@
 
-import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D, Skeleton } from '../yj';
 import { YJVertexColorTransition } from '../engine/YJVertexColorTransition';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
@@ -46,8 +46,15 @@ export class SetEffect extends FuckUi {
             // this.work();
         }
         else if (!path || this._renderComp.material.effectName == `../${path}`) {
-            this.setProperties(this._renderComp.material, defines, properties);
-            this.work();
+            if (this._renderComp instanceof Skeleton) {
+                const materialCache = this._renderComp['_materialCache'];
+                for (const key in materialCache) {
+                    this.setProperties(materialCache[key], defines, properties);
+                }
+            } else {
+                this.setProperties(this._renderComp.material, defines, properties);
+                this.work();
+            }
         }
         else if (path)
             no.assetBundleManager.loadEffect(path, item => {
