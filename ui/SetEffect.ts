@@ -1,5 +1,5 @@
 
-import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D } from '../yj';
+import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D, Skeleton } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransition';
@@ -81,8 +81,16 @@ export class SetEffect extends HackUi {
         }
         else if (this._renderComp.material.effectName == `../${path}`) {
             // 相同材质直接更新属性
-            this.setProperties(this._renderComp.material, defines, properties);
-            this.work();
+            if (this._renderComp instanceof Skeleton) {
+                //如果是骨骼动画，则遍历骨骼动画的材质
+                const materialCache = this._renderComp['_materialCache'];
+                for (const key in materialCache) {
+                    this.setProperties(materialCache[key], defines, properties);
+                }
+            } else {
+                this.setProperties(this._renderComp.material, defines, properties);
+                this.work();
+            }
         }
         else if (path) {
             // 加载新材质
