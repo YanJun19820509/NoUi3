@@ -149,6 +149,7 @@ export class SetSpine extends HackUi {
      * this.autoPlayOnEnable = true
      */
     onEnable() {
+        if (EDITOR) return;
         // 微信小游戏平台特殊处理（性能优化）
         if (sys.platform == sys.Platform.WECHAT_GAME)
             this.GlobalScale = .5;
@@ -178,6 +179,7 @@ export class SetSpine extends HackUi {
      * this.canDisable = false
      */
     onDisable() {
+        if (EDITOR) return;
         if (!this.canDisable) return;
         let spine = this._curSpine;
         if (!spine) return;
