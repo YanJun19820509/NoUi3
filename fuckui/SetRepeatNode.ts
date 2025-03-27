@@ -45,7 +45,9 @@ export class SetRepeatNode extends FuckUi {
 
     protected onDataChange(data: any) {
         if (typeof data === 'number') {
-            this.setWithNumber(data);
+            if (!this.starLike) this.setNotStar(data);
+            else
+                this.setWithNumber(data);
         } else if (typeof data === 'object') {
             this.setWithObject(data);
         }
@@ -74,7 +76,20 @@ export class SetRepeatNode extends FuckUi {
                     item.active = true;
                 }
             }
-            item.getComponent('SetSpriteFrameInSampler2D')['setData'](JSON.stringify(i < count ? show : fill));
+            item.getComponent('SetSpriteFrameInSampler2D')['setData'](i < count ? show : fill);
+        }
+    }
+
+    private setNotStar(n: number) {
+        for (let i = 0; i < n; i++) {
+            let item = this.node.children[i];
+            if (!item) {
+                item = instantiate(this.tempNode);
+                if (item) {
+                    item.parent = this.node;
+                    item.active = true;
+                }
+            }
         }
     }
 }
