@@ -83,6 +83,7 @@ export class SetSpine extends FuckUi {
     // }
 
     onEnable() {
+        if (EDITOR) return;
         if (sys.platform == sys.Platform.WECHAT_GAME)
             this.GlobalScale = .5;
         let spine = this.getComponent(Skeleton);
@@ -93,6 +94,7 @@ export class SetSpine extends FuckUi {
     }
 
     onDisable() {
+        if (EDITOR) return;
         if (!this.canDisable) return;
         this.a_clearData();
         let spine = this._curSpine;
