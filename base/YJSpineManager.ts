@@ -32,6 +32,8 @@ export class YJSpineManager extends no.SingleObject {
 
     private _timer: string | null = null;
 
+    private log: boolean = false;
+
     public static get ins(): YJSpineManager {
         return this.instance();
     }
@@ -65,6 +67,7 @@ export class YJSpineManager extends no.SingleObject {
 
         if (resource) {
             resource.ref--;
+            if (this.log) no.log(`[SpineManager] ${normalizedPath} ref减少到: ${resource.ref}`);
             resource.t = no.sysTime.now;
         } else if (data) {
             YJSpineManager._map.set(normalizedPath, {
@@ -73,7 +76,9 @@ export class YJSpineManager extends no.SingleObject {
                 ref: 0,
                 size: this.getSize(data)
             });
+            if (this.log) no.log(`[SpineManager] ${normalizedPath} ref减少到: 0`);
         }
+
     }
 
     public async get(path: string): Promise<SkeletonData | null> {
@@ -92,6 +97,7 @@ export class YJSpineManager extends no.SingleObject {
             const resource = YJSpineManager._map.get(normalizedPath);
             if (resource) {
                 resource.ref++;
+                if (this.log) no.log(`[SpineManager] ${normalizedPath} ref增加到: ${resource.ref}`);
                 return resource.data;
             }
 
@@ -110,6 +116,7 @@ export class YJSpineManager extends no.SingleObject {
                         ref: 1,
                         size: this.getSize(res)
                     });
+                    if (this.log) no.log(`[SpineManager] ${normalizedPath} ref增加到: 1`);
                     resolve(res);
                 });
             }).catch(e => {
