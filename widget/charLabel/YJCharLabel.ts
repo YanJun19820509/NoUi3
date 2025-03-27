@@ -521,7 +521,7 @@ export class YJCharLabel extends Sprite {
      */
     private setLabel() {
         if (EDITOR && !this._needSetLabel) return;
-        if (!this.enabledInHierarchy || !isValid(this.node)) {
+        if (!isValid(this.node)) {
             this._needSet = true;
             return;
         }
