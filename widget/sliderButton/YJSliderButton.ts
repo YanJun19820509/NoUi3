@@ -10,7 +10,7 @@ import { Component, EDITOR, ccclass, property, Node } from "../../yj";
  * FileBasenameNoExtension = YJSliderButton
  * URL = db://assets/NoUi3/widget/sliderButton/YJSliderButton.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
- * 滑块按钮
+ * 滑块按钮，需要在父节点添加BlockInputEvents组件
  */
 
 @ccclass('YJSliderButton')
@@ -56,6 +56,7 @@ export class YJSliderButton extends Component {
     }
 
     public set checked(v: boolean) {
+        if (EDITOR) return;
         if (this._checked == v) return;
         this._checked = v;
         if (this.slider) {
@@ -78,7 +79,7 @@ export class YJSliderButton extends Component {
     protected onLoad(): void {
         this.setCheckedNodesVisible();
         // 注册触摸结束事件（使用TOUCH_END而非TOUCH_START以获得更好的点击体验）
-        this.node.on(Node.EventType.TOUCH_END, this.onClick, this);
+        this.node.on(Node.EventType.TOUCH_END, this.onClick, this, true);
     }
 
     onEnable() {
@@ -173,10 +174,10 @@ export class YJSliderButton extends Component {
      */
     private setCheckedNodesVisible() {
         this.checkedShowNodes.forEach(n => {
-            no.visibleByActiveInHierarchy(n, this._checked);
+            no.visible(n, this._checked);
         });
         this.checkedHideNodes.forEach(n => {
-            no.visibleByActiveInHierarchy(n, !this._checked);
+            no.visible(n, !this._checked);
         });
         this._done = true; // 标记动画完成
     }
