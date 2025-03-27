@@ -105,7 +105,9 @@ export class SetRepeatNode extends HackUi {
      */
     protected onDataChange(data: any) {
         if (typeof data === 'number') {
-            this.setWithNumber(data);
+            if (!this.starLike) this.setNotStar(data);
+            else
+                this.setWithNumber(data);
         } else if (typeof data === 'object') {
             this.setWithObject(data);
         }
@@ -156,7 +158,7 @@ export class SetRepeatNode extends HackUi {
         for (let i = 0; i < max; i++) {
             // 尝试复用已有节点
             let item = this.node.children[i];
-            
+
             // 需要时创建新节点
             if (!item) {
                 item = instantiate(this.tempNode);
@@ -169,7 +171,20 @@ export class SetRepeatNode extends HackUi {
             // 设置节点显示内容（使用SetSpriteFrameInSampler2D组件）
             const comp = item.getComponent('SetSpriteFrameInSampler2D');
             const useShow = i < count; // 判断是否使用显示图
-            comp['setData'](JSON.stringify(useShow ? show : fill));
+            comp['setData'](useShow ? show : fill);
+        }
+    }
+
+    private setNotStar(n: number) {
+        for (let i = 0; i < n; i++) {
+            let item = this.node.children[i];
+            if (!item) {
+                item = instantiate(this.tempNode);
+                if (item) {
+                    item.parent = this.node;
+                    item.active = true;
+                }
+            }
         }
     }
 }
