@@ -680,107 +680,107 @@ export class YJCharLabel extends Sprite {
     /** 显示的文本内容 */
     @property({ serializable: true })
     protected _string: string = '';
-    
+
     /** 字体颜色（默认白色） 
      * @example this.fontColor = Color.RED */
     @property({ serializable: true })
     protected _fontColor: Color = Color.WHITE.clone();
-    
+
     /** 字体大小（单位：像素） 
      * @example this.fontSize = 32 */
     @property({ serializable: true })
     protected _fontSize: number = 22;
-    
+
     /** 使用的TTF字体资源 */
     @property({ serializable: true })
     protected _font: TTFFont = null;
-    
+
     /** 字体资源的UUID（编辑器使用） */
     @property({ serializable: true })
     protected _fontUuid: string = '';
-    
+
     /** 备用字体名称（当TTF加载失败时使用） */
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
-    
+
     /** 是否自动计算行高（默认true） 
      * @example this.autoLineHeight = false */
     @property({ serializable: true })
     protected _autoLineHeight: boolean = true;
-    
+
     /** 手动设置的行高（当autoLineHeight=false时生效） */
     @property({ serializable: true })
     protected _lineHeight: number = 28;
-    
+
     /** 水平对齐方式（0=左对齐 1=居中 2=右对齐） */
     @property({ serializable: true })
     protected _horizontalAlign: number = 0;
-    
+
     /** 垂直对齐方式（0=顶部 1=居中 2=底部） */
     @property({ serializable: true })
     protected _verticalAlign: number = 2;
-    
+
     /** 文本溢出处理方式（0=截断 1=自动换行） */
     @property({ serializable: true })
     protected _overflow: number = 0;
-    
+
     /** 最大文本宽度（超出时根据overflow处理） */
     @property({ serializable: true })
     protected _maxWidth: number = 50;
-    
+
     /** 是否固定宽度（默认自动适应内容） */
     @property({ serializable: true })
     protected _fixWidth: boolean = false;
-    
+
     /** 斜体样式开关 */
     @property({ serializable: true })
     protected _italic: boolean = false;
-    
+
     /** 粗体样式开关 
      * @example this.bold = true */
     @property({ serializable: true })
     protected _bold: boolean = false;
-    
+
     /** 下划线开关 */
     @property({ serializable: true })
     protected _underline: boolean = false;
-    
+
     /** 下划线宽度（当underline=true时生效） */
     @property({ serializable: true })
     protected _underlineWidth: number = 2;
-    
+
     /** 文字描边宽度（0=无描边） */
     @property({ serializable: true })
     protected _outlineWidth: number = 0;
-    
+
     /** 描边颜色（默认黑色） */
     @property({ serializable: true })
     protected _outlineColor: Color = Color.BLACK.clone();
-    
+
     /** 阴影模糊程度（0=无阴影） */
     @property({ serializable: true })
     protected _shadowBlur: number = 0;
-    
+
     /** 阴影偏移量（x,y方向偏移） */
     @property({ serializable: true })
     protected _shadowOffset: Vec2 = v2();
-    
+
     /** 阴影颜色（默认黑色） */
     @property({ serializable: true })
     protected _shadowColor: Color = Color.BLACK.clone();
-    
+
     /** 是否允许在空格处换行 */
     @property({ serializable: true })
     protected _blankBreakWord: boolean = false;
-    
+
     /** 是否支持富文本格式 */
     @property({ serializable: true })
     protected _richText: boolean = false;
-    
+
     /** 高清显示模式开关（见HDP属性） */
     @property({ serializable: true })
     protected _hdp: boolean = false;
-    
+
     /** 动态图集打包开关（见packToAtlas属性） */
     @property({ serializable: true })
     protected _packToAtlas: boolean = true;
@@ -788,11 +788,11 @@ export class YJCharLabel extends Sprite {
     /** 内部标记是否需要更新标签 */
     @property({ serializable: true })
     private _needSetLabel: boolean = false;
-    
+
     /** 关联的面板名称（内部使用） */
     @property({ visible() { return false; } })
     panelName: string;
-    
+
     /** 材质信息UUID（渲染系统使用） */
     @property({ visible() { return false; } })
     materialInfoUuid: string;
@@ -957,16 +957,16 @@ export class YJCharLabel extends Sprite {
     private async setLabel() {
         // 编辑器环境下且不需要强制更新时跳过
         if (EDITOR && !this._needSetLabel) return;
-        
+
         // 检查节点是否在场景树中且有效
-        if (!this.enabledInHierarchy || !isValid(this.node)) {
+        if (!isValid(this.node)) {
             this._needSet = true; // 标记需要延迟更新
             return;
         }
-        
+
         this._needSet = false; // 重置更新标记
         this.clearCanvas(); // 清理旧画布资源
-        
+
         if (this._string === '') {
             this.clearString(); // 示例：清空文本显示
             return;
@@ -974,7 +974,7 @@ export class YJCharLabel extends Sprite {
             this.updateUuid(); // 生成样式唯一标识
             // 尝试使用打包图集纹理，成功则直接返回
             if (this.packToAtlas && this.setPackedTexture()) return;
-            
+
             // 异步加载字体后执行绘制
             this.loadFont().then(() => {
                 this.toDraw(); // 启动绘制流程
@@ -1024,18 +1024,18 @@ export class YJCharLabel extends Sprite {
      */
     private updateUuid() {
         // 拼接所有样式特征参数
-        const styleSignature = this.string + "_" + this._fontColor + "_" + 
-            this.fontSize + "_" + this.fontFamily + "_" + this.outlineColor + '_' + 
-            this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' + 
+        const styleSignature = this.string + "_" + this._fontColor + "_" +
+            this.fontSize + "_" + this.fontFamily + "_" + this.outlineColor + '_' +
+            this.outlineWidth + '_' + (this.bold ? '1' : '0') + '_' +
             (this.italic ? '1' : '0');
-        
+
         // 生成哈希标识
         this._uid = no.Hash(styleSignature).toString();
     }
 
     /** @type {{canvas: HTMLCanvasElement, context: CanvasRenderingContext2D}} 共享画布实例 */
     private _canvas: { canvas: HTMLCanvasElement, context: CanvasRenderingContext2D };
-    
+
     /**
      * 获取共享画布实例
      * @实现方式：
@@ -1089,12 +1089,12 @@ export class YJCharLabel extends Sprite {
         else fontSize *= this._hdp ? this._hdpScale : 1;
         if (bold == null) bold = this.bold;
         if (italic == null) italic = this.italic;
-        
+
         // 配置基础文本属性
         ctx.textBaseline = 'top';  // 文本基线对齐方式
         ctx.textAlign = 'left';    // 文本水平对齐方式
         ctx.imageSmoothingQuality = 'high'; // 高精度抗锯齿
-        
+
         // 构建字体字符串（例："italic bold 24px Arial"）
         ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
         ctx.fillStyle = color; // 设置填充颜色
@@ -1113,7 +1113,7 @@ export class YJCharLabel extends Sprite {
         if (color == null) color = '#' + this.outlineColor.toHEX('#rrggbb');
         if (lineWidth == null) lineWidth = this.outlineWidth * 2; // 默认双倍宽度保证描边效果
         else lineWidth *= this.hdpScale * 2; // 应用HDP缩放
-        
+
         ctx.lineWidth = lineWidth;     // 设置描边宽度
         ctx.strokeStyle = color;       // 设置描边颜色
     }
@@ -1131,16 +1131,16 @@ export class YJCharLabel extends Sprite {
     private setShadowStyle(ctx: CanvasRenderingContext2D, color?: string, blur?: number, offset?: Vec2) {
         if (color == null) color = '#' + this.shadowColor.toHEX('#rrggbb');
         const scale = this._hdp ? this._hdpScale : 1; // HDP缩放系数
-        
+
         if (blur == null) blur = this.shadowBlur;
         else blur *= scale; // 应用HDP缩放
-        
+
         if (offset == null) offset = this.shadowOffset;
         else {
             offset.x *= scale; // X轴偏移量缩放
             offset.y *= scale; // Y轴偏移量缩放
         }
-        
+
         // 设置阴影三要素
         ctx.shadowBlur = blur;         // 模糊程度
         ctx.shadowColor = color;       // 阴影颜色
@@ -1221,7 +1221,7 @@ export class YJCharLabel extends Sprite {
         // 处理字体大小参数，应用HDP缩放
         if (fontSize == null) fontSize = this.fontSize;
         else fontSize *= this._hdp ? this._hdpScale : 1;
-        
+
         let w = 0;
         // 使用标准for循环遍历每个字符
         for (let i = 0, n = str.length; i < n; i++) {
@@ -1244,7 +1244,7 @@ export class YJCharLabel extends Sprite {
     private drawString(v: string) {
         const ctx = this.shareCanvas().context;
         this.setFontStyle(ctx); // 设置基础字体样式
-        
+
         // 应用阴影效果（如果启用）
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
@@ -1252,16 +1252,16 @@ export class YJCharLabel extends Sprite {
         if (this._overflow == Label.Overflow.RESIZE_HEIGHT) {
             let maxWidth = this.maxWidth;
             const extWidth = this.extWidth(); // 获取额外宽度（如轮廓、阴影等）
-            
+
             // 处理换行符分割
             const lines = v.split('\\n');
             let resultLines: string[] = [];
             const halfWidth = this.fontSize / 2; // 允许的宽度容差
-            
+
             // 遍历每个原始行
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                
+
                 // 处理空行情况
                 if (line.length === 0) {
                     resultLines[resultLines.length] = '';
@@ -1295,7 +1295,7 @@ export class YJCharLabel extends Sprite {
                         if (wordWidth > this.maxWidth + halfWidth) {
                             let tempLine = '';
                             let tempWidth = extWidth;
-                            
+
                             // 逐个字符处理
                             for (let k = 0; k < word.length; k++) {
                                 const char = word[k];
@@ -1357,14 +1357,14 @@ export class YJCharLabel extends Sprite {
                 } else {
                     ww = w;
                 }
-                
+
                 maxWidth = Math.max(maxWidth, ww);
                 resultLines[resultLines.length] = currentLine;
             }
 
             // 确定最终绘制宽度
-            const width = this._overflow != Label.Overflow.NONE && this.fixWidth 
-                ? this.maxWidth 
+            const width = this._overflow != Label.Overflow.NONE && this.fixWidth
+                ? this.maxWidth
                 : maxWidth;
 
             // 根据行数选择绘制方式
@@ -1418,7 +1418,7 @@ export class YJCharLabel extends Sprite {
         // 初始化绘制起点坐标
         let x = 2, // 基础水平偏移
             y = 0; // 垂直起始位置
-        
+
         // 垂直位置调整（应对描边和阴影偏移）
         if (this.outlineWidth > 0) y += this.outlineWidth / 2; // 描边居中补偿
         if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
@@ -1440,17 +1440,17 @@ export class YJCharLabel extends Sprite {
         // 处理渐变填充
         if (this.gradientColor) {
             // 示例：创建从左到右的渐变
-            ctx.fillStyle = this.gradientColor.createGradient(ctx, { 
-                x: 0, 
-                y, 
-                width, 
-                height 
+            ctx.fillStyle = this.gradientColor.createGradient(ctx, {
+                x: 0,
+                y,
+                width,
+                height
             });
         }
 
         // 设置阴影效果（示例：模糊5px，偏移(2,2)）
         if (this.shadowBlur > 0) this.setShadowStyle(ctx);
-        
+
         // 设置描边样式（示例：红色2px描边）
         if (this.outlineWidth > 0) {
             this.setStrokeStyle(ctx);
@@ -1458,20 +1458,20 @@ export class YJCharLabel extends Sprite {
 
         const fontSize = this.fontSize;
         let x1 = x; // 当前字符绘制位置
-        
+
         // 逐字符绘制（支持等宽/变宽字体）
         for (let i = 0, n = v.length; i < n; i++) {
             const c = v[i]; // 当前字符
             const w = this.getCharWidth(c, fontSize); // 获取字符宽度
-            
+
             // 先绘制描边（如果有）
             if (this.outlineWidth > 0) {
                 ctx.strokeText(c, x1, y);
             }
-            
+
             // 绘制填充文字
             ctx.fillText(c, x1, y);
-            
+
             x1 += w; // 移动到下一个字符位置
         }
 
@@ -1520,7 +1520,7 @@ export class YJCharLabel extends Sprite {
         const hh = height + this.extHeight();
         // 总宽度 = 基础宽度 + 扩展宽度 + 2px边距
         width += this.extWidth() + 2;
-        
+
         // 设置画布尺寸（宽度 x 总行高）
         canvas.canvas.width = width;
         canvas.canvas.height = hh * lines.length;
@@ -1566,7 +1566,7 @@ export class YJCharLabel extends Sprite {
             // 应用渐变颜色（示例：从左到右的彩虹渐变）
             if (this.gradientColor) {
                 ctx.fillStyle = this.gradientColor.createGradient(
-                    ctx, 
+                    ctx,
                     { x: 0, y, width: canvas.canvas.width, height: 0 }
                 );
             }
@@ -1912,7 +1912,7 @@ export class YJCharLabel extends Sprite {
         const extWidth = this.extWidth();
         // 半字号用于处理测量误差（防止因小数像素导致的布局问题）
         const halfWidth = this.fontSize / 2;
-        
+
         // 空白处理配置（当启用blankBreakWord时使用空格作为分隔符）
         let blankWork = '', blankWidth = 0;
         if (this.blankBreakWord) {
@@ -1987,7 +1987,7 @@ export class YJCharLabel extends Sprite {
                 const word = words[wordIndex];
                 // 测量当前单词宽度（考虑HDPI缩放）
                 const wordWidth = this.measureWidth(ctx, word, style?.size);
-                
+
                 // 检查当前行剩余空间
                 if (currentLineWidth + wordWidth <= this.maxWidth + halfWidth) {
                     // 追加到当前行：单词 + 空格（非最后一个单词）
@@ -2010,7 +2010,7 @@ export class YJCharLabel extends Sprite {
                     currentLine.htmls = [];
                 }
             }
-            
+
             // 收集剩余文本片段
             if (textFragment.text !== '') {
                 currentLine.htmls.push(textFragment);
@@ -2096,7 +2096,7 @@ export class YJCharLabel extends Sprite {
             // 应用渐变颜色（示例：从左到右的红蓝渐变）
             if (this.gradientColor) {
                 ctx.fillStyle = this.gradientColor.createGradient(
-                    ctx, 
+                    ctx,
                     { x: 0, y, width: canvas.canvas.width, height: 0 }
                 );
             }
@@ -2212,13 +2212,13 @@ export class YJCharLabel extends Sprite {
             let totalSegmentWidth = 0; // 当前行累计宽度
             let currentX = xPos;       // 当前绘制水平位置
             const htmlSegments = line.htmls;
-            
+
             // 遍历行内文本片段（标准for循环）
             for (let j = 0, segCount = htmlSegments.length; j < segCount; j++) {
                 const segment = htmlSegments[j];
                 const style = segment.style;
                 const text = segment.text;
-                
+
                 // 应用字体样式（示例：设置红色24px粗体）
                 this.setFontStyle(ctx, style?.color, style?.size, style?.bold, style?.italic);
                 // 设置阴影效果（使用组件级参数）
@@ -2243,11 +2243,11 @@ export class YJCharLabel extends Sprite {
 
                 // 设置渐变填充（示例：从左到右的红蓝渐变）
                 if (this.gradientColor) {
-                    ctx.fillStyle = this.gradientColor.createGradient(ctx, { 
-                        x: 0, 
-                        y: yPos, 
-                        width: canvas.canvas.width, 
-                        height: 0 
+                    ctx.fillStyle = this.gradientColor.createGradient(ctx, {
+                        x: 0,
+                        y: yPos,
+                        width: canvas.canvas.width,
+                        height: 0
                     });
                 }
 
@@ -2438,7 +2438,7 @@ export class YJCharLabel extends Sprite {
         // 标准for循环遍历每个字符
         for (let i = 0; i < textLength; i++) {
             const char = text[i];
-            
+
             // 处理CJK字符
             if (this.isCJK(char)) {
                 // 保存已累积的非CJK单词
