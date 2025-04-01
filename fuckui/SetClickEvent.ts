@@ -1,7 +1,8 @@
 
-import { ccclass, property, menu, Button } from '../yj';
+import { ccclass, property, menu, Button, requireComponent } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
+import { YJButton } from 'NoUi3/fix/YJButton';
 
 /**
  * Predefined variables
@@ -17,6 +18,7 @@ import { FuckUi } from './FuckUi';
 
 @ccclass('SetClickEvent')
 @menu('NoUi/ui/SetClickEvent(设置子项点击事件:string|number)')
+@requireComponent(YJButton)
 export class SetClickEvent extends FuckUi {
     @property({ displayName: '事件类型' })
     type: string = '';
