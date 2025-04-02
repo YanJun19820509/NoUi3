@@ -1,5 +1,4 @@
-
-import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys, size } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys, size, isValid } from '../yj';
 import { no } from '../no';
 import { FuckUi } from './FuckUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -97,14 +96,12 @@ export class SetSpine extends FuckUi {
         if (EDITOR) return;
         if (!this.canDisable) return;
         this.a_clearData();
-        let spine = this._curSpine;
-        if (!spine) return;
-        this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        spine.node?.destroy();
+        this.destroySpineNode(this._curSpine);
     }
 
     onDestroy() {
-        YJSpineManager.ins.set(this.curPath);
+        this.destroySpineNode(this._curSpine);
+        this._curSpine = null;
     }
 
     protected onDataChange(data: any) {
@@ -119,6 +116,17 @@ export class SetSpine extends FuckUi {
         this.setSpineData();
     }
 
+    // 修改销毁节点的通用方法
+    private destroySpineNode(spine: Skeleton, path = this.curPath) {
+        if (!spine) return;
+        this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
+        // 在销毁节点前更新引用计数
+        if (this.curPath && isValid(spine?.node, true)) {
+            YJSpineManager.ins.set(path);
+        }
+        spine.node?.destroy();
+    }
+
     private setSpineData() {
         const data = this.spineQueue[++this.queueIndex];
         if (!data) return;
@@ -126,8 +134,7 @@ export class SetSpine extends FuckUi {
         let spine = this._curSpine;
         if (!path && !animation) {
             if (!spine) return;
-            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-            spine.node?.destroy();
+            this.destroySpineNode(spine);
             return;
         }
 
@@ -139,25 +146,25 @@ export class SetSpine extends FuckUi {
          * 如果传入路径和之前的资源路径不一致   释放之前的
          */
         if (path && this.curPath && this.curPath != path) {
-            YJSpineManager.ins.set(this.curPath);
+            this.destroySpineNode(spine, this.curPath);
         }
 
 
-        if (!spine?.isValid || (path && this.curPath != path)) {
+        if (!isValid(spine, true) || (path && this.curPath != path)) {
             if (!path) path = this.curPath;
             YJSpineManager.ins.get(path).then(res => {
                 if (!res) {
                     no.err(`spine资源${path}不存在`);
                     return;
                 }
-                if (!this.node?.isValid) {
-                    YJSpineManager.ins.set(path);
+                if (!isValid(this.node, true)) {
+                    this.destroySpineNode(this._curSpine, path);
                     return;
                 }
                 this.curPath = path;
                 //销毁原spine节点  因为是异步的 所以需要重新获取
                 let spine = this._curSpine;
-                spine?.node?.destroy();
+                this.destroySpineNode(spine);
                 //创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.parent = this.node;
@@ -295,9 +302,8 @@ export class SetSpine extends FuckUi {
     }
 
     public a_stop(): void {
-        const spine = this._curSpine;
-        spine?.clearTrack(0);
-        spine?.node?.destroy();
+        this.destroySpineNode(this._curSpine);
+        this._curSpine = null;
     }
 
     public a_pause(e: any, animation?: string): void {

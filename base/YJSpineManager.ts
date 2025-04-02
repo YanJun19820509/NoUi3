@@ -69,6 +69,9 @@ export class YJSpineManager extends no.SingleObject {
             resource.ref--;
             if (this.log) no.log(`[SpineManager] ${normalizedPath} ref减少到: ${resource.ref}`);
             resource.t = no.sysTime.now;
+            if (resource.ref < 0) {
+                no.warn(`[SpineManager] ${normalizedPath} ref小于0: ${resource.ref}`);
+            }
         } else if (data) {
             YJSpineManager._map.set(normalizedPath, {
                 data,
