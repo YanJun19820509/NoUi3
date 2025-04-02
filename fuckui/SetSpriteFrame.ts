@@ -61,12 +61,11 @@ export class SetSpriteFrame extends FuckUi {
             let uuid = no.assetBundleManager.getUuidFromPath(path);
             if (this.sprite.spriteFrame?._uuid == uuid) return;
 
-            if (!uuid)
-                no.assetBundleManager.loadSprite(path, spriteFrame => {
-                    if (this.sprite?.isValid) {
-                        this.sprite.spriteFrame = spriteFrame;
-                    }
-                });
+            no.assetBundleManager.loadSprite(path, spriteFrame => {
+                if (this.sprite?.isValid) {
+                    this.sprite.spriteFrame = spriteFrame;
+                }
+            });
         } else {
             if (data.atlas) {
                 no.assetBundleManager.loadAtlas(data.atlas, item => {

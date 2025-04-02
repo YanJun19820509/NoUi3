@@ -289,6 +289,8 @@ export class SetSpine extends FuckUi {
         }
         if (spine?._skeleton?.data) {
             spine.setAnimation(0, animationName, loop);
+        } else {
+            no.warn(`spine节点${spine.node.name}动画数据为空  this.curPath ${this.curPath}`);
         }
     }
 
