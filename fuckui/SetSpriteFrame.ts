@@ -52,6 +52,7 @@ export class SetSpriteFrame extends FuckUi {
     }
 
     private lateSet(data: any): void {
+        data = data + '';
         this.sprite = this.sprite || this.getComponent(Sprite);
         if (this.sprite == null) return;
 
