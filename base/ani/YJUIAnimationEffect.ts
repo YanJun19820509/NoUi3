@@ -492,7 +492,7 @@ class AnimationEffect {
      * @param node 目标节点
      */
     private rotationX(node: Node) {
-        const scale = no.scale(node);
+        const scale = { x: 1, y: 1 };
         const t = this.duration / 4;
         return [{
             duration: t,
@@ -536,7 +536,7 @@ class AnimationEffect {
      * @param node 目标节点
      */
     private rotationY(node: Node) {
-        const scale = no.scale(node);
+        const scale = { x: 1, y: 1 };
         const t = this.duration / 4;
         return [{
             duration: t,
