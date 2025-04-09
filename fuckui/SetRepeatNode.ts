@@ -76,7 +76,10 @@ export class SetRepeatNode extends FuckUi {
                     item.active = true;
                 }
             }
-            item.getComponent('SetSpriteFrameInSampler2D')['setData'](i < count ? show : fill);
+            if (i >= count && fill == 'null') {
+                item.active = false;
+            } else
+                item.getComponent('SetSpriteFrameInSampler2D')['setData'](i < count ? show : fill);
         }
     }
 
