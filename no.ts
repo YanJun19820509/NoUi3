@@ -2781,7 +2781,7 @@ export namespace no {
          * 获取配置数据
          * @param path 如a.b.c 或[a,b,c]
          */
-        public getJSON(path?: string | string[]): any {
+        public getJSON<T = any>(path?: string | string[]): T {
             const a = this._json.get(path);
             if (!a) err('配置数据不存在：', path);
             return a;
