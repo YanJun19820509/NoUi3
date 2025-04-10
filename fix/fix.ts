@@ -150,7 +150,7 @@ js.mixin(Skeleton.prototype, {
                         batcher.commitMiddleware(this, meshBuffer, origin + dc.indexOffset,
                             dc.indexCount, dc.texture, dc.material!, this._enableBatch);
                     } else {
-                        console.error('Invalid texture in skeleton');
+                        console.warn('Invalid texture in skeleton');
                     }
                 }
                 indicesCount += dc.indexCount;
