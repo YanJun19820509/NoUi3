@@ -163,6 +163,8 @@ export const MeshRender = _cc.MeshRenderer;
 export type MeshRender = _cc.MeshRenderer;
 export const Mesh = _cc.Mesh;
 export type Mesh = _cc.Mesh;
+export const EventKeyboard = _cc.EventKeyboard;
+export type EventKeyboard = _cc.EventKeyboard;
 
 export const Game = _cc.Game;
 export const Enum = _cc.Enum;
