@@ -10,7 +10,6 @@ import { HackUi } from './HackUi';
  * count--重复数量, max--最大数量，show--重复节点显示图片名, fill-填充节点显示图片名
  */
 
-@ccclass('FillSpriteFrameInfo')
 /**
  * 填充用精灵帧信息封装类
  * 功能说明：

@@ -17,8 +17,6 @@ import { HackUi } from './HackUi';
 
 @ccclass('SetPosition')
 @menu('NoUi/ui/SetPosition(设置坐标:object|array)')
-@ccclass('SetPosition')
-@menu('NoUi/ui/SetPosition(设置坐标:object|array)')
 export class SetPosition extends HackUi {
 
     /**

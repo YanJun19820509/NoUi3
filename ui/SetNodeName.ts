@@ -14,8 +14,6 @@ import { HackUi } from './HackUi';
  *
  */
 
-@ccclass('SetNodeName')
-@menu('NoUi/ui/SetNodeName(设置节点名称:string)')
 /**
  * 节点名称设置组件
  * @功能说明
