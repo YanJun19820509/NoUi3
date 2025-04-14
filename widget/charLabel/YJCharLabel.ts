@@ -1238,7 +1238,7 @@ export class YJCharLabel extends Sprite {
      * - 自动调整行高和宽度
      * - 支持RESIZE_HEIGHT模式下的智能分词换行
      * @示例
-     * this.drawString("Hello\\nWorld"); // 绘制两行文本
+     * this.drawString("Hello\nWorld"); // 绘制两行文本
      * this.drawString("非常长的需要自动换行的文本内容"); // 在RESIZE_HEIGHT模式下自动换行
      */
     private drawString(v: string) {
@@ -1252,9 +1252,8 @@ export class YJCharLabel extends Sprite {
         if (this._overflow == Label.Overflow.RESIZE_HEIGHT) {
             let maxWidth = this.maxWidth;
             const extWidth = this.extWidth(); // 获取额外宽度（如轮廓、阴影等）
-
             // 处理换行符分割
-            const lines = v.split('\\n');
+            const lines = v.split('\n');
             let resultLines: string[] = [];
             const halfWidth = this.fontSize / 2; // 允许的宽度容差
 
@@ -1339,7 +1338,7 @@ export class YJCharLabel extends Sprite {
             );
         } else {
             // 处理其他溢出模式（CLAMP/SHRINK/NONE）
-            const lines = v.split('\\n');
+            const lines = v.split('\n');
             let resultLines: string[] = [];
             let maxWidth = 0;
 

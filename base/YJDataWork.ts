@@ -284,6 +284,7 @@ export class YJDataWork extends Component {
      *    .setValue('time', 60);
      */
     public setValue(key: string, value: any) {
+        if (key == null) return this;
         this.bindSubFuckUis();
         this._data?.set(key, value, this.onlyDiff);
         return this.repeatSetValue(key);

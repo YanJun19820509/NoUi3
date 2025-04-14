@@ -16,7 +16,7 @@ export class YJKeyboardDispatcher extends Component {
      * 组件加载时注册到键盘管理器
      * 确保可以接收全局键盘事件
      */
-    onLoad() {
+    onEnable() {
         YJKeyboardManager.ins?.register(this);
     }
 
@@ -24,7 +24,7 @@ export class YJKeyboardDispatcher extends Component {
      * 组件销毁时从键盘管理器注销
      * 防止内存泄漏
      */
-    onDestroy(): void {
+    onDisable(): void {
         YJKeyboardManager.ins?.unregister(this);
     }
 

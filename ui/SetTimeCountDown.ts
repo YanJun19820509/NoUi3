@@ -157,14 +157,20 @@ export class SetTimeCountDown extends HackUi {
      * - number: 总秒数（如3600）
      * - string: 数字字符串（如"3600"）或直接显示文本
      * - array: [剩余秒数, 总秒数]（如[1800, 3600]）
+     * - 'stop': 停止倒计时
      * @示例 
      * this.a_setData(60)       // 60秒倒计时
      * this.a_setData("pause")  // 直接显示"pause"文本
      * this.a_setData([30, 60]) // 显示30秒倒计时（总时长60秒）
+     * this.a_setData('stop')   // 停止倒计时
      */
     protected onDataChange(data: any) {
         no.sysTime.offTickTock(this);
-        
+
+        if (data == 'stop') {
+            return;
+        }
+
         // 处理直接显示文本的情况
         if (typeof data == 'string' && isNaN(Number(data))) {
             this.setLabel(data);
@@ -172,7 +178,7 @@ export class SetTimeCountDown extends HackUi {
         }
 
         const now = no.sysTime.now;
-        
+
         // 处理数组参数格式[剩余时间, 总时间]
         if (data instanceof Array) {
             const remaining = Number(data[0]);
@@ -182,7 +188,7 @@ export class SetTimeCountDown extends HackUi {
             }
             this._deadline = remaining + now;
             this._max = Number(data[1]);
-        } 
+        }
         // 处理数字参数格式
         else {
             const totalSeconds = Number(data);
@@ -209,19 +215,19 @@ export class SetTimeCountDown extends HackUi {
      */
     public doTickTock(now: number) {
         if (!isValid(this.node, true)) return;
-        
+
         const remaining = this._deadline - now;
-        
+
         // 倒计时结束处理
         if (remaining <= 0) {
             no.sysTime.offTickTock(this);
             no.EventHandlerInfo.execute(this.endCalls);
             return;
-        } 
+        }
         // 倒计时进行中处理
         else {
             no.EventHandlerInfo.execute(this.secondCalls);
-            
+
             // 触发定时回调
             if (this.isTime && remaining === this.time) {
                 no.EventHandlerInfo.execute(this.timeCalls);
@@ -230,8 +236,8 @@ export class SetTimeCountDown extends HackUi {
 
         // 更新文本显示
         if (this.isLabel) {
-            const formatted = this.decorator 
-                ? this.decorator.format(remaining) 
+            const formatted = this.decorator
+                ? this.decorator.format(remaining)
                 : no.sec2time(remaining, this.formatter, this.show0);
             this.setLabel(formatted);
         }
@@ -266,7 +272,7 @@ export class SetTimeCountDown extends HackUi {
     private setPercent(v: number) {
         let percent = v / this._max;
         if (this.is0_1) percent = 1 - percent;
-        
+
         // 遍历所有关联组件传递百分比
         for (let i = 0; i < this.fuckUiComponents.length; i++) {
             this.fuckUiComponents[i].a_setData(String(percent));
@@ -276,7 +282,7 @@ export class SetTimeCountDown extends HackUi {
     ///////////// 编辑器专用逻辑 ////////////
     update() {
         if (!EDITOR) return;
-        
+
         // 动态管理纹理组件
         const hasBitmapFont = !this.node.getComponent('YJBitmapFont');
         if (hasBitmapFont && this.label && !this.getComponent(YJDynamicTexture)) {

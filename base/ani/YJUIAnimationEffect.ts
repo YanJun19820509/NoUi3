@@ -271,7 +271,7 @@ class AnimationEffect {
         // 缓存原始缩放值（避免多次获取）
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = no.scale(node);
-            
+
         const s = node["__yj_ui_scale"];
         return [{
             set: 1,  // 立即设置初始状态
@@ -969,47 +969,47 @@ class AnimationEffect {
         const scale = node["__yj_ui_scale"] || no.scale(node);
         if (!node["__yj_ui_scale"])
             node["__yj_ui_scale"] = scale;
-            
+
         // 计算单阶段时长（总时长均分四等份）
         const t = this.duration / 4;
-        
+
         return [
-        // 阶段1：快速放大到130%（使用quadOut缓动实现加速效果）
-        {
-            duration: t,
-            to: 1,
-            props: {
-                scale: [scale.x * 1.3, scale.y * 1.3]
+            // 阶段1：快速放大到130%（使用quadOut缓动实现加速效果）
+            {
+                duration: t,
+                to: 1,
+                props: {
+                    scale: [scale.x * 1.3, scale.y * 1.3]
+                },
+                easing: 'quadOut'
             },
-            easing: 'quadOut'
-        }, 
-        // 阶段2：回弹缩小到90%（使用quadIn缓动实现减速效果）
-        {
-            duration: t,
-            to: 1,
-            props: {
-                scale: [scale.x * .9, scale.y * .9]
-            }, 
-            easing: 'quadIn'
-        }, 
-        // 阶段3：二次放大到110%（保持动态节奏）
-        {
-            duration: t,
-            to: 1,
-            props: {
-                scale: [scale.x * 1.1, scale.y * 1.1]
+            // 阶段2：回弹缩小到90%（使用quadIn缓动实现减速效果）
+            {
+                duration: t,
+                to: 1,
+                props: {
+                    scale: [scale.x * .9, scale.y * .9]
+                },
+                easing: 'quadIn'
             },
-            easing: 'quadOut'
-        }, 
-        // 阶段4：最终恢复原始尺寸（平滑过渡）
-        {
-            duration: t,
-            to: 1,
-            props: {
-                scale: [scale.x, scale.y]
-            }, 
-            easing: 'quadIn'
-        }];
+            // 阶段3：二次放大到110%（保持动态节奏）
+            {
+                duration: t,
+                to: 1,
+                props: {
+                    scale: [scale.x * 1.1, scale.y * 1.1]
+                },
+                easing: 'quadOut'
+            },
+            // 阶段4：最终恢复原始尺寸（平滑过渡）
+            {
+                duration: t,
+                to: 1,
+                props: {
+                    scale: [scale.x, scale.y]
+                },
+                easing: 'quadIn'
+            }];
     }
 }
 
@@ -1018,40 +1018,26 @@ class AnimationEffect {
  */
 @ccclass('AnimationEffectArray')
 export class AnimationEffectArray {
-    @property({ 
-        type: AnimationEffect, 
-        displayName: "串行动画效果", 
+    @property({
+        type: AnimationEffect,
+        displayName: "串行动画效果",
         tooltip: `多个动画效果按顺序依次执行，如果设置了串行动画效果，并行动画效果将不会执行
         【执行规则】
         - 前一个动画的onComplete事件触发后才会执行下一个
         - 任一动画中断会导致后续动画取消
-        - 支持不同种类动画混合编排` 
+        - 支持不同种类动画混合编排`
     })
     serialAnimationEffects: AnimationEffect[] = [];
 }
 
-/**
- * UI动画效果组件
- */
-@ccclass('YJUIAnimationEffect')
-@executeInEditMode()
-export class YJUIAnimationEffect extends Component {
-    @property({ 
-        type: Node, 
-        displayName: '目标节点', 
-        tooltip: '不设置则使用当前节点\n@示例\n// 在编辑器中拖拽其他节点到此属性\n// 或通过代码指定：\n// this.node.getComponent(YJUIAnimationEffect).target = someNode' 
-    })
-    target: Node = null;
+@ccclass('AnimationEffectInfo')
+class AnimationEffectInfo {
+    @property
+    type: string = '';
 
-    @property({ 
-        displayName: '作用在子节点上', 
-        tooltip: '当启用时，动画效果将作用于目标节点的所有子节点\n@示例\n// 菜单容器所有子项执行序列动画\n// 每个菜单项会依次执行入场效果' 
-    })
-    onChildren: boolean = false;
-
-    @property({ 
-        type: AnimationEffect, 
-        displayName: "串行动画效果", 
+    @property({
+        type: AnimationEffect,
+        displayName: "串行动画效果",
         tooltip: `多个动画效果按顺序依次执行，如果设置了串行动画效果，并行动画效果将不会执行
         【执行规则】
         - 前一个动画的onComplete事件触发后才会执行下一个
@@ -1060,33 +1046,97 @@ export class YJUIAnimationEffect extends Component {
         @示例
         // 先执行淡入再执行移动动画：
         // 1. 添加fadeIn效果，设置duration=0.5
-        // 2. 添加moveBy效果，设置duration=1.0` 
+        // 2. 添加moveBy效果，设置duration=1.0`
     })
     serialAnimationEffects: AnimationEffect[] = [];
 
-    @property({ 
-        type: AnimationEffectArray, 
-        displayName: "并行动画效果", 
+    @property({
+        type: AnimationEffectArray,
+        displayName: "并行动画效果",
         tooltip: `多个串行动画效果同时执行
         @示例
         // 同时执行两组动画：
         // 组1: 缩放+旋转
         // 组2: 颜色渐变+抖动
-        // 两组动画将并行播放` 
+        // 两组动画将并行播放`
     })
     parallelAnimationEffects: AnimationEffectArray[] = [];
 
-    @property({ 
-        displayName: '执行次数', 
-        tooltip: '0表示无限循环，1表示执行一次，2表示执行两次，以此类推\n@示例\n// 设置repeat=0创建无限旋转的加载动画\n// 设置repeat=2让按钮抖动两次后停止', 
-        min: 0, 
-        step: 1 
+    @property({
+        displayName: '执行次数',
+        tooltip: '0表示无限循环，1表示执行一次，2表示执行两次，以此类推\n@示例\n// 设置repeat=0创建无限旋转的加载动画\n// 设置repeat=2让按钮抖动两次后停止',
+        min: 0,
+        step: 1
     })
     repeat: number = 1;
 
-    @property({ 
-        displayName: '自动运行', 
-        tooltip: '组件启用时自动开始播放动画\n@示例\n// 用于场景开场动画自动播放\n// 或敌人出现时自动执行特效' 
+
+}
+
+/**
+ * UI动画效果组件
+ */
+@ccclass('YJUIAnimationEffect')
+@executeInEditMode()
+export class YJUIAnimationEffect extends Component {
+    @property({
+        type: Node,
+        displayName: '目标节点',
+        tooltip: '不设置则使用当前节点\n@示例\n// 在编辑器中拖拽其他节点到此属性\n// 或通过代码指定：\n// this.node.getComponent(YJUIAnimationEffect).target = someNode'
+    })
+    target: Node = null;
+
+    @property({
+        displayName: '作用在子节点上',
+        tooltip: '当启用时，动画效果将作用于目标节点的所有子节点\n@示例\n// 菜单容器所有子项执行序列动画\n// 每个菜单项会依次执行入场效果'
+    })
+    onChildren: boolean = false;
+
+    @property({
+        type: AnimationEffectInfo,
+        displayName: "动画效果",
+        tooltip: "动画效果配置"
+    })
+    animationEffectInfos: AnimationEffectInfo[] = [];
+
+    // @property({
+    //     type: AnimationEffect,
+    //     displayName: "串行动画效果",
+    //     tooltip: `多个动画效果按顺序依次执行，如果设置了串行动画效果，并行动画效果将不会执行
+    //     【执行规则】
+    //     - 前一个动画的onComplete事件触发后才会执行下一个
+    //     - 任一动画中断会导致后续动画取消
+    //     - 支持不同种类动画混合编排
+    //     @示例
+    //     // 先执行淡入再执行移动动画：
+    //     // 1. 添加fadeIn效果，设置duration=0.5
+    //     // 2. 添加moveBy效果，设置duration=1.0`
+    // })
+    // serialAnimationEffects: AnimationEffect[] = [];
+
+    // @property({
+    //     type: AnimationEffectArray,
+    //     displayName: "并行动画效果",
+    //     tooltip: `多个串行动画效果同时执行
+    //     @示例
+    //     // 同时执行两组动画：
+    //     // 组1: 缩放+旋转
+    //     // 组2: 颜色渐变+抖动
+    //     // 两组动画将并行播放`
+    // })
+    // parallelAnimationEffects: AnimationEffectArray[] = [];
+
+    // @property({
+    //     displayName: '执行次数',
+    //     tooltip: '0表示无限循环，1表示执行一次，2表示执行两次，以此类推\n@示例\n// 设置repeat=0创建无限旋转的加载动画\n// 设置repeat=2让按钮抖动两次后停止',
+    //     min: 0,
+    //     step: 1
+    // })
+    // repeat: number = 1;
+
+    @property({
+        displayName: '自动运行',
+        tooltip: '组件启用时自动开始播放动画\n@示例\n// 用于场景开场动画自动播放\n// 或敌人出现时自动执行特效'
     })
     auto: boolean = false;
 
@@ -1106,9 +1156,9 @@ export class YJUIAnimationEffect extends Component {
         if (EDITOR) return;
         if (this.auto) {
             if (this.onChildren) {
-                this.playOnChildren(this.node);  // 示例：用于菜单子项集体入场动画
+                this.playOnChildren(this.node, this.animationEffectInfos[0]);  // 示例：用于菜单子项集体入场动画
             } else {
-                this.play(this.node);  // 示例：单个UI元素的自动展示动画
+                this.play(this.node, this.animationEffectInfos[0]);  // 示例：单个UI元素的自动展示动画
             }
         }
     }
@@ -1158,13 +1208,21 @@ export class YJUIAnimationEffect extends Component {
      * this.target = childNode;
      * this.a_play();
      */
-    public a_play() {
+    public a_play(type?: string) {
         if (!this.enabled) return;
+        this.a_stop();
+        let info: AnimationEffectInfo;
+        if (type) {
+            info = this.animationEffectInfos.find(i => i.type === type);
+        } else {
+            info = this.animationEffectInfos[0];
+        }
+
         const node = this.target || this.node;
         if (this.onChildren) {
-            this.playOnChildren(node);
+            this.playOnChildren(node, info);
         } else {
-            this.play(node);
+            this.play(node, info);
         }
     }
 
@@ -1205,12 +1263,12 @@ export class YJUIAnimationEffect extends Component {
      * this.serialAnimationEffects = [effect1, effect2];
      * this.play(panelNode); // 按顺序执行effect1->effect2
      */
-    public play(node: Node) {
+    public play(node: Node, info: AnimationEffectInfo) {
         if (!this.enabled) return;
-        if (this.serialAnimationEffects.length > 0)
-            this.playSerial(node, this.repeat);
+        if (info.serialAnimationEffects.length > 0)
+            this.playSerial(node, info);
         else
-            this.playParallel(node, this.repeat);
+            this.playParallel(node, info);
     }
 
     /**
@@ -1230,12 +1288,12 @@ export class YJUIAnimationEffect extends Component {
      * // 配合schedule实现间隔0.1秒的播放节奏
      * this.schedule(() => {...}, 0.1, count);
      */
-    public playOnChildren(node: Node) {
+    public playOnChildren(node: Node, info: AnimationEffectInfo) {
         if (!this.enabled) return;
         const children = node.children;
         let i = 0;
         this.schedule(() => {
-            this.play(children[i++]);
+            this.play(children[i++], info);
         }, 0.1, children.length - 1);
     }
 
@@ -1253,9 +1311,10 @@ export class YJUIAnimationEffect extends Component {
      * this.repeat = 3;
      * this.playSerial(progressBar, 3);
      */
-    private playSerial(node: Node, repeat: number) {
-        this._playSerial(node, this.serialAnimationEffects, () => {
-            if (this.repeat == 0 || --repeat > 0) this.playSerial(node, repeat);
+    private playSerial(node: Node, info: AnimationEffectInfo) {
+        let repeat = info.repeat;
+        this._playSerial(node, info.serialAnimationEffects, () => {
+            if (info.repeat == 0 || --repeat > 0) this.playParallel(node, info);
         });
     }
 
@@ -1273,20 +1332,21 @@ export class YJUIAnimationEffect extends Component {
      * this.parallelAnimationEffects = [rotateEffect, scaleEffect];
      * this.playParallel(iconNode, 2); // 重复2次
      */
-    private playParallel(node: Node, repeat: number) {
+    private playParallel(node: Node, info: AnimationEffectInfo) {
         if (!isValid(node)) return;
-        let all = this.parallelAnimationEffects.length,
+        let all = info.parallelAnimationEffects.length,
             n = 0;
         for (let i = 0; i < all; i++) {
-            const a = this.parallelAnimationEffects[i];
+            const a = info.parallelAnimationEffects[i];
             this._playSerial(node, a.serialAnimationEffects, () => {
                 n++;
             });
         }
+        let repeat = info.repeat;
         no.scheduleUpdateCheck(() => {
             return n === all;
         }, () => {
-            if (this.repeat == 0 || --repeat > 0) this.playParallel(node, repeat);
+            if (info.repeat == 0 || --repeat > 0) this.playParallel(node, info);
         }, this);
     }
 
