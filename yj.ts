@@ -165,7 +165,8 @@ export const Mesh = _cc.Mesh;
 export type Mesh = _cc.Mesh;
 export const EventKeyboard = _cc.EventKeyboard;
 export type EventKeyboard = _cc.EventKeyboard;
-
+export const KeyCode = _cc.KeyCode;
+export type KeyCode = _cc.KeyCode;
 export const Game = _cc.Game;
 export const Enum = _cc.Enum;
 export const CCString = _cc.CCString;

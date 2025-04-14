@@ -19,7 +19,7 @@ export class YJKeyboardListener extends Component {
     onKeyDownHandler: no.EventHandlerInfo[] = [];
 
     /** 键盘抬起事件处理函数列表（参数为按键码） */
-    @property({ type: no.EventHandlerInfo, displayName: '按下事件' })
+    @property({ type: no.EventHandlerInfo, displayName: '抬起事件' })
     onKeyUpHandler: no.EventHandlerInfo[] = [];
 
     /**
