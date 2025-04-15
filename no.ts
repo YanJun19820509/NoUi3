@@ -816,7 +816,7 @@ export namespace no {
             this._time = t;
             this._targets = [];
             this._num = 1;
-            
+
             // 创建每秒定时器
             setInterval(() => {
                 this._time++;
@@ -1032,7 +1032,7 @@ export namespace no {
         (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
-   
+
     /**
      * 触发事件并注册一次性回调
      * @param emitType 要触发的事件类型
@@ -1349,7 +1349,7 @@ export namespace no {
         let s = String(n);
         let len = s.length;
         let l = len % 3;
-        
+
         // 计算显示数值部分
         let displayValue = '';
         if (l === 1) { // 处理类似 1,500 -> 1.5K
@@ -1358,7 +1358,7 @@ export namespace no {
             displayValue = s.slice(0, l || 3);
             if (l === 0) displayValue = s.slice(0, 3);
         }
-        
+
         // 计算单位索引
         const unitIndex = Math.floor(len / 3) - 1 - (l === 0 ? 1 : 0);
         return displayValue + unit[unitIndex];
@@ -3065,7 +3065,7 @@ export namespace no {
             m: number = Math.pow(10, Math.max(r1, r2));
         return (n1 * m + n2 * m) / m;
     }
-    
+
     /**
      * 精确减法运算（解决浮点数精度问题）
      * @param n1 - 被减数
@@ -3083,7 +3083,7 @@ export namespace no {
             m: number = Math.pow(10, n);
         return Number(((n1 * m - n2 * m) / m).toFixed(n));
     }
-    
+
     /**
      * 精确乘法运算（解决浮点数精度问题）
      * @param n1 - 被乘数
@@ -3100,7 +3100,7 @@ export namespace no {
             s2 = n2.toString().toLowerCase().split('e')[0].replace('.', '');
         return Number(s1) * Number(s2) / Math.pow(10, m);
     }
-    
+
     /**
      * 精确除法运算（解决浮点数精度问题）
      * @param n1 - 被除数
@@ -3246,7 +3246,7 @@ export namespace no {
 
             if (data.props != null) {
                 let np: any, tp: any, op: any; // 分别存储节点属性、变换属性、透明度属性
-                
+
                 // 遍历所有属性配置
                 for (let k in data.props) {
                     let v = data.props[k];
@@ -3504,12 +3504,12 @@ export namespace no {
                 parallelGroup = parallelGroup.concat(parseTweenData(data[i], node));
             }
             return parallelGroup;
-        } 
+        }
         // 处理串行结构（对象或一维数组）
         else {
             const _tween = new TweenSet(node);
             const sequenceData = [].concat(data); // 统一转为数组处理
-            
+
             for (let i = 0, n = sequenceData.length; i < n; i++) {
                 _tween.setTweenData(sequenceData[i]); // 依次添加串行动作
             }
@@ -5600,7 +5600,7 @@ export namespace no {
             // 移除路径中的assets前缀并分割路径层级
             path = path.split('/assets/').pop();
             let p = path.split('/');
-            
+
             // 遍历路径层级查找有效bundle名称
             let bundle: string;
             for (let i = 0, n = p.length; i < n; i++) {
@@ -5610,20 +5610,20 @@ export namespace no {
                     break;
                 }
             }
-            
+
             // 未找到有效bundle时返回空对象
             if (!bundle) return {};
-            
+
             // 解析文件名和扩展名
             let file = p.pop().split('.');
             let fileType = file.pop(),
                 fileName = file.join('.') || fileType;
-            
+
             // 构建返回对象基础信息
             let a: AssetPath = { bundle: bundle, file: fileName };
             p[p.length] = fileName;
             a.path = p.join('/');
-            
+
             // 根据文件扩展名确定资源类型
             let s: typeof Asset | typeof ImageAsset;
             if (fileType != null) {
@@ -5770,13 +5770,13 @@ export namespace no {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
-            
+
             // 确保路径以斜杠结尾用于前缀匹配
             p.path += '/';
             let bundle = this.getLoadedBundle(p.bundle);
             const assetInfos = bundle['_config'].assetInfos._map;
             let requests: any[] = [];
-            
+
             // 遍历资源信息表收集符合要求的资源
             for (const uuid in assetInfos) {
                 const info = assetInfos[uuid];
@@ -5822,12 +5822,12 @@ export namespace no {
                 err(`${folderName}没有设置ab包`);
                 return;
             }
-            
+
             let bundle = this.getLoadedBundle(p.bundle);
             // 获取目录下的所有资源信息
             let infos = bundle.getDirWithPath(p.path);
             let requests: { path: string, bundle: string, type: typeof Asset }[] = [];
-            
+
             // 过滤子资源并构建请求列表
             for (let i = 0; i < infos.length; i++) {
                 let a = infos[i];
@@ -6577,7 +6577,7 @@ export namespace no {
                     return Prefab;
                 case 'jsonasset':
                     return JsonAsset;
-                default: 
+                default:
                     return null;
             }
         }
@@ -6605,7 +6605,7 @@ export namespace no {
         public preloadRemoteBundles(cb?: () => void) {
             const bundles = this.remoteBundles.slice();  // 创建副本避免原数组被修改
             if (!bundles.length) return cb?.();
-            
+
             log('开始预加载远程包', bundles);
             this.loadBundles(bundles, (progress) => {
                 // 可在此处添加进度更新逻辑
@@ -6689,7 +6689,7 @@ export namespace no {
                 asset.addRef();
                 return onComplete?.(asset);
             };
-            
+
             // 防止重复加载
             if (this._loadingAssets.has(path)) {
                 warn(`资源 ${path} 正在加载中，请勿重复请求`);
@@ -6704,7 +6704,7 @@ export namespace no {
                     err('resources.load', path, e.stack);
                     return onComplete?.(null);
                 }
-                
+
                 // 缓存路径到UUID的映射
                 this._pathToUuid.set(path, asset.uuid);
                 asset.addRef(); // 增加引用计数防止自动释放
@@ -7783,7 +7783,7 @@ export namespace no {
             let exps = expression.split(' where ');
             let table = exps[0].split('.');
             let tableData = tableDatas[table[0]];
-            
+
             // 处理WHERE条件
             if (exps[1]) {
                 let query = exps[1];
@@ -8895,10 +8895,10 @@ export namespace no {
         if (b == null) return '';
         b = ToUTF8(b); // 转换为UTF-8字节数组
         // 生成固定加密密钥（1e8的整数形式）
-        for (var e = Math.floor(1e8 * 1), 
-             // 计算需要分割的4字节块数量
-             d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0), 
-             c = [], a = 0; a < d; a++)
+        for (var e = Math.floor(1e8 * 1),
+            // 计算需要分割的4字节块数量
+            d = (b.length >> 2) + (0 < b.length % 4 ? 1 : 0),
+            c = [], a = 0; a < d; a++)
             // 将4个字节组合为32位整数并进行异或加密
             (c[a] = b[4 * a] | (b[4 * a + 1] << 8) | (b[4 * a + 2] << 16) | (b[4 * a + 3] << 24)), (c[a] ^= e);
         c[d] = e; // 在数据末尾附加加密密钥
@@ -8906,9 +8906,9 @@ export namespace no {
         b = [];
         for (a = 0; a <= d; a++)
             (b[4 * a] = c[a] & 255),          // 取最低8位
-            (b[4 * a + 1] = (c[a] >> 8) & 255),  // 次低8位
-            (b[4 * a + 2] = (c[a] >> 16) & 255), // 次高8位 
-            (b[4 * a + 3] = (c[a] >> 24) & 255); // 最高8位
+                (b[4 * a + 1] = (c[a] >> 8) & 255),  // 次低8位
+                (b[4 * a + 2] = (c[a] >> 16) & 255), // 次高8位 
+                (b[4 * a + 3] = (c[a] >> 24) & 255); // 最高8位
         return bytes2String(b); // 转换为Base64字符串
     }
 
@@ -9134,7 +9134,7 @@ export namespace no {
     export class NetworkSpeed {
         /** 存储最近一次的加载数据 [已加载字节数, 时间戳] */
         private _lastLoaded: number[];
-        
+
         constructor() {
             this._lastLoaded = [0];
         }
@@ -9161,21 +9161,21 @@ export namespace no {
                 this._lastLoaded[1] = now;
                 return null;
             }
-            
+
             // 计算时间差（秒）
             const t = (now - this._lastLoaded[1]) / 1000;
             if (t < 1) return null; // 时间间隔不足1秒不计算
-            
+
             let result: number[] = [];
             const sub = (loaded - this._lastLoaded[0]) / t; // 计算字节/秒
-            
+
             result[0] = sub; // 当前网速
             result[1] = Math.ceil((total - loaded) / sub); // 剩余时间（向上取整）
-            
+
             // 更新基准数据
             this._lastLoaded[0] = loaded;
             this._lastLoaded[1] = now;
-            
+
             return result;
         }
 
@@ -9221,18 +9221,16 @@ export namespace no {
      */
     export function visible(node: Node, v?: boolean): boolean {
         if (!checkValid(node)) return false;
-        if (!EDITOR) {
-            if (v != undefined && node.active != v) {
-                node.active = v;
-            }
-            return node.active;
+        if (v != undefined && node.active != v) {
+            node.active = v;
         }
+        return node.active;
 
         // 通过修改节点X坐标实现隐藏（保留原始坐标用于恢复）
         if (node['__origin_x__'] == null) {
             node['__origin_x__'] = no.x(node);
         }
-        
+
         if (v != undefined) {
             node['yj_need_render'] = v;
             if (v) {
@@ -9276,7 +9274,7 @@ export namespace no {
             // 保存原始透明度用于恢复
             if (node['yj_origin_opacity'] == null)
                 node['yj_origin_opacity'] = uiopacity.opacity || 255;
-                
+
             if (!v) {
                 uiopacity.opacity = 0;
             } else {
@@ -9296,6 +9294,14 @@ export namespace no {
             node.emit(NodeEventType.ACTIVE_IN_HIERARCHY_CHANGED, node);
         }
         return node['yj_need_render'] !== false;
+    }
+
+    /** 触发可见性变更事件 */
+    function onVisibleChange(node: Node, v: boolean) {
+        const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
+        for (let i = 0; i < arr.length; i++) {
+            arr[i].changeVisible(v);
+        }
     }
 
     /**
@@ -9335,15 +9341,28 @@ export namespace no {
             }
         }
         node['_activeInHierarchy'] = v;
+        // 激活或禁用节点的组件
+        runCompActiveFunc(node, v);
     }
 
-    /** 触发可见性变更事件 */
-    function onVisibleChange(node: Node, v: boolean) {
-        const arr: any[] = node.getComponentsInChildren('YJOnVisibleChange');
-        for (let i = 0; i < arr.length; i++) {
-            arr[i].changeVisible(v);
+    // 定义一个函数runCompActiveFunc，用于激活或禁用节点的组件
+    function runCompActiveFunc(node: Node, isActive: boolean) {
+        // 获取节点的组件数组
+        const comps = node.components;
+        // 根据isActive的值确定要调用的函数名
+        const funcName = isActive ? 'onEnable' : 'onDisable';
+        // 遍历组件数组，调用相应的函数
+        for (let i = 0, n = comps.length; i < n; i++) {
+            comps[i][funcName]?.();
+        }
+        // 获取节点的子节点数组
+        const children = node.children;
+        // 遍历子节点数组，递归调用runCompActiveFunc函数
+        for (let i = 0; i < children.length; i++) {
+            runCompActiveFunc(children[i], isActive);
         }
     }
+
 
     /**
      * 节点包围盒类（增强计算包含子节点的包围盒）
@@ -9361,7 +9380,7 @@ export namespace no {
     export class NodeBoundingBox {
         private _targetNode: Node;
         private _rect: Rect;
-        
+
         /**
          * @param targetNode - 需要计算包围盒的目标节点
          */
@@ -10246,12 +10265,12 @@ export namespace no {
                 // 提取函数参数并递归解析
                 const sss = getStringBetween(formula, '(', ')', idx);
                 const args: any[] = sss.split(',');
-                
+
                 // 处理参数中的负号（_替换为-）
                 for (let i = 0; i < args.length; i++) {
                     const b = splitFormula(args[i]);
-                    args[i] = typeof b == 'string' && b.startsWith('_') ? 
-                             b.replace('_', '-') : b;
+                    args[i] = typeof b == 'string' && b.startsWith('_') ?
+                        b.replace('_', '-') : b;
                 }
 
                 // 执行数学函数并替换原表达式
@@ -10310,8 +10329,8 @@ export namespace no {
         /** 处理操作数中的表达式和负号 */
         function processOperand(operand: string) {
             if (isNaN(Number(operand))) {
-                return operand.startsWith('_') ? 
-                    operand.replace('_', '-') : 
+                return operand.startsWith('_') ?
+                    operand.replace('_', '-') :
                     splitFormula(operand);
             }
             return operand;
@@ -10562,10 +10581,10 @@ export namespace no {
             }
             return this._instance;
         }
-        
+
         /** 缓存对象池 */
         public pool: ISharedLabelData[] = [];
-        
+
         /**
          * 从缓存池获取canvas对象
          * @returns 可用的canvas数据对象（新建或复用）
@@ -10726,7 +10745,7 @@ export namespace no {
             }
         }
     }
-    
+
     /** 全局节点缓存池实例 */
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
@@ -10758,7 +10777,7 @@ export namespace no {
      * @template T - 函数返回值类型
      */
     type PromiseHandlerFuncReturn<T> = () => T;
-    
+
     /**
      * 带resolve/reject回调的异步函数类型定义
      */

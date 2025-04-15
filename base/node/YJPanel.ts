@@ -195,9 +195,6 @@ export class YJPanel extends Component {
     /** 
      * 是否缓存到对象池
      * @remarks 可重写实现特殊缓存逻辑
-     * @example
-     * // 紧急通知面板不缓存：
-     * protected cacheToPool = false;
      */
     protected cacheToPool: boolean = true;
 
