@@ -538,6 +538,7 @@ export class AutoCreateNode extends Component {
         widget.right = 0;
         view.addComponent(Mask).type = Mask.Type.GRAPHICS_RECT;
         let content = new Node('content');
+        content.layer = Layers.Enum.UI_2D;
         content.parent = view;
         content.addComponent(UITransform).setContentSize(node.getComponent(UITransform).contentSize);
         content.getComponent(UITransform).setAnchorPoint(view.getComponent(UITransform).anchorPoint);
