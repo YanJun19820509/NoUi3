@@ -174,7 +174,8 @@ export class YJLayout extends Component {
     }
 
     /** 添加子节点时的处理 */
-    protected _childAdded(child: Node) {
+    protected async _childAdded(child: Node) {
+        await no.sleep(0.1);
         const s1 = no.size(this.container),
             anchar = no.anchor(this.container),
             s2 = no.size(child);
@@ -221,6 +222,9 @@ export class YJLayout extends Component {
     /** 更新子节点位置并设置容器大小 */
     private updatePosition(poses: Vec3[], size: Vec2) {
         size.add(this.padding).add(this.padding);
+        let containerSize = no.size(this.container);
+        const anchor = no.anchor(this.container);
+        const containerPos = no.position(this.container);
         no.size(this.container, new Size(size.x, size.y)); //设置容器大小
         if (this.type == LayoutType.X) {
             const ancharX = no.anchorX(this.container),
@@ -233,6 +237,7 @@ export class YJLayout extends Component {
                     poses[i].x = -poses[i].x;
                 }
             }
+            containerPos.y += (anchor.y - 0.5) * (size.y - containerSize.y);
         }
         else if (this.type == LayoutType.Y) {
             const ancharY = no.anchorY(this.container),
@@ -245,6 +250,7 @@ export class YJLayout extends Component {
                     poses[i].y = -poses[i].y;
                 }
             }
+            containerPos.x += (anchor.x - 0.5) * (size.x - containerSize.x);
         }
         else if (this.type == LayoutType.XY || this.type == LayoutType.YX) {
             const ancharX = no.anchorX(this.container),
@@ -267,6 +273,7 @@ export class YJLayout extends Component {
             }
         }
 
+        no.position(this.container, containerPos);
         const children = this.container.children;
         //将poses赋值给children
         if (!this.isTween) {
