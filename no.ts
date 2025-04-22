@@ -920,23 +920,45 @@ export namespace no {
     }
 
     /**
-     * 大数字转换成最多3位数加单位的格式
-     * @param n
+     * 将数字转换为带单位的字符串
+     * @param n 要转换的数字
+     * @param units 单位数组（按单位从小到大排列，如[ 'K', 'M', 'B']）
+     * @param unitLen 每个单位对应的数字长度（如3表示每3位换一个单位）
+     * @example num2strWithUnit(123456, ['K', 'M', 'B'], 3) -> "123.45K"
+     * num2strWithUnit(123456, ['万', '亿'], 4) -> "12.34万"
      */
-    export function num2str(n: number): string {
+    export function num2strWithUnit(n: number, units: string[], unitLen: number): string {
+        // 处理空值情况
         if (n == null) return '';
-        if (n < 1000) return String(n);
-        let unit = ['K', 'M', 'B'];
-        var a = '';
-        let s = String(n);
-        let len = s.length;
-        let l = len % 3;
-        if (l == 1) {
-            a = s[0] + '.' + s[1];
-        } else {
-            a = s[0] + s[1] + (l == 0 ? s[2] : '');
-        }
-        return a + unit[floor(len / 3) - 1 - (l == 0 ? 1 : 0)];
+
+        // 将数字转换为字符串并获取长度
+        const s = String(n);
+        const len = s.length;
+
+        // 如果数字长度小于等于单位长度，直接返回原数字字符串
+        if (len <= unitLen) return String(n);
+
+        // 计算单位层级和余数
+        // 例：数字长度5位，单位长度3位时，level=1（对应千位单位），remainder=2
+        const level = Math.floor(len / unitLen);
+        const remainder = len % unitLen;
+
+        // 计算格式化数值（保留两位小数）：
+        // 1. 确定需要截断的位数 = 单位层级对应的总位数 - 余数处理偏移 - 小数保留位数
+        // 2. 截断后除以100得到两位小数
+        // 例：n=12345（5位），unitLen=3，level=1，remainder=2
+        //    截断位数 = 1*3 - (remainder?0:unitLen) -2 = 3 -0 -2 =1 → 10^1=10
+        //    n/10=1234.5 → floor=1234 → 1234/100=12.34
+        const digitsToCut = level * unitLen - (remainder === 0 ? unitLen : 0) - 2;
+        const a = Math.floor(n / Math.pow(10, digitsToCut)) / 100;
+
+        // 计算单位索引：
+        // 1. 基础索引 = 总单位层级 - 1（数组从0开始）
+        // 2. 余数为0时需要再减1（处理整除数情况）
+        // 例：数字长度4位，unitLen=3 → level=1，remainder=1 → 索引 1-1=0（对应第一个单位）
+        //    数字长度6位，unitLen=3 → level=2，remainder=0 → 索引 2-1-1=0（对应第二个单位需要减1）
+        const unitIndex = level - 1 - (remainder === 0 ? 1 : 0);
+        return a + units[unitIndex];
     }
 
     /**
