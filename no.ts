@@ -4217,7 +4217,8 @@ export namespace no {
         public add(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = add(this._coefficient, other._coefficient * Math.pow(10, other.index - this.index));
+                let temp = mutiply(other._coefficient, Math.pow(10, other.index - this.index));
+                this.coefficient = add(this._coefficient, temp);
             } else {
                 other = new ScientificString(other);
                 this.add(other);
@@ -4238,7 +4239,8 @@ export namespace no {
         public minus(other: ScientificString | number | string): ScientificString {
             if (other == null) return this;
             if (other instanceof ScientificString) {
-                this.coefficient = minus(this._coefficient, other._coefficient * Math.pow(10, other.index - this.index));
+                let temp = mutiply(other._coefficient, Math.pow(10, other.index - this.index));
+                this.coefficient = minus(this._coefficient, temp);
             } else {
                 other = new ScientificString(other);
                 this.minus(other);
