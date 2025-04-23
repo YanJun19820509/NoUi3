@@ -44,7 +44,7 @@ export class YJToggleGroupManager extends ToggleContainer {
     public ensureValidState() {
         const toggles = this.toggleItems;
         // 如果不允许全部关闭且有toggle时,确保默认选中项被选中
-        if (!this._allowSwitchOff && toggles.length !== 0) {
+        if (!this._allowSwitchOff && toggles.length !== 0 && this.defaultCheckedIdx > -1) {
             const toggle = toggles[this.defaultCheckedIdx];
             if (toggle && !toggle.isChecked) {
                 toggle.isChecked = true;
