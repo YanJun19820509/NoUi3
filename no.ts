@@ -17,7 +17,7 @@ export namespace no {
     let _appVer: string = '';
     let _isLogEnabled: boolean = DEBUG;
     let _isSpineEnable: boolean = true;
-    export let i18LogEnabled: boolean = false;
+    let _i18LogEnabled: boolean = false;
 
     /**
      * 不支持动态合图
@@ -81,6 +81,11 @@ export namespace no {
     export function multiTouch(v?: boolean): boolean {
         if (v !== undefined) macro.ENABLE_MULTI_TOUCH = v;
         return macro.ENABLE_MULTI_TOUCH;
+    }
+
+    export function i18LogEnabled(v?: boolean): boolean {
+        if (v !== undefined) _i18LogEnabled = v;
+        return _i18LogEnabled;
     }
 
     /**
