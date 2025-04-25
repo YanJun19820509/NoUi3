@@ -17,6 +17,7 @@ export namespace no {
     let _appVer: string = '';
     let _isLogEnabled: boolean = DEBUG;
     let _isSpineEnable: boolean = true;
+    export let i18LogEnabled: boolean = false;
 
     /**
      * 不支持动态合图
