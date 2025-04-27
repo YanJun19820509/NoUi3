@@ -207,7 +207,7 @@ export class AutoCreateNode extends Component {
     private createSpriteNode(c: any, parent: Node): Node {
         let n = this.getNode(c.name, Sprite, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
         let s = n.getComponent(Sprite) || n.addComponent(Sprite);
-        let sf_name = this.getSpriteFrameName(c.name);
+        let sf_name = this.getSpriteFrameName(c.img);
         let sf = this.getSpriteFrame(sf_name);
         let is9 = false;
         if (sf && (sf.insetTop != 0 || sf.insetBottom != 0 || sf.insetRight != 0 || sf.insetLeft != 0)) {
@@ -229,7 +229,7 @@ export class AutoCreateNode extends Component {
 
         s.spriteFrame = sf;
         if (!s.spriteFrame) {
-            no.EditorMode.loadAnyFile<SpriteFrame>(`${this.rootPath}/${c.name}.png`).then(f => {
+            no.EditorMode.loadAnyFile<SpriteFrame>(`${this.rootPath}/${c.img}.png`).then(f => {
                 s.spriteFrame = f;
             });
         }
