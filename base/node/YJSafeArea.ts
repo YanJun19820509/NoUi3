@@ -1,6 +1,7 @@
 
-import { ccclass, requireComponent, property, sys, Widget, SafeArea, UITransform, widgetManager, isValid, view } from '../../yj';
+import { ccclass, requireComponent, property, sys, Widget, SafeArea, UITransform, widgetManager, isValid } from '../../yj';
 import { EDITOR } from 'cc/env';
+import { YJFitScreen } from '../YJFitScreen';
 
 /**
  * Predefined variables
@@ -39,11 +40,10 @@ export class YJSafeArea extends SafeArea {
             return;
         }
         // IMPORTANT: need to update alignment to get the latest position
-        widget.updateAlignment();
-        const lastPos = this.node.position.clone();
-        const lastAnchorPoint = uiTransComp.anchorPoint.clone();
+        // widget.updateAlignment();
+        //
         widget.isAlignTop = widget.isAlignBottom = widget.isAlignLeft = widget.isAlignRight = true;
-        const visibleSize = view.getVisibleSize();
+        const visibleSize = YJFitScreen.getVisibleSize();
         const screenWidth = visibleSize.width;
         const screenHeight = visibleSize.height;
         const safeArea = sys.getSafeAreaRect();
@@ -54,12 +54,16 @@ export class YJSafeArea extends SafeArea {
             // widget.left = safeArea.x;
             // widget.right = screenWidth - safeArea.x - safeArea.width;
         }
-        widget.updateAlignment();
+        // widget.updateAlignment();
         // set anchor, keep the original position unchanged
-        const curPos = this.node.position.clone();
-        const anchorX = lastAnchorPoint.x - (curPos.x - lastPos.x) / uiTransComp.width;
-        const anchorY = lastAnchorPoint.y - (curPos.y - lastPos.y) / uiTransComp.height;
-        uiTransComp.setAnchorPoint(anchorX, anchorY);
+        const lastPos = this.node.position.clone();
+        const lastAnchorPoint = uiTransComp.anchorPoint.clone();
+        this.scheduleOnce(() => {
+            const curPos = this.node.position.clone();
+            const anchorX = lastAnchorPoint.x - (curPos.x - lastPos.x) / uiTransComp.width;
+            const anchorY = lastAnchorPoint.y - (curPos.y - lastPos.y) / uiTransComp.height;
+            uiTransComp.setAnchorPoint(anchorX, anchorY);
+        });
         // IMPORTANT: restore to lastPos even if widget is not ALWAYS
         widgetManager.add(widget);
     }
