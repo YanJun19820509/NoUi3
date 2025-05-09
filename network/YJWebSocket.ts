@@ -81,13 +81,13 @@ export class YJWebSocket implements YJSocketInterface {
             this._onMessage(event.data);
         };
         this.ws.onerror = (event) => {
-            no.err(`websocket error:${this.url}`, this.isClosed, JSON.stringify(event));
+            no.err(`websocket error:${this.url} isClosed:${this.isClosed} event:${JSON.stringify(event)}`);
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         };
         this.ws.onclose = (event) => {
-            no.err(`websocket close:${this.url}`, this.isClosed, JSON.stringify(event));
+            no.err(`websocket close:${this.url} isClosed:${this.isClosed} event:${JSON.stringify(event)}`);
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
@@ -116,14 +116,14 @@ export class YJWebSocket implements YJSocketInterface {
         });
 
         this.ws.onError((res) => {
-            no.err(`websocket error:${this.url}`, res);
+            no.err(`websocket error:${this.url} isClosed:${this.isClosed} res:${JSON.stringify(res)}`);
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
         });
 
         this.ws.onClose((res) => {
-            no.err(`websocket close:${this.url}`, res);
+            no.err(`websocket close:${this.url} isClosed:${this.isClosed} res:${JSON.stringify(res)}`);
             if (this.isClosed) return;
             this.isClosed = true;
             this.onClose();
