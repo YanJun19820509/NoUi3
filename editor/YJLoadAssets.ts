@@ -62,7 +62,7 @@ export class YJLoadAssets extends Component {
             if (a.loadFromAtlas) {
                 const sf = a.getComponent(Sprite).spriteFrame;
                 if (sf) {
-                    let uuid = sf.texture.uuid;
+                    let uuid = sf.texture._uuid;
                     no.addToArray(textureUuid, uuid);
                 } else {
                     no.warn(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);

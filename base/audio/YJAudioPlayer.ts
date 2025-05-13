@@ -58,10 +58,10 @@ export class YJAudioPlayer extends Component {
      * @param {AudioClip} v 音频剪辑资源
      */
     public set clip(v: AudioClip) {
-        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+        no.EditorMode.getAssetUrlByUuid(v._uuid).then(url => {
             if (!url) return;
             this.clipUrl = url;
-            this.clipUuid = v.uuid;
+            this.clipUuid = v._uuid;
         });
     }
 

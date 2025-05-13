@@ -1271,6 +1271,14 @@ export class YJUIAnimationEffect extends Component {
             this.playParallel(node, info);
     }
 
+    public playOtherNode(node: Node) {
+        const info = this.animationEffectInfos[0];
+        if (info.serialAnimationEffects.length > 0)
+            this.playSerial(node, info);
+        else
+            this.playParallel(node, info);
+    }
+
     /**
      * 子节点动画播放器
      * @param node 父级容器节点

@@ -15,11 +15,11 @@ const REUSE_MATERIAL = true; //是否复用材质
 //创建新的材质
 const createMaterial = function () {
     const material = new Material();
-    material._uuid = no.uuid();
+    material._uuid = no._uuid();
     const all = EffectAsset.getAll();
     let effectAsset: EffectAsset;
     for (const key in all) {
-        if (key.endsWith('NoUi3/effect/sample2d')) {
+        if (key.endsWith('../../effect/sample2d')) {
             effectAsset = all[key];
             break;
         }
@@ -187,8 +187,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         
         // 加载纹理资源并建立映射关系
         await this.loadTextures(materialInfo, textureInfos);
-        this.keyToMaterialUuid.set(name, materialInfo.uuid);
-        return materialInfo.uuid;
+        this.keyToMaterialUuid.set(name, materialInfo._uuid);
+        return materialInfo._uuid;
     }
 
     /**
@@ -384,13 +384,13 @@ export class YJSample2DMaterialInfo {
      * new YJSample2DMaterialInfo('skill_effect', false);
      */
     constructor(name: string, reuse: boolean) {
-        this.uuid = no.uuid();
+        this._uuid = no._uuid();
         this.refCount++;
         this.name = name;
 
         // 根据复用配置选择图集尺寸（可复用材质使用2048尺寸，临时材质使用512）
         const material = createMaterial();
-        const size = reuse ? 2048 : 512;
+        const size = 2;//reuse ? 2048 : 512;
         const atlas = new Atlas(size, size, name);
         this.dynamicAtlas = new YJDynamicAtlas(atlas, material);
         // 注册到调试显示组件

@@ -117,11 +117,11 @@ js.mixin(YJButton.prototype, {
     }
 });
 
-js.mixin(Asset.prototype, {
-    get uuid() {
-        return this._uuid;
-    }
-});
+// js.mixin(Asset.prototype, {
+//     get uuid() {
+//         return this._uuid;
+//     }
+// });
 
 js.mixin(SpriteFrame.prototype, {
     get width() {

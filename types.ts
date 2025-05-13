@@ -146,7 +146,7 @@ export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
  * 精灵帧元数据类型（包含完整纹理信息）
  * @example
  * // 获取精灵帧元数据
- * const frameMeta: SpriteFrameDataType = await EditorMode.getAssetInfo(spriteFrame.uuid);
+ * const frameMeta: SpriteFrameDataType = await EditorMode.getAssetInfo(spriteFrame._uuid);
  */
 export type SpriteFrameDataType = { 
     uuid: string, 
@@ -616,7 +616,7 @@ export class LoadAssetsInfo {
 
 //     public set json(v: JsonAsset) {
 //         if (v) {
-//             this.assetUuid = v.uuid;
+//             this.assetUuid = v._uuid;
 //             this.assetName = v.name;
 //         }
 //     }
@@ -657,7 +657,7 @@ export class TextureInfo extends LoadAssetsInfo {
 
     public set texture(v: Texture2D) {
         if (v) {
-            this.setPathAndName(v.uuid, info => {
+            this.setPathAndName(v._uuid, info => {
                 this.path = this.path.replace('.png', '');
                 this.setAtlasJson();
             });
@@ -724,7 +724,7 @@ export class TextureInfo extends LoadAssetsInfo {
 
 //     public set material(v: Material) {
 //         if (v) {
-//             this.assetUuid = v.uuid;
+//             this.assetUuid = v._uuid;
 //             this.assetName = v.name;
 //             this.setPath();
 //         }
@@ -758,7 +758,7 @@ export class SpriteFrameInfo extends LoadAssetsInfo {
 
     public set spriteFrame(v: SpriteFrame) {
         if (v) {
-            this.setPathAndName(v.uuid);
+            this.setPathAndName(v._uuid);
         } else {
             this.path = '';
             this.assetName = '';
@@ -790,7 +790,7 @@ export class PrefabInfo extends LoadAssetsInfo {
 
     public set prefab(v: Prefab) {
         if (v) {
-            this.setPathAndName(v.uuid);
+            this.setPathAndName(v._uuid);
         } else {
             this.path = '';
             this.assetName = '';

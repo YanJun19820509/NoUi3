@@ -1,10 +1,9 @@
-import { no } from "NoUi3/no";
-import { ccclass, Node, EventTouch, property, v4, Vec3, Vec4, v3, Vec2, v2 } from "NoUi3/yj";
-import { Range } from "NoUi3/types";
+import { no } from "../../no";
+import { ccclass, Node, EventTouch, property, v4, Vec3, Vec4, v3, Vec2, v2, view } from "../../yj";
+import { Range } from "../../types";
 import { YJTouchListener } from "../touch/YJTouchListener";
 import { YJDragDropItemNode } from "./YJDragDropItemNode";
 import { YJDragDropTargetNode } from "./YJDragDropTargetNode";
-import { YJFitScreen } from "../YJFitScreen";
 /**
  * 拖拽管理器，需要将可拖拽的节点和拖拽放入的目标节点都作为该节点的子节点
  * Author mqsy_yj
@@ -432,7 +431,7 @@ export class YJDragDropManager extends YJTouchListener {
             this.lastDragNode = this.dragNode;
             const nodeSize = no.size(this.dragNode);
             const anchor = no.anchor(this.dragNode);
-            const viewSize = YJFitScreen.getVisibleSize();
+            const viewSize = view.getVisibleSize();
             
             // 计算各边界的偏移量（考虑锚点对节点位置的影响）
             const range = v4(

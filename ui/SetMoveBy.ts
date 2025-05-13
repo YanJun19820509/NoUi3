@@ -1,6 +1,6 @@
-import { ccclass, property, Vec3 } from 'NoUi3/yj';
+import { ccclass, property, Vec3 } from '../yj';
 import { HackUi } from './HackUi';
-import { no } from 'NoUi3/no';
+import { no } from '../no';
 
 /**
  * 

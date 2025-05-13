@@ -1,5 +1,5 @@
-import { no } from 'NoUi3/no';
-import { ccclass, Component, EventTouch, property, Size, sys, v2, Vec2, view } from 'NoUi3/yj';
+import { no } from '../../no';
+import { ccclass, Component, EventTouch, property, Size, sys, v2, Vec2, view } from '../../yj';
 import { YJMoveHandleDelegate } from './YJMoveHandleDelegate';
 
 @ccclass('YJMoveHandle')

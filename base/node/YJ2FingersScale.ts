@@ -1,6 +1,5 @@
 
 import { ccclass, property, Component, Node, EventTouch, Touch, Vec2, math } from '../../yj';
-import { YJFitScreen } from '../YJFitScreen';
 
 /**
  * Predefined variables
@@ -154,8 +153,8 @@ export class YJ2FingersScale extends Component {
      */
     private touchesDistance(touches: Touch[]): number {
         return Vec2.distance(
-            YJFitScreen.fitTouchPoint(touches[0]), // 适配后的触摸点1坐标
-            YJFitScreen.fitTouchPoint(touches[1])  // 适配后的触摸点2坐标
+            touches[0].getUILocation(), // 适配后的触摸点1坐标
+            touches[1].getUILocation() // 适配后的触摸点2坐标
         );
     }
 }

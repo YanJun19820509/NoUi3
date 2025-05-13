@@ -1,4 +1,4 @@
-import { EasingType, EasingTypeName } from 'NoUi3/types';
+import { EasingType, EasingTypeName } from '../../types';
 import { no } from '../../no';
 import { Node, ccclass, executeInEditMode, property, Component, Enum, Vec2, v2, Vec3, v3, Size, NodeEventType } from '../../yj';
 

@@ -1,4 +1,4 @@
-import { ccclass, color, Color, Component, Enum, property } from "NoUi3/yj";
+import { ccclass, color, Color, Component, Enum, property } from "../../yj";
 /**
  * 
  * Author mqsy_yj

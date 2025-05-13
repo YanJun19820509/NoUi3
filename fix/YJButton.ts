@@ -1,7 +1,7 @@
 
 import { EDITOR, ccclass, property, menu, requireComponent, Component, Node, Button, EventHandler, EventTouch, disallowMultiple } from '../yj';
 import { no } from '../no';
-import { YJSoundEffectManager } from 'NoUi3/base/audio/YJSoundEffectManager';
+import { YJSoundEffectManager } from '../base/audio/YJSoundEffectManager';
 
 /**
  * Predefined variables

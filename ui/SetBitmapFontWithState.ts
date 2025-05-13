@@ -22,7 +22,7 @@ export class SetBitmapFontWithStateInfo extends LoadAssetsInfo {
 
     public set bmFont(v: BitmapFont) {
         if (v) {
-            this.setPathAndName(v.uuid);
+            this.setPathAndName(v._uuid);
         }
     }
 }

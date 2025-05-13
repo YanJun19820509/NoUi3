@@ -110,7 +110,7 @@ export class SetSpine extends HackUi {
         // 检查是否需要自动获取资源路径
         if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
             // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
-            no.EditorMode.getAssetUrlByUuid(spine.skeletonData.uuid).then(url => {
+            no.EditorMode.getAssetUrlByUuid(spine.skeletonData._uuid).then(url => {
                 if (!url) return;
 
                 // 处理资源路径格式（示例：'spine/hero'）

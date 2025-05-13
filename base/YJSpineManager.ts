@@ -1,7 +1,6 @@
 import { ccclass, Component, Node, SkeletonData } from '../yj';
 import { no } from '../no';
 import { singleObject } from '../types';
-import { sp } from 'cc';
 
 interface SpineResource {
     data: SkeletonData;

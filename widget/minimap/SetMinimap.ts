@@ -1,7 +1,7 @@
-import { DynamicAtlasTexture } from 'NoUi3/engine/atlas';
-import { HackUi } from 'NoUi3/ui/HackUi';
-import { no } from 'NoUi3/no';
-import { ccclass, Sprite, Node, Vec2, property, SpriteFrame, Texture2D, Vec3, v3, rect, EventTouch, size } from 'NoUi3/yj';
+import { DynamicAtlasTexture } from '../../engine/atlas';
+import { HackUi } from '../../ui/HackUi';
+import { no } from '../../no';
+import { ccclass, Sprite, Node, Vec2, property, SpriteFrame, Texture2D, Vec3, v3, rect, EventTouch, size } from '../../yj';
 import { SetFogOfWar } from '../fogOfWar/SetFogOfWar';
 
 /**

@@ -2,7 +2,7 @@
 import { EDITOR, ccclass, property, requireComponent, Component, BitmapFont, Label, executeInEditMode, v3, isValid } from '../../yj';
 import { no } from '../../no';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
-import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
+import { YJSample2DMaterialManager } from '../../engine/YJSample2DMaterialManager';
 
 /**
  * Predefined variables
@@ -47,8 +47,8 @@ export class YJBitmapFont extends Component {
         if (v == this._font || !v) return;
         this._font = v;
         this.fontName = v.name;
-        this.fontUuid = v.uuid;
-        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+        this.fontUuid = v._uuid;
+        no.EditorMode.getAssetUrlByUuid(v._uuid).then(url => {
             this.fontUrl = url;
         });
         const label = this.getComponent(Label);
@@ -119,7 +119,7 @@ export class YJBitmapFont extends Component {
      */
     @property
     public get packToAtlas(): boolean {
-        return this._packToAtlas;
+        return false;//this._packToAtlas;
     }
 
     public set packToAtlas(v: boolean) {

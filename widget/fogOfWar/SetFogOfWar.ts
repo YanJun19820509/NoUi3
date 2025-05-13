@@ -1,7 +1,7 @@
-import { DynamicAtlasTexture } from "NoUi3/engine/atlas";
-import { HackUi } from "NoUi3/ui/HackUi";
-import { no } from "NoUi3/no";
-import { ccclass, property, Sprite, SpriteFrame, requireComponent, size, Vec2, v2, v3 } from "NoUi3/yj";
+import { DynamicAtlasTexture } from "../../engine/atlas";
+import { HackUi } from "../../ui/HackUi";
+import { no } from "../../no";
+import { ccclass, property, Sprite, SpriteFrame, requireComponent, size, Vec2, v2, v3 } from "../../yj";
 
 /**
  * 迷雾效果
@@ -226,7 +226,7 @@ export class SetFogOfWar extends HackUi {
             
             // 强制刷新精灵渲染
             if (this.fogSprite) {
-                this.fogSprite.updateRenderer();
+                this.fogSprite.markForUpdateRenderData();
             }
         }
     }

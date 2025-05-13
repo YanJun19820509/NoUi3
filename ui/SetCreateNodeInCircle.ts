@@ -4,7 +4,7 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { HackUi } from './HackUi';
-import { YJJobManager } from 'NoUi3/base/YJJobManager';
+import { YJJobManager } from '../base/YJJobManager';
 
 /**
  * Predefined variables

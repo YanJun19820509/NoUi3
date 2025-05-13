@@ -1,7 +1,7 @@
 import { EDITOR, ccclass, property, menu, Component, Node, Prefab, instantiate, executeInEditMode } from '../../yj';
-import { YJLoadAssets } from 'NoUi3/editor/YJLoadAssets';
-import { no } from 'NoUi3/no';
-import { PrefabInfo } from 'NoUi3/types';
+import { YJLoadAssets } from '../../editor/YJLoadAssets';
+import { no } from '../../no';
+import { PrefabInfo } from '../../types';
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')

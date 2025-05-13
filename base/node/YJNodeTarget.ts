@@ -1,7 +1,6 @@
 
 import { ccclass, property, menu, disallowMultiple, Component, Node, Button, Toggle, v3, Vec3, UITransform, EventTouch, EventHandler, sys, Rect, rect } from '../../yj';
 import { no } from '../../no';
-import { YJFitScreen } from '../YJFitScreen';
 import { YJJobManager } from '../YJJobManager';
 import { YJTouchListener } from '../touch/YJTouchListener';
 
@@ -243,7 +242,7 @@ export class YJNodeTarget extends Component {
     public checkTouch(e: EventTouch, trigger = true): boolean {
         if (!no.checkValid(this.node)) return false;
         const rect = no.nodeBoundingBox(this.node);
-        const a = rect.contains(YJFitScreen.fitTouchPoint(e.touch));
+        const a = rect.contains(e.touch.getUILocation());
         if (a && trigger) {
             const btn = this.getComponent(Button);
             if (btn) {

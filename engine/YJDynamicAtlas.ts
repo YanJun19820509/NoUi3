@@ -163,7 +163,7 @@ export class YJDynamicAtlas {
      */
     public packSpriteFrame(spriteFrame: SpriteFrame, canRotate = true): SpriteFrame {
         if (!this.isWork || !spriteFrame) return null;
-        let uuid = spriteFrame.uuid;
+        let uuid = spriteFrame._uuid;
         if (!this.insertSpriteFrame(spriteFrame, this.canRotate && canRotate)) return null; // 插入图集
         return this.getSpriteFrameInstance(uuid); // 获取打包后的实例
     }
@@ -312,10 +312,10 @@ export class YJDynamicAtlas {
         if (packedFrame) {
             // 克隆原始精灵帧并更新图集参数
             let ff = frame.clone();
-            ff._uuid = frame.uuid;
+            ff._uuid = frame._uuid;
             ff.rotated = packedFrame.rotate;
             ff._setDynamicAtlasFrame(packedFrame);
-            no.setValueSafely(this.spriteFrameMap, { [frame.uuid]: ff });
+            no.setValueSafely(this.spriteFrameMap, { [frame._uuid]: ff });
 
             // 创建新的位图字体实例保留原配置
             let font = new BitmapFont();
@@ -470,7 +470,7 @@ export class YJDynamicAtlas {
 
         // 调用图集管理器插入帧数据，包含空间不足回调
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            no.err(`${this.atlas.uuid}动态图集无空间！`);
+            no.err(`${this.atlas._uuid}动态图集无空间！`);
         });
         return frame;
     }
@@ -563,7 +563,7 @@ export class YJDynamicAtlas {
     private createSpriteFrameInSample2D(spriteFrame: SpriteFrameDataType): SpriteFrame {
         let newSpriteFrame: SpriteFrame = new SpriteFrame();
         // 设置唯一标识（通过非标准方式设置内部属性）
-        newSpriteFrame['_uuid'] = spriteFrame.uuid;
+        newSpriteFrame['_uuid'] = spriteFrame._uuid;
         // 使用动态图集的共享纹理
         newSpriteFrame.texture = this.spriteTexture;
         // 设置原始尺寸（逻辑尺寸）

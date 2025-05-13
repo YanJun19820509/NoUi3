@@ -1,4 +1,4 @@
-import { Label, RichText, ccclass, isValid, property } from '../../common/yj';
+import { Label, RichText, ccclass, isValid, property } from '../yj';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';

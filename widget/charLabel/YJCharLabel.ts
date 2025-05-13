@@ -4,8 +4,8 @@ import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
 import { TextureInfoInGPU } from '../../engine/TextureInfoInGPU';
 import { DynamicAtlasTexture } from '../../engine/atlas';
-import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
-import { YJMacroConfig } from 'NoUi3/macro';
+import { YJSample2DMaterialManager } from '../../engine/YJSample2DMaterialManager';
+import { YJMacroConfig } from '../../macro';
 import { YJGradientColor } from './YJGradientColor';
 
 /**
@@ -212,7 +212,7 @@ export class YJCharLabel extends Sprite {
     public set font(v: TTFFont) {
         if (v == this._font) return;
         this._font = v;
-        this._fontUuid = v ? v.uuid : '';
+        this._fontUuid = v ? v._uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
         this.setLabel();
     }
@@ -667,7 +667,7 @@ export class YJCharLabel extends Sprite {
      */
     @property({ tooltip: '将文本打包到动态图集提升性能' })
     public get packToAtlas(): boolean {
-        return this._packToAtlas;
+        return false;//this._packToAtlas;
     }
 
     public set packToAtlas(v: boolean) {
@@ -847,7 +847,7 @@ export class YJCharLabel extends Sprite {
      * 组件实例唯一标识符
      * @特性说明：
      * - 用于字体资源关联和缓存查找
-     * - 通过no.uuid()生成唯一值
+     * - 通过no._uuid()生成唯一值
      * @示例
      * this._uid = 'a1b2c3d4-e5f6-7890';
      */

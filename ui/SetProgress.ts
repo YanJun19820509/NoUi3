@@ -1,7 +1,6 @@
 
 import { ProgressBar, ccclass, property, menu, Label } from '../yj';
 import { HackUi } from './HackUi';
-import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 
 /**

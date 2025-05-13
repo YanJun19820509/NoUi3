@@ -13,7 +13,7 @@ class YJLoadPrefabsInfo {
 
     /** 设置预制体时获取其url */
     public set prefab(v: Prefab) {
-        no.EditorMode.getAssetUrlByUuid(v.uuid).then(url => {
+        no.EditorMode.getAssetUrlByUuid(v._uuid).then(url => {
             if (!url) return;
             this.prefabUrl = url;
         });

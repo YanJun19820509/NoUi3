@@ -1,7 +1,6 @@
 
 import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate, Texture2D } from '../yj';
 import { no } from '../no';
-import { YJComponent } from './YJComponent';
 import { YJDataWork } from './YJDataWork';
 import { YJPreloadDelegate } from './YJPreloadDelegate';
 
@@ -124,7 +123,7 @@ export class PrefabFileInfo {
         if (this.prefab) {
             let info = await Editor.Message.request('asset-db', 'query-asset-info', this.prefab._uuid);
             this.name = info.name;
-            this._uuid = info.uuid;
+            this._uuid = info._uuid;
             this.url = info.url;
             this.prefab = null; // 清除原始预制体引用，仅保留元数据
         }
@@ -134,7 +133,7 @@ export class PrefabFileInfo {
 @ccclass('YJPreload')
 @menu('NoUi/base/YJPreload(资源预加载)')
 @executeInEditMode()
-export class YJPreload extends YJComponent {
+export class YJPreload extends Component {
     /** 是否预加载远程资源包（需要先配置远程资源服务器地址） */
     @property({ displayName: '预加载远程包' })
     preloadRemoteBundles: boolean = false;
@@ -285,7 +284,7 @@ export class YJPreload extends YJComponent {
     public a_startLoad(): void {
         this.delegate?.beforeStartLoad(this);
         no.EventHandlerInfo.execute(this.beforeCall);
-        this.addUpdateHandlerByFrame(this.checkState, 1);
+        this.checkState();
         this.init();
         this.loadBundles();
         if (this.loadTexture) this.loadTextures();
@@ -629,7 +628,7 @@ export class YJPreload extends YJComponent {
      * //   allProgress: 整体进度（0-1）
      * // }
      */
-    private checkState(): boolean {
+    private checkState() {
         // 获取当前整体进度基准值
         const p = this.dataWork?.data.allProgress || 0;
         if (this.finished >= this.total) {
@@ -649,7 +648,6 @@ export class YJPreload extends YJComponent {
             this.scheduleOnce(() => {
                 no.EventHandlerInfo.execute(this.completeCall);
             }, 0.5);
-            return false;
         } else {
             // 更新进行中的进度数据
             if (this.dataWork) {
@@ -660,7 +658,7 @@ export class YJPreload extends YJComponent {
                     allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
-            return true;
+            requestAnimationFrame(this.checkState.bind(this));
         }
     }
 

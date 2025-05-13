@@ -74,7 +74,7 @@ export class YJSoundEffectManager extends Component {
                 let name = info.name.split('.')[0];
                 effectInfo.alias = name;
                 effectInfo.assetUrl = info.url;
-                effectInfo.assetUuid = info.uuid;
+                effectInfo.assetUuid = info._uuid;
                 let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
                 if (i > -1) {
                     effectInfo.alias = this.soundEffects[i].alias;

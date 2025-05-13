@@ -1,4 +1,4 @@
-import { EasingType } from "NoUi3/types";
+import { EasingType } from "../../types";
 import { no } from "../../no";
 import { DEBUG, Node, UIOpacity, UITransform, ccclass, easing, isValid, js, quat, size, v2, v3 } from "../../yj";
 

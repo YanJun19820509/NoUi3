@@ -4,7 +4,7 @@ import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetNodeTweenAction } from './SetNodeTweenAction';
-import { EasingType, EasingTypeName } from 'NoUi3/types';
+import { EasingType, EasingTypeName } from '../../types';
 
 /**
  * Predefined variables

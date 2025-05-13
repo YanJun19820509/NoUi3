@@ -1,5 +1,5 @@
 import { _decorator, Component, Node } from 'cc';
-import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransition';
+import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransition';
 import { YJDataWorkManager } from './YJDataWorkManager';
 const { ccclass, property } = _decorator;
 /**

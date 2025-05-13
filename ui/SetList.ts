@@ -489,7 +489,7 @@ export class SetList extends HackUi {
         // 动画处理逻辑
         if (this.uiAnim?.enabled) {
             // 播放预设动画
-            this.uiAnim.play(item.children[0]);
+            this.uiAnim.playOtherNode(item.children[0]);
         } else if (this.isFirst && isNew) {
             // 首次创建时播放默认缩放动画
             no.TweenSet.play(no.parseTweenData([

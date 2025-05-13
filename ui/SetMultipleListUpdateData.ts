@@ -1,4 +1,4 @@
-import { ccclass, requireComponent } from '../../common/yj';
+import { ccclass, requireComponent } from '../yj';
 import { HackUi } from './HackUi';
 import { SetMultipleList } from './SetMultipleList';
 

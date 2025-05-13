@@ -1,10 +1,9 @@
 import { YJPanel } from '../../base/node/YJPanel';
 import { YJWindowManager } from '../../base/node/YJWindowManager';
 import { YJDataWork } from '../../base/YJDataWork';
-import { YJFitScreen } from '../../base/YJFitScreen';
 import { no } from '../../no';
 import { addPanelTo, panelPrefabPath } from '../../types';
-import { ccclass, property, Node } from '../../yj';
+import { ccclass, property, Node, view } from '../../yj';
 
 /**
  * 跑马灯
@@ -82,7 +81,7 @@ export class YJScrollMessage extends YJPanel {
         YJScrollMessage._ins = this;
         // 计算容器半宽和初始位置
         this.containerWidth = no.width(this.container) / 2;
-        this.startX = YJFitScreen.getVisibleSize().width / 2;
+        this.startX = view.getVisibleSize().width / 2;
     }
 
     /** 组件销毁时清理单例引用 */

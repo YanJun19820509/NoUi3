@@ -1,7 +1,6 @@
 
-import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3, isValid } from '../../yj';
+import { ccclass, property, executeInEditMode, Component, Node, UITransform, Widget, EventTouch, math, Touch, Layers, EDITOR, Vec2, Vec3, isValid, view } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
-import { YJFitScreen } from '../../base/YJFitScreen';
 import { SetNodeTweenAction } from '../../ui/SetNodeTweenAction';
 import { no } from '../../no';
 
@@ -592,7 +591,7 @@ export class YJScrollPanel extends Component {
         // 转换为世界坐标
         ut.convertToWorldSpaceAR(pos, pos);
         // 考虑屏幕适配
-        let vsize = YJFitScreen.getVisibleSize();
+        let vsize = view.getVisibleSize();
         pos.subtract3f((vsize.width - size.width), (vsize.height - size.height), 0);
         // 转换为内容节点本地坐标
         this.content.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);

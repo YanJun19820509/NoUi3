@@ -1,7 +1,7 @@
 
 import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB, executeInEditMode } from '../yj';
 import { no } from '../no';
-import { singleObject } from 'NoUi3/types';
+import { singleObject } from '../types';
 
 /**
  * Predefined variables
@@ -33,7 +33,7 @@ class YJVertexColorTransitionData {
 
     constructor(renderComp: Sprite) {
         this.renderComp = renderComp;
-        this._uuid = renderComp.uuid;
+        this._uuid = renderComp._uuid;
         //hack tiled 的updateColorLate方法
         this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
         this.renderComp['_assembler'].updateColorLate = function () { };
@@ -366,7 +366,7 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
      * mgr.add(buttonSprite, { '0-1': true }, [500, 300]);
      */
     public add(renderComp: Sprite, defines: any, properties?: number[]) {
-        let data = this.list.get(renderComp.uuid);
+        let data = this.list.get(renderComp._uuid);
         if (data) {
             // 已存在时更新效果参数
             data.setEffect(defines, properties);
@@ -374,7 +374,7 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
             // 新建效果实例并注册
             data = new YJVertexColorTransitionData(renderComp);
             data.setEffect(defines, properties);
-            this.list.set(renderComp.uuid, data);
+            this.list.set(renderComp._uuid, data);
         }
     }
 
@@ -391,7 +391,7 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
     public remove(uuid: string);
     public remove(renderComp: Sprite);
     public remove(a: string | Sprite) {
-        const uuid = typeof a === 'string' ? a : a.uuid;
+        const uuid = typeof a === 'string' ? a : a._uuid;
         this.removeSet.push(uuid);
     }
 

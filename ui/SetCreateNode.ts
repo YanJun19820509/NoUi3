@@ -422,7 +422,7 @@ export class SetCreateNode extends HackUi {
         if (immediate) return;
         // 处理动画效果
         if (this.uiAnim?.enabled) {
-            this.uiAnim.play(item); // 播放指定动画
+            this.uiAnim.playOtherNode(item); // 播放指定动画
         } else if (this.isFirst && isNew) {
             // 首次创建默认缩放动画
             no.TweenSet.play(no.parseTweenData([
@@ -486,7 +486,7 @@ export class SetCreateNode extends HackUi {
         if (this.uiAnim?.enabled) {
             this._aniEnd = false;
             item = item.children[0]; // 获取实际内容节点
-            this.uiAnim.play(item);  // 播放入场动画
+            this.uiAnim.playOtherNode(item);  // 播放入场动画
             // 如需等待动画完成可取消注释：
             // await no.waitFor(() => { return this._aniEnd; });
         }

@@ -1,7 +1,6 @@
 
 import { ccclass, property, menu, Component, Node, EventTouch, Rect, EDITOR } from '../../yj';
 import { no } from '../../no';
-import { YJFitScreen } from '../YJFitScreen';
 import { YJTouchDispatcher } from './YJTouchDispatcher';
 
 /**
@@ -113,7 +112,7 @@ export class YJTouchListener extends Component {
      */
     public onStart(event: EventTouch): boolean {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
-        this.isTouchIn = this.rect.contains(YJFitScreen.fitTouchPoint(event.touch));
+        this.isTouchIn = this.rect.contains(event.touch.getUILocation());
         event.preventSwallow = !(this.canSwallow && this.isTouchIn);
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.startHandlers, event);

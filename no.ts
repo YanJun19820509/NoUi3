@@ -189,8 +189,8 @@ export namespace no {
      * @param endCb 定时结束时回调
      */
     export function schedule(cb: (dt?: number) => void, interval: number, repeat: number, delay: number, target: any = {}, endCb?: () => void) {
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        const _uuid = target.uuid;
+        if (target && target._uuid == undefined) target._uuid = uuid();
+        const _uuid = target._uuid;
         unschedule(_uuid, cb);
 
         let callback = (dt: number) => {
@@ -230,8 +230,8 @@ export namespace no {
      * @param target 
      */
     export function scheduleForever(cb: (dt?: number) => void, interval: number, target: any = {}) {
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        const _uuid = target.uuid;
+        if (target && target._uuid == undefined) target._uuid = uuid();
+        const _uuid = target._uuid;
         unschedule(_uuid, cb);
 
         let callback = (dt: number) => {
@@ -261,8 +261,8 @@ export namespace no {
             onChecked.call(target);
             return;
         }
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        let _uuid = target.uuid;
+        if (target && target._uuid == undefined) target._uuid = uuid();
+        let _uuid = target._uuid;
 
         unschedule(_uuid, check);
 
@@ -293,8 +293,8 @@ export namespace no {
             cb?.call(target);
             return;
         }
-        if (target && target.uuid == undefined) target.uuid = uuid();
-        const _uuid = target.uuid;
+        if (target && target._uuid == undefined) target._uuid = uuid();
+        const _uuid = target._uuid;
 
         unschedule(_uuid, cb);
 
@@ -325,7 +325,7 @@ export namespace no {
      * @param target 
      */
     export function unschedule(target: any, cb?: any) {
-        const _uuid = target?.uuid || target;
+        const _uuid = target?._uuid || target;
         if (!_uuid) return;
         if (!cb) {
             _scheduler?.unscheduleAllForTarget({ uuid: _uuid });
@@ -348,7 +348,7 @@ export namespace no {
      */
     export function scheduleTargetUpdateFunction(target: any, priority: number) {
         if (!target || !target['update'] || typeof target['update'] != 'function') return;
-        if (target.uuid == undefined) target.uuid = uuid();
+        if (target._uuid == undefined) target._uuid = uuid();
         _scheduler.scheduleUpdate(target, priority, false);
     }
 
@@ -392,7 +392,7 @@ export namespace no {
     export function setTimeoutF(callback: () => void, ms = 0, target?: any) {
         const a = target || { uuid: uuid() };
         scheduleOnce(callback, ms / 1000, a);
-        return a.uuid;
+        return a._uuid;
     }
 
     /**
@@ -415,7 +415,7 @@ export namespace no {
     export function setIntervalF(callback: () => void, ms = 0, target?: any) {
         const a = target || { uuid: uuid() };
         scheduleForever(callback, ms / 1000, a);
-        return a.uuid;
+        return a._uuid;
     }
 
     /**
@@ -666,9 +666,9 @@ export namespace no {
          * no.state.on('player_level_up', this);
          */
         public on(type: string, target: any) {
-            if (!target.uuid) target.uuid = uuid();
+            if (!target._uuid) target._uuid = uuid();
             this._watchers[type] = this._watchers[type] || {};
-            this._watchers[type][target.uuid] = sys.now();
+            this._watchers[type][target._uuid] = sys.now();
         }
 
         /**
@@ -680,9 +680,9 @@ export namespace no {
          * no.state.off('player_level_up', this);
          */
         public off(type: string, target: any) {
-            if (!target.uuid) return;
+            if (!target._uuid) return;
             if (this._watchers[type])
-                delete this._watchers[type][target.uuid];
+                delete this._watchers[type][target._uuid];
         }
 
         /**
@@ -724,12 +724,12 @@ export namespace no {
             let c = { state: false, value: null };
             let b: { v: any, t: number } = this._states[type];
             if (!b) return c;
-            if (!target.uuid) target.uuid = uuid();
+            if (!target._uuid) target._uuid = uuid();
             let a = this._watchers[type];
             if (!a) {
                 this._watchers[type] = {};
-            } else if (a[target.uuid] == b.t) return c;
-            this._watchers[type][target.uuid] = b.t;
+            } else if (a[target._uuid] == b.t) return c;
+            this._watchers[type][target._uuid] = b.t;
             c.state = true;
             c.value = b.v;
             return c;
@@ -3653,7 +3653,7 @@ export namespace no {
             node.setSiblingIndex(index);
             return index;
         }
-        let p = node.parent['_children']?.findIndex(a => a.uuid == node.uuid) || 0;
+        let p = node.parent['_children']?.findIndex(a => a._uuid == node._uuid) || 0;
         return p;
     }
 
@@ -5436,7 +5436,7 @@ export namespace no {
                     } else {
                         for (let i = 0; i < items.length; i++) {
                             this.addRef(items[i]);// 增加引用计数防止自动释放
-                            // this.loadDepends(items[i].uuid);
+                            // this.loadDepends(items[i]._uuid);
                         }
                         onComplete && onComplete(items);
                     }
@@ -5831,7 +5831,7 @@ export namespace no {
             // 过滤子资源并构建请求列表
             for (let i = 0; i < infos.length; i++) {
                 let a = infos[i];
-                if (a.uuid.indexOf('@') == -1) {
+                if (a._uuid.indexOf('@') == -1) {
                     requests[requests.length] = { path: a.path, bundle: p.bundle, type: Asset };
                 }
             }
@@ -5906,9 +5906,9 @@ export namespace no {
             } else if (request.bundle && request.path && request.type) {
                 this.load(request.bundle, request.path, request.type, callback);
             } else {
-                assetManager.loadAny({ uuid: request.uuid }, (e: Error, f: T) => {
+                assetManager.loadAny({ uuid: request._uuid }, (e: Error, f: T) => {
                     if (e != null) {
-                        err(request.uuid, e.stack);
+                        err(request._uuid, e.stack);
                     }
                     this.addRef(f);//增加引用计数
                     callback?.(f);
@@ -5948,7 +5948,7 @@ export namespace no {
             scheduleOnce(() => {
                 if (asset.refCount > 0) {
                     asset.decRef();
-                    // log('decRef', asset.uuid, asset.refCount);
+                    // log('decRef', asset._uuid, asset.refCount);
                 }
             }, .02);
         }
@@ -5989,7 +5989,7 @@ export namespace no {
         public release(asset: Asset | string, force = false): void {
             if (!asset) return;
             if (asset instanceof SpriteFrame) {
-                asset = asset.uuid;
+                asset = asset._uuid;
             }
             if (typeof asset == 'string') {
                 asset = asset.split('@')[0];
@@ -6114,7 +6114,7 @@ export namespace no {
          */
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
-            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
+            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type)._uuid;
         }
 
         /**
@@ -6215,7 +6215,7 @@ export namespace no {
          * });
          */
         public getCachedTexture(img: ImageAsset): Texture2D | null {
-            const uuid = img.uuid;
+            const uuid = img._uuid;
             let texture = this.getCachedAsset<Texture2D>(uuid);
             if (!texture) {
                 texture = new Texture2D();
@@ -6267,7 +6267,7 @@ export namespace no {
             if (asset) {
                 no.assetBundleManager.decRef(asset);
                 this._cacheAsset.delete(k);
-                this._cacheAsset.delete(asset.uuid);
+                this._cacheAsset.delete(asset._uuid);
             }
         }
 
@@ -6281,8 +6281,8 @@ export namespace no {
          * });
          */
         public cacheImage(image: Texture2D) {
-            this.cacheAsset(image.uuid, image);
-            this._cacheAssetRef[image.uuid] = { ref: 0, time: sysTime.now };
+            this.cacheAsset(image._uuid, image);
+            this._cacheAssetRef[image._uuid] = { ref: 0, time: sysTime.now };
             this.releaseUnuseImage();
         }
 
@@ -6326,7 +6326,7 @@ export namespace no {
             const image = this.getCachedAsset<Texture2D>(uuid);
             if (!image) return null;
 
-            let a = this._cacheAssetRef[image.uuid];
+            let a = this._cacheAssetRef[image._uuid];
             a.ref++;
             a.time = sysTime.now;
             return image;
@@ -6472,8 +6472,8 @@ export namespace no {
                 let requests: { path?: string, uuid?: string }[] = [];
                 for (let i = 0; i < infos.length; i++) {
                     const a = infos[i];
-                    if (a.uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
-                        requests[requests.length] = { path: a.path, uuid: a.uuid };
+                    if (a._uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
+                        requests[requests.length] = { path: a.path, uuid: a._uuid };
                     }
                 }
                 this.loadAnyFiles(requests, null, items => {
@@ -6483,7 +6483,7 @@ export namespace no {
                         } else if (item instanceof Texture2D) {
                             this.cacheImage(item);
                         } else if (item instanceof JsonAsset) {
-                            this.cacheAsset(item.uuid, item.json);
+                            this.cacheAsset(item._uuid, item.json);
                         }
                     }
                     onComplete?.();
@@ -6706,7 +6706,7 @@ export namespace no {
                 }
 
                 // 缓存路径到UUID的映射
-                this._pathToUuid.set(path, asset.uuid);
+                this._pathToUuid.set(path, asset._uuid);
                 asset.addRef(); // 增加引用计数防止自动释放
                 onComplete?.(asset);
                 this.assetLoadingEnd(path);
@@ -6834,7 +6834,7 @@ export namespace no {
             let have = false;
             for (let i = 0, n = a.length; i < n; i++) {
                 let b = a[i];
-                if ((object.uuid && b.o.uuid == object.uuid) || (object._uuid && b.o._uuid == object._uuid)) {
+                if ((object._uuid && b.o._uuid == object._uuid) || (object._uuid && b.o._uuid == object._uuid)) {
                     have = true;
                     break;
                 }
@@ -8840,7 +8840,7 @@ export namespace no {
             let b = true;
             for (let i = 0, n = btn.clickEvents.length; i < n; i++) {
                 let ce = btn.clickEvents[i];
-                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                if (ce.target._uuid == a.target._uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
                     b = false;
                     break;
                 }
@@ -8872,7 +8872,7 @@ export namespace no {
             let b = true;
             for (let i = 0, n = toggle.checkEvents.length; i < n; i++) {
                 let ce = toggle.checkEvents[i];
-                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                if (ce.target._uuid == a.target._uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
                     b = false;
                     break;
                 }
@@ -9923,7 +9923,7 @@ export namespace no {
          */
         export async function getAssetUuidByUrl(url: string) {
             return getAssetInfo(url).then(info => {
-                return info?.uuid;
+                return info?._uuid;
             });
         }
 
@@ -9967,7 +9967,7 @@ export namespace no {
                 if (!info)
                     log('query-asset-info url无效', urls[i]);
                 else {
-                    requests[requests.length] = { 'uuid': info.uuid };
+                    requests[requests.length] = { 'uuid': info._uuid };
                 }
             }
             if (!requests.length) {
@@ -10019,7 +10019,7 @@ export namespace no {
                 for (let i = 0; i < infos.length; i++) {
                     const a = infos[i];
                     if (a['url'].indexOf(folderUrl) > -1) {
-                        aa[aa.length] = { uuid: a.uuid };
+                        aa[aa.length] = { uuid: a._uuid };
                     }
                 }
                 if (!aa.length) {
@@ -10155,7 +10155,7 @@ export namespace no {
             return getAssetInfoByFileName(fileName).then(info => {
                 if (info) {
                     return new Promise<T>(resolve =>
-                        assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
+                        assetBundleManager.loadByUuid<T>(info._uuid, asset => resolve(asset))
                     ).catch(e => {
                         console.error(e);
                         return null;

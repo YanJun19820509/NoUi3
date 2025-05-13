@@ -1,7 +1,7 @@
-import { ccclass, property, view, Node, instantiate, v3, Vec3, ImageAsset, Vec2, v2, Mask, Sprite, Texture2D, size, SpriteFrame } from 'NoUi3/yj';
-import { HackUi } from 'NoUi3/ui/HackUi';
-import { no } from 'NoUi3/no';
-import { YJDataWork } from 'NoUi3/base/YJDataWork';
+import { ccclass, property, view, Node, instantiate, v3, Vec3 } from '../../yj';
+import { HackUi } from '../../ui/HackUi';
+import { no } from '../../no';
+import { YJDataWork } from '../../base/YJDataWork';
 
 /**
  * 
@@ -121,7 +121,7 @@ export class SetDynamicMap extends HackUi {
      */
     protected onDataChange(data: any) {
         const { tileSize, tileInfos, startPos, moveBy, tileChangeInfos } = data;
-        
+
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
             const s = view.getVisibleSize();
@@ -159,10 +159,10 @@ export class SetDynamicMap extends HackUi {
                 const tileChangeInfo = tileChangeInfos[i];
                 const uv = this.xyToUv(tileChangeInfo.x, tileChangeInfo.y);
                 const key = `${uv[0]}_${uv[1]}`;
-                
+
                 // 更新数据存储
                 this._tileMap.set(key, tileChangeInfo);
-                
+
                 // 如果对应节点已存在，立即更新显示
                 if (this._tileNodeMap.has(key)) {
                     const node = this._tileNodeMap.get(key);
@@ -213,7 +213,7 @@ export class SetDynamicMap extends HackUi {
      */
     private setTiles() {
         if (!this._gridColRow.length) return;
-        
+
         // 获取节点位置并转换为世界坐标（取反处理）
         const pos = this.node.position;
         const x = -pos.x; // 转换为世界坐标系X
@@ -243,21 +243,21 @@ export class SetDynamicMap extends HackUi {
                         no.visible(item, true);
                         this._tileNodes.push(item);
                     }
-                    
+
                     // 初始化节点数据
                     this._tileNodeMap.set(key, item);
                     const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                     if (dataWork) {
                         dataWork.initWithData(data); // 示例数据格式：{x: 100, y: 200, type: 'grass'}
                     }
-                    
+
                     // 设置节点位置并标记延迟显示
                     this._tempV3.set(data.x, data.y, 0);
                     no.position(item, this._tempV3);
                     this._lateShowNodes.push(item);
                 }
             }
-        } 
+        }
         // 节点复用流程
         else {
             const needMoveTileNode: Node[] = [];
@@ -285,7 +285,7 @@ export class SetDynamicMap extends HackUi {
                         this._tileNodes.push(item);
                         this._lateShowNodes.push(item); // 新节点需要延迟激活
                     }
-                    
+
                     // 更新节点数据和位置
                     this._tileNodeMap.set(key, item);
                     const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);

@@ -6,10 +6,9 @@ import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
-import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManager';
-import { YJi18n } from 'NoUi3/base/YJi18n';
-import { YJMacroConfig } from 'NoUi3/macro';
-import { YJJobManager } from 'NoUi3/base/YJJobManager';
+import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
+import { YJMacroConfig } from '../macro';
+import { YJJobManager } from '../base/YJJobManager';
 
 /**
  * Predefined variables
@@ -304,7 +303,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         let name = spriteFrame.name;
         if (this.defaultName != name) {
             this.defaultName = name;
-            this.defaultSpriteFrameUuid = spriteFrame.uuid;
+            this.defaultSpriteFrameUuid = spriteFrame._uuid;
             
             // 判断资源加载方式（图集/散图）
             if (this.defaultSpriteFrameUuid)
@@ -536,7 +535,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
                     // 记录纹理到GPU监控系统
                     if (TextureInfoInGPU.isWork) {
-                        TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                        TextureInfoInGPU.addTextureUuidToPanel(file._uuid, this.panelName);
                     }
                 }
             }
@@ -576,7 +575,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                 
                 // GPU纹理跟踪
                 if (TextureInfoInGPU.isWork) {
-                    TextureInfoInGPU.addTextureUuidToPanel(s.uuid, this.panelName);
+                    TextureInfoInGPU.addTextureUuidToPanel(s._uuid, this.panelName);
                 }
             } else {
                 // 缓存未命中时回退加载
@@ -623,7 +622,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
                 // GPU纹理追踪（用于纹理内存管理）
                 if (TextureInfoInGPU.isWork) {
-                    TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                    TextureInfoInGPU.addTextureUuidToPanel(file._uuid, this.panelName);
                 }
             }
         });
@@ -661,7 +660,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
                     // GPU纹理追踪（仅运行时需要）
                     if (TextureInfoInGPU.isWork) {
-                        TextureInfoInGPU.addTextureUuidToPanel(file.uuid, this.panelName);
+                        TextureInfoInGPU.addTextureUuidToPanel(file._uuid, this.panelName);
                     }
                 }
             }
@@ -743,7 +742,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
             // GPU纹理内存追踪（当功能启用时）
             if (TextureInfoInGPU.isWork && this.panelName) {
-                TextureInfoInGPU.addTextureUuidToPanel(spriteFrame.uuid, this.panelName);
+                TextureInfoInGPU.addTextureUuidToPanel(spriteFrame._uuid, this.panelName);
             }
         });
     }

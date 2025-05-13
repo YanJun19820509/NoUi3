@@ -2,7 +2,7 @@
 import { Material, UIRenderer, v2, v3, v4, Vec2, Vec3, Vec4, ccclass, property, menu, SpriteFrame, Label, Sprite, Texture2D, Skeleton } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
-import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransition';
+import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransition';
 
 /**
  * Predefined variables

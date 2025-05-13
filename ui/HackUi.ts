@@ -1,6 +1,6 @@
 import { Component, DEBUG, EDITOR, ccclass, executeInEditMode, isValid, property, Node } from '../yj';
 import { no } from '../no';
-import { YJJobManager } from 'NoUi3/base/YJJobManager';
+import { YJJobManager } from '../base/YJJobManager';
 
 // export const { ccclass, property, executeInEditMode } = _decorator;
 

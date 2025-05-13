@@ -1,4 +1,4 @@
-import { ccclass, Component, property } from "NoUi3/yj";
+import { ccclass, Component, property } from "../../yj";
 /**
  * 
  * Author mqsy_yj

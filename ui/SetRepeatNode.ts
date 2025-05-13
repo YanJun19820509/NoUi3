@@ -1,4 +1,4 @@
-import { ccclass, property, Node, instantiate, SpriteFrame } from '../../common/yj';
+import { ccclass, property, Node, instantiate, SpriteFrame } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 
@@ -45,7 +45,7 @@ export class FillSpriteFrameInfo {
     public set fill(v: SpriteFrame) {
         if (v) {
             // 记录资源唯一标识符和名称（用于序列化/反序列化）
-            this.assetUuid = v.uuid;
+            this.assetUuid = v._uuid;
             this.assetName = v.name;
         }
     }

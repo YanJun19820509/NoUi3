@@ -1,4 +1,4 @@
-import { no } from 'NoUi3/no';
+import { no } from '../no';
 import { ccclass } from '../yj';
 
 /**

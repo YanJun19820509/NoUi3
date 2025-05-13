@@ -1,4 +1,4 @@
-import { EDITOR, Node, ScrollView, Size, Vec2, ccclass, instantiate, isValid, property, size } from '../../common/yj';
+import { EDITOR, Node, ScrollView, Size, Vec2, ccclass, instantiate, isValid, property, size } from '../yj';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { HackUi } from './HackUi';

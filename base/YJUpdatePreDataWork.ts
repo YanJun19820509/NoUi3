@@ -1,6 +1,6 @@
-import { ccclass, Component, EDITOR, executeInEditMode, property } from "NoUi3/yj";
+import { ccclass, Component, EDITOR, executeInEditMode, property } from "../yj";
 import { YJDataWork } from "./YJDataWork";
-import { no } from "NoUi3/no";
+import { no } from "../no";
 /**
  * 
  * Author mqsy_yj

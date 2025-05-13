@@ -1,4 +1,4 @@
-import { ccclass, EventTouch } from "NoUi3/yj";
+import { ccclass, EventTouch } from "../../yj";
 import { YJDragDropTargetNode } from "./YJDragDropTargetNode";
 /**
  * 拖拽节点

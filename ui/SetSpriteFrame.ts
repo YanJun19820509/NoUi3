@@ -1,9 +1,7 @@
 
 import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR, SpriteFrame } from '../yj';
-import { YJJobManager } from '../base/YJJobManager';
 import { no } from '../no';
 import { HackUi } from './HackUi';
-import { SetEffect } from './SetEffect';
 
 /**
  * Predefined variables
@@ -243,8 +241,8 @@ export class SetSpriteFrame extends HackUi {
             this.defaultName = name;
         }
         // 更新UUID引用
-        if (spriteFrame && (!this.defaultSpriteFrameUuid || spriteFrame.uuid != this.defaultSpriteFrameUuid)) {
-            this.defaultSpriteFrameUuid = spriteFrame.uuid;
+        if (spriteFrame && (!this.defaultSpriteFrameUuid || spriteFrame._uuid != this.defaultSpriteFrameUuid)) {
+            this.defaultSpriteFrameUuid = spriteFrame._uuid;
         }
     }
 }
