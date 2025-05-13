@@ -10,7 +10,7 @@ import { SetNodeTweenAction } from '../SetNodeTweenAction';
  * Author = mqsy_yj
  * FileBasename = SetBezier.ts
  * FileBasenameNoExtension = SetBezier
- * URL = db://assets/Script/NoUi3/tween/SetBezier.ts
+ * URL = db://assets/Script/common/tween/SetBezier.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -9,7 +9,7 @@ import { YJFitScreen } from '../YJFitScreen';
  * Author = mqsy_yj
  * FileBasename = YJ2FingersScale.ts
  * FileBasenameNoExtension = YJ2FingersScale
- * URL = db://assets/NoUi3/base/node/YJ2FingersScale.ts
+ * URL = db://assets/common/base/node/YJ2FingersScale.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

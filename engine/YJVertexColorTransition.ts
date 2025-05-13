@@ -10,7 +10,7 @@ import { singleObject } from 'NoUi3/types';
  * Author = mqsy_yj
  * FileBasename = YJVertexColorTransitionManager.ts
  * FileBasenameNoExtension = YJVertexColorTransitionManager
- * URL = db://assets/NoUi3/effect/YJVertexColorTransitionManager.ts
+ * URL = db://assets/common/effect/YJVertexColorTransitionManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

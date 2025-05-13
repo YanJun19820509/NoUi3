@@ -11,7 +11,7 @@ import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
  * Author = mqsy_yj
  * FileBasename = YJLoadAssets.ts
  * FileBasenameNoExtension = YJLoadAssets
- * URL = db://assets/NoUi3/base/YJLoadAssets.ts
+ * URL = db://assets/common/base/YJLoadAssets.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -224,11 +224,6 @@ export class YJLoadAssets extends Component {
             for (let i = 0; i < list.length; i++) {
                 list[i].materialInfoUuid = name;
             }
-            // 处理动态纹理组件
-            list = this.getComponentsInChildren('YJDynamicTexture');
-            for (let i = 0; i < list.length; i++) {
-                list[i].materialInfoUuid = name;
-            }
         }
     }
 
@@ -292,10 +287,8 @@ export class YJLoadAssets extends Component {
             node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
             node.getComponentsInChildren('YJLanguageSprite'),
             node.getComponentsInChildren('YJCharLabel'),
-            node.getComponentsInChildren('YJDynamicTexture'),
             node.getComponentsInChildren('YJBitmapFont'),
-            node.getComponentsInChildren('YJLoadPrefab'),
-            node.getComponentsInChildren('YJDynamicTexture')
+            node.getComponentsInChildren('YJLoadPrefab')
         );
         for (let i = 0; i < arr.length; i++) {
             arr[i].materialInfoUuid = materialInfoUuid;

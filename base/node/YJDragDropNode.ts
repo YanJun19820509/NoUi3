@@ -13,7 +13,7 @@ import { Range } from '../../types';
  * Author = mqsy_yj
  * FileBasename = YJDragDropNode.ts
  * FileBasenameNoExtension = YJDragDropNode
- * URL = db://assets/NoUi3/base/node/YJDragDropNode.ts
+ * URL = db://assets/common/base/node/YJDragDropNode.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

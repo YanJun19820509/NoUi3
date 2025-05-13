@@ -2,7 +2,6 @@
 import { ccclass, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from '../yj';
 import { no } from '../no';
 import { Atlas } from './atlas';
-import { YJWindowManager } from '../base/node/YJWindowManager';
 
 /**
  * Predefined variables
@@ -11,7 +10,7 @@ import { YJWindowManager } from '../base/node/YJWindowManager';
  * Author = mqsy_yj
  * FileBasename = YJShowDynamicAtlasDebug.ts
  * FileBasenameNoExtension = YJShowDynamicAtlasDebug
- * URL = db://assets/NoUi3/engine/YJShowDynamicAtlasDebug.ts
+ * URL = db://assets/common/engine/YJShowDynamicAtlasDebug.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

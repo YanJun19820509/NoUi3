@@ -11,7 +11,7 @@ import { YJTouchManager } from './YJTouchManager';
  * Author = mqsy_yj
  * FileBasename = YJTouchDispatcher.ts
  * FileBasenameNoExtension = YJTouchDispatcher
- * URL = db://assets/Script/NoUi3/base/touch/YJTouchDispatcher.ts
+ * URL = db://assets/Script/common/base/touch/YJTouchDispatcher.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

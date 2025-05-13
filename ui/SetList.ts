@@ -15,7 +15,7 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
  * Author = mqsy_yj
  * FileBasename = SetList.ts
  * FileBasenameNoExtension = SetList
- * URL = db://assets/Script/NoUi3/ui/SetList.ts
+ * URL = db://assets/Script/common/ui/SetList.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

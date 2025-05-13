@@ -12,7 +12,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = setNodeTarget.ts
  * FileBasenameNoExtension = setNodeTarget
- * URL = db://assets/NoUi3/ui/setNodeTarget.ts
+ * URL = db://assets/common/ui/setNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

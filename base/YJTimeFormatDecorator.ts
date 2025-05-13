@@ -8,7 +8,7 @@ import { ccclass, Component, Node } from '../yj';
  * Author = mqsy_yj
  * FileBasename = YJTimeFormatDecorator.ts
  * FileBasenameNoExtension = YJTimeFormatDecorator
- * URL = db://assets/NoUi3/base/YJTimeFormatDecorator.ts
+ * URL = db://assets/common/base/YJTimeFormatDecorator.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

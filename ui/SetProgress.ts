@@ -11,7 +11,7 @@ import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
  * Author = mqsy_yj
  * FileBasename = SetProgress.ts
  * FileBasenameNoExtension = SetProgress
- * URL = db://assets/Script/NoUi3/ui/SetProgress.ts
+ * URL = db://assets/Script/common/ui/SetProgress.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

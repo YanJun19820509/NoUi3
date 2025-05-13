@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetInteractable.ts
  * FileBasenameNoExtension = SetInteractable
- * URL = db://assets/Script/NoUi3/ui/SetInteractable.ts
+ * URL = db://assets/Script/common/ui/SetInteractable.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

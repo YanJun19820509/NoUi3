@@ -8,7 +8,7 @@ import { ccclass, property, requireComponent, Component, Node, Camera, Rect } fr
  * Author = mqsy_yj
  * FileBasename = YJRegisterCamera.ts
  * FileBasenameNoExtension = YJRegisterCamera
- * URL = db://assets/NoUi3/base/YJRegisterCamera.ts
+ * URL = db://assets/common/base/YJRegisterCamera.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

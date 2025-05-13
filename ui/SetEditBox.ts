@@ -11,7 +11,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetEditBox.ts
  * FileBasenameNoExtension = SetEditBox
- * URL = db://assets/NoUi3/ui/SetEditBox.ts
+ * URL = db://assets/common/ui/SetEditBox.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

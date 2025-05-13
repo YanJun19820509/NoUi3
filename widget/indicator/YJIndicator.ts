@@ -10,7 +10,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJIndicator.ts
  * FileBasenameNoExtension = YJIndicator
- * URL = db://assets/NoUi3/widget/indicator/YJIndicator.ts
+ * URL = db://assets/common/widget/indicator/YJIndicator.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

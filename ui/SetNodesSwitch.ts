@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetNodesSwitch.ts
  * FileBasenameNoExtension = SetNodesSwitch
- * URL = db://assets/Script/NoUi3/ui/SetNodesSwitch.ts
+ * URL = db://assets/Script/common/ui/SetNodesSwitch.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

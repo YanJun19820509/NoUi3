@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetPositionY.ts
  * FileBasenameNoExtension = SetPositionY
- * URL = db://assets/Script/NoUi3/ui/SetPositionY.ts
+ * URL = db://assets/Script/common/ui/SetPositionY.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

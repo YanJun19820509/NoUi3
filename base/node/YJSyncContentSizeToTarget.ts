@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJSyncContentSizeToTarget.ts
  * FileBasenameNoExtension = YJSyncContentSizeToTarget
- * URL = db://assets/NoUi3/base/node/YJSyncContentSizeToTarget.ts
+ * URL = db://assets/common/base/node/YJSyncContentSizeToTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

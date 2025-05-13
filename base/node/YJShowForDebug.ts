@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJShowForDebug.ts
  * FileBasenameNoExtension = YJShowForDebug
- * URL = db://assets/Script/NoUi3/base/node/YJShowForDebug.ts
+ * URL = db://assets/Script/common/base/node/YJShowForDebug.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -13,7 +13,7 @@ import { YJJobManager } from 'NoUi3/base/YJJobManager';
  * Author = mqsy_yj
  * FileBasename = SetCreateNodeInCircle.ts
  * FileBasenameNoExtension = SetCreateNodeInCircle
- * URL = db://assets/NoUi3/ui/SetCreateNodeInCircle.ts
+ * URL = db://assets/common/ui/SetCreateNodeInCircle.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

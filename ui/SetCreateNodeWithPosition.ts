@@ -13,7 +13,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetCreateNodeWithPosition.ts
  * FileBasenameNoExtension = SetCreateNodeWithPosition
- * URL = db://assets/NoUi3/ui/SetCreateNodeWithPosition.ts
+ * URL = db://assets/common/ui/SetCreateNodeWithPosition.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

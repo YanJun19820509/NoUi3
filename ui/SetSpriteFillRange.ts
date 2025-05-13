@@ -8,7 +8,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetSpriteFillRange.ts
  * FileBasenameNoExtension = SetSpriteFillRange
- * URL = db://assets/NoUi3/ui/SetSpriteFillRange.ts
+ * URL = db://assets/common/ui/SetSpriteFillRange.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

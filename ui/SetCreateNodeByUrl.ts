@@ -12,7 +12,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetCreateNodeByUrl.ts
  * FileBasenameNoExtension = SetCreateNodeByUrl
- * URL = db://assets/NoUi3/ui/SetCreateNodeByUrl.ts
+ * URL = db://assets/common/ui/SetCreateNodeByUrl.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

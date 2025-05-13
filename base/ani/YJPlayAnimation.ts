@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJPlayAnimation.ts
  * FileBasenameNoExtension = YJPlayAnimation
- * URL = db://assets/NoUi3/base/ani/YJPlayAnimation.ts
+ * URL = db://assets/common/base/ani/YJPlayAnimation.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 
  */

@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJTiledMapData.ts
  * FileBasenameNoExtension = YJTiledMapData
- * URL = db://assets/Script/NoUi3/base/tiled/YJTiledMapData.ts
+ * URL = db://assets/Script/common/base/tiled/YJTiledMapData.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

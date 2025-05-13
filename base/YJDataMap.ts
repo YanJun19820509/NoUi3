@@ -1,4 +1,4 @@
-import { YJDataWork } from '../../NoUi3/base/YJDataWork';
+import { YJDataWork } from '../../common/base/YJDataWork';
 import { no } from '../no';
 import { ccclass, js, property } from '../yj';
 import { YJGameData } from './YJGameData';

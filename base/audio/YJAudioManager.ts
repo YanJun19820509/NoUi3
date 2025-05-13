@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJAudioManager.ts
  * FileBasenameNoExtension = YJAudioManager
- * URL = db://assets/Script/NoUi3/base/YJAudioManager.ts
+ * URL = db://assets/Script/common/base/YJAudioManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

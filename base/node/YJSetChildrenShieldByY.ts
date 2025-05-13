@@ -8,7 +8,7 @@ import { ccclass, property, menu, Component, isValid, Node, macro } from '../../
  * Author = mqsy_yj
  * FileBasename = YJSetChildrenShieldByY.ts
  * FileBasenameNoExtension = YJSetChildrenShieldByY
- * URL = db://assets/Script/NoUi3/base/node/YJSetChildrenShieldByY.ts
+ * URL = db://assets/Script/common/base/node/YJSetChildrenShieldByY.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  * 设置子节点之间的遮挡关系，如果指定了目标节点，其他同级节点会根据目标节点进行遮挡关系设置
  * 

@@ -11,7 +11,7 @@ import { YJVertexColorTransitionManager } from 'NoUi3/engine/YJVertexColorTransi
  * Author = mqsy_yj
  * FileBasename = SetEffect.ts
  * FileBasenameNoExtension = SetEffect
- * URL = db://assets/NoUi3/ui/SetEffect.ts
+ * URL = db://assets/common/ui/SetEffect.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

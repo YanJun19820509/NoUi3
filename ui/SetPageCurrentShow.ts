@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetPageCurrentShow.ts
  * FileBasenameNoExtension = SetPageCurrentShow
- * URL = db://assets/Script/NoUi3/ui/SetPageCurrentShow.ts
+ * URL = db://assets/Script/common/ui/SetPageCurrentShow.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

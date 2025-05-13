@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetSiblingIndex.ts
  * FileBasenameNoExtension = SetSiblingIndex
- * URL = db://assets/Script/NoUi3/ui/SetSiblingIndex.ts
+ * URL = db://assets/Script/common/ui/SetSiblingIndex.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -11,7 +11,7 @@ import { YJSpineManager } from '../base/YJSpineManager';
  * Author = mqsy_yj
  * FileBasename = SetSpine.ts
  * FileBasenameNoExtension = SetSpine
- * URL = db://assets/Script/NoUi3/ui/SetSpine.ts
+ * URL = db://assets/Script/common/ui/SetSpine.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  * data:{path, skin, animation, loop, timeScale, loopNum}|[{path, skin, animation, loop, timeScale},...]
  * 支持动画链
@@ -315,7 +315,7 @@ export class SetSpine extends HackUi {
                 this.defaultScale = bSpine.timeScale;
                 spine.premultipliedAlpha = bSpine.premultipliedAlpha;
                 spine.defaultCacheMode = bSpine.defaultCacheMode;
-                spine.enableBatch = bSpine.enableBatch;
+                // spine.enableBatch = bSpine.enableBatch;
                 spine.sockets = bSpine.sockets;
 
                 // 设置骨骼数据

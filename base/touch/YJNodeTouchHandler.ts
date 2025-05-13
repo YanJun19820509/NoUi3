@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJNodeTouchHandler.ts
  * FileBasenameNoExtension = YJNodeTouchHandler
- * URL = db://assets/NoUi3/base/touch/YJNodeTouchHandler.ts
+ * URL = db://assets/common/base/touch/YJNodeTouchHandler.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

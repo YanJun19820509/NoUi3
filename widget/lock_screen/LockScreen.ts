@@ -1,8 +1,8 @@
 import { _decorator } from 'cc';
-import { YJPanel } from '../../../NoUi3/base/node/YJPanel';
-import { panelPrefabPath } from '../../../NoUi3/types';
-import { YJWindowManager } from '../../../NoUi3/base/node/YJWindowManager';
-import { no } from '../../../NoUi3/no';
+import { YJPanel } from '../../../common/base/node/YJPanel';
+import { panelPrefabPath } from '../../../common/types';
+import { YJWindowManager } from '../../../common/base/node/YJWindowManager';
+import { no } from '../../../common/no';
 const { ccclass, property } = _decorator;
 
 /**
@@ -13,7 +13,7 @@ const { ccclass, property } = _decorator;
  */
 
 @ccclass('LockScreen')
-@panelPrefabPath('db://assets/NoUi3/widget/lock_screen/lock_screen.prefab')
+@panelPrefabPath('db://assets/common/widget/lock_screen/lock_screen.prefab')
 /**
  * 锁屏面板组件
  * @example

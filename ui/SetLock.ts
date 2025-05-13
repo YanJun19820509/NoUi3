@@ -11,7 +11,7 @@ import { SetGray } from './SetGray';
  * Author = mqsy_yj
  * FileBasename = SetLock.ts
  * FileBasenameNoExtension = SetLock
- * URL = db://assets/NoUi3/base/node/SetLock.ts
+ * URL = db://assets/common/base/node/SetLock.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

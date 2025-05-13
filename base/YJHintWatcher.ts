@@ -10,7 +10,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = YJHintWatcher.ts
  * FileBasenameNoExtension = YJHintWatcher
- * URL = db://assets/Script/NoUi3/base/YJHintWatcher.ts
+ * URL = db://assets/Script/common/base/YJHintWatcher.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

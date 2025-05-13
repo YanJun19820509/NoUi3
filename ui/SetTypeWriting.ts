@@ -3,7 +3,6 @@ import {
     ccclass, property, executeInEditMode, EDITOR, Node, Label, RichText, HtmlTextParser, IHtmlTextParserResultObj, IHtmlTextParserStack,
     LabelOutline, Layers, UITransform, math, UIOpacity, Vec2, isValid
 } from '../yj';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 
@@ -14,7 +13,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetTypeWritting.ts
  * FileBasenameNoExtension = SetTypeWritting
- * URL = db://assets/NoUi3/ui/SetTypeWritting.ts
+ * URL = db://assets/common/ui/SetTypeWritting.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -486,8 +485,6 @@ export class SetTypeWritting extends HackUi {
             outline.width = a.style.outline.width;
         }
 
-        // 设置动态纹理（用于特殊效果）
-        let dynamicTexture = this.getComponent(YJDynamicTexture);
 
         // 设置最终文本内容
         label.string = a.text;

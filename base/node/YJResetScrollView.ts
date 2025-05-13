@@ -8,7 +8,7 @@ import { ccclass, property, requireComponent, Component, Node, ScrollView } from
  * Author = mqsy_yj
  * FileBasename = YJResetScrollView.ts
  * FileBasenameNoExtension = YJResetScrollView
- * URL = db://assets/NoUi3/base/node/YJResetScrollView.ts
+ * URL = db://assets/common/base/node/YJResetScrollView.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

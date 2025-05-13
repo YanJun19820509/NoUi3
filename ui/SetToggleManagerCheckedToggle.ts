@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetToggleManagerCheckedToggle.ts
  * FileBasenameNoExtension = SetToggleManagerCheckedToggle
- * URL = db://assets/NoUi3/ui/SetToggleManagerCheckedToggle.ts
+ * URL = db://assets/common/ui/SetToggleManagerCheckedToggle.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

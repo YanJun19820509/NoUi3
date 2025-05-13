@@ -9,7 +9,7 @@ import { Component, DEBUG, ccclass, property } from '../../yj';
  * Author = mqsy_yj
  * FileBasename = YJGuideManager.ts
  * FileBasenameNoExtension = YJGuideManager
- * URL = db://assets/NoUi3/widget/guide/YJGuideManager.ts
+ * URL = db://assets/common/widget/guide/YJGuideManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

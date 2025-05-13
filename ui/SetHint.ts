@@ -11,7 +11,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = SetHint.ts
  * FileBasenameNoExtension = SetHint
- * URL = db://assets/Script/NoUi3/ui/SetHint.ts
+ * URL = db://assets/Script/common/ui/SetHint.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

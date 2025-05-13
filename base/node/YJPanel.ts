@@ -11,7 +11,7 @@ import { YJPanelCreated } from '../../types';
  * Author = mqsy_yj
  * FileBasename = YJPanel.ts
  * FileBasenameNoExtension = YJPanel
- * URL = db://assets/Script/NoUi3/base/node/YJPanel.ts
+ * URL = db://assets/Script/common/base/node/YJPanel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

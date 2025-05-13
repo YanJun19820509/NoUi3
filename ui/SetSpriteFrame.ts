@@ -12,7 +12,7 @@ import { SetEffect } from './SetEffect';
  * Author = mqsy_yj
  * FileBasename = SetSpriteFrame.ts
  * FileBasenameNoExtension = SetSpriteFrame
- * URL = db://assets/Script/NoUi3/ui/SetSpriteFrame.ts
+ * URL = db://assets/Script/common/ui/SetSpriteFrame.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

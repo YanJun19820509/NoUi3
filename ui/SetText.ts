@@ -1,12 +1,8 @@
 
 import { ccclass, property, menu, Label, RichText, EDITOR, BitmapFont, isValid, Layout } from '../yj';
-import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
-import { SetEffect } from './SetEffect';
-import { YJDynamicLoadFont } from '../base/YJDynamicLoadFont';
 
 /**
  * Predefined variables
@@ -15,7 +11,7 @@ import { YJDynamicLoadFont } from '../base/YJDynamicLoadFont';
  * Author = mqsy_yj
  * FileBasename = SetText.ts
  * FileBasenameNoExtension = SetText
- * URL = db://assets/Script/NoUi3/ui/SetText.ts
+ * URL = db://assets/Script/common/ui/SetText.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
@@ -35,34 +31,6 @@ export class SetText extends HackUi {
      */
     @property({ displayName: '格式化模板' })
     formatter: string = '{0}';
-
-    /**
-     * 是否打包到动态图集（优化文本渲染性能）
-     * @规则：
-     * - true时自动添加YJDynamicTexture组件
-     * - false时移除动态纹理组件
-     * @示例 
-     * this.packToAtlas = true // 启用动态图集优化
-     */
-    @property
-    public get packToAtlas(): boolean {
-        return this._packToAtlas;
-    }
-
-    public set packToAtlas(v: boolean) {
-        if (v == this._packToAtlas) return;
-        this._packToAtlas = v;
-        if (v) {
-            // 获取有效的文本组件（排除YJBitmapFont类型的Label）
-            let label = (this.node.getComponent(Label) && !this.node.getComponent(YJBitmapFont)) || this.node.getComponent(RichText);
-            if (label && !this.getComponent(YJDynamicTexture)) this.addComponent(YJDynamicTexture);
-        } else {
-            this.getComponent(YJDynamicTexture)?.destroy();
-        }
-    }
-
-    @property({ serializable: true })
-    _packToAtlas: boolean = true;
 
     // 文本组件缓存（支持Label/RichText/YJCharLabel三种类型）
     protected label: Label | RichText | YJCharLabel;
@@ -94,12 +62,7 @@ export class SetText extends HackUi {
      */
     protected onDataChange(data: any) {
         this.newData = data;
-        if (this.getComponent(YJDynamicLoadFont))
-            this.getComponent(YJDynamicLoadFont).loadFont().then(() => {
-                this.lateSet();
-            });
-        else
-            this.lateSet();
+        this.lateSet();
     }
 
     /**
@@ -130,7 +93,7 @@ export class SetText extends HackUi {
         } else { // 对象类型处理
             s = no.formatString(this.formatter, data);
         }
-        
+
         // 编辑器模式直接更新
         if (EDITOR) {
             this.label.string = s;
@@ -140,31 +103,15 @@ export class SetText extends HackUi {
         // 运行时差异更新
         if (this.label.string != s) {
             if (this.label instanceof Label) {
-                let dt = this.getComponent(YJDynamicTexture);
                 if (this.label.font instanceof BitmapFont) {
                     this.label.string = s; // 位图字体直接设置
-                } else if (dt) {
-                    dt.packLabelFrame(s); // 动态纹理打包
                 } else {
                     this.label.string = s; // 普通Label设置
                 }
             } else {
                 this.label.string = s; // RichText/YJCharLabel设置
             }
-            this.checkShader();
         }
-    }
-
-    /**
-     * 检查并应用shader效果
-     * @实现逻辑：
-     * 延迟一帧执行SetEffect组件的work方法
-     * 确保文本渲染完成后再应用效果
-     */
-    private checkShader() {
-        this.scheduleOnce(() => {
-            this.getComponent(SetEffect)?.work();
-        });
     }
 
     /**

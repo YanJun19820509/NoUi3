@@ -4,7 +4,6 @@ import {
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
     Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents
 } from '../yj';
-// import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
 import { YJButton } from '../fix/YJButton';
@@ -25,7 +24,7 @@ import { YJDataWork } from '../base/YJDataWork';
  * Author = mqsy_yj
  * FileBasename = AutoCreateNode.ts
  * FileBasenameNoExtension = AutoCreateNode
- * URL = db://assets/NoUi3/editor/AutoCreateNode.ts
+ * URL = db://assets/common/editor/AutoCreateNode.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -467,7 +466,6 @@ export class AutoCreateNode extends Component {
         this.setOpacity(n, cname);
         this.setScale(n, cname);
         this.setWidget(n);
-        // if (addDynamicTexture && !n.getComponent(YJDynamicTexture)) n.addComponent(YJDynamicTexture).dynamicAtlas = this.node.getComponent(YJDynamicAtlas);
         return n;
     }
 
@@ -534,7 +532,7 @@ export class AutoCreateNode extends Component {
         widget.left = 0;
         widget.bottom = 0;
         widget.right = 0;
-        view.addComponent(Mask).type = Mask.Type.GRAPHICS_RECT;
+        view.addComponent(Mask).type = Mask.Type.RECT;
         let content = new Node('content');
         content.parent = view;
         content.addComponent(UITransform).setContentSize(node.getComponent(UITransform).contentSize);

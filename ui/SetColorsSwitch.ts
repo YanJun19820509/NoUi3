@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetColorsSwitch.ts
  * FileBasenameNoExtension = SetColorsSwitch
- * URL = db://assets/Script/NoUi3/ui/SetColorsSwitch.ts
+ * URL = db://assets/Script/common/ui/SetColorsSwitch.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

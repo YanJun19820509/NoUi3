@@ -13,7 +13,7 @@ import { EasingType, EasingTypeName } from 'NoUi3/types';
  * Author = mqsy_yj
  * FileBasename = SetMoveTweenToNodeTarget.ts
  * FileBasenameNoExtension = SetMoveTweenToNodeTarget
- * URL = db://assets/NoUi3/ui/SetMoveTweenToNodeTarget.ts
+ * URL = db://assets/common/ui/SetMoveTweenToNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 将当前节点移动到指定节点位置
  */

@@ -30,7 +30,7 @@ const createMaterial = function () {
             defines: { 'USE_TEXTURE': true, 'USE_ALPHA_TEST': true }
         });
     } else {
-        no.err('../NoUi3/effect/sample2d 未加载')
+        no.err('../common/effect/sample2d 未加载')
     }
     return material;
 }

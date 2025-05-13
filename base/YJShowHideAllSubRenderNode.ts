@@ -1,7 +1,6 @@
 
 import { ccclass, property, Component, Layers, Node, sys, disallowMultiple, ResolutionPolicy } from '../yj';
 import { no } from '../no';
-import { YJFitScreen } from './YJFitScreen';
 
 /**
  * Predefined variables
@@ -10,7 +9,7 @@ import { YJFitScreen } from './YJFitScreen';
  * Author = mqsy_yj
  * FileBasename = YJShowHideAllSubRenderNode.ts
  * FileBasenameNoExtension = YJShowHideAllSubRenderNode
- * URL = db://assets/NoUi3/base/YJShowHideAllSubRenderNode.ts
+ * URL = db://assets/common/base/YJShowHideAllSubRenderNode.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -111,7 +110,6 @@ export class YJShowHideAllSubRenderNode extends Component {
      * @description 处理特殊分辨率策略下的显隐逻辑（FIXED_HEIGHT模式强制隐藏）
      */
     private changeLayer(node: Node, v: boolean) {
-        if (v && YJFitScreen.policy == ResolutionPolicy.FIXED_HEIGHT) node.active = false;
         no.visibleByOpacity(node, v);
     }
 }

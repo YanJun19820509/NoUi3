@@ -12,7 +12,7 @@ import { SetCreateNodeOneByOneDelegate } from './SetCreateNodeOneByOneDelegate';
  * Author = mqsy_yj
  * FileBasename = setCreateNodeOneByOne.ts
  * FileBasenameNoExtension = setCreateNodeOneByOne
- * URL = db://assets/NoUi3/ui/setCreateNodeOneByOne.ts
+ * URL = db://assets/common/ui/setCreateNodeOneByOne.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

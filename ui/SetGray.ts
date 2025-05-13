@@ -11,7 +11,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = SetGray.ts
  * FileBasenameNoExtension = SetGray
- * URL = db://assets/Script/NoUi3/ui/SetGray.ts
+ * URL = db://assets/Script/common/ui/SetGray.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

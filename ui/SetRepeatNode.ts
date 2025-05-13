@@ -1,4 +1,4 @@
-import { ccclass, property, Node, instantiate, SpriteFrame } from '../../NoUi3/yj';
+import { ccclass, property, Node, instantiate, SpriteFrame } from '../../common/yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 

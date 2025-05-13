@@ -492,29 +492,29 @@ export class TextureSubresLayers {
 
 //关闭自动合图
 dynamicAtlasManager.enabled = false;
-js.mixin(dynamicAtlasManager['__proto__'], {
-    packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
-        if (EDITOR) return;
-        if (!isValid(comp?.node)) return;
-        //微信端不合图
-        if (no.notUseDynamicAtlas) return false;
-        let a: any = comp.getComponent('YJDynamicTexture');
-        if (!a) return;
-        if (frame?.original) return;
-        if (!comp.node.parent) return;
-        // no.log('packToDynamicAtlas', comp['string'])
-        if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
-            a = comp.addComponent('YJDynamicTexture');
-            let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
-            (a as any).dynamicAtlas = b.dynamicAtlas;
-            (a as any).canRotate = b.canRotate;
-            (a as any).needClear = true;
-            a.setCommonMaterial();
-            // setTimeout(() => {
-            //     a?.pack();
-            // }, 17);
-        } else if (a) {
-            a.pack();
-        }
-    }
-});
+// js.mixin(dynamicAtlasManager['__proto__'], {
+//     packToDynamicAtlas(comp: Component, frame: SpriteFrame) {
+//         if (EDITOR) return;
+//         if (!isValid(comp?.node)) return;
+//         //微信端不合图
+//         if (no.notUseDynamicAtlas) return false;
+//         let a: any = comp.getComponent('YJDynamicTexture');
+//         if (!a) return;
+//         if (frame?.original) return;
+//         if (!comp.node.parent) return;
+//         // no.log('packToDynamicAtlas', comp['string'])
+//         if (!a && comp.node.parent?.getComponent('cc.RichText') && comp.node.parent?.getComponent('YJDynamicTexture')) {
+//             a = comp.addComponent('YJDynamicTexture');
+//             let b = (comp.node.parent.getComponent('YJDynamicTexture') as any);
+//             (a as any).dynamicAtlas = b.dynamicAtlas;
+//             (a as any).canRotate = b.canRotate;
+//             (a as any).needClear = true;
+//             a.setCommonMaterial();
+//             // setTimeout(() => {
+//             //     a?.pack();
+//             // }, 17);
+//         } else if (a) {
+//             a.pack();
+//         }
+//     }
+// });

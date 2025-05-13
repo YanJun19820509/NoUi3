@@ -11,7 +11,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetScrollPanel.ts
  * FileBasenameNoExtension = SetScrollPanel
- * URL = db://assets/NoUi3/ui/SetScrollPanel.ts
+ * URL = db://assets/common/ui/SetScrollPanel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

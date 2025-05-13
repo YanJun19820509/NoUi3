@@ -15,7 +15,7 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
  * Author = mqsy_yj
  * FileBasename = SetCreateNode.ts
  * FileBasenameNoExtension = SetCreateNode
- * URL = db://assets/Script/NoUi3/ui/SetCreateNode.ts
+ * URL = db://assets/Script/common/ui/SetCreateNode.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

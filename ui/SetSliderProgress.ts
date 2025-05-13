@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetSliderProgress.ts
  * FileBasenameNoExtension = SetSliderProgress
- * URL = db://assets/Script/NoUi3/ui/SetSliderProgress.ts
+ * URL = db://assets/Script/common/ui/SetSliderProgress.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

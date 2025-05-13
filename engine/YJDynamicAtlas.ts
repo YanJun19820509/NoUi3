@@ -15,7 +15,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = YJDynamicAtlas.ts
  * FileBasenameNoExtension = YJDynamicAtlas
- * URL = db://assets/NoUi3/engine/YJDynamicAtlas.ts
+ * URL = db://assets/common/engine/YJDynamicAtlas.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -669,7 +669,6 @@ export class YJDynamicAtlas {
             node.getComponentsInChildren('SetList'),           // 列表组件
             node.getComponentsInChildren('SetPage'),           // 分页组件
             node.getComponentsInChildren('YJCharLabel'),       // 字符标签组件
-            node.getComponentsInChildren('YJDynamicTexture'),  // 动态纹理组件
             node.getComponentsInChildren('YJBitmapFont')       // 位图字体组件
         );
 

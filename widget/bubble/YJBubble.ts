@@ -11,7 +11,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJBubble.ts
  * FileBasenameNoExtension = YJBubble
- * URL = db://assets/NoUi3/widget/bubble/YJBubble.ts
+ * URL = db://assets/common/widget/bubble/YJBubble.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

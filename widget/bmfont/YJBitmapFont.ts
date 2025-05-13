@@ -11,7 +11,7 @@ import { YJSample2DMaterialManager } from 'NoUi3/engine/YJSample2DMaterialManage
  * Author = mqsy_yj
  * FileBasename = YJBitmapFont.ts
  * FileBasenameNoExtension = YJBitmapFont
- * URL = db://assets/Script/NoUi3/engine/YJBitmapFont.ts
+ * URL = db://assets/Script/common/engine/YJBitmapFont.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -153,7 +153,6 @@ export class YJBitmapFont extends Component {
                 label.font = null;
                 label.enabled = false;
             }
-            this.getComponent('YJDynamicTexture')?.destroy();
         } else {
             // 运行时初始化
             if (this._spacingX != 0)

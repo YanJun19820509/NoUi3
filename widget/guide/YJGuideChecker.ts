@@ -9,7 +9,7 @@ import { YJGuideManager } from './YJGuideManager';
  * Author = mqsy_yj
  * FileBasename = YJGuideChecker.ts
  * FileBasenameNoExtension = YJGuideChecker
- * URL = db://assets/NoUi3/widget/guide/YJGuideChecker.ts
+ * URL = db://assets/common/widget/guide/YJGuideChecker.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

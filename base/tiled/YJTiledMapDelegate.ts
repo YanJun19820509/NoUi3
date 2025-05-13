@@ -8,7 +8,7 @@ import { YJTiledMapData } from './YJTiledMapData';
  * Author = mqsy_yj
  * FileBasename = YJTiledMapDelegate.ts
  * FileBasenameNoExtension = YJTiledMapDelegate
- * URL = db://assets/Script/NoUi3/base/tiled/YJTiledMapDelegate.ts
+ * URL = db://assets/Script/common/base/tiled/YJTiledMapDelegate.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -15,7 +15,7 @@ import { YJGradientColor } from './YJGradientColor';
  * Author = mqsy_yj
  * FileBasename = YJCharLabel.ts
  * FileBasenameNoExtension = YJCharLabel
- * URL = db://assets/NoUi3/widget/charLabel/YJCharLabel.ts
+ * URL = db://assets/common/widget/charLabel/YJCharLabel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 自定义文本组件,使用时替换掉Label组件
  */

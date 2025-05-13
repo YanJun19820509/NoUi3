@@ -13,7 +13,7 @@ import { YJJobManager } from 'NoUi3/base/YJJobManager';
  * Author = mqsy_yj
  * FileBasename = SetPage.ts
  * FileBasenameNoExtension = SetPage
- * URL = db://assets/Script/NoUi3/ui/SetPage.ts
+ * URL = db://assets/Script/common/ui/SetPage.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

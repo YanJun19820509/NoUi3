@@ -11,7 +11,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetToggleCheck.ts
  * FileBasenameNoExtension = SetToggleCheck
- * URL = db://assets/Script/NoUi3/ui/SetToggleCheck.ts
+ * URL = db://assets/Script/common/ui/SetToggleCheck.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

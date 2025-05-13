@@ -11,7 +11,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = YJPageView.ts
  * FileBasenameNoExtension = YJPageView
- * URL = db://assets/Script/NoUi3/fix/YJPageView.ts
+ * URL = db://assets/Script/common/fix/YJPageView.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -15,7 +15,7 @@ import { panelPrefabPath } from '../../types';
  * Author = mqsy_yj
  * FileBasename = YJGuidePanel.ts
  * FileBasenameNoExtension = YJGuidePanel
- * URL = db://assets/NoUi3/widget/guide/YJGuidePanel.ts
+ * URL = db://assets/common/widget/guide/YJGuidePanel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
@@ -29,7 +29,7 @@ export class YJGuideTypeInfo {
 }
 
 @ccclass('YJGuidePanel')
-@panelPrefabPath('db://assets/NoUi3/widget/guide/guidePanel.prefab')
+@panelPrefabPath('db://assets/common/widget/guide/guidePanel.prefab')
 /**
  * 新手引导面板基类
  * @example

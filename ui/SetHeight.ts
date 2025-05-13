@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetHeight.ts
  * FileBasenameNoExtension = SetHeight
- * URL = db://assets/Script/NoUi3/ui/SetHeight.ts
+ * URL = db://assets/Script/common/ui/SetHeight.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

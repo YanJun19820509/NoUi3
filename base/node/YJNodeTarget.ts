@@ -12,7 +12,7 @@ import { YJTouchListener } from '../touch/YJTouchListener';
  * Author = mqsy_yj
  * FileBasename = YJNodeTarget.ts
  * FileBasenameNoExtension = YJNodeTarget
- * URL = db://assets/Script/NoUi3/base/node/YJNodeTarget.ts
+ * URL = db://assets/Script/common/base/node/YJNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

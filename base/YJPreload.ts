@@ -12,7 +12,7 @@ import { YJPreloadDelegate } from './YJPreloadDelegate';
  * Author = mqsy_yj
  * FileBasename = YJPreload.ts
  * FileBasenameNoExtension = YJPreload
- * URL = db://assets/Script/NoUi3/base/YJPreload.ts
+ * URL = db://assets/Script/common/base/YJPreload.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

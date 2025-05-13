@@ -11,7 +11,7 @@ import { EasingTypeName } from 'NoUi3/types';
  * Author = mqsy_yj
  * FileBasename = YJFloatTips.ts
  * FileBasenameNoExtension = YJFloatTips
- * URL = db://assets/NoUi3/widget/floatTips/YJFloatTips.ts
+ * URL = db://assets/common/widget/floatTips/YJFloatTips.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

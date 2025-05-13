@@ -8,7 +8,7 @@ import { Component, EDITOR, ccclass, property, Node } from "../../yj";
  * Author = mqsy_yj
  * FileBasename = YJSliderButton.ts
  * FileBasenameNoExtension = YJSliderButton
- * URL = db://assets/NoUi3/widget/sliderButton/YJSliderButton.ts
+ * URL = db://assets/common/widget/sliderButton/YJSliderButton.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 滑块按钮，需要在父节点添加BlockInputEvents组件
  */

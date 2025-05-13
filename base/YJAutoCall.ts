@@ -9,7 +9,7 @@ import { no } from '../no';
  * Author = mqsy_yj
  * FileBasename = YJAutoCall.ts
  * FileBasenameNoExtension = YJAutoCall
- * URL = db://assets/Script/NoUi3/base/YJAutoCall.ts
+ * URL = db://assets/Script/common/base/YJAutoCall.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

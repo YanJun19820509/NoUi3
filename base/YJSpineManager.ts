@@ -17,7 +17,7 @@ interface SpineResource {
  * Author = mqsy_yj
  * FileBasename = YJSpineManager.ts
  * FileBasenameNoExtension = YJSpineManager
- * URL = db://assets/NoUi3/base/YJSpineManager.ts
+ * URL = db://assets/common/base/YJSpineManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

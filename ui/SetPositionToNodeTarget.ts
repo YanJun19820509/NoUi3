@@ -11,7 +11,7 @@ import { SetPosition } from './SetPosition';
  * Author = mqsy_yj
  * FileBasename = SetPositionToNodeTarget.ts
  * FileBasenameNoExtension = SetPositionToNodeTarget
- * URL = db://assets/NoUi3/ui/SetPositionToNodeTarget.ts
+ * URL = db://assets/common/ui/SetPositionToNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

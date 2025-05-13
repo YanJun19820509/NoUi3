@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetScrollToPercent.ts
  * FileBasenameNoExtension = SetScrollToPercent
- * URL = db://assets/Script/NoUi3/ui/SetScrollToPercent.ts
+ * URL = db://assets/Script/common/ui/SetScrollToPercent.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  * data:number|{per:number, duration: number}
  */

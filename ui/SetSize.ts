@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetSize.ts
  * FileBasenameNoExtension = SetSize
- * URL = db://assets/Script/NoUi3/ui/SetSize.ts
+ * URL = db://assets/Script/common/ui/SetSize.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  * 设置宽高，支持子节点尺寸超过最大尺寸自动缩小，支持同步子节点尺寸
  */

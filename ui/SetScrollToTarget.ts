@@ -11,7 +11,7 @@ import { SetScrollToPercent } from './SetScrollToPercent';
  * Author = mqsy_yj
  * FileBasename = SetScrollToTarget.ts
  * FileBasenameNoExtension = SetScrollToTarget
- * URL = db://assets/Script/NoUi3/ui/SetScrollToTarget.ts
+ * URL = db://assets/Script/common/ui/SetScrollToTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

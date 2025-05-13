@@ -11,7 +11,7 @@ import { YJDataWorkManager } from './YJDataWorkManager';
  * Author = mqsy_yj
  * FileBasename = YJDataWork.ts
  * FileBasenameNoExtension = YJDataWork
- * URL = db://assets/Script/NoUi3/base/YJDataWork.ts
+ * URL = db://assets/Script/common/base/YJDataWork.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

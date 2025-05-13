@@ -8,7 +8,7 @@ import { JSB, ccclass, Component, Node } from '../../yj';
  * Author = mqsy_yj
  * FileBasename = YJShowForWeb.ts
  * FileBasenameNoExtension = YJShowForWeb
- * URL = db://assets/NoUi3/base/node/YJShowForWeb.ts
+ * URL = db://assets/common/base/node/YJShowForWeb.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

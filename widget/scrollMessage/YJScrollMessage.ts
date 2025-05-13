@@ -15,7 +15,7 @@ import { ccclass, property, Node } from '../../yj';
 
 @ccclass('YJScrollMessage')
 @addPanelTo('mess')
-@panelPrefabPath('db://assets/NoUi3/widget/scrollMessage/scroll_message.prefab')
+@panelPrefabPath('db://assets/common/widget/scrollMessage/scroll_message.prefab')
 /**
  * 跑马灯消息组件
  * 支持持续滚动显示多条消息，可控制消息插入位置（队首/队尾）

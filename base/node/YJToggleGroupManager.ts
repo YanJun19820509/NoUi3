@@ -10,7 +10,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJToggleGroupManager.ts
  * FileBasenameNoExtension = YJToggleGroupManager
- * URL = db://assets/NoUi3/base/node/YJToggleGroupManager.ts
+ * URL = db://assets/common/base/node/YJToggleGroupManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

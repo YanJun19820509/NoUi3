@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetDataWork.ts
  * FileBasenameNoExtension = SetDataWork
- * URL = db://assets/Script/NoUi3/ui/SetDataWork.ts
+ * URL = db://assets/Script/common/ui/SetDataWork.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

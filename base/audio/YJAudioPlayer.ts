@@ -10,7 +10,7 @@ import { YJAudioManager } from './YJAudioManager';
  * Author = mqsy_yj
  * FileBasename = YJAudioPlayer.ts
  * FileBasenameNoExtension = YJAudioPlayer
- * URL = db://assets/NoUi3/base/audio/YJAudioPlayer.ts
+ * URL = db://assets/common/base/audio/YJAudioPlayer.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

@@ -1,7 +1,7 @@
 import { YJNodeTarget } from 'NoUi3/base/node/YJNodeTarget';
 import { no } from 'NoUi3/no';
 import { EasingTypeName } from 'NoUi3/types';
-import { ccclass, v3, Vec3 } from '../../NoUi3/yj';
+import { ccclass, v3, Vec3 } from '../../common/yj';
 import { SetMoveTweenToNodeTarget } from './SetMoveTweenToNodeTarget';
 import { SetNodeTweenAction } from './SetNodeTweenAction';
 

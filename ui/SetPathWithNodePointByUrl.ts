@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetPathWithNodePointByUrl.ts
  * FileBasenameNoExtension = SetPathWithNodePointByUrl
- * URL = db://assets/Script/NoUi3/ui/SetPathWithNodePointByUrl.ts
+ * URL = db://assets/Script/common/ui/SetPathWithNodePointByUrl.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

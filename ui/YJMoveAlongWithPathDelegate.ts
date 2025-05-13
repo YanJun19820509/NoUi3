@@ -9,7 +9,7 @@ import { _SetMoveAlongWithPath } from '../types';
  * Author = mqsy_yj
  * FileBasename = SetMoveAlongWithPath.ts
  * FileBasenameNoExtension = SetMoveAlongWithPath
- * URL = db://assets/Script/NoUi3/ui/SetMoveAlongWithPath.ts
+ * URL = db://assets/Script/common/ui/SetMoveAlongWithPath.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

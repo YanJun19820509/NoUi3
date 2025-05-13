@@ -18,7 +18,7 @@ import { YJJobManager } from 'NoUi3/base/YJJobManager';
  * Author = mqsy_yj
  * FileBasename = SetSpriteFrameInSampler2D.ts
  * FileBasenameNoExtension = SetSpriteFrameInSampler2D
- * URL = db://assets/Script/NoUi3/ui/SetSpriteFrameInSampler2D.ts
+ * URL = db://assets/Script/common/ui/SetSpriteFrameInSampler2D.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

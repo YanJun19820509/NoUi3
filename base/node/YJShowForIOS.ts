@@ -8,7 +8,7 @@ import { ccclass, Component, property, sys } from '../../yj';
  * Author = mqsy_yj
  * FileBasename = YJShowForIOS.ts
  * FileBasenameNoExtension = YJShowForIOS
- * URL = db://assets/NoUi3/base/node/YJShowForIOS.ts
+ * URL = db://assets/common/base/node/YJShowForIOS.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

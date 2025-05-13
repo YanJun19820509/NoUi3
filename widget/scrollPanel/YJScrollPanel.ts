@@ -12,7 +12,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJScrollPanel.ts
  * FileBasenameNoExtension = YJScrollPanel
- * URL = db://assets/NoUi3/widget/scrollPanel/YJScrollPanel.ts
+ * URL = db://assets/common/widget/scrollPanel/YJScrollPanel.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

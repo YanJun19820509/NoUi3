@@ -1,7 +1,6 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Label, isValid } from '../yj';
+import { ccclass, property, menu, Label, isValid } from '../yj';
 import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
-import { YJDynamicTexture } from '../engine/YJDynamicTexture';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
@@ -13,14 +12,13 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetTimeCountDown.ts
  * FileBasenameNoExtension = SetTimeCountDown
- * URL = db://assets/Script/NoUi3/ui/SetTimeCountDown.ts
+ * URL = db://assets/Script/common/ui/SetTimeCountDown.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
 
 @ccclass('SetTimeCountDown')
 @menu('NoUi/ui/SetTimeCountDown(设置倒计时:number)')
-@executeInEditMode()
 /**
  * 设置倒计时
  * data: 时间段 秒
@@ -133,18 +131,6 @@ export class SetTimeCountDown extends HackUi {
     // 目标截止时间戳（秒）
     private _deadline: number;
 
-    onLoad() {
-        super.onLoad();
-        // 初始化动态纹理组件设置
-        if (this.getComponent(YJDynamicTexture)) this.getComponent(YJDynamicTexture).needClear = true;
-
-        // 编辑器模式下特殊处理
-        if (EDITOR) {
-            if (this.charLabel) {
-                this.charLabel.packToAtlas = false;
-            }
-        }
-    }
 
     onDisable() {
         // 组件禁用时取消时间监听
@@ -276,19 +262,6 @@ export class SetTimeCountDown extends HackUi {
         // 遍历所有关联组件传递百分比
         for (let i = 0; i < this.fuckUiComponents.length; i++) {
             this.fuckUiComponents[i].a_setData(String(percent));
-        }
-    }
-
-    ///////////// 编辑器专用逻辑 ////////////
-    update() {
-        if (!EDITOR) return;
-
-        // 动态管理纹理组件
-        const hasBitmapFont = !this.node.getComponent('YJBitmapFont');
-        if (hasBitmapFont && this.label && !this.getComponent(YJDynamicTexture)) {
-            this.addComponent(YJDynamicTexture);
-        } else if (!this.label && this.getComponent(YJDynamicTexture)) {
-            this.getComponent(YJDynamicTexture).destroy();
         }
     }
 }

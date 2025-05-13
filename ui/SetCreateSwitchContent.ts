@@ -12,7 +12,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetCreateSwitchContent.ts
  * FileBasenameNoExtension = SetCreateSwitchContent
- * URL = db://assets/NoUi3/ui/SetCreateSwitchContent.ts
+ * URL = db://assets/common/ui/SetCreateSwitchContent.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

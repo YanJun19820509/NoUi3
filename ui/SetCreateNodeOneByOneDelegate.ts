@@ -8,7 +8,7 @@ import { ccclass, Component, Node } from '../yj';
  * Author = mqsy_yj
  * FileBasename = SetCreateNodeOneByOneDelegate.ts
  * FileBasenameNoExtension = SetCreateNodeOneByOneDelegate
- * URL = db://assets/NoUi3/ui/SetCreateNodeOneByOneDelegate.ts
+ * URL = db://assets/common/ui/SetCreateNodeOneByOneDelegate.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

@@ -11,7 +11,7 @@ import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
  * Author = mqsy_yj
  * FileBasename = SetColor.ts
  * FileBasenameNoExtension = SetColor
- * URL = db://assets/Script/NoUi3/ui/SetColor.ts
+ * URL = db://assets/Script/common/ui/SetColor.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

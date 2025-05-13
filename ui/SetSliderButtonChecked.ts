@@ -8,7 +8,7 @@ import { HackUi } from "./HackUi";
  * Author = mqsy_yj
  * FileBasename = SetSliderButtonChecked.ts
  * FileBasenameNoExtension = SetSliderButtonChecked
- * URL = db://assets/NoUi3/ui/SetSliderButtonChecked.ts
+ * URL = db://assets/common/ui/SetSliderButtonChecked.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetAngle.ts
  * FileBasenameNoExtension = SetAngle
- * URL = db://assets/Script/NoUi3/ui/SetAngle.ts
+ * URL = db://assets/Script/common/ui/SetAngle.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -1,4 +1,4 @@
-import { BitmapFont, ccclass, property, requireComponent } from '../../NoUi3/yj';
+import { BitmapFont, ccclass, property, requireComponent } from '../../common/yj';
 import { no } from '../no';
 import { LoadAssetsInfo } from '../types';
 import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';

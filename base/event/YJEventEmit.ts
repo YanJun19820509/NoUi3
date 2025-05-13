@@ -9,7 +9,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJEventEmit.ts
  * FileBasenameNoExtension = YJEventEmit
- * URL = db://assets/Script/NoUi3/base/event/YJEventEmit.ts
+ * URL = db://assets/Script/common/base/event/YJEventEmit.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

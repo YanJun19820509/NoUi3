@@ -1,4 +1,4 @@
-import { EffectAsset, Material, Sprite, SpriteFrame, ccclass, game, requireComponent, sys, v2 } from '../../../NoUi3/yj';
+import { EffectAsset, Material, Sprite, SpriteFrame, ccclass, game, requireComponent, sys, v2 } from '../../../common/yj';
 import { no } from '../../no';
 import { HackUi } from '../HackUi';
 
@@ -124,14 +124,14 @@ export class SetFrameAnimation extends HackUi {
     /** 获取/创建专用材质 */
     private getMaterial() {
         const sprite = this.getComponent(Sprite);
-        if (sprite.material.effectName != '../NoUi3/effect/switch') {
+        if (sprite.material.effectName != '../common/effect/switch') {
             let material = new Material();
-            const effectAsset = EffectAsset.get('../NoUi3/effect/switch');
+            const effectAsset = EffectAsset.get('../common/effect/switch');
             if (effectAsset) {
                 material.initialize({ effectAsset: effectAsset });
                 sprite.material = material;
             } else {
-                no.err('../NoUi3/effect/switch 未加载');
+                no.err('../common/effect/switch 未加载');
             }
         }
         return sprite.material;

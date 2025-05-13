@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetBlockInputEvents.ts
  * FileBasenameNoExtension = SetBlockInputEvents
- * URL = db://assets/Script/NoUi3/ui/SetBlockInputEvents.ts
+ * URL = db://assets/Script/common/ui/SetBlockInputEvents.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

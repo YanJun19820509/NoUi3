@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetGraphics.ts
  * FileBasenameNoExtension = SetGraphics
- * URL = db://assets/NoUi3/ui/SetGraphics.ts
+ * URL = db://assets/common/ui/SetGraphics.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

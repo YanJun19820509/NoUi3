@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetClickEventWithState.ts
  * FileBasenameNoExtension = SetClickEventWithState
- * URL = db://assets/Script/NoUi3/ui/SetClickEventWithState.ts
+ * URL = db://assets/Script/common/ui/SetClickEventWithState.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

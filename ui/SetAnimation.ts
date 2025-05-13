@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetAnimation.ts
  * FileBasenameNoExtension = SetAnimation
- * URL = db://assets/Script/NoUi3/ui/SetAnimation.ts
+ * URL = db://assets/Script/common/ui/SetAnimation.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

@@ -9,7 +9,7 @@ import { ccclass, Component, property, sys } from '../../yj';
  * Author = mqsy_yj
  * FileBasename = YJShowForAppVer.ts
  * FileBasenameNoExtension = YJShowForAppVer
- * URL = db://assets/NoUi3/base/node/YJShowForAppVer.ts
+ * URL = db://assets/common/base/node/YJShowForAppVer.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 根据appver判断节点是否显示
  */

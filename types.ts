@@ -9,7 +9,7 @@ import { Asset, Bundle, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccc
  * Author = mqsy_yj
  * FileBasename = types.ts
  * FileBasenameNoExtension = types
- * URL = db://assets/NoUi3/types.ts
+ * URL = db://assets/common/types.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

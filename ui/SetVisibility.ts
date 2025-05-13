@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetVisibility.ts
  * FileBasenameNoExtension = SetVisibility
- * URL = db://assets/Script/NoUi3/ui/SetVisibility.ts
+ * URL = db://assets/Script/common/ui/SetVisibility.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

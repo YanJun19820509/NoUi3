@@ -10,7 +10,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = SetBlink.ts
  * FileBasenameNoExtension = SetBlink
- * URL = db://assets/Script/NoUi3/tween/SetBlink.ts
+ * URL = db://assets/Script/common/tween/SetBlink.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

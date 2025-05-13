@@ -10,7 +10,7 @@ import { YJAudioManager } from './YJAudioManager';
  * Author = mqsy_yj
  * FileBasename = YJSoundEffectManager.ts
  * FileBasenameNoExtension = YJSoundEffectManager
- * URL = db://assets/NoUi3/base/audio/YJSoundEffectManager.ts
+ * URL = db://assets/common/base/audio/YJSoundEffectManager.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

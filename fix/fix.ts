@@ -9,7 +9,7 @@ import { YJButton } from './YJButton';
  * Author = mqsy_yj
  * FileBasename = fix.ts
  * FileBasenameNoExtension = fix
- * URL = db://assets/NoUi3/fix/fix.ts
+ * URL = db://assets/common/fix/fix.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

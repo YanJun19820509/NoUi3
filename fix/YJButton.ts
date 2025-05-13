@@ -10,7 +10,7 @@ import { YJSoundEffectManager } from 'NoUi3/base/audio/YJSoundEffectManager';
  * Author = mqsy_yj
  * FileBasename = YJButton.ts
  * FileBasenameNoExtension = YJButton
- * URL = db://assets/Script/NoUi3/fix/YJButton.ts
+ * URL = db://assets/Script/common/fix/YJButton.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

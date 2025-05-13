@@ -10,7 +10,7 @@ import { SetEffect } from './SetEffect';
  * Author = mqsy_yj
  * FileBasename = SetGraphicsEffect.ts
  * FileBasenameNoExtension = SetGraphicsEffect
- * URL = db://assets/NoUi3/ui/SetGraphicsEffect.ts
+ * URL = db://assets/common/ui/SetGraphicsEffect.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

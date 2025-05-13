@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetFlip.ts
  * FileBasenameNoExtension = SetFlip
- * URL = db://assets/NoUi3/ui/SetFlip.ts
+ * URL = db://assets/common/ui/SetFlip.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

@@ -10,7 +10,7 @@ import { no } from '../../no';
  * Author = mqsy_yj
  * FileBasename = YJComboBox.ts
  * FileBasenameNoExtension = YJComboBox
- * URL = db://assets/NoUi3/widget/combobox/YJComboBox.ts
+ * URL = db://assets/common/widget/combobox/YJComboBox.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

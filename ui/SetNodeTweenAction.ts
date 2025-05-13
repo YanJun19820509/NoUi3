@@ -10,7 +10,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetNodeTweenAction.ts
  * FileBasenameNoExtension = SetNodeTweenAction
- * URL = db://assets/Script/NoUi3/ui/SetNodeTweenAction.ts
+ * URL = db://assets/Script/common/ui/SetNodeTweenAction.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
