@@ -135,6 +135,12 @@ export class YJLoadAssets extends Component {
         this.showSubSpriteFrame(v);
     }
 
+    private setMaterialKey() {
+        if (this._materialKey) return;
+        const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
+        this._materialKey = name;
+    }
+
     /**
      * 控制子节点显示模式
      * @param v 是否显示原始SpriteFrame
@@ -143,8 +149,7 @@ export class YJLoadAssets extends Component {
      * - false: 显示材质效果，用于测试材质应用
      */
     private showSubSpriteFrame(v: boolean) {
-        const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
-        this._materialKey = name;
+        this.setMaterialKey();
         // 处理各种类型的组件显示状态
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
         for (let i = 0; i < list.length; i++) {
@@ -252,6 +257,7 @@ export class YJLoadAssets extends Component {
      * await loader.load();
      */
     public async load() {
+        this.setMaterialKey();
         return YJSample2DMaterialManager.ins.createAtlasMaterial(this._materialKey, this.textureInfos, this.share);
     }
 

@@ -53,7 +53,7 @@ export class YJDataWorkManager extends no.SingleObject {
      * YJDataWorkManager.ins().remove(this);
      */
     public remove(dataWork: YJDataWork) {
-        this.removeList.push(dataWork._uuid);
+        this.removeList.push(dataWork.uuid);
     }
 
     /**
@@ -82,7 +82,7 @@ export class YJDataWorkManager extends no.SingleObject {
             // 逆序遍历避免删除导致的数组索引错乱
             for (let i = this.list.length - 1; i >= 0; i--) {
                 const item = this.list[i];
-                if (this.removeList.indexOf(item._uuid) >= 0) {
+                if (this.removeList.indexOf(item.uuid) >= 0) {
                     this.list.splice(i, 1);
                 } else {
                     item.syncDataToUi();

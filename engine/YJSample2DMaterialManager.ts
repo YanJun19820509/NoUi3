@@ -15,11 +15,11 @@ const REUSE_MATERIAL = true; //是否复用材质
 //创建新的材质
 const createMaterial = function () {
     const material = new Material();
-    material._uuid = no._uuid();
+    material._uuid = no.uuid();
     const all = EffectAsset.getAll();
     let effectAsset: EffectAsset;
     for (const key in all) {
-        if (key.endsWith('../../effect/sample2d')) {
+        if (key.endsWith('/effect/sample2d')) {
             effectAsset = all[key];
             break;
         }
@@ -30,7 +30,7 @@ const createMaterial = function () {
             defines: { 'USE_TEXTURE': true, 'USE_ALPHA_TEST': true }
         });
     } else {
-        no.err('../common/effect/sample2d 未加载')
+        no.err('/effect/sample2d 未加载')
     }
     return material;
 }
@@ -155,14 +155,14 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      */
     public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
         let materialInfo: YJSample2DMaterialInfo;
-        
+
         // 非共享模式或全局禁用材质复用时，直接创建新材质
         if (!share || !REUSE_MATERIAL) {
             materialInfo = this.createMaterialInfo(name, false);
         } else {
             // 尝试复用现有材质
             const { maxMaterialInfo, maxDiff } = this.reuseMaterial(textureInfos);
-            
+
             if (!maxMaterialInfo) {
                 // 没有合适材质可复用，创建新的可复用材质
                 materialInfo = this.createMaterialInfo(name, true);
@@ -184,11 +184,11 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                 materialInfo.refCount++; // 增加材质引用计数
             }
         }
-        
+
         // 加载纹理资源并建立映射关系
         await this.loadTextures(materialInfo, textureInfos);
-        this.keyToMaterialUuid.set(name, materialInfo._uuid);
-        return materialInfo._uuid;
+        this.keyToMaterialUuid.set(name, materialInfo.uuid);
+        return materialInfo.uuid;
     }
 
     /**
@@ -206,7 +206,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     private reuseMaterial(textureInfos: TextureInfo[]) {
         if (this.materialInfos.length == 0) return {};
         const assetPaths: string[] = [];
-        
+
         // 提取纯路径列表用于比较
         for (let i = 0; i < textureInfos.length; i++) {
             assetPaths.push(textureInfos[i].path);
@@ -223,7 +223,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
             // 获取当前材质缺少的纹理列表
             const diff = materialInfo.compareTexturePaths(assetPaths),
                 count = diff.length;
-            
+
             // 验证条件：差异数更小且纹理槽位充足（最大索引+差异数不超过8）
             if (count < maxCount && (materialInfo.maxIdx + count) < 8) {
                 maxCount = count;
@@ -300,12 +300,12 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                 jsonPath = textureInfo.atlasJsonPath,
                 bundleName = textureInfo.bundleName,
                 bundle = no.assetBundleManager.getLoadedBundle(bundleName);
-            
+
             // 仅当资源包已加载时执行加载操作
             if (bundle) {
                 // 记录纹理路径到材质信息
                 materialInfo.addTexturePath(assetPath);
-                
+
                 // 构建需要加载的路径数组
                 const paths: string[] = [assetPath];
                 // 如果图集配置未缓存则加入加载列表
@@ -318,10 +318,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                     if (!e) {
                         const texture = assets[0] as Texture2D;
                         const json = assets[1] as JsonAsset;
-                        
+
                         // 增加纹理引用计数防止被自动释放
                         texture.addRef();
-                        
+
                         // 处理图集配置数据
                         if (json) {
                             // 缓存图集配置并提取关键字段
@@ -330,13 +330,13 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                             // 减少JSON资源的引用计数
                             no.assetBundleManager.decRef(json);
                         }
-                        
+
                         // 构建图集配置信息对象
-                        let jsonInfo = { 
-                            jsonName: jsonPath, 
-                            names: this.atlasJsonKeys.get(jsonPath) 
+                        let jsonInfo = {
+                            jsonName: jsonPath,
+                            names: this.atlasJsonKeys.get(jsonPath)
                         };
-                        
+
                         // 将加载的资源关联到材质
                         materialInfo.setAtlases(texture, jsonInfo);
                     } else {
@@ -384,7 +384,7 @@ export class YJSample2DMaterialInfo {
      * new YJSample2DMaterialInfo('skill_effect', false);
      */
     constructor(name: string, reuse: boolean) {
-        this._uuid = no._uuid();
+        this.uuid = no.uuid();
         this.refCount++;
         this.name = name;
 

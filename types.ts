@@ -1,4 +1,3 @@
-import { SetMoveAlongWithPath } from './ui/SetMoveAlongWithPath';
 import { no } from './no';
 import { Asset, Bundle, JsonAsset, Material, Prefab, SpriteFrame, Texture2D, ccclass, property } from './yj';
 
@@ -134,13 +133,6 @@ export type CreateSpritemFrameData = {
  */
 export type PackedFrameData = { x: number, y: number, w: number, h: number, rotate: boolean, texture: Texture2D };
 
-/**
- * 路径移动组件类型别名（用于组件引用）
- * @example
- * // 获取路径移动组件
- * const pathMove = node.getComponent(_SetMoveAlongWithPath);
- */
-export type _SetMoveAlongWithPath = SetMoveAlongWithPath;
 
 /**
  * 精灵帧元数据类型（包含完整纹理信息）

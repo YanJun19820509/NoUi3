@@ -6,7 +6,7 @@ import { ccclass, Component, property } from "../../yj";
  *
  */
 
-type MoveHandleData = {
+export type MoveHandleData = {
     /** 移动类型:'moveby'表示步进移动,'moveto'表示移动到,'stop'表示停止 */
     type: 'moveby' | 'moveto' | 'stop',
     /** 步进移动方向,包含弧度和角度 */
