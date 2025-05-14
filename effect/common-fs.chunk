@@ -1,4 +1,7 @@
-#include <sprite-texture>
+#if USE_TEXTURE
+  #pragma builtin(local)
+  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+#endif
 
 in vec4 color;
 in vec2 ext;

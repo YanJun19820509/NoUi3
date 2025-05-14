@@ -5605,7 +5605,7 @@ export namespace no {
             let bundle: string;
             for (let i = 0, n = p.length; i < n; i++) {
                 const b = p.shift();
-                if (assetManager['_projectBundles'].includes(b)) {
+                if (assetManager.bundles.has(b)) {
                     bundle = b;
                     break;
                 }

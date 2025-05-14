@@ -1,10 +1,10 @@
 precision highp float;
-#include <builtin/uniforms/cc-global>
+#include <cc-global>
 #if USE_LOCAL
-  #include <builtin/uniforms/cc-local>
+  #include <cc-local>
 #endif
 #if SAMPLE_FROM_RT
-  #include <common/common-define>
+  #include <common>
 #endif
 in vec3 a_position;
 in vec2 a_texCoord;

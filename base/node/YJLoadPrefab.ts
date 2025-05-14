@@ -37,14 +37,6 @@ export default class YJLoadPrefab extends Component {
     prefabInfo: PrefabInfo = new PrefabInfo();
 
     /** 
-     * 旧版预制体资源路径（已废弃）
-     * @deprecated 将在3.7.3版本中移除，请使用prefabInfo替代
-     * @property {string} prefabUrl - 资源路径格式如："db://assets/Resources/prefabs/enemy.prefab"
-     */
-    @property({ readonly: true })
-    prefabUrl: string = '';
-
-    /** 
      * 材质配置UUID（编辑器专用）
      * @property {string} materialInfoUuid - 用于批量设置子节点材质的配置标识
      * @remarks 通过YJLoadAssets统一管理材质继承关系
@@ -62,20 +54,6 @@ export default class YJLoadPrefab extends Component {
      * }
      */
     public loaded: boolean = false;
-
-    /** 组件初始化时处理旧版资源路径迁移 */
-    onLoad() {
-        if (EDITOR) {
-            // 编辑器模式下自动转换旧版prefabUrl到prefabInfo
-            if (this.prefabUrl) {
-                no.EditorMode.getAssetUuidByUrl(this.prefabUrl).then(uuid => {
-                    if (uuid) {
-                        this.prefabInfo.setPathAndName(uuid);
-                    }
-                });
-            }
-        }
-    }
 
     /** 组件销毁时清理资源引用 */
     onDestroy() {
