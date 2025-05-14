@@ -136,7 +136,7 @@ export class YJBitmapFont extends Component {
     @property({ serializable: true })
     protected _size: number = 0;            // 缩放比例存储字段
     @property({ visible() { return false; } })
-    materialInfoUuid: string;               // 材质信息UUID（动态图集相关）
+    materialInfoUuid: string = '';               // 材质信息UUID（动态图集相关）
     //#endregion
 
     private _font: BitmapFont = null;       // 当前使用的位图字体

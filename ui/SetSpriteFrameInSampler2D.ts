@@ -9,6 +9,7 @@ import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
 import { YJMacroConfig } from '../macro';
 import { YJJobManager } from '../base/YJJobManager';
+import { YJi18n } from '../base/YJi18n';
 
 /**
  * Predefined variables
@@ -73,11 +74,11 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     
     // 所属面板名称（框架内部使用）
     @property({ visible() { return false; } })
-    panelName: string;
+    panelName: string = '';
     
     // 材质信息UUID（框架内部使用，关联YJSample2DMaterialManager配置）
     @property({ visible() { return false; } })
-    materialInfoUuid: string;
+    materialInfoUuid: string = '';
     
     // 是否启用多语言支持
     // @规则：

@@ -791,11 +791,11 @@ export class YJCharLabel extends Sprite {
 
     /** 关联的面板名称（内部使用） */
     @property({ visible() { return false; } })
-    panelName: string;
+    panelName: string = '';
 
     /** 材质信息UUID（渲染系统使用） */
     @property({ visible() { return false; } })
-    materialInfoUuid: string;
+    materialInfoUuid: string = '';
 
     /** 
      * 高清显示模式缩放系数 

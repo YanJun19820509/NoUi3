@@ -50,7 +50,7 @@ export default class YJLoadPrefabs extends Component {
      * @remarks 通过YJLoadAssets统一管理材质继承关系
      */
     @property({ visible() { return false; } })
-    materialInfoUuid: string;
+    materialInfoUuid: string = '';
 
     /** 
      * 加载状态标识

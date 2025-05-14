@@ -12,7 +12,6 @@ import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { SetText } from '../ui/SetText';
 import { YJToggleGroupManager } from '../base/node/YJToggleGroupManager';
 import { SetList } from '../ui/SetList';
-import { SetSliderProgress } from '../ui/SetSliderProgress';
 import { SetSpriteFrameInSampler2D } from '../ui/SetSpriteFrameInSampler2D';
 import { YJPlaySoundEffect } from '../base/audio/YJPlaySoundEffect';
 import { YJDataWork } from '../base/YJDataWork';
@@ -176,9 +175,9 @@ export class AutoCreateNode extends Component {
             case 'scrollView':
                 this.createScrollView(n, parent);
                 break;
-            case 'slider':
-                this.createSlider(n, parent);
-                break;
+            // case 'slider':
+            //     this.createSlider(n, parent);
+            //     break;
             case 'layout':
                 this.createLayout(n, parent);
                 break;
@@ -414,18 +413,18 @@ export class AutoCreateNode extends Component {
         return n;
     }
 
-    private createSlider(c: any, parent: Node): Node {
-        let n = this.getNode(c.name, Toggle, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
-        this.parseChildren(c, n);
-        if (!n.getComponent(Slider)) {
-            let s = n.addComponent(Slider);
-            s.direction = c.w > c.h ? Slider.Direction.Horizontal : Slider.Direction.Vertical;
-            n.addComponent(SetSliderProgress);
-            s.handle = n.getComponentInChildren(Sprite);
-            s.handle.addComponent(Button);
-        }
-        return n;
-    }
+    // private createSlider(c: any, parent: Node): Node {
+    //     let n = this.getNode(c.name, Toggle, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+    //     this.parseChildren(c, n);
+    //     if (!n.getComponent(Slider)) {
+    //         let s = n.addComponent(Slider);
+    //         s.direction = c.w > c.h ? Slider.Direction.Horizontal : Slider.Direction.Vertical;
+    //         n.addComponent(SetSliderProgress);
+    //         s.handle = n.getComponentInChildren(Sprite);
+    //         s.handle.addComponent(Button);
+    //     }
+    //     return n;
+    // }
 
     private createLayout(c: any, parent: Node): Node {
         let n = this.getNode(c.name, Toggle, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);

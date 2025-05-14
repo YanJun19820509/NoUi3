@@ -2,6 +2,7 @@ import { _decorator } from 'cc';
 import { YJPanel } from '../../../common/base/node/YJPanel';
 import { panelPrefabPath } from '../../../common/types';
 import { no } from '../../../common/no';
+import { YJWindowManager } from '../../base/node/YJWindowManager';
 const { ccclass, property } = _decorator;
 
 /**

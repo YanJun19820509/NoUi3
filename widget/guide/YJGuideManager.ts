@@ -1,3 +1,4 @@
+import { YJWindowManager } from '../../base/node/YJWindowManager';
 import { no } from '../../no';
 import { Component, DEBUG, ccclass, property } from '../../yj';
 

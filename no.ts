@@ -3653,7 +3653,7 @@ export namespace no {
             node.setSiblingIndex(index);
             return index;
         }
-        let p = node.parent['_children']?.findIndex(a => a._uuid == node._uuid) || 0;
+        let p = node.parent['_children']?.findIndex(a => a.uuid == node.uuid) || 0;
         return p;
     }
 
@@ -4681,7 +4681,7 @@ export namespace no {
 
     /**资源管理 */
 
-    export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset | typeof ImageAsset };
+    export type AssetPath = { bundle?: string, path?: string, file?: string, type?: typeof Asset };
     export class AssetBundleManager {
 
         // 远程资源缓存（键：资源路径，值：资源对象）
@@ -5083,7 +5083,7 @@ export namespace no {
          *   this.initLevels(json.json);
          * });
          */
-        public loadFile(path: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
+        public loadFile(path: string, type: typeof Asset, callback: (asset: Asset) => void): void {
             let p = this.assetPath(path);
             if (p.bundle) {
                 this.load(p.bundle, p.path, type, (asset: Asset) => {
@@ -5120,7 +5120,7 @@ export namespace no {
          *   director.loadScene(scene);
          * });
          */
-        public load(bundleName: string, fileName: string, type: typeof Asset | typeof ImageAsset, callback: (asset: Asset) => void): void {
+        public load(bundleName: string, fileName: string, type: typeof Asset, callback: (asset: Asset) => void): void {
             if (bundleName == null || bundleName == '') {
                 assetManager.loadAny({ 'url': fileName, 'type': type }, (err, item) => {
                     if (item == null) {
@@ -5625,7 +5625,7 @@ export namespace no {
             a.path = p.join('/');
 
             // 根据文件扩展名确定资源类型
-            let s: typeof Asset | typeof ImageAsset;
+            let s: any;
             if (fileType != null) {
                 switch (fileType.toLowerCase()) {
                     case 'json':
@@ -5831,7 +5831,7 @@ export namespace no {
             // 过滤子资源并构建请求列表
             for (let i = 0; i < infos.length; i++) {
                 let a = infos[i];
-                if (a._uuid.indexOf('@') == -1) {
+                if (a.uuid.indexOf('@') == -1) {
                     requests[requests.length] = { path: a.path, bundle: p.bundle, type: Asset };
                 }
             }
@@ -5899,16 +5899,16 @@ export namespace no {
          *   this.playSoundEffect(clip);
          * });
          */
-        public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset | typeof ImageAsset }, callback?: (file: T) => void): void {
+        public loadAny<T extends Asset>(request: { url?: string, path?: string, uuid?: string, bundle?: string, type?: typeof Asset }, callback?: (file: T) => void): void {
             if (request.url) {
                 const p = this.assetPath(request.url);
                 this.load(p.bundle, p.path, p.type, callback);
             } else if (request.bundle && request.path && request.type) {
                 this.load(request.bundle, request.path, request.type, callback);
             } else {
-                assetManager.loadAny({ uuid: request._uuid }, (e: Error, f: T) => {
+                assetManager.loadAny({ uuid: request.uuid }, (e: Error, f: T) => {
                     if (e != null) {
-                        err(request._uuid, e.stack);
+                        err(request.uuid, e.stack);
                     }
                     this.addRef(f);//增加引用计数
                     callback?.(f);
@@ -6114,7 +6114,7 @@ export namespace no {
          */
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
-            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type)._uuid;
+            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
         }
 
         /**
@@ -6472,8 +6472,8 @@ export namespace no {
                 let requests: { path?: string, uuid?: string }[] = [];
                 for (let i = 0; i < infos.length; i++) {
                     const a = infos[i];
-                    if (a._uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
-                        requests[requests.length] = { path: a.path, uuid: a._uuid };
+                    if (a.uuid.indexOf('@') == -1 && this.loadTypes.includes(a.ctor.name)) {
+                        requests[requests.length] = { path: a.path, uuid: a.uuid };
                     }
                 }
                 this.loadAnyFiles(requests, null, items => {
@@ -8808,10 +8808,10 @@ export namespace no {
         a.target = target;
         if (typeof comp == 'string') {
             a.component = comp;
-            a._componentId = js.getClassId(js.getClassByName(comp));
+            a._componentId = js._getClassId(js.getClassByName(comp));
         } else {
             a.component = js.getClassName(comp);
-            a._componentId = js.getClassId(comp);
+            a._componentId = js._getClassId(comp);
         }
         a.handler = handler;
         return a;
@@ -8840,7 +8840,7 @@ export namespace no {
             let b = true;
             for (let i = 0, n = btn.clickEvents.length; i < n; i++) {
                 let ce = btn.clickEvents[i];
-                if (ce.target._uuid == a.target._uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
                     b = false;
                     break;
                 }
@@ -8872,7 +8872,7 @@ export namespace no {
             let b = true;
             for (let i = 0, n = toggle.checkEvents.length; i < n; i++) {
                 let ce = toggle.checkEvents[i];
-                if (ce.target._uuid == a.target._uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
+                if (ce.target.uuid == a.target.uuid && (ce._componentName == a._componentName || ce._componentId == a._componentId) && ce.handler == a.handler) {
                     b = false;
                     break;
                 }
@@ -10155,7 +10155,7 @@ export namespace no {
             return getAssetInfoByFileName(fileName).then(info => {
                 if (info) {
                     return new Promise<T>(resolve =>
-                        assetBundleManager.loadByUuid<T>(info._uuid, asset => resolve(asset))
+                        assetBundleManager.loadByUuid<T>(info.uuid, asset => resolve(asset))
                     ).catch(e => {
                         console.error(e);
                         return null;

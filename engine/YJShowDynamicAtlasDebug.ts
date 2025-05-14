@@ -2,6 +2,7 @@
 import { ccclass, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, find, instantiate } from '../yj';
 import { no } from '../no';
 import { Atlas } from './atlas';
+import { YJWindowManager } from '../base/node/YJWindowManager';
 
 /**
  * Predefined variables
