@@ -16,7 +16,7 @@ export class Atlas {
             height = 2;
         }
         uuid = (uuid || no.sysTime.now) + '@';
-        this._uuid = uuid + 'a';
+        this.uuid = uuid + 'a';
         const texture = new DynamicAtlasTexture();
         texture._uuid = uuid + 't';
         texture.initWithSize(width, height);

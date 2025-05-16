@@ -41,7 +41,7 @@ export class YJMoveHandle extends Component {
     /** 事件代理组件（需实现移动事件处理方法） */
     @property({ type: YJMoveHandleDelegate, displayName: '代理组件', tooltip: '移动事件回调组件，需要实现moveHandleEvent方法\n示例见类注释' })
     delegate: YJMoveHandleDelegate = null;
-    
+
     /** 是否启用点击移动（短按150ms内松开触发moveto事件） */
     @property({ displayName: '点击移动', tooltip: '启用后短时间点击会触发moveto类型事件' })
     clickMove: boolean = false;
@@ -57,6 +57,8 @@ export class YJMoveHandle extends Component {
     /** 屏幕可视区域尺寸缓存 */
     private _viewSize: Size;
 
+    private _tempVec: Vec2 = new Vec2();
+
     /**
      * 触摸开始事件处理
      * @param e 触摸事件对象
@@ -66,7 +68,7 @@ export class YJMoveHandle extends Component {
         if (!this._viewSize) {
             this._viewSize = view.getVisibleSize();
         }
-        this.startTouchPos = this.touchUILocationAR(e);
+        this.startTouchPos = this.touchUILocationAR(e).clone();
         this._touchTime = sys.now();
     }
 
@@ -90,7 +92,7 @@ export class YJMoveHandle extends Component {
     public onEnd(e: EventTouch) {
         this._isMoving = false;
         const pos = this.touchUILocationAR(e);
-        
+
         // 短按判定（150ms内松开）
         if (this.clickMove && sys.now() - this._touchTime < 150) {
             // 计算相对于屏幕中心的方向
@@ -113,7 +115,8 @@ export class YJMoveHandle extends Component {
      */
     private touchUILocationAR(e: EventTouch): Vec2 {
         const p = e.getUILocation();
-        return v2(p.x - this._viewSize.width / 2, p.y - this._viewSize.height / 2);
+        this._tempVec.set(p.x - this._viewSize.width / 2, p.y - this._viewSize.height / 2);
+        return this._tempVec;
     }
 
     /**

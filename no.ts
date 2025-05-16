@@ -1881,11 +1881,10 @@ export namespace no {
      * console.log(no.angleTo(from, to).radian); // 输出1.5708（π/2）
      */
     export function angleTo(p1: Vec2 | Vec3, p2: Vec2 | Vec3): { angle: number, radian: number } {
-        let a = v2(p2.x - p1.x, p2.y - p1.y);
-        let b = a.signAngle(v2(1, 0));
+        let b = Math.atan2(p2.y - p1.y, p2.x - p1.x);
         return {
-            'angle': (360 - b / Math.PI * 180) % 360,
-            'radian': -b
+            'angle': (360 + b / Math.PI * 180) % 360,
+            'radian': b
         };
     }
 
@@ -10662,7 +10661,7 @@ export namespace no {
      * nodePool.put('enemy', deadEnemyNode);
      */
     export class NodePool {
-        private cacheMap: Map<string, { o: Node, t: number }>;
+        private cacheMap: Map<string, { o: Node, t: number }[]>;
         private static _ins: NodePool = null;
 
         /** 获取缓存池单例实例 */
@@ -10672,7 +10671,7 @@ export namespace no {
         }
 
         constructor() {
-            this.cacheMap = new Map<string, { o: Node, t: number }>();
+            this.cacheMap = new Map<string, { o: Node, t: number }[]>();
         }
 
         /**
@@ -10685,9 +10684,12 @@ export namespace no {
          */
         public get(type: string): Node {
             if (this.cacheMap.has(type)) {
-                const cache = this.cacheMap.get(type);
-                this._visible(cache.o, true);
-                this.cacheMap.delete(type);
+                const cache = this.cacheMap.get(type).shift();
+                if (!cache) {
+                    return null;
+                }
+                // this._visible(cache.o, true);
+                visibleByActiveInHierarchy(cache.o, true);
                 return cache.o;
             }
             return null;
@@ -10702,14 +10704,31 @@ export namespace no {
          * nodePool.put('levelRewardPopup', rewardPopup);
          */
         public put(type: string, node: Node) {
-            this._visible(node, false);
-            this.cacheMap.set(type, { o: node, t: Date.now() });
+            // this._visible(node, false);
+            visibleByActiveInHierarchy(node, false);
+            if (!this.cacheMap.has(type)) {
+                this.cacheMap.set(type, []);
+            }
+            this.cacheMap.get(type).push({ o: node, t: Date.now() });
+        }
+
+        /** 根据类型清空缓存节点 */
+        public clearByType(type: string) {
+            if (this.cacheMap.has(type)) {
+                const v = this.cacheMap.get(type);
+                for (let i = 0; i < v.length; i++) {
+                    v[i].o.destroy();
+                }
+                this.cacheMap.delete(type);
+            }
         }
 
         /** 清空所有缓存节点 */
         public clear() {
             this.cacheMap.forEach((v, k) => {
-                v.o.destroy();
+                for (let i = 0; i < v.length; i++) {
+                    v[i].o.destroy();
+                }
             });
             this.cacheMap.clear();
         }

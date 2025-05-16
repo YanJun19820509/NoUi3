@@ -470,7 +470,7 @@ export class YJDynamicAtlas {
 
         // 调用图集管理器插入帧数据，包含空间不足回调
         const frame = this.atlas.insertSpriteFrame(spriteFrame, this.canRotate && canRotate, () => {
-            no.err(`${this.atlas._uuid}动态图集无空间！`);
+            no.err(`${this.atlas.uuid}动态图集无空间！`);
         });
         return frame;
     }
@@ -563,7 +563,7 @@ export class YJDynamicAtlas {
     private createSpriteFrameInSample2D(spriteFrame: SpriteFrameDataType): SpriteFrame {
         let newSpriteFrame: SpriteFrame = new SpriteFrame();
         // 设置唯一标识（通过非标准方式设置内部属性）
-        newSpriteFrame['_uuid'] = spriteFrame._uuid;
+        newSpriteFrame['_uuid'] = spriteFrame.uuid;
         // 使用动态图集的共享纹理
         newSpriteFrame.texture = this.spriteTexture;
         // 设置原始尺寸（逻辑尺寸）

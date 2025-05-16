@@ -150,6 +150,7 @@ export class YJLoadAssets extends Component {
      */
     private showSubSpriteFrame(v: boolean) {
         this.setMaterialKey();
+        const name = this._materialKey;
         // 处理各种类型的组件显示状态
         let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
         for (let i = 0; i < list.length; i++) {

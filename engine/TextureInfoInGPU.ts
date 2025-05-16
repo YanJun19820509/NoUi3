@@ -48,7 +48,7 @@ class _TextureInfoInGPU {
             path: assetInfo?.["path"] || "未知",
             size: texture._gfxTexture?.size,
         };
-        no.addToArray(this._uuids, data);
+        no.addToArray(this.uuids, data);
 
         // console.log(`>>>>>>上传贴图: 
         //     ---UUID: ${data._uuid}
@@ -63,7 +63,7 @@ class _TextureInfoInGPU {
         if (!uuid) {
             return;
         }
-        no.removeFromArray(this._uuids, uuid, "uuid");
+        no.removeFromArray(this.uuids, uuid, "uuid");
 
         // let data: ProfilerData = no.itemOfArray(this._uuids, uuid, "uuid");
         // if (data) {
@@ -106,7 +106,7 @@ class _TextureInfoInGPU {
         }
         let infos: ProfilerData[] = [];
         for (let i = 0; i < uuids.length; i++) {
-            let data: ProfilerData = no.itemOfArray(this._uuids, uuids[i], "uuid");
+            let data: ProfilerData = no.itemOfArray(this.uuids, uuids[i], "uuid");
             if (data) infos.push(data);
         }
         if (infos.length == 0) {
@@ -116,9 +116,9 @@ class _TextureInfoInGPU {
             console.log(`>>>>>>${panelName}资源未释放: ${infos.length}个`);
             for (let i = 0; i < infos.length; i++) {
                 let data = infos[i];
-                let asset = no.assetBundleManager.getCachedImageInfo(data._uuid);
+                let asset = no.assetBundleManager.getCachedImageInfo(data.uuid);
                 console.log(`
-                ---UUID: ${data._uuid}
+                ---UUID: ${data.uuid}
                 ---路径: ${data.path}
                 ---大小: ${bytes2MB(data.size)} MB
                 ---引用计数: ${asset?.ref}
@@ -133,15 +133,15 @@ class _TextureInfoInGPU {
 
     /**打印贴图信息 */
     public log_texture() {
-        let uuids: ProfilerData[] = this._uuids.sort((a: ProfilerData, b: ProfilerData) => { return Number(a.size) - Number(b.size) });
+        let uuids: ProfilerData[] = this.uuids.sort((a: ProfilerData, b: ProfilerData) => { return Number(a.size) - Number(b.size) });
         if (uuids) {
             let size = 0;
             for (let i = 0; i < uuids.length; i++) {
                 // no.log(`贴图 uuid: ${uuids[i]._uuid} path: ${uuids[i].path} size:${uuids[i].size}`);
                 let data = uuids[i];
-                let asset = no.assetBundleManager.getCachedImageInfo(data._uuid);
+                let asset = no.assetBundleManager.getCachedImageInfo(data.uuid);
                 console.log(`>>>>>>贴图: 
-                    ---UUID: ${data._uuid}
+                    ---UUID: ${data.uuid}
                     ---路径: ${data.path}
                     ---大小: ${bytes2MB(data.size)} MB
                     ---计数: ${asset?.ref}
@@ -154,7 +154,7 @@ class _TextureInfoInGPU {
         }
     }
 
-    public clear_texture() { this._uuids.length = 0; };
+    public clear_texture() { this.uuids.length = 0; };
 }
 
 export const TextureInfoInGPU = new _TextureInfoInGPU();
