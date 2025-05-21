@@ -1387,9 +1387,9 @@ export namespace no {
      * // 处理空数组情况
      * const empty = no.arrayRandom([]); // 返回null
      */
-    export function arrayRandom(arr: any[], n = 1, repeatable = false, except?: any[]): any {
-        if (!arr || arr.length == 0) return null;
-        if (arr.length == 1) return arr[0];
+    export function arrayRandom(arr: any[], num = 1, repeatable = false, except?: any[], needArr = false): any {
+        if (!arr || arr.length == 0) return [];
+        if (arr.length == 1) return needArr ? arr : arr[0];
         let a: any[] = [];
         if (except) {
             a = [];
@@ -1409,7 +1409,7 @@ export namespace no {
             a = arr.slice();
         }
         let c = [];
-        for (var i = 0; i < n; i++) {
+        for (var i = 0; i < num; i++) {
             let al = a.length;
             if (al == 0) break;
             let b = floor(random() * al);
@@ -1418,7 +1418,7 @@ export namespace no {
             else
                 c = [].concat(c, a[b]);
         }
-        return n == 1 ? c[0] : c;
+        return needArr ? c : num == 1 ? c[0] : c;
     }
 
     /**

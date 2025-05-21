@@ -48,46 +48,48 @@ js.mixin(UITransform.prototype, {
         return _hitTest.call(this, screenPoint, windowId);
     }
 });
-/**修复原生Button _onTouchMove 的时候 hitTest点击测试没有传event?.windowId事件窗口id 导致与摄像机systemWindowId不一致 点击测试始终返回false的问题 */
-Button.prototype["_onTouchMove"] = function (event?: EventTouch) {
-    if (!this._interactable || !this.enabledInHierarchy || !this._pressed) { return; }
-    // mobile phone will not emit _onMouseMoveOut,
-    // so we have to do hit test when touch moving
-    if (!event) {
-        return;
-    }
+//3.5.2引擎中hitTest没有第二个参数无需修改
+// /**修复原生Button _onTouchMove 的时候 hitTest点击测试没有传event?.windowId事件窗口id 导致与摄像机systemWindowId不一致 点击测试始终返回false的问题 */
+// Button.prototype["_onTouchMove"] = function (event?: EventTouch) {
+//     if (!this._interactable || !this.enabledInHierarchy || !this._pressed) { return; }
+//     // mobile phone will not emit _onMouseMoveOut,
+//     // so we have to do hit test when touch moving
+//     if (!event) {
+//         return;
+//     }
 
-    const touch = (event).touch;
-    if (!touch) {
-        return;
-    }
+//     const touch = (event).touch;
+//     if (!touch) {
+//         return;
+//     }
 
-    const hit = this.node._uiProps.uiTransformComp!.hitTest(touch.getLocation(), event?.windowId);
+//     //3.5.2引擎中hitTest没有第二个参数
+//     const hit = this.node._uiProps.uiTransformComp!.hitTest(touch.getLocation(), event?.windowId);
 
-    if (this._transition === 3/* Transition.SCALE */ && this.target && this._originalScale) {
-        if (hit) {
-            Vec3.copy(this._fromScale, this._originalScale);
-            Vec3.multiplyScalar(this._toScale, this._originalScale, this._zoomScale);
-            this._transitionFinished = false;
-        } else {
-            this._time = 0;
-            this._transitionFinished = true;
-            this.target.setScale(this._originalScale);
-        }
-    } else {
-        let state;
-        if (hit) {
-            state = "pressed"/* State.PRESSED */;
-        } else {
-            state = "normal"/* State.NORMAL */;
-        }
-        this._applyTransition(state);
-    }
+//     if (this._transition === 3/* Transition.SCALE */ && this.target && this._originalScale) {
+//         if (hit) {
+//             Vec3.copy(this._fromScale, this._originalScale);
+//             Vec3.multiplyScalar(this._toScale, this._originalScale, this._zoomScale);
+//             this._transitionFinished = false;
+//         } else {
+//             this._time = 0;
+//             this._transitionFinished = true;
+//             this.target.setScale(this._originalScale);
+//         }
+//     } else {
+//         let state;
+//         if (hit) {
+//             state = "pressed"/* State.PRESSED */;
+//         } else {
+//             state = "normal"/* State.NORMAL */;
+//         }
+//         this._applyTransition(state);
+//     }
 
-    if (event) {
-        event.propagationStopped = true;
-    }
-}
+//     if (event) {
+//         event.propagationStopped = true;
+//     }
+// }
 //layout
 js.mixin(Layout.prototype, {
     _checkUsefulObj() {
@@ -147,8 +149,17 @@ js.mixin(Skeleton.prototype, {
                 const dc = this._drawList.data[i];
                 if (dc.texture) {
                     if (dc.texture.isValid) {
-                        batcher.commitMiddleware(this, meshBuffer, origin + dc.indexOffset,
-                            dc.indexCount, dc.texture, dc.material!, this._enableBatch);
+                        //3.5.2引擎没有这个方法
+                        // batcher.commitMiddleware(this, meshBuffer, origin + dc.indexOffset,
+                        //     dc.indexCount, dc.texture, dc.material!, this._enableBatch);
+                        
+                        //以下是3.5.2引擎的内容
+                        // Construct IA
+                        const ia = meshBuffer.requireFreeIA(batcher.device);
+                        ia.firstIndex = origin + dc.indexOffset;
+                        ia.indexCount = dc.indexCount;
+                        // Commit IA
+                        batcher.commitIA(this, ia, dc.texture, dc.material!, this.node);
                     } else {
                         console.error('Invalid texture in skeleton');
                     }
