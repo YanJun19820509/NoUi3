@@ -218,7 +218,7 @@ export class YJLoadAssets extends Component {
             list = this.getComponentsInChildren(Button);
             for (let i = 0; i < list.length; i++) {
                 let a = list[i] as Button;
-                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame') || !a.getComponent('Sprite')) {
+                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame')) {
                     a.normalSprite = null;
                     a.hoverSprite = null;
                     a.pressedSprite = null;
