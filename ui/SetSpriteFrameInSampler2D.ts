@@ -39,47 +39,47 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     // @示例 this.defaultName = "icon_hero" // 设置默认显示英雄图标
     @property
     defaultName: string = '';
-    
+
     // 编辑器专用属性：默认精灵帧资源UUID（用于保存资源引用）
     @property({ readonly: true })
     defaultSpriteFrameUuid: string = '';
-    
+
     // 编辑器专用属性：资源路径（根据defaultSpriteFrameUuid自动生成）
     @property({ readonly: true })
     defaultUrl: string = '';
-    
+
     // 资源所在AssetBundle名称（用于动态加载）
     // @示例 this.bundleName = "resources" // 指定资源在resources包中
     @property
     bundleName: string = '';
-    
+
     // 是否从图集加载模式（编辑器专用标记）
     // @规则：
     // - true: 从图集加载精灵帧
     // - false: 使用单独纹理资源
     @property({ displayName: '从图集加载', readonly: true })
     loadFromAtlas: boolean = true;
-    
+
     // 是否允许动态合图（仅在非图集模式有效）
     // @规则：
     // - true: 运行时将单独纹理合并到动态图集
     // - false: 保持独立纹理
     @property({ displayName: '可动态合图', visible() { return !this.loadFromAtlas; } })
     canPack: boolean = false;
-    
+
     // UI动效组件（设置精灵帧时自动播放）
     // @示例 this.uiAnim = fadeInEffect // 绑定一个渐入动画效果
     @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
     uiAnim: YJUIAnimationEffect = null;
-    
+
     // 所属面板名称（框架内部使用）
     @property({ visible() { return false; } })
     panelName: string = '';
-    
+
     // 材质信息UUID（框架内部使用，关联YJSample2DMaterialManager配置）
     @property({ visible() { return false; } })
     materialInfoUuid: string = '';
-    
+
     // 是否启用多语言支持
     // @规则：
     // - true: 根据当前语言自动切换精灵帧（需在defaultName后添加语言后缀）
@@ -89,18 +89,20 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
     // 最后使用的shader宏定义（用于材质变体管理）
     private lastDefine: string;
-    
+
     // 当前shader变体索引（配合YJSample2DMaterialManager使用）
     private defineIndex: number = 0;
-    
+
     // 单独加载的精灵帧缓存（非图集模式使用）
     private _singleSpriteFrame: SpriteFrame = null;
-    
+
     // 动态图集实例引用（从YJSample2DMaterialManager获取）
     private dynamicAtlas: YJDynamicAtlas = null;
-    
+
     // 材质配置信息（包含UV转换参数等）
     private materialInfo: YJSample2DMaterialInfo;
+
+    private _sprite: Sprite = null;
 
     /**
      * 每帧更新逻辑（仅在编辑器模式生效）
@@ -145,9 +147,10 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * // 当切换语言时自动重新加载对应资源
      */
     onEnable() {
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
         // 编辑器模式下不执行
         if (EDITOR) return;
-        
+
         // 异步初始化材质信息（失败时下一帧重试）
         if (!this.initMaterialInfo()) {
             return requestAnimationFrame(this.onEnable.bind(this));
@@ -194,11 +197,11 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         if (!this.materialInfoUuid) return false;
         // 已初始化过材质信息时跳过
         if (this.materialInfo) return true;
-        
+
         // 从材质管理器获取配置信息
         this.materialInfo = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid);
         if (!this.materialInfo) return false;
-        
+
         // 设置动态图集引用
         this.dynamicAtlas = this.materialInfo.dynamicAtlas;
         return true;
@@ -248,7 +251,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
             this._singleSpriteFrame = null;
         }
         // 清空精灵组件引用
-        this.getComponent(Sprite).spriteFrame = null;
+        this._sprite.spriteFrame = null;
     }
 
     /**
@@ -269,13 +272,13 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         // 判断是否为散图资源（特殊后缀标识）
         if (this.defaultSpriteFrameUuid)
             this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
-        
+
         // 非图集模式且不允许打包时终止流程
         if (!this.loadFromAtlas && !this.canPack) return;
-        
+
         // 清空现有图集引用（准备动态打包）
-        if (this.getComponent(Sprite).spriteAtlas)
-            this.getComponent(Sprite).spriteAtlas = null;
+        if (this._sprite.spriteAtlas)
+            this._sprite.spriteAtlas = null;
     }
 
     /**
@@ -299,29 +302,29 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         if (!EDITOR) return;
         const spriteFrame = this.getComponent(Sprite).spriteFrame;
         if (!spriteFrame) return;
-        
+
         // 检测到资源名称变更时更新缓存
         let name = spriteFrame.name;
         if (this.defaultName != name) {
             this.defaultName = name;
             this.defaultSpriteFrameUuid = spriteFrame._uuid;
-            
+
             // 判断资源加载方式（图集/散图）
             if (this.defaultSpriteFrameUuid)
                 this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
-            
+
             // 异步获取资源元信息
             no.EditorMode.getAssetInfo(this.defaultSpriteFrameUuid).then(info => {
                 // 处理基础资源路径
                 this.defaultUrl = info.url.replace(/.png|.jpg/, '');
                 // 检测多语言资源路径特征
                 this.multiLan = this.defaultUrl.indexOf('/language/') > -1;
-                
+
                 // 获取资源包名称
                 no.EditorMode.getBundleName(info.url).then(bundleName => {
                     this.bundleName = bundleName;
                 });
-                
+
                 // 散图资源处理流程
                 if (!this.loadFromAtlas) {
                     const metaUrl = info.url.replace('/spriteFrame', '');
@@ -424,7 +427,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     public setSpriteFrame(name: string) {
         // 基础有效性检查
         if (!this.enabled || !name) return;
-        
+
         // 非合图模式处理
         if (!this.loadFromAtlas) {
             this.resetSprite();
@@ -445,7 +448,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         }
 
         // 获取并配置Sprite组件
-        const sprite = this.getComponent(Sprite);
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
+        const sprite = this._sprite;
         // 动态设置材质（如果未设置）
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
@@ -485,15 +489,15 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         const t = `${this.defineIndex}-${(idx + 1) * 100}`;
         const defines: any = {};
         defines[t] = true;
-        
+
         // 关闭之前的效果define
         if (this.lastDefine && this.lastDefine != t) {
             defines[this.lastDefine] = false;
         }
-        
+
         // 更新并应用新define
         this.lastDefine = t;
-        YJVertexColorTransitionManager.ins().add(this.getComponent(Sprite), defines);
+        YJVertexColorTransitionManager.ins().add(this._sprite, defines);
     }
 
     /**
@@ -503,7 +507,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * this.clearEffect() // 移除所有关联的材质特效
      */
     private clearEffect() {
-        YJVertexColorTransitionManager.ins().remove(this.getComponent(Sprite));
+        YJVertexColorTransitionManager.ins().remove(this._sprite);
     }
 
     /**
@@ -522,8 +526,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                 no.err('setSpriteFrameByUuid by uuid no file', this.node?.name, uuid);
             } else {
                 // 设置精灵组件显示内容
-                this.getComponent(Sprite).spriteFrame = file;
-                
+                this._sprite.spriteFrame = file;
+
                 // 非编辑器环境处理资源引用
                 if (!EDITOR) {
                     // 释放之前持有的精灵帧引用
@@ -554,7 +558,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * this.setDefaultSpriteFrame() // 初始化时设置默认贴图
      */
     private setDefaultSpriteFrame() {
-        const sprite = this.getComponent(Sprite);
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
+        const sprite = this._sprite;
         // 初始化材质设置
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
@@ -570,10 +575,10 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                     this._singleSpriteFrame = null;
                 }
                 this._singleSpriteFrame = s;
-                
+
                 // 打包到动态图集
                 this.packSpriteFrame(s);
-                
+
                 // GPU纹理跟踪
                 if (TextureInfoInGPU.isWork) {
                     TextureInfoInGPU.addTextureUuidToPanel(s._uuid, this.panelName);
@@ -602,7 +607,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
             this.loadByUuid();
             return;
         }
-        
+
         // 通过URL异步加载精灵帧资源
         no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
             if (!file) {
@@ -615,7 +620,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                     this._singleSpriteFrame.decRef();
                     this._singleSpriteFrame = null;
                 }
-                
+
                 // 更新精灵帧引用
                 this._singleSpriteFrame = file;
                 // 打包到动态图集
@@ -688,7 +693,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         if (!isValid(this)) return;
 
         // 获取Sprite组件并设置自定义材质
-        const sprite = this.getComponent(Sprite);
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
+        const sprite = this._sprite;
         if (!sprite.customMaterial) {
             sprite.customMaterial = this.dynamicAtlas?.customMaterial;
         }
@@ -727,17 +733,16 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
             // 缓存新加载的精灵帧
             this._singleSpriteFrame = spriteFrame;
-            
+
             // 配置精灵组件属性
-            const sprite = this.getComponent(Sprite);
             if (sprite.sizeMode != Sprite.SizeMode.CUSTOM) {
                 sprite.sizeMode = Sprite.SizeMode.RAW; // 保持原始纹理尺寸
             }
             sprite.trim = false; // 禁用自动裁剪
-            
+
             // 清除可能存在的特效
             this.clearEffect();
-            
+
             // 打包到动态图集
             this.packSpriteFrame(spriteFrame);
 
@@ -761,7 +766,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * this.packSpriteFrame(loadedFrame) // 将已加载的帧打包
      */
     private packSpriteFrame(frame: SpriteFrame) {
-        const sprite = this.getComponent(Sprite);
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
+        const sprite = this._sprite;
         if (!frame) return;
 
         // 直接设置模式（当禁用动态图集或不允许打包时）
@@ -813,8 +819,9 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      */
     private removeSprite() {
         // this._lastName = null;
-        this.getComponent(Sprite).spriteFrame = null;
-        this.getComponent(Sprite).spriteAtlas = null;
+        if (!this._sprite) this._sprite = this.getComponent(Sprite);
+        this._sprite.spriteFrame = null;
+        this._sprite.spriteAtlas = null;
         if (EDITOR && this.bind_keys) {
             this.defaultName = '';
             this.defaultSpriteFrameUuid = '';
@@ -832,7 +839,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      */
     public setSpriteEnable(v: boolean) {
         if (!this.enabled) return;
-        this.getComponent(Sprite).enabled = v;
+        this._sprite.enabled = v;
     }
 
     /**
@@ -847,6 +854,6 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * @注意事项：频繁更换材质可能影响性能
      */
     public setSpriteMaterial(material: Material) {
-        this.getComponent(Sprite).customMaterial = material;
+        this._sprite.customMaterial = material;
     }
 }
