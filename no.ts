@@ -1880,7 +1880,7 @@ export namespace no {
      * const to = new Vec2(0, 1);
      * console.log(no.angleTo(from, to).radian); // 输出1.5708（π/2）
      */
-    export function angleTo(p1: Vec2 | Vec3, p2: Vec2 | Vec3): { angle: number, radian: number } {
+    export function angleTo(p1: Vec2 | Vec3 | { x: number, y: number }, p2: Vec2 | Vec3 | { x: number, y: number }): { angle: number, radian: number } {
         let b = Math.atan2(p2.y - p1.y, p2.x - p1.x);
         return {
             'angle': (360 + b / Math.PI * 180) % 360,
