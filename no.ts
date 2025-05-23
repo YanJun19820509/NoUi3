@@ -1889,6 +1889,21 @@ export namespace no {
     }
 
     /**
+     * 计算两点之间的距离
+     * @param p1 点1坐标
+     * @param p2 点2坐标
+     * @returns 距离
+     * @example
+     * // 计算玩家与目标点之间的距离
+     * const playerPos = new Vec3(0, 0, 0);
+     * const targetPos = new Vec3(1, 1, 0);
+     * const distance = no.distance(playerPos, targetPos);
+     */
+    export function distance(p1: Vec2 | Vec3 | { x: number, y: number }, p2: Vec2 | Vec3 | { x: number, y: number }): number {
+        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+
+    /**
      * 批量执行事件处理器
      * @param handlers 事件处理器数组
      * @param args 要传递给处理器的参数（会自动合并handler的customEventData）

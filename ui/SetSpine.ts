@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, EDITOR, Skeleton, requireComponent, sys, size } from '../yj';
+import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -19,7 +19,6 @@ import { YJSpineManager } from '../base/YJSpineManager';
 
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画)')
-@executeInEditMode()
 @requireComponent(Skeleton)
 /**
  * 设置spine动画
@@ -64,6 +63,30 @@ export class SetSpine extends HackUi {
     @property({ tooltip: '当显示全屏界面时，是否支持disable' })
     canDisable: boolean = true;
 
+    @property
+    get sync(): boolean {
+        return false;
+    }
+
+    set sync(v: boolean) {
+        // 获取当前节点的Spine组件
+        const spine = this.getComponent(Skeleton);
+
+        // 检查是否需要自动获取资源路径
+        if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
+            // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
+            no.EditorMode.getAssetUrlByUuid(spine.skeletonData._uuid).then(url => {
+                if (!url) return;
+
+                // 处理资源路径格式（示例：'spine/hero'）
+                this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
+
+                // 记录当前动画名称（示例：'idle'或'attack'）
+                this.animationName = spine.animation;
+            });
+        }
+    }
+
     /** 
      * 全局性能开关 - 低帧率时禁用Spine动画
      * （设置为true时，当帧率低于45帧会自动禁用spine渲染）
@@ -91,39 +114,6 @@ export class SetSpine extends HackUi {
     // 当前控制的Spine组件实例
     private _curSpine: Skeleton;
 
-    /**
-     * 编辑器模式下自动获取Spine资源路径
-     * 当组件满足以下条件时自动处理：
-     * 1. 存在骨架数据
-     * 2. 没有挂接的插槽
-     * 3. 未手动设置spineUrl
-     * 
-     * 示例：当拖拽spine/hero.json资源到组件时，自动设置spineUrl为'spine/hero'
-     */
-    protected update(): void {
-        // 仅在编辑器模式下执行
-        if (!EDITOR) return;
-
-        // 获取当前节点的Spine组件
-        const spine = this.getComponent(Skeleton);
-
-        // 检查是否需要自动获取资源路径
-        if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
-            // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
-            no.EditorMode.getAssetUrlByUuid(spine.skeletonData._uuid).then(url => {
-                if (!url) return;
-
-                // 处理资源路径格式（示例：'spine/hero'）
-                this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
-
-                // 记录当前动画名称（示例：'idle'或'attack'）
-                this.animationName = spine.animation;
-
-                // 清空临时设置的骨架数据，避免编辑器误保存
-                spine.skeletonData = null;
-            });
-        }
-    }
 
     //性能判断
     // private checkFPS(dt: number) {
