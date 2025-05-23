@@ -253,16 +253,16 @@ class JsonConfig {
 }
 
 export const YJJsonConfig = new JsonConfig();
-
-js.mixin(no['DataCache'].prototype, {
-    getJSON(path?: string | string[]): any {
-        const a = YJJsonConfig.read(path);
-        if (a === null || a === undefined) no.err('配置数据不存在：', path);
-        return a;
-    },
-    setJSON(json: Object): void {
-        for (const key in json) {
-            YJJsonConfig.loadDatabase({ name: key, json: json[key] });
-        }
-    }
-});
+//p2项目不适用
+// js.mixin(no['DataCache'].prototype, {
+//     getJSON(path?: string | string[]): any {
+//         const a = YJJsonConfig.read(path);
+//         if (a === null || a === undefined) no.err('配置数据不存在：', path);
+//         return a;
+//     },
+//     setJSON(json: Object): void {
+//         for (const key in json) {
+//             YJJsonConfig.loadDatabase({ name: key, json: json[key] });
+//         }
+//     }
+// });
