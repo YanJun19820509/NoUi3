@@ -876,7 +876,7 @@ export class YJCharLabel extends Sprite {
      * 运行时初始化动态图集："dynamic-atlas-001"
      */
     onLoad() {
-        super.onLoad();
+        // super.onLoad();
         // 编辑器特殊处理逻辑
         if (EDITOR) {
             // 未指定字体时使用宏配置的默认字体
