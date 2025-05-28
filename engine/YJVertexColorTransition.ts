@@ -34,9 +34,11 @@ class YJVertexColorTransitionData {
     constructor(renderComp: Sprite) {
         this.renderComp = renderComp;
         this._uuid = renderComp.uuid;
-        //hack tiled 的updateColorLate方法
-        this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
-        this.renderComp['_assembler'].updateColorLate = function () { };
+        if (this.renderComp['_assembler']) {
+            //hack tiled 的updateColorLate方法
+            this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
+            this.renderComp['_assembler'].updateColorLate = function () { };
+        }
     }
 
     /**
@@ -124,7 +126,7 @@ class YJVertexColorTransitionData {
             let offset = Number(keys[0]); // 分组索引
             let id = Number(keys[1]);     // 宏ID
             let ids = this._defineIds[offset];
-            
+
             // 更新宏定义状态
             if (v) {
                 no.addToArray(ids, id);
@@ -184,7 +186,7 @@ class YJVertexColorTransitionData {
      */
     private _updateVB() {
         if (!this.renderComp.renderData) return;
-        
+
         // 根据精灵类型选择更新策略
         switch (this.renderComp.type) {
             case Sprite.Type.SIMPLE:   // 普通精灵（4顶点）
@@ -197,7 +199,7 @@ class YJVertexColorTransitionData {
                 this._updateSlicedVB();
                 break;
             case Sprite.Type.FILLED:   // 填充精灵
-                this.renderComp.fillType === Sprite.FillType.RADIAL 
+                this.renderComp.fillType === Sprite.FillType.RADIAL
                     ? this._updateRadialFilledVB()  // 径向填充（圆形进度）
                     : this._updateBarFilledVB();    // 条形填充（直线进度）
                 break;

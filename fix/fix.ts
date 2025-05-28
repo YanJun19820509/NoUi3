@@ -105,19 +105,19 @@ js.mixin(Layout.prototype, {
     }
 });
 
-js.mixin(YJButton.prototype, {
-    a_trigger(event) {
-        if (!this._canClick && event) return;
-        if (event && event.getAllTouches().length > 1) return;
-        if (this.needWait) return;
-        this.needWait = true;
-        no.executeHandlers(this._clickEvents, event);
-        this.scheduleOnce(() => {
-            this.needWait = false;
-        }, this.delay);
-        no.evn.emit('YJButton_a_trigger')
-    }
-});
+// js.mixin(YJButton.prototype, {
+//     a_trigger(event) {
+//         if (!this._canClick && event) return;
+//         if (event && event.getAllTouches().length > 1) return;
+//         if (this.needWait) return;
+//         this.needWait = true;
+//         no.executeHandlers(this._clickEvents, event);
+//         this.scheduleOnce(() => {
+//             this.needWait = false;
+//         }, this.delay);
+//         no.evn.emit('YJButton_a_trigger')
+//     }
+// });
 
 // js.mixin(Asset.prototype, {
 //     get uuid() {
