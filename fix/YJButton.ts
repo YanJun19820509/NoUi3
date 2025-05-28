@@ -49,27 +49,44 @@ export class YJButton extends Component {
     @property({ displayName: '延时生效(s)', min: 0 })
     wait: number = 0;
 
+    @property({ type: EventHandler, displayName: '点击事件' })
+    clickEvents: EventHandler[] = [];
+
+    @property({ displayName: '同步点击事件' })
+    get syncEvents(): boolean {
+        return false
+    }
+
+    set syncEvents(v: boolean) {
+        if (v) {
+            const btn = this.getComponent(Button);
+            this.clickEvents = [];
+            for (let i = 0; i < btn.clickEvents.length; i++) {
+                this.clickEvents[this.clickEvents.length] = btn.clickEvents[i];
+            }
+        }
+    }
+
+
     private _canClick = true; // 总点击开关控制
 
-    private _clickEvents: EventHandler[] = []; // 原始点击事件缓存
     private needWait: boolean = false; // 等待间隔标记
     private interactable: boolean; // 原始交互状态缓存
 
     onEnable() {
         this.needWait = false;
         // 首次激活时接管原始点击事件
-        if (this._clickEvents.length == 0) {
-            const btn = this.getComponent(Button);
-            // 保存原始点击事件（使用数组长度作为索引保证顺序）
+        const btn = this.getComponent(Button);
+        if (this.clickEvents.length == 0) {
             for (let i = 0; i < btn.clickEvents.length; i++) {
-                this._clickEvents[this._clickEvents.length] = btn.clickEvents[i];
+                this.clickEvents[this.clickEvents.length] = btn.clickEvents[i];
             }
-            btn.clickEvents.length = 0; // 清空原始事件
-            // 延时设置代理事件（实现wait功能）
-            this.scheduleOnce(() => {
-                btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
-            }, this.wait);
         }
+        btn.clickEvents.length = 0; // 清空原始事件
+        // 延时设置代理事件（实现wait功能）
+        this.scheduleOnce(() => {
+            btn.clickEvents = [no.createClickEvent(this.node, 'YJButton', 'a_trigger')];
+        }, this.wait);
     }
 
     /**
@@ -82,7 +99,7 @@ export class YJButton extends Component {
      *     .setHandler('onClick'));
      */
     public addClickHandler(handler: EventHandler) {
-        this._clickEvents[this._clickEvents.length] = handler;
+        this.clickEvents[this.clickEvents.length] = handler;
     }
 
     /**
@@ -99,9 +116,9 @@ export class YJButton extends Component {
 
         this.needWait = true;
         // 执行所有缓存的事件处理器
-        no.executeHandlers(this._clickEvents, event);
+        no.executeHandlers(this.clickEvents, event);
         // 播放标准点击音效
-        YJSoundEffectManager.ins.playClickSoundEffect();
+        YJSoundEffectManager.ins?.playClickSoundEffect();
         // 重置点击状态（实现防连点间隔）
         this.scheduleOnce(() => {
             this.needWait = false;
