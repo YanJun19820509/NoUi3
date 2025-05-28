@@ -47,7 +47,7 @@ export class LoadingPanel extends YJPanel {
         no.evn.on('__popu_panel_open', this.onPanelOpen, this);
         no.evn.on('__popu_panel_close', this.onPanelClose, this);
         this.dataWork.setValue('show', true)
-            .setValue('hide', 1);
+            .setValue('hide', false);
     }
 
     private onPanelOpen() {
@@ -91,6 +91,7 @@ export class LoadingPanel extends YJPanel {
             });
             if (opened == 1) {
                 this.onHide();
+                this.unscheduleAllCallbacks();
                 return;
             }
             if (this.status == 'open') {
@@ -157,6 +158,6 @@ export class LoadingPanel extends YJPanel {
 
     private onHide() {
         this.dataWork.setValue('hide', true)
-            .setValue('show', 1);
+            .setValue('show', false);
     }
 }

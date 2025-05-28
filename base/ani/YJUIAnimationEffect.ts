@@ -1208,7 +1208,7 @@ export class YJUIAnimationEffect extends Component {
      * this.target = childNode;
      * this.a_play();
      */
-    public a_play(type?: string) {
+    public a_play(e?: any, type?: string) {
         if (!this.enabled) return;
         this.a_stop();
         let info: AnimationEffectInfo;

@@ -5,7 +5,7 @@ import { PopuPanel } from './PopuPanel';
 import { LayerType } from '../../../base/node/LayerType';
 
 @ccclass('PopupWindow')
-@panelPrefabPath('db://assets/GameAUG/res/common/popu/popu_panel1.prefab')
+@panelPrefabPath('db://assets/WJCY/scripts/common/base/node/popu/popu_panel1.prefab')
 @AllowMultipleOpen()
 export class PopupWindow extends PopuPanel {
 
