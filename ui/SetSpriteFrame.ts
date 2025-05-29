@@ -27,7 +27,7 @@ export class SetSpriteFrame extends HackUi {
      */
     @property(Sprite)
     sprite: Sprite = null;
-    
+
     /**
      * 资源路径前缀（用于自动拼接资源路径）
      * @规则：
@@ -36,14 +36,14 @@ export class SetSpriteFrame extends HackUi {
      */
     @property
     path: string = '';
-    
+
     /**
      * 默认精灵帧UUID（编辑器模式下使用）
      * @功能：在编辑器模式保存默认精灵帧引用
      */
     @property
     defaultSpriteFrameUuid: string = '';
-    
+
     /**
      * 默认精灵帧名称（用于编辑器显示）
      */
@@ -122,21 +122,19 @@ export class SetSpriteFrame extends HackUi {
             if (this.path != '' && data.indexOf(this.path) == -1) {
                 data = this.path + '/' + data;
             }
-            
+
             const path = `${data}/spriteFrame`;
             const uuid = no.assetBundleManager.getUuidFromPath(path);
-            
+
             // 避免重复加载相同资源
             if (this.sprite.spriteFrame?._uuid == uuid) return;
 
-            if (!uuid) {
-                // 异步加载精灵帧资源
-                no.assetBundleManager.loadSprite(path, spriteFrame => {
-                    if (this.sprite?.isValid) {
-                        this.sprite.spriteFrame = spriteFrame;
-                    }
-                });
-            }
+            // 异步加载精灵帧资源
+            no.assetBundleManager.loadSprite(path, spriteFrame => {
+                if (this.sprite?.isValid) {
+                    this.sprite.spriteFrame = spriteFrame;
+                }
+            });
         } else { // 图集模式
             if (data.atlas) {
                 // 加载完整图集并设置精灵帧
@@ -206,7 +204,7 @@ export class SetSpriteFrame extends HackUi {
     }
 
     /////// 编辑器专用方法 ///////
-    
+
     /**
      * 组件加载时初始化编辑器引用
      */

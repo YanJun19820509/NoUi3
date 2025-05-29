@@ -421,7 +421,7 @@ export class YJPanel extends Component {
             no.visibleByActiveInHierarchy(this.node, true);
         else
             no.visible(this.node, true);
-        no.siblingIndex(this.node, _nodeSiblingIndex_++);
+        no.siblingIndex(this.node, ++_nodeSiblingIndex_);
     }
 
     /**

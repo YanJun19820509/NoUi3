@@ -268,7 +268,7 @@ export class SetCreateNode extends HackUi {
         if (l === 0) this._1b1 = this.isFirst; // 首次运行标记
 
         // 非增量模式时隐藏多余节点
-        if (!this.onlyAdd) {
+        if (!this.onlyAdd && l > n) {
             for (let i = n; i < l; i++) {
                 no.visible(this._items[i], false);
             }
@@ -292,13 +292,12 @@ export class SetCreateNode extends HackUi {
                 for (let j = 0; j < this.batchNum; j++) {
                     this.setItem(data, start, dataIdx++);
                 }
-            }, 0.1, Math.ceil(data.length / this.batchNum));
+            }, 0.1, Math.ceil(n / this.batchNum));
         } else {
             // 普通模式：使用JobManager优化性能
-            const len = data.length;
             YJJobManager.ins.addTask(() => {
                 this.setItem(data, start, dataIdx++);
-                return dataIdx >= len; // 任务完成条件
+                return dataIdx >= n; // 任务完成条件
             });
         }
 
@@ -408,8 +407,13 @@ export class SetCreateNode extends HackUi {
             return;
         }
 
+        no.visible(item, true); // 确保节点可见
+
         // 获取实际内容节点（当有包装容器时）
-        if (this.uiAnim?.enabled || this.isFirst) item = item.children[0];
+        if (this.uiAnim?.enabled || this.isFirst) {
+            item = item.children[0];
+            no.visible(item, true);
+        }
 
         // 数据绑定到YJDataWork组件
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
@@ -418,7 +422,6 @@ export class SetCreateNode extends HackUi {
             a.init(); // 初始化数据绑定
         }
 
-        no.visible(item, true); // 确保节点可见
         if (immediate) return;
         // 处理动画效果
         if (this.uiAnim?.enabled) {
