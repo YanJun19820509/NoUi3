@@ -506,7 +506,7 @@ export namespace no {
          * no.evn.targetOff(this.uiPanel);
          */
         public targetOff(target: any): void {
-            for (let type in this._map) {
+            for (let type of this._map.keys()) {
                 let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
                 if (!a) continue;
                 for (let i = a.length - 1; i >= 0; i--) {
