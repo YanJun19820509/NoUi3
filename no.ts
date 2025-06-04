@@ -3044,6 +3044,17 @@ export namespace no {
     }
 
     /**
+     * 是否在范围内
+     * @param v 
+     * @param min 
+     * @param max 
+     * @returns 
+     */
+    export function inRange(v: number, min: number, max: number): boolean {
+        return v > min && v < max;
+    }
+
+    /**
      * 循环索引（适用于环形数组访问）
      * @param n - 当前索引
      * @param min - 最小索引值（通常为0）

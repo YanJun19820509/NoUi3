@@ -13,7 +13,7 @@ import { YJSpineManager } from '../base/YJSpineManager';
  * FileBasenameNoExtension = SetSpine
  * URL = db://assets/Script/common/ui/SetSpine.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
- * data:{path, skin, animation, loop, timeScale, loopNum}|[{path, skin, animation, loop, timeScale},...]
+ * data:{path, skin, animation, loop, timeScale, loopNum, startEvent, endEvent, eventParam}|[{path, skin, animation, loop, timeScale, startEvent, endEvent, eventParam},...]
  * 支持动画链
  */
 
@@ -22,7 +22,7 @@ import { YJSpineManager } from '../base/YJSpineManager';
 @requireComponent(Skeleton)
 /**
  * 设置spine动画
- * data:{path, skin, animation, loop, timeScale, loopNum}|[{path, skin, animation, loop, timeScale},...]
+ * data:{path, skin, animation, loop, timeScale, loopNum, startEvent, endEvent, eventParam}|[{path, skin, animation, loop, timeScale, startEvent, endEvent, eventParam},...]
  * 支持动画链
  */
 export class SetSpine extends HackUi {
@@ -113,6 +113,12 @@ export class SetSpine extends HackUi {
     private _endIndexes: string[];
     // 当前控制的Spine组件实例
     private _curSpine: Skeleton;
+    //动画播放开始广播的事件
+    private _startEvent: string;
+    //动画播放结束广播的事件
+    private _endEvent: string;
+    //事件参数
+    private _eventParam: any;
 
 
     //性能判断
@@ -239,7 +245,7 @@ export class SetSpine extends HackUi {
         if (!data) return;
 
         // 解构配置参数（带默认值）
-        let { path, skin, animation, loop, timeScale, loopNum, pause, duration }: {
+        let { path, skin, animation, loop, timeScale, loopNum, pause, duration, startEvent, endEvent, eventParam }: {
             path: string,
             skin: string,
             animation: string,
@@ -247,7 +253,10 @@ export class SetSpine extends HackUi {
             timeScale: number,
             loopNum: number,
             pause: boolean,
-            duration: number
+            duration: number,
+            startEvent: string,
+            endEvent: string
+            eventParam: any
         } = data;
 
         let spine = this._curSpine;
@@ -270,7 +279,9 @@ export class SetSpine extends HackUi {
         if (path && this.curPath && this.curPath != path) {
             YJSpineManager.ins.set(this.curPath);
         }
-
+        this._startEvent = startEvent;
+        this._endEvent = endEvent;
+        this._eventParam = eventParam || animation;
         // 需要加载新资源的情况
         if (!spine?.isValid || (path && this.curPath != path)) {
             if (!path) path = this.curPath;
@@ -598,11 +609,13 @@ export class SetSpine extends HackUi {
             // 原生事件监听模式
             spine?.setStartListener(() => {
                 spine?.setStartListener(() => { }); // 单次监听自动移除
+                this.emitStartEvent();
                 if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
                     this?.startCall.execute(spine, this.queueIndex);
             });
         } else {
             // 模拟模式：立即执行回调
+            this.emitStartEvent();
             if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
                 this?.startCall.execute(spine, this.queueIndex);
         }
@@ -622,6 +635,7 @@ export class SetSpine extends HackUi {
         if (no.spineEnable()) {
             spine?.setCompleteListener(() => {
                 spine?.setCompleteListener(() => { }); // 单次监听自动移除
+                this.emitEndEvent();
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
                     this?.endCall.execute(spine, this.queueIndex);
                 this.setSpineData(); // 重置动画数据
@@ -629,6 +643,7 @@ export class SetSpine extends HackUi {
         } else {
             // 模拟模式：延迟1秒后执行
             this.scheduleOnce(() => {
+                this.emitEndEvent();
                 if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
                     this?.endCall.execute(spine, this.queueIndex);
                 this.setSpineData(); // 重置动画数据
@@ -652,11 +667,13 @@ export class SetSpine extends HackUi {
             // 原生模式：使用Spine内置事件系统
             spine?.setCompleteListener(() => {
                 spine?.setCompleteListener(() => { }); // 单次监听自动移除
+                this.emitEndEvent();
                 this.playLoopNum(spine.animation); // 处理循环计数逻辑
             });
         } else {
             // 模拟模式：延迟1秒后执行（假设动画时长约1秒）
             this.scheduleOnce(() => {
+                this.emitEndEvent();
                 this.playLoopNum(spine.animation);
             }, 1);
         }
@@ -696,6 +713,18 @@ export class SetSpine extends HackUi {
         } else {
             this.isFullScreenHide = true; // 标记为全屏隐藏
             spine.enabled = false;
+        }
+    }
+
+    private emitStartEvent() {
+        if (this._startEvent) {
+            no.evn.emit(this._startEvent, this._eventParam);
+        }
+    }
+
+    private emitEndEvent() {
+        if (this._endEvent) {
+            no.evn.emit(this._endEvent, this._eventParam);
         }
     }
 }
