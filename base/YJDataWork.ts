@@ -358,8 +358,9 @@ export class YJDataWork extends Component {
      * this.clear();
      * // 会触发所有绑定UI的清除操作
      */
-    public clear(): void {
+    public clear() {
         this._data.clear();
+        return this;
     }
 
     /**

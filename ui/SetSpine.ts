@@ -424,6 +424,7 @@ export class SetSpine extends HackUi {
             spine.clearTrack(0); // 清理轨道0
             spine.loop = false; // 确保停止循环
             this?.endCall.execute(spine); // 执行结束回调
+            this.emitEndEvent();
             this.setSpineData(); // 重置spine数据
         }, duration);
     }
