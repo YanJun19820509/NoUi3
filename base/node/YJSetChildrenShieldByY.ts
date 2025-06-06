@@ -55,38 +55,20 @@ export class YJSetChildrenShieldByY extends Component {
      */
     private resort() {
         if (!isValid(this?.node)) return;
-        const children = this.node.children;
-        
-        // 过滤出场景树中实际激活的节点（activeInHierarchy）
-        const visibleChildren: Node[] = [];
-        for (let i = 0, n = children.length; i < n; i++) {
-            const child = children[i];
-            if (child.activeInHierarchy) {
-                visibleChildren.push(child);
-            }
-        }
-
-        // 按Y轴坐标降序排列（Y值大的节点显示在上层）
-        no.sortArray(visibleChildren, (b, a) => {
+        let children = this.node['_children'];
+        if (children.length <= 1) return;
+        no.sortArray(children, (b, a) => {
             return b.position.y - a.position.y;
         }, true);
-
-        // 设置子节点层级（通过改变兄弟索引实现）
-        for (let i = 0, n = visibleChildren.length; i < n; i++) {
-            const child = visibleChildren[i];
-            child.setSiblingIndex(i); // 索引越大显示越靠前
-        }
     }
 
-    /**
-     * 组件启动时初始化定时任务
-     * @remarks
-     * 使用Cocos调度系统实现定时更新：
-     * - 将帧数转换为时间间隔（frameNum/60秒）
-     * - macro.REPEAT_FOREVER 表示无限重复
-     */
-    start() {
-        // 将帧数转换为秒（60帧≈1秒）
-        this.schedule(this.resort, this.frameNum / 60, macro.REPEAT_FOREVER);
+    private _num = 0;
+    lateUpdate(dt: number): void {
+        if (this._num == 0) {
+            this.resort();
+            this._num = this.frameNum;
+        } else {
+            this._num--;
+        }
     }
 }
