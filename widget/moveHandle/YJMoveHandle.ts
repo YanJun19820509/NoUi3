@@ -1,5 +1,6 @@
 import { no } from '../../no';
 import { ccclass, Component, EventTouch, property, Size, sys, v2, Vec2, view } from '../../yj';
+import { YJHandShank } from '../handShank/YJHandShank';
 import { YJMoveHandleDelegate } from './YJMoveHandleDelegate';
 
 @ccclass('YJMoveHandle')
@@ -42,6 +43,12 @@ export class YJMoveHandle extends Component {
     @property({ type: YJMoveHandleDelegate, displayName: '代理组件', tooltip: '移动事件回调组件，需要实现moveHandleEvent方法\n示例见类注释' })
     delegate: YJMoveHandleDelegate = null;
 
+    /**
+     * 手柄
+     */
+    @property({ type: YJHandShank, displayName: '手柄' })
+    handShank: YJHandShank = null;
+
     /** 是否启用点击移动（短按150ms内松开触发moveto事件） */
     @property({ displayName: '点击移动', tooltip: '启用后短时间点击会触发moveto类型事件' })
     clickMove: boolean = false;
@@ -70,6 +77,7 @@ export class YJMoveHandle extends Component {
         }
         this.startTouchPos = this.touchUILocationAR(e).clone();
         this._touchTime = sys.now();
+        this.handShank?.onStart(this.startTouchPos);
     }
 
     /**
@@ -82,6 +90,7 @@ export class YJMoveHandle extends Component {
         // 计算当前触摸点相对于起点的方向（角度和弧度）
         this._dir = no.angleTo(this.startTouchPos, pos);
         this._isMoving = true;
+        this.handShank?.onMove(this._dir.radian);
     }
 
     /**
@@ -102,6 +111,7 @@ export class YJMoveHandle extends Component {
             // 触发停止事件并传递最终方向
             this.delegate?.moveHandleEvent({ type: 'stop' });
         }
+        this.handShank?.onStop();
     }
 
     /**
