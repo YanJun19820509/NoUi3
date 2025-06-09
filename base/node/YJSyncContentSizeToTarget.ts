@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, math, isValid, Size } from '../../yj';
+import { ccclass, property, Component, Node, math, isValid, Size, Vec2 } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -44,6 +44,9 @@ export class YJSyncContentSizeToTarget extends Component {
      */
     @property(Node)
     target: Node = null;
+
+    @property({ displayName: '比例', tooltip: '与目标节点尺寸按比例缩放，默认(1,1)，先按比例缩放，再做偏移' })
+    ratio: Vec2 = new Vec2(1, 1);
 
     /** 
      * 尺寸偏移量 
@@ -146,6 +149,9 @@ export class YJSyncContentSizeToTarget extends Component {
             size.width *= scale.x;
             size.height *= scale.y;
         }
+        //按比例缩放
+        size.width *= this.ratio.x;
+        size.height *= this.ratio.y;
         // 应用偏移量
         size.width += this.offset.width;
         size.height += this.offset.height;
