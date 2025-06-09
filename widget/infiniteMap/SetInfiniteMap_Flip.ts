@@ -14,6 +14,9 @@ export class SetInfiniteMap_Flip extends HackUi {
     @property({ displayName: '是否水平翻转', tooltip: '如果为true，则水平翻转,否则垂直翻转' })
     isHorizontalFlip: boolean = true;
 
+    @property({ displayName: '是否全屏' })
+    isFullScreen: boolean = true;
+
     /**
      * 可见区域的网格行列数[列数,行数]
      * @description 根据视口尺寸和地砖尺寸计算得出，用于确定需要渲染的网格范围
@@ -83,7 +86,7 @@ export class SetInfiniteMap_Flip extends HackUi {
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
-            const s = view.getVisibleSize();
+            const s = this.isFullScreen ? view.getVisibleSize() : no.size(this.node);
             // 计算可见区域网格行列数：横向列数 = 可见宽度/(tileSize*2) + 缓冲列
             // 例如：tileSize=64，屏幕宽1280 => 1280/(64*2)=10，+2缓冲 => 总12列
             this._gridColRow = [Math.ceil(s.width / tileSize[0] / 2) + Math.floor(s.width / tileSize[0]), Math.ceil(s.height / tileSize[1] / 2) + Math.floor(s.height / tileSize[1])];

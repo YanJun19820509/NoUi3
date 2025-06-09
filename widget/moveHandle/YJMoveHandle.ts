@@ -1,5 +1,5 @@
 import { no } from '../../no';
-import { ccclass, Component, EventTouch, property, Size, sys, v2, Vec2, view } from '../../yj';
+import { ccclass, Component, EventTouch, property, Size, sys, v2, v3, Vec2, Vec3, view } from '../../yj';
 import { YJHandShank } from '../handShank/YJHandShank';
 import { YJMoveHandleDelegate } from './YJMoveHandleDelegate';
 
@@ -54,17 +54,15 @@ export class YJMoveHandle extends Component {
     clickMove: boolean = false;
 
     /** 触摸起点坐标（相对屏幕中心坐标系） */
-    private startTouchPos: Vec2;
+    private startTouchPos: Vec3;
     /** 移动方向数据（包含角度和弧度两种表示方式） */
     private _dir: { angle: number, radian: number };
     /** 移动状态标记（true表示正在持续移动） */
     private _isMoving: boolean = false;
     /** 触摸开始时间戳（用于计算点击时长） */
     private _touchTime: number = 0;
-    /** 屏幕可视区域尺寸缓存 */
-    private _viewSize: Size;
 
-    private _tempVec: Vec2 = new Vec2();
+    private _tempVec: Vec3 = new Vec3();
 
     /**
      * 触摸开始事件处理
@@ -72,9 +70,6 @@ export class YJMoveHandle extends Component {
      * @description 初始化触摸起点坐标和时间戳
      */
     public onStart(e: EventTouch) {
-        if (!this._viewSize) {
-            this._viewSize = view.getVisibleSize();
-        }
         this.startTouchPos = this.touchUILocationAR(e).clone();
         this._touchTime = sys.now();
         this.handShank?.onStart(this.startTouchPos);
@@ -123,9 +118,10 @@ export class YJMoveHandle extends Component {
      * - 屏幕中心：(0, 0)
      * - 屏幕右上角：(width/2, height/2)
      */
-    private touchUILocationAR(e: EventTouch): Vec2 {
+    private touchUILocationAR(e: EventTouch): Vec3 {
         const p = e.getUILocation();
-        this._tempVec.set(p.x - this._viewSize.width / 2, p.y - this._viewSize.height / 2);
+        this._tempVec.set(p.x, p.y, 0);
+        no.worldPositionInNode(this._tempVec, this.node, this._tempVec);
         return this._tempVec;
     }
 

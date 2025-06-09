@@ -1,4 +1,4 @@
-import { ccclass, Component, Node, property, Vec2, Vec3 } from "../../../common/yj";
+import { ccclass, Component, Node, property, Vec3 } from "../../../common/yj";
 /**
  * 手柄
  * Author mqsy_yj
@@ -19,7 +19,7 @@ export class YJHandShank extends Component {
         this._originPos = this.node.position.clone();
     }
 
-    public onStart(pos: Vec2) {
+    public onStart(pos: Vec3) {
         this.node.setPosition(pos.x, pos.y);
     }
 
