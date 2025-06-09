@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR } from '../yj';
+import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR, isValid } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -62,6 +62,9 @@ export class SetSpine extends HackUi {
     // 是否允许在显示全屏界面时禁用组件（示例：设置为false可防止被全屏界面意外关闭）
     @property({ tooltip: '当显示全屏界面时，是否支持disable' })
     canDisable: boolean = true;
+
+    @property({ tooltip: '使用节点size，不使用spine默认size' })
+    useNodeSize: boolean = false;
 
     @property
     get sync(): boolean {
@@ -227,6 +230,17 @@ export class SetSpine extends HackUi {
         this.setSpineData();
     }
 
+    // 修改销毁节点的通用方法
+    private destroySpineNode(spine: Skeleton, path = this.curPath) {
+        if (!spine) return;
+        this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
+        // 在销毁节点前更新引用计数
+        if (this.curPath && isValid(spine?.node, true)) {
+            YJSpineManager.ins.set(path);
+        }
+        spine.node?.destroy();
+    }
+
     /**
      * 设置Spine动画数据核心方法
      * @功能说明：
@@ -293,8 +307,8 @@ export class SetSpine extends HackUi {
                     return;
                 }
                 // 组件有效性检查
-                if (!this.node?.isValid) {
-                    YJSpineManager.ins.set(path);
+                if (!isValid(this.node, true)) {
+                    this.destroySpineNode(this._curSpine, path);
                     return;
                 }
 
@@ -302,7 +316,7 @@ export class SetSpine extends HackUi {
 
                 // 销毁旧spine节点（异步加载后需要重新获取引用）
                 let spine = this._curSpine;
-                spine?.node?.destroy();
+                this.destroySpineNode(spine);
 
                 // 创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
@@ -327,8 +341,13 @@ export class SetSpine extends HackUi {
                 // 自动设置节点尺寸
                 const width = res.getRuntimeData().width;
                 const height = res.getRuntimeData().height;
-                if (width > 0 && height > 0) {
-                    no.size(this.node, size(width, height));
+                if (!this.useNodeSize) {
+                    if (width > 0 && height > 0) {
+                        no.size(this.node, size(width, height));
+                    }
+                } else {
+                    const nodeSize = no.size(this.node);
+                    newSpineNode.setScale(nodeSize.width / width, nodeSize.height / height);
                 }
 
                 // 构建动画标识（皮肤:动画名）
