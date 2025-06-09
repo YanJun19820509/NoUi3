@@ -20,7 +20,7 @@ class _YJTextureManager extends no.SingleObject {
      * const textureMgr = YJTextureManager.ins;
      */
     public static get ins(): _YJTextureManager {
-        return this.instance();
+        return this.instance() as _YJTextureManager;
     }
 
     /**

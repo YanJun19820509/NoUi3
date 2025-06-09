@@ -9063,7 +9063,7 @@ export namespace no {
      *   private _configs: Map<string, any> = new Map();
      * 
      *   static getInstance() {
-     *     return this.instance();
+     *     return this.instance() as ConfigManager;
      *   }
      * 
      *   // 实现清理逻辑
@@ -9071,18 +9071,23 @@ export namespace no {
      *     this._configs.clear();
      *   }
      * }
+     * //单例扩展：在instance方法中传入不同的key，可以实现不同的单例实例
      */
     export class SingleObject {
-        /** 单例实例缓存 */
-        private static _ins: any;
+        /** 单例表 */
+        private static _insMap: { [key: string]: { [key: string]: SingleObject } } = {};
 
         /**
          * 获取单例实例（需在子类中包装此方法）
          * @returns 单例实例
          */
-        protected static instance(): any {
-            if (!this._ins) this._ins = new this();
-            return this._ins;
+        protected static instance(): SingleObject;
+        protected static instance(key: string): SingleObject
+        protected static instance(key?: string): SingleObject {
+            key = key || '_';
+            if (!this._insMap[this.name]) this._insMap[this.name] = {};
+            if (!this._insMap[this.name][key]) this._insMap[this.name][key] = new this();
+            return this._insMap[this.name][key];
         }
 
         /** 
@@ -9106,13 +9111,13 @@ export namespace no {
      */
     export class SingleObjectManager {
         /** 已注册的单例类列表 */
-        private static _singleObjects: any[] = [];
+        private static _singleObjects: SingleObject[] = [];
 
         /**
          * 注册需要管理的单例类
          * @param singleObject - 继承自SingleObject的类
          */
-        public static register(singleObject: any) {
+        public static register(singleObject: SingleObject) {
             this._singleObjects[this._singleObjects.length] = singleObject;
         }
 
@@ -9124,9 +9129,9 @@ export namespace no {
         public static clear() {
             for (let i = 0; i < this._singleObjects.length; i++) {
                 let so = this._singleObjects[i];
-                if (so['_ins']) {
-                    so['_ins'].clear();  // 调用具体清理逻辑
-                    so['_ins'] = null;   // 重置单例实例
+                for (const key in so['_insMap']) {
+                    so['_insMap'][key].clear();// 调用具体清理逻辑
+                    delete so['_insMap'][key];// 重置单例实例
                 }
             }
         }

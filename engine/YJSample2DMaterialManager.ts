@@ -73,7 +73,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      * const manager = YJSample2DMaterialManager.ins;
      */
     public static get ins(): YJSample2DMaterialManager {
-        return super.instance();
+        return super.instance() as YJSample2DMaterialManager;
     }
 
     /**

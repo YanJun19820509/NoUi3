@@ -45,7 +45,7 @@ export class YJSpineManager extends no.SingleObject {
      * spineMgr.get('character/hero').then(data => { ... });
      */
     public static get ins(): YJSpineManager {
-        return this.instance();
+        return this.instance() as YJSpineManager;
     }
 
     /**
