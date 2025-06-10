@@ -4666,10 +4666,10 @@ export namespace no {
          * // 使用数组路径
          * const weaponStats = dataCache.getJSON(['equipment', 'weapons', 'sword']);
          */
-        public getJSON(path?: string | string[]): any {
+        public getJSON(path?: string | string[], defaultVal?: any): any {
             const a = this._json.get(path);
-            if (!a) err('配置数据不存在：', path);
-            return a;
+            if (a == null) err('配置数据不存在：', path);
+            return a ?? defaultVal;
         }
 
         /**
