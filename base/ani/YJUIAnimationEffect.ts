@@ -576,13 +576,6 @@ class AnimationEffect {
      * @使用场景
      * - 按钮点击微动效果
      * - 元素入场/出场滑动效果
-     * 
-     * @示例
-     * // 按钮点击后右移100像素
-     * this.moveByArgs = v2(100, 0)
-     * this.duration = 0.2
-     * this.easing = EasingType.ELASTIC_OUT
-     * moveBy(button) // 0.2秒弹性右移
      */
     private moveBy(node: Node) {
         const pos = no.position(node);
@@ -763,7 +756,10 @@ class AnimationEffect {
      *   .easing('bounceOut') // 使用弹跳缓动增强效果
      */
     private jump(node: Node) {
-        const pos = no.position(node);
+        if (!node['__yj_ui_pos']) {
+            node['__yj_ui_pos'] = no.position(node);
+        }
+        const pos = node['__yj_ui_pos'];
         return [{
             duration: this.duration / 2,
             to: 1,
@@ -799,7 +795,10 @@ class AnimationEffect {
      *   .easing('elasticOut') // 使用弹性缓动增强抖动效果
      */
     private shake(node: Node) {
-        const pos = no.position(node);
+        if (!node['__yj_ui_pos']) {
+            node['__yj_ui_pos'] = no.position(node);
+        }
+        const pos = node['__yj_ui_pos'];
         return [{
             duration: this.duration / 2,
             to: 1,
@@ -838,7 +837,10 @@ class AnimationEffect {
      * rotationX(cardNode) // 卡牌翻转效果
      */
     private rotationX(node: Node) {
-        const scale = no.scale(node);
+        if (!node['__yj_ui_scale']) {
+            node['__yj_ui_scale'] = no.scale(node);
+        }
+        const scale = node['__yj_ui_scale'];
         const t = this.duration / 4;
         return [{
             duration: t,
@@ -898,7 +900,10 @@ class AnimationEffect {
      * rotationY(menuItem) // 菜单项旋转进入效果
      */
     private rotationY(node: Node) {
-        const scale = no.scale(node);
+        if (!node['__yj_ui_scale']) {
+            node['__yj_ui_scale'] = no.scale(node);
+        }
+        const scale = node['__yj_ui_scale'];
         const t = this.duration / 4;
         return [{
             duration: t,
@@ -966,9 +971,10 @@ class AnimationEffect {
      */
     private heartBit(node: Node) {
         // 获取并缓存原始缩放值（避免多次获取影响性能）
-        const scale = node["__yj_ui_scale"] || no.scale(node);
-        if (!node["__yj_ui_scale"])
-            node["__yj_ui_scale"] = scale;
+        if (!node['__yj_ui_scale']) {
+            node['__yj_ui_scale'] = no.scale(node);
+        }
+        const scale = node['__yj_ui_scale'];
 
         // 计算单阶段时长（总时长均分四等份）
         const t = this.duration / 4;

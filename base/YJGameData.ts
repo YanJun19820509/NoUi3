@@ -25,7 +25,7 @@ import { no } from '../no';
  */
 export class YJGameData extends no.Data {
     /** 单例实例缓存 */
-    private static _ins: any;
+    private static _insMap: { [key: string]: any } = {};
     /** 数据状态管理器 */
     private _state: no.State;
 
@@ -36,13 +36,15 @@ export class YJGameData extends no.Data {
      * // 获取玩家数据单例
      * const playerData = PlayerData.instance();
      */
-    public static instance(): any {
-        if (!this._ins) {
-            this._ins = new this();
-            this._ins._state = new no.State();
-            this._ins.onInit();
+    public static instance(key?: string): any {
+        key = key || '_';
+        if (!this._insMap[key]) {
+            const a = new this();
+            a._state = new no.State();
+            a.onInit();
+            this._insMap[key] = a;
         }
-        return this._ins;
+        return this._insMap[key];
     }
 
     /**

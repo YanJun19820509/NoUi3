@@ -6181,7 +6181,7 @@ export namespace no {
          */
         public getUuidFromPath(path: string): string | null {
             let a = this.assetPath(path);
-            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type).uuid;
+            return this.getLoadedBundle(a.bundle)?.getInfoWithPath(a.path, a.type)?.uuid;
         }
 
         /**
