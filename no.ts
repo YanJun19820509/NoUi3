@@ -9425,7 +9425,11 @@ export namespace no {
         const funcName = isActive ? 'onEnable' : 'onDisable';
         // 遍历组件数组，调用相应的函数
         for (let i = 0, n = comps.length; i < n; i++) {
-            comps[i][funcName]?.();
+            const comp = comps[i];
+            if (comp['__proto__'].__classname__.indexOf('cc.') == 0) continue;
+            if (comp[funcName]) {
+                comp[funcName]();
+            }
         }
         // 获取节点的子节点数组
         const children = node.children;
