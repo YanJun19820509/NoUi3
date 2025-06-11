@@ -1,5 +1,5 @@
 
-import { DEBUG, EDITOR, ccclass, property, menu, requireComponent, executeInEditMode, Component, isValid, disallowMultiple, Node } from '../yj';
+import { EDITOR, ccclass, property, menu, Component, disallowMultiple, Node } from '../yj';
 import { HackUi } from '../ui/HackUi';
 import { no } from '../no';
 import { YJDataWorkManager } from './YJDataWorkManager';
@@ -374,6 +374,10 @@ export class YJDataWork extends Component {
      * // 适合在加载完所有数据后统一刷新UI
      */
     public syncDataToUi() {
+        if (!this.isValid) {
+            YJDataWorkManager.ins().remove(this);
+            return;
+        }
         for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
             const ui = this.subFuckUis[i];
             ui.syncData();

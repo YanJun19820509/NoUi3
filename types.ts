@@ -140,16 +140,16 @@ export type PackedFrameData = { x: number, y: number, w: number, h: number, rota
  * // 获取精灵帧元数据
  * const frameMeta: SpriteFrameDataType = await EditorMode.getAssetInfo(spriteFrame._uuid);
  */
-export type SpriteFrameDataType = { 
-    uuid: string, 
-    rect: number[], 
-    originalSize: number[], 
-    textureSize: number[], 
-    uv: number[], 
-    uvSliced?: IUV[], 
-    capInsets?: number[], 
-    rotated: boolean, 
-    scale: number 
+export type SpriteFrameDataType = {
+    uuid: string,
+    rect: number[],
+    originalSize: number[],
+    textureSize: number[],
+    uv: number[],
+    uvSliced?: IUV[],
+    capInsets?: number[],
+    rotated: boolean,
+    scale: number
 };
 
 /**
@@ -200,7 +200,7 @@ export class Range {
     under(v: number): boolean {
         return v < this.min;
     }
-    
+
     /** 检查数值是否大于最大值 */
     above(v: number): boolean {
         return v > this.max;
@@ -283,7 +283,7 @@ export class UV {
     /** 水平偏移量（0-1范围） */
     @property({ step: 1 })
     u: number = 0;
-    
+
     /** 垂直偏移量（0-1范围） */
     @property({ step: 1 })
     v: number = 0;
@@ -461,9 +461,9 @@ export function AllowMultipleOpen() {
  *   static ins() { return no.SingleObjectManager.get(GameManager); }
  * }
  */
-export function singleObject() {
+export function singleObject(type?: string) {
     return function (target: Function) {
-        no.SingleObjectManager.register(target);
+        no.SingleObjectManager.register(type, target);
     };
 }
 
@@ -623,7 +623,7 @@ export class TextureInfo extends LoadAssetsInfo {
      */
     @property({ readonly: true, displayName: '图集配置文件name', editorOnly: true })
     atlasJsonName: string = '';
-    
+
     /** 
      * 图集配置文件相对路径（相对于assets目录）
      * @example
@@ -632,7 +632,7 @@ export class TextureInfo extends LoadAssetsInfo {
      */
     @property({ readonly: true, displayName: '图集配置文件path' })
     atlasJsonPath: string = '';
-    
+
     /** 
      * 关联的纹理资源（自动处理路径转换）
      * @example

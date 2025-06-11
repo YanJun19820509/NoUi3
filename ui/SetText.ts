@@ -143,6 +143,7 @@ export class SetText extends HackUi {
      * this.a_setEmpty(); // 清空当前显示的文本
      */
     public a_setEmpty(): void {
+        if (!this.isValid) return;
         this.setLabel('');
     }
 }

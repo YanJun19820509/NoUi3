@@ -793,6 +793,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * @注意事项：在编辑器模式下会同时清除默认数据
      */
     public a_setEmpty(): void {
+        if (!this.isValid) return;
         this.removeSprite();
     }
 
@@ -818,7 +819,6 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * 3. 维护资源引用关系
      */
     private removeSprite() {
-        // this._lastName = null;
         if (!this._sprite) this._sprite = this.getComponent(Sprite);
         this._sprite.spriteFrame = null;
         this._sprite.spriteAtlas = null;

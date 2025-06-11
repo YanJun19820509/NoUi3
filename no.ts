@@ -9090,6 +9090,27 @@ export namespace no {
             return this._insMap[this.name][key];
         }
 
+        /**
+         * 销毁单例实例
+         * @param key 实例key
+         */
+        public static destroy(key?: string) {
+            key = key || '_';
+            if (this._insMap[this.name]) {
+                this._insMap[this.name][key]?.clear();
+                this._insMap[this.name][key] = null;
+            }
+        }
+
+        public static destroyAll() {
+            if (this._insMap[this.name]) {
+                const keys = Object.keys(this._insMap[this.name]);
+                for (let i = 0, n = keys.length; i < n; i++) {
+                    this.destroy(keys[i]);
+                }
+            }
+        }
+
         /** 
          * 清理单例数据（由管理器调用）
          * @remarks
@@ -9111,14 +9132,16 @@ export namespace no {
      */
     export class SingleObjectManager {
         /** 已注册的单例类列表 */
-        private static _singleObjects: SingleObject[] = [];
+        private static _singleObjects: { [key: string]: Function[] } = {};
 
         /**
          * 注册需要管理的单例类
          * @param singleObject - 继承自SingleObject的类
          */
-        public static register(singleObject: SingleObject) {
-            this._singleObjects[this._singleObjects.length] = singleObject;
+        public static register(type: string, singleObject: Function) {
+            type = type || '_';
+            if (!this._singleObjects[type]) this._singleObjects[type] = [];
+            this._singleObjects[type].push(singleObject);
         }
 
         /**
@@ -9126,13 +9149,23 @@ export namespace no {
          * @remarks
          * 遍历所有注册的单例类，调用其clear方法并重置实例
          */
-        public static clear() {
-            for (let i = 0; i < this._singleObjects.length; i++) {
-                let so = this._singleObjects[i];
-                for (const key in so['_insMap']) {
-                    so['_insMap'][key].clear();// 调用具体清理逻辑
-                    delete so['_insMap'][key];// 重置单例实例
+        public static clear(type?: string) {
+            type = type || '_';
+            if (this._singleObjects[type]) {
+                for (let i = 0, n = this._singleObjects[type].length; i < n; i++) {
+                    this._singleObjects[type][i]['destroyAll']?.();
                 }
+            }
+        }
+
+        /**
+         * 清理所有注册的单例实例
+         * @remarks
+         * 遍历所有注册的单例类，调用其clear方法并重置实例
+         */
+        public static clearAll() {
+            for (const key in this._singleObjects) {
+                this.clear(key);
             }
         }
     }

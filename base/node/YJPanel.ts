@@ -60,7 +60,7 @@ export class YJPanel extends Component {
      * });
      */
     public static PanelOpenEvent = '_PanelOpen';
-    
+
     /** 
      * 面板关闭全局事件标识 
      * @eventProperty
@@ -143,7 +143,7 @@ export class YJPanel extends Component {
      */
     @property
     needCache: boolean = true;
-    
+
     /** 
      * 是否在重新打开时清理状态
      * @remarks 仅在needCache=true时生效
@@ -153,7 +153,7 @@ export class YJPanel extends Component {
      */
     @property({ visible() { return this.needCache; } })
     needClear: boolean = true;
-    
+
     /** 
      * 全屏面板标识
      * @remarks 全屏面板打开时会自动触发_full_screen_panel_open事件
@@ -165,7 +165,7 @@ export class YJPanel extends Component {
      */
     @property({ tooltip: '如果是全屏界面，打开时推送_full_screen_panel_open事件，关闭时推送_full_screen_panel_close' })
     isFullScreen: boolean = false;
-    
+
     /** 
      * 多点触摸支持开关
      * @remarks 开启后允许在该面板上同时响应多个触摸操作
@@ -273,7 +273,7 @@ export class YJPanel extends Component {
             this.status = 'open';
             this._loaded = true;
             this._originX = no.x(this.node); // 记录原始X坐标用于动画
-            
+
             // 加载依赖资源（如配置表、纹理等）
             await this.getComponent(YJLoadAssets)?.load().catch(e => {
                 no.err('YJPanel initPanel', this.node.name, e.message);
@@ -283,7 +283,7 @@ export class YJPanel extends Component {
         }
 
         no.EventHandlerInfo.execute(this.onOpen); // 执行打开事件回调
-        
+
         // 等待派生类自定义初始化（如数据请求）
         this.onInitPanel();
 
@@ -319,16 +319,20 @@ export class YJPanel extends Component {
         this.status = 'close';
         no.log('panel close', this.panelType);
         no.EventHandlerInfo.execute(this.onClose); // 执行关闭回调
-        this.lastCloseTime = no.sysTime.now; // 记录关闭时间戳
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType); // 全局事件
-        
+
         // 全屏面板关闭通知（如恢复底层UI）
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType);
-        
+
         // 恢复系统原始触摸设置
         no.multiTouch(this._lastMultiTouchState);
-        this.hide(); // 执行隐藏逻辑
+        if (this.needCache) {
+            this.lastCloseTime = no.sysTime.now; // 记录关闭时间戳
+            this.hide(); // 执行隐藏逻辑
+        } else {
+            this.clear(true);
+        }
     }
 
     /**

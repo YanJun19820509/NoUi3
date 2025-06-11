@@ -37,7 +37,7 @@ export class YJGameData extends no.Data {
      * const playerData = PlayerData.instance();
      */
     public static instance(key?: string): any {
-        key = key || '_';
+        key = key || this.name;
         if (!this._insMap[key]) {
             const a = new this();
             a._state = new no.State();
@@ -45,6 +45,23 @@ export class YJGameData extends no.Data {
             this._insMap[key] = a;
         }
         return this._insMap[key];
+    }
+
+    /**
+     * 销毁单例实例
+     * @param key 实例key
+     */
+    public static destroy(key?: string) {
+        key = key || '_';
+        if (this._insMap[key]) {
+            this._insMap[key] = null;
+        }
+    }
+
+    public static destroyAll() {
+        for (const key in this._insMap) {
+            this.destroy(key);
+        }
     }
 
     /**
