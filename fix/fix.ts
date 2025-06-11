@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect, EDITOR } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -152,7 +152,7 @@ js.mixin(Skeleton.prototype, {
                         //3.5.2引擎没有这个方法
                         // batcher.commitMiddleware(this, meshBuffer, origin + dc.indexOffset,
                         //     dc.indexCount, dc.texture, dc.material!, this._enableBatch);
-                        
+
                         //以下是3.5.2引擎的内容
                         // Construct IA
                         const ia = meshBuffer.requireFreeIA(batcher.device);
@@ -168,6 +168,45 @@ js.mixin(Skeleton.prototype, {
             }
             const subIndices = rd.indices!.subarray(0, indicesCount);
             accessor.appendIndices(chunk.bufferId, subIndices);
+        }
+    }
+});
+export const timeScale = 1.0;
+js.mixin(Skeleton.prototype, {
+    updateAnimation(dt: number) {
+        if (!this.isValid) return;
+        this.markForUpdateRenderData();
+        if (EDITOR) return;
+        if (this.paused) return;
+
+        dt *= this._timeScale * timeScale;
+        if (this.isAnimationCached()) {
+            // Cache mode and has animation queue.
+            if (this._isAniComplete) {
+                if (this._animationQueue.length === 0 && !this._headAniInfo) {
+                    const frameCache = this._frameCache;
+                    if (frameCache && frameCache.isInvalid()) {
+                        frameCache.updateToFrame();
+                        const frames = frameCache.frames;
+                        this._curFrame = frames[frames.length - 1];
+                    }
+                    return;
+                }
+                if (!this._headAniInfo) {
+                    this._headAniInfo = this._animationQueue.shift()!;
+                }
+                this._accTime += dt;
+                if (this._accTime > this._headAniInfo.delay) {
+                    const aniInfo = this._headAniInfo;
+                    this._headAniInfo = null;
+                    this.setAnimation(0, aniInfo.animationName, aniInfo.loop);
+                }
+                return;
+            }
+
+            this._updateCache(dt);
+        } else {
+            this._updateRealtime(dt);
         }
     }
 });
