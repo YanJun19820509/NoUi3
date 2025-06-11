@@ -3195,6 +3195,8 @@ export namespace no {
     export class TweenSet {
 
         protected map: any;
+        private _node: Node;
+
         constructor(node: Node) {
             this.init(node);
         }
@@ -3213,9 +3215,7 @@ export namespace no {
          */
         private init(node: Node) {
             this.map = {};
-            this.map[TweenSetType.Node] = tween(node);
-            this.map[TweenSetType.Transform] = node.getComponent(UITransform) ? tween(node.getComponent(UITransform)) : null;
-            this.map[TweenSetType.Opacity] = node.getComponent(UIOpacity) ? tween(node.getComponent(UIOpacity)) : null;
+            this._node = node;
         }
 
         /**
@@ -3308,8 +3308,6 @@ export namespace no {
          * });
          */
         public setTweenData(data: any) {
-            // 设置全局延迟时间
-            this.setDelay(data.delay);
 
             if (data.props != null) {
                 let np: any, tp: any, op: any; // 分别存储节点属性、变换属性、透明度属性
@@ -3354,11 +3352,22 @@ export namespace no {
                             break;
                     }
                 }
+                if (np && !this.map[TweenSetType.Node]) {
+                    this.map[TweenSetType.Node] = tween(this._node);
+                }
+                if (tp && !this.map[TweenSetType.Transform]) {
+                    this.map[TweenSetType.Transform] = this._node.getComponent(UITransform) ? tween(this._node.getComponent(UITransform)) : null;
+                }
+                if (op && !this.map[TweenSetType.Opacity]) {
+                    this.map[TweenSetType.Opacity] = this._node.getComponent(UIOpacity) ? tween(this._node.getComponent(UIOpacity)) : null;
+                }
+                // 设置全局延迟时间
+                this.setDelay(data.delay);
 
                 // 处理没有属性变化的延迟设置
-                if (!np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].delay(data.duration || 0);
-                if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
-                if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
+                // if (!np) this.map[TweenSetType.Node] = this.map[TweenSetType.Node].delay(data.duration || 0);
+                // if (!tp) this.map[TweenSetType.Transform] = this.map[TweenSetType.Transform]?.delay(data.duration || 0);
+                // if (!op) this.map[TweenSetType.Opacity] = this.map[TweenSetType.Opacity]?.delay(data.duration || 0);
 
                 const easing = data.easing; // 获取缓动函数类型
 
