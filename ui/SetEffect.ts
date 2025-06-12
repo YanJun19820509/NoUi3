@@ -76,17 +76,12 @@ export class SetEffect extends HackUi {
      */
     protected setMaterial(path: string, defines: any, properties: any) {
         if (!path) {
-            // 使用顶点颜色过渡管理器
-            YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
-        }
-        else if (this._renderComp.material.effectName == `../${path}`) {
-            // 相同材质直接更新属性
-            if (this._renderComp instanceof Skeleton) {
-                //如果是骨骼动画，则遍历骨骼动画的材质
-                const materialCache = this._renderComp['_materialCache'];
-                for (const key in materialCache) {
-                    this.setProperties(materialCache[key], defines, properties);
-                }
+            if (this._renderComp instanceof Sprite) {
+                // 使用顶点颜色过渡管理器
+                YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
+            }
+            else if (this._renderComp instanceof Skeleton) {
+                this.setSkeletonMaterial(defines, properties);
             } else {
                 this.setProperties(this._renderComp.material, defines, properties);
                 this.work();
@@ -103,6 +98,34 @@ export class SetEffect extends HackUi {
             });
         } else {
             this.reset();
+        }
+    }
+
+    protected setSkeletonMaterial(defines: any, properties: any) {
+        const skeleton = this._renderComp as Skeleton;
+        if (skeleton.skeletonData) {
+            this.checkSkeletonMaterial(skeleton, defines, properties);
+        } else {
+            const subSkeleton = skeleton.getComponentsInChildren(Skeleton);
+            if (subSkeleton.length > 0) {
+                for (let i = 0; i < subSkeleton.length; i++) {
+                    if (subSkeleton[i].skeletonData) {
+                        this.checkSkeletonMaterial(subSkeleton[i], defines, properties);
+                    }
+                }
+            }
+        }
+    }
+
+    private checkSkeletonMaterial(skeleton: Skeleton, defines: any, properties: any) {
+        //如果是骨骼动画，则遍历骨骼动画的材质
+        const materialCache = skeleton['_materialCache'];
+        if (Object.keys(materialCache).length > 0) {
+            for (const key in materialCache) {
+                this.setProperties(materialCache[key], defines, properties);
+            }
+        } else {
+            this.setProperties(skeleton.customMaterial, defines, properties);
         }
     }
 
