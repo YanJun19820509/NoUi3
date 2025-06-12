@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Label, isValid } from '../yj';
+import { ccclass, property, menu, Label, isValid, ProgressBar } from '../yj';
 import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
@@ -40,6 +40,9 @@ export class SetTimeCountDown extends HackUi {
 
     @property({ type: YJCharLabel, visible() { return this.isLabel; } })
     charLabel: YJCharLabel = null;
+
+    @property({ type: ProgressBar, visible() { return !this.isLabel; } })
+    progressBar: ProgressBar = null;
 
     /**
      * 时间格式化模板字符串
@@ -204,6 +207,9 @@ export class SetTimeCountDown extends HackUi {
 
         const remaining = this._deadline - now;
 
+        // 更新进度百分比
+        this.setPercent(remaining);
+
         // 倒计时结束处理
         if (remaining <= 0) {
             no.sysTime.offTickTock(this);
@@ -227,9 +233,6 @@ export class SetTimeCountDown extends HackUi {
                 : no.sec2time(remaining, this.formatter, this.show0);
             this.setLabel(formatted);
         }
-
-        // 更新进度百分比
-        this.setPercent(remaining);
     }
 
     /**
@@ -262,6 +265,9 @@ export class SetTimeCountDown extends HackUi {
         // 遍历所有关联组件传递百分比
         for (let i = 0; i < this.fuckUiComponents.length; i++) {
             this.fuckUiComponents[i].a_setData(String(percent));
+        }
+        if (this.progressBar) {
+            this.progressBar.progress = percent;
         }
     }
 }
