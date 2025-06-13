@@ -9430,6 +9430,7 @@ export namespace no {
      * visibleByActiveInHierarchy(poolObject, true);
      */
     export function visibleByActiveInHierarchy(node: Node, v: boolean) {
+        if (!checkValid(node)) return;
         const blockInputEvents = node.getComponentsInChildren(BlockInputEvents);
         if (blockInputEvents)
             for (let i = 0; i < blockInputEvents.length; i++) {
@@ -9461,6 +9462,7 @@ export namespace no {
 
     // 定义一个函数runCompActiveFunc，用于激活或禁用节点的组件
     function runCompActiveFunc(node: Node, isActive: boolean) {
+        if (!checkValid(node)) return;
         // 获取节点的组件数组
         const comps = node.components;
         // 根据isActive的值确定要调用的函数名
