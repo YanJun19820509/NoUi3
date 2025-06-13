@@ -125,6 +125,7 @@ export class SetInfiniteMap_Flip extends HackUi {
 
         // 相对移动处理（适用于平滑滚动效果）
         if (moveBy) {
+            if (!this._curPos) return;
             this._curPos.add3f(moveBy[0], moveBy[1], 0); // 累加偏移量
             no.position(this.node, this._curPos); // 更新节点位置
             this.setTiles(); // 重新计算可见地砖
