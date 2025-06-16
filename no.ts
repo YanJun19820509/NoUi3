@@ -3750,10 +3750,10 @@ export namespace no {
      *   .to(1, { position: no.v3(0, 100, 0) })
      *   .start();
      */
-    export function position(node: Node, pos?: Vec3): Vec3 {
+    export function position(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): Vec3 {
         if (!node) return;
         if (pos != undefined) {
-            node.setPosition(pos);
+            node.setPosition(pos.x, pos.y, pos.z);
         }
         node.getPosition(_tempPos);
         return _tempPos.clone(); // 返回克隆避免外部修改影响实际坐标

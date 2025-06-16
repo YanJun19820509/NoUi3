@@ -53,9 +53,12 @@ export class YJOpenWindow extends Component {
     @property
     autoOpen: boolean = false;
 
+    @property({ tooltip: '自动打开窗口的索引', visible() { return this.autoOpen; } })
+    autoOpenIndex: number = 0;
+
     /** 组件加载时,如果autoOpen为true则自动打开窗口 */
     onLoad() {
-        this.autoOpen && this.a_open();
+        this.autoOpen && this.openAt(this.autoOpenIndex);
     }
 
     /** 按顺序打开所有窗口,每个窗口间隔0.2秒 */
