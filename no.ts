@@ -10043,7 +10043,7 @@ export namespace no {
          */
         export async function getAssetUuidByUrl(url: string) {
             return getAssetInfo(url).then(info => {
-                return info?._uuid;
+                return info?.uuid;
             });
         }
 
@@ -10057,6 +10057,7 @@ export namespace no {
          */
         export async function loadAnyFile<T extends Asset>(url: string) {
             const uuid = await getAssetUuidByUrl(url);
+            console.log('loadAnyFile', uuid);
             if (!uuid) {
                 return null;
             }
@@ -10087,7 +10088,7 @@ export namespace no {
                 if (!info)
                     log('query-asset-info url无效', urls[i]);
                 else {
-                    requests[requests.length] = { 'uuid': info._uuid };
+                    requests[requests.length] = { 'uuid': info.uuid };
                 }
             }
             if (!requests.length) {
@@ -10139,7 +10140,7 @@ export namespace no {
                 for (let i = 0; i < infos.length; i++) {
                     const a = infos[i];
                     if (a['url'].indexOf(folderUrl) > -1) {
-                        aa[aa.length] = { uuid: a._uuid };
+                        aa[aa.length] = { uuid: a.uuid };
                     }
                 }
                 if (!aa.length) {

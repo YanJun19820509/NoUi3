@@ -1,4 +1,4 @@
-import { ccclass, property, menu, Component, Node, Sprite, Button, EDITOR, executeInEditMode, } from '../yj';
+import { ccclass, property, menu, Component, Node, Sprite, Button, EDITOR, executeInEditMode, Label, } from '../yj';
 import { no } from '../no';
 import { TextureInfo } from '../types';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
@@ -196,6 +196,10 @@ export class YJLoadAssets extends Component {
                 list[i].materialInfoUuid = name;
                 list[i].panelName = name;
             }
+        }
+        list = this.getComponentsInChildren('SetText');
+        for (let i = 0; i < list.length; i++) {
+            if (!v) list[i].getComponent(Label).string = '';
         }
         // 处理材质设置组件
         list = this.getComponentsInChildren('SetMaterial');

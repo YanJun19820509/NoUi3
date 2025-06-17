@@ -44,7 +44,7 @@ export class AutoCreateNode extends Component {
     }
 
     onEnable() {
-        console.log(this.node.name)
+        console.log('AutoCreateNode', this.node.name)
         if (EDITOR) {
             this.loadConfigFile();
         }
@@ -53,35 +53,42 @@ export class AutoCreateNode extends Component {
     private async loadConfigFile() {
         this.addComponents();
         try {
-            const projectName = Editor.Project.name;
+            // const projectName = Editor.Project.name;
             this.nameMap = {};
             let name = this.node.name;
-            // let a = await Editor.Dialog.select({
-            //     path: Editor.Project.path,
-            //     multi: false,
-            //     type: 'directory'
-            // });
-            let dest = Editor.Clipboard.read('cur_prefab_path');
-            // if (!a.canceled) {
-            // let path = a.filePaths[0];
-            // path = path.replace(/\\/g, '/');
-            // let root = Editor.Project.path.replace(/\\/g, '/');
-            // let dest = path.replace(root + '/', 'db://');
-            this.rootPath = dest;
-            // await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-            console.log(dest);
-            no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAtlas').then(assets => {
-                this.atlases = this.atlases.concat(assets);
-                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/ui`, 'cc.SpriteAtlas').then(assets => {
-                    if (assets?.length > 0)
-                        this.atlases = this.atlases.concat(assets);
-                    no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/font`, 'cc.TTFFont').then(assets => {
-                        if (assets?.length > 0)
-                            this.fonts = this.fonts.concat(assets);
-                        this.loadJson(dest, name);
-                    });
-                });
+            let a = await Editor.Dialog.select({
+                path: Editor.Project.path + '/assets',
+                multi: false,
+                type: 'directory'
             });
+            // let dest = Editor.Clipboard.read('cur_prefab_path');
+            if (!a.canceled) {
+                let path = a.filePaths[0];
+                path = path.replace(/\\/g, '/');
+                let root = Editor.Project.path.replace(/\\/g, '/');
+                let dest = path.replace(root + '/', 'db://');
+                this.rootPath = dest;
+                // await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
+                console.log('loadConfigFile', dest, name);
+                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/WJCY/res/font`, 'cc.TTFFont').then(assets => {
+                    console.log('loadAssetsOfCCTypeUnderFolder', assets);
+                    if (assets?.length > 0)
+                        this.fonts = this.fonts.concat(assets);
+                    this.loadJson(dest, name);
+                });
+                // no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAtlas').then(assets => {
+                //     this.atlases = this.atlases.concat(assets);
+                //     no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/ui`, 'cc.SpriteAtlas').then(assets => {
+                //         if (assets?.length > 0)
+                //             this.atlases = this.atlases.concat(assets);
+                //         no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/font`, 'cc.TTFFont').then(assets => {
+                //             if (assets?.length > 0)
+                //                 this.fonts = this.fonts.concat(assets);
+                //             this.loadJson(dest, name);
+                //         });
+                //     });
+                // });
+            }
         } catch (e) {
             console.log(e);
         }
@@ -105,12 +112,13 @@ export class AutoCreateNode extends Component {
     }
 
     private loadJson(dest: string, name: string) {
-        // console.log('loadjson');
-        no.EditorMode.loadAnyFile<JsonAsset>(dest + `/${name}.json`).then(f => {
+        const path = dest + `/${name}.json`
+        console.log('loadjson', path);
+        no.EditorMode.loadAnyFile<JsonAsset>(path).then(f => {
             console.log(f.json);
-            this.deleteConfigFile(dest + `/${name}.json`);
             this.createNodes(f.json);
-            this.enabled = false;
+            // this.enabled = false;
+            this.deleteConfigFile(path);
             this.destroy();
         });
     }
@@ -122,11 +130,12 @@ export class AutoCreateNode extends Component {
             // let da = this.node.getComponent(YJDynamicAtlas) || this.node.addComponent(YJDynamicAtlas);
             // da.width = 512;
             // da.height = 512;
-            this.node.getComponent(UITransform).setContentSize(size);
-            if (!this.node.getComponent(YJDataWork))
-                this.node.addComponent(YJDataWork);
-            if (!this.node.getComponent(BlockInputEvents))
-                this.node.addComponent(BlockInputEvents);
+            // this.node.getComponent(UITransform).setContentSize(size);
+            no.size(this.node, size);
+            // if (!this.node.getComponent(YJDataWork))
+            //     this.node.addComponent(YJDataWork);
+            // if (!this.node.getComponent(BlockInputEvents))
+            //     this.node.addComponent(BlockInputEvents);
             this.parent = this.node.getChildByName('Canvas') || this.node;
 
             for (let i = 0; i < config.nodes.length; i++) {
@@ -235,91 +244,93 @@ export class AutoCreateNode extends Component {
 
     private createLabelNode(c: any, parent: Node): Node {
         let n: Node;
-        if (c.type == 'label' || c.type == 'ttf')
-            n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
-        else
-            n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
-        if (!n.getComponent('YJLanguageLabel')) {
-            let t: string = c.text;
-            for (let i = 0, m = t.length; i < m; i++) {
-                let code = t.charCodeAt(i);
-                if (code >= 0x4e00 && code <= 0x29fa5) {
-                    n.addComponent('YJLanguageLabel')['textId'] = c.text;
-                    break;
-                }
-            }
+        // if (c.type == 'label' || c.type == 'ttf')
+        //     n = this.getNode(c.name, YJCharLabel, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+        // else
+        n = this.getNode(c.name, Label, Number(c.x), Number(c.y), Number(c.w), Number(c.h), parent, false);
+        // if (!n.getComponent('YJLanguageLabel')) {
+        //     let t: string = c.text;
+        //     for (let i = 0, m = t.length; i < m; i++) {
+        //         let code = t.charCodeAt(i);
+        //         if (code >= 0x4e00 && code <= 0x29fa5) {
+        //             n.addComponent('YJLanguageLabel')['textId'] = c.text;
+        //             break;
+        //         }
+        //     }
+        // }
+        // if (n.getComponent('YJLanguageLabel')) {
+        //     let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
+        //     l.string = c.text;
+        //     l.fontSize = Math.ceil(Number(c.size));
+        //     // l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
+        //     l.lineHeight = l.fontSize + 2;
+        //     l.fontColor = no.str2Color(c.textColor);
+        //     l.bold = c.bold;
+        //     l.italic = c.italic;
+        //     l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
+        //     if (c.direction == 'vertical') {
+        //         l.overflow = Overflow.RESIZE_HEIGHT;
+        //     }
+        //     if (c.outline != '') {
+        //         let info = c.outline.split('|');
+        //         l.outlineColor = no.str2Color(info[0]);
+        //         l.outlineWidth = Number(info[1]);
+        //     }
+        //     if (c.shadow != '') {
+        //         let info = c.shadow.split('|');
+        //         l.shadowColor = no.str2Color(info[0]);
+        //         l.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+        //         l.shadowBlur = Number(info[3]);
+        //     }
+        // } else if (c.type == 'bmf') {
+        let l = n.getComponent(Label) || n.addComponent(Label);
+        l.string = c.text;
+        l.fontSize = Number(c.size);
+        l.useSystemFont = false;
+        l.font = this.getFont('AlibabaPuHuiTiBold');
+        l.lineHeight = l.fontSize;
+        l.color = no.str2Color(c.textColor);
+        l.isBold = c.bold;
+        l.isItalic = c.italic;
+        l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
+        if (c.direction == 'vertical') {
+            l.overflow = Overflow.RESIZE_HEIGHT;
         }
-        if (n.getComponent('YJLanguageLabel')) {
-            let l = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
-            l.string = c.text;
-            l.fontSize = Math.ceil(Number(c.size));
-            // l.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
-            l.lineHeight = l.fontSize + 2;
-            l.fontColor = no.str2Color(c.textColor);
-            l.bold = c.bold;
-            l.italic = c.italic;
-            l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
-            if (c.direction == 'vertical') {
-                l.overflow = Overflow.RESIZE_HEIGHT;
-            }
-            if (c.outline != '') {
-                let info = c.outline.split('|');
-                l.outlineColor = no.str2Color(info[0]);
-                l.outlineWidth = Number(info[1]);
-            }
-            if (c.shadow != '') {
-                let info = c.shadow.split('|');
-                l.shadowColor = no.str2Color(info[0]);
-                l.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
-                l.shadowBlur = Number(info[3]);
-            }
-        } else if (c.type == 'bmf') {
-            let l = n.getComponent(Label) || n.addComponent(Label);
-            l.string = c.text;
-            l.fontSize = Number(c.size);
-            // l.font = this.getFont(c.name);
-            l.lineHeight = l.fontSize;
-            l.color = no.str2Color(c.textColor);
-            l.isBold = c.bold;
-            l.isItalic = c.italic;
-            l.horizontalAlign = c.justification == 'right' ? HorizontalTextAlignment.RIGHT : (c.justification == 'center' ? HorizontalTextAlignment.CENTER : HorizontalTextAlignment.LEFT);
-            if (c.direction == 'vertical') {
-                l.overflow = Overflow.RESIZE_HEIGHT;
-            }
-            if (c.outline != '') {
-                const outline = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
-                let info = c.outline.split('|');
-                outline.color = no.str2Color(info[0]);
-                outline.width = Number(info[1]);
-            }
-            if (c.shadow != '') {
-                const shadow = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
-                let info = c.shadow.split('|');
-                shadow.color = no.str2Color(info[0]);
-                shadow.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
-                shadow.blur = Number(info[3]);
-            }
-        } else {
-            let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
-            char.string = c.text;
-            // char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
-            char.fontSize = Math.ceil(Number(c.size));
-            char.lineHeight = char.fontSize;
-            char.color = no.str2Color(c.textColor);
-            char.bold = c.bold;
-            char.italic = c.italic;
-            if (c.outline != '') {
-                let info = c.outline.split('|');
-                char.outlineColor = no.str2Color(info[0]);
-                char.outlineWidth = Number(info[1]);
-            }
-            if (c.shadow != '') {
-                let info = c.shadow.split('|');
-                char.shadowColor = no.str2Color(info[0]);
-                char.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
-                char.shadowBlur = Number(info[3]);
-            }
+        if (c.outline != '') {
+            const outline = n.getComponent(LabelOutline) || n.addComponent(LabelOutline);
+            let info = c.outline.split('|');
+            outline.color = no.str2Color(info[0]);
+            outline.width = Number(info[1]);
         }
+        if (c.shadow != '') {
+            const shadow = n.getComponent(LabelShadow) || n.addComponent(LabelShadow);
+            let info = c.shadow.split('|');
+            shadow.color = no.str2Color(info[0]);
+            shadow.offset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+            shadow.blur = Number(info[3]);
+        }
+        // } 
+        // else {
+        //     let char = n.getComponent(YJCharLabel) || n.addComponent(YJCharLabel);
+        //     char.string = c.text;
+        //     // char.font = this.getFont('SOURCEHANSANSCN-MEDIUM');
+        //     char.fontSize = Math.ceil(Number(c.size));
+        //     char.lineHeight = char.fontSize;
+        //     char.color = no.str2Color(c.textColor);
+        //     char.bold = c.bold;
+        //     char.italic = c.italic;
+        //     if (c.outline != '') {
+        //         let info = c.outline.split('|');
+        //         char.outlineColor = no.str2Color(info[0]);
+        //         char.outlineWidth = Number(info[1]);
+        //     }
+        //     if (c.shadow != '') {
+        //         let info = c.shadow.split('|');
+        //         char.shadowColor = no.str2Color(info[0]);
+        //         char.shadowOffset = this.getAzimuthOffset(Number(info[2]), Number(info[1]));
+        //         char.shadowBlur = Number(info[3]);
+        //     }
+        // }
         return n;
     }
 
@@ -495,7 +506,8 @@ export class AutoCreateNode extends Component {
             widget.isAlignVerticalCenter = true
             widget.verticalCenter = rect.center.y;
         }
-        widget.enabled = false;
+        // widget.enabled = false;
+        widget.destroy();
     }
 
     private async deleteConfigFile(path: string) {
