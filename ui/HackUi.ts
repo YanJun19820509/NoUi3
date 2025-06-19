@@ -107,7 +107,7 @@ export class HackUi extends Component {
      * 2. 在syncData()处理后被重置为false
      */
     public dataDirty: boolean = false;
-    
+
     /**
      * 数据缓存引用
      * @作用 存储最后一次有效数据用于比较
@@ -138,7 +138,7 @@ export class HackUi extends Component {
         } else {
             // 运行时优化：禁用未使用的update循环
             this.update = function () { };
-            
+
             // 开发环境下进行格式校验
             if (DEBUG) {
                 // 检测非法格式的key（包含.字符）
@@ -174,7 +174,7 @@ export class HackUi extends Component {
     private setData(d: any) {
         // 节点有效性检查（防止已销毁节点处理数据）
         if (!isValid(this?.node)) return;
-        
+
         // 更新数据引用
         this._oldData = d;
     }
@@ -201,11 +201,11 @@ export class HackUi extends Component {
         if (!this._oldData) return null;
         let keys = this.bindKeys;
         let a: any;
-        
+
         // 单键直接取值
         if (keys.length == 1) {
             a = this._oldData.data[keys[0]];
-        } 
+        }
         // 多键组合成对象
         else {
             a = {};
@@ -351,6 +351,16 @@ export class HackUi extends Component {
     protected clearDataValue(key: string) {
         if (!this._oldData) return;
         no.deleteValue(this._oldData.data, key);
+    }
+
+    /**
+     * 对dataWork进行修改或设置数据
+     * @param key 键
+     * @param value 值
+     */
+    protected setDataValue(key: string, value: any) {
+        if (!this._oldData) return;
+        no.setValue(this._oldData.data, key, value);
     }
 
     /**

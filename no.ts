@@ -6,7 +6,8 @@ import {
     CCObject,
     EventTouch,
     Toggle,
-    resources, JSB
+    resources, JSB,
+    approx
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -2611,7 +2612,7 @@ export namespace no {
      */
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = out || v3();
+        out = out || _tempPos;
         out.set(node.worldPosition.clone());
         return out;
     }
@@ -2632,7 +2633,7 @@ export namespace no {
      */
     export function worldPositionInNode(pos: Vec3, node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
-        out = out || v3();
+        out = out || _tempPos;
         node.getComponent(UITransform).convertToNodeSpaceAR(pos, out);
         return out;
     }
@@ -2652,7 +2653,7 @@ export namespace no {
      * const radarPos = no.nodePositionInOtherNode(this.aircraftNode, this.radarNode);
      */
     export function nodePositionInOtherNode(node: Node, otherNode: Node, out?: Vec3): Vec3 {
-        out = out || v3();
+        out = out || _tempPos;
         nodeWorldPosition(node, out);
         otherNode.getComponent(UITransform).convertToNodeSpaceAR(out, out);
         return out;
@@ -2752,7 +2753,7 @@ export namespace no {
     export function nodeBoundingBox(node: Node, offset?: Vec2, subSize?: Size): Rect {
         offset = offset || v2();
         subSize = subSize || Size.ZERO;
-        let origin = v3();
+        let origin = _tempPos;
         origin = nodeWorldPosition(node, origin);
         let anchor = node.getComponent(UITransform).anchorPoint;
         let size = node.getComponent(UITransform).contentSize;
@@ -5338,7 +5339,7 @@ export namespace no {
 
         /**
          * 加载纹理资源（适用于3D模型贴图、背景图等）
-         * @param path - 纹理路径（格式：'bundle/path/to/texture' 或远程URL）
+         * @param path - 纹理路径（格式：'bundle/path/imgName/texture' 或远程URL）
          * @param callback - 加载完成回调，接收Texture2D对象
          * @example
          * // 加载场景背景纹理
@@ -10598,6 +10599,38 @@ export namespace no {
     }
 
     /**
+     * 向量叉积公式
+     * @param A 点
+     * @param B 点
+     * @param P 点
+     * @returns 叉积
+     */
+    function crossProduct(A: Vec2 | { x: number, y: number }, B: Vec2 | { x: number, y: number }, P: Vec2 | { x: number, y: number }): number {
+        return (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
+    }
+
+    /**
+     * 同向法（叉积法）​判断点是否在三角形内
+     * 原理​：若点 P 在三角形 ABC 内部，则它必须位于所有边的同一侧（左侧或右侧，取决于三角形方向）。通过叉积符号判断方向
+     * @param P 点
+     * @param A 三角形顶点
+     * @param B 三角形顶点
+     * @param C 三角形顶点
+     * @returns 是否在三角形内
+     */
+    export function isPointInTriangle(P: Vec2 | { x: number, y: number }, A: Vec2 | { x: number, y: number }, B: Vec2 | { x: number, y: number }, C: Vec2 | { x: number, y: number }) {
+        const cpAB = crossProduct(A, B, P);  // P 相对 AB 的位置
+        const cpBC = crossProduct(B, C, P);  // P 相对 BC 的位置
+        const cpCA = crossProduct(C, A, P);  // P 相对 CA 的位置
+
+        // 检查是否同侧（包含边界）
+        return (
+            (cpAB >= 0 && cpBC >= 0 && cpCA >= 0) ||
+            (cpAB <= 0 && cpBC <= 0 && cpCA <= 0)
+        );
+    }
+
+    /**
      * 根据分隔符获取字符串的指定索引参数（自动处理越界情况）
      * @param str 原始字符串（非字符串类型直接返回原值）
      * @param split 分隔符（支持多字符分隔）
@@ -10950,7 +10983,8 @@ export namespace no {
     ): Promise<T> {
         return new Promise<T>((resolve) => {
             try {
-                resolve(func());
+                const res = func();
+                resolve(res);
             } catch (e) {
                 console.error(e.stack);
                 resolve(defaultValue);
@@ -10993,6 +11027,114 @@ export namespace no {
                 resolve(null);
             }
         });
+    }
+
+    /**
+     * 二次贝塞尔曲线专用公式
+     * @param t 
+     * @param p0 
+     * @param p1 
+     * @param p2 
+     * @returns 
+     */
+    const bezierQuadratic = (t: number, p0: { x: number, y: number }, p1: { x: number, y: number }, p2: { x: number, y: number }): { x: number, y: number } => ({
+        x: (1 - t) ** 2 * p0.x + 2 * (1 - t) * t * p1.x + t ** 2 * p2.x,
+        y: (1 - t) ** 2 * p0.y + 2 * (1 - t) * t * p1.y + t ** 2 * p2.y
+    });
+
+    /**
+     * 三次贝塞尔曲线专用公式
+     * @param t 
+     * @param p0 
+     * @param p1 
+     * @param p2 
+     * @param p3 
+     * @returns 
+     */
+    const bezierCubic = (t: number, p0: { x: number, y: number }, p1: { x: number, y: number }, p2: { x: number, y: number }, p3: { x: number, y: number }): { x: number, y: number } => ({
+        x: (1 - t) ** 3 * p0.x + 3 * (1 - t) ** 2 * t * p1.x + 3 * (1 - t) * t ** 2 * p2.x + t ** 3 * p3.x,
+        y: (1 - t) ** 3 * p0.y + 3 * (1 - t) ** 2 * t * p1.y + 3 * (1 - t) * t ** 2 * p2.y + t ** 3 * p3.y
+    });
+
+    /**
+     * 贝塞尔曲线点数组
+     * @param points 控制点数组,可以是二或三个点
+     * @param segment 分段数
+     * @param isInt 是否取整
+     * @returns 贝塞尔曲线点
+     */
+    export function bezierPoints(points: Vec2[] | { x: number, y: number }[], segment: number, isInt = true): { x: number, y: number }[] {
+        let arr: { x: number, y: number }[] = [];
+        let n = points.length;
+        if (n > 4) {
+            //多阶用通用公式计算
+            // 预计算组合数
+            let combinations = [];
+            for (let i = 0; i < n; i++) {
+                combinations[combinations.length] = no.combination(n - 1, i);
+            }
+
+            // 计算曲线上的点
+            for (let i = 0; i < segment; i++) {
+                let t = i / segment;
+                let p = { x: 0, y: 0 };
+
+                // 贝塞尔曲线公式实现
+                for (let j = 0; j < n; j++) {
+                    let pp = points[j];
+                    let v = combinations[j] * Math.pow((1 - t), (n - 1 - j)) * Math.pow(t, j);
+                    p.x += pp.x * v;
+                    p.y += pp.y * v;
+                }
+                if (isInt) {
+                    p.x = Math.floor(p.x);
+                    p.y = Math.floor(p.y);
+                }
+                arr[arr.length] = p;
+            }
+        } else if (n == 4) {
+            //三阶用三次贝塞尔曲线公式计算
+            for (let i = 0; i < segment; i++) {
+                let t = i / segment;
+                let p = bezierCubic(t, points[0], points[1], points[2], points[3]);
+                if (isInt) {
+                    p.x = Math.floor(p.x);
+                    p.y = Math.floor(p.y);
+                }
+                arr[arr.length] = p;
+            }
+        } else if (n == 3) {
+            //二阶用二次贝塞尔曲线公式计算
+            for (let i = 0; i < segment; i++) {
+                let t = i / segment;
+                let p = bezierQuadratic(t, points[0], points[1], points[2]);
+                if (isInt) {
+                    p.x = Math.floor(p.x);
+                    p.y = Math.floor(p.y);
+                }
+                arr[arr.length] = p;
+            }
+        }
+
+        // 添加终点确保精度
+        let end = points[points.length - 1];
+        arr[arr.length] = v2(end.x, end.y);
+        return arr;
+    }
+
+    /**
+     * 检查点是否在直线上
+     * @param line 直线
+     * @param point 点
+     * @returns 是否在直线上
+     */
+    export function checkPointInLine(line: { x: number, y: number }[], point: { x: number, y: number }) {
+        const { x, y } = point;
+        const { x: x1, y: y1 } = line[0];
+        const { x: x2, y: y2 } = line[1];
+        const k = (y2 - y1) / (x2 - x1);
+        const b = (y - y1) / (x - x1);
+        return approx(k, b, 0.000001);
     }
 }
 no.addToWindowForDebug('no', no);

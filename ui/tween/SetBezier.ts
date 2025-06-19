@@ -46,7 +46,7 @@ export class SetBezier extends SetNodeTweenAction {
      */
     protected createAction(data: any): no.TweenSet | no.TweenSet[] {
         // 生成贝塞尔曲线路径点（世界坐标）
-        let points = this.bezier(data.points, data.segment || 50);
+        let points = no.bezierPoints(this.getControlPoints(data.points), data.segment || 50);
         points.shift(); // 移除起始点（节点当前位置）
 
         // 构建每段动画数据
@@ -64,47 +64,47 @@ export class SetBezier extends SetNodeTweenAction {
         return no.parseTweenData(d, this.node);
     }
 
-    /**
-     * 计算贝塞尔曲线路径点
-     * @param points 控制点数组（相对坐标）
-     * @param segment 曲线分段数
-     * @returns 世界坐标路径点数组
-     * 
-     * @原理 
-     * 使用伯恩斯坦多项式计算贝塞尔曲线：
-     * B(t) = Σ (n-1 choose i) * (1-t)^(n-1-i) * t^i * P_i
-     * 其中n为控制点数量，t∈[0,1]
-     */
-    private bezier(points: { x: number, y: number }[], segment: number): Vec2[] {
-        let arr: Vec2[] = [];
-        let cPoints = this.getControlPoints(points); // 获取世界坐标控制点
-        let n = cPoints.length;
+    // /**
+    //  * 计算贝塞尔曲线路径点
+    //  * @param points 控制点数组（相对坐标）
+    //  * @param segment 曲线分段数
+    //  * @returns 世界坐标路径点数组
+    //  * 
+    //  * @原理 
+    //  * 使用伯恩斯坦多项式计算贝塞尔曲线：
+    //  * B(t) = Σ (n-1 choose i) * (1-t)^(n-1-i) * t^i * P_i
+    //  * 其中n为控制点数量，t∈[0,1]
+    //  */
+    // private bezier(points: { x: number, y: number }[], segment: number): Vec2[] {
+    //     let arr: Vec2[] = [];
+    //     let cPoints = this.getControlPoints(points); // 获取世界坐标控制点
+    //     let n = cPoints.length;
 
-        // 预计算组合数
-        let combinations = [];
-        for (let i = 0; i < n; i++) {
-            combinations[combinations.length] = no.combination(n - 1, i);
-        }
+    //     // 预计算组合数
+    //     let combinations = [];
+    //     for (let i = 0; i < n; i++) {
+    //         combinations[combinations.length] = no.combination(n - 1, i);
+    //     }
 
-        // 计算曲线上的点
-        for (let i = 0; i < segment; i++) {
-            let t = i / segment;
-            let p = new Vec2();
+    //     // 计算曲线上的点
+    //     for (let i = 0; i < segment; i++) {
+    //         let t = i / segment;
+    //         let p = new Vec2();
 
-            // 贝塞尔曲线公式实现
-            for (let j = 0; j < n; j++) {
-                let pp = cPoints[j];
-                let v = combinations[j] * Math.pow((1 - t), (n - 1 - j)) * Math.pow(t, j);
-                p.add(v2(pp.x, pp.y).multiplyScalar(v));
-            }
-            arr[arr.length] = p;
-        }
+    //         // 贝塞尔曲线公式实现
+    //         for (let j = 0; j < n; j++) {
+    //             let pp = cPoints[j];
+    //             let v = combinations[j] * Math.pow((1 - t), (n - 1 - j)) * Math.pow(t, j);
+    //             p.add(v2(pp.x, pp.y).multiplyScalar(v));
+    //         }
+    //         arr[arr.length] = p;
+    //     }
 
-        // 添加终点确保精度
-        let end = cPoints[cPoints.length - 1];
-        arr[arr.length] = v2(end.x, end.y);
-        return arr;
-    }
+    //     // 添加终点确保精度
+    //     let end = cPoints[cPoints.length - 1];
+    //     arr[arr.length] = v2(end.x, end.y);
+    //     return arr;
+    // }
 
     /**
      * 将相对坐标转换为世界坐标

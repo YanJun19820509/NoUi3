@@ -283,3 +283,5 @@ export interface IRedirectInfo {
     // 跳转资源的 uuid
     uuid: string;
 }
+
+export const approx = _cc.approx; 

@@ -14,7 +14,6 @@ import { ccclass, property, Sprite, SpriteFrame, requireComponent, size, Vec2, v
  * }
  */
 @ccclass('SetFogOfWar')
-@requireComponent([Sprite])
 /**
  * 战争迷雾系统组件
  * @example
@@ -56,6 +55,18 @@ export class SetFogOfWar extends HackUi {
     private _mapHeight: number = 0;            // 地图实际高度（考虑精度缩放后）
     private _lastUpdatePos: Vec2;              // 上次更新时的位置坐标
 
+    onDestroy(): void {
+        this.fogSprite?.spriteFrame?.destroy();
+        this.fogTexture?.destroy();
+        this.fogTexture = null;
+        this.textureBuffer = null;
+        this._lastUpdatePos = null;
+        this.fogSprite = null;
+        this._lastUpdatePos = null;
+        this._mapWidth = 0;
+        this._mapHeight = 0;
+    }
+
     /**
      * 数据变更处理
      * @param data 包含以下可能参数：
@@ -77,7 +88,7 @@ export class SetFogOfWar extends HackUi {
             this._createFogSystem(data.size);
             this.clearDataValue(`${this.bind_keys}.size`);
         }
-        
+
         // 更新地图缩放比例
         if (data.scale) {
             this.mapScale = data.scale;
@@ -96,11 +107,11 @@ export class SetFogOfWar extends HackUi {
             if (!this._lastUpdatePos) {
                 this._lastUpdatePos = new Vec2(scaledPos.x, scaledPos.y);
                 this.updateFog();
-            } 
+            }
             // 后续更新检查移动距离
             else {
                 const distance = Vec2.distance(scaledPos, this._lastUpdatePos);
-                
+
                 // 超过阈值时更新位置并刷新迷雾
                 if (distance >= this.updateThreshold * this.mapScale * this.accuracyScale) {
                     this._lastUpdatePos.set(scaledPos);
@@ -172,7 +183,7 @@ export class SetFogOfWar extends HackUi {
     public updateFog() {
         // 转换到纹理坐标系
         const [centerX, centerY] = this.xyToUv(this._lastUpdatePos.x, this._lastUpdatePos.y);
-        
+
         // 计算实际有效半径（考虑缩放和精度）
         const effectiveRadius = Math.floor(this.visionRadius * this.mapScale * this.accuracyScale);
         const transitionWidth = 5 * this.accuracyScale; // 边缘过渡宽度
@@ -193,13 +204,13 @@ export class SetFogOfWar extends HackUi {
 
                 // 计算像素索引
                 const pixelIndex = (y * this._mapWidth + x) * 4;
-                
+
                 // 使用平滑函数计算过渡效果
                 const smoothFactor = no.smoothStep(distance, effectiveRadius, effectiveRadius + transitionWidth);
-                
+
                 // 根据距离设置透明度
                 if (smoothFactor === 1) continue; // 完全在视野外
-                
+
                 if (smoothFactor === 0) {
                     this.textureBuffer[pixelIndex + 3] = 0; // 完全可见
                 } else {
@@ -223,7 +234,7 @@ export class SetFogOfWar extends HackUi {
         if (this.fogTexture) {
             // 上传新数据到GPU
             this.fogTexture.uploadData(this.textureBuffer);
-            
+
             // 强制刷新精灵渲染
             if (this.fogSprite) {
                 this.fogSprite.markForUpdateRenderData();
