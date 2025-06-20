@@ -109,7 +109,7 @@ export class SetScanPath extends HackUi {
         if (startPoints.length < 2) return;
         const step = 10;
         const path: { u: number, v: number, angle: number }[] = [];
-        let len = 0, tempY: number;
+        let len = 0, tempY: number, angleMax: number;
         for (let u1 = u; u1 <= endU; u1 += step) {
             tempY = null;
             for (let v1 = v; v1 < endV; v1++) {
@@ -123,6 +123,8 @@ export class SetScanPath extends HackUi {
                         if (u1 < centerU) a = 180;
                         else a = 360;
                     }
+                    if (angleMax == null || a > angleMax) angleMax = a;
+                    else if (angleMax > 270 && a < 180) a += 360;
                     path[len++] = { u: u1, v: v1, angle: a };
                 }
             }
