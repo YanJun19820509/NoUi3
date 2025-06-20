@@ -90,8 +90,9 @@ export class SetScanPath extends HackUi {
      * @param v 区域Y坐标
      * @param width 区域宽度
      * @param height 区域高度
+     * @param angle 区域方向
      */
-    protected scanAreaPath(u: number, v: number, radius: number) {
+    protected scanAreaPath(u: number, v: number, radius: number, angle: number) {
         let idx = 0;
         const endU = u + radius * 2,
             endV = v + radius * 2;
@@ -104,45 +105,43 @@ export class SetScanPath extends HackUi {
         }
         const centerU = u + radius,
             centerV = v + radius;
-        const startPoints = this.getStartEndPoints(centerU, centerV, radius);
+        const startPoints = this.getStartEndPoints(centerU, centerV, radius, angle);
         if (startPoints.length < 2) return;
-        const step = this.step;
+        const step = 10;
         const path: { u: number, v: number, angle: number }[] = [];
-        // this._path.splice(idx++, 0, { u: startPoints[0].u, v: startPoints[0].v }, { u: startPoints[1].u, v: startPoints[1].v });
         let len = 0, tempY: number;
         for (let u1 = u; u1 <= endU; u1 += step) {
             tempY = null;
-            //只扫描下半部分
-            for (let v1 = v + radius; v1 <= endV; v1++) {
+            for (let v1 = v; v1 < endV; v1++) {
                 if (this.isPath(u1, v1)) {
-                    if (tempY == null || v1 - tempY >= 10) tempY = v1;
-                    else continue;
-                    const angle = -no.angleTo({ x: centerU, y: centerV }, { x: u1, y: v1 }).angle;
-                    // if (angle > 180) {
-                    //     console.error(centerU, centerV, u1, v1, angle);
-                    //     continue;
-                    // }
-                    path[len++] = { u: u1, v: v1, angle };
-                    // console.error(centerU, centerV, u1, v1, angle);
+                    // if (tempY == null || v1 - tempY >= 10) tempY = v1;
+                    // else continue;
+                    const distance = no.distance({ x: u1, y: v1 }, { x: centerU, y: centerV });
+                    if (distance > radius + 3) continue;
+                    let a = this.angleTo(centerU, centerV, u1, v1);
+                    if (a == 0) {
+                        if (u1 < centerU) a = 180;
+                        else a = 360;
+                    }
+                    path[len++] = { u: u1, v: v1, angle: a };
                 }
             }
         }
-        no.sortArray(path, (a, b) => {
-            return a.angle - b.angle;
-        });
-        if (path[0].u != startPoints[0].u) {
-            path.unshift({ u: startPoints[0].u, v: startPoints[0].v, angle: 0 });
-        }
-        if (path[path.length - 1].u != startPoints[1].x) {
-            path.push({ u: startPoints[1].u, v: startPoints[1].v, angle: 0 });
-        }
+        this.sortPoints(path, angle);
+        // if (path[0].u != startPoints[0].u || path[0].u != startPoints[1].u) {
+        //     path.unshift({ u: startPoints[0].u, v: startPoints[0].v, angle: 0 });
+        // }
+        // if (path[path.length - 1].u != startPoints[1].u || path[path.length - 1].u != startPoints[0].u) {
+        //     path.push({ u: startPoints[1].u, v: startPoints[1].v, angle: 0 });
+        // }
         path.forEach(p => this._path.splice(idx++, 0, p));
 
         //去重
+        const step1 = step / 2;
         for (let i = this._path.length - 1; i >= 1; i--) {
             const x = this._path[i].u - this._path[i - 1].u;
             const y = this._path[i].v - this._path[i - 1].v;
-            if (x > -5 && x < 5 && y > -5 && y < 5) {
+            if (x > -step1 && x < step1 && y > -step1 && y < step1) {
                 this._path.splice(i, 1);
             }
         }
@@ -166,7 +165,7 @@ export class SetScanPath extends HackUi {
      * @param v 挖洞中心Y坐标
      * @param radius 挖洞半径
      */
-    protected getStartEndPoints(u: number, v: number, radius: number): { x: number, y: number, u: number, v: number }[] {
+    protected getStartEndPoints(u: number, v: number, radius: number, middleAngle: number): { x: number, y: number, u: number, v: number, angle: number }[] {
         const points = [];
         const minX = u - radius;
         const maxX = u + radius;
@@ -177,7 +176,8 @@ export class SetScanPath extends HackUi {
             const a = this.isPixelAlpha0(i, minY);
             if (i == minX) b = a;
             else if (b != a) {
-                points.push({ x: i, y: minY, u: i, v: minY });
+                const angle = this.angleTo(u, v, i, minY);
+                points.push({ x: i, y: minY, u: i, v: minY, angle });
                 break;
             }
         }
@@ -185,7 +185,8 @@ export class SetScanPath extends HackUi {
             const a = this.isPixelAlpha0(i, maxY);
             if (i == minX) b = a;
             else if (b != a) {
-                points.push({ x: i, y: maxY, u: i, v: maxY });
+                const angle = this.angleTo(u, v, i, maxY);
+                points.push({ x: i, y: maxY, u: i, v: maxY, angle });
                 break;
             }
         }
@@ -194,7 +195,8 @@ export class SetScanPath extends HackUi {
                 const a = this.isPixelAlpha0(minX, i);
                 if (i == minY) b = a;
                 else if (b != a) {
-                    points.push({ x: minX, y: i, u: minX, v: i });
+                    const angle = this.angleTo(u, v, minX, i);
+                    points.push({ x: minX, y: i, u: minX, v: i, angle });
                     break;
                 }
             }
@@ -204,12 +206,58 @@ export class SetScanPath extends HackUi {
                 const a = this.isPixelAlpha0(maxX, i);
                 if (i == minY) b = a;
                 else if (b != a) {
-                    points.push({ x: maxX, y: i, u: maxX, v: i });
+                    const angle = this.angleTo(u, v, maxX, i);
+                    points.push({ x: maxX, y: i, u: maxX, v: i, angle });
+                    break;
+                }
+            }
+        }
+        if (points.length == 2) {
+            //判断起点和终点
+            const minAngle = middleAngle - 90;
+            const maxAngle = middleAngle + 90;
+            for (let i = 0; i < 2; i++) {
+                const { angle } = points[i];
+                //起点
+                if (angle > minAngle && angle < middleAngle) {
+                    if (i == 1) {
+                        const t = points[0];
+                        points[0] = points[1];
+                        points[1] = t;
+                    }
+                    break;
+                }
+                //终点
+                else if (angle > middleAngle && angle < maxAngle) {
+                    if (i == 0) {
+                        const t = points[0];
+                        points[0] = points[1];
+                        points[1] = t;
+                    }
                     break;
                 }
             }
         }
         return points;
+    }
+
+    /**
+     * 排序点,角度范围为[0,360]，
+     * @param points 点
+     * @param middleAngle 中间角度
+     */
+    protected sortPoints(points: { u: number, v: number, angle: number }[], middleAngle: number) {
+        if (middleAngle <= 90 || middleAngle >= 270) {
+            for (let i = 0, n = points.length; i < n; i++) {
+                const p = points[i];
+                if (p.angle <= 90) {
+                    p.angle += 360;
+                }
+            }
+        }
+        no.sortArray(points, (a, b) => {
+            return a.angle - b.angle;
+        });
     }
 
     /**
@@ -309,6 +357,19 @@ export class SetScanPath extends HackUi {
     }
 
     /**
+     * 获取两个点之间的角度
+     * @param u1 圆心点1X坐标
+     * @param v1 圆心点1Y坐标
+     * @param u2 目标点X坐标
+     * @param v2 目标点Y坐标
+     */
+    protected angleTo(u1: number, v1: number, u2: number, v2: number) {
+        const a = no.angleTo({ x: u1, y: v1 }, { x: u2, y: v2 });
+        //因为纹理坐标系原点在左上角，所以需要转换
+        return 360 - a.angle;
+    }
+
+    /**
      * 获取像素索引
      * @param u 像素X坐标
      * @param v 像素Y坐标
@@ -319,22 +380,16 @@ export class SetScanPath extends HackUi {
     }
 
     /**
-     * 坐标转换：世界坐标 -> 纹理坐标
-     * @param x 世界X坐标
-     * @param y 世界Y坐标
+     * 坐标转换：节点坐标 -> 以左上角为原点的纹理坐标
+     * @param x 节点X坐标
+     * @param y 节点Y坐标
      * @returns [u, v] 纹理坐标
-     * 
-     * @description 转换规则：
-     * 1. X轴：世界坐标 + 地图半宽 = 纹理X坐标
-     * 2. Y轴：地图高度 - (世界坐标 + 地图半高) = 纹理Y坐标
-     * 3. 坐标范围限制在[0, 地图尺寸-1]
      */
     protected xyToUv(x: number, y: number) {
-        const pos = this.node.position;
-        // 计算相对于地图左下角的位置
-        const relativeX = x + this._size.width / 2;
-        // 注意：这里Y坐标需要翻转，因为纹理坐标系原点在左上角
-        const relativeY = this._size.height - (y + this._size.height / 2);
+        const anchor = no.anchor(this.node);
+        // 计算相对于图片左上角的位置
+        const relativeX = x + anchor.x * this._size.width;
+        const relativeY = (1 - anchor.y) * this._size.height - y;
 
         // 在等大纹理中，世界坐标可以直接映射到纹理坐标
         return [
@@ -350,14 +405,17 @@ export class SetScanPath extends HackUi {
      * @returns [x, y] 世界坐标
      */
     protected uvToXy(u: number, v: number) {
-        const pos = this.node.position;
-        // 计算相对于地图左下角的位置
+        let { x, y } = this.node.position;
+        const anchor = no.anchor(this.node);
+        x += (.5 - anchor.x) * this._size.width;
+        y += (.5 - anchor.y) * this._size.height;
+        // 计算相对于地图左上角的位置
         const relativeX = u - this._size.width / 2;
         // 注意：这里Y坐标需要翻转，因为纹理坐标系原点在左上角
         const relativeY = this._size.height / 2 - v;
         return [
-            relativeX - pos.x,
-            relativeY - pos.y
+            relativeX + x,
+            relativeY + y
         ];
     }
 }

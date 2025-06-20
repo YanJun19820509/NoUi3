@@ -364,6 +364,16 @@ export class HackUi extends Component {
     }
 
     /**
+     * 获取dataWork的数据值
+     * @param key 键
+     * @returns 值
+     */
+    protected getDataValue(key: string) {
+        if (!this._oldData) return null;
+        return this._oldData.data[key];
+    }
+
+    /**
      * 数据变更处理模板方法（需子类实现）
      * @param data 更新后的数据
      * 

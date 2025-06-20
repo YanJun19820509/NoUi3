@@ -1924,11 +1924,31 @@ export namespace no {
      * console.log(no.angleTo(from, to).radian); // 输出1.5708（π/2）
      */
     export function angleTo(p1: Vec2 | Vec3 | { x: number, y: number }, p2: Vec2 | Vec3 | { x: number, y: number }): { angle: number, radian: number } {
-        let b = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+        const b = Math.atan2(p2.y - p1.y, p2.x - p1.x);
         return {
-            'angle': (360 + b / Math.PI * 180) % 360,
+            'angle': radianToAngle(b),
             'radian': b
         };
+    }
+
+    /**
+     * 将弧度转换为角度
+     * @param radian 弧度
+     * @returns 角度
+     */
+    export function radianToAngle(radian: number): number {
+        const angle = radian / Math.PI * 180;
+        return angle > 0 ? angle : angle + 360;
+    }
+
+    /**
+     * 将角度转换为弧度
+     * @param angle 角度
+     * @returns 弧度
+     */
+    export function angleToRadian(angle: number): number {
+        if (angle > 180) angle -= 360;
+        return angle / 180 * Math.PI;
     }
 
     /**
@@ -3938,11 +3958,11 @@ export namespace no {
      * // 获取当前锚点用于计算
      * const currentAnchor = no.anchor(this.draggableItem);
      */
-    export function anchor(node: Node, ...args: number[]): Vec2 {
+    export function anchor(node: Node, ...args: number[]): { x: number, y: number } {
         if (!node) return;
         let t = node.getComponent(UITransform);
         if (args != undefined && args.length > 0) t.setAnchorPoint(args[0], args[1] == null ? args[0] : args[1]);
-        return t.anchorPoint.clone();
+        return { x: t.anchorX, y: t.anchorY };
     }
 
     /**
@@ -11114,6 +11134,17 @@ export namespace no {
                 }
                 arr[arr.length] = p;
             }
+        } else if (n == 2) {
+            //一阶用线性插值计算
+            for (let i = 0; i < segment; i++) {
+                let t = i / segment;
+                let p = { x: points[0].x + (points[1].x - points[0].x) * t, y: points[0].y + (points[1].y - points[0].y) * t };
+                if (isInt) {
+                    p.x = Math.floor(p.x);
+                    p.y = Math.floor(p.y);
+                }
+                arr[arr.length] = p;
+            }
         }
 
         // 添加终点确保精度
@@ -11126,15 +11157,15 @@ export namespace no {
      * 检查点是否在直线上
      * @param line 直线
      * @param point 点
+     * @param precision 精度
      * @returns 是否在直线上
      */
-    export function checkPointInLine(line: { x: number, y: number }[], point: { x: number, y: number }) {
-        const { x, y } = point;
-        const { x: x1, y: y1 } = line[0];
-        const { x: x2, y: y2 } = line[1];
-        const k = (y2 - y1) / (x2 - x1);
-        const b = (y - y1) / (x - x1);
-        return approx(k, b, 0.000001);
+    export function checkPointInLine(line: { x: number, y: number }[], point: { x: number, y: number }, precision: number = 5) {
+        if (!line[0] || !line[1] || !point) return false;
+        const dis1 = distance(line[0], point);
+        const dis2 = distance(line[1], point);
+        const dis3 = distance(line[0], line[1]);
+        return dis1 + dis2 <= dis3 + precision;
     }
 }
 no.addToWindowForDebug('no', no);

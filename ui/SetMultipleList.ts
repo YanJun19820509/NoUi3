@@ -34,9 +34,9 @@ export class SetMultipleListInfo {
     type: string = '';
     @property({ type: Node, displayName: '元素模板', tooltip: '预制体节点引用' })
     template: Node = null;
-    @property({ 
-        displayName: '所需元素节点个数', 
-        tooltip: '根据滚动视图尺寸计算的显示上限' 
+    @property({
+        displayName: '所需元素节点个数',
+        tooltip: '根据滚动视图尺寸计算的显示上限'
     })
     showMax: number = 0;
     @property({ visible() { return false; } })
@@ -154,7 +154,7 @@ export class SetMultipleList extends HackUi {
         }
         let viewSize = no.size(this.scrollView.view.node);
         let isVertical = this.scrollView.vertical;
-        
+
         // 使用传统for循环替代for...of
         if (isVertical) {
             for (let i = 0; i < this.templates.length; i++) {
@@ -195,7 +195,7 @@ export class SetMultipleList extends HackUi {
      * // contentSize 表示内容区域总宽度
      */
     private contentSize: number;
-    
+
     private showNum: number;
     /**
      * 实际最多可显示的itemPanel个数
@@ -203,7 +203,7 @@ export class SetMultipleList extends HackUi {
      * - 考虑不同尺寸模板的混合排列
      * - 根据滚动视图尺寸和模板尺寸动态计算
      */
-    
+
     private allNum: number;
     /**
      * node最后的位置，横向时指x，纵向时指y
@@ -212,13 +212,13 @@ export class SetMultipleList extends HackUi {
      * - 根据滚动方向存储不同坐标值
      */
     private lastIndex: number = 0;
-    
+
     private _loaded: boolean = false;
     private _isSettingData: boolean = false;
     private scrollViewContent: Node;
     private scrollViewSize: Size;
-    
-    private templateMap: { [type: string]: { size: Size, anchor: Vec2, showNum: number } };
+
+    private templateMap: { [type: string]: { size: Size, anchor: { x: number, y: number }, showNum: number } };
     /**
      * 模板尺寸映射表
      * @example
@@ -227,7 +227,7 @@ export class SetMultipleList extends HackUi {
      *   'image': { size: cc.size(300,150), anchor: cc.v2(0,1), showNum: 3 }
      * }
      */
-    
+
     private itemsMap: { [type: string]: Node[] };
     /**
      * 可用节点池
@@ -238,7 +238,7 @@ export class SetMultipleList extends HackUi {
      *   'image': [node4, node5]
      * }
      */
-    
+
     private positionMap: number[] = [];
     /**
      * 位置索引映射表
@@ -247,7 +247,7 @@ export class SetMultipleList extends HackUi {
      * // 垂直布局：
      * [0, 100, 200, 300,...] // 每个元素对应y坐标
      */
-    
+
     private typeDataIndexMap: { [type: string]: number[] } = {};
     /**
      * 类型数据索引映射
@@ -389,7 +389,7 @@ export class SetMultipleList extends HackUi {
             // 初始化模板实例并建立映射
             this.itemsMap[t.type] = t.initTemplate(this.content);
             // 存储模板元数据
-            this.templateMap[t.type] = { 
+            this.templateMap[t.type] = {
                 size: t.itemSize,          // 模板尺寸
                 anchor: no.anchor(t.template), // 模板锚点
                 showNum: t.showMax         // 最大显示数量
@@ -437,7 +437,7 @@ export class SetMultipleList extends HackUi {
             // 建立类型-索引映射关系
             this.typeDataIndexMap[templateType] = this.typeDataIndexMap[templateType] || [];
             this.typeDataIndexMap[templateType][this.typeDataIndexMap[templateType].length] = index;
-            
+
             if (templateType) {
                 const template = this.templateMap[templateType],
                     size = template.size;
@@ -505,33 +505,33 @@ export class SetMultipleList extends HackUi {
     protected async onDataChange(data: any) {
         // 取消所有可能影响数据完整性的异步操作
         this.unscheduleAllCallbacks();
-        
+
         // 节点有效性检查（防止组件已销毁的情况）
         if (!this?.node?.isValid) return;
-        
+
         // 初始化模板系统（如果未初始化）
         await this.initTemplates();
-        
+
         // 再次检查节点和内容容器有效性
         if (!this?.node?.isValid || !this?.content?.isValid) return;
-        
+
         // 创建数据副本以避免污染原始数据
         let a = [].concat(data);
         this.listData = a;      // 存储当前列表数据
         this.allNum = a.length; // 记录数据总量
-        
+
         // 计算并设置内容容器尺寸
         this.setContentSize();
-        
+
         // 更新列表项显示
         this.setList();
-        
+
         // 最终有效性检查
         if (!this?.node?.isValid) return;
-        
+
         // 执行完成回调（示例：更新滚动条、播放动画等）
         no.EventHandlerInfo.execute(this.onComplete);
-        
+
         // 重置数据设置状态
         this._isSettingData = false;
     }
@@ -548,19 +548,19 @@ export class SetMultipleList extends HackUi {
      */
     private setList() {
         if (!this.node.isValid) return;
-        
+
         // 获取所有模板类型（示例：['character', 'item', 'skill']）
         const types = Object.keys(this.itemsMap);
-        
+
         // 使用传统for循环遍历模板类型（避免for of）
         for (let typeIndex = 0, typeCount = types.length; typeIndex < typeCount; typeIndex++) {
             const type = types[typeIndex];
             const dataIndexes: number[] = this.typeDataIndexMap[type];
-            
+
             // 当前类型没有对应数据的情况
             if (!dataIndexes) {
                 const items = this.itemsMap[type];
-                
+
                 // 隐藏所有该类型元素并重置数据索引
                 for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
                     const item = items[itemIndex];
@@ -573,12 +573,12 @@ export class SetMultipleList extends HackUi {
                     // 找到第一个>=lastIndex的索引作为起始点
                     if (dataIndexes[i] >= this.lastIndex) {
                         const items = this.itemsMap[type];
-                        
+
                         // 批量更新元素显示（示例：同时更新3个相同模板的元素）
                         for (let j = 0; j < items.length; j++) {
                             const item = items[j];
                             const dataIndex = dataIndexes[i + j];
-                            
+
                             if (dataIndex != undefined) {
                                 // 有效数据索引时更新元素
                                 this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
@@ -625,19 +625,19 @@ export class SetMultipleList extends HackUi {
                 const indexs = this.typeDataIndexMap[templateType];    // 该类型数据索引数组
                 const i = indexs.indexOf(index);                       // 当前数据在类型数组中的位置
                 const items = this.itemsMap[templateType];             // 该类型所有节点实例
-                
+
                 // 计算需要更新的目标索引
                 const ni = i + showNum;                // 目标位置偏移量
                 const nIndex = indexs[ni];             // 实际目标数据索引
                 const nItem: Node = no.itemOfArray(items, nIndex, '__dataIndex'); // 查找已绑定该索引的节点
-                
+
                 // 如果目标节点已存在则跳过
                 if (nItem) continue;
-                
+
                 // 获取当前索引绑定的节点
                 const item: Node = no.itemOfArray(items, index, '__dataIndex');
                 if (!item) continue;
-                
+
                 // 更新节点数据和位置
                 const nd = this.listData[nIndex];
                 if (nd) {
@@ -653,20 +653,20 @@ export class SetMultipleList extends HackUi {
                 const templateType = d[templateTypeKey];
                 const showNum = this.templateMap[templateType].showNum;
                 const items = this.itemsMap[templateType];
-                
+
                 // 跳过已处理的节点
                 if (no.itemOfArray(items, index, '__dataIndex')) continue;
-                
+
                 // 计算需要复用的节点索引
                 const indexs = this.typeDataIndexMap[templateType];
                 const i = indexs.indexOf(index) + showNum; // 向后偏移showNum个位置
                 let nIndex = indexs[i];
                 if (nIndex == undefined) nIndex = -1;      // 处理越界情况
-                
+
                 // 获取可复用的节点
                 let item: Node = no.itemOfArray(items, nIndex, '__dataIndex');
                 if (!item) continue;
-                
+
                 // 更新节点为当前数据
                 const nd = this.listData[index];
                 if (nd) {
@@ -746,7 +746,7 @@ export class SetMultipleList extends HackUi {
     private updatePos() {
         // 有效性检查：确保节点未销毁
         if (!isValid(this?.node)) return;
-        
+
         // 获取当前所有列表项节点
         let listItems = this.content.children;
         // 数据为空或没有列表项时直接返回
@@ -754,7 +754,7 @@ export class SetMultipleList extends HackUi {
 
         let curPos = 0;      // 当前滚动位置
         let startIndex = 0;  // 可视区域起始索引
-        
+
         // 根据滚动方向计算当前位置（转换为正数坐标系）
         if (this.isVertical) {
             // 垂直滚动：取Y轴负值（因为内容容器向下滚动时坐标为负）
@@ -781,7 +781,7 @@ export class SetMultipleList extends HackUi {
         // 执行滚动事件回调（参数：当前滚动位置，滚动进度0-1）
         // 示例：curPos=250，contentSize=400 → 进度=250/400=0.625
         no.EventHandlerInfo.execute(this.onScrolling, curPos, -curPos / this.contentSize);
-        
+
         // 起始索引有效性检查
         if (this.positionMap[startIndex] == null) return;
 

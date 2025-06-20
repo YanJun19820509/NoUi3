@@ -17,7 +17,7 @@ export class SetDigHole extends SetScanPath {
             this.clearDataValue(`${this.bind_keys}.path`);
         }
         if (digInfo) {
-            this.digHole(digInfo.x, digInfo.y, digInfo.radius);
+            this.digHole(digInfo.x, digInfo.y, digInfo.radius, digInfo.radian);
             // this.digHoleByBezier(digInfo.x, digInfo.y, digInfo.radius, digInfo.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
@@ -28,8 +28,9 @@ export class SetDigHole extends SetScanPath {
      * @param x 挖洞中心X坐标
      * @param y 挖洞中心Y坐标
      * @param radius 挖洞半径
+     * @param radian 挖洞方向
      */
-    private digHole(x: number, y: number, radius: number) {
+    private digHole(x: number, y: number, radius: number, radian: number) {
         this.clearPoints();
         const [centerX, centerY] = this.xyToUv(x, y);
         // 计算更新区域边界（优化性能，只处理视野范围内像素）
@@ -54,7 +55,7 @@ export class SetDigHole extends SetScanPath {
 
         // 提交纹理更新
         this._updateTexture();
-        this.scanAreaPath(startX - 1, startY - 1, radius);
+        this.scanAreaPath(startX - 1, startY - 1, radius, no.radianToAngle(radian));
     }
 
     /**
@@ -66,16 +67,31 @@ export class SetDigHole extends SetScanPath {
      */
     private digHoleByBezier(x: number, y: number, radius: number, radian: number) {
         const [centerX, centerY] = this.xyToUv(x, y);
-        const [startPoint, endPoint] = this.getStartEndPoints(centerX, centerY, radius);
+        const [startPoint, endPoint] = this.getStartEndPoints(centerX, centerY, radius, no.radianToAngle(radian));
         if (!startPoint || !endPoint) return;
-        const controlPoint = this.getBezierControlPoint(centerX, centerY, radius * 3, radian);
-        const points = no.bezierPoints([startPoint, controlPoint, endPoint], 5);
+        // const controlPoint = this.getBezierControlPoint(centerX, centerY, radius, radian);
+        const points = no.bezierPoints([startPoint, endPoint], 20);
         // 查看贝塞尔曲线
         // this.showPoints(points);
         for (let i = 1; i < points.length; i++) {
             this.digTriangleHole({ x: centerX, y: centerY }, points[i - 1], points[i]);
         }
         this._updateTexture();
+        let idx = 0;
+        const startU = points[0].x,
+            startV = points[0].y,
+            endU = points[points.length - 1].x,
+            endV = points[points.length - 1].y;
+        for (let i = this._path.length - 1; i >= 0; i--) {
+            const p = this._path[i];
+            if (p.u > startU && p.u < endU && p.v > startV && p.v < endV) {
+                this._path.splice(i, 1);
+                idx = i;
+            }
+        }
+        points.forEach(p => this._path.splice(idx++, 0, { u: p.x, v: p.y }));
+        this.showPoints(this._path);
+        this.updateToData();
     }
 
     /**
