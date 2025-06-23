@@ -1158,7 +1158,7 @@ export namespace no {
      * // 带目标对象的等待
      * const userData = await no.waiForEventValue('user_info_updated', this.userComponent);
      */
-    export function waiForEventValue(type: string, target?: any): Promise<any> {
+    export function waitForEventValue(type: string, target?: any): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             evn.once(type, (v: any) => {
                 if (v == '__clear_Wait_For_Event__') reject(null);
