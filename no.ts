@@ -10155,26 +10155,25 @@ export namespace no {
          * // 加载resources/items下所有预制体
          * const items = await EditorMode.loadAssetsOfCCTypeUnderFolder('resources/items', 'cc.Prefab');
          */
-        export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string) {
-            return getAssetInfosByCCType(ccType).then((infos: any[]) => {
-                let aa = [];
-                for (let i = 0; i < infos.length; i++) {
-                    const a = infos[i];
-                    if (a['url'].indexOf(folderUrl) > -1) {
-                        aa[aa.length] = { uuid: a.uuid };
-                    }
+        export async function loadAssetsOfCCTypeUnderFolder(folderUrl: string, ccType: string): Promise<Asset[]> {
+            const infos: any[] = await getAssetInfosByCCType(ccType);
+            let aa = [];
+            for (let i = 0; i < infos.length; i++) {
+                const a = infos[i];
+                if (a['url'].indexOf(folderUrl) > -1) {
+                    aa[aa.length] = { uuid: a.uuid };
                 }
-                if (!aa.length) {
-                    return [];
-                }
-                return new Promise<any>(resolve => {
-                    assetBundleManager.loadAnyFiles(aa, null, items => {
-                        resolve(items);
-                    });
-                }).catch(e => {
-                    console.error(e);
-                    return [];
+            }
+            if (!aa.length) {
+                return [];
+            }
+            return new Promise<Asset[]>(resolve => {
+                assetBundleManager.loadAnyFiles(aa, null, items => {
+                    resolve(items);
                 });
+            }).catch(e => {
+                console.error(e);
+                return [];
             });
         }
 

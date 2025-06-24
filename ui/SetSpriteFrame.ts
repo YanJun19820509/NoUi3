@@ -113,8 +113,15 @@ export class SetSpriteFrame extends HackUi {
      */
     private lateSet(data: any): void {
         // 确保Sprite组件存在
-        this.sprite = this.sprite || this.getComponent(Sprite);
+        if (!this.sprite) {
+            this.sprite = this.getComponent(Sprite);
+        }
         if (this.sprite == null) return;
+
+        if (data == 'null') {
+            this.a_setEmpty();
+            return;
+        }
 
         // 无图集模式：直接加载单个精灵帧
         if (!this.sprite.spriteAtlas && !data.atlas) {

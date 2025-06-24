@@ -2,7 +2,8 @@
 import {
     EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, JsonAsset, UITransform,
     Sprite, SpriteAtlas, Label, Size, Layers, Widget, HorizontalTextAlignment, Overflow, Button, ProgressBar,
-    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents
+    Layout, v3, ToggleContainer, Toggle, ScrollView, Mask, Slider, LabelOutline, Vec2, LabelShadow, SpriteFrame, LayoutType, LayoutResizeMode, Font, TTFFont, Vec3, math, BlockInputEvents,
+    Asset
 } from '../yj';
 import { no } from '../no';
 import { YJLoadAssets } from './YJLoadAssets';
@@ -44,7 +45,6 @@ export class AutoCreateNode extends Component {
     }
 
     onEnable() {
-        console.log('AutoCreateNode', this.node.name)
         if (EDITOR) {
             this.loadConfigFile();
         }
@@ -68,30 +68,36 @@ export class AutoCreateNode extends Component {
                 let root = Editor.Project.path.replace(/\\/g, '/');
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
-                // await YJCollectSpriteFrameDataInAtlas.createAtlasConfig(dest);
-                console.log('loadConfigFile', dest, name);
-                no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/WJCY/res/font`, 'cc.TTFFont').then(assets => {
-                    console.log('loadAssetsOfCCTypeUnderFolder', assets);
-                    if (assets?.length > 0)
-                        this.fonts = this.fonts.concat(assets);
+                this.preloadAssets([
+                    [`assets/WJCY/res/font`, 'cc.TTFFont'],
+                    [`assets/WJCY/res/common`, 'cc.SpriteAtlas'],
+                ], () => {
                     this.loadJson(dest, name);
                 });
-                // no.EditorMode.loadAssetsOfCCTypeUnderFolder(dest, 'cc.SpriteAtlas').then(assets => {
-                //     this.atlases = this.atlases.concat(assets);
-                //     no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/ui`, 'cc.SpriteAtlas').then(assets => {
-                //         if (assets?.length > 0)
-                //             this.atlases = this.atlases.concat(assets);
-                //         no.EditorMode.loadAssetsOfCCTypeUnderFolder(`assets/${projectName}/res/common/font`, 'cc.TTFFont').then(assets => {
-                //             if (assets?.length > 0)
-                //                 this.fonts = this.fonts.concat(assets);
-                //             this.loadJson(dest, name);
-                //         });
-                //     });
-                // });
             }
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private preloadAssets(assetsInfo: string[][], cb: () => void) {
+        const promises: Promise<Asset[]>[] = [];
+        for (let i = 0; i < assetsInfo.length; i++) {
+            promises.push(no.EditorMode.loadAssetsOfCCTypeUnderFolder(assetsInfo[i][0], assetsInfo[i][1]));
+        }
+        Promise.all(promises).then(arr => {
+            arr.forEach(assets => {
+                for (let i = 0; i < assets.length; i++) {
+                    const asset = assets[i];
+                    if (asset instanceof TTFFont) {
+                        this.fonts.push(asset);
+                    } else if (asset instanceof SpriteAtlas) {
+                        this.atlases.push(asset);
+                    }
+                }
+            })
+            cb();
+        });
     }
 
     private addComponents() {
@@ -113,9 +119,9 @@ export class AutoCreateNode extends Component {
 
     private loadJson(dest: string, name: string) {
         const path = dest + `/${name}.json`
-        console.log('loadjson', path);
+        // console.log('loadjson', path);
         no.EditorMode.loadAnyFile<JsonAsset>(path).then(f => {
-            console.log(f.json);
+            // console.log(f.json);
             this.createNodes(f.json);
             // this.enabled = false;
             this.deleteConfigFile(path);
@@ -571,7 +577,9 @@ export class AutoCreateNode extends Component {
     }
 
     private getFont(name: string): TTFFont {
+        console.log('getFont', this.fonts);
         for (let i = 0, n = this.fonts.length; i < n; i++) {
+            console.log('getFont', this.fonts[i].name, name);
             if (this.fonts[i].name == name) return this.fonts[i];
         }
         return null;
