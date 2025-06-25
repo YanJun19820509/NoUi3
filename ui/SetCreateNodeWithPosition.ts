@@ -2,7 +2,6 @@
 import { ccclass, property, executeInEditMode, EDITOR, Node, math, UITransform, instantiate, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJJobManager } from '../base/YJJobManager';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 
@@ -266,10 +265,7 @@ export class SetCreateNodeWithPosition extends HackUi {
         }
         let item = this.container.children[start + i];
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-        if (a) {
-            a.data = data[i];
-            a.init();
-        }
+        a?.clear().initWithData(data[i]);
         no.visible(item, true);
     }
 

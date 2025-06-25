@@ -417,10 +417,8 @@ export class SetCreateNode extends HackUi {
 
         // 数据绑定到YJDataWork组件
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-        if (a) {
-            a.data = data[dataIdx];
-            a.init(); // 初始化数据绑定
-        }
+        // 初始化数据绑定
+        a?.clear().initWithData(data[dataIdx]);
 
         if (immediate) return;
         // 处理动画效果
@@ -524,6 +522,7 @@ export class SetCreateNode extends HackUi {
      * @description 立即更新数据，不使用动画效果
      */
     public a_immediate() {
+        if (!this.enabledInHierarchy) return;
         this.unscheduleAllCallbacks();
         this.setItems(true);
     }

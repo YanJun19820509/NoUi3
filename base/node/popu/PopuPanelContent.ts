@@ -74,9 +74,7 @@ export class PopuPanelContent extends Component {
             });
             return;
         }
-        this.dataWork.clear();
-        this.dataWork.data = data;
-        this.dataWork.init();
+        this.dataWork.clear().initWithData(data);
         this.afterDataInit();
     }
 
