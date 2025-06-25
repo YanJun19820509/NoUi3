@@ -232,7 +232,6 @@ export class YJPanel extends Component {
     onEnable() {
         if (EDITOR) return;
         this.lastCloseTime = -1; // 重置关闭时间
-        no.evn.emit(YJPanel.PanelOpenEvent, this.panelType); // 全局事件通知
         no.log('panel load', this.panelType); // 调试日志
         this.onLoadPanel(); // 调用派生类实现的加载逻辑
     }
@@ -294,6 +293,7 @@ export class YJPanel extends Component {
         // 设置多点触摸（如允许手势操作）
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
+        no.evn.emit(YJPanel.PanelOpenEvent, this.panelType); // 全局事件通知
     }
 
     /**
