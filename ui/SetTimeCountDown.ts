@@ -81,10 +81,10 @@ export class SetTimeCountDown extends HackUi {
      * - 倒计时时间会转换为百分比传递给这些组件
      * - 需要实现HackUi接口的组件
      * @示例 
-     * this.fuckUiComponents = [progressBarComponent] // 将百分比传递给进度条
+     * this.hackUiComponents = [progressBarComponent] // 将百分比传递给进度条
      */
     @property({ type: HackUi, tooltip: '将倒计时转换成百分比，传给对应组件' })
-    fuckUiComponents: HackUi[] = [];
+    hackUiComponents: HackUi[] = [];
 
     /**
      * 百分比计算方向
@@ -130,9 +130,9 @@ export class SetTimeCountDown extends HackUi {
     timeCalls: no.EventHandlerInfo[] = [];
 
     // 倒计时总时长（秒）
-    private _max: number;
+    protected _max: number;
     // 目标截止时间戳（秒）
-    private _deadline: number;
+    protected _deadline: number;
 
 
     onDisable() {
@@ -242,7 +242,7 @@ export class SetTimeCountDown extends HackUi {
      * - 优先使用label组件
      * - 无label时使用charLabel组件
      */
-    private setLabel(str: string): void {
+    protected setLabel(str: string): void {
         if (this.label) {
             this.label.string = str || '';
         } else if (this.charLabel) {
@@ -258,13 +258,13 @@ export class SetTimeCountDown extends HackUi {
      * 2. 根据is0_1调整百分比方向
      * 3. 传递给所有关联组件
      */
-    private setPercent(v: number) {
+    protected setPercent(v: number) {
         let percent = v / this._max;
         if (this.is0_1) percent = 1 - percent;
 
         // 遍历所有关联组件传递百分比
-        for (let i = 0; i < this.fuckUiComponents.length; i++) {
-            this.fuckUiComponents[i].a_setData(String(percent));
+        for (let i = 0; i < this.hackUiComponents.length; i++) {
+            this.hackUiComponents[i].a_setData(String(percent));
         }
         if (this.progressBar) {
             this.progressBar.progress = percent;

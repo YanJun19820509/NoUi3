@@ -4174,7 +4174,14 @@ export namespace no {
 
             if (!lt || now >= lt) {
                 dataCache.setLocal(dataKey, value);
-                lastResetTime[dataKey] = (isInterval ? now : zeroTimestamp()) + time;
+                if (isInterval) {
+                    lastResetTime[dataKey] = now + time;
+                } else {
+                    let t = zeroTimestamp() + time;
+                    //如果重置时间点已过，则延长到下一天
+                    if (t < now) t += 86400;
+                    lastResetTime[dataKey] = t;
+                }
                 dataCache.setLocal('reset_data_check_time', jsonStringify(lastResetTime));
             }
         } catch (e) {
