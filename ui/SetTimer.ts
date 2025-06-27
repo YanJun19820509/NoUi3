@@ -53,7 +53,7 @@ export class SetTimer extends SetTimeCountDown {
             }
             this._deadline = max + now;
             this._max = max;
-            this._start = start + now;
+            this._start = now - start;
         }
         // 处理数字参数格式
         else {
@@ -103,7 +103,7 @@ export class SetTimer extends SetTimeCountDown {
                 no.EventHandlerInfo.execute(this.timeCalls);
             }
             // 触发间隔回调
-            if (this.isInterval && duration % this.interval === 0) {
+            if (this.isInterval && duration > 0 && (duration % this.interval) === 0) {
                 no.EventHandlerInfo.execute(this.intervalCalls);
             }
         }

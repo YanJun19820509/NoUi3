@@ -73,7 +73,7 @@ export class YJButton extends Component {
     private needWait: boolean = false; // 等待间隔标记
     private interactable: boolean; // 原始交互状态缓存
 
-    onEnable() {
+    start() {
         this.needWait = false;
         // 首次激活时接管原始点击事件
         const btn = this.getComponent(Button);

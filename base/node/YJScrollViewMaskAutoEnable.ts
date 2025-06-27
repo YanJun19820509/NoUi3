@@ -1,5 +1,5 @@
 import { no } from "../../no";
-import { ccclass, Component, EDITOR, executeInEditMode, Mask, Node, NodeEventType, property, requireComponent, ScrollView } from "../../yj";
+import { ccclass, Component, EDITOR, executeInEditMode, isValid, Mask, Node, NodeEventType, property, requireComponent, ScrollView } from "../../yj";
 /**
  * 
  * Author mqsy_yj
@@ -40,7 +40,9 @@ export class YJScrollViewMaskAutoEnable extends Component {
     /** 当组件禁用时移除事件监听 */
     onDisable() {
         // 移除内容节点尺寸变化监听，避免内存泄漏
-        this.content?.off(NodeEventType.SIZE_CHANGED, this._enableMask, this);
+        if (isValid(this.content)) {
+            this.content.off(NodeEventType.SIZE_CHANGED, this._enableMask, this);
+        }
     }
 
     /** 根据内容尺寸控制遮罩启用状态 */
@@ -48,7 +50,7 @@ export class YJScrollViewMaskAutoEnable extends Component {
         // 获取容器（当前节点）和内容节点的尺寸
         const containerSize = no.size(this.node);
         const contentSize = no.size(this.content);
-        
+
         // 当内容高度或宽度超过容器时启用遮罩
         const needMask = contentSize.height > containerSize.height || contentSize.width > containerSize.width;
         this.getComponent(Mask).enabled = needMask;

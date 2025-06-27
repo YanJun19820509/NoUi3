@@ -47,25 +47,23 @@ export class SwitchInfo {
     public checkShow(v: string) {
         // 初始化条件数组（只执行一次）
         if (!this.conditions) this.conditions = this.condition.split(',');
-        
+
         // 判断当前值是否匹配条件
         const isMatch = this.conditions.indexOf(v) !== -1;
-        
+
         // 遍历所有节点进行显隐控制
         for (let i = 0; i < this.nodes.length; i++) {
             const node = this.nodes[i];
             if (!isValid(node)) continue; // 跳过无效节点
-            
+
             // 缓存原始X坐标（用于位移方式的显隐控制）
             if (node['__origin_x__'] == null) {
                 node['__origin_x__'] = no.x(node);
             }
-            
+
             // 通过激活状态控制显隐（替代直接设置位置的方式）
-            no.visibleByActiveInHierarchy(node, isMatch);
-            
-            // 旧的位置控制方式保留但注释掉，方便需要时切换
-            // no.x(node, !isMatch ? 20000 : node['__origin_x__']);
+            // no.visibleByActiveInHierarchy(node, isMatch);
+            node.active = isMatch;
         }
     }
 
@@ -76,7 +74,8 @@ export class SwitchInfo {
     public init() {
         for (let i = 0; i < this.nodes.length; i++) {
             const node = this.nodes[i];
-            no.visibleByActiveInHierarchy(node, false);
+            // no.visibleByActiveInHierarchy(node, false);
+            node.active = false;
         }
     }
 }
@@ -99,10 +98,10 @@ export class SetNodesSwitch extends HackUi {
     infos: SwitchInfo[] = [];
 
     // UI动画效果组件（配置后会在切换时播放动画）
-    @property({ 
-        displayName: '播放动效', 
-        type: YJUIAnimationEffect, 
-        tooltip: '没有指定则不播放动效，指定后会先播放动画再执行切换' 
+    @property({
+        displayName: '播放动效',
+        type: YJUIAnimationEffect,
+        tooltip: '没有指定则不播放动效，指定后会先播放动画再执行切换'
     })
     uiAnim: YJUIAnimationEffect = null;
 

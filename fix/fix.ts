@@ -1,5 +1,5 @@
 import { no } from '../no';
-import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect, EDITOR } from '../yj';
+import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect, EDITOR, LabelOutline } from '../yj';
 import { YJButton } from './YJButton';
 
 /**
@@ -228,3 +228,8 @@ js.mixin(Skeleton.prototype, {
 //         return _commitIA.call(this, renderComp, ia, tex, mat, transform);
 //     }
 // });
+
+//3.5.2
+js.mixin(LabelOutline.prototype, {
+    onDisable() { }
+})

@@ -2,7 +2,7 @@
 import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js, UIOpacity, Node } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
-import { YJPanelCreated } from '../../types';
+import { YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
 
 /**
  * Predefined variables
@@ -285,15 +285,15 @@ export class YJPanel extends Component {
 
         // 等待派生类自定义初始化（如数据请求）
         this.onInitPanel();
-
+        const key = this.getPrefabUrl();
         // 全屏面板通知（如隐藏底层UI）
         if (this.isFullScreen)
-            no.evn.emit('_full_screen_panel_open', this.panelType);
+            no.evn.emit('_full_screen_panel_open', this.panelType, key);
 
         // 设置多点触摸（如允许手势操作）
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
-        no.evn.emit(YJPanel.PanelOpenEvent, this.panelType); // 全局事件通知
+        no.evn.emit(YJPanel.PanelOpenEvent, this.panelType, key); // 全局事件通知
     }
 
     /**
@@ -319,11 +319,13 @@ export class YJPanel extends Component {
         this.status = 'close';
         no.log('panel close', this.panelType);
         no.EventHandlerInfo.execute(this.onClose); // 执行关闭回调
-        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType); // 全局事件
+
+        const key = this.getPrefabUrl();
+        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType, key); // 全局事件
 
         // 全屏面板关闭通知（如恢复底层UI）
         if (this.isFullScreen)
-            no.evn.emit('_full_screen_panel_close', this.panelType);
+            no.evn.emit('_full_screen_panel_close', this.panelType, key);
 
         // 恢复系统原始触摸设置
         no.multiTouch(this._lastMultiTouchState);
@@ -357,10 +359,11 @@ export class YJPanel extends Component {
         this.status = 'close';
         no.log('panel close', this.panelType);
         no.EventHandlerInfo.execute(this.onClose);
-        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType);
+        const key = this.getPrefabUrl();
+        no.evn.emit(YJPanel.PanelCloseEvent, this.panelType, key);
         this.onClosePanel();
         if (this.isFullScreen)
-            no.evn.emit('_full_screen_panel_close', this.panelType);
+            no.evn.emit('_full_screen_panel_close', this.panelType, key);
         no.multiTouch(this._lastMultiTouchState);
         this.clear(true);
     }
@@ -446,6 +449,10 @@ export class YJPanel extends Component {
     protected onClosePanel() {
         no.evn.targetOff(this);
         this.unscheduleAllCallbacks();
+    }
+
+    private getPrefabUrl() {
+        return this['__proto__'][YJPanelPrefabMetaKey];
     }
 
     //////以下方法需要子类实现

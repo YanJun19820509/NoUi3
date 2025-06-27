@@ -1,10 +1,11 @@
 
 import { ccclass, property, menu, Component, Node, Prefab, js, Widget, instantiate } from '../../yj';
 import { no } from '../../no';
-import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
 import { LayerType, LayerTypeDesc } from './LayerType';
+import { PopuPanel } from './popu/PopuPanel';
 
 /**
  * Predefined variables
@@ -253,10 +254,8 @@ export class YJWindowManager extends Component {
             else no.setPrototype(comp, { [YJPanelCreated]: '1' });
         }
 
-        const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
-            uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey),
-            k = url || uuid;
-        const request = { type: Prefab, url: url, uuid: uuid };
+        const url = no.getPrototype(comp, YJPanelPrefabMetaKey);
+        const request = { type: Prefab, url: url };
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             if (!content?.isValid) {
@@ -380,11 +379,13 @@ export class YJWindowManager extends Component {
             len = children.length;
         for (let i = len - 1; i >= 0; i--) {
             const node = children[i];
-            const panel = node.getComponent(YJPanel);
+            const panel = node.getComponent(PopuPanel) || node.getComponent(YJPanel);
             if (panel?.enabledInHierarchy) {
                 let name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;
-                panel.closePanel();
+                if (panel['closePopuPanel']) panel['closePopuPanel']();
+                else
+                    panel.closePanel();
             }
         }
         // content.children.forEach(node => {

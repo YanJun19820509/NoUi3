@@ -1,4 +1,5 @@
 import { no } from '../../no';
+import { YJPanelPrefabMetaKey } from '../../types';
 import { ccclass, property, Component, Node, js } from '../../yj';
 import { YJPanel } from '../node/YJPanel';
 import { YJWindowManager } from '../node/YJWindowManager';
@@ -72,7 +73,9 @@ export class YJGoToManager extends Component {
             return;
         }
         if (typeof clazz['show'] == 'function') {
-            no.evn.once(clazz['$super'] == YJPanel ? '_PanelOpen' : 'PopuPanelContent_create', (panelType: string) => {
+            const key = no.getPrototype(clazz, YJPanelPrefabMetaKey);
+            no.evn.once(clazz['$super'] == YJPanel ? '_PanelOpen' : 'PopuPanelContent_create', (panelType: string, panelUrl: string) => {
+                if (panelUrl != key) return;
                 let panel = YJWindowManager.opennedPanelByType(panelType);
                 this._ins.trigger(panel, args, cb);
             }, this);

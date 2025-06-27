@@ -393,8 +393,6 @@ export function addMeta(key: string, value: string) {
 
 /** 预制体路径元数据键（用于存储面板预制体资源路径） */
 export const YJPanelPrefabMetaKey = 'prefabPath';
-/** 预制体UUID元数据键（用于存储面板预制体资源UUID） */
-export const YJPanelPrefabUuidMetaKey = 'prefabUuid';
 /** 面板归属目标名称元数据键（用于指定面板所属层级/父节点） */
 export const YJAddPanelToMetaKey = 'addPanelToTargetName';
 /** 允许多开标识元数据键（控制面板是否允许重复打开） */
@@ -416,19 +414,6 @@ export function panelPrefabPath(path: string) {
     return addMeta(YJPanelPrefabMetaKey, path);
 }
 
-/**
- * 类装饰器：为YJPanel组件指定预制体资源UUID
- * @param uuid - 预制体资源的唯一标识符（可在编辑器资源管理器查看）
- * @returns 类装饰器
- * @example
- * @panelPrefabUuid('fcmR3XnlRK6QHYdTQxFc1S') // 关联预制体UUID
- * class SettingsPanel extends YJPanel {
- *   // 元数据将存储在SettingsPanel.prototype['prefabUuid']
- * }
- */
-export function panelPrefabUuid(uuid: string) {
-    return addMeta(YJPanelPrefabUuidMetaKey, uuid);
-}
 /**
  * 为YJPanel组件添加所属层级/父节点元数据
  * @param targetName 目标节点名称（用于指定面板的父节点或层级）

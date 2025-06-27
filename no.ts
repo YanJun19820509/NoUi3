@@ -3329,7 +3329,7 @@ export namespace no {
          * });
          */
         public setTweenData(data: any) {
-
+            this.setDelay(data.delay);
             if (data.props != null) {
                 let np: any, tp: any, op: any; // 分别存储节点属性、变换属性、透明度属性
 

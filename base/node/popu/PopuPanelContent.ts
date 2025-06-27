@@ -3,7 +3,7 @@ import { YJDataWork } from '../../../base/YJDataWork';
 import { PopuPanel } from './PopuPanel';
 import { YJLoadAssets } from '../../../editor/YJLoadAssets';
 import { no } from '../../../no';
-import { YJPanelCreated } from '../../../types';
+import { YJPanelCreated, YJPanelPrefabMetaKey } from '../../../types';
 
 @ccclass('PopuPanelContent')
 /**
@@ -60,7 +60,7 @@ export class PopuPanelContent extends Component {
             this._initData(data);
         }
         this.afterInit();
-        no.evn.emit('PopuPanelContent_create', this);
+        no.evn.emit('PopuPanelContent_create', this.node.name, this.getPrefabUrl());
     }
 
     /**
@@ -108,6 +108,10 @@ export class PopuPanelContent extends Component {
     /** 显示弹窗 */
     public show() {
         this.panel?.show();
+    }
+
+    private getPrefabUrl() {
+        return this['__proto__'][YJPanelPrefabMetaKey];
     }
 
     /** 弹窗关闭时调用,清理事件监听 */

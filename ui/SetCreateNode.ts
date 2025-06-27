@@ -249,6 +249,7 @@ export class SetCreateNode extends HackUi {
             return;
         }
         const data = this._data;
+        if (!data) return;
         // 单节点特殊处理模式
         if (this.onlyOne) {
             this.setDynamicAtlasNode(data[0]);
