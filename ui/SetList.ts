@@ -223,26 +223,26 @@ export class SetList extends HackUi {
     private async initTemplate() {
         if (this._loaded) return;
         this._loaded = true;
-        
+
         // 加载预制体模板
         if (!this.template) {
             this.template = await this.itemPanel.loadPrefab();
             if (!this?.node?.isValid) return;
             this.preInitItems(); // 预计算元素尺寸
         }
-        
+
         // 计算最大显示数量
         if (this.showMax == 0)
             this.preInitItems();
-        
+
         // 初始化滚动方向配置
         this.isVertical = this.scrollView.vertical;
-        
+
         // 获取内容节点引用
         if (!this.content)
             this.content = this.scrollView.content;
         this.scrollViewContent = this.scrollView.content;
-        
+
         // 注册滚动事件监听
         this.scrollView.node.on(ScrollView.EventType.SCROLLING, () => {
             this.updatePos(); // 滚动时更新元素位置
@@ -306,7 +306,7 @@ export class SetList extends HackUi {
     protected async onDataChange(data: any) {
         // 将输入数据转换为标准数组（支持类数组对象）
         let a = [].concat(data);
-        
+
         // 空数据情况处理
         if (a.length == 0) {
             no.EventHandlerInfo.execute(this.onComplete);
@@ -315,10 +315,10 @@ export class SetList extends HackUi {
 
         // 标记数据更新状态防止重复操作
         this._isSettingData = true;
-        
+
         // 取消所有延迟任务确保更新顺序
         this.unscheduleAllCallbacks();
-        
+
         // 初始化列表项模板（异步加载预制体）
         await this.initTemplate();
         if (!this?.node?.isValid) return;
@@ -415,21 +415,21 @@ export class SetList extends HackUi {
             this._1b1 = false; // 重置强制更新标记
             let i = 0;
             // 使用定时器逐个更新（支持动画效果）
-            this.schedule(() => this.setItem(i++), 0.1, this.showNum - 1);
-        } 
+            this.schedule(() => this.setItem(i++), 0.1, this.showMax - 1);
+        }
         // 普通模式
         else {
             let i = 0;
             // 使用任务管理器分帧处理
             YJJobManager.ins.addTask(() => {
                 this.setItem(i++);
-                return i >= this.showNum; // 终止条件
+                return i >= this.showMax; // 终止条件
             });
         }
 
         // 安全校验节点状态
         if (!this?.node?.isValid) return;
-        
+
         // 执行完成回调
         no.EventHandlerInfo.execute(this.onComplete);
         // 释放数据更新锁
@@ -452,25 +452,25 @@ export class SetList extends HackUi {
         // 获取当前索引对应的列表项
         let item = this.content.children[i];
         let isNew = false;
-        
+
         // 如果节点不存在则创建新节点
         if (!item) {
             // 实例化模板节点并设置基础属性
             const node = instantiate(this.template);
             no.position(node, v3(0, 0));  // 重置位置
-            
+
             // 创建容器节点并配置尺寸
             const box = no.newNode('box');
             no.size(box, this.itemSize);  // 设置容器尺寸
-            
+
             // 同步锚点配置
             const a = no.anchor(node);
             no.anchor(box, a.x, a.y);  // 保持与模板相同的锚点
-            
+
             // 构建节点层级
             box.addChild(node);  // 将模板节点放入容器
             box.parent = this.content;  // 挂载到滚动容器
-            
+
             // 初始化位置并标记为新节点
             this.setItemPosition(box, i);
             item = box;
@@ -554,12 +554,12 @@ export class SetList extends HackUi {
 
         if (this.isVertical) {
             // 垂直滚动布局计算
-            p.y = -(index + 1 - itemAnchor.y) * this.itemSize.height 
-                 + contentSize.height * (1 - no.anchorY(this.content));
+            p.y = -(index + 1 - itemAnchor.y) * this.itemSize.height
+                + contentSize.height * (1 - no.anchorY(this.content));
         } else {
             // 水平滚动布局计算
-            p.x = (index + itemAnchor.x) * this.itemSize.width 
-                 - contentSize.width * no.anchorX(this.content);
+            p.x = (index + itemAnchor.x) * this.itemSize.width
+                - contentSize.width * no.anchorX(this.content);
         }
         item.setPosition(p);
     }
@@ -623,12 +623,12 @@ export class SetList extends HackUi {
         if (diff !== 0) {
             this.lastIndex = startIndex; // 更新最后已知索引
             const n = listItems.length; // 当前存在的列表项数量
-            
+
             // 使用标准for循环遍历所有列表项
             for (let i = 0; i < n; i++) {
                 const item = listItems[i];
                 const dataIndex = item['__dataIndex']; // 获取元素关联的数据索引
-                
+
                 if (diff < 0) { // 向下/向右滚动
                     // 检查元素是否超出可见范围且可以循环到顶部/左侧
                     if (dataIndex - startIndex > this.showNum - 1 && dataIndex - n >= 0) {

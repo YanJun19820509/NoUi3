@@ -183,6 +183,7 @@ export class SetSpriteFrame extends HackUi {
     public a_setEmpty(): void {
         if (this.sprite) {
             no.assetBundleManager.release(this.sprite.spriteFrame);
+            this.sprite.spriteFrame = null;
         }
     }
 

@@ -41,19 +41,19 @@ export class SetHint extends HackUi {
     @property({ tooltip: '是否显示数字数量' })
     isNumber: boolean = true;
 
-    @property({ 
-        type: Label, 
-        displayName: '显示红点数量', 
+    @property({
+        type: Label,
+        displayName: '显示红点数量',
         visible() { return this.isNumber; },
-        tooltip: '用于显示数字的Label组件（isNumber为true时生效）' 
+        tooltip: '用于显示数字的Label组件（isNumber为true时生效）'
     })
     label: Label = null;
 
-    @property({ 
-        type: YJCharLabel, 
-        displayName: '显示红点数量', 
+    @property({
+        type: YJCharLabel,
+        displayName: '显示红点数量',
         visible() { return this.isNumber; },
-        tooltip: '用于显示数字动画的CharLabel组件（isNumber为true时生效）' 
+        tooltip: '用于显示数字动画的CharLabel组件（isNumber为true时生效）'
     })
     charLabel: YJCharLabel = null;
 
@@ -67,7 +67,7 @@ export class SetHint extends HackUi {
         this._defaultShow = v;
         no.visible(this.targetNode, v);
     }
-    
+
     @property({ serializable: true })
     _defaultShow: boolean = true;
 
@@ -77,7 +77,7 @@ export class SetHint extends HackUi {
         // 默认使用当前节点作为目标节点
         this.targetNode = this.targetNode || this.node;
         // 初始化显示状态
-        if (!this.dataSetted) {
+        if (this.bind_keys && !this.dataSetted) {
             no.visible(this.targetNode, this._defaultShow);
         }
     }
@@ -94,7 +94,7 @@ export class SetHint extends HackUi {
         let v = Number(data);
         // 控制红点显隐
         no.visible(this.targetNode, v > 0);
-        
+
         // 更新数字显示
         if (this.isNumber) {
             const strData = String(data);

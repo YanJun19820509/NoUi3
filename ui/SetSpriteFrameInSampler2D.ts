@@ -250,8 +250,10 @@ export class SetSpriteFrameInSampler2D extends HackUi {
             this._singleSpriteFrame.decRef();
             this._singleSpriteFrame = null;
         }
-        // 清空精灵组件引用
-        this._sprite.spriteFrame = null;
+        if (this._sprite) {
+            // 清空精灵组件引用
+            this._sprite.spriteFrame = null;
+        }
     }
 
     /**

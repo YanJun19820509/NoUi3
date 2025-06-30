@@ -178,6 +178,7 @@ export class YJDataWork extends Component {
     public initWithData(d: any) {
         this.data = d;
         this.init();
+        return this;
     }
 
     /**
