@@ -144,7 +144,7 @@ export class YJDataWork extends Component {
     protected onLoad() {
         YJDataWorkManager.ins().add(this);
         this._loaded = true;
-        this.init();
+        // this.init();
     }
 
     /**

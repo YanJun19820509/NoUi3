@@ -496,8 +496,7 @@ export class SetCreateNode extends HackUi {
         // 数据绑定到YJDataWork组件
         let dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (dataWork) {
-            dataWork.data = data; // 注入数据
-            dataWork.init();      // 初始化数据绑定
+            dataWork.initWithData(data);
         }
 
         // 触发完成回调

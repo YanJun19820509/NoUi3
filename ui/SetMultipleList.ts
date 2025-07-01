@@ -695,8 +695,7 @@ export class SetMultipleList extends HackUi {
         // 优先使用YJDataWork组件进行数据绑定
         let b = item.getComponent(YJDataWork);
         if (b) {
-            b.data = data;
-            b.init(); // 触发数据初始化
+            b.initWithData(data);
         }
         // 兼容SetCreateNode方式
         else {

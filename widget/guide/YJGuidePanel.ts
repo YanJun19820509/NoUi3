@@ -119,7 +119,7 @@ export class YJGuidePanel extends YJPanel {
         this.dataWork.setValue('lock', info.lock == 1);
         // 如果需要持久化保存进度
         if (info.save) YJGuideManager.ins.save(info.save);
-        
+
         if (info.event) {
             // 显示对应类型的引导节点
             this.showGuideNode(info.type);
@@ -151,7 +151,7 @@ export class YJGuidePanel extends YJPanel {
     protected async showGuide(info: any) {
         if (!this?.node?.isValid) return;
         let guideNode: Node = this.guideNodeMap[info.type];
-        
+
         if (!guideNode) {
             // 获取对应引导类型的配置
             let a = no.itemOfArray<YJGuideTypeInfo>(this.guideTypes, info.type, 'type');
@@ -166,12 +166,10 @@ export class YJGuidePanel extends YJPanel {
             guideNode.parent = this.container;
             this.guideNodeMap[info.type] = guideNode;
         }
-        
+
         // 初始化数据绑定
         let b = guideNode.getComponent(YJDataWork);
-        b.clear();
-        b.data = info;
-        b.init();
+        b.clear().initWithData(info);
         this.showGuideNode(info.type);
     }
 

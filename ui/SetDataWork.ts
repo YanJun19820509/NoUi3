@@ -68,8 +68,7 @@ export class SetDataWork extends HackUi {
     protected onDataChange(data: any) {
         if (this.dataWork) {
             // 设置新数据并初始化
-            this.dataWork.data = data;
-            this.dataWork.init();
+            this.dataWork.initWithData(data);
         }
     }
 }

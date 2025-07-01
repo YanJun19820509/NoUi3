@@ -80,22 +80,20 @@ export class YJGuideManager extends Component {
      */
     onLoad() {
         YJGuideManager._ins = this;
-        if (this.jsonPath == '') {
+        if (this.isWork && this.jsonPath == '') {
             console.error('新手引导配置不可为空！');
             return;
         }
         // 处理配置文件路径（移除资源前缀和扩展名）
         let path = this.jsonPath.replace('db://assets/', '').replace('.json', '');
-        // 尝试从缓存获取配置
-        this._config = no.dataCache.getJSON(path);
-        if (!this._config)
-            // 异步加载配置文件
-            no.assetBundleManager.loadJSON(path, item => {
-                // 缓存配置数据
-                no.dataCache.setJSON({ [item.name]: item.json });
-                this._config = no.dataCache.getJSON(item.name);
-                item.decRef(); // 释放资源引用
-            });
+        // 异步加载配置文件
+        no.assetBundleManager.loadJSON(path, item => {
+            // 缓存配置数据
+            this._config = item.json;
+            item.decRef(); // 释放资源引用
+        });
+        // 初始化完成步骤记录
+        this.saveSteps = no.dataCache.getLocal('guide_steps', []);
     }
 
     /** 组件销毁时清理单例 */

@@ -135,8 +135,7 @@ export class SetCreateCacheNode extends HackUi {
         // 绑定数据到YJDataWork组件
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
-            a.data = data[i];
-            a.init();
+            a.clear().initWithData(data[i]);
         }
         no.visible(item, true);
         // 新建节点需要等待一帧继续创建（防止卡顿）
