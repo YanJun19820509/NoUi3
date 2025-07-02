@@ -211,7 +211,6 @@ export class YJGuidePanel extends YJPanel {
         if (info.next_id) {
             // 存在后续步骤时更新当前步骤ID并继续引导
             this.curStep = info.next_id;
-            this.showGuideNode('yj小僧'); // 显示默认引导节点
             this.setGuide();
         } else {
             // 没有后续步骤时关闭面板

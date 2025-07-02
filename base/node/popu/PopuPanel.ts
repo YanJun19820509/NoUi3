@@ -1,7 +1,7 @@
 import { no } from '../../../no';
 import { YJWindowManager } from '../../../base/node/YJWindowManager';
 import { PopuPanelContent } from './PopuPanelContent';
-import { AllowMultipleOpen, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../../types';
+import { AllowMultipleOpen, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from '../../../types';
 import { YJPanel } from '../../../base/node/YJPanel';
 import { YJButton } from '../../../fix/YJButton';
 import { ccclass, js, Prefab, property, Node, instantiate } from '../../../yj';
@@ -81,13 +81,13 @@ export class PopuPanel extends YJPanel {
     }
 
     private createContent(comp: typeof PopuPanelContent, data?: any) {
-        const k = comp.prototype[YJPanelPrefabMetaKey] || comp.prototype[YJPanelPrefabUuidMetaKey];
+        const k = comp.prototype[YJPanelPrefabMetaKey];
         const prefab: Prefab = no.assetBundleManager.getCachedAsset(k);
         if (prefab) {
             const node = instantiate(prefab);
             this.setContent(node, data);
         } else {
-            const request = { type: Prefab, url: comp.prototype[YJPanelPrefabMetaKey], uuid: comp.prototype[YJPanelPrefabUuidMetaKey] };
+            const request = { type: Prefab, url: comp.prototype[YJPanelPrefabMetaKey] };
             no.assetBundleManager.loadAny(request, (pf: Prefab) => {
                 if (!pf) {
                     no.err('无法加载预制体', request.url);
