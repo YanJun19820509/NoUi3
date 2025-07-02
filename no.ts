@@ -11171,7 +11171,7 @@ export namespace no {
         const dis1 = distance(line[0], point);
         const dis2 = distance(line[1], point);
         const dis3 = distance(line[0], line[1]);
-        return dis1 + dis2 <= dis3 + precision;
+        return (dis1 + dis2) <= (dis3 + precision);
     }
 }
 no.addToWindowForDebug('no', no);

@@ -1,5 +1,5 @@
 import { no } from '../../no';
-import { ccclass, requireComponent, Sprite } from '../../yj';
+import { ccclass, requireComponent, Sprite, v3, Vec3 } from '../../yj';
 import { SetScanPath } from '../scanPath/SetScanPath';
 /**
  * 挖洞效果组件
@@ -10,6 +10,10 @@ import { SetScanPath } from '../scanPath/SetScanPath';
 @requireComponent([Sprite])
 export class SetDigHole extends SetScanPath {
 
+    private _tempPos: Vec3 = v3();
+    private _isDig = false;
+    private _drawLineUv: Set<string> = new Set();
+
     protected onDataChange(data: any): void {
         const { path, digInfo } = data;
         if (path) {
@@ -17,7 +21,9 @@ export class SetDigHole extends SetScanPath {
             this.clearDataValue(`${this.bind_keys}.path`);
         }
         if (digInfo) {
-            this.digHole(digInfo.x, digInfo.y, digInfo.radius, digInfo.radian);
+            this._tempPos.set(digInfo.x, digInfo.y, 0);
+            no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
+            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
             // this.digHoleByBezier(digInfo.x, digInfo.y, digInfo.radius, digInfo.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
@@ -31,7 +37,10 @@ export class SetDigHole extends SetScanPath {
      * @param radian 挖洞方向
      */
     private digHole(x: number, y: number, radius: number, radian: number) {
+        this._isDig = true;
         this.clearPoints();
+        x -= Math.floor(radius * Math.cos(radian));
+        y -= Math.floor(radius * Math.sin(radian));
         const [centerX, centerY] = this.xyToUv(x, y);
         // 计算更新区域边界（优化性能，只处理视野范围内像素）
         const startX = Math.max(0, centerX - radius + 1);
@@ -55,77 +64,85 @@ export class SetDigHole extends SetScanPath {
 
         // 提交纹理更新
         this._updateTexture();
-        this.scanAreaPath(startX - 1, startY - 1, radius, no.radianToAngle(radian));
+        this.scanWholePixels();
     }
 
     /**
-     * 贝塞尔曲线挖洞
-     * @param x 挖洞中心X坐标
-     * @param y 挖洞中心Y坐标
-     * @param radius 挖洞半径
-     * @param radian 挖洞弧度
+     * 获取所有边缘像素时回调
+     * @param arr 像素
      */
-    private digHoleByBezier(x: number, y: number, radius: number, radian: number) {
-        const [centerX, centerY] = this.xyToUv(x, y);
-        const [startPoint, endPoint] = this.getStartEndPoints(centerX, centerY, radius, no.radianToAngle(radian));
-        if (!startPoint || !endPoint) return;
-        // const controlPoint = this.getBezierControlPoint(centerX, centerY, radius, radian);
-        const points = no.bezierPoints([startPoint, endPoint], 20);
-        // 查看贝塞尔曲线
-        // this.showPoints(points);
-        for (let i = 1; i < points.length; i++) {
-            this.digTriangleHole({ x: centerX, y: centerY }, points[i - 1], points[i]);
-        }
-        this._updateTexture();
-        let idx = 0;
-        const startU = points[0].x,
-            startV = points[0].y,
-            endU = points[points.length - 1].x,
-            endV = points[points.length - 1].y;
-        for (let i = this._path.length - 1; i >= 0; i--) {
-            const p = this._path[i];
-            if (p.u > startU && p.u < endU && p.v > startV && p.v < endV) {
-                this._path.splice(i, 1);
-                idx = i;
-            }
-        }
-        points.forEach(p => this._path.splice(idx++, 0, { u: p.x, v: p.y }));
-        this.showPoints(this._path);
-        this.updateToData();
+    protected onGetWholePixels(arr: number[][]) {
+        this.drawOutline(arr);
     }
 
-    /**
-     * 获取贝塞尔曲线控制点
-     * @param u 挖洞中心X坐标
-     * @param v 挖洞中心Y坐标
-     * @param radius 挖洞半径
-     * @param radian 挖洞弧度
-     * @returns 控制点
-     */
-    private getBezierControlPoint(u: number, v: number, radius: number, radian: number): { x: number, y: number } {
-        return { x: Math.floor(u + radius * Math.cos(radian)), y: Math.floor(v - radius * Math.sin(radian)) };
-    }
+    // /**
+    //  * 贝塞尔曲线挖洞
+    //  * @param x 挖洞中心X坐标
+    //  * @param y 挖洞中心Y坐标
+    //  * @param radius 挖洞半径
+    //  * @param radian 挖洞弧度
+    //  */
+    // private digHoleByBezier(x: number, y: number, radius: number, radian: number) {
+    //     const [centerX, centerY] = this.xyToUv(x, y);
+    //     const [startPoint, endPoint] = this.getStartEndPoints(centerX, centerY, radius, no.radianToAngle(radian));
+    //     if (!startPoint || !endPoint) return;
+    //     // const controlPoint = this.getBezierControlPoint(centerX, centerY, radius, radian);
+    //     const points = no.bezierPoints([startPoint, endPoint], 20);
+    //     // 查看贝塞尔曲线
+    //     // this.showPoints(points);
+    //     for (let i = 1; i < points.length; i++) {
+    //         this.digTriangleHole({ x: centerX, y: centerY }, points[i - 1], points[i]);
+    //     }
+    //     this._updateTexture();
+    //     let idx = 0;
+    //     const startU = points[0].x,
+    //         startV = points[0].y,
+    //         endU = points[points.length - 1].x,
+    //         endV = points[points.length - 1].y;
+    //     for (let i = this._path.length - 1; i >= 0; i--) {
+    //         const p = this._path[i];
+    //         if (p.u > startU && p.u < endU && p.v > startV && p.v < endV) {
+    //             this._path.splice(i, 1);
+    //             idx = i;
+    //         }
+    //     }
+    //     points.forEach(p => this._path.splice(idx++, 0, { u: p.x, v: p.y }));
+    //     this.showPoints(this._path);
+    //     this.updateToData();
+    // }
 
-    /**
-     * 挖三角形洞
-     * @param p1 三角形顶点1
-     * @param p2 三角形顶点2
-     * @param p3 三角形顶点3
-     */
-    private digTriangleHole(p1: { x: number, y: number }, p2: { x: number, y: number }, p3: { x: number, y: number }) {
-        const startX = Math.min(p1.x, p2.x, p3.x);
-        const startY = Math.min(p1.y, p2.y, p3.y);
-        const endX = Math.max(p1.x, p2.x, p3.x);
-        const endY = Math.max(p1.y, p2.y, p3.y);
-        // 遍历区域内的每个像素
-        for (let y = startY; y <= endY; y++) {
-            for (let x = startX; x <= endX; x++) {
-                if (!no.isPointInTriangle({ x, y }, p1, p2, p3)) continue;
+    // /**
+    //  * 获取贝塞尔曲线控制点
+    //  * @param u 挖洞中心X坐标
+    //  * @param v 挖洞中心Y坐标
+    //  * @param radius 挖洞半径
+    //  * @param radian 挖洞弧度
+    //  * @returns 控制点
+    //  */
+    // private getBezierControlPoint(u: number, v: number, radius: number, radian: number): { x: number, y: number } {
+    //     return { x: Math.floor(u + radius * Math.cos(radian)), y: Math.floor(v - radius * Math.sin(radian)) };
+    // }
 
-                this.setPixelAlpha(x, y);
-            }
-        }
-    }
+    // /**
+    //  * 挖三角形洞
+    //  * @param p1 三角形顶点1
+    //  * @param p2 三角形顶点2
+    //  * @param p3 三角形顶点3
+    //  */
+    // private digTriangleHole(p1: { x: number, y: number }, p2: { x: number, y: number }, p3: { x: number, y: number }) {
+    //     const startX = Math.min(p1.x, p2.x, p3.x);
+    //     const startY = Math.min(p1.y, p2.y, p3.y);
+    //     const endX = Math.max(p1.x, p2.x, p3.x);
+    //     const endY = Math.max(p1.y, p2.y, p3.y);
+    //     // 遍历区域内的每个像素
+    //     for (let y = startY; y <= endY; y++) {
+    //         for (let x = startX; x <= endX; x++) {
+    //             if (!no.isPointInTriangle({ x, y }, p1, p2, p3)) continue;
+
+    //             this.setPixelAlpha(x, y);
+    //         }
+    //     }
+    // }
 
     /**
      * 设置像素透明度
@@ -139,6 +156,69 @@ export class SetDigHole extends SetScanPath {
             this._textureBuffer[i] = alpha;
         else {
             console.error('setPixelAlpha null', u, v);
+        }
+    }
+
+    /**
+     * 绘制轮廓
+     * @param arr 轮廓点
+     */
+    private drawOutline(arr: number[][]) {
+        for (let k = 0, n = arr.length; k < n; k++) {
+            const [u, v] = arr[k];
+            for (let i = u - 3, m = u + 3; i <= m; i++) {
+                for (let j = v - 3, m = v + 3; j <= m; j++) {
+                    if (this.isPixelAlpha0(i, j)) continue;
+                    const idx = this.uvToPixelIndex(i, j);
+                    this._textureBuffer[idx] = 0;
+                    this._textureBuffer[idx + 1] = 0;
+                    this._textureBuffer[idx + 2] = 0;
+                    this._textureBuffer[idx + 3] = 255;
+                }
+            }
+            this.drawRandomLine(u, v);
+        }
+        this._updateTexture();
+    }
+
+    /**
+     * 绘制随机线
+     * @param u 起点X坐标
+     * @param v 起点Y坐标
+     */
+    private drawRandomLine(u: number, v: number) {
+        if (!this._isDig) {
+            this._drawLineUv.add(`${u},${v}`);
+            return;
+        }
+        if (this._drawLineUv.has(`${u},${v}`)) return;
+        this._drawLineUv.add(`${u},${v}`);
+        if (Math.random() > .8) return;
+        const angle = Math.random() * Math.PI * 2;
+        const length = Math.random() * 10 + 10;
+        const startX = u + Math.cos(angle) * length;
+        const startY = v + Math.sin(angle) * length;
+        const endX = u - Math.cos(angle) * length;
+        const endY = v - Math.sin(angle) * length;
+        const points = no.bezierPoints([{ x: startX, y: startY }, { x: endX, y: endY }], 20);
+        for (let i = 1; i < points.length; i++) {
+            const p1 = points[i - 1];
+            const p2 = points[i];
+            this.drawLine(p1.x, p1.y, p2.x, p2.y);
+        }
+        // this.drawLine(startX, startY, endX, endY);
+    }
+
+    private drawLine(u1: number, v1: number, u2: number, v2: number) {
+        const dy = (v2 - v1) / (u2 - u1);
+        for (let u = u1; u <= u2; u++) {
+            const v = v1 + Math.floor(dy * (u - u1));
+            if (this.isPixelAlpha0(u, v)) continue;
+            const idx = this.uvToPixelIndex(u, v);
+            this._textureBuffer[idx] = 0;
+            this._textureBuffer[idx + 1] = 0;
+            this._textureBuffer[idx + 2] = 0;
+            this._textureBuffer[idx + 3] = 255;
         }
     }
 }
