@@ -354,7 +354,7 @@ export class SetScanPath extends HackUi {
             }
         }
         this.onGetWholePixels(arr);
-        while (arr.length > 0) {
+        while (arr.length > 2) {
             const path = this.splitPath(arr);
             if (path.length > 1) {
                 this._pathes.push(path);

@@ -11173,5 +11173,39 @@ export namespace no {
         const dis3 = distance(line[0], line[1]);
         return (dis1 + dis2) <= (dis3 + precision);
     }
+
+    /**
+     * 旋转点
+     * @param point 点
+     * @param radian 旋转角度
+     * @returns 旋转后的点
+     */
+    export function rotatePoint(point: { x: number, y: number }, radian: number) {
+        const cos = Math.cos(radian);
+        const sin = Math.sin(radian);
+        return {
+            x: Math.ceil(point.x * cos + point.y * sin),
+            y: Math.ceil(-point.x * sin + point.y * cos)
+        }
+    }
+
+    /**
+     * 以中心点旋转点
+     * @param point 点
+     * @param center 中心点
+     * @param radian 旋转角度
+     * @returns 旋转后的点
+     */
+    export function rotatePointByCenter(point: { x: number, y: number }, center: { x: number, y: number }, radian: number) {
+        const translated = {
+            x: point.x - center.x,
+            y: point.y - center.y
+        }
+        const rotated = rotatePoint(translated, radian);
+        return {
+            x: rotated.x + center.x,
+            y: rotated.y + center.y
+        }
+    }
 }
 no.addToWindowForDebug('no', no);

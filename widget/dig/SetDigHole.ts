@@ -24,13 +24,13 @@ export class SetDigHole extends SetScanPath {
             this._tempPos.set(digInfo.x, digInfo.y, 0);
             no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
             this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
-            // this.digHoleByBezier(digInfo.x, digInfo.y, digInfo.radius, digInfo.radian);
+            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
     }
 
     /**
-     * 挖洞
+     * 挖圆洞
      * @param x 挖洞中心X坐标
      * @param y 挖洞中心Y坐标
      * @param radius 挖洞半径
@@ -39,8 +39,6 @@ export class SetDigHole extends SetScanPath {
     private digHole(x: number, y: number, radius: number, radian: number) {
         this._isDig = true;
         this.clearPoints();
-        x -= Math.floor(radius * Math.cos(radian));
-        y -= Math.floor(radius * Math.sin(radian));
         const [centerX, centerY] = this.xyToUv(x, y);
         // 计算更新区域边界（优化性能，只处理视野范围内像素）
         const startX = Math.max(0, centerX - radius + 1);
@@ -51,14 +49,8 @@ export class SetDigHole extends SetScanPath {
         // 遍历区域内的每个像素
         for (let y = startY; y <= endY; y++) {
             for (let x = startX; x <= endX; x++) {
-                // 计算像素到中心的距离
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-
-                if (distance > radius) continue;
-
-                this.setPixelAlpha(x, y);
+                if (this.isInCircle(x, y, centerX, centerY, radius))
+                    this.setPixelAlpha(x, y);
             }
         }
 
@@ -68,11 +60,81 @@ export class SetDigHole extends SetScanPath {
     }
 
     /**
+     * 挖椭圆洞
+     * @param x 挖洞中心X坐标
+     * @param y 挖洞中心Y坐标
+     * @param radius 挖洞半径
+     * @param radian 挖洞方向
+     */
+    private digEllipseHole(x: number, y: number, radius: number, radian: number) {
+        this._isDig = true;
+        this.clearPoints();
+        const [centerX, centerY] = this.xyToUv(x, y);
+        const a = radius,
+            b = radius * .5;
+        const rotatedPoints: { x: number, y: number }[] = [];
+        for (let i = -1; i <= 1; i += 2) {
+            for (let j = -1; j <= 1; j += 2) {
+                rotatedPoints.push(no.rotatePointByCenter({ x: centerX + i * a, y: centerY + j * b }, { x: centerX, y: centerY }, radian));
+            }
+        }
+        const startX = Math.max(Math.min(...rotatedPoints.map(p => p.x)), 0);
+        const endX = Math.min(Math.max(...rotatedPoints.map(p => p.x)), this._size.width - 1);
+        const startY = Math.max(Math.min(...rotatedPoints.map(p => p.y)), 0);
+        const endY = Math.min(Math.max(...rotatedPoints.map(p => p.y)), this._size.height - 1);
+        for (let y = startY; y <= endY; y++) {
+            for (let x = startX; x <= endX; x++) {
+                if (this.isInEllipse(x, y, centerX, centerY, a, b, -radian))
+                    this.setPixelAlpha(x, y);
+            }
+        }
+        this._updateTexture();
+        this.scanWholePixels();
+    }
+
+    /**
+     * 判断点是否在圆内
+     * @param x 点X坐标
+     * @param y 点Y坐标
+     * @param centerX 圆心X坐标
+     * @param centerY 圆心Y坐标
+     * @param radius 圆半径
+     * @returns 是否在圆内
+     */
+    private isInCircle(x: number, y: number, centerX: number, centerY: number, radius: number) {
+        const dx = x - centerX;
+        const dy = y - centerY;
+        return dx * dx + dy * dy <= radius * radius;
+    }
+
+    /**
+     * 判断点是否在椭圆内
+     * @param x 点X坐标
+     * @param y 点Y坐标
+     * @param centerX 椭圆中心X坐标
+     * @param centerY 椭圆中心Y坐标
+     * @param radiusX 椭圆X半径
+     * @param radiusY 椭圆Y半径
+     * @param radian 椭圆旋转角度
+     * @returns 是否在椭圆内
+     */
+    private isInEllipse(x: number, y: number, centerX: number, centerY: number, radiusX: number, radiusY: number, radian: number) {
+        // // 平移点，使椭圆中心为原点
+        const translatedX = x - centerX;
+        const translatedY = y - centerY;
+
+        // // 旋转点的坐标
+        const rotated = no.rotatePoint({ x: translatedX, y: translatedY }, radian);
+        // // 应用椭圆方程
+        return rotated.x ** 2 / radiusX ** 2 + rotated.y ** 2 / radiusY ** 2 <= 1;
+    }
+
+    /**
      * 获取所有边缘像素时回调
      * @param arr 像素
      */
     protected onGetWholePixels(arr: number[][]) {
-        this.drawOutline(arr);
+        // this.drawOutline(arr);
     }
 
     // /**
