@@ -1,3 +1,4 @@
+import { YJJobManager } from '../../base/YJJobManager';
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { no } from '../../no';
 import { HackUi } from '../../ui/HackUi';
@@ -26,10 +27,26 @@ export class SetScanPath extends HackUi {
     protected _size: { width: number, height: number };
     protected _pathes: { u: number, v: number }[][] = [];
     protected _pathPoints: { idx: number, r: number, g: number, b: number, a: number }[] = [];
-    //上右下左
-    protected _dir4 = [{ x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }];
+    //左上右下
+    protected _dir4 = [{ x: -1, y: 0 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
     //上、右上、右、右下、下、左下、左、左上
     protected _dir8 = [{ x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: -1, y: -1 }];
+
+    // 非透明像素
+    protected _noAlpha0PixelsMap: Map<string, number[]> = new Map();
+    protected _noAlpha0PixelsArr: string[] = [];
+    protected _pixelSet: Set<string> = new Set();
+    protected _pixelArr: number[][] = [];
+    /**
+     * 0: 无操作
+     * 1: 扫描中
+     * 2: 剔除孤立像素
+     * 3: 描绘边缘
+     * 4: 解析路径
+     * 5: 更新纹理
+     */
+    protected _state = 0;
+    protected _doing = false;
 
     protected onDestroy(): void {
         this._spriteFrame?.destroy();
@@ -66,302 +83,119 @@ export class SetScanPath extends HackUi {
         this._spriteFrame.texture = this._texture;
         this._sprite.spriteFrame = this._spriteFrame;
         texture.decRef();
-        // this.scanWholePath();
-        // this.scanWholePathByPixel();
-        this.scanWholePixels();
+        this.initNoAlpha0Pixels();
+        this.updateScanState();
     }
 
-    // /**
-    //  * 扫描整个路径
-    //  */
-    // protected scanWholePath() {
-    //     this._pathes.length = 0;
-    //     let len = 0;
-    //     for (let x1 = 0; x1 < this._size.width; x1 += this.step) {
-    //         for (let y1 = 0; y1 < this._size.height; y1++) {
-    //             if (this.isPath(x1, y1)) {
-    //                 this._pathes[len++] = { u: x1, v: y1 };
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     this.showPath(this._pathes);
-    //     this.updateToData();
-    // }
+    protected lateUpdate(dt: number): void {
+        if (this._state == 0 || this._doing) return;
+        this._doing = true;
+        switch (this._state) {
+            case 1:
+                this.scanWholePixels();
+                break;
+            case 2:
+                this.removeIsolatedPixels();
+                break;
+            case 3:
+                this.onGetWholePixels();
+                break;
+            case 4:
+                this.parsePath();
+                break;
+            case 5:
+                this._updateTexture();
+                this.updateScanState();
+                break;
+        }
+    }
 
-    // /**
-    //  * 扫描指定区域路径
-    //  * @param u 区域X坐标
-    //  * @param v 区域Y坐标
-    //  * @param width 区域宽度
-    //  * @param height 区域高度
-    //  * @param angle 区域方向
-    //  */
-    // protected scanAreaPath(u: number, v: number, radius: number, angle: number) {
-    //     let idx = 0;
-    //     const endU = u + radius * 2,
-    //         endV = v + radius * 2;
-    //     for (let i = this._pathes.length - 1; i >= 0; i--) {
-    //         const p = this._pathes[i];
-    //         if (p.u > u && p.u < endU && p.v > v && p.v < endV) {
-    //             this._pathes.splice(i, 1);
-    //             idx = i;
-    //         }
-    //     }
-    //     const centerU = u + radius,
-    //         centerV = v + radius;
-    //     const startPoints = this.getStartEndPoints(centerU, centerV, radius, angle);
-    //     if (startPoints.length < 2) return;
-    //     const step = 10;
-    //     const path: { u: number, v: number, angle: number }[] = [];
-    //     let len = 0, tempY: number, angleMax: number;
-    //     for (let u1 = u; u1 <= endU; u1 += step) {
-    //         tempY = null;
-    //         for (let v1 = v; v1 < endV; v1++) {
-    //             if (this.isPath(u1, v1)) {
-    //                 // if (tempY == null || v1 - tempY >= 10) tempY = v1;
-    //                 // else continue;
-    //                 const distance = no.distance({ x: u1, y: v1 }, { x: centerU, y: centerV });
-    //                 if (distance > radius + 3) continue;
-    //                 let a = this.angleTo(centerU, centerV, u1, v1);
-    //                 if (a == 0) {
-    //                     if (u1 < centerU) a = 180;
-    //                     else a = 360;
-    //                 }
-    //                 if (angleMax == null || a > angleMax) angleMax = a;
-    //                 else if (angleMax > 270 && a < 180) a += 360;
-    //                 path[len++] = { u: u1, v: v1, angle: a };
-    //             }
-    //         }
-    //     }
-    //     this.sortPoints(path, angle);
-    //     // if (path[0].u != startPoints[0].u || path[0].u != startPoints[1].u) {
-    //     //     path.unshift({ u: startPoints[0].u, v: startPoints[0].v, angle: 0 });
-    //     // }
-    //     // if (path[path.length - 1].u != startPoints[1].u || path[path.length - 1].u != startPoints[0].u) {
-    //     //     path.push({ u: startPoints[1].u, v: startPoints[1].v, angle: 0 });
-    //     // }
-    //     path.forEach(p => this._pathes.splice(idx++, 0, p));
+    protected initNoAlpha0Pixels() {
+        this._noAlpha0PixelsMap.clear();
+        this._noAlpha0PixelsArr.length = 0;
+        for (let i = 0; i < this._size.width; i++) {
+            for (let j = 0; j < this._size.height; j++) {
+                if (this.isPixelAlpha0(i, j)) continue;
+                const key = `${i}-${j}`;
+                this._noAlpha0PixelsMap.set(key, [i, j]);
+            }
+        }
+    }
 
-    //     //去重
-    //     const step1 = step / 2;
-    //     for (let i = this._pathes.length - 1; i >= 1; i--) {
-    //         const x = this._pathes[i].u - this._pathes[i - 1].u;
-    //         const y = this._pathes[i].v - this._pathes[i - 1].v;
-    //         if (x > -step1 && x < step1 && y > -step1 && y < step1) {
-    //             this._pathes.splice(i, 1);
-    //         }
-    //     }
-    //     this.showPoints(this._pathes);
-    //     this.updateToData();
-    // }
-
-    // /**
-    //  * 获取贝塞尔曲线起点和终点, 
-    //  * @param u 挖洞中心X坐标
-    //  * @param v 挖洞中心Y坐标
-    //  * @param radius 挖洞半径
-    //  */
-    // protected getStartEndPoints(u: number, v: number, radius: number, middleAngle: number): { x: number, y: number, u: number, v: number, angle: number }[] {
-    //     const points = [];
-    //     const minX = u - radius;
-    //     const maxX = u + radius;
-    //     const minY = v - radius;
-    //     const maxY = v + radius;
-    //     let b: boolean;
-    //     for (let i = minX; i <= maxX; i++) {
-    //         const a = this.isPixelAlpha0(i, minY);
-    //         if (i == minX) b = a;
-    //         else if (b != a) {
-    //             const angle = this.angleTo(u, v, i, minY);
-    //             points.push({ x: i, y: minY, u: i, v: minY, angle });
-    //             break;
-    //         }
-    //     }
-    //     for (let i = minX; i <= maxX; i++) {
-    //         const a = this.isPixelAlpha0(i, maxY);
-    //         if (i == minX) b = a;
-    //         else if (b != a) {
-    //             const angle = this.angleTo(u, v, i, maxY);
-    //             points.push({ x: i, y: maxY, u: i, v: maxY, angle });
-    //             break;
-    //         }
-    //     }
-    //     if (points.length < 2) {
-    //         for (let i = minY; i <= maxY; i++) {
-    //             const a = this.isPixelAlpha0(minX, i);
-    //             if (i == minY) b = a;
-    //             else if (b != a) {
-    //                 const angle = this.angleTo(u, v, minX, i);
-    //                 points.push({ x: minX, y: i, u: minX, v: i, angle });
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     if (points.length < 2) {
-    //         for (let i = minY; i <= maxY; i++) {
-    //             const a = this.isPixelAlpha0(maxX, i);
-    //             if (i == minY) b = a;
-    //             else if (b != a) {
-    //                 const angle = this.angleTo(u, v, maxX, i);
-    //                 points.push({ x: maxX, y: i, u: maxX, v: i, angle });
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     if (points.length == 2) {
-    //         //判断起点和终点
-    //         const minAngle = middleAngle - 90;
-    //         const maxAngle = middleAngle + 90;
-    //         for (let i = 0; i < 2; i++) {
-    //             const { angle } = points[i];
-    //             //起点
-    //             if (angle > minAngle && angle < middleAngle) {
-    //                 if (i == 1) {
-    //                     const t = points[0];
-    //                     points[0] = points[1];
-    //                     points[1] = t;
-    //                 }
-    //                 break;
-    //             }
-    //             //终点
-    //             else if (angle > middleAngle && angle < maxAngle) {
-    //                 if (i == 0) {
-    //                     const t = points[0];
-    //                     points[0] = points[1];
-    //                     points[1] = t;
-    //                 }
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     return points;
-    // }
-
-    // /**
-    //  * 排序点,角度范围为[0,360]，
-    //  * @param points 点
-    //  * @param middleAngle 中间角度
-    //  */
-    // protected sortPoints(points: { u: number, v: number, angle: number }[], middleAngle: number) {
-    //     if (middleAngle <= 90 || middleAngle >= 270) {
-    //         for (let i = 0, n = points.length; i < n; i++) {
-    //             const p = points[i];
-    //             if (p.angle <= 90) {
-    //                 p.angle += 360;
-    //             }
-    //         }
-    //     }
-    //     no.sortArray(points, (a, b) => {
-    //         return a.angle - b.angle;
-    //     });
-    // }
-
-    // /**
-    //  * 像素扫描路径
-    //  */
-    // protected scanWholePathByPixel() {
-    //     this._pathes.length = 0;
-    //     const tempPath: string[] = [];
-    //     let len = 0;
-    //     for (let x1 = 0; x1 < this._size.width; x1++) {
-    //         if (len > 0) break;
-    //         for (let y1 = 0; y1 < this._size.height; y1++) {
-    //             if (this.isPath(x1, y1)) {
-    //                 this._pathes[len++] = { u: x1, v: y1 };
-    //                 tempPath.push(`${x1}-${y1}`);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     let curP = this._pathes[0];
-    //     let n = this.step;
-    //     while (curP.u + 1 < this._size.width) {
-    //         for (let i = 0; i < 8; i++) {
-    //             const d = this._dir8[i];
-    //             const p = { u: curP.u + d.x, v: curP.v + d.y };
-    //             if (tempPath.includes(`${p.u}-${p.v}`)) continue;
-    //             if (this.isPath(p.u, p.v)) {
-    //                 if (--n == 0) {
-    //                     this._pathes[len++] = p;
-    //                     n = this.step;
-    //                 }
-    //                 curP = p;
-    //                 tempPath.push(`${p.u}-${p.v}`);
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     this.showPoints(this._pathes);
-    //     this.updateToData();
-    // }
-
-    // protected scanAreaPathByPixel(start: number, end: number) {
-    //     let idx = 0;
-    //     for (let i = this._pathes.length - 1; i >= 0; i--) {
-    //         const p = this._pathes[i];
-    //         if (p.u > start && p.u < end + 30) {
-    //             this._pathes.splice(i, 1);
-    //             idx = i;
-    //         }
-    //     }
-    //     const endP = this._pathes[idx + 1];
-    //     const tempPath: string[] = [];
-    //     let len = 0;
-    //     const path: { u: number, v: number }[] = [];
-    //     let curU = this._pathes[idx - 1].u;
-    //     let curV = this._pathes[idx - 1].v;
-    //     let n = this.step;
-    //     let set = false;
-    //     while (curU != endP.u && curV != endP.v && curU < this._size.width) {
-    //         set = false;
-    //         for (let i = 0; i < 8; i++) {
-    //             const d = this._dir8[i];
-    //             const p = { u: curU + d.x, v: curV + d.y };
-    //             if (tempPath.includes(`${p.u}-${p.v}`)) continue;
-    //             if (this.isPath(p.u, p.v)) {
-    //                 if (--n == 0) {
-    //                     path[len++] = p;
-    //                     n = this.step;
-    //                 }
-    //                 set = true;
-    //                 curU = p.u;
-    //                 curV = p.v;
-    //                 tempPath.push(`${p.u}-${p.v}`);
-    //                 break;
-    //             }
-    //         }
-    //         if (!set) {
-    //             curU += 1;
-    //         }
-    //     }
-    //     path.forEach(p => this._pathes.splice(idx++, 0, p));
-    //     this.showPoints(this._pathes);
-    //     this.updateToData();
-    // }
+    protected deleteFromNoAlpha0Pixels(u: number, v: number) {
+        this._noAlpha0PixelsArr[this._noAlpha0PixelsArr.length] = `${u}-${v}`;
+    }
 
     /**
      * 扫描所有像素，找到边缘像素
      */
     protected scanWholePixels() {
         this._pathes.length = 0;
-        const arr: number[][] = [];
-        for (let i = 0; i < this._size.width; i++) {
-            for (let j = 0; j < this._size.height; j++) {
-                if (this.isPath(i, j)) {
-                    arr.push([i, j]);
-                }
+        this._pixelSet.clear();
+        this._pixelArr.length = 0;
+        for (let i = 0, n = this._noAlpha0PixelsArr.length; i < n; i++) {
+            const key = this._noAlpha0PixelsArr[i];
+            this._noAlpha0PixelsMap.delete(key);
+        }
+        this._noAlpha0PixelsArr.length = 0;
+        for (const [key, value] of this._noAlpha0PixelsMap) {
+            if (this.isPath(value[0], value[1])) {
+                this._pixelArr[this._pixelArr.length] = value;
+                this._pixelSet.add(key);
             }
         }
-        this.onGetWholePixels(arr);
-        while (arr.length > 2) {
-            const path = this.splitPath(arr);
+        this.updateScanState();
+    }
+
+    /**
+     * 剔除孤立像素
+     */
+    protected removeIsolatedPixels() {
+        let newArr: number[][] = [];
+
+        // 检查每个像素的邻居
+        for (let i = 0, n = this._pixelArr.length; i < n; i++) {
+            const p = this._pixelArr[i];
+            let neighborCount = 0;
+
+            // 检查8个方向的邻居
+            for (let j = 0; j < 8; j++) {
+                const d = this._dir8[j];
+                const neighborKey = `${p[0] + d.x}-${p[1] + d.y}`;
+
+                if (this._pixelSet.has(neighborKey)) {
+                    neighborCount++;
+                    // 如果已经有3个邻居，可以提前退出内层循环
+                    if (neighborCount >= 3) {
+                        newArr[newArr.length] = p;
+                        break;
+                    }
+                }
+            }
+            //邻居至少得有3个，如果按2个邻居判定为孤立，它的下一个邻居被判定为孤立而删除后，它自己也会变成孤立
+            if (neighborCount < 3) {
+                this._pixelSet.delete(`${p[0]}-${p[1]}`);
+            }
+        }
+
+        this._pixelArr = newArr;
+        newArr = null;
+        this.updateScanState();
+    }
+
+    /**
+     * 解析路径
+     */
+    protected parsePath() {
+        while (this._pixelSet.size > 2) {
+            const path = this.splitPath();
             if (path.length > 1) {
                 this._pathes.push(path);
             }
         }
         this.showPath(this._pathes);
         this.updateToData();
+        this.updateScanState();
     }
 
     /**
@@ -369,39 +203,48 @@ export class SetScanPath extends HackUi {
      * @param arr 边缘像素
      * @returns 路径
      */
-    protected splitPath(arr: number[][]) {
-        const path: { u: number, v: number }[] = [{ u: arr[0][0], v: arr[0][1] }];
-        arr.splice(0, 1);
-        let a = false;
+    protected splitPath() {
+        if (this._pixelSet.size === 0) return [];
+        const key = this._pixelSet.values().next().value;
+        const [u, v] = this._noAlpha0PixelsMap.get(key);
+        const path: { u: number, v: number }[] = [{ u, v }];
+        this._pixelSet.delete(key);
+
         let n = this.step;
         let cur = path[0];
-        do {
-            a = false;
+
+        while (true) {
+            let found = false;
+
+            // 检查8个方向的邻居
             for (let i = 0; i < 8; i++) {
                 const d = this._dir8[i];
                 const p1 = { u: cur.u + d.x, v: cur.v + d.y };
-                const idx = arr.findIndex(p => p[0] == p1.u && p[1] == p1.v);
-                if (idx != -1) {
-                    if (--n == 0) {
-                        path[path.length] = p1;
+                const key = `${p1.u}-${p1.v}`;
+
+                if (this._pixelSet.has(key)) {
+                    // 从Set中移除已访问的点
+                    this._pixelSet.delete(key);
+                    if (--n === 0) {
+                        path.push(p1);
                         n = this.step;
                     }
-                    arr.splice(idx, 1);
+
                     cur = p1;
-                    a = true;
+                    found = true;
                     break;
                 }
             }
-        } while (a);
+
+            if (!found) break;
+        }
+
         return path;
     }
 
     protected isPath(u: number, v: number) {
-        let a = this.isPixelAlpha0(u, v);
-        if (a) return false;
-        for (let i = 0, n = this._dir4.length; i < n; i++) {
-            const d = this._dir4[i];
-            if (this.isPixelAlpha0(u + d.x, v + d.y)) return true;
+        for (let i = 0; i < 4; i++) {
+            if (this.isPixelAlpha0(u + this._dir4[i].x, v + this._dir4[i].y)) return true;
         }
         return false;
     }
@@ -456,11 +299,12 @@ export class SetScanPath extends HackUi {
      * @returns 透明度索引
      */
     protected alphaIndex(u: number, v: number) {
-        return (v * this._size.width + u) * 4 + 3;
+        return this.uvToPixelIndex(u, v) + 3;
     }
 
     protected showPath(path: { u: number, v: number }[][]) {
         if (!this.showPathPoints) return;
+        no.unschedule(this);
         this._pathPoints.length = 0;
         for (let i = 0, n = path.length; i < n; i++) {
             this.showPoints(path[i]);
@@ -475,7 +319,7 @@ export class SetScanPath extends HackUi {
         let i = 0;
         const r = Math.random() * 255,
             g = Math.random() * 255,
-            b = Math.random() * 255;
+            b = 255;
         no.schedule(() => {
             const p = points[i++];
             if (!p) return;
@@ -585,11 +429,20 @@ export class SetScanPath extends HackUi {
     }
 
     /**
-     * 获取所有边缘像素时回调
+     * 更新扫描状态
+     */
+    protected updateScanState() {
+        this._state++;
+        this._doing = false;
+        if (this._state > 5) this._state = 0;
+    }
+
+    /**
+     * 获取所有边缘像素时回调,默认执行updateState操作，子类重写也要调用updateState
      * @param arr 像素
      */
-    protected onGetWholePixels(arr: number[][]) {
-
+    protected onGetWholePixels() {
+        this.updateScanState();
     }
 }
 

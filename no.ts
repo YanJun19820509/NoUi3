@@ -11181,6 +11181,7 @@ export namespace no {
      * @returns 旋转后的点
      */
     export function rotatePoint(point: { x: number, y: number }, radian: number) {
+        if (radian == 0) return point;
         const cos = Math.cos(radian);
         const sin = Math.sin(radian);
         return {

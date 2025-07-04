@@ -13,6 +13,7 @@ export class SetDigHole extends SetScanPath {
     private _tempPos: Vec3 = v3();
     private _isDig = false;
     private _drawLineUv: Set<string> = new Set();
+    private _drawOutlineUv: Set<string> = new Set();
 
     protected onDataChange(data: any): void {
         const { path, digInfo } = data;
@@ -23,9 +24,10 @@ export class SetDigHole extends SetScanPath {
         if (digInfo) {
             this._tempPos.set(digInfo.x, digInfo.y, 0);
             no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
-            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
-            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
+            // this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
+            this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
+            this.updateScanState();
         }
     }
 
@@ -36,7 +38,7 @@ export class SetDigHole extends SetScanPath {
      * @param radius 挖洞半径
      * @param radian 挖洞方向
      */
-    private digHole(x: number, y: number, radius: number, radian: number) {
+    private digHole(x: number, y: number, radius: number) {
         this._isDig = true;
         this.clearPoints();
         const [centerX, centerY] = this.xyToUv(x, y);
@@ -53,10 +55,6 @@ export class SetDigHole extends SetScanPath {
                     this.setPixelAlpha(x, y);
             }
         }
-
-        // 提交纹理更新
-        this._updateTexture();
-        this.scanWholePixels();
     }
 
     /**
@@ -66,30 +64,44 @@ export class SetDigHole extends SetScanPath {
      * @param radius 挖洞半径
      * @param radian 挖洞方向
      */
-    private digEllipseHole(x: number, y: number, radius: number, radian: number) {
+    private digEllipseHole(x: number, y: number, radius: number, radian?: number) {
         this._isDig = true;
         this.clearPoints();
         const [centerX, centerY] = this.xyToUv(x, y);
         const a = radius,
             b = radius * .5;
-        const rotatedPoints: { x: number, y: number }[] = [];
-        for (let i = -1; i <= 1; i += 2) {
-            for (let j = -1; j <= 1; j += 2) {
-                rotatedPoints.push(no.rotatePointByCenter({ x: centerX + i * a, y: centerY + j * b }, { x: centerX, y: centerY }, radian));
+        if (radian) {
+            const rotatedPoints: { x: number, y: number }[] = [];
+            for (let i = -1; i <= 1; i += 2) {
+                for (let j = -1; j <= 1; j += 2) {
+                    rotatedPoints.push(no.rotatePointByCenter({ x: centerX + i * a, y: centerY + j * b }, { x: centerX, y: centerY }, radian));
+                }
+            }
+            const startX = Math.max(Math.min(...rotatedPoints.map(p => p.x)), 0);
+            const endX = Math.min(Math.max(...rotatedPoints.map(p => p.x)), this._size.width - 1);
+            const startY = Math.max(Math.min(...rotatedPoints.map(p => p.y)), 0);
+            const endY = Math.min(Math.max(...rotatedPoints.map(p => p.y)), this._size.height - 1);
+            for (let y = startY; y <= endY; y++) {
+                for (let x = startX; x <= endX; x++) {
+                    if (this.isInEllipse(x, y, centerX, centerY, a, b, -radian))
+                        this.setPixelAlpha(x, y);
+                }
+            }
+        } else {
+            // 计算更新区域边界（优化性能，只处理视野范围内像素）
+            const startX = Math.max(0, centerX - a + 1);
+            const endX = Math.min(this._size.width - 1, centerX + a - 1);
+            const startY = Math.max(0, centerY - b + 1);
+            const endY = Math.min(this._size.height - 1, centerY + b - 1);
+
+            // 遍历区域内的每个像素
+            for (let y = startY; y <= endY; y++) {
+                for (let x = startX; x <= endX; x++) {
+                    if (this.isInEllipse(x, y, centerX, centerY, a, b, radian))
+                        this.setPixelAlpha(x, y);
+                }
             }
         }
-        const startX = Math.max(Math.min(...rotatedPoints.map(p => p.x)), 0);
-        const endX = Math.min(Math.max(...rotatedPoints.map(p => p.x)), this._size.width - 1);
-        const startY = Math.max(Math.min(...rotatedPoints.map(p => p.y)), 0);
-        const endY = Math.min(Math.max(...rotatedPoints.map(p => p.y)), this._size.height - 1);
-        for (let y = startY; y <= endY; y++) {
-            for (let x = startX; x <= endX; x++) {
-                if (this.isInEllipse(x, y, centerX, centerY, a, b, -radian))
-                    this.setPixelAlpha(x, y);
-            }
-        }
-        this._updateTexture();
-        this.scanWholePixels();
     }
 
     /**
@@ -126,15 +138,18 @@ export class SetDigHole extends SetScanPath {
         // // 旋转点的坐标
         const rotated = no.rotatePoint({ x: translatedX, y: translatedY }, radian);
         // // 应用椭圆方程
-        return rotated.x ** 2 / radiusX ** 2 + rotated.y ** 2 / radiusY ** 2 <= 1;
+        const a = rotated.x / radiusX;
+        const b = rotated.y / radiusY;
+        return a * a + b * b <= 1;
     }
 
     /**
      * 获取所有边缘像素时回调
      * @param arr 像素
      */
-    protected onGetWholePixels(arr: number[][]) {
-        // this.drawOutline(arr);
+    protected onGetWholePixels() {
+        this.drawOutline();
+        this.updateScanState();
     }
 
     // /**
@@ -155,7 +170,6 @@ export class SetDigHole extends SetScanPath {
     //     for (let i = 1; i < points.length; i++) {
     //         this.digTriangleHole({ x: centerX, y: centerY }, points[i - 1], points[i]);
     //     }
-    //     this._updateTexture();
     //     let idx = 0;
     //     const startU = points[0].x,
     //         startV = points[0].y,
@@ -214,9 +228,10 @@ export class SetDigHole extends SetScanPath {
      */
     private setPixelAlpha(u: number, v: number, alpha = 0) {
         const i = this.alphaIndex(u, v);
-        if (this._textureBuffer[i] != null)
+        if (this._textureBuffer[i] != null) {
             this._textureBuffer[i] = alpha;
-        else {
+            this.deleteFromNoAlpha0Pixels(u, v);
+        } else {
             console.error('setPixelAlpha null', u, v);
         }
     }
@@ -225,22 +240,23 @@ export class SetDigHole extends SetScanPath {
      * 绘制轮廓
      * @param arr 轮廓点
      */
-    private drawOutline(arr: number[][]) {
-        for (let k = 0, n = arr.length; k < n; k++) {
-            const [u, v] = arr[k];
+    private drawOutline() {
+        for (let k = 0, n = this._pixelArr.length; k < n; k++) {
+            const [u, v] = this._pixelArr[k];
             for (let i = u - 3, m = u + 3; i <= m; i++) {
                 for (let j = v - 3, m = v + 3; j <= m; j++) {
                     if (this.isPixelAlpha0(i, j)) continue;
+                    if (this._drawOutlineUv.has(`${i},${j}`)) continue;
+                    this._drawOutlineUv.add(`${i},${j}`);
                     const idx = this.uvToPixelIndex(i, j);
                     this._textureBuffer[idx] = 0;
                     this._textureBuffer[idx + 1] = 0;
                     this._textureBuffer[idx + 2] = 0;
                     this._textureBuffer[idx + 3] = 255;
+                    this.drawRandomLine(i, j);
                 }
             }
-            this.drawRandomLine(u, v);
         }
-        this._updateTexture();
     }
 
     /**
@@ -255,28 +271,22 @@ export class SetDigHole extends SetScanPath {
         }
         if (this._drawLineUv.has(`${u},${v}`)) return;
         this._drawLineUv.add(`${u},${v}`);
-        if (Math.random() > .8) return;
+        if (Math.random() > .3) return;
         const angle = Math.random() * Math.PI * 2;
         const length = Math.random() * 10 + 10;
-        const startX = u + Math.cos(angle) * length;
-        const startY = v + Math.sin(angle) * length;
-        const endX = u - Math.cos(angle) * length;
-        const endY = v - Math.sin(angle) * length;
-        const points = no.bezierPoints([{ x: startX, y: startY }, { x: endX, y: endY }], 20);
-        for (let i = 1; i < points.length; i++) {
-            const p1 = points[i - 1];
-            const p2 = points[i];
-            this.drawLine(p1.x, p1.y, p2.x, p2.y);
-        }
-        // this.drawLine(startX, startY, endX, endY);
+        const startX = Math.floor(u + Math.cos(angle) * length);
+        const startY = Math.floor(v + Math.sin(angle) * length);
+        const endX = Math.floor(u - Math.cos(angle) * length);
+        const endY = Math.floor(v - Math.sin(angle) * length);
+        this.drawLine(startX, startY, endX, endY);
     }
 
     private drawLine(u1: number, v1: number, u2: number, v2: number) {
         const dy = (v2 - v1) / (u2 - u1);
         for (let u = u1; u <= u2; u++) {
             const v = v1 + Math.floor(dy * (u - u1));
-            if (this.isPixelAlpha0(u, v)) continue;
             const idx = this.uvToPixelIndex(u, v);
+            if (!this._textureBuffer[idx + 3]) continue;
             this._textureBuffer[idx] = 0;
             this._textureBuffer[idx + 1] = 0;
             this._textureBuffer[idx + 2] = 0;
