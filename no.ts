@@ -1938,7 +1938,7 @@ export namespace no {
      */
     export function radianToAngle(radian: number): number {
         const angle = radian / Math.PI * 180;
-        return angle > 0 ? angle : angle + 360;
+        return angle >= 0 ? angle : angle + 360;
     }
 
     /**

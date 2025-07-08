@@ -48,6 +48,9 @@ export class SetScanPath extends HackUi {
     protected _state = 0;
     protected _doing = false;
 
+    private _pathPointTexture: DynamicAtlasTexture;
+    private _pathPointTextureBuffer: Uint8Array;
+
     protected onDestroy(): void {
         this._spriteFrame?.destroy();
         this._spriteFrame = null;
@@ -85,6 +88,7 @@ export class SetScanPath extends HackUi {
         texture.decRef();
         this.initNoAlpha0Pixels();
         this.updateScanState();
+        this.initDebugSprite();
     }
 
     protected lateUpdate(dt: number): void {
@@ -144,6 +148,7 @@ export class SetScanPath extends HackUi {
                 this._pixelSet.add(key);
             }
         }
+        console.log('scanWholePixels', this._pixelArr.length);
         this.updateScanState();
     }
 
@@ -163,7 +168,7 @@ export class SetScanPath extends HackUi {
                 const d = this._dir8[j];
                 const neighborKey = `${p[0] + d.x}-${p[1] + d.y}`;
 
-                if (this._pixelSet.has(neighborKey)) {
+                if (this._noAlpha0PixelsMap.has(neighborKey)) {
                     neighborCount++;
                     // 如果已经有3个邻居，可以提前退出内层循环
                     if (neighborCount >= 3) {
@@ -180,6 +185,7 @@ export class SetScanPath extends HackUi {
 
         this._pixelArr = newArr;
         newArr = null;
+        console.log('removeIsolatedPixels', this._pixelArr.length);
         this.updateScanState();
     }
 
@@ -327,11 +333,11 @@ export class SetScanPath extends HackUi {
                 for (let j = p.v - 3; j <= p.v + 3; j++) {
                     if (this.isPixelAlpha0(i, j)) continue;
                     const idx = this.uvToPixelIndex(i, j);
-                    this._pathPoints.push({ idx, r: this._textureBuffer[idx], g: this._textureBuffer[idx + 1], b: this._textureBuffer[idx + 2], a: this._textureBuffer[idx + 3] });
-                    this._textureBuffer[idx] = r;
-                    this._textureBuffer[idx + 1] = g;
-                    this._textureBuffer[idx + 2] = b;
-                    this._textureBuffer[idx + 3] = 255;
+                    this._pathPoints.push({ idx, r: this._pathPointTextureBuffer[idx], g: this._pathPointTextureBuffer[idx + 1], b: this._pathPointTextureBuffer[idx + 2], a: this._pathPointTextureBuffer[idx + 3] });
+                    this._pathPointTextureBuffer[idx] = r;
+                    this._pathPointTextureBuffer[idx + 1] = g;
+                    this._pathPointTextureBuffer[idx + 2] = b;
+                    this._pathPointTextureBuffer[idx + 3] = 255;
                 }
             }
             this._updateTexture();
@@ -343,10 +349,10 @@ export class SetScanPath extends HackUi {
         if (this._pathPoints.length == 0) return;
         for (let i = 0, n = this._pathPoints.length; i < n; i++) {
             const { idx, r, g, b, a } = this._pathPoints[i];
-            this._textureBuffer[idx] = r;
-            this._textureBuffer[idx + 1] = g;
-            this._textureBuffer[idx + 2] = b;
-            this._textureBuffer[idx + 3] = a;
+            this._pathPointTextureBuffer[idx] = r;
+            this._pathPointTextureBuffer[idx + 1] = g;
+            this._pathPointTextureBuffer[idx + 2] = b;
+            this._pathPointTextureBuffer[idx + 3] = a;
         }
     }
 
@@ -435,6 +441,32 @@ export class SetScanPath extends HackUi {
         this._state++;
         this._doing = false;
         if (this._state > 5) this._state = 0;
+    }
+
+    private initDebugSprite() {
+        const node = no.newNode('path_point', [Sprite]);
+        node.parent = this.node;
+        const size = no.size(this.node);
+        no.size(node, size);
+        this._pathPointTexture = new DynamicAtlasTexture();
+        this._pathPointTexture.initWithSize(size.width, size.height);
+        // 初始化纹理缓冲区（每个像素4字节RGBA）
+        this._pathPointTextureBuffer = new Uint8Array(size.width * size.height * 4);
+
+        // console.log("创建迷雾纹理，尺寸:", width, "x", height);
+
+        // 初始化缓冲区 (全黑不透明)
+        for (let i = 0, n = size.width * size.height; i < n; i++) {
+            // RGBA: 黑色不透明
+            this._pathPointTextureBuffer[i * 4] = 0;     // R
+            this._pathPointTextureBuffer[i * 4 + 1] = 0; // G
+            this._pathPointTextureBuffer[i * 4 + 2] = 0; // B
+            this._pathPointTextureBuffer[i * 4 + 3] = 0; // A (不透明)
+        }
+        this._pathPointTexture.uploadData(this._pathPointTextureBuffer);
+        const sprite = node.getComponent(Sprite);
+        sprite.spriteFrame = new SpriteFrame();
+        sprite.spriteFrame.texture = this._pathPointTexture;
     }
 
     /**

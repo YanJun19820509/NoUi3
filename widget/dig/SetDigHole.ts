@@ -24,8 +24,8 @@ export class SetDigHole extends SetScanPath {
         if (digInfo) {
             this._tempPos.set(digInfo.x, digInfo.y, 0);
             no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
-            // this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
-            this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
+            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
+            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
             this.updateScanState();
         }
@@ -271,7 +271,7 @@ export class SetDigHole extends SetScanPath {
         }
         if (this._drawLineUv.has(`${u},${v}`)) return;
         this._drawLineUv.add(`${u},${v}`);
-        if (Math.random() > .3) return;
+        if (Math.random() > .2) return;
         const angle = Math.random() * Math.PI * 2;
         const length = Math.random() * 10 + 10;
         const startX = Math.floor(u + Math.cos(angle) * length);
