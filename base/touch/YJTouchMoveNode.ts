@@ -1,4 +1,4 @@
-import { ccclass, Component, EventTouch, property, Node, Vec2, view } from "hackUi/yj";
+import { ccclass, Component, EventTouch, property, Node, Vec2, view } from "../../yj";
 import { no } from "../../no";
 /**
  * 拖动节点
