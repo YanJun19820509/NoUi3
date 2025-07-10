@@ -315,13 +315,13 @@ export class SetSpine extends HackUi {
                 this.curPath = path;
 
                 // 销毁旧spine节点（异步加载后需要重新获取引用）
-                let spine = this._curSpine;
-                this.destroySpineNode(spine);
+                this.destroySpineNode(this._curSpine);
 
                 // 创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
+                newSpineNode.layer = this.node.layer;
                 newSpineNode.parent = this.node;
-                spine = newSpineNode.getComponent(Skeleton);
+                const spine = newSpineNode.getComponent(Skeleton);
                 this._curSpine = spine;
 
                 // 继承基础spine组件属性

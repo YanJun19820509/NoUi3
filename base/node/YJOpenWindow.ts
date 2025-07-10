@@ -25,15 +25,19 @@ export class OpenWindowInfo {
     prefabPath: string = '';
     @property({ type: Enum(LayerTypeEnum) })
     to: LayerTypeEnum = LayerTypeEnum.Popup;
-    @property({ tooltip: '传参，仅用于show' })
+    @property({ tooltip: '传参，仅用于show,多个参数用逗号分隔' })
     args: string = '';
 
     public panelType: string = '';
 
     public open(onOpended?: (panel: YJPanel) => void) {
         if (this.windowName != '') {
+            let args = [];
+            if (this.args) {
+                args = this.args.split(',');
+            }
             const clazz = js.getClassByName(this.windowName);
-            if (typeof clazz['show'] == 'function') clazz['show'](!!this.args ? this.args : null);
+            if (typeof clazz['show'] == 'function') clazz['show'](...args);
             else if (clazz['$super'] == YJPanel)
                 YJWindowManager.createPanel(this.windowName, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
         } else if (this.prefabPath != '') {

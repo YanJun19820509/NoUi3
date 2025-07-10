@@ -50,26 +50,29 @@ export class YJTouchListener extends Component {
     /** 按下事件处理器列表（支持多回调） */
     @property({ type: no.EventHandlerInfo, displayName: '按下事件' })
     startHandlers: no.EventHandlerInfo[] = [];
-    
+
     /** 移动事件处理器列表（持续触发） */
     @property({ type: no.EventHandlerInfo, displayName: '移动事件' })
     moveHandlers: no.EventHandlerInfo[] = [];
-    
+
     /** 释放事件处理器列表（正常抬起时触发） */
     @property({ type: no.EventHandlerInfo, displayName: '释放事件' })
     endHandlers: no.EventHandlerInfo[] = [];
-    
+
     /** 取消事件处理器列表（中断时触发，如来电打断） */
     @property({ type: no.EventHandlerInfo, displayName: '取消事件' })
     cancelHandlers: no.EventHandlerInfo[] = [];
-    
+
     /** 是否吞噬事件（true时阻止事件继续传递） */
     @property({ displayName: '吞噬' })
     canSwallow: boolean = true;
 
+    @property({ displayName: '是否坐标固定' })
+    isFixed: boolean = true;
+
     /** 当前触摸点是否在有效区域内 */
     protected isTouchIn: boolean = false;
-    
+
     /** 节点边界区域缓存（基于世界坐标系） */
     protected rect: Rect;
 
@@ -113,9 +116,12 @@ export class YJTouchListener extends Component {
     public onStart(event: EventTouch): boolean {
         if (this.rect == null) this.rect = no.nodeBoundingBox(this.node);
         this.isTouchIn = this.rect.contains(event.touch.getUILocation());
-        event.preventSwallow = !(this.canSwallow && this.isTouchIn);
+        if (!this.isFixed) {
+            this.rect = null;
+        }
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.startHandlers, event);
+        event.preventSwallow = !this.canSwallow;
         return true;
     }
 
@@ -125,9 +131,9 @@ export class YJTouchListener extends Component {
      * @returns 是否继续传递事件
      */
     public onMove(event: EventTouch): boolean {
-        event.preventSwallow = !(this.canSwallow && this.isTouchIn);
         if (!this.isTouchIn) return false;
         no.EventHandlerInfo.execute(this.moveHandlers, event);
+        event.preventSwallow = !this.canSwallow;
         return true;
     }
 
@@ -137,10 +143,10 @@ export class YJTouchListener extends Component {
      * @returns 是否有效结束
      */
     public onEnd(event: EventTouch): boolean {
-        event.preventSwallow = !(this.canSwallow && this.isTouchIn);
         if (!this.isTouchIn) return false;
         this.isTouchIn = false;
         no.EventHandlerInfo.execute(this.endHandlers, event);
+        event.preventSwallow = !this.canSwallow;
         return true;
     }
 
@@ -150,9 +156,9 @@ export class YJTouchListener extends Component {
      * @desc 用于处理异常中断情况
      */
     public onCancel(event: EventTouch) {
-        event.preventSwallow = !(this.canSwallow && this.isTouchIn);
         if (!this.isTouchIn) return;
         this.isTouchIn = false;
+        event.preventSwallow = !this.canSwallow;
         no.EventHandlerInfo.execute(this.cancelHandlers, event);
     }
 }

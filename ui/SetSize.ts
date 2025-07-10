@@ -67,6 +67,12 @@ export class SetSize extends HackUi {
         if (this.checkMaxSize || this.syncSize) {
             this.node.on(NodeEventType.CHILD_ADDED, this._childAdded, this);
             this.node.on(NodeEventType.CHILD_REMOVED, this._childRemoved, this);
+            const children = this.node.children;
+            for (let i = 0, n = children.length; i < n; i++) {
+                const child = children[i];
+                child.on(NodeEventType.SIZE_CHANGED, this.checkSize, this);
+            }
+            this.checkSize();
         }
     }
 
@@ -75,6 +81,11 @@ export class SetSize extends HackUi {
         if (this.checkMaxSize || this.syncSize) {
             this.node.off(NodeEventType.CHILD_ADDED, this._childAdded, this);
             this.node.off(NodeEventType.CHILD_REMOVED, this._childRemoved, this);
+            const children = this.node.children;
+            for (let i = 0, n = children.length; i < n; i++) {
+                const child = children[i];
+                child.off(NodeEventType.SIZE_CHANGED, this.checkSize, this);
+            }
         }
     }
 
@@ -106,15 +117,17 @@ export class SetSize extends HackUi {
      * 宽度超过限制，缩放比例为0.8（200/250）
      */
     private checkSize() {
-        let width = 0, height = 0;
+        let rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
         // 遍历所有子节点获取最大尺寸
         for (let i = 0, n = this.node.children.length; i < n; i++) {
             const child = this.node.children[i];
-            const s = no.size(child);
-            width = Math.max(width, s.width);
-            height = Math.max(height, s.height);
+            const r = no.nodeRect(child);
+            rect.minX = Math.min(rect.minX, r.xMin);
+            rect.minY = Math.min(rect.minY, r.yMin);
+            rect.maxX = Math.max(rect.maxX, r.xMax);
+            rect.maxY = Math.max(rect.maxY, r.yMax);
         }
-
+        const width = rect.maxX - rect.minX, height = rect.maxY - rect.minY;
         // 最大尺寸模式处理
         if (this.checkMaxSize) {
             const wMax = this.maxSize.width,
@@ -154,5 +167,6 @@ export class SetSize extends HackUi {
      */
     protected _childRemoved(child: Node) {
         child.off(NodeEventType.SIZE_CHANGED, this.checkSize, this);
+        this.checkSize();
     }
 }

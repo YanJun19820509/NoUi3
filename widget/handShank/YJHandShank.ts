@@ -12,15 +12,19 @@ export class YJHandShank extends Component {
     handler: Node = null;
     @property({ displayName: '摇杆半径' })
     radius: number = 100;
+    @property({ displayName: '固定位置' })
+    fixed: boolean = false;
 
     private _originPos: Vec3 = null;
 
     onLoad() {
-        this._originPos = this.node.position.clone();
+        if (!this.fixed)
+            this._originPos = this.node.position.clone();
     }
 
     public onStart(pos: Vec3) {
-        this.node.setPosition(pos.x, pos.y);
+        if (!this.fixed)
+            this.node.setPosition(pos.x, pos.y);
     }
 
     public onMove(radian: number) {
@@ -30,7 +34,8 @@ export class YJHandShank extends Component {
     }
 
     public onStop() {
-        this.node.setPosition(this._originPos);
+        if (!this.fixed)
+            this.node.setPosition(this._originPos);
         this.handler.setPosition(0, 0);
     }
 }

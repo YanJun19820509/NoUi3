@@ -241,6 +241,7 @@ export class SetDigHole extends SetScanPath {
      * @param arr 轮廓点
      */
     private drawOutline() {
+        if (!this._isDig) return;
         for (let k = 0, n = this._pixelArr.length; k < n; k++) {
             const [u, v] = this._pixelArr[k];
             for (let i = u - 3, m = u + 3; i <= m; i++) {

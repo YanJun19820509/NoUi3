@@ -13,6 +13,8 @@ import { ccclass, property, Rect, requireComponent, Sprite, SpriteFrame, Texture
 @ccclass('SetScanPath')
 @requireComponent([Sprite])
 export class SetScanPath extends HackUi {
+    @property({ displayName: '路径数据key', tooltip: '路径数据将以该key更新到dataWork中' })
+    pathKey: string = 'scanPathes';
     @property({ displayName: '步长' })
     step = 10;
     @property({ displayName: '开启调试' })
@@ -280,8 +282,8 @@ export class SetScanPath extends HackUi {
             }
             pathesData.push(pathData);
         }
-        this.clearDataValue('scanPathes');
-        this.setDataValue('scanPathes', pathesData);
+        this.clearDataValue(this.pathKey);
+        this.setDataValue(this.pathKey, pathesData);
     }
 
 

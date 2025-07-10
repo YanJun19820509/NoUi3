@@ -69,8 +69,9 @@ export class AutoCreateNode extends Component {
                 let dest = path.replace(root + '/', 'db://');
                 this.rootPath = dest;
                 this.preloadAssets([
-                    [`assets/WJCY/res/font`, 'cc.TTFFont'],
-                    [`assets/WJCY/res/common`, 'cc.SpriteAtlas'],
+                    [dest, 'cc.SpriteAtlas'],
+                    // [`assets/WJCY/res/font`, 'cc.TTFFont'],
+                    // [`assets/WJCY/res/common`, 'cc.SpriteAtlas'],
                 ], () => {
                     this.loadJson(dest, name);
                 });
@@ -81,6 +82,10 @@ export class AutoCreateNode extends Component {
     }
 
     private preloadAssets(assetsInfo: string[][], cb: () => void) {
+        if (assetsInfo.length == 0) {
+            cb();
+            return;
+        }
         const promises: Promise<Asset[]>[] = [];
         for (let i = 0; i < assetsInfo.length; i++) {
             promises.push(no.EditorMode.loadAssetsOfCCTypeUnderFolder(assetsInfo[i][0], assetsInfo[i][1]));

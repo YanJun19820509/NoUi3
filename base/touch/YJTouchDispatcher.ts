@@ -117,7 +117,10 @@ export class YJTouchDispatcher extends Component {
      * dispatcher.addListener(listener);
      */
     public addListener(listener: YJTouchListener) {
-        no.addToArray(this.listeners, listener, 'uuid');
+        if (no.indexOfArray(this.listeners, listener, 'uuid') == -1) {
+            //同一场景中，先添加的节点的层级在下，所以后添加需要先处理
+            this.listeners.unshift(listener);
+        }
     }
 
     /**

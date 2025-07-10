@@ -2802,7 +2802,7 @@ export namespace no {
      * }
      */
     export function nodeRect(node: Node): Rect {
-        const pos = position(node),
+        const pos = node.position,
             contentSize = size(node);
         let anchor = node.getComponent(UITransform).anchorPoint;
         const rect = new Rect();
@@ -8441,8 +8441,8 @@ export namespace no {
      *   strokeColor: '#FF0000'
      * });
      */
-    export function createGraphicLineData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        let ps = [];
+    export function createGraphicLineData(d: { points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        let ps: number[] = [];
         for (let i = 0; i < d.points.length; i++) {
             ps[ps.length] = d.points[i].x;
             ps[ps.length] = d.points[i].y;
@@ -8667,8 +8667,8 @@ export namespace no {
      *   strokeColor: '#00FFFF'
      * });
      */
-    export function createBezierData(d: { points: Vec2[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        let ps = [];
+    export function createBezierData(d: { points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+        let ps: number[] = [];
         for (let i = 0; i < d.points.length; i++) {
             ps[ps.length] = d.points[i].x;
             ps[ps.length] = d.points[i].y;

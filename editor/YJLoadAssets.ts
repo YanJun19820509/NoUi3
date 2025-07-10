@@ -261,7 +261,7 @@ export class YJLoadAssets extends Component {
      * const loader = this.node.getComponent(YJLoadAssets);
      * await loader.load();
      */
-    public async load() {
+    public load() {
         this.setMaterialKey();
         return YJSample2DMaterialManager.ins.createAtlasMaterial(this._materialKey, this.textureInfos, this.share);
     }
