@@ -3869,10 +3869,10 @@ export namespace no {
      * const currentSize = no.size(this.itemNode);
      * no.size(this.itemNode, currentSize.multiplyScalar(1.5));
      */
-    export function size(node: Node, size?: Size): Size {
+    export function size(node: Node, size?: Size | { width: number, height: number }): Size {
         if (!node || !node.getComponent(UITransform)) return;
         if (size != undefined)
-            node.getComponent(UITransform).contentSize = size;
+            node.getComponent(UITransform).setContentSize(size.width, size.height);
         return node.getComponent(UITransform).contentSize.clone();
     }
 

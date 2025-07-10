@@ -28,7 +28,7 @@ export class SetScanPath extends HackUi {
     protected _textureBuffer: Uint8Array = null!; // 纹理数据缓冲区（RGBA格式）
     protected _size: { width: number, height: number };
     protected _pathes: { u: number, v: number }[][] = [];
-    protected _pathPoints: { idx: number, r: number, g: number, b: number, a: number }[] = [];
+    protected _pathPoints: number[] = [];
     //左上右下
     protected _dir4 = [{ x: -1, y: 0 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
     //上、右上、右、右下、下、左下、左、左上
@@ -52,6 +52,7 @@ export class SetScanPath extends HackUi {
 
     private _pathPointTexture: DynamicAtlasTexture;
     private _pathPointTextureBuffer: Uint8Array;
+    private _pathPointSprite: Sprite;
 
     protected onDestroy(): void {
         this._spriteFrame?.destroy();
@@ -61,6 +62,12 @@ export class SetScanPath extends HackUi {
         this._texture = null;
         this._textureBuffer = null;
         this._size = null;
+        if (this._pathPointSprite) {
+            this._pathPointSprite.spriteFrame = null;
+            this._pathPointTexture?.destroy();
+            this._pathPointTexture = null;
+            this._pathPointTextureBuffer = null;
+        }
     }
 
     protected onDataChange(data: any): void {
@@ -335,14 +342,14 @@ export class SetScanPath extends HackUi {
                 for (let j = p.v - 3; j <= p.v + 3; j++) {
                     if (this.isPixelAlpha0(i, j)) continue;
                     const idx = this.uvToPixelIndex(i, j);
-                    this._pathPoints.push({ idx, r: this._pathPointTextureBuffer[idx], g: this._pathPointTextureBuffer[idx + 1], b: this._pathPointTextureBuffer[idx + 2], a: this._pathPointTextureBuffer[idx + 3] });
+                    this._pathPoints.push(idx);
                     this._pathPointTextureBuffer[idx] = r;
                     this._pathPointTextureBuffer[idx + 1] = g;
                     this._pathPointTextureBuffer[idx + 2] = b;
                     this._pathPointTextureBuffer[idx + 3] = 255;
                 }
             }
-            this._updateTexture();
+            this._updatePathTexture();
         }, this.interval, points.length, 0, this)
     }
 
@@ -350,11 +357,11 @@ export class SetScanPath extends HackUi {
         if (!this.showPathPoints) return;
         if (this._pathPoints.length == 0) return;
         for (let i = 0, n = this._pathPoints.length; i < n; i++) {
-            const { idx, r, g, b, a } = this._pathPoints[i];
-            this._pathPointTextureBuffer[idx] = r;
-            this._pathPointTextureBuffer[idx + 1] = g;
-            this._pathPointTextureBuffer[idx + 2] = b;
-            this._pathPointTextureBuffer[idx + 3] = a;
+            const idx = this._pathPoints[i];
+            this._pathPointTextureBuffer[idx] = 0;
+            this._pathPointTextureBuffer[idx + 1] = 0;
+            this._pathPointTextureBuffer[idx + 2] = 0;
+            this._pathPointTextureBuffer[idx + 3] = 0;
         }
     }
 
@@ -446,10 +453,11 @@ export class SetScanPath extends HackUi {
     }
 
     private initDebugSprite() {
+        const size = this._size;
         const node = no.newNode('path_point', [Sprite]);
         node.parent = this.node;
-        const size = no.size(this.node);
-        no.size(node, size);
+        const anchor = no.anchor(this.node);
+        no.anchor(node, anchor.x, anchor.y);
         this._pathPointTexture = new DynamicAtlasTexture();
         this._pathPointTexture.initWithSize(size.width, size.height);
         // 初始化纹理缓冲区（每个像素4字节RGBA）
@@ -469,6 +477,20 @@ export class SetScanPath extends HackUi {
         const sprite = node.getComponent(Sprite);
         sprite.spriteFrame = new SpriteFrame();
         sprite.spriteFrame.texture = this._pathPointTexture;
+        this._pathPointSprite = sprite;
+        no.size(node, size);
+    }
+
+    protected _updatePathTexture() {
+        if (this._pathPointTexture) {
+            // 上传新数据到GPU
+            this._pathPointTexture.uploadData(this._pathPointTextureBuffer);
+
+            // 强制刷新精灵渲染
+            if (this._pathPointSprite) {
+                this._pathPointSprite.markForUpdateRenderData();
+            }
+        }
     }
 
     /**
