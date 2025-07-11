@@ -241,22 +241,21 @@ export class SetDigHole extends SetScanPath {
      * @param arr 轮廓点
      */
     private drawOutline() {
-        if (!this._isDig) return;
         for (let k = 0, n = this._pixelArr.length; k < n; k++) {
             const [u, v] = this._pixelArr[k];
-            for (let i = u - 3, m = u + 3; i <= m; i++) {
-                for (let j = v - 3, m = v + 3; j <= m; j++) {
-                    if (this.isPixelAlpha0(i, j)) continue;
-                    if (this._drawOutlineUv.has(`${i},${j}`)) continue;
-                    this._drawOutlineUv.add(`${i},${j}`);
-                    const idx = this.uvToPixelIndex(i, j);
-                    this._textureBuffer[idx] = 0;
-                    this._textureBuffer[idx + 1] = 0;
-                    this._textureBuffer[idx + 2] = 0;
-                    this._textureBuffer[idx + 3] = 255;
-                    this.drawRandomLine(i, j);
-                }
-            }
+            // for (let i = u - 3, m = u + 3; i <= m; i++) {
+            //     for (let j = v - 3, m = v + 3; j <= m; j++) {
+            //         if (this.isPixelAlpha0(i, j)) continue;
+            if (this._drawOutlineUv.has(`${u},${v}`)) continue;
+            this._drawOutlineUv.add(`${u},${v}`);
+            const idx = this.uvToPixelIndex(u, v);
+            this._textureBuffer[idx] = 0;
+            this._textureBuffer[idx + 1] = 0;
+            this._textureBuffer[idx + 2] = 0;
+            this._textureBuffer[idx + 3] = 2;
+            this.drawRandomLine(u, v);
+            // }
+            // }
         }
     }
 
@@ -272,7 +271,7 @@ export class SetDigHole extends SetScanPath {
         }
         if (this._drawLineUv.has(`${u},${v}`)) return;
         this._drawLineUv.add(`${u},${v}`);
-        if (Math.random() > .2) return;
+        if (Math.random() > .8) return;
         const angle = Math.random() * Math.PI * 2;
         const length = Math.random() * 10 + 10;
         const startX = Math.floor(u + Math.cos(angle) * length);

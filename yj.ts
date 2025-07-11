@@ -232,6 +232,9 @@ export const PhysicsSystem = _cc.PhysicsSystem;
 export const primitives = _cc.primitives;
 export const UIVertexFormat = _cc.UIVertexFormat;
 
+export const rendererCamera = _cc.renderer.scene.Camera;
+export type rendererCamera = _cc.renderer.scene.Camera;
+
 //EDITOR
 // 资源的基础信息
 export interface _AssetInfo {

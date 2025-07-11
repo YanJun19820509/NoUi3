@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, UITransform, Vec3, math, Vec2, Enum } from '../yj';
+import { ccclass, property, requireComponent, UITransform, Vec3, math, Vec2, Enum, view, Node } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { HackUi } from './HackUi';
@@ -16,6 +16,7 @@ import { EasingType, EasingTypeName } from '../types';
  * URL = db://assets/NoUi3/ui/SetMoveTweenToNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 将当前节点移动到指定节点位置
+ * data:string|{target:string,subTypes:string[]},目标节点标识符，子节点路径数组
  */
 
 @ccclass('SetMoveTweenToNodeTarget')
@@ -32,34 +33,50 @@ import { EasingType, EasingTypeName } from '../types';
  * - 动态调整物体位置时的过渡动画
  */
 export class SetMoveTweenToNodeTarget extends HackUi {
+    @property({ type: Node, displayName: '边界节点', tooltip: '边界节点，用于限制相机移动范围' })
+    boundaryNode: Node = null;
+    @property({ displayName: '水平移动' })
+    horizontal: boolean = true;
+    @property({ displayName: '垂直移动' })
+    vertical: boolean = true;
 
-    @property({ displayName: '根据速度计算时间' })
-    fixSpeed: boolean = true;
     /**
      * @example
      * // true - 根据距离和速度计算移动时间（移动时间 = 距离/速度）
      * // false - 直接使用指定的移动时间
      */
+    @property({ displayName: '根据速度计算时间' })
+    fixSpeed: boolean = true;
 
+    /** 像素/秒，仅在fixSpeed为true时生效 */
     @property({ min: 1, displayName: '移动速度', tooltip: '移动速度', visible() { return this.fixSpeed; } })
     speed: number = 10;
-    /** 像素/秒，仅在fixSpeed为true时生效 */
 
+    /** 固定移动时长，仅在fixSpeed为false时生效 */
     @property({ min: 0.01, displayName: '移动时间(s)', visible() { return !this.fixSpeed; } })
     time: number = 1;
-    /** 固定移动时长，仅在fixSpeed为false时生效 */
 
-    @property
-    offset: Vec2 = math.v2();
     /** 
      * 目标位置偏移量 
      * @example
      * // 设置x:50,y:-30将在目标位置基础上向右偏移50像素，向下偏移30像素
      */
+    @property
+    offset: Vec2 = math.v2();
 
+    /** 缓动动画类型，支持各种缓动效果如quadInOut、backIn等 */
     @property({ type: Enum(EasingType) })
     easing: EasingType = EasingType.LINEAR;
-    /** 缓动动画类型，支持各种缓动效果如quadInOut、backIn等 */
+
+    /** 是否反向移动 */
+    @property
+    reverse: boolean = false;
+
+    @property({ type: no.EventHandlerInfo, displayName: '移动中回调' })
+    movingCall: no.EventHandlerInfo[] = [];
+
+    private _range: { xMin: number, xMax: number, yMin: number, yMax: number };
+    private _followData: { duration: number, speed: number, radian: number };
 
     /**
      * 处理数据变更入口
@@ -69,7 +86,23 @@ export class SetMoveTweenToNodeTarget extends HackUi {
      * component.a_setData('player');
      */
     protected onDataChange(data: any) {
-        this.setTween(data);
+        if (this.boundaryNode && !this._range) {
+            const viewSize = view.getVisibleSize();
+            const size = no.size(this.boundaryNode);
+            const width = (size.width - viewSize.width) / 2;
+            const height = (size.height - viewSize.height) / 2;
+            this._range = {
+                xMin: -width,
+                xMax: width,
+                yMin: -height,
+                yMax: height
+            };
+        }
+        if (typeof data == 'string') {
+            this.setTween(data);
+        } else if (typeof data == 'object') {
+            this.setTween(data.target, data.subTypes);
+        }
     }
 
     /**
@@ -85,26 +118,46 @@ export class SetMoveTweenToNodeTarget extends HackUi {
      * // 将血条移动到BOSS节点位置：
      * this.setTween('BOSS_HP_POSITION');
      */
-    protected setTween(targetType: string) {
+    protected setTween(targetType: string, subTypes?: string[]) {
         // 从节点目标管理器获取目标节点引用
-        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+        let target: YJNodeTarget;
+        if (subTypes) {
+            target = no.nodeTargetManager.getSub<YJNodeTarget>(targetType, subTypes);
+        } else {
+            target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+        }
         if (!target) {
             // 目标节点未就绪时，延迟重试机制
             this.scheduleOnce(() => {
-                this.setTween(targetType);
+                this.setTween(targetType, subTypes);
             });
             return;
         }
 
         // 获取目标节点的世界坐标并转换为本地坐标系
         let pos = target.nodeWorldPosition;
-        this.node.parent.getComponent(UITransform).convertToNodeSpaceAR(pos, pos);
+        no.worldPositionInNode(pos, this.boundaryNode || this.node.parent, pos);
+        if (this.reverse) {
+            pos.x = -pos.x;
+            pos.y = -pos.y;
+        }
+
+        if (this._range) {
+            pos.x = no.clamp(pos.x, this._range.xMin, this._range.xMax);
+            pos.y = no.clamp(pos.y, this._range.yMin, this._range.yMax);
+        }
 
         // 计算移动参数
         let p = this.node.position;
-        let dis = Vec3.distance(p, pos); // 三维空间距离计算
+        if (!this.horizontal) {
+            pos.x = p.x;
+        }
+        if (!this.vertical) {
+            pos.y = p.y;
+        }
+        let dis = no.distance(p, pos); // 三维空间距离计算
         let duration = this.fixSpeed ? dis / this.speed : this.time; // 持续时间计算策略
-
+        this.node.on(Node.EventType.TRANSFORM_CHANGED, this.onMoving, this);
         // 配置缓动动画组件参数
         this.getComponent(SetNodeTweenAction).a_setData({
             duration: duration, // 动画持续时间
@@ -117,5 +170,13 @@ export class SetMoveTweenToNodeTarget extends HackUi {
             },
             easing: EasingTypeName[this.easing] // 使用配置的缓动函数
         });
+        this.scheduleOnce(() => {
+            this.node.off(Node.EventType.TRANSFORM_CHANGED, this.onMoving, this);
+        }, duration);
+    }
+
+    private onMoving() {
+        const { x, y } = this.node.position;
+        no.EventHandlerInfo.execute(this.movingCall, x, y);
     }
 }

@@ -7,7 +7,7 @@ import {
     EventTouch,
     Toggle,
     resources, JSB,
-    approx
+    rendererCamera
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -7332,6 +7332,7 @@ export namespace no {
          */
         public getSub<T>(type: string, subs: string[]): T {
             let target = this.get<any>(type);
+            if (!target) return null;
             let sub = subs.shift();
             if (!isNaN(Number(sub)))
                 target = target.node.children[sub]?.getComponentsInChildren('YJNodeTarget')[0];
@@ -11207,6 +11208,21 @@ export namespace no {
             x: rotated.x + center.x,
             y: rotated.y + center.y
         }
+    }
+
+    /**
+     * 获取指定layer的相机
+     * @param layer 对应node.layer
+     */
+    export function getCamera(layer: number): rendererCamera {
+        const cameras = director.getScene().scene.renderScene.cameras;
+        for (let i = 0; i < cameras.length; i++) {
+            const camera = cameras[i];
+            if (camera.visibility & layer) {
+                return camera;
+            }
+        }
+        return null;
     }
 }
 no.addToWindowForDebug('no', no);

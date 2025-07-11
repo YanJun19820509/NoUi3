@@ -22,41 +22,33 @@ export class YJTouchMoveNode extends Component {
 
     private _moveRange: { xMin: number, yMin: number, xMax: number, yMax: number };
     private _syncRangeScale: { x: number, y: number };
+    private _isTouching: boolean = false;
 
     public onTouchStart(event: EventTouch) {
-        if (!this._moveRange) {
-            const nsize = no.size(this.node);
-            const csize = no.size(this.container);
-            const nar = no.anchor(this.node);
-            const car = no.anchor(this.container);
-
-            this._moveRange = {
-                xMin: (1 - car.x) * csize.width - (1 - nar.x) * nsize.width,
-                yMin: (1 - car.y) * csize.height - (1 - nar.y) * nsize.height,
-                xMax: (1 - nar.x) * nsize.width - (1 - car.x) * csize.width,
-                yMax: nar.y * nsize.height - car.y * csize.height
-            };
-            if (nsize.width < csize.width) {
-                this._moveRange.xMin *= -1;
-                this._moveRange.xMax *= -1;
-            }
-            if (nsize.height < csize.height) {
-                this._moveRange.yMin *= -1;
-                this._moveRange.yMax *= -1;
-            }
-        }
+        this._isTouching = true;
     }
 
     public onTouchMove(event: EventTouch) {
-        const pos = this.node.position;
-        const x = this.horizontal ? no.clamp(event.getDeltaX() + pos.x, this._moveRange.xMin, this._moveRange.xMax) : pos.x;
-        const y = this.vertical ? no.clamp(event.getDeltaY() + pos.y, this._moveRange.yMin, this._moveRange.yMax) : pos.y;
-        this.node.setPosition(x, y);
-        this.sync(x, y);
+        this._moveBy(event.getDeltaX(), event.getDeltaY());
     }
 
-    private sync(x: number, y: number) {
+    public onTouchEnd(event: EventTouch) {
+        this._isTouching = false;
+    }
+
+
+    private _moveBy(x: number, y: number) {
+        this.initMoveRange();
+        const pos = this.node.position;
+        x = this.horizontal ? no.clamp(x + pos.x, this._moveRange.xMin, this._moveRange.xMax) : pos.x;
+        y = this.vertical ? no.clamp(y + pos.y, this._moveRange.yMin, this._moveRange.yMax) : pos.y;
+        this.node.setPosition(x, y);
+        this._sync(x, y);
+    }
+
+    private _sync(x: number, y: number) {
         if (!this.syncNode) return;
+        this.initMoveRange();
         if (!this._syncRangeScale) {
             const nsize = no.size(this.syncNode);
             const csize = no.size(this.syncNode.parent);
@@ -78,5 +70,43 @@ export class YJTouchMoveNode extends Component {
         const pos = this.syncNode.position;
         const a = this.reverse ? -1 : 1;
         this.syncNode.setPosition(this.horizontal ? x * this._syncRangeScale.x * a : pos.x, this.vertical ? y * this._syncRangeScale.y * a : pos.y);
+    }
+
+    public moveTo(x: number, y: number) {
+        if (this._isTouching) return;
+        const pos = this.node.position;
+        x = this.horizontal ? no.clamp(x, this._moveRange.xMin, this._moveRange.xMax) : pos.x;
+        y = this.vertical ? no.clamp(y, this._moveRange.yMin, this._moveRange.yMax) : pos.y;
+        this.node.setPosition(x, y);
+        this._sync(x, y);
+    }
+
+    public sync(x: number, y: number) {
+        if (this._isTouching) return;
+        this._sync(x, y);
+    }
+
+    private initMoveRange() {
+        if (!this._moveRange) {
+            const nsize = no.size(this.node);
+            const csize = no.size(this.container);
+            const nar = no.anchor(this.node);
+            const car = no.anchor(this.container);
+
+            this._moveRange = {
+                xMin: (1 - car.x) * csize.width - (1 - nar.x) * nsize.width,
+                yMin: (1 - car.y) * csize.height - (1 - nar.y) * nsize.height,
+                xMax: (1 - nar.x) * nsize.width - (1 - car.x) * csize.width,
+                yMax: nar.y * nsize.height - car.y * csize.height
+            };
+            if (nsize.width < csize.width) {
+                this._moveRange.xMin *= -1;
+                this._moveRange.xMax *= -1;
+            }
+            if (nsize.height < csize.height) {
+                this._moveRange.yMin *= -1;
+                this._moveRange.yMax *= -1;
+            }
+        }
     }
 }
