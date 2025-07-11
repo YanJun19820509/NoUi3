@@ -32,7 +32,7 @@ export class SetScanPath extends HackUi {
     //左上右下
     protected _dir4 = [{ x: -1, y: 0 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }];
     //上、右上、右、右下、下、左下、左、左上
-    protected _dir8 = [{ x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: -1, y: -1 }];
+    protected _dir8 = [{ x: -1, y: -1 }, { x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }];
 
     // 非透明像素
     protected _noAlpha0PixelsMap: Map<string, number[]> = new Map();
@@ -304,7 +304,7 @@ export class SetScanPath extends HackUi {
     protected isPixelAlpha0(u: number, v: number): boolean;
     protected isPixelAlpha0(u: number, v?: number): boolean {
         if (v != null) u = this.alphaIndex(u, v);
-        return !this._textureBuffer[u];
+        return this._textureBuffer[u] === 0;
     }
 
     /**
@@ -455,6 +455,7 @@ export class SetScanPath extends HackUi {
     private initDebugSprite() {
         const size = this._size;
         const node = no.newNode('path_point', [Sprite]);
+        node.layer = this.node.layer;
         node.parent = this.node;
         const anchor = no.anchor(this.node);
         no.anchor(node, anchor.x, anchor.y);
