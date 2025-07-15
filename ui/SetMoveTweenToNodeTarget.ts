@@ -16,7 +16,7 @@ import { EasingType, EasingTypeName } from '../types';
  * URL = db://assets/NoUi3/ui/SetMoveTweenToNodeTarget.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  * 将当前节点移动到指定节点位置
- * data:string|{target:string,subTypes:string[]},目标节点标识符，子节点路径数组
+ * data:string|{target:string,subTypes:string[],speed?:number},目标节点标识符，子节点路径数组，移动速度
  */
 
 @ccclass('SetMoveTweenToNodeTarget')
@@ -101,7 +101,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         if (typeof data == 'string') {
             this.setTween(data);
         } else if (typeof data == 'object') {
-            this.setTween(data.target, data.subTypes);
+            this.setTween(data.target, data.subTypes, data.speed);
         }
     }
 
@@ -118,7 +118,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
      * // 将血条移动到BOSS节点位置：
      * this.setTween('BOSS_HP_POSITION');
      */
-    protected setTween(targetType: string, subTypes?: string[]) {
+    protected setTween(targetType: string, subTypes?: string[], speed?: number) {
         // 从节点目标管理器获取目标节点引用
         let target: YJNodeTarget;
         if (subTypes) {
@@ -129,7 +129,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         if (!target) {
             // 目标节点未就绪时，延迟重试机制
             this.scheduleOnce(() => {
-                this.setTween(targetType, subTypes);
+                this.setTween(targetType, subTypes, speed);
             });
             return;
         }
@@ -156,7 +156,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
             pos.y = p.y;
         }
         let dis = no.distance(p, pos); // 三维空间距离计算
-        let duration = this.fixSpeed ? dis / this.speed : this.time; // 持续时间计算策略
+        let duration = this.fixSpeed ? dis / (speed || this.speed) : this.time; // 持续时间计算策略
         this.node.on(Node.EventType.TRANSFORM_CHANGED, this.onMoving, this);
         // 配置缓动动画组件参数
         this.getComponent(SetNodeTweenAction).a_setData({

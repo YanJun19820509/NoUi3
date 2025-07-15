@@ -1328,7 +1328,7 @@ export class YJUIAnimationEffect extends Component {
     private playSerial(node: Node, info: AnimationEffectInfo) {
         let repeat = info.repeat;
         this._playSerial(node, info.serialAnimationEffects, () => {
-            if (info.repeat == 0 || --repeat > 0) this.playParallel(node, info);
+            if (info.repeat == 0 || --repeat > 0) this.playSerial(node, info);
         });
     }
 
@@ -1350,6 +1350,7 @@ export class YJUIAnimationEffect extends Component {
         if (!isValid(node)) return;
         let all = info.parallelAnimationEffects.length,
             n = 0;
+        if (all == 0) return;
         for (let i = 0; i < all; i++) {
             const a = info.parallelAnimationEffects[i];
             this._playSerial(node, a.serialAnimationEffects, () => {
@@ -1382,6 +1383,7 @@ export class YJUIAnimationEffect extends Component {
      */
     private _playSerial(node: Node, serialAnimationEffects: AnimationEffect[], onEnd?: () => void) {
         if (!isValid(node)) return;
+        if (serialAnimationEffects.length == 0) return;
         let a: any[] = [];
         for (let i = 0; i < serialAnimationEffects.length; i++) {
             a = a.concat(serialAnimationEffects[i].getTweenSet(node));

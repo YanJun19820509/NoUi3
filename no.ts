@@ -1543,6 +1543,8 @@ export namespace no {
                     o[k] = value;
                 }
             } else if (index < max - 1) {
+                if (typeof o[k] != 'object')
+                    o[k] = {};
                 o = o[k];
             } else {
                 o[k] = value;
@@ -11223,6 +11225,85 @@ export namespace no {
             }
         }
         return null;
+    }
+
+
+
+    /**
+     * 计算斜抛运动参数（考虑重力加速度）
+     * @param initialSpeed 初速度（单位：米/秒）
+     * @param angle 发射角度（单位：度，0-90度）
+     * @param gravity 重力加速度（单位：米/秒²，默认9.8）
+     * @returns 包含各种运动参数的对象
+     * @example
+     * // 计算导弹发射参数
+     * const missileData = no.calculateProjectileMotion(100, 45, 9.8);
+     * console.log(`最高点时间：${missileData.timeToPeak}秒`);
+     * console.log(`最大高度：${missileData.maxHeight}米`);
+     * console.log(`总飞行时间：${missileData.totalTime}秒`);
+     * console.log(`水平射程：${missileData.range}米`);
+     * 
+     * // 游戏中的子弹轨迹计算
+     * const bulletData = no.calculateProjectileMotion(50, 30);
+     * this.scheduleOnce(() => {
+     *   // 在最高点时触发特效
+     *   this.showPeakEffect();
+     * }, bulletData.timeToPeak);
+     */
+    export function calculateProjectileMotion(initialSpeed: number, angle: number, gravity: number, maxDistance?: number): {
+        timeToPeak: number,      // 到达最高点时间
+        maxHeight: number,       // 最大高度
+        totalTime: number,       // 总飞行时间
+        range: number,           // 水平射程
+        horizontalSpeed: number, // 水平速度分量
+        verticalSpeed: number,   // 垂直速度分量
+        peakVelocity: number     // 最高点时的水平速度
+    } {
+        // 将角度转换为弧度
+        const angleRad = no.angleToRadian(angle);
+
+        // 分解速度分量
+        const horizontalSpeed = initialSpeed * Math.cos(angleRad);
+        const verticalSpeed = initialSpeed * Math.sin(angleRad);
+
+        // 计算到达最高点的时间（垂直速度减为0的时间）
+        const timeToPeak = Math.abs(verticalSpeed / gravity);
+
+        // 计算最大高度（使用运动学公式：h = v0*t - 0.5*g*t²）
+        const maxHeight = verticalSpeed * timeToPeak - 0.5 * gravity * timeToPeak * timeToPeak;
+
+        // 计算总飞行时间（从发射到落地的时间）
+        const totalTime = maxDistance ? Math.abs(maxDistance / horizontalSpeed) : 0;
+
+        // 计算水平射程
+        const range = horizontalSpeed * totalTime;
+
+        return {
+            timeToPeak,
+            maxHeight,
+            totalTime,
+            range,
+            horizontalSpeed,
+            verticalSpeed,
+            peakVelocity: horizontalSpeed // 最高点时只有水平速度
+        };
+    }
+
+    /**
+     * 计算斜抛物体在指定时间的运动参数
+     * @param initialSpeed 初速度（单位：米/秒）
+     * @param angle 发射角度（单位：度，0-90度）
+     * @param time 指定时间（单位：秒）
+     * @param gravity 重力加速度（单位：米/秒²，默认9.8）
+     */
+    export function calculateProjectileMotionAtTime(horizontalSpeed: number, verticalSpeed: number, time: number, gravity: number) {
+        const x = horizontalSpeed * time;
+        const y = verticalSpeed * time - 0.5 * gravity * time * time;
+        const newVerticalSpeed = verticalSpeed - gravity * time;
+        //计算角度变化
+        let angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
+        if (horizontalSpeed < 0) angleChange += 180;
+        return { x, y, angleChange };
     }
 }
 no.addToWindowForDebug('no', no);

@@ -59,8 +59,7 @@ export class SetSpine extends HackUi {
     @property({ tooltip: '当两个动作切换出现异常时，可尝试勾选' })
     needClearTracks: boolean = true;
 
-    // 是否允许在显示全屏界面时禁用组件（示例：设置为false可防止被全屏界面意外关闭）
-    @property({ tooltip: '当显示全屏界面时，是否支持disable' })
+    @property({ tooltip: '当disable时是否销毁spine' })
     canDisable: boolean = true;
 
     @property({ tooltip: '使用节点size，不使用spine默认size' })

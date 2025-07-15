@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, Component, Node, Prefab, js, Widget, instantiate } from '../../yj';
+import { ccclass, property, menu, Component, Node, Prefab, js, Widget, instantiate, isValid } from '../../yj';
 import { no } from '../../no';
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
@@ -457,6 +457,37 @@ export class YJWindowManager extends Component {
             }
         }
         return null;
+    }
+
+    private _prefabPathToView: { [path: string]: Node } = {};
+
+    /**
+     * 添加非标准面板,非标准面板不做缓存管理，关闭时需要调用removeView
+     * @param viewPath 非标准面板prefab路径
+     * @param to 所属层级
+     */
+    public static addView(viewPath: string, to: string) {
+        const self = YJWindowManager._ins,
+            content: Node = self.getContent(to);
+        const request = { type: Prefab, url: viewPath };
+        no.assetBundleManager.loadAny<Prefab>(request, pf => {
+            if (!pf) return;
+            const node = instantiate(pf);
+            self._prefabPathToView[viewPath] = node;
+            content.addChild(node);
+        });
+    }
+
+    /**
+     * 移除非标准面板
+     * @param viewPath 非标准面板prefab路径
+     */
+    public static removeView(viewPath: string) {
+        const self = YJWindowManager._ins;
+        const node = self._prefabPathToView[viewPath];
+        if (node && isValid(node)) {
+            node.destroy();
+        }
     }
 
     /**

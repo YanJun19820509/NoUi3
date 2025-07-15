@@ -147,17 +147,28 @@ export class SetTimeCountDown extends HackUi {
      * - string: 数字字符串（如"3600"）或直接显示文本
      * - array: [剩余秒数, 总秒数]（如[1800, 3600]）
      * - 'stop': 停止倒计时
+     * - 'pause': 暂停倒计时
+     * - 'resume': 恢复倒计时
      * @示例 
      * this.a_setData(60)       // 60秒倒计时
-     * this.a_setData("pause")  // 直接显示"pause"文本
+     * this.a_setData("hello")  // 直接显示"hello"文本
      * this.a_setData([30, 60]) // 显示30秒倒计时（总时长60秒）
      * this.a_setData('stop')   // 停止倒计时
+     * this.a_setData('pause')   // 暂停倒计时
+     * this.a_setData('resume')   // 恢复倒计时
      */
     protected onDataChange(data: any) {
         no.sysTime.offTickTock(this);
 
-        if (data == 'stop') {
+        if (data == 'pause') {
             return;
+        }
+        if (data == 'resume') {
+            no.sysTime.onTickTock(this);
+            return;
+        }
+        if (data == 'stop') {
+            data = 0;
         }
 
         // 处理直接显示文本的情况

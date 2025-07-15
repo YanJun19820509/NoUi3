@@ -157,7 +157,7 @@ export class SetScanPath extends HackUi {
                 this._pixelSet.add(key);
             }
         }
-        console.log('scanWholePixels', this._pixelArr.length);
+        // console.log('scanWholePixels', this._pixelArr.length);
         this.updateScanState();
     }
 
@@ -194,7 +194,7 @@ export class SetScanPath extends HackUi {
 
         this._pixelArr = newArr;
         newArr = null;
-        console.log('removeIsolatedPixels', this._pixelArr.length);
+        // console.log('removeIsolatedPixels', this._pixelArr.length);
         this.updateScanState();
     }
 

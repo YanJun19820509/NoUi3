@@ -271,7 +271,7 @@ export class SetDigHole extends SetScanPath {
         }
         if (this._drawLineUv.has(`${u},${v}`)) return;
         this._drawLineUv.add(`${u},${v}`);
-        if (Math.random() > .8) return;
+        if (Math.random() > .9) return;
         const angle = Math.random() * Math.PI * 2;
         const length = Math.random() * 10 + 10;
         const startX = Math.floor(u + Math.cos(angle) * length);
