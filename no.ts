@@ -2815,6 +2815,18 @@ export namespace no {
         return rect;
     }
 
+    export function nodeRectInOther(node: Node, other: Node): Rect {
+        const pos = nodePositionInOtherNode(node, other, _tempPos),
+            contentSize = size(node);
+        let anchor = node.getComponent(UITransform).anchorPoint;
+        const rect = new Rect();
+        rect.x = pos.x - anchor.x * contentSize.width;
+        rect.y = pos.y - anchor.y * contentSize.height
+        rect.height = contentSize.height;
+        rect.width = contentSize.width;
+        return rect;
+    }
+
     /**
      * 检测坐标点是否在节点范围内（支持世界坐标系）
      * @param node 目标节点
@@ -11276,7 +11288,7 @@ export namespace no {
         const totalTime = maxDistance ? Math.abs(maxDistance / horizontalSpeed) : 0;
 
         // 计算水平射程
-        const range = horizontalSpeed * totalTime;
+        const range = horizontalSpeed * timeToPeak * 2;
 
         return {
             timeToPeak,

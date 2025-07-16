@@ -102,6 +102,11 @@ export class YJTouchListener extends Component {
         this.dispatcher?.removeListener(this);
     }
 
+    public readdListener() {
+        this.dispatcher?.removeListener(this);
+        this.dispatcher?.addListener(this);
+    }
+
     /**
      * 触摸开始事件处理
      * @param event 触摸事件对象（包含触摸点坐标等信息）
