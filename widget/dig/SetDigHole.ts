@@ -22,12 +22,16 @@ export class SetDigHole extends SetScanPath {
             this.clearDataValue(`${this.bind_keys}.path`);
         }
         if (digInfo) {
-            this._tempPos.set(digInfo.x, digInfo.y, 0);
-            no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
-            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
-            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, digInfo.radius, digInfo.radian);
-            this.clearDataValue(`${this.bind_keys}.digInfo`);
+            const infos = [].concat(digInfo);
+            for (let i = 0, n = infos.length; i < n; i++) {
+                const info = infos[i];
+                this._tempPos.set(info.x, info.y, 0);
+                no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
+                this.digHole(this._tempPos.x, this._tempPos.y, info.radius);
+                // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
+            }
             this.updateScanState();
+            this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
     }
 

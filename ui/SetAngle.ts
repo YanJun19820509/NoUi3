@@ -1,4 +1,4 @@
-import { ccclass, menu } from '../yj';
+import { ccclass, menu, property } from '../yj';
 import { HackUi } from './HackUi';
 
 /**
@@ -16,7 +16,10 @@ import { HackUi } from './HackUi';
 @ccclass('SetAngle')
 @menu('NoUi/ui/SetAngle(设置旋转角度:number)')
 export class SetAngle extends HackUi {
+    @property({ displayName: '反向', tooltip: '反向' })
+    reverse: boolean = false;
     protected onDataChange(data: any) {
-        this.node.angle = Number(data);
+        const a = Number(data);
+        this.node.angle = this.reverse ? -a : a;
     }
 }
