@@ -133,6 +133,7 @@ export class SetTimeCountDown extends HackUi {
     protected _max: number;
     // 目标截止时间戳（秒）
     protected _deadline: number;
+    private _pauseTime: number = 0;
 
 
     onDisable() {
@@ -161,9 +162,13 @@ export class SetTimeCountDown extends HackUi {
         no.sysTime.offTickTock(this);
 
         if (data == 'pause') {
+            this._pauseTime = no.sysTime.now;
             return;
         }
         if (data == 'resume') {
+            const a = no.sysTime.now - this._pauseTime;
+            this._deadline += a;
+            this._pauseTime = 0;
             no.sysTime.onTickTock(this);
             return;
         }

@@ -20,7 +20,10 @@ export class YJTouchMoveNode extends Component {
     @property({ displayName: '是否反向', visible() { return this.syncNode != null; } })
     reverse: boolean = false;
 
+    //移动范围
     private _moveRange: { xMin: number, yMin: number, xMax: number, yMax: number };
+    //显示范围
+    private _rect: { xMin: number, yMin: number, xMax: number, yMax: number };
     private _syncRangeScale: { x: number, y: number };
     private _isTouching: boolean = false;
 
@@ -86,6 +89,14 @@ export class YJTouchMoveNode extends Component {
         this._sync(x, y);
     }
 
+    /**
+     * 获取子节点在其内的可移动范围，非该节点可移动范围
+     * @returns 移动范围
+     */
+    public moveRange() {
+        return this._rect;
+    }
+
     private initMoveRange() {
         if (!this._moveRange) {
             const nsize = no.size(this.node);
@@ -107,6 +118,12 @@ export class YJTouchMoveNode extends Component {
                 this._moveRange.yMin *= -1;
                 this._moveRange.yMax *= -1;
             }
+            this._rect = {
+                xMin: (0 - nar.x) * nsize.width,
+                yMin: (0 - nar.y) * nsize.height,
+                xMax: (1 - nar.x) * nsize.width,
+                yMax: (1 - nar.y) * nsize.height
+            };
         }
     }
 }
