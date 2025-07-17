@@ -14,25 +14,50 @@ export class SetDigHole extends SetScanPath {
     private _isDig = false;
     private _drawLineUv: Set<string> = new Set();
     private _drawOutlineUv: Set<string> = new Set();
+    private _holesInfo: any[] = [];
 
     protected onDataChange(data: any): void {
-        const { path, digInfo } = data;
+        const { path, digInfo, oldDigInfo } = data;
         if (path) {
             super.onDataChange(path);
             this.clearDataValue(`${this.bind_keys}.path`);
+            this._holesInfo.length = 0;
         }
         if (digInfo) {
-            const infos = [].concat(digInfo);
-            for (let i = 0, n = infos.length; i < n; i++) {
-                const info = infos[i];
-                this._tempPos.set(info.x, info.y, 0);
-                no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
-                this.digHole(this._tempPos.x, this._tempPos.y, info.radius);
-                // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
-            }
-            this.updateScanState();
+            this._tempPos.set(digInfo.x, digInfo.y, 0);
+            no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
+            this._holesInfo.push({ x: this._tempPos.x, y: this._tempPos.y, radius: digInfo.radius });
+            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
+            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
+        //恢复旧挖洞
+        if (oldDigInfo) {
+            const infos = [].concat(oldDigInfo);
+            this.recoverHoles(infos);
+            this.clearDataValue(`${this.bind_keys}.oldDigInfo`);
+        }
+    }
+
+    /**
+     * 恢复旧挖洞
+     * @param infos 挖洞信息
+     */
+    private recoverHoles(infos: any[]) {
+        if (!this._pathReady) {
+            this.scheduleOnce(() => {
+                this.recoverHoles(infos);
+            }, 0);
+            return;
+        }
+        for (let i = 0, n = infos.length; i < n; i++) {
+            const info = infos[i];
+            this._tempPos.set(info.x, info.y, 0);
+            this._holesInfo.push({ x: this._tempPos.x, y: this._tempPos.y, radius: info.radius });
+            this.digHole(this._tempPos.x, this._tempPos.y, info.radius);
+            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
+        }
+        this.updateScanState();
     }
 
     /**
@@ -296,6 +321,13 @@ export class SetDigHole extends SetScanPath {
             this._textureBuffer[idx + 2] = 0;
             this._textureBuffer[idx + 3] = 255;
         }
+    }
+
+    protected updateToData() {
+        super.updateToData();
+        //保存挖洞信息
+        this.clearDataValue('holesInfo');
+        this.setDataValue('holesInfo', this._holesInfo);
     }
 }
 

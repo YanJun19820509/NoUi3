@@ -49,6 +49,7 @@ export class SetScanPath extends HackUi {
      */
     protected _state = 0;
     protected _doing = false;
+    protected _pathReady = false;
 
     private _pathPointTexture: DynamicAtlasTexture;
     private _pathPointTextureBuffer: Uint8Array;
@@ -119,6 +120,11 @@ export class SetScanPath extends HackUi {
             case 5:
                 this._updateTexture();
                 this.updateScanState();
+                if (!this._pathReady) {
+                    this.scheduleOnce(() => {
+                        this._pathReady = true;
+                    }, 1);
+                }
                 break;
         }
     }
