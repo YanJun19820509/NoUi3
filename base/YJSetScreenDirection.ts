@@ -17,16 +17,15 @@ export class YJSetScreenDirection extends Component {
     direction: ScreenDirection = ScreenDirection.Horizontal;
 
     onLoad() {
+        view.setOrientation(this.direction);
         const size = view.getDesignResolutionSize();
         if (this.direction == ScreenDirection.Horizontal) {
-            view.setOrientation(ScreenDirection.Horizontal);
             if (size.height > size.width) {
                 view.setDesignResolutionSize(size.height, size.width, ResolutionPolicy.FIXED_HEIGHT);
             } else {
                 view.setResolutionPolicy(ResolutionPolicy.FIXED_HEIGHT);
             }
         } else {
-            view.setOrientation(ScreenDirection.Vertical);
             if (size.width > size.height) {
                 view.setDesignResolutionSize(size.width, size.height, ResolutionPolicy.FIXED_WIDTH);
             } else
