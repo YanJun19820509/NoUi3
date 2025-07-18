@@ -1,14 +1,20 @@
 import { no } from '../../no';
-import { ccclass, requireComponent, Sprite, v3, Vec3 } from '../../yj';
+import { ccclass, property, requireComponent, Sprite, v3, Vec3 } from '../../yj';
 import { SetScanPath } from '../scanPath/SetScanPath';
 /**
  * 挖洞效果组件
- * 图片路径，挖洞信息{节点内坐标，半径，弧度}
+ * 图片路径，挖洞信息{节点内坐标非世界坐标，半径，弧度}
  * data:{path: string, digInfo:{x: number, y: number, radius: number, radian: number}}
  */
 @ccclass('SetDigHole')
 @requireComponent([Sprite])
 export class SetDigHole extends SetScanPath {
+    @property({ displayName: '同步地形数据', tooltip: '将地形数据更新到dataWork中' })
+    needUpdateHolesInfoToData: boolean = true;
+    @property({ displayName: '挖洞数据key', tooltip: '挖洞数据将以该key更新到dataWork中', visible() { return this.needUpdateHolesInfoToData } })
+    holesInfoKey: string = 'holesInfo';
+    @property
+    showOutline: boolean = true;
 
     private _tempPos: Vec3 = v3();
     private _isDig = false;
@@ -24,10 +30,10 @@ export class SetDigHole extends SetScanPath {
             this._holesInfo.length = 0;
         }
         if (digInfo) {
-            this._tempPos.set(digInfo.x, digInfo.y, 0);
-            no.worldPositionInNode(this._tempPos, this.node, this._tempPos);
-            this._holesInfo.push({ x: this._tempPos.x, y: this._tempPos.y, radius: digInfo.radius });
-            this.digHole(this._tempPos.x, this._tempPos.y, digInfo.radius);
+            let { x, y, radius } = digInfo;
+            this._holesInfo.push({ x, y, radius });
+            this.digHole(x, y, radius);
+            this.updateScanState();
             // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
@@ -270,6 +276,7 @@ export class SetDigHole extends SetScanPath {
      * @param arr 轮廓点
      */
     private drawOutline() {
+        if (!this.showOutline) return;
         for (let k = 0, n = this._pixelArr.length; k < n; k++) {
             const [u, v] = this._pixelArr[k];
             // for (let i = u - 3, m = u + 3; i <= m; i++) {
@@ -325,9 +332,10 @@ export class SetDigHole extends SetScanPath {
 
     protected updateToData() {
         super.updateToData();
+        if (!this.needUpdateHolesInfoToData) return;
         //保存挖洞信息
-        this.clearDataValue('holesInfo');
-        this.setDataValue('holesInfo', this._holesInfo);
+        this.clearDataValue(this.holesInfoKey);
+        this.setDataValue(this.holesInfoKey, this._holesInfo);
     }
 }
 

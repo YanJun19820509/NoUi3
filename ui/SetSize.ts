@@ -46,6 +46,8 @@ export class SetSize extends HackUi {
      */
     @property({ tooltip: '最大尺寸，超过该尺寸会缩小，0表示不限制', visible() { return this.checkMaxSize; } })
     maxSize: Size = size();
+    @property({ displayName: '同步其他节点缩放', tooltip: '将其他节点的缩放同步到该节点', type: Node, visible() { return this.checkMaxSize; } })
+    syncOtherNodeScale: Node[] = [];
 
     /**
      * 是否同步子节点最大尺寸
@@ -117,19 +119,9 @@ export class SetSize extends HackUi {
      * 宽度超过限制，缩放比例为0.8（200/250）
      */
     private checkSize() {
-        let rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
-        // 遍历所有子节点获取最大尺寸
-        for (let i = 0, n = this.node.children.length; i < n; i++) {
-            const child = this.node.children[i];
-            const r = no.nodeRect(child);
-            rect.minX = Math.min(rect.minX, r.xMin);
-            rect.minY = Math.min(rect.minY, r.yMin);
-            rect.maxX = Math.max(rect.maxX, r.xMax);
-            rect.maxY = Math.max(rect.maxY, r.yMax);
-        }
-        const width = rect.maxX - rect.minX, height = rect.maxY - rect.minY;
         // 最大尺寸模式处理
         if (this.checkMaxSize) {
+            const { width, height } = no.size(this.node);
             const wMax = this.maxSize.width,
                 hMax = this.maxSize.height;
             let s = 1;
@@ -143,9 +135,26 @@ export class SetSize extends HackUi {
             if (s < 1) {
                 no.scale(this.node, v3(s, s, 1));
             }
+            if (this.syncOtherNodeScale.length > 0) {
+                for (let i = 0, n = this.syncOtherNodeScale.length; i < n; i++) {
+                    const node = this.syncOtherNodeScale[i];
+                    no.scale(node, v3(s, s, 1));
+                }
+            }
         }
         // 尺寸同步模式处理
         else if (this.syncSize) {
+            let rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+            // 遍历所有子节点获取最大尺寸
+            for (let i = 0, n = this.node.children.length; i < n; i++) {
+                const child = this.node.children[i];
+                const r = no.nodeRect(child);
+                rect.minX = Math.min(rect.minX, r.xMin);
+                rect.minY = Math.min(rect.minY, r.yMin);
+                rect.maxX = Math.max(rect.maxX, r.xMax);
+                rect.maxY = Math.max(rect.maxY, r.yMax);
+            }
+            const width = rect.maxX - rect.minX, height = rect.maxY - rect.minY;
             no.size(this.node, size(width, height));
         }
     }

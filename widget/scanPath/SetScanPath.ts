@@ -13,7 +13,9 @@ import { ccclass, property, Rect, requireComponent, Sprite, SpriteFrame, Texture
 @ccclass('SetScanPath')
 @requireComponent([Sprite])
 export class SetScanPath extends HackUi {
-    @property({ displayName: '路径数据key', tooltip: '路径数据将以该key更新到dataWork中' })
+    @property({ displayName: '同步路径数据', tooltip: '将路径数据更新到dataWork中' })
+    needUpdatePathToData: boolean = true;
+    @property({ displayName: '路径数据key', tooltip: '路径数据将以该key更新到dataWork中', visible() { return this.needUpdatePathToData } })
     pathKey: string = 'scanPathes';
     @property({ displayName: '步长' })
     step = 10;
@@ -123,7 +125,7 @@ export class SetScanPath extends HackUi {
                 if (!this._pathReady) {
                     this.scheduleOnce(() => {
                         this._pathReady = true;
-                    }, 1);
+                    }, 0.05);
                 }
                 break;
         }
@@ -284,6 +286,7 @@ export class SetScanPath extends HackUi {
      * 更新数据到dataWork
      */
     protected updateToData() {
+        if (!this.needUpdatePathToData) return;
         const pathesData: { x: number, y: number }[][] = [];
         for (let i = 0, n = this._pathes.length; i < n; i++) {
             const path = this._pathes[i];
