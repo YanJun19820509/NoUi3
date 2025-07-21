@@ -4980,6 +4980,12 @@ export namespace no {
             this._cacheAsset.clear();
         }
 
+        public clearBundle(name: string) {
+            const bundle = this.getLoadedBundle(name);
+            bundle.releaseAll();
+            assetManager.removeBundle(bundle);
+        }
+
         /**
          * 顺序预加载多个资源包（支持进度回调）
          * @param paths 需要加载的bundle路径数组
@@ -5582,7 +5588,7 @@ export namespace no {
          *   this.hideLoadingScreen();
          * });
          */
-        public loadScene(name: string, callback: () => void): void {
+        public loadScene(name: string, callback?: () => void): void {
             director.loadScene(name, callback);
         }
 

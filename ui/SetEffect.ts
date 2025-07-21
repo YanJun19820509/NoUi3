@@ -106,13 +106,13 @@ export class SetEffect extends HackUi {
         if (skeleton.skeletonData) {
             this.checkSkeletonMaterial(skeleton, defines, properties);
         } else {
-            const subSkeleton = skeleton.getComponentsInChildren(Skeleton);
-            if (subSkeleton.length > 0) {
-                for (let i = 0; i < subSkeleton.length; i++) {
-                    if (subSkeleton[i].skeletonData) {
-                        this.checkSkeletonMaterial(subSkeleton[i], defines, properties);
-                    }
-                }
+            const subSkeleton = skeleton.getComponentInChildren(Skeleton);
+            if (subSkeleton?.skeletonData) {
+                this.checkSkeletonMaterial(subSkeleton, defines, properties);
+            } else {
+                this.scheduleOnce(() => {
+                    this.setSkeletonMaterial(defines, properties);
+                });
             }
         }
     }
@@ -124,8 +124,12 @@ export class SetEffect extends HackUi {
             for (const key in materialCache) {
                 this.setProperties(materialCache[key], defines, properties);
             }
-        } else {
-            this.setProperties(skeleton.customMaterial, defines, properties);
+        }
+        else {
+            // this.setProperties(skeleton.customMaterial, defines, properties);
+            this.scheduleOnce(() => {
+                this.checkSkeletonMaterial(skeleton, defines, properties);
+            });
         }
     }
 

@@ -330,10 +330,10 @@ export class SetSpine extends HackUi {
                 spine.premultipliedAlpha = bSpine.premultipliedAlpha;
                 spine.defaultCacheMode = bSpine.defaultCacheMode;
                 // spine.enableBatch = bSpine.enableBatch;
-                spine.sockets = bSpine.sockets;
 
                 // 设置骨骼数据
                 spine.skeletonData = res;
+                spine.sockets = bSpine.sockets;
                 // 时间缩放计算（全局缩放系数 * 配置缩放系数）
                 spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
 
