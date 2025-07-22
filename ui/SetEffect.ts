@@ -118,9 +118,13 @@ export class SetEffect extends HackUi {
     }
 
     private checkSkeletonMaterial(skeleton: Skeleton, defines: any, properties: any) {
+        if (!skeleton.node) {
+            this.setSkeletonMaterial(defines, properties);
+            return;
+        }
         //如果是骨骼动画，则遍历骨骼动画的材质
         const materialCache = skeleton['_materialCache'];
-        if (Object.keys(materialCache).length > 0) {
+        if (materialCache && Object.keys(materialCache).length > 0) {
             for (const key in materialCache) {
                 this.setProperties(materialCache[key], defines, properties);
             }

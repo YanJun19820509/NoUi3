@@ -1,5 +1,4 @@
-
-import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR, isValid } from '../yj';
+import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR, isValid, Node, SpineSocket } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -16,6 +15,19 @@ import { YJSpineManager } from '../base/YJSpineManager';
  * data:{path, skin, animation, loop, timeScale, loopNum, startEvent, endEvent, eventParam}|[{path, skin, animation, loop, timeScale, startEvent, endEvent, eventParam},...]
  * 支持动画链
  */
+
+@ccclass('SocketInfo')
+export class SocketInfo {
+    @property
+    path: string = '';
+    @property({ type: Node })
+    node: Node = null;
+
+    constructor(path: string, target: Node) {
+        this.path = path;
+        this.node = target;
+    }
+}
 
 @ccclass('SetSpine')
 @menu('NoUi/ui/SetSpine(设置spine动画)')
@@ -64,6 +76,8 @@ export class SetSpine extends HackUi {
 
     @property({ tooltip: '使用节点size，不使用spine默认size' })
     useNodeSize: boolean = false;
+    @property({ type: SocketInfo })
+    scokets: SocketInfo[] = [];
 
     @property
     get sync(): boolean {
@@ -75,7 +89,7 @@ export class SetSpine extends HackUi {
         const spine = this.getComponent(Skeleton);
 
         // 检查是否需要自动获取资源路径
-        if (spine.skeletonData && !spine.sockets.length && !this.spineUrl) {
+        if (spine.skeletonData) {
             // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
             no.EditorMode.getAssetUrlByUuid(spine.skeletonData._uuid).then(url => {
                 if (!url) return;
@@ -86,6 +100,12 @@ export class SetSpine extends HackUi {
                 // 记录当前动画名称（示例：'idle'或'attack'）
                 this.animationName = spine.animation;
             });
+        }
+        if (spine.sockets.length) {
+            this.scokets = [];
+            for (let i = 0; i < spine.sockets.length; i++) {
+                this.scokets.push(new SocketInfo(spine.sockets[i].path, spine.sockets[i].target));
+            }
         }
     }
 
@@ -333,7 +353,13 @@ export class SetSpine extends HackUi {
 
                 // 设置骨骼数据
                 spine.skeletonData = res;
-                spine.sockets = bSpine.sockets;
+                if (this.scokets.length) {
+                    for (let i = 0, n = this.scokets.length; i < n; i++) {
+                        const { path, node } = this.scokets[i];
+                        spine.sockets.push(new SpineSocket(path, node));
+                    }
+                    spine.sockets = spine.sockets;
+                }
                 // 时间缩放计算（全局缩放系数 * 配置缩放系数）
                 spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
 
