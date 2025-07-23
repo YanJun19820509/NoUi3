@@ -1,5 +1,5 @@
 
-import { ccclass, menu, property, Node, Size, size, v3, NodeEventType } from '../yj';
+import { ccclass, menu, property, Node, Size, size, v3, NodeEventType, isValid } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 
@@ -86,6 +86,7 @@ export class SetSize extends HackUi {
             const children = this.node.children;
             for (let i = 0, n = children.length; i < n; i++) {
                 const child = children[i];
+                if (!isValid(child)) continue;
                 child.off(NodeEventType.SIZE_CHANGED, this.checkSize, this);
             }
         }

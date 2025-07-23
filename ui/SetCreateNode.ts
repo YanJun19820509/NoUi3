@@ -432,7 +432,7 @@ export class SetCreateNode extends HackUi {
                     set: 1, // 初始状态
                     props: { scale: [0, 0] } // 缩放归零
                 }, {
-                    duration: .1, // 动画时长
+                    duration: .2, // 动画时长
                     to: 1, // 线性插值
                     props: { scale: [1, 1] } // 恢复正常尺寸
                 }

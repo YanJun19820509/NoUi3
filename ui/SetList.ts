@@ -325,6 +325,7 @@ export class SetList extends HackUi {
 
         // 获取当前所有列表项
         let listItems = this.content.children;
+        if (listItems.length === 0) this._1b1 = this.isFirst; // 首次运行标记
 
         // 处理多列布局（将一维数组转换为二维数组）
         if (this.columnNumber > 1) {
@@ -420,11 +421,12 @@ export class SetList extends HackUi {
         // 普通模式
         else {
             let i = 0;
-            // 使用任务管理器分帧处理
-            YJJobManager.ins.addTask(() => {
-                this.setItem(i++);
-                return i >= this.showMax; // 终止条件
-            });
+            // // 使用任务管理器分帧处理
+            // YJJobManager.ins.addTask(() => {
+            //     this.setItem(i++);
+            //     return i >= this.showMax; // 终止条件
+            // });
+            this.schedule(() => this.setItem(i++), 0.1, this.showMax - 1);
         }
 
         // 安全校验节点状态
@@ -497,7 +499,7 @@ export class SetList extends HackUi {
                     set: 1,
                     props: { scale: [0, 0] }  // 初始状态：完全缩小
                 }, {
-                    duration: .1,
+                    duration: .15,
                     to: 1,
                     props: { scale: [1, 1] }  // 动画终点：正常尺寸
                 }

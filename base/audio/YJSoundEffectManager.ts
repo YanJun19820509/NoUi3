@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Component } from '../../yj';
+import { EDITOR, ccclass, property, Component, requireComponent } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from './YJAudioManager';
 
@@ -26,6 +26,7 @@ export class SoundEffectInfo {
 }
 
 @ccclass('YJSoundEffectManager')
+@requireComponent(YJAudioManager)
 /**
  * 音效管理类,用于管理游戏中的音效播放
  * @特性

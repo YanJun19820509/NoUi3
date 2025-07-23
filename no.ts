@@ -9209,9 +9209,10 @@ export namespace no {
          */
         public static clear(type?: string) {
             type = type || '_';
-            if (this._singleObjects[type]) {
-                for (let i = 0, n = this._singleObjects[type].length; i < n; i++) {
-                    this._singleObjects[type][i]['destroyAll']?.();
+            const arr = this._singleObjects[type];
+            if (arr) {
+                for (let i = 0, n = arr.length; i < n; i++) {
+                    arr[i]['destroyAll']?.();
                 }
             }
         }

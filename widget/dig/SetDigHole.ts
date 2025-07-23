@@ -16,7 +16,6 @@ export class SetDigHole extends SetScanPath {
     @property
     showOutline: boolean = true;
 
-    private _tempPos: Vec3 = v3();
     private _isDig = false;
     private _drawLineUv: Set<string> = new Set();
     private _drawOutlineUv: Set<string> = new Set();
@@ -34,7 +33,7 @@ export class SetDigHole extends SetScanPath {
             this._holesInfo.push({ x, y, radius });
             this.digHole(x, y, radius);
             this.updateScanState();
-            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
+            // this.digEllipseHole(x, y, radius, info.radian);
             this.clearDataValue(`${this.bind_keys}.digInfo`);
         }
         //恢复旧挖洞
@@ -57,11 +56,10 @@ export class SetDigHole extends SetScanPath {
             return;
         }
         for (let i = 0, n = infos.length; i < n; i++) {
-            const info = infos[i];
-            this._tempPos.set(info.x, info.y, 0);
-            this._holesInfo.push({ x: this._tempPos.x, y: this._tempPos.y, radius: info.radius });
-            this.digHole(this._tempPos.x, this._tempPos.y, info.radius);
-            // this.digEllipseHole(this._tempPos.x, this._tempPos.y, info.radius, info.radian);
+            const { x, y, radius } = infos[i];
+            this._holesInfo.push({ x, y, radius });
+            this.digHole(x, y, radius);
+            // this.digEllipseHole(x, y, radius, info.radian);
         }
         this.updateScanState();
     }
