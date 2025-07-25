@@ -74,10 +74,6 @@ export class YJCreateNode extends Component {
                 if (!this?.node?.isValid) return null;
             }
 
-            // 4. 初始化数据
-            const dataWorkComp = node.getComponent(YJDataWork);
-            dataWorkComp?.init();
-
             // 6. 设置父节点和显示状态
             node.parent = this.target;
             no.visible(node, true);

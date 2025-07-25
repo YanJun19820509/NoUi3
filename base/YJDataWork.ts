@@ -177,52 +177,52 @@ export class YJDataWork extends Component {
      */
     public initWithData(d: any) {
         this.data = d;
-        this.init();
+        this.afterDataInit();
         return this;
     }
 
-    /**
-     * 初始化数据组件
-     * @description 
-     * - 在组件加载时自动调用
-     * - 可手动调用进行重新初始化
-     * - 如果数据未就绪会启动定时检查（每帧检查，最多180次）
-     * @example
-     * // 手动重新初始化组件
-     * this.getComponent(YJDataWork).init();
-     * 
-     * @example
-     * // 在节点加入场景前初始化
-     * const node = instantiate(prefab);
-     * node.getComponent(YJDataWork).init();
-     * scene.addChild(node);
-     */
-    public init() {
-        if (!this._loaded) return;
-        const afterDataInit = this['afterDataInit'];
-        if (typeof afterDataInit == 'function') {
-            this.unschedule(this._checkData);
-            if (!this.data)
-                this.schedule(this._checkData, 0, 180);
-            else afterDataInit.call(this);
-        }
-    }
+    // /**
+    //  * 初始化数据组件
+    //  * @description 
+    //  * - 在组件加载时自动调用
+    //  * - 可手动调用进行重新初始化
+    //  * - 如果数据未就绪会启动定时检查（每帧检查，最多180次）
+    //  * @example
+    //  * // 手动重新初始化组件
+    //  * this.getComponent(YJDataWork).init();
+    //  * 
+    //  * @example
+    //  * // 在节点加入场景前初始化
+    //  * const node = instantiate(prefab);
+    //  * node.getComponent(YJDataWork).init();
+    //  * scene.addChild(node);
+    //  */
+    // public init() {
+    //     if (!this._loaded) return;
+    //     const afterDataInit = this['afterDataInit'];
+    //     if (typeof afterDataInit == 'function') {
+    //         this.unschedule(this._checkData);
+    //         if (!this.data)
+    //             this.schedule(this._checkData, 0, 180);
+    //         else afterDataInit.call(this);
+    //     }
+    // }
 
-    /**
-     * 数据就绪检查方法
-     * @private
-     * @description 当数据加载完成后：
-     * 1. 停止定时检查
-     * 2. 执行后续初始化回调（afterDataInit）
-     * @remarks 由init方法自动调度，无需手动调用
-     */
-    private _checkData() {
-        if (!!this.data) {
-            this.unschedule(this._checkData);
-            const afterDataInit = this['afterDataInit'];
-            afterDataInit.call(this);
-        }
-    }
+    // /**
+    //  * 数据就绪检查方法
+    //  * @private
+    //  * @description 当数据加载完成后：
+    //  * 1. 停止定时检查
+    //  * 2. 执行后续初始化回调（afterDataInit）
+    //  * @remarks 由init方法自动调度，无需手动调用
+    //  */
+    // private _checkData() {
+    //     if (!!this.data) {
+    //         this.unschedule(this._checkData);
+    //         const afterDataInit = this['afterDataInit'];
+    //         afterDataInit.call(this);
+    //     }
+    // }
 
     /**
      * 获取数据对象
@@ -247,19 +247,6 @@ export class YJDataWork extends Component {
         for (let key in d) {
             this.setValue(key, d[key]);
         }
-    }
-
-    /**
-     * 设置数据到DataWork并初始化
-     * @param t 基础数据对象（当d为空时使用）
-     * @param d 优先使用的数据对象
-     * @example
-     * // 优先使用服务器数据，没有则用本地缓存
-     * dataWork.setDataToDataWork(localData, serverData);
-     */
-    public setDataToDataWork(t: any, d: any) {
-        this.data = d || t;
-        this.init();
     }
 
     /**
@@ -502,8 +489,8 @@ export class YJDataWork extends Component {
      * 数据初始化后调用,此时data一定有值
      * 子类按需实现该方法
      */
-    // protected afterDataInit() {
+    protected afterDataInit() {
 
-    // }
+    }
 
 }
