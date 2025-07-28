@@ -44,7 +44,7 @@ export class YJGhostShadow extends Component {
     private _preview: boolean = false;
     private _sprite: Sprite = null;
     private _shadows: Node[] = [];
-    private _poses: Map<number, number[]> = new Map();
+    private _poses: Map<number, any[]> = new Map();
     private _isMoving: boolean = false;
     private _intervalFrame: number = 0;
     private _frameNum: number = 0;
@@ -91,9 +91,10 @@ export class YJGhostShadow extends Component {
             if (!shadow) break;
             const index = this._frameNum - this._intervalFrame * (i + 1);
             if (index < 0 || !this._poses.has(index)) continue;
-            const [x, y, angle] = this._poses.get(index);
+            const [x, y, angle, scale] = this._poses.get(index);
             shadow.setPosition(x, y, 0);
             shadow.angle = angle;
+            shadow.setScale(scale[0], scale[1], scale[2]);
             if (i === this.num - 1) {
                 this._poses.delete(index - 1);
             }
@@ -111,7 +112,8 @@ export class YJGhostShadow extends Component {
         }
         const { x, y } = this.node.position;
         const angle = this.node.angle;
-        this._poses.set(this._frameNum++, [x, y, angle]);
+        const scale = this.node.scale;
+        this._poses.set(this._frameNum++, [x, y, angle, [scale.x, scale.y, scale.z]]);
         if (this._frameNum >= this._intervalFrame) {
             this.shadowFollow();
         }
