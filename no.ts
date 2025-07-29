@@ -4982,6 +4982,7 @@ export namespace no {
 
         public clearBundle(name: string) {
             const bundle = this.getLoadedBundle(name);
+            if (bundle == null) return;
             bundle.releaseAll();
             assetManager.removeBundle(bundle);
         }
