@@ -11323,7 +11323,9 @@ export namespace no {
         //计算角度变化
         let angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
         if (horizontalSpeed < 0) angleChange += 180;
-        return { x, y, angleChange };
+        const horizontalDistance = horizontalSpeed * time;
+        const verticalDistance = verticalSpeed * time - 0.5 * gravity * time * time;
+        return { x, y, angleChange, horizontalDistance, verticalDistance };
     }
 }
 no.addToWindowForDebug('no', no);

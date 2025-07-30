@@ -22,7 +22,9 @@ export class SetFollowTarget extends HackUi {
     reserve: boolean = false;
 
     private _target: Node = null;
+    private _targetName: string = '';
     private _selfScale: Vec3 = null;
+    private _dir: number = 1;
 
     protected onDataChange(data: any) {
         if (data == 'null') {
@@ -33,6 +35,7 @@ export class SetFollowTarget extends HackUi {
     }
 
     private clearTarget() {
+        this._targetName = '';
         if (this._target) {
             this._target.off(Node.EventType.TRANSFORM_CHANGED, this.onTargetTransformChanged, this);
             this._target = null;
@@ -40,16 +43,24 @@ export class SetFollowTarget extends HackUi {
     }
 
     private initTarget(targetName: string) {
-        this._target = no.nodeTargetManager.get<YJNodeTarget>(targetName).node;
+        if (this._targetName == targetName) {
+            this.onTargetTransformChanged();
+            return;
+        }
+        this._targetName = targetName;
+        this._target = no.nodeTargetManager.get<YJNodeTarget>(targetName)?.node;
+        if (!this._target) {
+            this.scheduleOnce(() => {
+                this.initTarget(targetName);
+            });
+            return;
+        }
         this._target.on(Node.EventType.TRANSFORM_CHANGED, this.onTargetTransformChanged, this);
         this.onTargetTransformChanged();
     }
 
     private onTargetTransformChanged() {
-        if (this.syncPos) {
-            const pos = this._target.position;
-            this.node.setPosition(pos.x + this.posOffset.x, pos.y + this.posOffset.y, pos.z + this.posOffset.z);
-        }
+        if (!this._target) return;
         if (this.syncScale) {
             if (!this._selfScale) this._selfScale = this.node.scale.clone();
             const scale = this._target.scale;
@@ -59,5 +70,14 @@ export class SetFollowTarget extends HackUi {
             }
             this.node.setScale(scale.x * a * this._selfScale.x, scale.y * a * this._selfScale.y, scale.z * a * this._selfScale.z);
         }
+        if (this.syncPos) {
+            const pos = this._target.position;
+            this.node.setPosition(pos.x + this.posOffset.x * this._dir, pos.y + this.posOffset.y, pos.z + this.posOffset.z);
+        }
+    }
+
+    public setDir(dir: number) {
+        this._dir = dir;
+        this.onTargetTransformChanged();
     }
 }
