@@ -55,6 +55,7 @@ export class YJGameData extends no.Data {
         key = key || '_';
         if (this._insMap[key]) {
             this._insMap[key] = null;
+            delete this._insMap[key];
         }
     }
 

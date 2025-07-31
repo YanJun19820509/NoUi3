@@ -98,9 +98,11 @@ export class SetScanPath extends HackUi {
         this._spriteFrame.texture = this._texture;
         this._sprite.spriteFrame = this._spriteFrame;
         texture.decRef();
-        this.initNoAlpha0Pixels();
-        this.updateScanState();
-        this.initDebugSprite();
+        this.scheduleOnce(() => {
+            this.initNoAlpha0Pixels();
+            this.updateScanState();
+            this.initDebugSprite();
+        });
     }
 
     protected lateUpdate(dt: number): void {
