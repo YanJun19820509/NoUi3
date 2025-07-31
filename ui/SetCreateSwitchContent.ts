@@ -4,6 +4,7 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { YJDataWork } from '../base/YJDataWork';
 
 /**
  * Predefined variables
@@ -85,6 +86,7 @@ class ContentInfo {
             // no.visibleByOpacity(this.loadedNode, v);
             // no.x(this.loadedNode, !v ? 20000 : this.loadedNode['__origin_x__']);
             no.visibleByActiveInHierarchy(this.loadedNode, v);
+            if (v) this.enableDataWork();
         }
     }
 
@@ -102,6 +104,13 @@ class ContentInfo {
     public clear() {
         this.prefab.clear();
         this.loadedNode = null;
+    }
+
+    private enableDataWork() {
+        let comps = this.loadedNode.getComponentsInChildren(YJDataWork);
+        for (let i = 0; i < comps.length; i++) {
+            comps[i]['onEnable']();
+        }
     }
 }
 

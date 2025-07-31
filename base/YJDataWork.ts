@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, Component, disallowMultiple, Node } fr
 import { HackUi } from '../ui/HackUi';
 import { no } from '../no';
 import { YJDataWorkManager } from './YJDataWorkManager';
+import { YJUpdatePreDataWork } from './YJUpdatePreDataWork';
 
 /**
  * Predefined variables
@@ -336,7 +337,7 @@ export class YJDataWork extends Component {
     public changeValueByUi(key: string, value: any) {
         this.setValue(key, value);
         this['onUIValueChange']?.(key, value);
-        this.getComponent('YJUpdatePreDataWork')?.['updateData'](this.data);
+        this.getComponent(YJUpdatePreDataWork)?.updateData(this.data);
     }
 
     /**

@@ -1,6 +1,7 @@
 import { ccclass, property, Node, instantiate, SpriteFrame } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { SetSpriteFrameInSampler2D } from './SetSpriteFrameInSampler2D';
 
 /**
  * 设置重复节点，如星级展示
@@ -168,9 +169,9 @@ export class SetRepeatNode extends HackUi {
             }
 
             // 设置节点显示内容（使用SetSpriteFrameInSampler2D组件）
-            const comp = item.getComponent('SetSpriteFrameInSampler2D');
+            const comp = item.getComponent(SetSpriteFrameInSampler2D);
             const useShow = i < count; // 判断是否使用显示图
-            comp['setData'](useShow ? show : fill);
+            comp.a_setData(useShow ? show : fill);
         }
     }
 

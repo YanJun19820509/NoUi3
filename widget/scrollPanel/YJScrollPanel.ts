@@ -3,6 +3,7 @@ import { ccclass, property, executeInEditMode, Component, Node, UITransform, Wid
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { SetNodeTweenAction } from '../../ui/SetNodeTweenAction';
 import { no } from '../../no';
+import { nodeTargetManager } from '../../NodeTargetManager';
 
 /**
  * Predefined variables
@@ -206,7 +207,7 @@ export class YJScrollPanel extends Component {
      */
     public scrollToTarget(targetType: string, offset?: Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         const f = () => {
-            let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            let target = nodeTargetManager.get<YJNodeTarget>(targetType);
             if (!target) {
                 console.error('scrollToTargetAndScale找不到target：', targetType);
                 return;
@@ -233,7 +234,7 @@ export class YJScrollPanel extends Component {
      */
     public scrollToTargetAndScale(targetType: string, scale: number, offset?: Vec2, duration?: number, cb?: (target: YJNodeTarget) => void): void {
         const f = () => {
-            let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            let target = nodeTargetManager.get<YJNodeTarget>(targetType);
             if (!target) {
                 console.error('scrollToTargetAndScale找不到target：', targetType);
                 return;

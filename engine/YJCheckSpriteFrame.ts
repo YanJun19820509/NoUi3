@@ -1,4 +1,5 @@
 import { no } from "../no";
+import { SetSpriteFrameInSampler2D } from "../ui/SetSpriteFrameInSampler2D";
 import { YJCharLabel } from "../widget/charLabel/YJCharLabel";
 import { Component, Prefab, Sprite, _AssetInfo, assetManager, ccclass, instantiate, property } from "../yj";
 
@@ -141,7 +142,7 @@ export class YJCheckSpriteFrame extends Component {
 
             if (checkType === CheckType.SetSpriteFrameInSampler2D) {
                 // 检查规范使用组件的情况
-                if (!sprite.getComponent('SetSpriteFrameInSampler2D') && 
+                if (!sprite.getComponent(SetSpriteFrameInSampler2D) && 
                     sprite.spriteFrame && 
                     !sprite.spriteFrame.name.startsWith('default_') && 
                     !sprite.spriteFrame._uuid.endsWith('@f9941')) {
@@ -152,7 +153,7 @@ export class YJCheckSpriteFrame extends Component {
             if (checkType === CheckType.FILLED) {
                 // 检查FILLED类型使用规范
                 if (sprite.type === Sprite.Type.FILLED && 
-                    sprite.getComponent('SetSpriteFrameInSampler2D')?.['loadFromAtlas']) {
+                    sprite.getComponent(SetSpriteFrameInSampler2D)?.loadFromAtlas) {
                     no.err(`预制体${url}     节点${sprite.name}`);
                 }
             }

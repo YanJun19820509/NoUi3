@@ -3,6 +3,14 @@ import { no } from '../no';
 import { TextureInfo } from '../types';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
+import { PopuPanelContent } from '../base/node/popu/PopuPanelContent';
+import { YJPanel } from '../base/node/YJPanel';
+import { SetSpriteFrame } from '../ui/SetSpriteFrame';
+import { SetSpriteFrameInSampler2D } from '../ui/SetSpriteFrameInSampler2D';
+import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
+import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
+import { SetText } from '../ui/SetText';
+import YJLoadPrefab from '../base/node/YJLoadPrefab';
 
 /**
  * Predefined variables
@@ -55,7 +63,7 @@ export class YJLoadAssets extends Component {
 
     public set getAllAssets(v: boolean) {
         // 遍历所有子节点的SetSpriteFrameInSampler2D组件
-        const list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D'),
+        const list: any[] = this.getComponentsInChildren(SetSpriteFrameInSampler2D),
             textureUuid: string[] = [];
         for (let i = 0; i < list.length; i++) {
             const a = list[i];
@@ -137,7 +145,7 @@ export class YJLoadAssets extends Component {
 
     private setMaterialKey() {
         if (this._materialKey) return;
-        const name = no.getPrototype(this.node.getComponent('PopuPanelContent') || this.node.getComponent('YJPanel'))?.name || this.node.name;
+        const name = no.getPrototype(this.node.getComponent(PopuPanelContent) || this.node.getComponent(YJPanel))?.name || this.node.name;
         this._materialKey = name;
     }
 
@@ -152,7 +160,7 @@ export class YJLoadAssets extends Component {
         this.setMaterialKey();
         const name = this._materialKey;
         // 处理各种类型的组件显示状态
-        let list: any[] = this.getComponentsInChildren('SetSpriteFrameInSampler2D');
+        let list: any[] = this.getComponentsInChildren(SetSpriteFrameInSampler2D);
         for (let i = 0; i < list.length; i++) {
             if (v) list[i].resetSprite();
             else {
@@ -162,16 +170,16 @@ export class YJLoadAssets extends Component {
             }
         }
         // 处理多语言图片组件
-        list = this.getComponentsInChildren('YJLanguageSprite');
-        for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetSprite();
-            else {
-                list[i].removeSprite();
-                list[i].materialInfoUuid = name;
-            }
-        }
+        // list = this.getComponentsInChildren(YJLanguageSprite);
+        // for (let i = 0; i < list.length; i++) {
+        //     if (v) list[i].resetSprite();
+        //     else {
+        //         list[i].removeSprite();
+        //         list[i].materialInfoUuid = name;
+        //     }
+        // }
         // 处理位图字体组件
-        list = this.getComponentsInChildren('YJBitmapFont');
+        list = this.getComponentsInChildren(YJBitmapFont);
         for (let i = 0; i < list.length; i++) {
             if (v) list[i].resetFont();
             else {
@@ -180,15 +188,15 @@ export class YJLoadAssets extends Component {
             }
         }
         // 处理多语言文本组件
-        list = this.getComponentsInChildren('YJLanguageLabel');
-        for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetLabel();
-            else {
-                list[i].removeLabel();
-            }
-        }
+        // list = this.getComponentsInChildren(YJLanguageLabel);
+        // for (let i = 0; i < list.length; i++) {
+        //     if (v) list[i].resetLabel();
+        //     else {
+        //         list[i].removeLabel();
+        //     }
+        // }
         // 处理字符标签组件
-        list = this.getComponentsInChildren('YJCharLabel');
+        list = this.getComponentsInChildren(YJCharLabel);
         for (let i = 0; i < list.length; i++) {
             if (v) list[i].resetLabel();
             else {
@@ -197,20 +205,20 @@ export class YJLoadAssets extends Component {
                 list[i].panelName = name;
             }
         }
-        list = this.getComponentsInChildren('SetText');
+        list = this.getComponentsInChildren(SetText);
         for (let i = 0; i < list.length; i++) {
             if (!v) list[i].getComponent(Label).string = '';
         }
         // 处理材质设置组件
-        list = this.getComponentsInChildren('SetMaterial');
-        for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetMaterial();
-            else {
-                list[i].removeMaterial();
-            }
-        }
+        // list = this.getComponentsInChildren(SetMaterial);
+        // for (let i = 0; i < list.length; i++) {
+        //     if (v) list[i].resetMaterial();
+        //     else {
+        //         list[i].removeMaterial();
+        //     }
+        // }
         // 处理精灵帧设置组件
-        list = this.getComponentsInChildren('SetSpriteFrame');
+        list = this.getComponentsInChildren(SetSpriteFrame);
         for (let i = 0; i < list.length; i++) {
             if (v) list[i].resetSprite();
             else {
@@ -222,7 +230,7 @@ export class YJLoadAssets extends Component {
             list = this.getComponentsInChildren(Button);
             for (let i = 0; i < list.length; i++) {
                 let a = list[i] as Button;
-                if (a.getComponent('SetSpriteFrameInSampler2D') || a.getComponent('SetSpriteFrame')) {
+                if (a.getComponent(SetSpriteFrameInSampler2D) || a.getComponent(SetSpriteFrame)) {
                     a.normalSprite = null;
                     a.hoverSprite = null;
                     a.pressedSprite = null;
@@ -230,7 +238,7 @@ export class YJLoadAssets extends Component {
                 }
             }
             // 处理预制件加载组件
-            list = this.getComponentsInChildren('YJLoadPrefab');
+            list = this.getComponentsInChildren(YJLoadPrefab);
             for (let i = 0; i < list.length; i++) {
                 list[i].materialInfoUuid = name;
             }
@@ -295,11 +303,11 @@ export class YJLoadAssets extends Component {
     public static setMaterialInfoUuidToSubNode(node: Node, materialInfoUuid: string) {
         if (!node || !materialInfoUuid) return;
         const arr = [].concat(
-            node.getComponentsInChildren('SetSpriteFrameInSampler2D'),
-            node.getComponentsInChildren('YJLanguageSprite'),
-            node.getComponentsInChildren('YJCharLabel'),
-            node.getComponentsInChildren('YJBitmapFont'),
-            node.getComponentsInChildren('YJLoadPrefab')
+            node.getComponentsInChildren(SetSpriteFrameInSampler2D),
+            // node.getComponentsInChildren(YJLanguageSprite),
+            node.getComponentsInChildren(YJCharLabel),
+            node.getComponentsInChildren(YJBitmapFont),
+            node.getComponentsInChildren(YJLoadPrefab)
         );
         for (let i = 0; i < arr.length; i++) {
             arr[i].materialInfoUuid = materialInfoUuid;

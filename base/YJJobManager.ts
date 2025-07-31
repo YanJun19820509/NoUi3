@@ -318,5 +318,3 @@ export class YJJobManager {
         clearInterval(this.performanceStatsInterval);
     }
 }
-
-no.addToWindowForDebug('YJJobManager', YJJobManager.ins);

@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInp
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
+import { YJDataWork } from '../YJDataWork';
 
 /**
  * Predefined variables
@@ -424,9 +425,10 @@ export class YJPanel extends Component {
     public show() {
         this.status = 'open';
         if (this.node.active) this.onEnable();
-        if (this.cacheToPool)
+        if (this.cacheToPool) {
             no.visibleByActiveInHierarchy(this.node, true);
-        else
+            this.enableDataWork();
+        } else
             no.visible(this.node, true);
         no.siblingIndex(this.node, ++_nodeSiblingIndex_);
     }
@@ -453,6 +455,13 @@ export class YJPanel extends Component {
 
     private getPrefabUrl() {
         return this['__proto__'][YJPanelPrefabMetaKey];
+    }
+
+    private enableDataWork() {
+        let comps = this.node.getComponentsInChildren(YJDataWork);
+        for (let i = 0; i < comps.length; i++) {
+            comps[i]['onEnable']();
+        }
     }
 
     //////以下方法需要子类实现

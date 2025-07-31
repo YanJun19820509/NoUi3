@@ -3,6 +3,7 @@ import { ccclass, property, v3, Vec3, UITransform, isValid } from '../../yj';
 import { YJNodeTarget } from '../../base/node/YJNodeTarget';
 import { YJDataWork } from '../../base/YJDataWork';
 import { no } from '../../no';
+import { nodeTargetManager } from '../../NodeTargetManager';
 
 /**
  * Predefined variables
@@ -56,7 +57,7 @@ export class YJBubble extends YJDataWork {
             pos.x = this.data.position[0];
             pos.y = this.data.position[1];
         } else if (this.data.target) { // 通过目标节点获取世界坐标
-            let nt = no.nodeTargetManager.get<YJNodeTarget>(this.data.target);
+            let nt = nodeTargetManager.get<YJNodeTarget>(this.data.target);
             if (!nt) return; // 目标节点不存在时中止
             
             let p = nt.nodeWorldPosition; // 获取目标节点世界坐标

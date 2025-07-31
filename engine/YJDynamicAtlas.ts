@@ -109,7 +109,7 @@ export class YJDynamicAtlas {
     public get spriteTexture() {
         return this.atlas._texture;
     }
-    
+
     /**
      * 创建动态合图SpriteFrame
      * @param uuid 唯一标识符 
@@ -361,10 +361,10 @@ export class YJDynamicAtlas {
      */
     private setPackedFrame(comp: UIRenderer, frame: SpriteFrame, packedFrame: PackedFrameData, _uuid?: string) {
         if (!this.spriteFrameMap) return;
-        
+
         if (packedFrame) {
             const uuid = _uuid || frame?._uuid; // 优先使用自定义UUID
-            
+
             // 处理Label组件
             if (comp instanceof Label) {
                 // 确保使用自定义材质
@@ -377,31 +377,31 @@ export class YJDynamicAtlas {
                     let ff = frame.clone();
                     ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
-                    
+
                     // 更新字体使用的精灵帧
                     (comp.font as BitmapFont).spriteFrame = ff;
-                    
+
                     // 触发渲染数据更新
                     comp.markForUpdateRenderData(true);
                     comp['_assembler'].updateRenderData(comp);
-                    
+
                     // 强制合并批次优化渲染
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, ff, comp);
-                    
+
                     // 缓存新生成的精灵帧
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
-                } 
+                }
                 // 系统字体处理分支
                 else {
                     // 直接修改原始帧参数
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
-                    
+
                     // 获取渲染数据并更新UV坐标
                     const renderData = comp['_renderData'];
                     const vData = renderData.chunk.vb;
                     const uv = comp['_ttfSpriteFrame'].uv;
-                    
+
                     // 手动更新顶点缓冲区的UV数据
                     vData[3] = uv[0];   // 左下U
                     vData[4] = uv[1];   // 左下V
@@ -411,33 +411,33 @@ export class YJDynamicAtlas {
                     vData[22] = uv[5];  // 右上V
                     vData[30] = uv[6];  // 左上U
                     vData[31] = uv[7];  // 左上V
-                    
+
                     // 标记纹理数据变更并更新渲染
                     renderData.textureDirty = true;
                     comp.markForUpdateRenderData(false);
                     renderData.updateRenderData(comp, comp['_ttfSpriteFrame']);
-                    
+
                     // 合并批次并缓存精灵帧
                     director.root.batcher2D.forceMergeBatches(comp.customMaterial, frame, comp);
                     no.setValueSafely(this.spriteFrameMap, { [uuid]: frame });
                 }
-            } 
+            }
             // 处理Sprite组件
             else if (comp instanceof Sprite) {
                 // 创建或克隆精灵帧
                 let ff = frame?.clone() || new SpriteFrame();
                 ff._uuid = uuid;
                 ff.rotated = packedFrame.rotate;
-                
+
                 // 设置默认尺寸（当原始尺寸无效时）
                 if (!ff.rect.width || !ff.rect.height) {
                     ff.rect = rect(0, 0, packedFrame.w, packedFrame.h);
                 }
-                
+
                 // 应用动态图集参数并更新组件
                 ff._setDynamicAtlasFrame(packedFrame);
                 comp.spriteFrame = ff;
-                
+
                 // 缓存新生成的精灵帧
                 no.setValueSafely(this.spriteFrameMap, { [uuid]: ff });
             }
@@ -657,34 +657,34 @@ export class YJDynamicAtlas {
      * // - YJBitmapFont: 位图字体
      * // 等其他需要动态图集的组件
      */
-    public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
-        // 收集所有需要动态图集的组件类型
-        let bs = [].concat(
-            node.getComponentsInChildren('YJCreateNode'),      // 动态节点创建器
-            node.getComponentsInChildren('SetSpriteFrameInSampler2D'), // 采样器设置组件
-            node.getComponentsInChildren('YJLanguageSprite'),  // 多语言精灵组件
-            node.getComponentsInChildren('SetCreateCacheNode'),// 缓存节点创建器
-            node.getComponentsInChildren('SetCreateNode'),     // 通用节点创建器
-            node.getComponentsInChildren('SetCreateNodeByUrl'),// URL节点创建器 
-            node.getComponentsInChildren('SetList'),           // 列表组件
-            node.getComponentsInChildren('SetPage'),           // 分页组件
-            node.getComponentsInChildren('YJCharLabel'),       // 字符标签组件
-            node.getComponentsInChildren('YJBitmapFont')       // 位图字体组件
-        );
+    // public static setDynamicAtlas(node: Node, dynamicAtlas: YJDynamicAtlas): void {
+    //     // 收集所有需要动态图集的组件类型
+    //     let bs = [].concat(
+    //         node.getComponentsInChildren('YJCreateNode'),      // 动态节点创建器
+    //         node.getComponentsInChildren('SetSpriteFrameInSampler2D'), // 采样器设置组件
+    //         node.getComponentsInChildren('YJLanguageSprite'),  // 多语言精灵组件
+    //         node.getComponentsInChildren('SetCreateCacheNode'),// 缓存节点创建器
+    //         node.getComponentsInChildren('SetCreateNode'),     // 通用节点创建器
+    //         node.getComponentsInChildren('SetCreateNodeByUrl'),// URL节点创建器 
+    //         node.getComponentsInChildren('SetList'),           // 列表组件
+    //         node.getComponentsInChildren('SetPage'),           // 分页组件
+    //         node.getComponentsInChildren('YJCharLabel'),       // 字符标签组件
+    //         node.getComponentsInChildren('YJBitmapFont')       // 位图字体组件
+    //     );
 
-        // 遍历所有组件并设置动态图集引用
-        for (let i = 0; i < bs.length; i++) {
-            if (!bs[i].dynamicAtlas) {
-                bs[i].dynamicAtlas = dynamicAtlas;
-            }
-        }
+    //     // 遍历所有组件并设置动态图集引用
+    //     for (let i = 0; i < bs.length; i++) {
+    //         if (!bs[i].dynamicAtlas) {
+    //             bs[i].dynamicAtlas = dynamicAtlas;
+    //         }
+    //     }
 
-        // 保留的材质设置逻辑（当前已注释）
-        // let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
-        // r.forEach(rr => {
-        //     if (!rr.customMaterial) {
-        //         rr.customMaterial = dynamicAtlas.customMaterial;
-        //     }
-        // });
-    }
+    //     // 保留的材质设置逻辑（当前已注释）
+    //     // let r: UIRenderer[] = [].concat(node.getComponentsInChildren(Sprite));
+    //     // r.forEach(rr => {
+    //     //     if (!rr.customMaterial) {
+    //     //         rr.customMaterial = dynamicAtlas.customMaterial;
+    //     //     }
+    //     // });
+    // }
 }

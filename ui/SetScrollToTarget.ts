@@ -3,6 +3,7 @@ import { UITransform, v2, ccclass, menu, property, game, Vec2 } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';
+import { nodeTargetManager } from '../NodeTargetManager';
 
 /**
  * Predefined variables
@@ -101,7 +102,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
      */
     private startScroll(targetType: string) {
         // 从管理器获取目标节点
-        let target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+        let target = nodeTargetManager.get<YJNodeTarget>(targetType);
         
         if (!target) {
             // 重试逻辑

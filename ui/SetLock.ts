@@ -3,6 +3,7 @@ import { ccclass, property, menu, Node, UITransform, Button, EDITOR, BlockInputE
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetGray } from './SetGray';
+import { SetEffect } from './SetEffect';
 
 /**
  * Predefined variables
@@ -102,14 +103,14 @@ export class SetLock extends HackUi {
                     let grays = a.getComponentsInChildren(SetGray);
                     for (let i = 0; i < grays.length; i++) {
                         const aa = grays[i];
-                        const bb = aa.getComponent('SetEffect');
+                        const bb = aa.getComponent(SetEffect);
                         aa?.destroy();
                         bb?.destroy();
                     }
                 }
                 a?.destroy();
             }
-            this.getComponent('SetEffect')?.destroy();
+            this.getComponent(SetEffect)?.destroy();
         }
     }
 

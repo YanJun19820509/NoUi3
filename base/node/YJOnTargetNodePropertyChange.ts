@@ -1,4 +1,5 @@
 import { no } from "../../no";
+import { nodeTargetManager } from "../../NodeTargetManager";
 import { ccclass, Component, property, Node, isValid } from "../../yj";
 import { YJNodeTarget } from "./YJNodeTarget";
 /**
@@ -88,7 +89,7 @@ export class YJOnTargetNodePropertyChange extends Component {
      */
     onLoad() {
         // 通过类型标识获取已注册的目标节点
-        this._targetNode = no.nodeTargetManager.get<YJNodeTarget>(this.targetNodeType)?.node;
+        this._targetNode = nodeTargetManager.get<YJNodeTarget>(this.targetNodeType)?.node;
         if (this._targetNode) {
             // 注册节点变换事件监听，使用bitmask检测所有变换类型
             this._targetNode.on(Node.EventType.TRANSFORM_CHANGED, this.onPropertyChange, this);

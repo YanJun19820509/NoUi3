@@ -5,6 +5,7 @@ import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetNodeTweenAction } from './SetNodeTweenAction';
 import { EasingType, EasingTypeName } from '../types';
+import { nodeTargetManager } from '../NodeTargetManager';
 
 /**
  * Predefined variables
@@ -122,9 +123,9 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         // 从节点目标管理器获取目标节点引用
         let target: YJNodeTarget;
         if (subTypes) {
-            target = no.nodeTargetManager.getSub<YJNodeTarget>(targetType, subTypes);
+            target = nodeTargetManager.getSub<YJNodeTarget>(targetType, subTypes);
         } else {
-            target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            target = nodeTargetManager.get<YJNodeTarget>(targetType);
         }
         if (!target) {
             // 目标节点未就绪时，延迟重试机制

@@ -2,6 +2,7 @@ import { ccclass, property, Node, Vec2, v2, view } from '../../common/yj';
 import { HackUi } from '../../common/ui/HackUi';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
+import { nodeTargetManager } from '../NodeTargetManager';
 
 /**
  * 相机跟随目标
@@ -72,9 +73,9 @@ export class SetCameraFollowTarget extends HackUi {
     private followTarget(targetType: string, subTypes?: string[]) {
         let target: YJNodeTarget;
         if (subTypes) {
-            target = no.nodeTargetManager.getSub<YJNodeTarget>(targetType, subTypes);
+            target = nodeTargetManager.getSub<YJNodeTarget>(targetType, subTypes);
         } else {
-            target = no.nodeTargetManager.get<YJNodeTarget>(targetType);
+            target = nodeTargetManager.get<YJNodeTarget>(targetType);
         }
         if (!target) {
             // 目标节点未就绪时，延迟重试机制

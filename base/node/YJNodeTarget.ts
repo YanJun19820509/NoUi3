@@ -3,6 +3,7 @@ import { ccclass, property, menu, disallowMultiple, Component, Node, Button, Tog
 import { no } from '../../no';
 import { YJJobManager } from '../YJJobManager';
 import { YJTouchListener } from '../touch/YJTouchListener';
+import { nodeTargetManager } from '../../NodeTargetManager';
 
 /**
  * Predefined variables
@@ -25,13 +26,13 @@ import { YJTouchListener } from '../touch/YJTouchListener';
  */
 export class YJNodeTarget extends Component {
     /** 
-     * 在no.nodeTargetManager中注册的标识
+     * 在nodeTargetManager中注册的标识
      * @property {string} type - 节点类型标识，用于全局目标管理
      * @example
      * // 当type设置为"player.weapon"时：
-     * // 可以通过no.nodeTargetManager.get("player.weapon")获取所有同类型节点目标
+     * // 可以通过nodeTargetManager.get("player.weapon")获取所有同类型节点目标
      */
-    @property({ tooltip: '在no.nodeTargetManager中注册的标识' })
+    @property({ tooltip: '在nodeTargetManager中注册的标识' })
     type: string = '';
 
     /** 
@@ -123,7 +124,7 @@ export class YJNodeTarget extends Component {
      */
     private check() {
         if (this.pos.equals(this.node.worldPosition)) {
-            no.nodeTargetManager.register(this.type, this);
+            nodeTargetManager.register(this.type, this);
             return true;
         } else {
             this.pos = this.node.worldPosition;
@@ -149,7 +150,7 @@ export class YJNodeTarget extends Component {
      * // 自动从目标管理器移除，其他系统无法再定位到该NPC
      */
     onDestroy() {
-        no.nodeTargetManager.remove(this.type, this);
+        nodeTargetManager.remove(this.type, this);
     }
 
     /**
@@ -164,9 +165,9 @@ export class YJNodeTarget extends Component {
      * // 现在其他系统可以通过'EliteEnemy'类型查找该节点
      */
     public setType(type: string): void {
-        if (this.type != '') no.nodeTargetManager.remove(this.type, this);
+        if (this.type != '') nodeTargetManager.remove(this.type, this);
         this.type = type;
-        no.nodeTargetManager.register(this.type, this);
+        nodeTargetManager.register(this.type, this);
     }
 
     /** 

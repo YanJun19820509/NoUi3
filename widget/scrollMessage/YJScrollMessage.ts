@@ -145,4 +145,3 @@ export class YJScrollMessage extends YJPanel {
         this.scheduleOnce(this.setMsgItem, duration + .1); // 动画结束后间隔0.1秒播放下一条
     }
 }
-no.addToWindowForDebug('YJScrollMessage', YJScrollMessage);

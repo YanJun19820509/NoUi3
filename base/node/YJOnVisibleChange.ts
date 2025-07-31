@@ -16,6 +16,15 @@ import { Component, ccclass, property } from "../../yj";
  * // 3. 3D物体进入视野时加载资源
  */
 export class YJOnVisibleChange extends Component {
+
+    onLoad() {
+        no.evn.on('visibleChange', this.changeVisible, this);
+    }
+
+    onDestroy() {
+        no.evn.off('visibleChange', this.changeVisible, this);
+    }
+
     /** 
      * 当节点变为可见状态时触发的事件
      * @property {no.EventHandlerInfo[]} onVisible - 显示事件处理器数组
@@ -54,7 +63,8 @@ export class YJOnVisibleChange extends Component {
      * objectPool.put(item.node);
      * item.getComponent(YJOnVisibleChange).changeVisible(false);
      */
-    public changeVisible(v: boolean) {
+    private changeVisible(uuid: string, v: boolean) {
+        if (this.node.uuid != uuid) return;
         if (v) no.EventHandlerInfo.execute(this.onVisible);
         else no.EventHandlerInfo.execute(this.onInVisible);
     }

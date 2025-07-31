@@ -511,20 +511,20 @@ export class YJPreload extends Component {
                     } else {
                         this.progress = p / this.total;
                     }
-                }, 
-                // 加载完成回调
-                items => {
-                    for (let i = 0; i < items.length; i++) {
-                        let item = items[i] as Prefab;
-                        // 设置优化策略（2=高频实例化优化）
-                        item.optimizationPolicy = 2;
-                        
-                        // 预实例化并执行缓存初始化
-                        let a = instantiate(item);
-                        // 调用缓存对象的预创建方法（如果存在）
-                        a.getComponent('YJCacheObject')?.['preCreate']();
-                    }
                 }
+                // 加载完成回调
+                // items => {
+                //     for (let i = 0; i < items.length; i++) {
+                //         let item = items[i] as Prefab;
+                //         // 设置优化策略（2=高频实例化优化）
+                //         item.optimizationPolicy = 2;
+                        
+                //         // 预实例化并执行缓存初始化
+                //         let a = instantiate(item);
+                //         // 调用缓存对象的预创建方法（如果存在）
+                //         a.getComponent('YJCacheObject')?.['preCreate']();
+                //     }
+                // }
             );
         }
     }

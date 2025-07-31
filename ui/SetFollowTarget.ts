@@ -2,6 +2,7 @@ import { ccclass, Node, property, Vec3 } from 'hackUi/yj';
 import { HackUi } from 'hackUi/ui/HackUi';
 import { no } from '../no';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
+import { nodeTargetManager } from '../NodeTargetManager';
 
 /**
  * 跟随目标,状态同步
@@ -48,7 +49,7 @@ export class SetFollowTarget extends HackUi {
             return;
         }
         this._targetName = targetName;
-        this._target = no.nodeTargetManager.get<YJNodeTarget>(targetName)?.node;
+        this._target = nodeTargetManager.get<YJNodeTarget>(targetName)?.node;
         if (!this._target) {
             this.scheduleOnce(() => {
                 this.initTarget(targetName);

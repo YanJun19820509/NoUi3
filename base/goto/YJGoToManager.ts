@@ -117,5 +117,3 @@ export class YJGoToManager extends Component {
         cb?.();
     }
 }
-
-no.addToWindowForDebug('goto', YJGoToManager)
