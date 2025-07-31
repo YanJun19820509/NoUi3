@@ -29,6 +29,11 @@ export class YJGameData extends no.Data {
     /** 数据状态管理器 */
     private _state: no.State;
 
+
+    private static get objectName() {
+        return this['_singleObjectName'];
+    }
+
     /**
      * 获取单例实例
      * @returns 当前类的单例实例
@@ -37,7 +42,7 @@ export class YJGameData extends no.Data {
      * const playerData = PlayerData.instance();
      */
     public static instance(key?: string): any {
-        key = key || this.name;
+        key = key || this.objectName;
         if (!this._insMap[key]) {
             const a = new this();
             a._state = new no.State();
@@ -51,8 +56,8 @@ export class YJGameData extends no.Data {
      * 销毁单例实例
      * @param key 实例key
      */
-    public static destroy(key?: string) {
-        key = key || '_';
+    public static destroy(key: string) {
+        key = key || this.objectName;
         if (this._insMap[key]) {
             this._insMap[key] = null;
             delete this._insMap[key];

@@ -36,7 +36,7 @@ const createMaterial = function () {
 }
 
 @ccclass('YJSample2DMaterialManager')
-@singleObject()
+@singleObject('YJSample2DMaterialManager')
 /**
  * 动态材质管理器
  * @description 管理动态材质的创建、销毁和使用

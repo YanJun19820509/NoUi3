@@ -6,7 +6,7 @@ import { ccclass } from '../yj';
  * dataWork管理器,延时处理dataWork数据同步逻辑
  */
 @ccclass('YJDataWorkManager')
-@singleObject()
+@singleObject('YJDataWorkManager')
 /**
  * 数据工作管理器
  * @class 管理所有数据工作实例，延迟处理数据到UI的同步逻辑

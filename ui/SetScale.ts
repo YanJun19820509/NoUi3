@@ -9,7 +9,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetScale.ts
  * FileBasenameNoExtension = SetScale
- * URL = db://assets/Script/NoUi3/fuckui/SetScale.ts
+ * URL = db://assets/Script/NoUi3/HackUi/SetScale.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */

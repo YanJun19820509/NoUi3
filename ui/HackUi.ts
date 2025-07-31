@@ -143,7 +143,7 @@ export class HackUi extends Component {
             if (DEBUG) {
                 // 检测非法格式的key（包含.字符）
                 if (this.bind_keys.indexOf('.') != -1) {
-                    no.err('FuckUi不支持多级key', this.name, this.bind_keys);
+                    no.err('HackUi不支持多级key', this.uuid, this.bind_keys);
                 }
             }
         }

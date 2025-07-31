@@ -11,7 +11,7 @@ import { HackUi } from './HackUi';
  * Author = mqsy_yj
  * FileBasename = SetCreateNodeInCircle.ts
  * FileBasenameNoExtension = SetCreateNodeInCircle
- * URL = db://assets/NoUi3/fuckui/SetCreateNodeInCircle.ts
+ * URL = db://assets/NoUi3/HackUi/SetCreateNodeInCircle.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */

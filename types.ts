@@ -446,8 +446,9 @@ export function AllowMultipleOpen() {
  *   static ins() { return no.SingleObjectManager.get(GameManager); }
  * }
  */
-export function singleObject(type?: string) {
+export function singleObject(type: string) {
     return function (target: Function) {
+        target['_singleObjectName'] = type;
         no.SingleObjectManager.register(type, target);
     };
 }

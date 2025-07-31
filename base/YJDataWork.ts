@@ -21,8 +21,8 @@ import { YJDataWorkManager } from './YJDataWorkManager';
 @disallowMultiple()
 export class YJDataWork extends Component {
     /**
-     * 自动注册子级FuckUi组件
-     * @property 设置后会立即扫描并注册所有子节点中的FuckUi组件
+     * 自动注册子级HackUi组件
+     * @property 设置后会立即扫描并注册所有子节点中的HackUi组件
      * @example
      * // 在编辑器勾选autoRegister属性
      * // 或在代码中设置：
@@ -30,7 +30,7 @@ export class YJDataWork extends Component {
      */
     @property({
         displayName: '自动注册',
-        tooltip: '自动注册当前节点及子节点中的所有FuckUi组件\n（编辑器设置后立即生效）'
+        tooltip: '自动注册当前节点及子节点中的所有HackUi组件\n（编辑器设置后立即生效）'
     })
     public get autoRegister(): boolean {
         return false;
@@ -68,7 +68,7 @@ export class YJDataWork extends Component {
     subFuckUiNodes: Node[] = [];
 
     /** 
-     * 已注册的FuckUi组件列表 
+     * 已注册的HackUi组件列表 
      * @example
      * // 包含绑定'hp'的进度条组件
      * // 包含绑定'gold'的文本组件
@@ -273,7 +273,7 @@ export class YJDataWork extends Component {
      */
     public setValue(key: string, value: any) {
         if (key == null) return this;
-        this.bindSubFuckUis();
+        this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
         return this.repeatSetValue(key);
     }
@@ -301,7 +301,7 @@ export class YJDataWork extends Component {
      * });
      */
     public resetValue(key: string, value: any) {
-        this.bindSubFuckUis();
+        this.bindSubHackUis();
         this._data?.set(key, value, false);
         return this.repeatSetValue(key);
     }
@@ -446,10 +446,10 @@ export class YJDataWork extends Component {
      * 绑定子UI组件
      * @remarks 初始化时自动建立数据与UI的映射关系
      * @example
-     * // 自动绑定所有子节点中的FuckUi组件
-     * this.bindSubFuckUis();
+     * // 自动绑定所有子节点中的HackUi组件
+     * this.bindSubHackUis();
      */
-    private bindSubFuckUis() {
+    private bindSubHackUis() {
         if (this._isBound) return;
         this._isBound = true;
         let list = this.subFuckUis;

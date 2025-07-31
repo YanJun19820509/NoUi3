@@ -22,7 +22,7 @@ interface SpineResource {
  */
 //spine资源加载和缓存管理器
 @ccclass('YJSpineManager')
-@singleObject()
+@singleObject('YJSpineManager')
 export class YJSpineManager extends no.SingleObject {
     /** 资源释放检查间隔（毫秒）用于定时触发资源回收检测 */
     private static readonly RELEASE_INTERVAL = 2000; // 释放检查间隔

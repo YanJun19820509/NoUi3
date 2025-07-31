@@ -19,7 +19,7 @@ export namespace no {
     let _debug: boolean = DEBUG;
     let _version: string = '';
     let _appVer: string = '';
-    let _isLogEnabled: boolean = false;
+    let _isLogEnabled: boolean = DEBUG;
     let _isSpineEnable: boolean = true;
 
     /**
@@ -9136,6 +9136,10 @@ export namespace no {
         /** 单例表 */
         private static _insMap: { [key: string]: { [key: string]: SingleObject } } = {};
 
+        private static get objectName() {
+            return this['_singleObjectName'];
+        }
+
         /**
          * 获取单例实例（需在子类中包装此方法）
          * @returns 单例实例
@@ -9144,9 +9148,10 @@ export namespace no {
         protected static instance(key: string): SingleObject
         protected static instance(key?: string): SingleObject {
             key = key || '_';
-            if (!this._insMap[this.name]) this._insMap[this.name] = {};
-            if (!this._insMap[this.name][key]) this._insMap[this.name][key] = new this();
-            return this._insMap[this.name][key];
+            const name = this.objectName;
+            if (!this._insMap[name]) this._insMap[name] = {};
+            if (!this._insMap[name][key]) this._insMap[name][key] = new this();
+            return this._insMap[name][key];
         }
 
         /**
@@ -9155,15 +9160,17 @@ export namespace no {
          */
         public static destroy(key?: string) {
             key = key || '_';
-            if (this._insMap[this.name]) {
-                this._insMap[this.name][key]?.clear();
-                this._insMap[this.name][key] = null;
+            const name = this.objectName;
+            if (this._insMap[name]) {
+                this._insMap[name][key]?.clear();
+                this._insMap[name][key] = null;
             }
         }
 
         public static destroyAll() {
-            if (this._insMap[this.name]) {
-                const keys = Object.keys(this._insMap[this.name]);
+            const name = this.objectName;
+            if (this._insMap[name]) {
+                const keys = Object.keys(this._insMap[name]);
                 for (let i = 0, n = keys.length; i < n; i++) {
                     this.destroy(keys[i]);
                 }
@@ -9198,7 +9205,6 @@ export namespace no {
          * @param singleObject - 继承自SingleObject的类
          */
         public static register(type: string, singleObject: Function) {
-            type = type || '_';
             if (!this._singleObjects[type]) this._singleObjects[type] = [];
             this._singleObjects[type].push(singleObject);
         }
@@ -9208,8 +9214,7 @@ export namespace no {
          * @remarks
          * 遍历所有注册的单例类，调用其clear方法并重置实例
          */
-        public static clear(type?: string) {
-            type = type || '_';
+        public static clear(type: string) {
             const arr = this._singleObjects[type];
             if (arr) {
                 for (let i = 0, n = arr.length; i < n; i++) {

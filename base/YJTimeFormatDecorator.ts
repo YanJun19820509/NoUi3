@@ -26,7 +26,7 @@ import { ccclass, Component, Node } from '../yj';
  * const timeStr = formatter.format(new Date());
  * 
  * @example 配合数据绑定使用
- * // 在FuckUi组件中配置：
+ * // 在HackUi组件中配置：
  * // format: ${YJTimeFormatDecorator.format(timestamp)}
  */
 @ccclass('YJTimeFormatDecorator')
