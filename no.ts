@@ -4651,7 +4651,7 @@ export namespace no {
         public getLocal(key: string, defaultVal?: any): any {
             key = `${this._localPreKey}_${key}`;
             let a = localStorage.getItem(key);
-            if (a == null || a == undefined || a == 'undefined') return defaultVal;
+            if (a == '' || a == null || a == undefined || a == 'undefined') return defaultVal;
             try {
                 return parse2Json(a);
             } catch (e) {
