@@ -147,6 +147,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * // 当切换语言时自动重新加载对应资源
      */
     onEnable() {
+        if (!isValid(this)) return;
         if (!this._sprite) this._sprite = this.getComponent(Sprite);
         // 编辑器模式下不执行
         if (EDITOR) return;
