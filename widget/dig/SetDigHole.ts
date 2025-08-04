@@ -24,9 +24,19 @@ export class SetDigHole extends SetScanPath {
     private _holesInfo: any[] = [];
     private _holesEdges: number[] = [];
 
+    onDestroy(): void {
+        super.onDestroy();
+        if (this.subSprite) {
+            this.subSprite.spriteFrame = null;
+        }
+    }
+
     protected onDataChange(data: any): void {
         const { path, dataPath, digInfo, oldDigInfo } = data;
         if (path) {
+            if (this.subSprite) {
+                this.subSprite.spriteFrame = null;
+            }
             super.onDataChange({ path });
             this.clearDataValue(`${this.bind_keys}.path`);
             this._holesInfo.length = 0;

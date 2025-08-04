@@ -204,16 +204,17 @@ class AnimationEffect {
      *   .easing('backOut')
      */
     private leftSlideIn(node: Node) {
+        const { x, y } = node.position;
         return [{
             set: 1,  // 立即设置初始状态
             props: {
-                pos: [-no.width(node) - 50, 0]  // 左侧偏移保证完全移出视口
+                pos: [x - no.width(node) - 50, y]  // 左侧偏移保证完全移出视口
             }
         }, {
             duration: this.duration,
             to: 1,   // 过渡到目标状态
             props: {
-                pos: [0, 0]  // 使用节点锚点定位到目标位置
+                pos: [x, y]  // 使用节点锚点定位到目标位置
             }
         }];
     }
@@ -236,16 +237,17 @@ class AnimationEffect {
      *   .easing('elasticOut')
      */
     private rightSlideIn(node: Node) {
+        const { x, y } = node.position;
         return [{
             set: 1,
             props: {
-                pos: [no.width(node) + 50, 0]  // 右侧偏移计算
+                pos: [x + no.width(node) + 50, y]  // 右侧偏移计算
             }
         }, {
             duration: this.duration,
             to: 1,
             props: {
-                pos: [0, 0]  // 目标位置归零
+                pos: [x, y]  // 目标位置归零
             }
         }];
     }
