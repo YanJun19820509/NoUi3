@@ -170,7 +170,7 @@ export class SetSpine extends HackUi {
         if (EDITOR) return;
         // 微信小游戏平台特殊处理（性能优化）
         if (sys.platform == sys.Platform.WECHAT_GAME)
-            this.GlobalScale = .5;
+            this.GlobalScale = 1;
         // 获取基础Spine组件并禁用（使用动态创建的实例）
         let spine = this.getComponent(Skeleton);
         spine.enabled = false;

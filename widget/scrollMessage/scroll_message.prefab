@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "scroll_message",
+    "_name": "",
     "_objFlags": 0,
     "_native": "",
     "data": {
@@ -59,7 +59,6 @@
       "y": 1,
       "z": 1
     },
-    "_mobility": 0,
     "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -112,7 +111,6 @@
       "y": 1,
       "z": 1
     },
-    "_mobility": 0,
     "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -171,7 +169,6 @@
       "y": 1,
       "z": 1
     },
-    "_mobility": 0,
     "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -223,7 +220,6 @@
       "y": 1,
       "z": 1
     },
-    "_mobility": 0,
     "_layer": 33554432,
     "_euler": {
       "__type__": "cc.Vec3",
@@ -271,6 +267,7 @@
     "__prefab": {
       "__id__": 8
     },
+    "_visFlags": 0,
     "_customMaterial": null,
     "_srcBlendFactor": 2,
     "_dstBlendFactor": 4,
@@ -296,7 +293,6 @@
     "_useGrayscale": false,
     "_atlas": null,
     "_gradientColor": null,
-    "useJob": true,
     "_string": "",
     "_fontColor": {
       "__type__": "cc.Color",
@@ -306,12 +302,10 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": {
-      "__uuid__": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
-      "__expectedType__": "cc.TTFFont"
-    },
-    "_fontUuid": "bf0675b3-d1fc-4305-a507-cdd28e0ffee6",
-    "_foitnFamily": "MiSans-Semibold_LABEL",
+    "_font": null,
+    "_fontUuid": "",
+    "_foitnFamily": "Arial",
+    "_autoLineHeight": true,
     "_lineHeight": 28,
     "_horizontalAlign": 0,
     "_verticalAlign": 2,
@@ -348,6 +342,8 @@
     "_hdp": false,
     "_packToAtlas": false,
     "_needSetLabel": false,
+    "panelName": "",
+    "materialInfoUuid": "",
     "_id": ""
   },
   {
@@ -370,10 +366,8 @@
     },
     "bind_keys": "msg",
     "once": false,
-    "saveIgnore": true,
     "showValueLog": false,
     "formatter": "{0}",
-    "_packToAtlas": true,
     "_id": ""
   },
   {
@@ -463,7 +457,6 @@
     },
     "bind_keys": "move",
     "once": false,
-    "saveIgnore": false,
     "showValueLog": false,
     "beforeCall": [],
     "endCall": [],
@@ -614,7 +607,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 720,
-      "height": 1280
+      "height": 1560
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",

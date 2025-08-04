@@ -77,11 +77,13 @@ export class YJLoadAssets extends Component {
                 }
             }
         }
+        console.log('textureUuid', textureUuid);
         // 根据收集到的纹理UUID创建TextureInfo
         this.textureInfos.length = 0;
         for (let i = 0; i < textureUuid.length; i++) {
             const info = new TextureInfo();
-            info.addTexture(textureUuid[i]).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
+            info.addTexture(textureUuid[i]);
+            this.textureInfos[this.textureInfos.length] = info
         }
     }
 

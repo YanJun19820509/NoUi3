@@ -652,15 +652,15 @@ export class TextureInfo extends LoadAssetsInfo {
      * if(success) Editor.log('纹理添加成功');
      */
     public async addTexture(uuid: string) {
-        return Promise.all([no.EditorMode.getAssetInfo(uuid), no.EditorMode.getAssetUrlByUuid(uuid)]).then(([info, url]) => {
-            if (!info) return false;
-            this.base = info.url.replace(url, '').replace(/\.[^/.]+$/, '');
-            this.assetName = info.displayName;
-            this.bundleName = url.split('/')[0];
-            this.path = url.replace(this.bundleName + '/', '').replace('.png', '');
-            this.setAtlasJson();
-            return true;
-        });
+        const info = await no.EditorMode.getAssetInfo(uuid);
+        if (!info) return false;
+        const bundleName = await no.EditorMode.getBundleName(info.path);
+        this.base = info.path;
+        this.assetName = info.displayName;
+        this.bundleName = bundleName;
+        this.path = info.path.split(this.bundleName + '/')[1];
+        this.setAtlasJson();
+        return true;
     }
 
     /**

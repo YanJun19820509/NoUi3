@@ -1,17 +1,17 @@
-import { YJJobManager } from '../../base/YJJobManager';
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { no } from '../../no';
 import { HackUi } from '../../ui/HackUi';
-import { ccclass, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
+import { ccclass, EDITOR, executeInEditMode, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
 
 /**
  * 扫描路径组件，扫描图片透明交界处，生成路径
- * 图片路径
- * data: string
+ * 图片路径,图片数据文件路径
+ * data: {path:string,dataPath:string}
  * 路径数据生成后，会自动更新到dataWork的scanPath中
  */
 @ccclass('SetScanPath')
 @requireComponent([Sprite])
+@executeInEditMode()
 export class SetScanPath extends HackUi {
     @property({ displayName: '同步路径数据', tooltip: '将路径数据更新到dataWork中' })
     needUpdatePathToData: boolean = true;
@@ -23,6 +23,14 @@ export class SetScanPath extends HackUi {
     showPathPoints = false;
     @property({ displayName: '显示路径点时间间隔', min: 0, visible() { return this.showPathPoints } })
     interval = .1;
+
+    @property({ displayName: '导出数据' })
+    get export(): boolean {
+        return false;
+    }
+    set export(value: boolean) {
+        this.exportData();
+    }
 
     protected _sprite: Sprite = null!;
     protected _spriteFrame: SpriteFrame;
@@ -41,13 +49,14 @@ export class SetScanPath extends HackUi {
     protected _noAlpha0PixelsArr: string[] = [];
     protected _pixelSet: Set<string> = new Set();
     protected _pixelArr: number[][] = [];
+    protected _edgePixelsMap: Map<string, number[]> = new Map();
     /**
      * 0: 无操作
-     * 1: 扫描中
-     * 2: 剔除孤立像素
-     * 3: 描绘边缘
-     * 4: 解析路径
-     * 5: 更新纹理
+     * 1: 描绘边缘
+     * 2: 更新纹理
+     * 3: 解析路径
+     * 4: 同步数据
+     * 5: 显示路径
      */
     protected _state = 0;
     protected _doing = false;
@@ -74,10 +83,19 @@ export class SetScanPath extends HackUi {
     }
 
     protected onDataChange(data: any): void {
-        const path = data;
-        no.assetBundleManager.loadTexture(path + '/texture', t => {
-            this.init(t);
-        });
+        const { path, dataPath } = data;
+        if (path) {
+            no.assetBundleManager.loadTexture(path + '/texture', t => {
+                this.init(t);
+            });
+            this.clearDataValue(this.bind_keys + '.path');
+        }
+        if (dataPath) {
+            no.assetBundleManager.loadJSON(dataPath, t => {
+                this.initPixelData(t.json);
+            });
+            this.clearDataValue(this.bind_keys + '.dataPath');
+        }
     }
 
 
@@ -98,115 +116,147 @@ export class SetScanPath extends HackUi {
         this._spriteFrame.texture = this._texture;
         this._sprite.spriteFrame = this._spriteFrame;
         texture.decRef();
-        this.scheduleOnce(() => {
-            this.initNoAlpha0Pixels();
-            this.updateScanState();
-            this.initDebugSprite();
-        });
+        // this.scheduleOnce(() => {
+        //     this.initEdgePixels();
+        //     this.updateScanState();
+        // });
+    }
+
+    protected initPixelData(data: any) {
+        if (!this._texture) {
+            this.scheduleOnce(() => {
+                this.initPixelData(data);
+            }, 0.05);
+            return;
+        }
+        const { pixels, pathes }: { pixels: number[], pathes: number[][] } = data;
+        this._edgePixelsMap.clear();
+        for (let i = 0, n = pixels.length; i < n; i += 2) {
+            const u = pixels[i];
+            const v = pixels[i + 1];
+            const key = `${u}-${v}`;
+            this._edgePixelsMap.set(key, [u, v]);
+        }
+        for (let i = 0, n = pathes.length; i < n; i++) {
+            const path = pathes[i];
+            const pathData: { u: number, v: number }[] = [];
+            for (let j = 0, m = path.length; j < m; j += 2) {
+                pathData.push({ u: path[j], v: path[j + 1] });
+            }
+            this._pathes.push(pathData);
+        }
+        this._state = 3;
+        this.updateScanState();
     }
 
     protected lateUpdate(dt: number): void {
+        if (EDITOR) return;
         if (this._state == 0 || this._doing) return;
         this._doing = true;
         switch (this._state) {
             case 1:
-                this.scanWholePixels();
-                break;
-            case 2:
-                this.removeIsolatedPixels();
-                break;
-            case 3:
                 this.onGetWholePixels();
                 break;
-            case 4:
+            case 2:
+                this._updateTexture();
+                break;
+            case 3:
+                this.prepareParsePath();
                 this.parsePath();
                 break;
-            case 5:
-                this._updateTexture();
-                this.updateScanState();
+            case 4:
+                this.updateToData();
                 if (!this._pathReady) {
                     this.scheduleOnce(() => {
                         this._pathReady = true;
                     }, 0.05);
                 }
                 break;
+            case 5:
+                this.showPath();
+                this.updateScanState();
+                break;
         }
     }
 
-    protected initNoAlpha0Pixels() {
-        this._noAlpha0PixelsMap.clear();
-        this._noAlpha0PixelsArr.length = 0;
-        for (let i = 0; i < this._size.width; i++) {
-            for (let j = 0; j < this._size.height; j++) {
-                if (this.isPixelAlpha0(i, j)) continue;
-                const key = `${i}-${j}`;
-                this._noAlpha0PixelsMap.set(key, [i, j]);
-            }
-        }
-    }
+    // protected initNoAlpha0Pixels() {
+    //     this._noAlpha0PixelsMap.clear();
+    //     this._noAlpha0PixelsArr.length = 0;
+    //     for (let i = 0; i < this._size.width; i++) {
+    //         for (let j = 0; j < this._size.height; j++) {
+    //             if (this.isPixelAlpha0(i, j)) continue;
+    //             const key = `${i}-${j}`;
+    //             this._noAlpha0PixelsMap.set(key, [i, j]);
+    //         }
+    //     }
+    // }
 
-    protected deleteFromNoAlpha0Pixels(u: number, v: number) {
-        this._noAlpha0PixelsArr[this._noAlpha0PixelsArr.length] = `${u}-${v}`;
-    }
+    // protected deleteFromNoAlpha0Pixels(u: number, v: number) {
+    //     this._noAlpha0PixelsArr[this._noAlpha0PixelsArr.length] = `${u}-${v}`;
+    // }
 
     /**
      * 扫描所有像素，找到边缘像素
      */
-    protected scanWholePixels() {
-        this._pathes.length = 0;
-        this._pixelSet.clear();
-        this._pixelArr.length = 0;
-        for (let i = 0, n = this._noAlpha0PixelsArr.length; i < n; i++) {
-            const key = this._noAlpha0PixelsArr[i];
-            this._noAlpha0PixelsMap.delete(key);
-        }
-        this._noAlpha0PixelsArr.length = 0;
-        for (const [key, value] of this._noAlpha0PixelsMap) {
-            if (this.isPath(value[0], value[1])) {
-                this._pixelArr[this._pixelArr.length] = value;
-                this._pixelSet.add(key);
-            }
-        }
-        // console.log('scanWholePixels', this._pixelArr.length);
-        this.updateScanState();
-    }
+    // protected scanWholePixels() {
+    //     this._pathes.length = 0;
+    //     this._pixelSet.clear();
+    //     this._pixelArr.length = 0;
+    //     for (let i = 0, n = this._noAlpha0PixelsArr.length; i < n; i++) {
+    //         const key = this._noAlpha0PixelsArr[i];
+    //         this._noAlpha0PixelsMap.delete(key);
+    //     }
+    //     this._noAlpha0PixelsArr.length = 0;
+    //     for (const [key, value] of this._noAlpha0PixelsMap) {
+    //         if (this.isPath(value[0], value[1])) {
+    //             this._pixelArr[this._pixelArr.length] = value;
+    //             this._pixelSet.add(key);
+    //         }
+    //     }
+    //     // console.log('scanWholePixels', this._pixelArr.length);
+    //     this.updateScanState();
+    // }
 
     /**
      * 剔除孤立像素
      */
-    protected removeIsolatedPixels() {
-        let newArr: number[][] = [];
+    // protected removeIsolatedPixels() {
+    //     let newArr: number[][] = [];
 
-        // 检查每个像素的邻居
-        for (let i = 0, n = this._pixelArr.length; i < n; i++) {
-            const p = this._pixelArr[i];
-            let neighborCount = 0;
+    //     // 检查每个像素的邻居
+    //     for (let i = 0, n = this._pixelArr.length; i < n; i++) {
+    //         const p = this._pixelArr[i];
+    //         let neighborCount = 0;
 
-            // 检查8个方向的邻居
-            for (let j = 0; j < 8; j++) {
-                const d = this._dir8[j];
-                const neighborKey = `${p[0] + d.x}-${p[1] + d.y}`;
+    //         // 检查8个方向的邻居
+    //         for (let j = 0; j < 8; j++) {
+    //             const d = this._dir8[j];
+    //             if (!this.isPixelAlpha0(p[0] + d.x, p[1] + d.y)) {
+    //                 neighborCount++;
+    //                 // 如果已经有3个邻居，可以提前退出内层循环
+    //                 if (neighborCount >= 3) {
+    //                     newArr[newArr.length] = p;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //         //邻居至少得有3个，如果按2个邻居判定为孤立，它的下一个邻居被判定为孤立而删除后，它自己也会变成孤立
+    //         if (neighborCount < 3) {
+    //             this._pixelSet.delete(`${p[0]}-${p[1]}`);
+    //         }
+    //     }
 
-                if (this._noAlpha0PixelsMap.has(neighborKey)) {
-                    neighborCount++;
-                    // 如果已经有3个邻居，可以提前退出内层循环
-                    if (neighborCount >= 3) {
-                        newArr[newArr.length] = p;
-                        break;
-                    }
-                }
-            }
-            //邻居至少得有3个，如果按2个邻居判定为孤立，它的下一个邻居被判定为孤立而删除后，它自己也会变成孤立
-            if (neighborCount < 3) {
-                this._pixelSet.delete(`${p[0]}-${p[1]}`);
-            }
-        }
+    //     this._pixelArr = newArr;
+    //     newArr = null;
+    //     // console.log('removeIsolatedPixels', this._pixelArr.length);
+    //     this.updateScanState();
+    // }
 
-        this._pixelArr = newArr;
-        newArr = null;
-        // console.log('removeIsolatedPixels', this._pixelArr.length);
-        this.updateScanState();
+    private prepareParsePath() {
+        this._pathes.length = 0;
+        this._pixelSet = new Set(this._edgePixelsMap.keys());
     }
+
 
     /**
      * 解析路径
@@ -218,8 +268,6 @@ export class SetScanPath extends HackUi {
                 this._pathes.push(path);
             }
         }
-        this.showPath(this._pathes);
-        this.updateToData();
         this.updateScanState();
     }
 
@@ -231,7 +279,7 @@ export class SetScanPath extends HackUi {
     protected splitPath() {
         if (this._pixelSet.size === 0) return [];
         const key = this._pixelSet.values().next().value;
-        const [u, v] = this._noAlpha0PixelsMap.get(key);
+        const [u, v] = this._edgePixelsMap.get(key);
         const path: { u: number, v: number }[] = [{ u, v }];
         this._pixelSet.delete(key);
 
@@ -302,6 +350,7 @@ export class SetScanPath extends HackUi {
         }
         this.clearDataValue(this.pathKey);
         this.setDataValue(this.pathKey, pathesData);
+        this.updateScanState();
     }
 
 
@@ -328,8 +377,11 @@ export class SetScanPath extends HackUi {
         return this.uvToPixelIndex(u, v) + 3;
     }
 
-    protected showPath(path: { u: number, v: number }[][]) {
+    protected showPath() {
         if (!this.showPathPoints) return;
+        this.clearPathPoints();
+        const path = this._pathes;
+        this.initDebugSprite();
         no.unschedule(this);
         this._pathPoints.length = 0;
         for (let i = 0, n = path.length; i < n; i++) {
@@ -364,7 +416,7 @@ export class SetScanPath extends HackUi {
         }, this.interval, points.length, 0, this)
     }
 
-    protected clearPoints() {
+    protected clearPathPoints() {
         if (!this.showPathPoints) return;
         if (this._pathPoints.length == 0) return;
         for (let i = 0, n = this._pathPoints.length; i < n; i++) {
@@ -389,6 +441,7 @@ export class SetScanPath extends HackUi {
                 this._sprite.markForUpdateRenderData();
             }
         }
+        this.updateScanState();
     }
 
     /**
@@ -464,6 +517,7 @@ export class SetScanPath extends HackUi {
     }
 
     private initDebugSprite() {
+        if (this._pathPointSprite) return;
         const size = this._size;
         const node = no.newNode('path_point', [Sprite]);
         node.layer = this.node.layer;
@@ -511,6 +565,92 @@ export class SetScanPath extends HackUi {
      */
     protected onGetWholePixels() {
         this.updateScanState();
+    }
+
+    /********* 导出数据 *********/
+    protected exportData() {
+        const sprite = this.getComponent(Sprite);
+        if (!sprite.spriteFrame) return;
+        const texture = sprite.spriteFrame.texture as Texture2D;
+        const size = { width: texture.width, height: texture.height };
+        this._size = size;
+        this._texture = new DynamicAtlasTexture();
+        this._texture.initWithSize(size.width, size.height);
+        this._textureBuffer = this._texture.getTextureBuffer(texture, new Rect(0, 0, size.width, size.height));
+        this._texture.uploadData(this._textureBuffer);
+        this.initEdgePixels();
+        this.prepareParsePath();
+        this.parsePath();
+        this.showPath();
+        const arr: number[] = [];
+        this._edgePixelsMap.forEach((value, key) => {
+            arr.push(...value);
+        });
+        const pathArr: number[][] = [];
+        this._pathes.forEach(pathPoints => {
+            const a: number[] = [];
+            pathPoints.forEach(point => {
+                a.push(point.u, point.v);
+            });
+            pathArr.push(a);
+        })
+        console.log(JSON.stringify({ pixels: arr, pathes: pathArr }));
+    }
+
+    protected initEdgePixels() {
+        this._edgePixelsMap.clear();
+        for (let i = 0; i < this._size.width; i++) {
+            for (let j = 0; j < this._size.height; j++) {
+                if (!this.isEdgePixel(i, j)) continue;
+                const key = `${i}-${j}`;
+                this._edgePixelsMap.set(key, [i, j]);
+            }
+        }
+    }
+
+    /**
+     * 判断像素是否为边缘像素, 边缘像素的邻居(非透明)至少得有3个，并且至少有一个透明像素
+     * @param u 像素X坐标
+     * @param v 像素Y坐标
+     * @returns 是否为边缘像素
+     */
+    protected isEdgePixel(u: number, v: number) {
+        if (this.isPixelAlpha0(u, v)) return false;
+        let hasAlpha0 = false;
+        for (let i = 0; i < 4; i++) {
+            const d = this._dir4[i];
+            if (this.isPixelAlpha0(u + d.x, v + d.y)) {
+                hasAlpha0 = true;
+                break;
+            }
+        }
+        if (!hasAlpha0) return false;
+        let neighborCount = 0;
+        for (let j = 0; j < 8; j++) {
+            const d = this._dir8[j];
+            if (!this.isPixelAlpha0(u + d.x, v + d.y)) {
+                neighborCount++;
+                // 如果已经有3个邻居，可以提前退出内层循环
+                //邻居至少得有3个，如果按2个邻居判定为孤立，它的下一个邻居被判定为孤立而删除后，它自己也会变成孤立
+                if (neighborCount >= 3) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected checkEdgePixel(u: number, v: number) {
+        const key = `${u}-${v}`;
+        if (!this.isEdgePixel(u, v)) {
+            if (this._edgePixelsMap.has(key))
+                this._edgePixelsMap.delete(key);
+            return false;
+        } else {
+            if (!this._edgePixelsMap.has(key))
+                this._edgePixelsMap.set(key, [u, v]);
+            return true;
+        }
     }
 }
 

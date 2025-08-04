@@ -9967,11 +9967,12 @@ export namespace no {
          */
         export async function getAssetUrlByUuid(uuid: string) {
             return Promise.all([getAssetInfo(uuid), getBundleNames()]).then(([info, bundleNames]) => {
-                const url: string = info.url.replace(/\.[^/.]+$/, '');
+                const url: string = info.path.replace('ad://assets/', '');
+                const a: string[] = url.split('/')
                 let bundleName = null;
-                for (let i = 0, n = bundleNames.length; i < n; i++) {
-                    if (url.indexOf('/' + bundleNames[i] + '/') > -1) {
-                        bundleName = bundleNames[i];
+                for (let i = 0, n = a.length; i < n; i++) {
+                    if (bundleNames.includes(a[i])) {
+                        bundleName = a[i];
                         break;
                     }
                 }
@@ -10156,9 +10157,14 @@ export namespace no {
          */
         export async function getBundleName(url: string) {
             return getBundleInfos().then(infos => {
-                for (let i = 0, n = infos.length; i < n; i++) {
-                    if (url.indexOf(infos[i].url) == 0)
-                        return infos[i].name;
+                const a: string[] = url.replace('ad://assets/', '').split('/');
+                for (let i = 0, n = a.length; i < n; i++) {
+                    const name = a[i];
+                    for (let j = 0, m = infos.length; j < m; j++) {
+                        if (infos[j].name == name) {
+                            return infos[j].name;
+                        }
+                    }
                 }
                 return null;
             });

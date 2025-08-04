@@ -15,18 +15,26 @@ export class SetDigHole extends SetScanPath {
     holesInfoKey: string = 'holesInfo';
     @property
     showOutline: boolean = true;
+    @property({ type: Sprite, displayName: '纹理映射' })
+    subSprite: Sprite = null;
 
     private _isDig = false;
     private _drawLineUv: Set<string> = new Set();
     private _drawOutlineUv: Set<string> = new Set();
     private _holesInfo: any[] = [];
+    private _holesEdges: number[] = [];
 
     protected onDataChange(data: any): void {
-        const { path, digInfo, oldDigInfo } = data;
+        const { path, dataPath, digInfo, oldDigInfo } = data;
         if (path) {
-            super.onDataChange(path);
+            super.onDataChange({ path });
             this.clearDataValue(`${this.bind_keys}.path`);
             this._holesInfo.length = 0;
+            this.setSubSprite();
+        }
+        if (dataPath) {
+            super.onDataChange({ dataPath });
+            this.clearDataValue(`${this.bind_keys}.dataPath`);
         }
         if (digInfo) {
             let { x, y, radius } = digInfo;
@@ -42,6 +50,17 @@ export class SetDigHole extends SetScanPath {
             this.recoverHoles(infos);
             this.clearDataValue(`${this.bind_keys}.oldDigInfo`);
         }
+    }
+
+    private setSubSprite() {
+        if (!this.subSprite) return;
+        if (!this._spriteFrame) {
+            this.scheduleOnce(() => {
+                this.setSubSprite();
+            }, 0);
+            return;
+        }
+        this.subSprite.spriteFrame = this._spriteFrame;
     }
 
     /**
@@ -73,7 +92,6 @@ export class SetDigHole extends SetScanPath {
      */
     private digHole(x: number, y: number, radius: number) {
         this._isDig = true;
-        this.clearPoints();
         const [centerX, centerY] = this.xyToUv(x, y);
         // 计算更新区域边界（优化性能，只处理视野范围内像素）
         const startX = Math.max(0, centerX - radius + 1);
@@ -81,11 +99,21 @@ export class SetDigHole extends SetScanPath {
         const startY = Math.max(0, centerY - radius + 1);
         const endY = Math.min(this._size.height - 1, centerY + radius - 1);
 
-        // 遍历区域内的每个像素
-        for (let y = startY; y <= endY; y++) {
-            for (let x = startX; x <= endX; x++) {
-                if (this.isInCircle(x, y, centerX, centerY, radius))
-                    this.setPixelAlpha(x, y);
+        this._holesEdges.length = 0;
+        // 将挖洞区域内的像素设置为透明
+        for (let v = startY; v <= endY; v++) {
+            for (let u = startX; u <= endX; u++) {
+                if (this.isInCircle(u, v, centerX, centerY, radius)) {
+                    this.setPixelAlpha(u, v);
+                }
+            }
+        }
+        // 找到挖洞区域内的边缘
+        for (let v = startY - 2; v <= endY + 2; v++) {
+            for (let u = startX - 2; u <= endX + 2; u++) {
+                if (this.checkEdgePixel(u, v)) {
+                    this._holesEdges.push(u, v);
+                }
             }
         }
     }
@@ -99,7 +127,6 @@ export class SetDigHole extends SetScanPath {
      */
     private digEllipseHole(x: number, y: number, radius: number, radian?: number) {
         this._isDig = true;
-        this.clearPoints();
         const [centerX, centerY] = this.xyToUv(x, y);
         const a = radius,
             b = radius * .5;
@@ -263,7 +290,6 @@ export class SetDigHole extends SetScanPath {
         const i = this.alphaIndex(u, v);
         if (this._textureBuffer[i] != null) {
             this._textureBuffer[i] = alpha;
-            this.deleteFromNoAlpha0Pixels(u, v);
         } else {
             console.error('setPixelAlpha null', u, v);
         }
@@ -275,11 +301,9 @@ export class SetDigHole extends SetScanPath {
      */
     private drawOutline() {
         if (!this.showOutline) return;
-        for (let k = 0, n = this._pixelArr.length; k < n; k++) {
-            const [u, v] = this._pixelArr[k];
-            // for (let i = u - 3, m = u + 3; i <= m; i++) {
-            //     for (let j = v - 3, m = v + 3; j <= m; j++) {
-            //         if (this.isPixelAlpha0(i, j)) continue;
+        for (let k = 0, n = this._holesEdges.length; k < n; k += 2) {
+            const u = this._holesEdges[k];
+            const v = this._holesEdges[k + 1];
             if (this._drawOutlineUv.has(`${u},${v}`)) continue;
             this._drawOutlineUv.add(`${u},${v}`);
             const idx = this.uvToPixelIndex(u, v);
@@ -288,8 +312,6 @@ export class SetDigHole extends SetScanPath {
             this._textureBuffer[idx + 2] = 0;
             this._textureBuffer[idx + 3] = 2;
             this.drawRandomLine(u, v);
-            // }
-            // }
         }
     }
 

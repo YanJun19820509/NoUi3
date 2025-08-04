@@ -65,8 +65,11 @@ export class SetSize extends HackUi {
         if (this.checkMaxSize) {
             this.checkMaxSize = this.maxSize.width > 0 && this.maxSize.height > 0;
         }
+        if (this.checkMaxSize) {
+            this.node.on(NodeEventType.SIZE_CHANGED, this.checkSize, this);
+        }
         // 需要尺寸监控时注册子节点事件
-        if (this.checkMaxSize || this.syncSize) {
+        else if (this.syncSize) {
             this.node.on(NodeEventType.CHILD_ADDED, this._childAdded, this);
             this.node.on(NodeEventType.CHILD_REMOVED, this._childRemoved, this);
             const children = this.node.children;
