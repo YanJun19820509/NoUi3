@@ -133,6 +133,9 @@ export class YJPanel extends Component {
     @property({ type: no.EventHandlerInfo })
     onClose: no.EventHandlerInfo[] = [];
 
+    @property({ tooltip: '如果没有勾，需要手动调用closePanelDone' })
+    autoClose: boolean = true;
+
     /** 
      * 是否启用缓存
      * @remarks
@@ -317,9 +320,15 @@ export class YJPanel extends Component {
      * });
      */
     public closePanel() {
+        no.EventHandlerInfo.execute(this.onClose); // 执行关闭回调
+        if (this.autoClose) {
+            this.closePanelDone();
+        }
+    }
+
+    public closePanelDone() {
         this.status = 'close';
         no.log('panel close', this.panelType);
-        no.EventHandlerInfo.execute(this.onClose); // 执行关闭回调
 
         const key = this.getPrefabUrl();
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType, key); // 全局事件

@@ -11104,12 +11104,12 @@ export namespace no {
      * @returns 旋转后的点
      */
     export function rotatePoint(point: { x: number, y: number }, radian: number) {
-        if (radian == 0) return point;
+        if (radian == 0) return { x: point.x, y: point.y };
         const cos = Math.cos(radian);
         const sin = Math.sin(radian);
         return {
-            x: Math.ceil(point.x * cos + point.y * sin),
-            y: Math.ceil(-point.x * sin + point.y * cos)
+            x: point.x * cos - point.y * sin,
+            y: point.x * sin + point.y * cos
         }
     }
 
@@ -11220,6 +11220,7 @@ export namespace no {
         const x = horizontalSpeed * time;
         const y = verticalSpeed * time - 0.5 * gravity * time * time;
         const newVerticalSpeed = verticalSpeed - gravity * time;
+        
         //计算角度变化
         let angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
         if (horizontalSpeed < 0) angleChange += 180;

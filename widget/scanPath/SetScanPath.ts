@@ -138,7 +138,7 @@ export class SetScanPath extends HackUi {
             const v = pixels[i + 1];
             this._edgePixelsMap.set(this.key(u, v), [u, v, 0]);
         }
-        this._pathes = pathes;
+        this._pathes = pathes.slice();
         this._state = 3;
         this.updateScanState();
     }
@@ -173,79 +173,6 @@ export class SetScanPath extends HackUi {
         }
     }
 
-    // protected initNoAlpha0Pixels() {
-    //     this._noAlpha0PixelsMap.clear();
-    //     this._noAlpha0PixelsArr.length = 0;
-    //     for (let i = 0; i < this._size.width; i++) {
-    //         for (let j = 0; j < this._size.height; j++) {
-    //             if (this.isPixelAlpha0(i, j)) continue;
-    //             const key = `${i}-${j}`;
-    //             this._noAlpha0PixelsMap.set(key, [i, j]);
-    //         }
-    //     }
-    // }
-
-    // protected deleteFromNoAlpha0Pixels(u: number, v: number) {
-    //     this._noAlpha0PixelsArr[this._noAlpha0PixelsArr.length] = `${u}-${v}`;
-    // }
-
-    /**
-     * 扫描所有像素，找到边缘像素
-     */
-    // protected scanWholePixels() {
-    //     this._pathes.length = 0;
-    //     this._pixelSet.clear();
-    //     this._pixelArr.length = 0;
-    //     for (let i = 0, n = this._noAlpha0PixelsArr.length; i < n; i++) {
-    //         const key = this._noAlpha0PixelsArr[i];
-    //         this._noAlpha0PixelsMap.delete(key);
-    //     }
-    //     this._noAlpha0PixelsArr.length = 0;
-    //     for (const [key, value] of this._noAlpha0PixelsMap) {
-    //         if (this.isPath(value[0], value[1])) {
-    //             this._pixelArr[this._pixelArr.length] = value;
-    //             this._pixelSet.add(key);
-    //         }
-    //     }
-    //     // console.log('scanWholePixels', this._pixelArr.length);
-    //     this.updateScanState();
-    // }
-
-    /**
-     * 剔除孤立像素
-     */
-    // protected removeIsolatedPixels() {
-    //     let newArr: number[][] = [];
-
-    //     // 检查每个像素的邻居
-    //     for (let i = 0, n = this._pixelArr.length; i < n; i++) {
-    //         const p = this._pixelArr[i];
-    //         let neighborCount = 0;
-
-    //         // 检查8个方向的邻居
-    //         for (let j = 0; j < 8; j++) {
-    //             const d = this._dir8[j];
-    //             if (!this.isPixelAlpha0(p[0] + d.x, p[1] + d.y)) {
-    //                 neighborCount++;
-    //                 // 如果已经有3个邻居，可以提前退出内层循环
-    //                 if (neighborCount >= 3) {
-    //                     newArr[newArr.length] = p;
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //         //邻居至少得有3个，如果按2个邻居判定为孤立，它的下一个邻居被判定为孤立而删除后，它自己也会变成孤立
-    //         if (neighborCount < 3) {
-    //             this._pixelSet.delete(`${p[0]}-${p[1]}`);
-    //         }
-    //     }
-
-    //     this._pixelArr = newArr;
-    //     newArr = null;
-    //     // console.log('removeIsolatedPixels', this._pixelArr.length);
-    //     this.updateScanState();
-    // }
-
     private prepareParsePath() {
         this._pathes.length = 0;
         for (const [key, value] of this._edgePixelsMap) {
@@ -259,7 +186,7 @@ export class SetScanPath extends HackUi {
     protected parsePath() {
         while (1) {
             const path = this.splitPath();
-            if (path.length > 1) {
+            if (path.length > 3) {
                 this._pathes.push(path);
             } else break;
         }
@@ -342,11 +269,22 @@ export class SetScanPath extends HackUi {
         const pathesData: { x: number, y: number }[][] = [];
         for (let i = 0, n = this._pathes.length; i < n; i++) {
             const path = this._pathes[i];
+            if (path.length < 4) continue;
             const pathData: { x: number, y: number }[] = [];
+            let lastX = 0, lastY = 0;
             for (let j = 0, m = path.length; j < m; j += 2) {
                 const u = path[j];
                 const v = path[j + 1];
                 const [x, y] = this.uvToXy(u, v);
+                if (j == 0) {
+                    lastX = x;
+                    lastY = y;
+                }
+                else if (x < lastX && y > lastY) continue;
+                else {
+                    lastX = x;
+                    lastY = y;
+                }
                 pathData.push({ x, y });
             }
             pathesData.push(pathData);
@@ -588,7 +526,7 @@ export class SetScanPath extends HackUi {
         this.showPath();
         const arr: number[] = [];
         this._edgePixelsMap.forEach((value, key) => {
-            arr.push(...value);
+            arr.push(value[0], value[1]);
         });
         console.log(JSON.stringify({ pixels: arr, pathes: this._pathes }));
     }
