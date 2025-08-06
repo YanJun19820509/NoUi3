@@ -204,6 +204,7 @@ export class SetList extends HackUi {
         // 根据配置执行子节点清理
         if (this.clearOnDisable) {
             this.clearItems();
+            this.lastIndex = 0;
         }
     }
 
@@ -601,7 +602,10 @@ export class SetList extends HackUi {
         // 获取当前所有列表项
         const listItems = this.content.children;
         // 数据或元素为空时直接返回
-        if (this.listData == null || listItems == null || listItems.length == 0) return;
+        if (this.listData == null || listItems == null || listItems.length < this.showMax) {
+            no.scheduleOnce(this.updatePos, 0.1, this);
+            return;
+        }
 
         // 计算当前滚动位置和起始索引
         let curPos = 0;
@@ -625,7 +629,7 @@ export class SetList extends HackUi {
         if (diff !== 0) {
             this.lastIndex = startIndex; // 更新最后已知索引
             const n = listItems.length; // 当前存在的列表项数量
-
+            let j = 1;
             // 使用标准for循环遍历所有列表项
             for (let i = 0; i < n; i++) {
                 const item = listItems[i];
@@ -635,15 +639,20 @@ export class SetList extends HackUi {
                     // 检查元素是否超出可见范围且可以循环到顶部/左侧
                     if (dataIndex - startIndex > this.showNum - 1 && dataIndex - n >= 0) {
                         // 示例：当向下滚动时，将底部元素移动到顶部并更新数据
-                        this.setItemData(item, this.listData[dataIndex - n]);
-                        this.setItemPosition(item, dataIndex - n);
+                        const idx = dataIndex - n;
+                        this.setItemData(item, this.listData[idx]);
+                        this.setItemPosition(item, idx);
                     }
                 } else if (diff > 0) { // 向上/向左滚动
                     // 检查元素是否超出可见范围且可以循环到底部/右侧
                     if (dataIndex < startIndex && dataIndex + n < this.allNum) {
                         // 示例：当向上滚动时，将顶部元素移动到底部并更新数据
-                        this.setItemData(item, this.listData[dataIndex + n]);
-                        this.setItemPosition(item, dataIndex + n);
+                        let idx = startIndex - j++ + n;
+                        while (idx >= this.allNum) {
+                            idx = startIndex - j++ + n;
+                        }
+                        this.setItemData(item, this.listData[idx]);
+                        this.setItemPosition(item, idx);
                     }
                 }
             }
