@@ -64,6 +64,8 @@ export class SetAnimation extends HackUi {
     defaultName: string = '';
     @property({ type: SetAnimationCb })
     cbs: SetAnimationCb[] = [];
+    @property
+    autoPlay: boolean = true;
 
     // ======================== 资源管理 ========================
     /** 需要释放的动画剪辑缓存（防止内存泄漏） */
@@ -71,6 +73,12 @@ export class SetAnimation extends HackUi {
     private _curCb: SetAnimationCb;
 
     // ======================== 生命周期管理 ========================
+
+    protected onEnable(): void {
+        if (this.autoPlay) {
+            this._play(this.defaultName, 1, 1);
+        }
+    }
     /**
      * 组件禁用时清理资源
      * @实现要点
