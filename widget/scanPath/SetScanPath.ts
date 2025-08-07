@@ -212,7 +212,7 @@ export class SetScanPath extends HackUi {
         let n = this.step;
         let curU = path[0];
         let curV = path[1];
-
+        let lastDir: number = -1;
         while (true) {
             let found = false;
 
@@ -226,11 +226,11 @@ export class SetScanPath extends HackUi {
                 if (value && value[2] == 0) {
                     // 从Set中移除已访问的点
                     value[2] = 1;
-                    if (--n === 0) {
+                    if (--n === 0 || Math.abs(lastDir - i) > 1) {
                         path.push(u, v);
                         n = this.step;
                     }
-
+                    lastDir = i;
                     curU = u;
                     curV = v;
                     found = true;

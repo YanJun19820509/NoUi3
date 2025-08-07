@@ -136,7 +136,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         }
 
         // 获取目标节点的世界坐标并转换为本地坐标系
-        let pos = target.nodeWorldPosition;
+        let pos = target.node.worldPosition.clone();
         no.worldPositionInNode(pos, this.boundaryNode || this.node.parent, pos);
         if (this.reverse) {
             pos.x = -pos.x;
