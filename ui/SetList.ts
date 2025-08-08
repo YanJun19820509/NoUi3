@@ -603,7 +603,7 @@ export class SetList extends HackUi {
         const listItems = this.content.children;
         // 数据或元素为空时直接返回
         if (this.listData == null || listItems == null || listItems.length < this.showMax) {
-            no.scheduleOnce(this.updatePos, 0.1, this);
+            no.scheduleOnce(this.updatePos, 0.05, this);
             return;
         }
 
