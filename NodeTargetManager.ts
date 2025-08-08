@@ -38,9 +38,36 @@ class NodeTargetManager {
      * const player = nodeTargetManager.get<PlayerController>('player');
      */
     public get<T>(type: string): T {
-        if (type == null || type == '') return null;
         if (!this.targetMap.has(type)) return null;
         return this.targetMap.get(type) as T;
+    }
+
+    /**
+     * 异步获取目标节点
+     * @param type - 目标节点类型
+     * @returns 目标节点
+     */
+    public getTargetAsync<T>(type: string): Promise<T> {
+        if (type == null || type == '') return null;
+        return new Promise<T>((resolve, reject) => {
+            let tryNum = 50;
+            const timer = setInterval(() => {
+                const target = this.get<T>(type);
+                if (target) {
+                    clearInterval(timer);
+                    resolve(target);
+                } else {
+                    if (--tryNum <= 0) {
+                        clearInterval(timer);
+                        console.error('getTargetAsync获取目标失败', type);
+                        resolve(null);
+                    }
+                }
+            }, 40);
+        }).catch(err => {
+            console.error('getTargetAsync获取目标失败 error', type, err);
+            return null;
+        });
     }
 
     /**
