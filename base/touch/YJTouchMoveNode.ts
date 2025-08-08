@@ -19,6 +19,8 @@ export class YJTouchMoveNode extends Component {
     syncNode: Node = null;
     @property({ displayName: '是否反向', visible() { return this.syncNode != null; } })
     reverse: boolean = false;
+    @property({ displayName: '是否触摸开始时移动' })
+    touchStartMove: boolean = false;
 
     //移动范围
     private _moveRange: { xMin: number, yMin: number, xMax: number, yMax: number };
@@ -27,8 +29,20 @@ export class YJTouchMoveNode extends Component {
     private _syncRangeScale: { x: number, y: number };
     private _isTouching: boolean = false;
 
+    protected onDisable(): void {
+        this._moveRange = null;
+        this._rect = null;
+        this._syncRangeScale = null;
+    }
+
+    private _tempPos: Vec2 = new Vec2();
     public onTouchStart(event: EventTouch) {
         this._isTouching = true;
+        if (this.touchStartMove) {
+            const pos = this.node.worldPosition;
+            const location = event.getUILocation(this._tempPos);
+            this._moveBy(location.x - pos.x, location.y - pos.y);
+        }
     }
 
     public onTouchMove(event: EventTouch) {

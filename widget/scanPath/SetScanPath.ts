@@ -226,7 +226,14 @@ export class SetScanPath extends HackUi {
                 if (value && value[2] == 0) {
                     // 从Set中移除已访问的点
                     value[2] = 1;
-                    if (--n === 0 || Math.abs(lastDir - i) > 1) {
+                    if (--n === 0) {
+                        path.push(u, v);
+                        n = this.step;
+                    } else if (Math.abs(lastDir - i) > 1) {
+                        if (n > 15) {
+                            path.pop();
+                            path.pop();
+                        }
                         path.push(u, v);
                         n = this.step;
                     }

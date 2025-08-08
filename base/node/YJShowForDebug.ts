@@ -1,5 +1,5 @@
 
-import { ccclass, menu, Component, Node } from '../../yj';
+import { ccclass, menu, Component, Node, DEBUG } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -44,19 +44,21 @@ export class YJShowForDebug extends Component {
      */
     onLoad() {
         // 组件未启用时直接返回
-        if (!this.enabled) return;
-        
-        // 初始化节点显示状态（根据全局调试标志）
-        this.node.active = window['show_GM_btn'];
-        
-        // 注册调试标志变化监听
-        no.evn.on('show_GM_btn', () => {
-            // 安全校验：确保节点未被销毁
-            if (this?.node?.isValid) {
-                // 同步最新调试标志到节点显示状态
-                this.node.active = window['show_GM_btn'];
-            }
-        }, this);
+        // if (!this.enabled) return;
+
+        // // 初始化节点显示状态（根据全局调试标志）
+        // this.node.active = window['show_GM_btn'];
+
+        // // 注册调试标志变化监听
+        // no.evn.on('show_GM_btn', () => {
+        //     // 安全校验：确保节点未被销毁
+        //     if (this?.node?.isValid) {
+        //         // 同步最新调试标志到节点显示状态
+        //         this.node.active = window['show_GM_btn'];
+        //     }
+        // }, this);
+
+        this.node.active = DEBUG;
     }
 
     /**

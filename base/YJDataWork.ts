@@ -3,7 +3,6 @@ import { EDITOR, ccclass, property, menu, Component, disallowMultiple, Node } fr
 import { HackUi } from '../ui/HackUi';
 import { no } from '../no';
 import { YJDataWorkManager } from './YJDataWorkManager';
-import { YJUpdatePreDataWork } from './YJUpdatePreDataWork';
 
 /**
  * Predefined variables
@@ -92,6 +91,19 @@ export class YJDataWork extends Component {
     @property({ displayName: '差异更新', tooltip: '仅修改某key下有变更的值，否则替换该key对应全部值。非差异更新性能较好，默认true' })
     onlyDiff: boolean = true;
 
+    @property({ type: Node })
+    preDataWorkNode: Node = null;
+    /**
+     * 数据绑定路径配置
+     * @property 
+     * @example 
+     * - 更新单个字段: "position"
+     * - 更新数组元素: "items.0" 或 "items.id"（通过id查找数组元素）
+     * - 批量更新多个字段: "hp,items.0,equipment.weapon"
+     */
+    @property({ displayName: '绑定数据的keys', tooltip: '用.表示key的层级关系；如果上层数据是数组，那么.后为下标或能找唯一子项的key；仅支持两层。用,分隔多个key', visible() { return this.preDataWork != null; } })
+    bind_keys: string = '';
+
 
     /**
      * 数据键到UI组件的映射关系
@@ -127,6 +139,7 @@ export class YJDataWork extends Component {
      * node.destroy();
      */
     protected onDestroy(): void {
+        this._preDataWork = null;
         YJDataWorkManager.ins().remove(this);
         this.clear();
     }
@@ -337,7 +350,7 @@ export class YJDataWork extends Component {
     public changeValueByUi(key: string, value: any) {
         this.setValue(key, value);
         this['onUIValueChange']?.(key, value);
-        this.getComponent(YJUpdatePreDataWork)?.updateData(this.data);
+        this.updatePreData(this.data);
     }
 
     /**
@@ -468,6 +481,51 @@ export class YJDataWork extends Component {
                     }
                     a.push(ui);
                 }
+            }
+        }
+    }
+
+    private _preDataWork: YJDataWork = null;
+
+    /**
+     * 数据更新方法
+     * @param d 要更新的数据对象
+     * @example
+     * // 更新用户位置信息
+     * updateData({x:100, y:200}); // bind_keys配置为"position"
+     * 
+     * // 更新背包第一个物品
+     * updateData({id:1, count:5}); // bind_keys配置为"bagItems.0"
+     * 
+     * // 批量更新角色属性和装备
+     * updateData({atk:50, weapon:'sword'}); // bind_keys配置为"roleStatus,equipment.weapon"
+     */
+    private updatePreData(d: any) {
+        if (!this.preDataWorkNode || !this.bind_keys) return;
+        if (!this._preDataWork) {
+            this._preDataWork = this.preDataWorkNode.getComponent(YJDataWork);
+            if (!this._preDataWork) return;
+        }
+        const keys = this.bind_keys.split(',');
+        for (let i = 0, n = keys.length; i < n; i++) {
+            const ks = keys[i].split('.');
+            if (ks.length == 1) {
+                // 直接更新一级属性
+                this._preDataWork.changeValueByUi(ks[0], d);
+            } else {
+                // 处理嵌套属性（支持数组）
+                const data = this._preDataWork.getValue(ks[0]);
+                if (Array.isArray(data)) {
+                    // 解析数组索引（支持数字下标或通过key查找）
+                    let index = parseInt(ks[1]);
+                    if (isNaN(index)) {
+                        index = no.indexOfArray(data, d[ks[1]], ks[1]);
+                    }
+                    // 更新数组元素
+                    data[index] = d;
+                }
+                // 提交修改后的数据
+                this._preDataWork.changeValueByUi(ks[0], data);
             }
         }
     }
