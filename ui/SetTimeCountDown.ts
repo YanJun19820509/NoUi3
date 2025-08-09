@@ -166,9 +166,11 @@ export class SetTimeCountDown extends HackUi {
             return;
         }
         if (data == 'resume') {
-            const a = no.sysTime.now - this._pauseTime;
-            this._deadline += a;
-            this._pauseTime = 0;
+            if (this._pauseTime > 0) {
+                const a = no.sysTime.now - this._pauseTime;
+                this._deadline += a;
+                this._pauseTime = 0;
+            }
             no.sysTime.onTickTock(this);
             return;
         }

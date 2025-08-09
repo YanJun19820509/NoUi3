@@ -33,6 +33,8 @@ export class YJTouchMoveNode extends Component {
         this._moveRange = null;
         this._rect = null;
         this._syncRangeScale = null;
+        this.node.setPosition(0, 0);
+        this.syncNode?.setPosition(0, 0);
     }
 
     private _tempPos: Vec2 = new Vec2();

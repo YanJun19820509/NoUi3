@@ -22,7 +22,9 @@ export class SetDigHole extends SetScanPath {
     private _drawLineUv: Set<string> = new Set();
     private _drawOutlineUv: Set<string> = new Set();
     private _holesInfo: any[] = [];
+    /** 挖洞边缘像素 */
     private _holesEdges: number[] = [];
+    // private _holesRect: { startX: number, startY: number, endX: number, endY: number }[] = [];
 
     onDestroy(): void {
         super.onDestroy();
@@ -126,6 +128,7 @@ export class SetDigHole extends SetScanPath {
                 }
             }
         }
+        // this.saveHoleRect(startX, startY, endX, endY);
     }
 
     /**
@@ -367,5 +370,34 @@ export class SetDigHole extends SetScanPath {
         this.clearDataValue(this.holesInfoKey);
         this.setDataValue(this.holesInfoKey, this._holesInfo);
     }
-}
 
+    /**
+     * 保存挖洞矩形
+     * @param startX 矩形左上角X坐标
+     * @param startY 矩形左上角Y坐标
+     * @param endX 矩形右下角X坐标
+     * @param endY 矩形右下角Y坐标
+     */
+    // private saveHoleRect(startX: number, startY: number, endX: number, endY: number) {
+    //     for (let i = 0, n = this._holesRect.length; i < n; i++) {
+    //         const rect = this._holesRect[i];
+    //         if (
+    //             no.inRange(startX, rect.startX, rect.endX)
+    //             || no.inRange(startY, rect.startY, rect.endY)
+    //             || no.inRange(endX, rect.startX, rect.endX)
+    //             || no.inRange(endY, rect.startY, rect.endY)
+    //         ) {
+    //             //合并矩形
+    //             startX = Math.min(startX, rect.startX);
+    //             startY = Math.min(startY, rect.startY);
+    //             endX = Math.max(endX, rect.endX);
+    //             endY = Math.max(endY, rect.endY);
+    //             //删除被合并的矩形，并重新保存，计算其他矩形是否需要合并
+    //             this._holesRect.splice(i, 1);
+    //             this.saveHoleRect(startX, startY, endX, endY);
+    //             return;
+    //         }
+    //     }
+    //     this._holesRect.push({ startX, startY, endX, endY });
+    // }
+}

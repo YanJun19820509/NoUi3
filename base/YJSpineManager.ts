@@ -60,6 +60,13 @@ export class YJSpineManager extends no.SingleObject {
         this.startReleaseTimer();
     }
 
+    /**
+     * 停止自动释放
+     */
+    public stopAutoRelease() {
+        this.stopReleaseTimer();
+    }
+
     /** 
      * 启动资源释放定时器
      * @description 每RELEASE_INTERVAL毫秒执行一次资源回收检查
@@ -288,6 +295,7 @@ export class YJSpineManager extends no.SingleObject {
      */
     public clear(): void {
         this.stopReleaseTimer();
+        this.release();
         YJSpineManager._map.clear();
         YJSpineManager._loading.clear();
     }

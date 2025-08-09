@@ -169,8 +169,8 @@ export class SetSpine extends HackUi {
     onEnable() {
         if (EDITOR) return;
         // 微信小游戏平台特殊处理（性能优化）
-        if (sys.platform == sys.Platform.WECHAT_GAME)
-            this.GlobalScale = 1;
+        // if (sys.platform == sys.Platform.WECHAT_GAME)
+        //     this.GlobalScale = 1;
         // 获取基础Spine组件并禁用（使用动态创建的实例）
         let spine = this.getComponent(Skeleton);
         spine.enabled = false;
@@ -236,8 +236,8 @@ export class SetSpine extends HackUi {
      */
     protected onDataChange(data: any) {
         // 微信平台缩放设置
-        if (sys.platform == sys.Platform.WECHAT_GAME && this.GlobalScale != .5)
-            this.GlobalScale = .5;
+        // if (sys.platform == sys.Platform.WECHAT_GAME && this.GlobalScale != .5)
+        //     this.GlobalScale = .5;
         // 转换起始/结束索引配置
         if (this.startIndexes)
             this._startIndexes = this.startIndexes.split(','); // 示例："0,1,2" => [0,1,2]

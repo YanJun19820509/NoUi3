@@ -3086,7 +3086,7 @@ export namespace no {
      * @returns 
      */
     export function inRange(v: number, min: number, max: number): boolean {
-        return v > min && v < max;
+        return v >= min && v <= max;
     }
 
     /**
@@ -11220,13 +11220,67 @@ export namespace no {
         const x = horizontalSpeed * time;
         const y = verticalSpeed * time - 0.5 * gravity * time * time;
         const newVerticalSpeed = verticalSpeed - gravity * time;
-        
+
         //计算角度变化
         let angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
         if (horizontalSpeed < 0) angleChange += 180;
         const horizontalDistance = horizontalSpeed * time;
         const verticalDistance = verticalSpeed * time - 0.5 * gravity * time * time;
         return { x, y, angleChange, horizontalDistance, verticalDistance };
+    }
+
+    /**
+     * 计算斜抛运动角度
+     * @param speed 初速度
+     * @param horizontalDistance 水平距离
+     * @param verticalDistance 垂直距离
+     * @param gravity 重力加速度
+     */
+    export function calculateProjectileMotionRadian(S: number, H: number, V: number, g: number) {
+        if (S <= 0) {
+            err("初速度 S 必须大于0");
+            return null;
+        }
+        if (g <= 0) {
+            err("重力加速度 g 必须大于0");
+            return null;
+        }
+        if (H === 0) {
+            // 水平位移为0时，抛射角固定为90度（竖直方向）
+            return [Math.PI / 2];
+        }
+
+        // 计算二次方程系数
+        const a = (g * H * H) / (2 * S * S);
+        const b = -H;
+        const c = V + (g * H * H) / (2 * S * S);
+
+        // 计算判别式
+        const discriminant = b * b - 4 * a * c;
+        if (discriminant < 0) {
+            err("无实数解，给定条件下不存在符合条件的抛物线运动");
+            return null;
+        }
+
+        // 计算根
+        const sqrtDiscriminant = Math.sqrt(discriminant);
+        const u1 = (H + sqrtDiscriminant) / (2 * a);
+        const u2 = (H - sqrtDiscriminant) / (2 * a);
+
+        // 筛选有效解（tanθ > 0）
+        // const validUs = [u1, u2].filter(u => u > 0);
+        const validUs = [u1, u2];
+
+        // 转换为抛射角（弧度）
+        const angles = validUs.map(u => Math.atan(u));
+
+        // 验证结果非空（理论上至少有一个解，因判别式已检查）
+        if (angles.length === 0) {
+            err("无有效抛射角解");
+            return null;
+        }
+
+        return angles;
     }
 }
 no.addToWindowForDebug('no', no);

@@ -75,20 +75,36 @@ export class SetScanPath extends HackUi {
         this._size = null;
         if (this._pathPointSprite) {
             this._pathPointSprite.spriteFrame = null;
+            this._pathPointSprite.node.destroy();
+            this._pathPointSprite = null;
             this._pathPointTexture?.destroy();
             this._pathPointTexture = null;
             this._pathPointTextureBuffer = null;
+            this._pathPoints.length = 0;
         }
     }
 
     protected onDataChange(data: any): void {
         const { path, dataPath } = data;
         if (path) {
+            this._pathReady = false;
             if (!this._sprite)
                 this._sprite = this.getComponent(Sprite);
             this._sprite.spriteFrame = null;
             this._spriteFrame?.destroy();
             this._spriteFrame = null;
+            this._texture?.destroy();
+            this._texture = null;
+            this._textureBuffer = null;
+            if (this._pathPointSprite) {
+                this._pathPointSprite.spriteFrame = null;
+                this._pathPointSprite.node.destroy();
+                this._pathPointSprite = null;
+                this._pathPointTexture?.destroy();
+                this._pathPointTexture = null;
+                this._pathPointTextureBuffer = null;
+                this._pathPoints.length = 0;
+            }
             no.assetBundleManager.loadTexture(path + '/texture', t => {
                 this.init(t);
             });
@@ -109,7 +125,6 @@ export class SetScanPath extends HackUi {
      */
     protected init(texture: Texture2D) {
         this._size = { width: texture.width, height: texture.height };
-        this._texture?.destroy();
         this._texture = new DynamicAtlasTexture();
         this._texture.initWithSize(this._size.width, this._size.height);
         this._textureBuffer = this._texture.getTextureBuffer(texture, new Rect(0, 0, this._size.width, this._size.height));
@@ -178,6 +193,15 @@ export class SetScanPath extends HackUi {
         for (const [key, value] of this._edgePixelsMap) {
             value[2] = 0;
         }
+        //排序
+        // const arr = Array.from(this._edgePixelsMap.values());
+        // no.sortArray(arr, (a, b) => { return a[0] - b[0]; });
+        // this._edgePixelsMap.clear();
+        // for (let i = 0, n = arr.length; i < n; i++) {
+        //     const a = arr[i];
+        //     a[2] = 0;
+        //     this._edgePixelsMap.set(this.key(a[0], a[1]), a);
+        // }
     }
 
     /**
@@ -186,9 +210,10 @@ export class SetScanPath extends HackUi {
     protected parsePath() {
         while (1) {
             const path = this.splitPath();
-            if (path.length > 3) {
+            const len = path.length;
+            if (len > 3) {
                 this._pathes.push(path);
-            } else break;
+            } else if (len == 0) break;
         }
         this.updateScanState();
     }
@@ -280,18 +305,16 @@ export class SetScanPath extends HackUi {
             const pathData: { x: number, y: number }[] = [];
             let lastX = 0, lastY = 0;
             for (let j = 0, m = path.length; j < m; j += 2) {
-                const u = path[j];
-                const v = path[j + 1];
-                const [x, y] = this.uvToXy(u, v);
-                if (j == 0) {
-                    lastX = x;
-                    lastY = y;
-                }
-                else if (x < lastX && y > lastY) continue;
-                else {
-                    lastX = x;
-                    lastY = y;
-                }
+                const [x, y] = this.uvToXy(path[j], path[j + 1]);
+                // if (j == 0) {
+                //     lastX = x;
+                //     lastY = y;
+                // }
+                // else if (x < lastX && y > lastY) continue;
+                // else {
+                //     lastX = x;
+                //     lastY = y;
+                // }
                 pathData.push({ x, y });
             }
             pathesData.push(pathData);

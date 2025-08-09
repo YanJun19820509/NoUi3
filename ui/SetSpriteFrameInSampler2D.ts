@@ -246,6 +246,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * // 将Sprite组件的spriteFrame设为null防止内存泄漏
      */
     onDestroy() {
+        if (EDITOR) return;
         if (this._singleSpriteFrame) {
             // 减少引用计数（重要：防止资源泄漏）
             this._singleSpriteFrame.decRef();

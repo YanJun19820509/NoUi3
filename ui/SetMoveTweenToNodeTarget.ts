@@ -77,7 +77,10 @@ export class SetMoveTweenToNodeTarget extends HackUi {
     movingCall: no.EventHandlerInfo[] = [];
 
     private _range: { xMin: number, xMax: number, yMin: number, yMax: number };
-    private _followData: { duration: number, speed: number, radian: number };
+
+    protected onDisable(): void {
+        this._range = null;
+    }
 
     /**
      * 处理数据变更入口
