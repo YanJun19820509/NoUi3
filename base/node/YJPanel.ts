@@ -433,7 +433,6 @@ export class YJPanel extends Component {
      */
     public show() {
         this.status = 'open';
-        if (this.node.active) this.onEnable();
         if (this.cacheToPool) {
             no.visibleByActiveInHierarchy(this.node, true);
             this.enableDataWork();

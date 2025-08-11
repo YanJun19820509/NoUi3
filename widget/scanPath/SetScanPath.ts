@@ -225,10 +225,10 @@ export class SetScanPath extends HackUi {
      */
     protected splitPath() {
         const path: number[] = [];
-        for (const [key, value] of this._edgePixelsMap) {
-            if (value[2] == 0) {
-                value[2] = 1;
-                path.push(value[0], value[1]);
+        for (const [k, v] of this._edgePixelsMap) {
+            if (v[2] == 0) {
+                v[2] = 1;
+                path.push(v[0], v[1]);
                 break;
             }
         }
@@ -245,7 +245,9 @@ export class SetScanPath extends HackUi {
             for (let i = 0; i < 8; i++) {
                 const d = this._dir8[i];
                 const u = curU + d.x;
+                if (u < 0 || u >= this._size.width) continue;
                 const v = curV + d.y;
+                if (v < 0 || v >= this._size.height) continue;
                 const key = this.key(u, v);
                 const value = this._edgePixelsMap.get(key);
                 if (value && value[2] == 0) {
@@ -334,6 +336,8 @@ export class SetScanPath extends HackUi {
     protected isPixelAlpha0(idx: number): boolean;
     protected isPixelAlpha0(u: number, v: number): boolean;
     protected isPixelAlpha0(u: number, v?: number): boolean {
+        if (u < 0 || u >= this._size.width) return false;
+        if (v != null && (v < 0 || v >= this._size.height)) return false;
         if (v != null) u = this.alphaIndex(u, v);
         return this._textureBuffer[u] === 0;
     }
@@ -350,11 +354,10 @@ export class SetScanPath extends HackUi {
 
     protected showPath() {
         if (!this.showPathPoints) return;
+        no.unschedule(this);
+        this.initDebugSprite();
         this.clearPathPoints();
         const path = this._pathes;
-        this.initDebugSprite();
-        no.unschedule(this);
-        this._pathPoints.length = 0;
         for (let i = 0, n = path.length; i < n; i++) {
             this.showPoints(path[i]);
         }
@@ -365,14 +368,19 @@ export class SetScanPath extends HackUi {
      * @param points 点
      */
     protected showPoints(points: number[]) {
-        let i = 0;
+        let k = 0;
         const r = Math.random() * 255,
             g = Math.random() * 255,
             b = 255;
+        const len = points.length;
         no.schedule(() => {
-            const u = points[i++];
-            const v = points[i++];
+            const u = points[k++];
+            const v = points[k++];
             if (!u || !v) return;
+            if (this.isPixelAlpha0(u, v)) {
+                console.log('showPoints', len, k)
+                return;
+            }
             for (let i = u - 3; i <= u + 3; i++) {
                 for (let j = v - 3; j <= v + 3; j++) {
                     if (this.isPixelAlpha0(i, j)) continue;
@@ -398,6 +406,7 @@ export class SetScanPath extends HackUi {
             this._pathPointTextureBuffer[idx + 2] = 0;
             this._pathPointTextureBuffer[idx + 3] = 0;
         }
+        this._pathPoints.length = 0;
     }
 
     /**
@@ -503,13 +512,13 @@ export class SetScanPath extends HackUi {
 
         // console.log("创建迷雾纹理，尺寸:", width, "x", height);
 
-        // 初始化缓冲区 (全黑不透明)
+        // 初始化缓冲区 (全黑透明)
         for (let i = 0, n = size.width * size.height; i < n; i++) {
             // RGBA: 黑色不透明
             this._pathPointTextureBuffer[i * 4] = 0;     // R
             this._pathPointTextureBuffer[i * 4 + 1] = 0; // G
             this._pathPointTextureBuffer[i * 4 + 2] = 0; // B
-            this._pathPointTextureBuffer[i * 4 + 3] = 0; // A (不透明)
+            this._pathPointTextureBuffer[i * 4 + 3] = 0; // A (透明)
         }
         this._pathPointTexture.uploadData(this._pathPointTextureBuffer);
         const sprite = node.getComponent(Sprite);
@@ -537,6 +546,10 @@ export class SetScanPath extends HackUi {
      */
     protected onGetWholePixels() {
         this.updateScanState();
+    }
+
+    protected isValidPixel(u: number, v: number) {
+        return u >= 0 && u < this._size.width && v >= 0 && v < this._size.height;
     }
 
     /********* 导出数据 *********/
