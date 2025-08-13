@@ -1,5 +1,5 @@
 
-import { ccclass, menu, Component, Node, DEBUG } from '../../yj';
+import { ccclass, menu, Component } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -58,7 +58,7 @@ export class YJShowForDebug extends Component {
         //     }
         // }, this);
 
-        this.node.active = DEBUG;
+        this.node.active = no.isDebug();
     }
 
     /**

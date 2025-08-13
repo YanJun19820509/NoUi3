@@ -75,7 +75,7 @@ export class SetScanPath extends HackUi {
         this._size = null;
         if (this._pathPointSprite) {
             this._pathPointSprite.spriteFrame = null;
-            this._pathPointSprite.node.destroy();
+            this._pathPointSprite.node?.destroy();
             this._pathPointSprite = null;
             this._pathPointTexture?.destroy();
             this._pathPointTexture = null;

@@ -541,32 +541,34 @@ export namespace no {
          */
         public emit(type: string, ...args: any[]): void {
             let a: { h: Function, t: any, o: boolean }[] = this._map.get(type) || [];
-            if (!a) return;
+            if (!a.length) return;
             args = args || [];
             args[args.length] = type;
+
+            for (let i = a.length - 1; i >= 0; i--) {
+                let b = a[i];
+                if (b.t && !checkValid(b.t)) {
+                    a.splice(i, 1);
+                }
+            }
+
             if (DEBUG) {
                 for (let i = a.length - 1; i >= 0; i--) {
                     const b = a[i];
                     try {
-                        if (b.t && !checkValid(b.t)) {
-                            b.o = true;
-                        } else
-                            b.h.apply(b.t, args);
+                        if (b.o) {
+                            a.splice(i, 1);
+                        }
+                        b.h.apply(b.t, args);
                     } catch (e) { console.error(e); }
                 }
             } else {
                 for (let i = a.length - 1; i >= 0; i--) {
                     const b = a[i];
-                    if (b.t && !checkValid(b.t)) {
-                        b.o = true;
-                    } else
-                        b.h.apply(b.t, args);
-                }
-            }
-            for (let i = a.length - 1; i >= 0; i--) {
-                let b = a[i];
-                if (b.o) {
-                    a.splice(i, 1);
+                    if (b.o) {
+                        a.splice(i, 1);
+                    }
+                    b.h.apply(b.t, args);
                 }
             }
             this._map.set(type, a);
