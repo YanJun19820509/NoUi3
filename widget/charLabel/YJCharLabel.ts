@@ -2427,7 +2427,25 @@ export class YJCharLabel extends Sprite {
     private splitIntoWords(text: string): string[] {
         // 启用空格断词时使用正则分割
         if (this.blankBreakWord) {
-            return text.split(/(?= )|(?<= )/); // 正向/反向零宽断言分割
+            // 某些环境不支持零宽断言，改为兼容写法
+            let arr: string[] = [];
+            let temp = '';
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                if (char === ' ') {
+                    if (temp.length > 0) {
+                        arr.push(temp);
+                        temp = '';
+                    }
+                    arr.push(' ');
+                } else {
+                    temp += char;
+                }
+            }
+            if (temp.length > 0) {
+                arr.push(temp);
+            }
+            return arr;
         }
 
         let words = [];
