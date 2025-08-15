@@ -115,7 +115,7 @@ export class SetDigHole extends SetScanPath {
         // 将挖洞区域内的像素设置为透明
         for (let v = startY; v <= endY; v++) {
             for (let u = startX; u <= endX; u++) {
-                if (this.isInCircle(u, v, centerX, centerY, radius)) {
+                if (this.isInCircle(u, v, centerX, centerY, radius) && !this.isEdge(u, v)) {
                     this.setPixelAlpha(u, v);
                 }
             }

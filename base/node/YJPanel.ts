@@ -371,7 +371,6 @@ export class YJPanel extends Component {
         no.EventHandlerInfo.execute(this.onClose);
         const key = this.getPrefabUrl();
         no.evn.emit(YJPanel.PanelCloseEvent, this.panelType, key);
-        this.onClosePanel();
         if (this.isFullScreen)
             no.evn.emit('_full_screen_panel_close', this.panelType, key);
         no.multiTouch(this._lastMultiTouchState);
@@ -389,6 +388,7 @@ export class YJPanel extends Component {
      * panel.clear(true);
      */
     public clear(force = false) {
+        this.onClosePanel();
         if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
         no.setPrototype(this, { [YJPanelCreated]: '0' });
         this.node.destroy();

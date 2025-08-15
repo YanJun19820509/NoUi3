@@ -326,6 +326,10 @@ export class SetScanPath extends HackUi {
         this.updateScanState();
     }
 
+    protected isEdge(u: number, v: number) {
+        return u == 0 || u == this._size.width - 1 || v == 0 || v == this._size.height - 1;
+    }
+
 
     /**
      * 判断像素是否透明
