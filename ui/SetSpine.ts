@@ -167,7 +167,7 @@ export class SetSpine extends HackUi {
      * this.autoPlayOnEnable = true
      */
     onEnable() {
-        if (EDITOR) return;
+        if (EDITOR || !this.node.activeInHierarchy) return;
         // 微信小游戏平台特殊处理（性能优化）
         // if (sys.platform == sys.Platform.WECHAT_GAME)
         //     this.GlobalScale = 1;
@@ -199,12 +199,20 @@ export class SetSpine extends HackUi {
     onDisable() {
         if (EDITOR) return;
         if (!this.canDisable) return;
-        let spine = this._curSpine;
-        if (!spine) return;
-        // 清理动画轨道（非缓存模式时）
-        this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        // 销毁Spine节点释放资源
-        spine.node?.destroy();
+        // let spine = this._curSpine;
+        // if (!spine) return;
+        // // 清理动画轨道（非缓存模式时）
+        // this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
+        // // 销毁Spine节点释放资源
+        // spine.node?.destroy();
+        // this._curSpine = null;
+        this.destroySpineNode(this._curSpine);
+        this._curSpine = null;
+        this.node.children.forEach(child => {
+            if (child.name == 'spine') {
+                child.destroy();
+            }
+        });
     }
 
     /**
@@ -254,10 +262,13 @@ export class SetSpine extends HackUi {
         if (!spine) return;
         this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         // 在销毁节点前更新引用计数
-        if (this.curPath && isValid(spine?.node, true)) {
-            YJSpineManager.ins.set(path);
+        if (isValid(spine?.node, true)) {
+            spine.node.parent = null;
+            spine.node.destroy();
+            if (this.curPath) {
+                YJSpineManager.ins.set(path);
+            }
         }
-        spine.node?.destroy();
     }
 
     /**
@@ -328,6 +339,7 @@ export class SetSpine extends HackUi {
                 // 组件有效性检查
                 if (!isValid(this.node, true)) {
                     this.destroySpineNode(this._curSpine, path);
+                    this._curSpine = null;
                     return;
                 }
 
@@ -335,7 +347,7 @@ export class SetSpine extends HackUi {
 
                 // 销毁旧spine节点（异步加载后需要重新获取引用）
                 this.destroySpineNode(this._curSpine);
-
+                this._curSpine = null;
                 // 创建新spine节点
                 const newSpineNode = no.newNode('spine', [Skeleton]);
                 newSpineNode.layer = this.node.layer;

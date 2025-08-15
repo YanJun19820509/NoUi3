@@ -123,7 +123,7 @@ export class YJSpineManager extends no.SingleObject {
         const normalizedPath = this.normalizePath(path);
         const resource = YJSpineManager._map.get(normalizedPath);
 
-        if (resource) {
+        if (resource && resource.ref > 0) {
             resource.ref--;
             resource.t = no.sysTime.now;
         } else if (data) {
