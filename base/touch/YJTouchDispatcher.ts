@@ -68,6 +68,7 @@ export class YJTouchDispatcher extends Component {
      * - 当某个监听器返回true且未标记preventSwallow时终止传递
      */
     public onStart(event: EventTouch) {
+        no.sortArray(this.listeners, (a, b) => b.priority - a.priority);
         for (let i = 0, n = this.listeners.length; i < n; i++) {
             if (this.listeners[i].onStart(event) && !event.preventSwallow) break;
         }

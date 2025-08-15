@@ -46,6 +46,8 @@ export class YJTouchListener extends Component {
     /** 关联的事件分发器（自动从父节点查找或代码绑定） */
     @property(YJTouchDispatcher)
     dispatcher: YJTouchDispatcher = null;
+    @property({ displayName: '优先级', tooltip: '优先级越大，越先处理' })
+    priority: number = 0;
 
     /** 按下事件处理器列表（支持多回调） */
     @property({ type: no.EventHandlerInfo, displayName: '按下事件' })
