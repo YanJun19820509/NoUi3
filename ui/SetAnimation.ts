@@ -225,11 +225,11 @@ export class SetAnimation extends HackUi {
 
     public a_playOnce(e: any, v?: any) {
         v = v || e;
-        this._play(v, 1, 1);
+        this.a_setData({ name: v, repeat: 1 });
     }
 
     public a_playLoop(e: any, v?: any) {
         v = v || e;
-        this._play(v);
+        this.a_setData({ name: v });
     }
 }

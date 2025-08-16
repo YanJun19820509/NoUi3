@@ -177,6 +177,7 @@ export class SetTimeCountDown extends HackUi {
         if (data == 'stop') {
             data = 0;
         }
+        this._pauseTime = 0;
 
         // 处理直接显示文本的情况
         if (typeof data == 'string' && isNaN(Number(data))) {

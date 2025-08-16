@@ -1,5 +1,5 @@
 
-import { ccclass, menu, property, executeInEditMode, EDITOR, Node, instantiate } from '../yj';
+import { ccclass, menu, property, executeInEditMode, EDITOR, Node, instantiate, isValid } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
@@ -125,7 +125,7 @@ export class SetCreateCacheNode extends HackUi {
         };
         // 尝试从缓存池获取节点
         let item = no.nodePool.get(this.recycleType), needWait = false;
-        if (!item) {
+        if (!item || !isValid(item)) {
             // 实例化新节点并标记需要等待初始化
             item = instantiate(this.template);
             item.active = true;

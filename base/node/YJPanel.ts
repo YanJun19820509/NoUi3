@@ -200,7 +200,7 @@ export class YJPanel extends Component {
      * 是否缓存到对象池
      * @remarks 可重写实现特殊缓存逻辑
      */
-    protected cacheToPool: boolean = true;
+    protected cacheToPool: boolean = false;
 
     /**
      * 组件加载时初始化基础配置
@@ -320,6 +320,7 @@ export class YJPanel extends Component {
      * });
      */
     public closePanel() {
+        if (this.status != 'open') return;
         no.EventHandlerInfo.execute(this.onClose); // 执行关闭回调
         if (this.autoClose) {
             this.closePanelDone();
