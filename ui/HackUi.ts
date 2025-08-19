@@ -275,7 +275,7 @@ export class HackUi extends Component {
      */
     private logValue(data: any): void {
         if (!DEBUG || !this.showValueLog) return;
-        no.log(this.bind_keys, data);
+        no.log(this._name, this.bind_keys, data);
     }
 
     /**
