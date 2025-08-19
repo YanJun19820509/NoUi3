@@ -87,6 +87,7 @@ export class SetScanPath extends HackUi {
     protected onDataChange(data: any): void {
         const { path, dataPath } = data;
         if (path) {
+            no.unschedule(this);
             this._pathReady = false;
             if (!this._sprite)
                 this._sprite = this.getComponent(Sprite);
@@ -208,13 +209,52 @@ export class SetScanPath extends HackUi {
      * 解析路径
      */
     protected parsePath() {
+        const pathes: number[][] = [];
         while (1) {
             const path = this.splitPath();
             const len = path.length;
-            if (len > 3) {
-                this._pathes.push(path);
-            } else if (len == 0) break;
+            if (len > 5) {
+                pathes.push(path);
+            } else if (len === 0) break;
         }
+        let n = pathes.length
+        //合并路径
+        if (n > 1) {
+            //判断两条路径前后点是否连接的最大距离
+            const maxDis = this.step * 2;
+            //按x从左到右排序,确定路径之间的先后顺序
+            no.sortArray(pathes, (a, b) => {
+                return a[0] - b[0];
+            });
+            let i = 0;
+            while (n > 1) {
+                const path1 = pathes[i];
+                const end1 = { x: path1[path1.length - 2], y: path1[path1.length - 1] };
+                const arr: { path1: number, path2: number, dis: number }[] = [];
+                for (let j = i + 1; j < n; j++) {
+                    const path2 = pathes[j];
+                    const start2 = { x: path2[0], y: path2[1] };
+                    const dis = no.distance(end1, start2);
+                    if (dis <= maxDis) {
+                        arr.push({ path1: 0, path2: j, dis: dis });
+                    }
+                }
+                if (arr.length == 0) {
+                    if (i < n - 2) {
+                        i++;
+                        continue;
+                    } else break;
+                }
+                no.sortArray(arr, (a, b) => {
+                    return a.dis - b.dis;
+                });
+                const idx = arr[0].path2;
+                const nextPath = pathes.splice(idx, 1)[0];
+                path1.push(...nextPath);
+                n--;
+            }
+        }
+        this._pathes = pathes;
         this.updateScanState();
     }
 
@@ -226,7 +266,7 @@ export class SetScanPath extends HackUi {
     protected splitPath() {
         const path: number[] = [];
         for (const [k, v] of this._edgePixelsMap) {
-            if (v[2] == 0) {
+            if (v[2] === 0) {
                 v[2] = 1;
                 path.push(v[0], v[1]);
                 break;
@@ -250,7 +290,7 @@ export class SetScanPath extends HackUi {
                 if (v < 0 || v >= this._size.height) continue;
                 const key = this.key(u, v);
                 const value = this._edgePixelsMap.get(key);
-                if (value && value[2] == 0) {
+                if (value && value[2] === 0) {
                     // 从Set中移除已访问的点
                     value[2] = 1;
                     if (--n === 0) {
