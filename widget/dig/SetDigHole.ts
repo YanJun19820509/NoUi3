@@ -36,6 +36,8 @@ export class SetDigHole extends SetScanPath {
     protected onDataChange(data: any): void {
         const { path, dataPath, digInfo, oldDigInfo } = data;
         if (path) {
+            this._drawLineUv.clear();
+            this._drawOutlineUv.clear();
             if (this.subSprite) {
                 this.subSprite.spriteFrame = null;
             }
