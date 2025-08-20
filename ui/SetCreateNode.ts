@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3, Layout, UIOpacity } from '../yj';
+import { ccclass, property, menu, executeInEditMode, Node, instantiate, EDITOR, Size, v3, Layout, UIOpacity, isValid } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJJobManager } from '../base/YJJobManager';
@@ -400,6 +400,11 @@ export class SetCreateNode extends HackUi {
             this.container.addChild(item);
             this._items.push(item);
             isNew = true;
+        } else if ((!item.children[0] || !isValid(item.children[0], true)) && data[dataIdx] != null) {
+            this.container.removeChild(item);
+            item = this.initItem(instantiate(this.template));
+            this.container.addChild(item);
+            this._items.splice(childIdx, 1, item);
         }
 
         // 处理空数据节点
