@@ -109,6 +109,8 @@ export class YJAudioManager extends Component {
      */
     private clips: Map<string, AudioClip> = new Map();
 
+    private loopEffectMap: Map<string, any> = new Map();
+
     /**
      * 获取背景音乐开关状态
      * @使用场景
@@ -118,7 +120,7 @@ export class YJAudioManager extends Component {
     public get isBGMOn(): boolean {
         return this._isBGMOn;
     }
-    
+
     /**
      * 设置音乐开关
      * @param v true开启,false关闭
@@ -174,6 +176,14 @@ export class YJAudioManager extends Component {
     /** 音效开关状态 默认true开启 */
     private _isEffectOn = true;
 
+    public getEffectDuration(path: string): number {
+        if (this.clips.has(path)) {
+            let c = this.clips.get(path);
+            return c.getDuration();
+        }
+        return 0;
+    }
+
     /**
      * 播放背景音乐
      * @param path 音频剪辑路径,不传则播放上一次的背景音乐
@@ -228,6 +238,31 @@ export class YJAudioManager extends Component {
             this._playClip(c, false);
         } else {
             this.loadAndPlay(path, false);
+        }
+    }
+
+    public playLoopEffect(path: string): void {
+        if (!this.isEffectOn) return;
+        if (this.loopEffectMap.has(path)) return;
+        if (this.clips.has(path)) {
+            const duration = this.getEffectDuration(path);
+            const timer = setInterval(() => {
+                this.playEffect(path);
+            }, duration * 1000);
+            this.playEffect(path);
+            this.loopEffectMap.set(path, timer);
+        }
+        else {
+            this.loadAudioClip(path, (clip) => {
+                this.playLoopEffect(path);
+            });
+        }
+    }
+
+    public stopLoopEffect(path: string): void {
+        if (this.loopEffectMap.has(path)) {
+            clearInterval(this.loopEffectMap.get(path));
+            this.loopEffectMap.delete(path);
         }
     }
 

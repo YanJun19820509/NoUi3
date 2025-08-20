@@ -19,9 +19,9 @@ import { YJAudioManager } from './YJAudioManager';
 export class SoundEffectInfo {
     @property({ displayName: '别名', tooltip: '默认为文件名，可自定义，播放时指定别名即可，不用关心实际播放的是哪个文件' })
     alias: string = '';
-    @property({ readonly: true })
+    @property
     assetUrl: string = '';
-    @property({ readonly: true })
+    @property
     assetUuid: string = '';
 }
 
@@ -36,6 +36,8 @@ export class SoundEffectInfo {
  * - 与YJAudioManager协同工作实现完整音频管理
  */
 export class YJSoundEffectManager extends Component {
+    @property
+    root: string = '';
     /**
      * 编辑器属性,用于解析项目中的音频资源
      * @机制
@@ -65,7 +67,7 @@ export class YJSoundEffectManager extends Component {
      * - 文件名将作为默认别名（自动去除扩展名）
      */
     public set parse(v: boolean) {
-        no.EditorMode.getAssetInfosByCCType('cc.AudioClip').then(infos => {
+        no.EditorMode.loadAssetInfosOfCCTypeUnderFolder(this.root, 'cc.AudioClip').then(infos => {
             if (!infos.length) {
                 return;
             }
@@ -75,7 +77,7 @@ export class YJSoundEffectManager extends Component {
                 let name = info.name.split('.')[0];
                 effectInfo.alias = name;
                 effectInfo.assetUrl = info.url;
-                effectInfo.assetUuid = info._uuid;
+                effectInfo.assetUuid = info.uuid;
                 let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
                 if (i > -1) {
                     effectInfo.alias = this.soundEffects[i].alias;
@@ -146,6 +148,8 @@ export class YJSoundEffectManager extends Component {
 
     /** 单例实例 */
     private static _ins: YJSoundEffectManager;
+
+    private _loopEffectMap: { [url: string]: any } = {};
 
     /** 
      * 获取单例实例
@@ -219,6 +223,20 @@ export class YJSoundEffectManager extends Component {
     public playEffectByAlias(alias: string): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playEffect(url);
+    }
+
+    public playLoopEffectByAlias(alias: string): void {
+        let url = this._map[alias];
+        if (url) {
+            YJAudioManager.ins.playLoopEffect(url);
+        }
+    }
+
+    public stopLoopEffectByAlias(alias: string): void {
+        let url = this._map[alias];
+        if (url) {
+            YJAudioManager.ins.stopLoopEffect(url);
+        }
     }
 
     /**
