@@ -1148,16 +1148,16 @@ export class YJUIAnimationEffect extends Component {
     })
     auto: boolean = false;
 
-    onLoad() {
-        // 编辑器环境下自动关联相关组件
-        if (EDITOR && !this.target) {
-            const a = this.getComponent('SetList')
-                || this.getComponent('SetCreateNode')
-                || this.getComponent('SetNodesSwitch')
-                || this.getComponent('SetSpriteFrameInSampler2D');
-            if (a && !a['uiAnim']) a['uiAnim'] = this;  // 在编辑器扩展中自动绑定动画控制器
-        }
-    }
+    // onLoad() {
+    //     // 编辑器环境下自动关联相关组件
+    //     if (EDITOR && !this.target) {
+    //         const a = this.getComponent('SetList')
+    //             || this.getComponent('SetCreateNode')
+    //             || this.getComponent('SetNodesSwitch')
+    //             || this.getComponent('SetSpriteFrameInSampler2D');
+    //         if (a && !a['uiAnim']) a['uiAnim'] = this;  // 在编辑器扩展中自动绑定动画控制器
+    //     }
+    // }
 
     onEnable() {
         // 运行时自动播放逻辑（编辑器模式下不执行）
