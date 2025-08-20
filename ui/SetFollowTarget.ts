@@ -1,6 +1,5 @@
-import { ccclass, Node, property, Vec3 } from 'hackUi/yj';
-import { HackUi } from 'hackUi/ui/HackUi';
-import { no } from '../no';
+import { ccclass, isValid, Node, property, Vec3 } from '../yj';
+import { HackUi } from '../ui/HackUi';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { nodeTargetManager } from '../NodeTargetManager';
 
@@ -61,7 +60,7 @@ export class SetFollowTarget extends HackUi {
     }
 
     private onTargetTransformChanged() {
-        if (!this._target) return;
+        if (!this._target || !isValid(this._target, true)) return;
         if (this.syncScale) {
             if (!this._selfScale) this._selfScale = this.node.scale.clone();
             const scale = this._target.scale;
