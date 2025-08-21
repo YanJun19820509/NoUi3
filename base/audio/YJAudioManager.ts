@@ -537,4 +537,20 @@ export class YJAudioManager extends Component {
             }
         });
     }
+
+    public pauseAll(): void {
+        this.audioSource.enabled = false;
+    }
+
+    public resumeAll(): void {
+        this.audioSource.enabled = true;
+    }
+
+    public stopAll(): void {
+        this.audioSource.stop();
+        this.loopEffectMap.forEach(timer => {
+            clearInterval(timer);
+        });
+        this.loopEffectMap.clear();
+    }
 }
