@@ -194,6 +194,7 @@ export class YJSoundEffectManager extends Component {
     /**
      * 根据别名播放背景音乐
      * @param alias 音乐别名
+     * @param volume 音量
      * @实现逻辑
      * 1. 通过别名获取资源路径
      * 2. 委托YJAudioManager播放BGM
@@ -203,14 +204,20 @@ export class YJSoundEffectManager extends Component {
      *   this.playMusicByAlias('menu_bgm');
      * }
      */
-    public playMusicByAlias(alias: string): void {
+    public playMusicByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
-        if (url) YJAudioManager.ins.playBGM(url);
+        if (url) YJAudioManager.ins.playBGM(url, volume);
+    }
+
+    public playForeverMusicByAlias(alias: string, volume = 1): void {
+        let url = this._map[alias];
+        if (url) YJAudioManager.ins.playForever(url, volume);
     }
 
     /**
      * 根据别名播放音效
      * @param alias 音效别名
+     * @param volume 音量
      * @注意
      * - 实际播放受音效总开关控制
      * - 支持同时播放多个音效
@@ -220,15 +227,15 @@ export class YJSoundEffectManager extends Component {
      *   this.playEffectByAlias('weapon_switch');
      * }
      */
-    public playEffectByAlias(alias: string): void {
+    public playEffectByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
-        if (url) YJAudioManager.ins.playEffect(url);
+        if (url) YJAudioManager.ins.playEffect(url, volume);
     }
 
-    public playLoopEffectByAlias(alias: string): void {
+    public playLoopEffectByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
         if (url) {
-            YJAudioManager.ins.playLoopEffect(url);
+            YJAudioManager.ins.playLoopEffect(url, volume);
         }
     }
 

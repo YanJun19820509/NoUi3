@@ -53,6 +53,13 @@ export class YJAudioManager extends Component {
      */
     private audioSource: AudioSource = null;
 
+    /**
+     * 永久音频源组件 
+     * @实现说明 通过getComponent(AudioSource)获取
+     * @注意 需确保节点已挂载AudioSource组件
+     */
+    private audioSourceForever: AudioSource = null;
+
     /** 
      * 单例实例 
      * @设计模式 使用单例模式确保全局音频控制唯一性
@@ -187,6 +194,7 @@ export class YJAudioManager extends Component {
     /**
      * 播放背景音乐
      * @param path 音频剪辑路径,不传则播放上一次的背景音乐
+     * @param volume 音量
      * @实现逻辑
      * 1. 记录/获取背景音乐路径
      * 2. 检查音乐开关状态
@@ -201,22 +209,23 @@ export class YJAudioManager extends Component {
      * // 继续播放上次中断的BGM
      * YJAudioManager.ins.playBGM();
      */
-    public playBGM(path?: string): void {
+    public playBGM(path?: string, volume = 1): void {
         if (path) this._lastBGM = path;
         else path = this._lastBGM;
         if (!path) return;
         if (!this.isBGMOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
-            this._playClip(c);
+            this._playClip(c, volume, true);
         } else {
-            this.loadAndPlay(path, true);
+            this.loadAndPlay(path, volume, true);
         }
     }
 
     /**
      * 播放音效
      * @param path 音频剪辑路径 格式：'目录/文件名'（无扩展名）
+     * @param volume 音量
      * @实现逻辑
      * 1. 检查音效总开关
      * 2. 使用缓存或加载音频资源
@@ -231,30 +240,30 @@ export class YJAudioManager extends Component {
      * // 播放技能音效
      * YJAudioManager.ins.playEffect('audio/skill/fireball');
      */
-    public playEffect(path: string): void {
+    public playEffect(path: string, volume = 1): void {
         if (!this.isEffectOn) return;
         if (this.clips.has(path)) {
             let c = this.clips.get(path);
-            this._playClip(c, false);
+            this._playClip(c, volume, false);
         } else {
-            this.loadAndPlay(path, false);
+            this.loadAndPlay(path, volume, false);
         }
     }
 
-    public playLoopEffect(path: string): void {
+    public playLoopEffect(path: string, volume = 1): void {
         if (!this.isEffectOn) return;
         if (this.loopEffectMap.has(path)) return;
         if (this.clips.has(path)) {
             const duration = this.getEffectDuration(path);
             const timer = setInterval(() => {
-                this.playEffect(path);
+                this.playEffect(path, volume);
             }, duration * 1000);
-            this.playEffect(path);
+            this.playEffect(path, volume);
             this.loopEffectMap.set(path, timer);
         }
         else {
             this.loadAudioClip(path, (clip) => {
-                this.playLoopEffect(path);
+                this.playLoopEffect(path, volume);
             });
         }
     }
@@ -303,6 +312,43 @@ export class YJAudioManager extends Component {
         }).catch(e => {
             console.error('音效加载失败:', e);
         });
+    }
+
+    /**
+     * 播放永久音效
+     * @param path 音频剪辑路径,不传则播放上一次的背景音乐
+     * @param volume 音量
+     */
+    public playForever(path: string, volume = 1): void {
+        if (!this.audioSourceForever) {
+            const node = no.newNode('audio_forever', [AudioSource]);
+            this.audioSourceForever = node.getComponent(AudioSource);
+            this.audioSourceForever.playOnAwake = true;
+            this.audioSourceForever.loop = true;
+            node.setParent(this.node);
+        }
+        if (this.audioSourceForever) {
+            if (this.clips.has(path)) {
+                this.audioSourceForever.stop();
+                let c = this.clips.get(path);
+                this.audioSourceForever.clip = c;
+                this.audioSourceForever.volume = volume;
+                this.audioSourceForever.play();
+            } else {
+                this.loadAudioClip(path, () => {
+                    this.playForever(path, volume);
+                });
+            }
+        }
+    }
+
+    /**
+     * 停止永久音效播放
+     */
+    public stopForever(): void {
+        if (this.audioSourceForever) {
+            this.audioSourceForever.stop();
+        }
     }
 
     /**
@@ -385,6 +431,7 @@ export class YJAudioManager extends Component {
     /**
      * 播放音频剪辑
      * @param clip 音频剪辑
+     * @param volume 音量
      * @param loop 是否循环，默认true
      * @实现逻辑
      * - 循环播放时检查BGM开关状态
@@ -401,10 +448,10 @@ export class YJAudioManager extends Component {
      *   YJAudioManager.ins.playClip(btnClip, false);
      * }
      */
-    public playClip(clip: AudioClip, loop = true): void {
+    public playClip(clip: AudioClip, volume = 1, loop = true): void {
         if (loop && !this.isBGMOn) return;
         if (!loop && !this.isEffectOn) return;
-        this._playClip(clip, loop);
+        this._playClip(clip, volume, loop);
     }
 
     /**
@@ -455,6 +502,7 @@ export class YJAudioManager extends Component {
     /**
      * 播放音频剪辑核心方法
      * @param clip 要播放的音频剪辑对象
+     * @param volume 音量
      * @param loop 是否循环播放，默认为true
      * 
      * @实现说明
@@ -473,20 +521,22 @@ export class YJAudioManager extends Component {
      * // 单次播放音效
      * this._playClip(sfxClip, false);
      */
-    private _playClip(clip: AudioClip, loop = true): void {
+    private _playClip(clip: AudioClip, volume = 1, loop = true): void {
         if (loop) {
             this.audioSource.stop();
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
+            this.audioSource.volume = volume;
             this.audioSource.play();
         } else {
-            this.audioSource.playOneShot(clip, 1);
+            this.audioSource.playOneShot(clip, volume);
         }
     }
 
     /**
      * 加载并播放音频文件的完整流程
      * @param path 音频资源路径（基于assets目录的相对路径）
+     * @param volume 音量
      * @param loop 是否循环播放
      * 
      * @实现流程
@@ -500,9 +550,9 @@ export class YJAudioManager extends Component {
      * // 加载并循环播放环境音效
      * this.loadAndPlay('audio/ambient/forest', true);
      */
-    private loadAndPlay(path: string, loop: boolean): void {
+    private loadAndPlay(path: string, volume: number, loop: boolean): void {
         this.loadAudioClip(path, clip => {
-            this._playClip(clip, loop);
+            this._playClip(clip, volume, loop);
         });
     }
 
@@ -538,19 +588,48 @@ export class YJAudioManager extends Component {
         });
     }
 
-    public pauseAll(): void {
+    /**
+     * 暂停非永久音效播放
+     */
+    public pause(): void {
         this.audioSource.enabled = false;
     }
-
-    public resumeAll(): void {
+    /**
+     * 恢复非永久音效播放
+     */
+    public resume(): void {
         this.audioSource.enabled = true;
     }
-
-    public stopAll(): void {
-        this.audioSource.stop();
+    /**
+     * 停止所有非永久音效播放
+     */
+    public stop(): void {
         this.loopEffectMap.forEach(timer => {
             clearInterval(timer);
         });
         this.loopEffectMap.clear();
+        this.audioSource.stop();
+    }
+
+    public pauseAll(): void {
+        this.pause();
+        if (this.audioSourceForever) {
+            this.audioSourceForever.enabled = false;
+        }
+    }
+
+    public resumeAll(): void {
+        this.resume();
+        if (this.audioSourceForever) {
+            this.audioSourceForever.enabled = true;
+        }
+    }
+
+    /**
+     * 停止所有音效播放,包括永久音效
+     */
+    public stopAll(): void {
+        this.stop();
+        this.stopForever();
     }
 }
