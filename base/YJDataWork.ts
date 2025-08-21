@@ -276,7 +276,7 @@ export class YJDataWork extends Component {
     }
 
     /**
-     * 设置指定key的数据（支持差异更新）
+     * 设置指定key的数据（支持差异更新）,下一帧更新UI，同一帧调用多次只更新最后一次数据
      * @param key 数据的key
      * @param value 要设置的值
      * @returns {YJDataWork} 返回自身以支持链式调用
@@ -290,6 +290,25 @@ export class YJDataWork extends Component {
         this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
         return this.repeatSetValue(key);
+    }
+
+    /**
+     * 设置值并更新UI
+     * @param key 数据的key
+     * @param value 要设置的值
+     * @returns {YJDataWork} 返回自身以支持链式调用
+     * @example
+     */
+    public setValueAndUpdateUi(key: string, value: any) {
+        if (key == null) return this;
+        this.bindSubHackUis();
+        this._data?.set(key, value, this.onlyDiff);
+        let ui: HackUi[] = this.getUis(key);
+        for (let i = 0, n = ui.length; i < n; i++) {
+            const a = ui[i];
+            a.updateUiValue();
+        }
+        return this;
     }
 
     /**

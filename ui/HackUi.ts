@@ -236,18 +236,22 @@ export class HackUi extends Component {
         if (!this.dataDirty) return;
         this.dataDirty = false;
         YJJobManager.ins.addTask(() => {
-            let a = this.getValue();
-            if (a == null) {
-                this.a_setEmpty();
-                return true;
-            }
-            this.logValue(a);
-            this.onDataChange(a);
-            if (this.once) {
-                this.destroy();
-            }
-            return true;
+            return this.updateUiValue();
         });
+    }
+
+    public updateUiValue() {
+        let a = this.getValue();
+        if (a == null) {
+            this.a_setEmpty();
+            return true;
+        }
+        this.logValue(a);
+        this.onDataChange(a);
+        if (this.once) {
+            this.destroy();
+        }
+        return true;
     }
 
     private _keys: string[];
