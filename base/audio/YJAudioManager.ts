@@ -593,13 +593,13 @@ export class YJAudioManager extends Component {
      * 暂停非永久音效播放
      */
     public pause(): void {
-        this.audioSource.enabled = false;
+        this.audioSource.volume = 0;
     }
     /**
      * 恢复非永久音效播放
      */
     public resume(): void {
-        this.audioSource.enabled = true;
+        this.audioSource.volume = 1;
     }
     /**
      * 停止所有非永久音效播放
@@ -615,14 +615,14 @@ export class YJAudioManager extends Component {
     public pauseAll(): void {
         this.pause();
         if (this.audioSourceForever) {
-            this.audioSourceForever.enabled = false;
+            this.audioSourceForever.volume = 0;
         }
     }
 
     public resumeAll(): void {
         this.resume();
         if (this.audioSourceForever) {
-            this.audioSourceForever.enabled = true;
+            this.audioSourceForever.volume = 1;
         }
     }
 
@@ -634,3 +634,5 @@ export class YJAudioManager extends Component {
         this.stopForever();
     }
 }
+
+no.addToWindowForDebug('ad', YJAudioManager);
