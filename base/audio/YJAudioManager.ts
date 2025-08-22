@@ -320,6 +320,7 @@ export class YJAudioManager extends Component {
      * @param volume 音量
      */
     public playForever(path: string, volume = 1): void {
+        if (!this._isBGMOn) return;
         if (!this.audioSourceForever) {
             const node = no.newNode('audio_forever', [AudioSource]);
             this.audioSourceForever = node.getComponent(AudioSource);
@@ -495,7 +496,7 @@ export class YJAudioManager extends Component {
      * }
      */
     public setClip(path: string, clip: AudioClip): void {
-        if (path && !this.clips.has(path))
+        if (path && !this.clips?.has(path))
             this.clips.set(path, clip);
     }
 
