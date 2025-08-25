@@ -146,6 +146,9 @@ export class SetMoveTweenToNodeTarget extends HackUi {
             pos.y = -pos.y;
         }
 
+        pos.x += this.offset.x;
+        pos.y += this.offset.y;
+
         if (this._range) {
             pos.x = no.clamp(pos.x, this._range.xMin, this._range.xMax);
             pos.y = no.clamp(pos.y, this._range.yMin, this._range.yMax);
@@ -168,8 +171,8 @@ export class SetMoveTweenToNodeTarget extends HackUi {
             to: 1,             // 动画进度终点值
             props: {           // 目标属性值
                 pos: [
-                    pos.x + this.offset.x, // 应用水平偏移
-                    pos.y + this.offset.y  // 应用垂直偏移
+                    pos.x, // 应用水平偏移
+                    pos.y  // 应用垂直偏移
                 ]
             },
             easing: EasingTypeName[this.easing] // 使用配置的缓动函数
