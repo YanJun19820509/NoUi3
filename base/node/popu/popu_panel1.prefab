@@ -25,17 +25,17 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 39
+        "__id__": 45
       },
       {
-        "__id__": 41
+        "__id__": 47
       },
       {
-        "__id__": 43
+        "__id__": 49
       }
     ],
     "_prefab": {
-      "__id__": 45
+      "__id__": 51
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -80,23 +80,23 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 21
+        "__id__": 27
       },
       {
-        "__id__": 23
+        "__id__": 29
       },
       {
-        "__id__": 25
+        "__id__": 31
       },
       {
-        "__id__": 28
+        "__id__": 34
       },
       {
-        "__id__": 30
+        "__id__": 36
       }
     ],
     "_prefab": {
-      "__id__": 38
+      "__id__": 44
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -151,7 +151,7 @@
       }
     ],
     "_prefab": {
-      "__id__": 20
+      "__id__": 26
     },
     "_lpos": {
       "__type__": "cc.Vec3",
@@ -399,6 +399,12 @@
     "serialAnimationEffects": [
       {
         "__id__": 17
+      },
+      {
+        "__id__": 20
+      },
+      {
+        "__id__": 23
       }
     ],
     "parallelAnimationEffects": [],
@@ -406,9 +412,9 @@
   },
   {
     "__type__": "AnimationEffect",
-    "type": 9,
-    "duration": 0.1,
-    "easing": 11,
+    "type": 10,
+    "duration": 0,
+    "easing": 0,
     "expandWidthArgs": {
       "__id__": 18
     },
@@ -425,7 +431,79 @@
       "x": 0,
       "y": 0
     },
-    "scaleToArgs": 0.5,
+    "scaleToArgs": 0.9,
+    "opacityArgs": 255,
+    "rotationArgs": 360,
+    "callbacks": []
+  },
+  {
+    "__type__": "Range",
+    "min": 0,
+    "max": 50
+  },
+  {
+    "__type__": "Range",
+    "min": 0,
+    "max": 50
+  },
+  {
+    "__type__": "AnimationEffect",
+    "type": 10,
+    "duration": 0.1,
+    "easing": 0,
+    "expandWidthArgs": {
+      "__id__": 21
+    },
+    "expandHeightArgs": {
+      "__id__": 22
+    },
+    "moveByArgs": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "moveToArgs": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "scaleToArgs": 1.1,
+    "opacityArgs": 255,
+    "rotationArgs": 360,
+    "callbacks": []
+  },
+  {
+    "__type__": "Range",
+    "min": 0,
+    "max": 50
+  },
+  {
+    "__type__": "Range",
+    "min": 0,
+    "max": 50
+  },
+  {
+    "__type__": "AnimationEffect",
+    "type": 10,
+    "duration": 0.1,
+    "easing": 0,
+    "expandWidthArgs": {
+      "__id__": 24
+    },
+    "expandHeightArgs": {
+      "__id__": 25
+    },
+    "moveByArgs": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "moveToArgs": {
+      "__type__": "cc.Vec2",
+      "x": 0,
+      "y": 0
+    },
+    "scaleToArgs": 1,
     "opacityArgs": 255,
     "rotationArgs": 360,
     "callbacks": []
@@ -448,10 +526,7 @@
     "asset": {
       "__id__": 0
     },
-    "fileId": "f8JH0S9tBPaIy52hUu2Cqh",
-    "instance": null,
-    "targetOverrides": null,
-    "nestedPrefabInstanceRoots": null
+    "fileId": "f8JH0S9tBPaIy52hUu2Cqh"
   },
   {
     "__type__": "cc.UITransform",
@@ -462,7 +537,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 22
+      "__id__": 28
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -489,7 +564,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 24
+      "__id__": 30
     },
     "_alignFlags": 45,
     "_target": null,
@@ -524,11 +599,11 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 26
+      "__id__": 32
     },
     "clickEvents": [
       {
-        "__id__": 27
+        "__id__": 33
       }
     ],
     "_interactable": true,
@@ -579,11 +654,11 @@
   {
     "__type__": "cc.ClickEvent",
     "target": {
-      "__id__": 2
+      "__id__": 1
     },
     "component": "",
-    "_componentId": "70299jWS5dMY7wrpLvtGcTU",
-    "handler": "a_play",
+    "_componentId": "ab642ncUyRGTq6BvbUz/fps",
+    "handler": "a_closePanel",
     "customEventData": ""
   },
   {
@@ -595,10 +670,11 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 29
+      "__id__": 35
     },
     "delay": 1,
     "wait": 0,
+    "clickEvents": [],
     "_id": ""
   },
   {
@@ -612,9 +688,9 @@
     "node": {
       "__id__": 2
     },
-    "_enabled": true,
+    "_enabled": false,
     "__prefab": {
-      "__id__": 31
+      "__id__": 37
     },
     "target": {
       "__id__": 3
@@ -622,7 +698,7 @@
     "onChildren": false,
     "animationEffectInfos": [
       {
-        "__id__": 32
+        "__id__": 38
       }
     ],
     "auto": false,
@@ -637,7 +713,7 @@
     "type": "1",
     "serialAnimationEffects": [
       {
-        "__id__": 33
+        "__id__": 39
       }
     ],
     "parallelAnimationEffects": [],
@@ -649,10 +725,10 @@
     "duration": 0.1,
     "easing": 11,
     "expandWidthArgs": {
-      "__id__": 34
+      "__id__": 40
     },
     "expandHeightArgs": {
-      "__id__": 35
+      "__id__": 41
     },
     "moveByArgs": {
       "__type__": "cc.Vec2",
@@ -669,7 +745,7 @@
     "rotationArgs": 360,
     "callbacks": [
       {
-        "__id__": 36
+        "__id__": 42
       }
     ]
   },
@@ -686,7 +762,7 @@
   {
     "__type__": "EventHandlerInfo",
     "handler": {
-      "__id__": 37
+      "__id__": 43
     }
   },
   {
@@ -721,7 +797,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 40
+      "__id__": 46
     },
     "_contentSize": {
       "__type__": "cc.Size",
@@ -748,7 +824,7 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 42
+      "__id__": 48
     },
     "_alignFlags": 45,
     "_target": null,
@@ -783,11 +859,12 @@
     },
     "_enabled": true,
     "__prefab": {
-      "__id__": 44
+      "__id__": 50
     },
     "panelType": "popu_panel1",
     "onOpen": [],
     "onClose": [],
+    "autoClose": true,
     "needCache": false,
     "needClear": true,
     "isFullScreen": false,
@@ -799,7 +876,7 @@
       "__id__": 14
     },
     "closeBtn": {
-      "__id__": 28
+      "__id__": 34
     },
     "_id": ""
   },

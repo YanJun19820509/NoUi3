@@ -521,6 +521,12 @@ export class SetList extends HackUi {
      * // 调用a_setData(data)方法设置数据
      */
     private setItemData(item: Node, data = []) {
+        if (data == null) {
+            no.visible(item.children[0], false);
+            return;
+        } else {
+            no.visible(item.children[0], true);
+        }
         // 尝试获取YJDataWork组件
         let dataWork = item.children[0].getComponent(YJDataWork);
         if (dataWork) {

@@ -575,25 +575,43 @@ export class SetMultipleList extends HackUi {
                         const items = this.itemsMap[type];
 
                         // 批量更新元素显示（示例：同时更新3个相同模板的元素）
-                        for (let j = 0; j < items.length; j++) {
-                            const item = items[j];
-                            const dataIndex = dataIndexes[i + j];
+                        // for (let j = 0; j < items.length; j++) {
+                        //     const item = items[j];
+                        //     const dataIndex = dataIndexes[i + j];
 
-                            if (dataIndex != undefined) {
-                                // 有效数据索引时更新元素
-                                this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
-                                this.setItemPosition(item, dataIndex);           // 示例：设置位置
-                                no.visible(item, true);                          // 显示元素
-                            } else {
-                                // 超出数据范围时隐藏元素
-                                no.visible(item, false);
-                                item['__dataIndex'] = -1;
-                            }
-                        }
+                        //     if (dataIndex != undefined) {
+                        //         // 有效数据索引时更新元素
+                        //         this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
+                        //         this.setItemPosition(item, dataIndex);           // 示例：设置位置
+                        //         no.visible(item, true);                          // 显示元素
+                        //     } else {
+                        //         // 超出数据范围时隐藏元素
+                        //         no.visible(item, false);
+                        //         item['__dataIndex'] = -1;
+                        //     }
+                        // }
+                        let j = 0;
+                        this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.1, items.length - 1);
                         break; // 找到第一个有效区间后跳出循环
                     }
                 }
             }
+        }
+    }
+
+    private setItem(items: Node[], dataIndexes: number[], i: number, j: number) {
+        const item = items[j];
+        const dataIndex = dataIndexes[i + j];
+
+        if (dataIndex != undefined) {
+            // 有效数据索引时更新元素
+            this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
+            this.setItemPosition(item, dataIndex);           // 示例：设置位置
+            no.visible(item, true);                          // 显示元素
+        } else {
+            // 超出数据范围时隐藏元素
+            no.visible(item, false);
+            item['__dataIndex'] = -1;
         }
     }
 
