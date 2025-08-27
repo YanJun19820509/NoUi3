@@ -286,7 +286,7 @@ export class SetCreateNode extends HackUi {
             return;
         }
 
-        if (this.uiAnim?.enabled || this._1b1) {
+        if (this._1b1) {
             // 动画模式/首次创建：分批次定时创建
             this._1b1 = false; // 重置首次标记
             this.schedule(() => {
@@ -428,20 +428,22 @@ export class SetCreateNode extends HackUi {
 
         if (immediate) return;
         // 处理动画效果
-        if (this.uiAnim?.enabled) {
-            this.uiAnim.playOtherNode(item); // 播放指定动画
-        } else if (this.isFirst && isNew) {
-            // 首次创建默认缩放动画
-            no.TweenSet.play(no.parseTweenData([
-                {
-                    set: 1, // 初始状态
-                    props: { scale: [0, 0] } // 缩放归零
-                }, {
-                    duration: .2, // 动画时长
-                    to: 1, // 线性插值
-                    props: { scale: [1, 1] } // 恢复正常尺寸
-                }
-            ], item));
+        if (isNew) {
+            if (this.uiAnim?.enabled) {
+                this.uiAnim.playOtherNode(item); // 播放指定动画
+            } else if (this.isFirst) {
+                // 首次创建默认缩放动画
+                no.TweenSet.play(no.parseTweenData([
+                    {
+                        set: 1, // 初始状态
+                        props: { scale: [.8, .8] } // 缩放归零
+                    }, {
+                        duration: .2, // 动画时长
+                        to: 1, // 线性插值
+                        props: { scale: [1, 1] } // 恢复正常尺寸
+                    }
+                ], item));
+            }
         }
     }
 

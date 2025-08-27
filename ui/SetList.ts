@@ -269,6 +269,14 @@ export class SetList extends HackUi {
         }
     }
 
+    public updateData(data: any) {
+        let a = [].concat(data);
+        if (this.columnNumber > 1) {
+            a = no.arrayToArrays(a, this.columnNumber);
+        }
+        this.listData = a;
+    }
+
     /**
      * 组件销毁生命周期回调
      * @功能说明
@@ -685,9 +693,9 @@ export class SetList extends HackUi {
         }
 
         // 计算模板元素实际尺寸
-        this.itemSize = this.template.getComponent(UITransform).getBoundingBox().size;
+        this.itemSize = no.size(this.template);
         // 获取滚动视图可视区域尺寸
-        const viewSize = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+        const viewSize = no.size(this.scrollView.node);
         // 确定滚动方向
         this.isVertical = this.scrollView.vertical;
 
