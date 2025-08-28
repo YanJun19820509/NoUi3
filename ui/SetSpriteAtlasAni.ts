@@ -18,6 +18,11 @@ export class SetSpriteAtlasAni extends HackUi {
     private _sprite: Sprite;
     private _curIndex: number;
     private _sum: number;
+    private _dt: number = 0;
+    private _interval: number = 0;
+    private _repeat: number = 0;
+    private _loop: boolean = false;
+    private _play: boolean = false;
 
     protected onDataChange(data: any) {
         const { path, time, loop, duration } = data;
@@ -45,13 +50,16 @@ export class SetSpriteAtlasAni extends HackUi {
     }
 
     private play(time: number, loop: number, duration: number) {
-        this.unschedule(this.showSpriteFrame);
         const len = this._curSpriteAtlas.getSpriteFrames().length,
             interval = time / len;
         const repeat = duration ? Math.ceil(duration / interval) : loop <= 0 ? macro.REPEAT_FOREVER : (loop - 1) * len;
         this._curIndex = 1;
         this._sum = len;
-        this.schedule(this.showSpriteFrame, interval, repeat);
+        this._play = true;
+        this._interval = interval;
+        this._repeat = repeat;
+        this._dt = 0;
+        this._loop = loop <= 0;
     }
 
     private showSpriteFrame() {
@@ -65,12 +73,28 @@ export class SetSpriteAtlasAni extends HackUi {
 
     /**如果没需求可以不实现 */
     public a_setEmpty(): void {
-        this.unschedule(this.showSpriteFrame);
         this._sprite.spriteAtlas = null;
         this._curPath = null;
+        this._play = false;
         if (this._curSpriteAtlas) {
             no.assetBundleManager.decRef(this._curSpriteAtlas);
             this._curSpriteAtlas = null;
+        }
+    }
+
+    protected lateUpdate(dt: number): void {
+        if (this._play) {
+            this._dt += dt;
+            if (this._dt >= this._interval) {
+                this._dt = 0;
+                this.showSpriteFrame();
+                if (!this._loop) {
+                    this._repeat--;
+                    if (this._repeat <= 0) {
+                        this._play = false;
+                    }
+                }
+            }
         }
     }
 }

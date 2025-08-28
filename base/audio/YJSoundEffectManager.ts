@@ -207,11 +207,13 @@ export class YJSoundEffectManager extends Component {
     public playMusicByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playBGM(url, volume);
+        else console.error('YJSoundEffectManager.playMusicByAlias: 没有找到音乐资源:', alias);
     }
 
     public playForeverMusicByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playForever(url, volume);
+        else console.error('YJSoundEffectManager.playForeverMusicByAlias: 没有找到音乐资源:', alias);
     }
 
     /**
@@ -230,12 +232,15 @@ export class YJSoundEffectManager extends Component {
     public playEffectByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
         if (url) YJAudioManager.ins.playEffect(url, volume);
+        else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
     }
 
     public playLoopEffectByAlias(alias: string, volume = 1): void {
         let url = this._map[alias];
         if (url) {
             YJAudioManager.ins.playLoopEffect(url, volume);
+        } else {
+            console.error('YJSoundEffectManager.playLoopEffectByAlias: 没有找到音效资源:', alias);
         }
     }
 
