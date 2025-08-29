@@ -91,6 +91,9 @@ export class YJDataWork extends Component {
     @property({ displayName: '差异更新', tooltip: '仅修改某key下有变更的值，否则替换该key对应全部值。非差异更新性能较好，默认true' })
     onlyDiff: boolean = true;
 
+    @property({ displayName: '立即更新', tooltip: '立即更新UI，默认false,仅通过initWithData设置数据时有效' })
+    immediate: boolean = false;
+
     @property({ type: Node })
     preDataWorkNode: Node = null;
     /**
@@ -190,7 +193,13 @@ export class YJDataWork extends Component {
      * this.initWithData(JSON.parse(json));
      */
     public initWithData(d: any) {
-        this.data = d;
+        if (this.immediate) {
+            for (let key in d) {
+                this.setValueAndUpdateUi(key, d[key]);
+            }
+        } else {
+            this.data = d;
+        }
         this.afterDataInit();
         return this;
     }

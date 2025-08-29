@@ -135,7 +135,7 @@ export class SetList extends HackUi {
      */
 
     // ================== 运行时状态属性 ==================
-    @property({ displayName: '所需元素节点个数', readonly: true })
+    @property({ displayName: '所需元素节点个数' })
     showMax: number = 0; // 根据可视区域计算的动态值
     @property({ visible() { return false; } })
     itemSize: Size = size(); // 通过preInitItems计算的元素实际尺寸
@@ -537,7 +537,7 @@ export class SetList extends HackUi {
         // 尝试获取YJDataWork组件
         let dataWork = item.children[0].getComponent(YJDataWork);
         if (dataWork) {
-            dataWork.initWithData(data);
+            dataWork.clear().initWithData(data);
         }
         else {
             // 备选获取SetCreateNode组件

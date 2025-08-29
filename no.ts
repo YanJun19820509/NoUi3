@@ -1709,7 +1709,8 @@ export namespace no {
     export function itemOfArray<T>(array: any[], value: any, key: string): T {
         if (array == null || value == null || key == null) return null as T;
         for (let i = 0, n = array.length; i < n; i++) {
-            let a = array[i];
+            const a = array[i];
+            if (!a) continue;
             if (a[key] == value || a[key] == value[key]) {
                 return a as T;
             }
