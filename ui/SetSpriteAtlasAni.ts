@@ -39,14 +39,20 @@ export class SetSpriteAtlasAni extends HackUi {
             return;
         }
         if (!this._curSpriteAtlas) {
-            no.assetBundleManager.loadAtlas(this._curPath, atlas => {
-                this._curSpriteAtlas = atlas;
-                this._sprite.spriteAtlas = atlas;
+            this.loadAtlas(this._curPath, () => {
                 this.play(time, loop, duration);
             });
         } else {
             this.play(time, loop, duration);
         }
+    }
+
+    private loadAtlas(path: string, cb: () => void) {
+        no.assetBundleManager.loadAtlas(path, atlas => {
+            this._curSpriteAtlas = atlas;
+            this._sprite.spriteAtlas = atlas;
+            cb();
+        });
     }
 
     private play(time: number, loop: number, duration: number) {
@@ -63,6 +69,12 @@ export class SetSpriteAtlasAni extends HackUi {
     }
 
     private showSpriteFrame() {
+        if (!this._curSpriteAtlas) {
+            this.loadAtlas(this._curPath, () => {
+                this.showSpriteFrame();
+            });
+            return;
+        }
         const key = `${this._curIndex}`;
         this._sprite.spriteFrame = this._curSpriteAtlas.getSpriteFrame(key);
         this._curIndex++;
