@@ -293,7 +293,7 @@ export class SetCreateNode extends HackUi {
                 for (let j = 0; j < this.batchNum; j++) {
                     this.setItem(data, start, dataIdx++);
                 }
-            }, 0.1, Math.ceil(n / this.batchNum));
+            }, 0.06, Math.ceil(n / this.batchNum));
         } else {
             // 普通模式：使用JobManager优化性能
             YJJobManager.ins.addTask(() => {
@@ -438,7 +438,7 @@ export class SetCreateNode extends HackUi {
                         set: 1, // 初始状态
                         props: { scale: [.8, .8] } // 缩放归零
                     }, {
-                        duration: .2, // 动画时长
+                        duration: .1, // 动画时长
                         to: 1, // 线性插值
                         props: { scale: [1, 1] } // 恢复正常尺寸
                     }

@@ -591,7 +591,7 @@ export class SetMultipleList extends HackUi {
                         //     }
                         // }
                         let j = 0;
-                        this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.1, items.length - 1);
+                        this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.06, items.length - 1);
                         break; // 找到第一个有效区间后跳出循环
                     }
                 }

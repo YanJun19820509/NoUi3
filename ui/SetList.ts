@@ -2,7 +2,6 @@
 import { ccclass, property, menu, executeInEditMode, EDITOR, Node, instantiate, ScrollView, Size, UITransform, Layout, size, isValid, v3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
-import { YJJobManager } from '../base/YJJobManager';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetCreateNode } from './SetCreateNode';
@@ -425,7 +424,7 @@ export class SetList extends HackUi {
             this._1b1 = false; // 重置强制更新标记
             let i = 0;
             // 使用定时器逐个更新（支持动画效果）
-            this.schedule(() => this.setItem(i++), 0.1, this.showMax - 1);
+            this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
         }
         // 普通模式
         else {
@@ -435,7 +434,7 @@ export class SetList extends HackUi {
             //     this.setItem(i++);
             //     return i >= this.showMax; // 终止条件
             // });
-            this.schedule(() => this.setItem(i++), 0.1, this.showMax - 1);
+            this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
         }
 
         // 安全校验节点状态
@@ -508,7 +507,7 @@ export class SetList extends HackUi {
                     set: 1,
                     props: { scale: [0, 0] }  // 初始状态：完全缩小
                 }, {
-                    duration: .15,
+                    duration: .1,
                     to: 1,
                     props: { scale: [1, 1] }  // 动画终点：正常尺寸
                 }
@@ -617,7 +616,7 @@ export class SetList extends HackUi {
         const listItems = this.content.children;
         // 数据或元素为空时直接返回
         if (this.listData == null || listItems == null || listItems.length < this.showMax) {
-            no.scheduleOnce(this.updatePos, 0.05, this);
+            no.scheduleOnce(this.updatePos, 0.02, this);
             return;
         }
 
