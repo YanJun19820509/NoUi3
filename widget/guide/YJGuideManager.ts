@@ -85,7 +85,8 @@ export class YJGuideManager extends Component {
             return;
         }
         // 处理配置文件路径（移除资源前缀和扩展名）
-        let path = this.jsonPath.replace('db://assets/', '').replace('.json', '');
+        // let path = this.jsonPath.replace('db://assets/', '').replace('.json', '');
+        const path = this.jsonPath;
         // 异步加载配置文件
         no.assetBundleManager.loadJSON(path, item => {
             // 缓存配置数据

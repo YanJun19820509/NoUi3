@@ -1,4 +1,4 @@
-import { BitmapFont, ccclass, property, requireComponent } from 'hackUi/yj';
+import { BitmapFont, ccclass, property, requireComponent } from '../yj';
 import { no } from '../no';
 import { LoadAssetsInfo } from '../types';
 import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';

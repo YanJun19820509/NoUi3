@@ -70,8 +70,8 @@ export class AutoCreateNode extends Component {
                 this.rootPath = dest;
                 this.preloadAssets([
                     [dest, 'cc.SpriteAtlas'],
-                    // [`assets/WJCY/res/font`, 'cc.TTFFont'],
-                    // [`assets/WJCY/res/common`, 'cc.SpriteAtlas'],
+                    // [`assets/WJCY/res/resource/font`, 'cc.TTFFont'],
+                    // [`assets/WJCY/res/resource/common`, 'cc.SpriteAtlas'],
                 ], () => {
                     this.loadJson(dest, name);
                 });

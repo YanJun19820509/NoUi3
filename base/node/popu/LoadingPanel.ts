@@ -21,7 +21,7 @@ import { ccclass, macro, property } from "../../../yj";
 
 //通用loading面板，当有界面将要显示时会自动出现在最上层，当界面关闭时会移到下层界面之下，如果当前没有任何界面将关闭
 @ccclass('LoadingPanel')
-@panelPrefabPath('db://assets/WJCY/scripts/common/base/node/popu/loading_panel.prefab')
+@panelPrefabPath('db://assets/WJCY_scripts/common/base/node/popu/loading_panel.prefab')
 export class LoadingPanel extends YJPanel {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;
