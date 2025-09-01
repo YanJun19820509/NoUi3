@@ -1,11 +1,14 @@
 
 import { YJPreloadDelegate } from './YJPreloadDelegate';
-import { ccclass, JsonAsset } from '../yj';
+import { ccclass, JsonAsset, property } from '../yj';
 import { no } from '../no';
 import { YJJobManager } from './YJJobManager';
 
 @ccclass('YJPreloadJson')
 export class YJPreloadJson extends YJPreloadDelegate {
+    @property({ type: no.EventHandlerInfo, displayName: '加载完成' })
+    completeCall: no.EventHandlerInfo[] = [];
+
     private _needAddJSONs: JsonAsset[] = [];
     onJsonLoaded(assets: JsonAsset[]) {
         this._needAddJSONs = assets;
@@ -15,6 +18,7 @@ export class YJPreloadJson extends YJPreloadDelegate {
     private iterateNeedAddJSONs() {
         let asset: JsonAsset = this._needAddJSONs.shift();
         if (asset == undefined) {
+            no.EventHandlerInfo.execute(this.completeCall);
             return true;
         }
         no.dataCache.setJSON({ [asset.name]: asset.json });

@@ -1,5 +1,6 @@
 import { ccclass, Material, property, Sprite, UIRenderer } from '../../yj';
 import { SetEffect } from '../../ui/SetEffect';
+import { no } from '../../no';
 
 /**
  * 控制扫光效果的显示，需要配合saoguang.effect使用
@@ -12,6 +13,10 @@ import { SetEffect } from '../../ui/SetEffect';
 export class SetShowSaoGuang extends SetEffect {
     @property({ displayName: '同材质中的Speed' })
     speed: number = 0;
+    @property({ type: no.EventHandlerInfo })
+    onStart: no.EventHandlerInfo[] = [];
+    @property({ type: no.EventHandlerInfo })
+    onComplete: no.EventHandlerInfo[] = [];
 
     private _showSG: boolean = false;
     private _duration: number = 0;
@@ -22,6 +27,7 @@ export class SetShowSaoGuang extends SetEffect {
             this._renderComp = this.getComponent(UIRenderer);
             if (!this._renderComp) return;
         }
+        no.EventHandlerInfo.execute(this.onStart);
         const { loop, duration } = data;
         if (loop) {
             this.setProperties(this._renderComp.material, null, { auto: 1.0 });
@@ -37,10 +43,15 @@ export class SetShowSaoGuang extends SetEffect {
         if (this._showSG) {
             if (this._dt >= this._duration) {
                 this._showSG = false;
+                no.EventHandlerInfo.execute(this.onComplete);
             } else {
                 this.setProperties(this._renderComp.material, null, { aniTime: this._dt % this.speed });
                 this._dt += dt * this.speed;
             }
         }
+    }
+
+    public a_playOnce() {
+        this.a_setData({ loop: false, duration: this.speed });
     }
 }

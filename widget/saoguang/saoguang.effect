@@ -107,7 +107,7 @@ CCProgram sprite-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, v_uv0);
+    // o *= CCSampleWithAlphaSeparated(cc_spriteTexture, v_uv0);
     float k = angle;
     float time_step = 0.0;
 
@@ -137,6 +137,7 @@ CCProgram sprite-fs %{
         float st = smoothstep(l, c, v_uv0.x) - smoothstep(c, r, v_uv0.x);
         st = st * strength + 1.0;
         o *= st;
+        o.a = .8;
     }else{
       discard;
     }

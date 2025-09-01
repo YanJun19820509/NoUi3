@@ -313,6 +313,7 @@ export class YJDataWork extends Component {
         this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
         let ui: HackUi[] = this.getUis(key);
+        if (!ui) return this;
         for (let i = 0, n = ui.length; i < n; i++) {
             const a = ui[i];
             a.updateUiValue();
