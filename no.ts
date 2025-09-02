@@ -1340,33 +1340,35 @@ export namespace no {
      * @param n 要转换的数字
      * @param units 单位数组（按单位从小到大排列，如[ 'K', 'M', 'B']）
      * @param unitLen 每个单位对应的数字长度（如3表示每3位换一个单位）
+     * @param intDigits 整数保留位数（默认1）
+     * @param digits 小数保留位数（默认2）
      * @example num2strWithUnit(123456, ['K', 'M', 'B'], 3) -> "123.45K"
      * num2strWithUnit(123456, ['万', '亿'], 4) -> "12.34万"
      */
-    export function num2strWithUnit(n: number, units: string[], unitLen: number): string {
+    export function num2strWithUnit(n: number, units: string[], unitLen: number, digits: number = 2): string {
         // 处理空值情况
         if (n == null) return '';
 
         // 将数字转换为字符串并获取长度
         const s = String(n);
         const len = s.length;
-
+        const ul = unitLen;
         // 如果数字长度小于等于单位长度，直接返回原数字字符串
-        if (len <= unitLen) return String(n);
+        if (len <= ul) return String(n);
 
         // 计算单位层级和余数
         // 例：数字长度5位，单位长度3位时，level=1（对应千位单位），remainder=2
-        const level = Math.floor(len / unitLen);
+        const level = Math.floor(len / ul);
         const remainder = len % unitLen;
 
         // 计算格式化数值（保留两位小数）：
         // 1. 确定需要截断的位数 = 单位层级对应的总位数 - 余数处理偏移 - 小数保留位数
-        // 2. 截断后除以100得到两位小数
+        // 2. 截断后除以100得到小数保留位数的小数
         // 例：n=12345（5位），unitLen=3，level=1，remainder=2
         //    截断位数 = 1*3 - (remainder?0:unitLen) -2 = 3 -0 -2 =1 → 10^1=10
         //    n/10=1234.5 → floor=1234 → 1234/100=12.34
-        const digitsToCut = level * unitLen - (remainder === 0 ? unitLen : 0) - 2;
-        const a = Math.floor(n / Math.pow(10, digitsToCut)) / 100;
+        const digitsToCut = level * unitLen - (remainder === 0 ? unitLen : 0) - digits;
+        const a = Math.floor(n / Math.pow(10, digitsToCut)) / Math.pow(10, digits);
 
         // 计算单位索引：
         // 1. 基础索引 = 总单位层级 - 1（数组从0开始）

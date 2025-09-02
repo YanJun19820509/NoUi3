@@ -100,18 +100,27 @@ export class YJFloatTips extends YJDataWork {
                     to: 1, // 过渡到目标值
                     duration: this.upDuration,
                     props: {
+                        pos: [0, this.maxHeight - 30, 0] // 中间位置
+                    }
+                },
+                {
+                    to: 1, // 过渡到目标值
+                    duration: .1,
+                    props: {
                         pos: [0, this.maxHeight - 50, 0] // 中间位置
                     }
                 },
                 // 停留并淡出阶段：持续stayDuration秒上升到顶部并透明
                 {
+                    delay: this.stayDuration,
+                },
+                {
                     to: 1,
-                    duration: this.stayDuration,
+                    duration: .5,
                     props: {
                         pos: [0, this.maxHeight, 0], // 最终高度
                         opacity: 0                   // 完全透明
-                    },
-                    easing: EasingTypeName.BackIn // 使用回弹缓动效果
+                    }
                 }
             ]
         });

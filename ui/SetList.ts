@@ -317,6 +317,7 @@ export class SetList extends HackUi {
 
         // 空数据情况处理
         if (a.length == 0) {
+            this.content.children.forEach(child => no.visible(child.children[0], false));
             no.EventHandlerInfo.execute(this.onComplete);
             return;
         }
