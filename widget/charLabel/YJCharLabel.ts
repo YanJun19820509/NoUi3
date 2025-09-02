@@ -1,4 +1,4 @@
-import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, size, rect, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, DEBUG, VerticalTextAlignment, view, TTFFont, sys, color } from '../../yj';
+import { EDITOR, ccclass, property, Font, Color, Label, Vec2, v2, Sprite, Enum, SpriteFrame, Texture2D, CCString, ImageAsset, SpriteAtlas, math, HtmlTextParser, IHtmlTextParserResultObj, isValid, HorizontalTextAlignment, view, TTFFont, color } from '../../yj';
 import { YJDynamicAtlas } from '../../engine/YJDynamicAtlas';
 import { no } from '../../no';
 import { YJJobManager } from '../../base/YJJobManager';
@@ -214,6 +214,7 @@ export class YJCharLabel extends Sprite {
         this._font = v;
         this._fontUuid = v ? v._uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
+        this._fontFamilyWx = v ? v.name : 'Arial';
         this.setLabel();
     }
 
@@ -234,6 +235,7 @@ export class YJCharLabel extends Sprite {
         this._font = null;
         this._fontUuid = '';
         this._foitnFamily = 'Arial';
+        this._fontFamilyWx = 'Arial';
     }
 
     /** 
@@ -246,6 +248,7 @@ export class YJCharLabel extends Sprite {
      */
     @property({ readonly: true })
     public get fontFamily(): string {
+        if (window['wx']) return this._fontFamilyWx;
         return this._foitnFamily;
     }
 
@@ -702,6 +705,8 @@ export class YJCharLabel extends Sprite {
     /** 备用字体名称（当TTF加载失败时使用） */
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
+    @property({ serializable: true })
+    protected _fontFamilyWx: string = 'Arial';
 
     /** 是否自动计算行高（默认true） 
      * @example this.autoLineHeight = false */

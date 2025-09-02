@@ -302,9 +302,13 @@
       "a": 255
     },
     "_fontSize": 22,
-    "_font": null,
-    "_fontUuid": "",
-    "_foitnFamily": "Arial",
+    "_font": {
+      "__uuid__": "c110281c-a263-4d5d-b138-b637e2de1644",
+      "__expectedType__": "cc.TTFFont"
+    },
+    "_fontUuid": "c110281c-a263-4d5d-b138-b637e2de1644",
+    "_foitnFamily": "AlibabaPuHuiTiBold_LABEL",
+    "_fontFamilyWx": "AlibabaPuHuiTiBold",
     "_autoLineHeight": true,
     "_lineHeight": 28,
     "_horizontalAlign": 0,
@@ -435,6 +439,9 @@
       }
     ],
     "onlyDiff": true,
+    "immediate": false,
+    "preDataWorkNode": null,
+    "bind_keys": "",
     "_id": ""
   },
   {
@@ -607,7 +614,7 @@
     "_contentSize": {
       "__type__": "cc.Size",
       "width": 720,
-      "height": 1560
+      "height": 1600
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -669,6 +676,9 @@
     "subFuckUiNodes": [],
     "subFuckUis": [],
     "onlyDiff": true,
+    "immediate": false,
+    "preDataWorkNode": null,
+    "bind_keys": "",
     "_id": ""
   },
   {
@@ -689,6 +699,7 @@
     "panelType": "scroll_message",
     "onOpen": [],
     "onClose": [],
+    "autoClose": true,
     "needCache": true,
     "needClear": false,
     "isFullScreen": false,
