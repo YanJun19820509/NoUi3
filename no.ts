@@ -4187,8 +4187,8 @@ export namespace no {
      * resetValueCheck('guide_step', 0, eightHour);
      */
     export function resetValueCheck(dataKey: string, value: any, time: number, isInterval = false) {
-        let now = sysTime.now;
         try {
+            let now = sysTime.now;
             let lastResetTime = parse2Json(dataCache.getLocal('reset_data_check_time') || '{}');
             let lt = lastResetTime[dataKey];
 
@@ -4203,9 +4203,13 @@ export namespace no {
                     lastResetTime[dataKey] = t;
                 }
                 dataCache.setLocal('reset_data_check_time', jsonStringify(lastResetTime));
+                return true;
+            } else {
+                return dataCache.getLocal(dataKey) == value;
             }
         } catch (e) {
             no.err('JSON.parse', 'resetValueCheck');
+            return false;
         }
     }
 
@@ -4445,10 +4449,14 @@ export namespace no {
             if (this._updateScheduled) return;
 
             this._updateScheduled = true;
-            requestAnimationFrame(() => {
+            // requestAnimationFrame(() => {
+            //     this.emit(Data.DataChangeEvent, this);
+            //     this._updateScheduled = false;
+            // });
+            setTimeout(() => {
                 this.emit(Data.DataChangeEvent, this);
                 this._updateScheduled = false;
-            });
+            }, 100);
         }
 
         /**

@@ -87,7 +87,7 @@ export class YJPlaySoundEffect extends Component {
      * effectType = CloseWindow
      * 组件会自动将播放逻辑绑定到YJPanel的onClose事件
      */
-    onLoad() {
+    onEnable() {
         if (this.effectType != SoundEffectType.Other) {
             if (this.effectType == SoundEffectType.CloseWindow) {
                 let handler = no.EventHandlerInfo.new(this.node, 'YJPlaySoundEffect', 'a_play');

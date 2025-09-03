@@ -477,8 +477,10 @@ export class SetSpine extends HackUi {
         // 使用定时器实现时长控制
         this.scheduleOnce(() => {
             const spine = this._curSpine;
-            spine.clearTrack(0); // 清理轨道0
-            spine.loop = false; // 确保停止循环
+            if (spine) {
+                spine.clearTrack(0); // 清理轨道0
+                spine.loop = false; // 确保停止循环
+            }
             this?.endCall.execute(spine); // 执行结束回调
             this.emitEndEvent();
             this.setSpineData(); // 重置spine数据
