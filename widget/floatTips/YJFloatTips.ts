@@ -58,8 +58,8 @@ export class YJFloatTips extends YJDataWork {
      * setTips(["获得金币×100", "解锁新成就"]);
      */
     public setTips(tips: string | string[]): void {
-        this.tipList = this.tipList.concat(tips);
         if (this.isShowing) return;
+        this.tipList = this.tipList.concat(tips);
         this.show();
     }
 
@@ -116,14 +116,18 @@ export class YJFloatTips extends YJDataWork {
                 },
                 {
                     to: 1,
-                    duration: .5,
+                    duration: 1,
                     props: {
-                        pos: [0, this.maxHeight, 0], // 最终高度
-                        opacity: 0                   // 完全透明
+                        pos: [0, this.maxHeight + 50, 0], // 最终高度
+                        opacity: 0                  // 完全透明
                     }
                 }
             ]
         });
+        this.scheduleOnce(() => {
+            this.isShowing = false;
+        }, this.upDuration + this.stayDuration + 1.1);
+        return;
 
         // 队列处理
         if (this.tipList.length == 0) {

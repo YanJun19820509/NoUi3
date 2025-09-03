@@ -34,6 +34,7 @@ enum AnimType {
     RotationX = 23,//x轴旋转
     RotationY = 24,//y轴旋转
     HeartBit = 25,//心跳
+    Flash = 26,//闪烁
 }
 
 /**
@@ -141,6 +142,7 @@ class AnimationEffect {
             case AnimType.RotationX: a = this.rotationX(node); break; // X轴3D旋转
             case AnimType.RotationY: a = this.rotationY(node); break; // Y轴3D旋转
             case AnimType.HeartBit: a = this.heartBit(node); break;  // 心跳效果
+            case AnimType.Flash: a = this.flash(node); break;  // 闪烁效果
         }
 
         // 统一处理缓动函数注入
@@ -1018,6 +1020,27 @@ class AnimationEffect {
                 },
                 easing: 'quadIn'
             }];
+    }
+
+    private flash(node: Node) {
+        return [{
+            set: 1,
+            props: {
+                opacity: 0
+            }
+        }, {
+            duration: this.duration,
+            to: 1,
+            props: {
+                opacity: 255
+            }
+        }, {
+            duration: .5,
+            to: 1,
+            props: {
+                opacity: 0
+            }
+        }];
     }
 }
 
