@@ -126,7 +126,7 @@ export class YJGuidePanel extends YJPanel {
             // 等待指定事件触发
             if (info.content) {
                 // 等待事件携带特定值（例如需要玩家达到指定等级）
-                await no.waiForEventValueEqual(info.event, info.content[0], this);
+                await no.waiForEventValueEqual(info.event, info.content, this);
             } else {
                 // 等待普通事件触发（例如点击某个按钮）
                 await no.waitForEvent(info.event, this);
