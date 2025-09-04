@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, math, isValid, Size, Vec2 } from '../../yj';
+import { ccclass, property, Component, Node, math, isValid, Size, Vec2, v3 } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -78,6 +78,12 @@ export class YJSyncContentSizeToTarget extends Component {
     @property({ displayName: '是否同步scale' })
     syncScale: boolean = true;
 
+    @property({ displayName: '是否按宽度适应' })
+    fitWidth: boolean = false;
+
+    @property({ displayName: '是否按高度适应' })
+    fitHeight: boolean = false;
+
     /** 
      * 测试模式开关 
      * @tip 编辑器模式下用于手动触发尺寸检查
@@ -129,6 +135,8 @@ export class YJSyncContentSizeToTarget extends Component {
         }
     }
 
+    private _originSize: Size;
+
     /**
      * 执行实际尺寸同步
      * @param from 尺寸来源节点
@@ -143,9 +151,9 @@ export class YJSyncContentSizeToTarget extends Component {
      */
     private syncSize(from: Node, to: Node) {
         let size = no.size(from);
-        let scale = no.scale(from);
         // 计算缩放影响后的实际尺寸
         if (this.syncScale) {
+            let scale = no.scale(from);
             size.width *= scale.x;
             size.height *= scale.y;
         }
@@ -155,8 +163,24 @@ export class YJSyncContentSizeToTarget extends Component {
         // 应用偏移量
         size.width += this.offset.width;
         size.height += this.offset.height;
-        // 设置目标节点尺寸并触发事件
-        no.size(to, size);
+        if (!this._originSize) {
+            this._originSize = no.size(to);
+        }
+        const toSize = this._originSize.clone();
+        //按宽度适应
+        if (this.fitWidth && !this.fitHeight) {
+            const s = size.width / toSize.width;
+            no.scale(to, v3(s, s, 1));
+        }
+        //按高度适应
+        else if (this.fitHeight && !this.fitWidth) {
+            const s = size.height / toSize.height;
+            no.scale(to, v3(s, s, 1));
+        } else {
+            const s1 = size.width / toSize.width;
+            const s2 = size.height / toSize.height;
+            no.scale(to, v3(s1, s2, 1));
+        }
         no.EventHandlerInfo.execute(this.onChange);
     }
 
