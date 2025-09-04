@@ -25,7 +25,7 @@ import { no } from '../no';
  */
 export class YJGameData extends no.Data {
     /** 单例实例缓存 */
-    private static _insMap: { [key: string]: any } = {};
+    private static _insMap: { [objectName: string]: { [key: string]: any } } = {};
     /** 数据状态管理器 */
     private _state: no.State;
 
@@ -42,14 +42,16 @@ export class YJGameData extends no.Data {
      * const playerData = PlayerData.instance();
      */
     public static instance(key?: string): any {
-        key = key || this.objectName;
-        if (!this._insMap[key]) {
+        key = key || '_';
+        if (!this._insMap[this.objectName]) this._insMap[this.objectName] = {};
+        const b = this._insMap[this.objectName];
+        if (!b[key]) {
             const a = new this();
             a._state = new no.State();
             a.onInit();
-            this._insMap[key] = a;
+            b[key] = a;
         }
-        return this._insMap[key];
+        return b[key];
     }
 
     /**
@@ -57,15 +59,15 @@ export class YJGameData extends no.Data {
      * @param key 实例key
      */
     public static destroy(key: string) {
-        key = key || this.objectName;
-        if (this._insMap[key]) {
-            this._insMap[key] = null;
-            delete this._insMap[key];
+        key = key || '_';
+        if (this._insMap[this.objectName]?.[key]) {
+            this._insMap[this.objectName][key] = null;
+            delete this._insMap[this.objectName][key];
         }
     }
 
     public static destroyAll() {
-        for (const key in this._insMap) {
+        for (const key in this._insMap[this.objectName]) {
             this.destroy(key);
         }
     }
