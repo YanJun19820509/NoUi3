@@ -46,6 +46,8 @@ export class SetSpine extends HackUi {
     // Spine资源路径（示例值："spine/hero"，对应spine/hero.json）
     @property
     spineUrl: string = '';
+    @property
+    spineUuid: string = '';
 
     // 自动播放的动画名称（当autoPlayOnEnable为true时可见，示例："idle"）
     @property({ visible() { return this.autoPlayOnEnable; } })
@@ -91,14 +93,18 @@ export class SetSpine extends HackUi {
         // 检查是否需要自动获取资源路径
         if (spine.skeletonData) {
             // 通过UUID异步获取资源路径（示例：'db://assets/spine/hero.json'）
-            no.EditorMode.getAssetUrlByUuid(spine.skeletonData._uuid).then(url => {
+            const uuid = spine.skeletonData._uuid;
+            this.spineUuid = uuid;
+            // 记录当前动画名称（示例：'idle'或'attack'）
+            this.animationName = spine.animation;
+            no.EditorMode.getAssetUrlByUuid(uuid).then(url => {
                 if (!url) return;
 
                 // 处理资源路径格式（示例：'spine/hero'）
-                this.spineUrl = url.replace('db://assets/', '').replace('.json', '');
-
-                // 记录当前动画名称（示例：'idle'或'attack'）
-                this.animationName = spine.animation;
+                const path = url.replace('db://assets/', '').replace('.json', '');
+                no.EditorMode.getBundleName(path).then(bundleName => {
+                    if (bundleName) this.spineUrl = path;
+                })
             });
         }
         if (spine.sockets.length) {
@@ -331,7 +337,7 @@ export class SetSpine extends HackUi {
             if (!path) path = this.curPath;
 
             // 异步加载spine资源
-            YJSpineManager.ins.get(path).then(res => {
+            YJSpineManager.ins.get(path, this.spineUuid).then(res => {
                 if (!res) {
                     no.err(`spine资源${path}不存在`);
                     return;

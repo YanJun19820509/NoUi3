@@ -159,8 +159,9 @@ export class YJSpineManager extends no.SingleObject {
      *     showErrorToast('资源加载失败');
      * });
      */
-    public async get(path: string): Promise<SkeletonData | null> {
-        if (!path) return null;
+    public async get(path?: string, uuid?: string): Promise<SkeletonData | null> {
+        if (!path && !uuid) return null;
+        if (!path) return this.getByUuid(uuid);
 
         const normalizedPath = this.normalizePath(path);
 
@@ -211,6 +212,49 @@ export class YJSpineManager extends no.SingleObject {
             no.warn(`加载Spine资源失败: ${normalizedPath}, 错误: ${error.message}`);
             return null;
         }
+    }
+
+    private async getByUuid(uuid: string): Promise<SkeletonData | null> {
+        // 检查是否正在加载
+        if (YJSpineManager._loading.has(uuid)) {
+            await YJSpineManager._loading.get(uuid);
+            return this.get(uuid);
+        }
+
+        // 检查缓存
+        const resource = YJSpineManager._map.get(uuid);
+        if (resource) {
+            resource.ref++;
+            return resource.data;
+        }
+
+        // 新建加载请求
+        const loadingPromise = new Promise<SkeletonData>((resolve, reject) => {
+            no.assetBundleManager.loadAny({ uuid }, (res: SkeletonData) => {
+                if (!res) {
+                    no.err(`Failed to load spine: ${uuid}`);
+                    resolve(null);
+                    return;
+                }
+
+                YJSpineManager._map.set(uuid, {
+                    data: res,
+                    t: no.sysTime.now + 86400, // 初始缓存时间设为24小时后
+                    ref: 1,
+                    size: this.getSize(res)
+                });
+                resolve(res);
+            });
+        }).catch(e => {
+            console.error(e);
+            return null;
+        });
+
+        YJSpineManager._loading.set(uuid, loadingPromise);
+
+        const result = await loadingPromise;
+        YJSpineManager._loading.delete(uuid);
+        return result;
     }
 
     /**
