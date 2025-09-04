@@ -1,5 +1,5 @@
 
-import { ccclass, property, Component, Node, math, isValid, Size, Vec2, v3 } from '../../yj';
+import { ccclass, property, Component, Node, math, isValid, Size, Vec2, v3, UIRenderer } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -98,9 +98,13 @@ export class YJSyncContentSizeToTarget extends Component {
             this.check()
         }
     }
+    //是否是渲染组件
+    private _isRenderComp: boolean = false;
 
     /** 组件启用时注册尺寸变化监听 */
     protected onEnable(): void {
+        const target = this.checkSelf ? this.target : this.node;
+        this._isRenderComp = target.getComponent(UIRenderer) != null;
         this.check();
         // 根据检测模式注册对应节点的尺寸变化事件
         if (this.checkSelf)
@@ -163,23 +167,27 @@ export class YJSyncContentSizeToTarget extends Component {
         // 应用偏移量
         size.width += this.offset.width;
         size.height += this.offset.height;
-        if (!this._originSize) {
-            this._originSize = no.size(to);
-        }
-        const toSize = this._originSize.clone();
-        //按宽度适应
-        if (this.fitWidth && !this.fitHeight) {
-            const s = size.width / toSize.width;
-            no.scale(to, v3(s, s, 1));
-        }
-        //按高度适应
-        else if (this.fitHeight && !this.fitWidth) {
-            const s = size.height / toSize.height;
-            no.scale(to, v3(s, s, 1));
+        if (this._isRenderComp) {
+            if (!this._originSize) {
+                this._originSize = no.size(to);
+            }
+            const toSize = this._originSize.clone();
+            //按宽度适应
+            if (this.fitWidth && !this.fitHeight) {
+                const s = size.width / toSize.width;
+                no.scale(to, v3(s, s, 1));
+            }
+            //按高度适应
+            else if (this.fitHeight && !this.fitWidth) {
+                const s = size.height / toSize.height;
+                no.scale(to, v3(s, s, 1));
+            } else {
+                const s1 = size.width / toSize.width;
+                const s2 = size.height / toSize.height;
+                no.scale(to, v3(s1, s2, 1));
+            }
         } else {
-            const s1 = size.width / toSize.width;
-            const s2 = size.height / toSize.height;
-            no.scale(to, v3(s1, s2, 1));
+            no.size(to, size);
         }
         no.EventHandlerInfo.execute(this.onChange);
     }
