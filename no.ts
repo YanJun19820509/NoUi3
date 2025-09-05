@@ -10563,6 +10563,46 @@ export namespace no {
     }
 
     /**
+     * 矩形相交
+     * @param rect1 矩形1
+     * @param rect2 矩形2
+     * @returns 是否相交
+     */
+    export function rectIntersectsRect(rect1: { minX: number, minY: number, maxX: number, maxY: number }, rect2: { minX: number, minY: number, maxX: number, maxY: number }) {
+        // 判断两个矩形是否相交
+        // 只要有一条边不重叠就不相交
+        return !(
+            rect1.maxX < rect2.minX ||
+            rect1.minX > rect2.maxX ||
+            rect1.maxY < rect2.minY ||
+            rect1.minY > rect2.maxY
+        );
+    }
+
+    /**
+     * 点是否在矩形内
+     * @param point 点
+     * @param rect 矩形
+     * @returns 是否在矩形内
+     */
+    export function pointInRect(point: { x: number, y: number }, rect: { minX: number, minY: number, maxX: number, maxY: number }) {
+        return point.x >= rect.minX && point.x <= rect.maxX && point.y >= rect.minY && point.y <= rect.maxY;
+    }
+
+    /**
+     * 点是否在矩形内（带旋转）
+     * @param point 要检测的点
+     * @param pos 矩形中心点
+     * @param rect 矩形
+     * @param radian 旋转弧度
+     * @returns 是否在矩形内
+     */
+    export function pointInRectWithRotation(point: { x: number, y: number }, pos: { x: number, y: number }, rect: { minX: number, minY: number, maxX: number, maxY: number }, radian: number) {
+        const p = no.rotatePointByCenter(point, pos, -radian);
+        return pointInRect(p, rect);
+    }
+
+    /**
      * 向量叉积公式
      * @param A 点
      * @param B 点
