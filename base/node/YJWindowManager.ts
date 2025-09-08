@@ -1,7 +1,7 @@
 
 import { ccclass, property, menu, Component, Node, Prefab, js, Widget, instantiate, isValid } from '../../yj';
 import { no } from '../../no';
-import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey, YJPanelPrefabUuidMetaKey } from '../../types';
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
 import { LayerType, LayerTypeDesc } from './LayerType';
@@ -254,8 +254,9 @@ export class YJWindowManager extends Component {
             else no.setPrototype(comp, { [YJPanelCreated]: '1' });
         }
 
-        const url = no.getPrototype(comp, YJPanelPrefabMetaKey);
-        const request = { type: Prefab, url: url };
+        const url = no.getPrototype(comp, YJPanelPrefabMetaKey),
+            uuid = no.getPrototype(comp, YJPanelPrefabUuidMetaKey);
+        const request = { type: Prefab, url, uuid };
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             if (!content?.isValid) {

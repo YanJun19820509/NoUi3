@@ -16,12 +16,12 @@ import { YJDataWork } from "../../../base/YJDataWork";
 import { YJPanel } from "../../../base/node/YJPanel";
 import { YJWindowManager } from "../../../base/node/YJWindowManager";
 import { no } from "../../../no";
-import { panelPrefabPath } from "../../../types";
+import { panelPrefabPath, panelPrefabUuid } from "../../../types";
 import { ccclass, macro, property } from "../../../yj";
 
 //通用loading面板，当有界面将要显示时会自动出现在最上层，当界面关闭时会移到下层界面之下，如果当前没有任何界面将关闭
 @ccclass('LoadingPanel')
-@panelPrefabPath('db://assets/WJCY_scripts/common/base/node/popu/loading_panel.prefab')
+@panelPrefabUuid('6660fd4d-6ce9-4d0f-964b-d8dfbc5b5c4d')
 export class LoadingPanel extends YJPanel {
     @property({ type: YJDataWork })
     dataWork: YJDataWork = null;

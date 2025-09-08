@@ -1,11 +1,11 @@
-import { AllowMultipleOpen, panelPrefabPath } from '../../../types';
+import { AllowMultipleOpen, panelPrefabPath, panelPrefabUuid } from '../../../types';
 import { ccclass } from '../../../yj';
 import { LoadingPanel } from './LoadingPanel';
 import { PopuPanel } from './PopuPanel';
 import { LayerType } from '../../../base/node/LayerType';
 
 @ccclass('PopupWindow')
-@panelPrefabPath('db://assets/WJCY_scripts/common/base/node/popu/popu_panel1.prefab')
+@panelPrefabUuid('e20dfedd-375c-4ae7-b1a9-13ee7e86522c')
 @AllowMultipleOpen()
 export class PopupWindow extends PopuPanel {
 
