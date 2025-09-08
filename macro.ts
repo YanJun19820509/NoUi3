@@ -12,7 +12,7 @@ export const YJMacroConfig = {
      * 例：MiSans-Regular.ttf / MiSans-Bold.ttf
      * 使用示例：LabelComponent.fontFamily = YJMacroConfig.TTF_FONT
      */
-    TTF_FONT: 'font.ttf',
+    TTF_FONT: 'AlibabaPuHuiTiBold.ttf',
     
     /**
      * 动态批渲染开关配置
