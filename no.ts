@@ -4989,7 +4989,7 @@ export namespace no {
          */
         public clearCachedAssets() {
             for (const [key, asset] of this._cacheAsset) {
-                asset.destroy?.();
+                this.release(asset, true);
             }
             this._cacheAsset.clear();
         }
@@ -5277,6 +5277,10 @@ export namespace no {
                         if (item == null) {
                             err('load', fileName, error.message);
                             evn.emit('load_file_fail');
+                        } else if (!isValid(item)) {
+                            err('资源被释放', fileName);
+                            evn.emit('load_file_fail');
+                            item = null;
                         } else {
                             this.addRef(item);
                         }

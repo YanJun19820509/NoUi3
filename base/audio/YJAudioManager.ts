@@ -633,6 +633,14 @@ export class YJAudioManager extends Component {
         this.stop();
         this.stopForever();
     }
+
+    public clear(): void {
+        this.loopEffectMap.clear();
+        for (const clip of this.clips.values()) {
+            no.assetBundleManager.release(clip, true);
+        }
+        this.clips.clear();
+    }
 }
 
 no.addToWindowForDebug('ad', YJAudioManager);

@@ -87,7 +87,7 @@ export class PopuPanel extends YJPanel {
             const node = instantiate(prefab);
             this.setContent(node, data);
         } else {
-            const request = { type: Prefab, url: comp.prototype[YJPanelPrefabMetaKey] };
+            const request = { type: Prefab, url: k };
             no.assetBundleManager.loadAny(request, (pf: Prefab) => {
                 if (!pf) {
                     no.err('无法加载预制体', request.url);

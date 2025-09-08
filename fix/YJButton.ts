@@ -113,13 +113,13 @@ export class YJButton extends Component {
         if (event && event.getAllTouches().length > 1) return;
         // 防连点间隔期间直接返回
         if (this.needWait) return;
-
         this.needWait = true;
-        // 执行所有缓存的事件处理器
-        no.executeHandlers(this.clickEvents, event);
+
         // 点击时播放标准点击音效
         if (event)
             YJSoundEffectManager.ins?.playClickSoundEffect();
+        // 执行所有缓存的事件处理器
+        no.executeHandlers(this.clickEvents, event);
         // 重置点击状态（实现防连点间隔）
         this.scheduleOnce(() => {
             this.needWait = false;
