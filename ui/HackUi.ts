@@ -233,7 +233,7 @@ export class HackUi extends Component {
      * 将触发YJJobManager的任务队列，在下一帧更新UI
      */
     public syncData() {
-        if (!this.dataDirty) return;
+        if (!this.dataDirty || !this.enabled) return;
         this.dataDirty = false;
         YJJobManager.ins.addTask(() => {
             return this.updateUiValue();
@@ -241,6 +241,7 @@ export class HackUi extends Component {
     }
 
     public updateUiValue() {
+        if (!this.enabled) return;
         let a = this.getValue();
         if (a == null) {
             this.a_setEmpty();

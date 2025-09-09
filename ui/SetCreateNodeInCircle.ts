@@ -1,6 +1,8 @@
 
+import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
+import { no } from '../no';
 import { ccclass, executeInEditMode, instantiate, math, property, UITransform, v3, Vec3, Node } from '../yj';
 import { HackUi } from './HackUi';
 
@@ -76,6 +78,22 @@ export class SetCreateNodeInCircle extends HackUi {
         }
     }
 
+    // ================== 效果相关 ==================
+    /** 
+     * 节点创建动画组件
+     * @example 可配置淡入、缩放等入场动画效果
+     */
+    @property({ displayName: '播放动效', type: YJUIAnimationEffect, tooltip: '没有指定则不播放动效' })
+    uiAnim: YJUIAnimationEffect = null;/** 
+    * 节点创建完成事件回调
+    * @example 可用于：
+    * - 播放音效
+    * - 更新界面计数
+    * - 触发后续流程
+    */
+    @property({ type: no.EventHandlerInfo, displayName: '创建完成回调' })
+    onComplete: no.EventHandlerInfo[] = [];
+
     onDestroy() {
         if (this.loadPrefab && this.template && this.template.isValid)
             this.template.destroy();
@@ -108,8 +126,12 @@ export class SetCreateNodeInCircle extends HackUi {
                 let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 a?.clear().initWithData(data[i]);
                 item.active = true;
+                if (this.uiAnim?.enabled) {
+                    this.uiAnim.playOtherNode(item);
+                }
             }
         }
+        no.EventHandlerInfo.execute(this.onComplete);
     }
 
     private setPos(item: Node, idx: number) {

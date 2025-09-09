@@ -50,7 +50,7 @@ export class SetSpine extends HackUi {
     spineUuid: string = '';
 
     // 自动播放的动画名称（当autoPlayOnEnable为true时可见，示例："idle"）
-    @property({ visible() { return this.autoPlayOnEnable; } })
+    @property
     animationName: string = '';
 
     // 触发开始回调的动画索引（示例："0,2" 表示第1个和第3个动画会触发开始回调）
@@ -398,14 +398,14 @@ export class SetSpine extends HackUi {
 
                 // 播放控制逻辑
                 if (pause) {
-                    this.a_pause(tempStr); // 示例：暂停动画
+                    this._pause(tempStr); // 示例：暂停动画
                 } else if (loop) {
-                    this.a_playLoop(tempStr); // 示例：循环播放
+                    this._playLoop(tempStr); // 示例：循环播放
                 } else if (loopNum > 1) {
                     this.loopNum = loopNum;
                     this.playLoopNum(tempStr); // 示例：指定次数循环
                 } else {
-                    this.a_playOnce(tempStr); // 示例：单次播放
+                    this._playOnce(tempStr); // 示例：单次播放
                 }
 
                 this.playDuration(duration); // 设置播放时长限制
@@ -418,14 +418,14 @@ export class SetSpine extends HackUi {
 
             let tempStr = (skin ? (skin + ':') : '') + animation;
             if (pause) {
-                this.a_pause(tempStr);
+                this._pause(tempStr);
             } else if (loop) {
-                this.a_playLoop(tempStr);
+                this._playLoop(tempStr);
             } else if (loopNum > 1) {
                 this.loopNum = loopNum;
                 this.playLoopNum(tempStr);
             } else {
-                this.a_playOnce(tempStr);
+                this._playOnce(tempStr);
             }
             this.playDuration(duration);
         } else { // 无有效动画配置时
@@ -493,20 +493,7 @@ export class SetSpine extends HackUi {
         }, duration);
     }
 
-    /**
-     * 单次播放动画
-     * @param e 事件对象或动画字符串
-     * @param animation 动画标识（可选，格式：皮肤名:动画名）
-     * @example
-     * // 单次播放"jump"动画
-     * this.a_playOnce("jump");
-     * 
-     * // 单次播放"skin2:run"动画
-     * this.a_playOnce("skin2:run");
-     */
-    public a_playOnce(e: any, animation?: string) {
-        animation = animation || e;
-        if (!animation) return;
+    private _playOnce(animation: string) {
         // 解析皮肤和动画名称
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
@@ -528,19 +515,23 @@ export class SetSpine extends HackUi {
     }
 
     /**
-     * 循环播放指定动画
+     * 单次播放动画
      * @param e 事件对象或动画字符串
-     * @param animation 动画标识（格式：皮肤名:动画名 或 动画名）
-     * @example 
-     * // 循环播放"run"动画
-     * this.a_playLoop("run");
+     * @param animation 动画标识（可选，格式：皮肤名:动画名）
+     * @example
+     * // 单次播放"jump"动画
+     * this.a_playOnce("jump");
      * 
-     * // 使用指定皮肤循环播放"skin1:walk"动画
-     * this.a_playLoop("skin1:walk");
+     * // 单次播放"skin2:run"动画
+     * this.a_playOnce("skin2:run");
      */
-    public a_playLoop(e: any, animation?: string) {
-        animation = animation || e;
+    public a_playOnce(e: any, animation?: string) {
+        animation = animation || e || this.animationName;
         if (!animation) return;
+        this.a_setData({ animation: animation, loop: false });
+    }
+
+    private _playLoop(animation: string) {
         // 解析皮肤和动画名称（格式：皮肤名:动画名）
         const a = animation.split(':');
         const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
@@ -557,6 +548,23 @@ export class SetSpine extends HackUi {
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
 
         this._play(spine, name, true); // 执行播放
+    }
+
+    /**
+     * 循环播放指定动画
+     * @param e 事件对象或动画字符串
+     * @param animation 动画标识（格式：皮肤名:动画名 或 动画名）
+     * @example 
+     * // 循环播放"run"动画
+     * this.a_playLoop("run");
+     * 
+     * // 使用指定皮肤循环播放"skin1:walk"动画
+     * this.a_playLoop("skin1:walk");
+     */
+    public a_playLoop(e: any, animation?: string) {
+        animation = animation || e || this.animationName;
+        if (!animation) return;
+        this.a_setData({ animation: animation, loop: true });
     }
 
     /**
@@ -583,7 +591,7 @@ export class SetSpine extends HackUi {
         }
 
         // 检查节点层级激活状态
-        if (!spine?.node?.activeInHierarchy) {
+        if (!spine?.node?.active) {
             no.warn(`spine节点${spine.node.name}未在场景中激活  this.curPath ${this.curPath}`);
             return;
         }
@@ -612,6 +620,22 @@ export class SetSpine extends HackUi {
         spine?.node?.destroy(); // 销毁节点释放资源
     }
 
+    private _pause(animation: string) {
+        // 解析皮肤和动画名称（格式："皮肤:动画名"）
+        const a = animation.split(':');
+        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
+        if (name == null) return;
+
+        const spine = this._curSpine;
+        // 处理动画轨道：当需要清除轨道且非缓存动画时执行清理
+        if (spine.enabled)
+            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
+        else spine.enabled = true; // 激活组件
+
+        spine.loop = false; // 停止循环播放
+        !!skin && spine.setSkin(skin); // 设置指定皮肤（如果存在）
+    }
+
     /**
      * 暂停当前动画并准备新动画
      * @param e 事件对象或动画名称
@@ -628,22 +652,9 @@ export class SetSpine extends HackUi {
      */
     public a_pause(e: any, animation?: string): void {
         // 参数处理：支持事件对象或直接传动画名称
-        animation = animation || e;
+        animation = animation || e || this.animationName;
         if (!animation) return;
-
-        // 解析皮肤和动画名称（格式："皮肤:动画名"）
-        const a = animation.split(':');
-        const skin = a.length == 2 ? a[0] : null, name = a[a.length - 1];
-        if (name == null) return;
-
-        const spine = this._curSpine;
-        // 处理动画轨道：当需要清除轨道且非缓存动画时执行清理
-        if (spine.enabled)
-            this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
-        else spine.enabled = true; // 激活组件
-
-        spine.loop = false; // 停止循环播放
-        !!skin && spine.setSkin(skin); // 设置指定皮肤（如果存在）
+        this.a_setData({ animation: animation, pause: true });
     }
 
     /**
