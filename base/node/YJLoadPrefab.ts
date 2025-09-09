@@ -44,6 +44,11 @@ export default class YJLoadPrefab extends Component {
     @property({ visible() { return false; } })
     materialInfoUuid: string = '';
 
+    @property
+    preload: boolean = false;
+
+    private _tempNode: Node = null;
+
     /** 
      * 加载状态标识
      * @public {boolean} loaded - 表示预制体是否已完成加载
@@ -54,6 +59,12 @@ export default class YJLoadPrefab extends Component {
      * }
      */
     public loaded: boolean = false;
+
+    onLoad() {
+        if (this.preload) {
+            this.loadPrefab();
+        }
+    }
 
     /** 组件销毁时清理资源引用 */
     onDestroy() {
@@ -76,14 +87,17 @@ export default class YJLoadPrefab extends Component {
      * }
      */
     public async loadPrefab(): Promise<Node> {
+        if (this._tempNode) {
+            return instantiate(this._tempNode);
+        }
         return new Promise<Node>(resolve => {
             this.prefabInfo.loadAsset<Prefab>(prefab => {
                 if (prefab) {
-                    const node = instantiate(prefab);
+                    this._tempNode = instantiate(prefab);
                     // 应用材质配置到所有子节点
-                    YJLoadAssets.setMaterialInfoUuidToSubNode(node, this.materialInfoUuid);
+                    YJLoadAssets.setMaterialInfoUuidToSubNode(this._tempNode, this.materialInfoUuid);
                     this.loaded = true;
-                    resolve(node);
+                    resolve(instantiate(this._tempNode));
                 } else {
                     resolve(null);
                 }
@@ -103,6 +117,7 @@ export default class YJLoadPrefab extends Component {
      * const newPrefab = await loader.loadPrefab();
      */
     public clear(): void {
+        this._tempNode?.destroy();
         this.loaded = false;
     }
 }

@@ -803,21 +803,25 @@ class AnimationEffect {
             node['__yj_ui_pos'] = no.position(node);
         }
         const pos = node['__yj_ui_pos'];
-        return [{
-            duration: this.duration / 2,
-            to: 1,
-            props: {
-                pos: [pos.x + 5, pos.y] // 右移阶段：X轴偏移+5
-            }
-        }, {
-            duration: this.duration / 2,
+        const n = Math.ceil(this.duration / .1) - 1;
+        const arr: any[] = [];
+        for (let i = 0; i < n; i++) {
+            arr.push({
+                duration: .1,
+                to: 1,
+                props: {
+                    pos: [pos.x + no.randomBetween(-5, 5), pos.y + no.randomBetween(-5, 5)] // 随机偏移
+                }
+            });
+        }
+        arr.push({
+            duration: .1,
             to: 1,
             props: {
                 pos: [pos.x, pos.y] // 复位阶段：回到原始位置
             }
-        }, {
-            repeat: 1 // 重复1次（总共执行2次完整动画）
-        }];
+        })
+        return arr;
     }
 
     /**
