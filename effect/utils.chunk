@@ -413,13 +413,13 @@ float isStroke(sampler2D _texture, vec2 _uv, float _outlineWidth) {
  * // 垂直反向流动
  * vec4 color = flow(cc_spriteTexture, uv, 0.5, true, true);
  */
-vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isVertical, bool isVerse) {
+vec4 flow(sampler2D _texture, vec2 _uv, float _speed, bool isHorizontal, bool isVertical, bool isVerse) {
   // 基于时间计算偏移量（使用ffract确保在0-1范围内）
   float offset = ffract(cc_time.x*_speed);
   if (isVerse) offset = 1. - offset; // 反向处理
   
   // 根据流动方向应用偏移
-  vec2 uv = _uv + vec2(isVertical ? 0. : offset, isVertical ? offset : 0.);
+  vec2 uv = _uv + vec2(isHorizontal ? offset : 0., isVertical ? 1.-offset : 0.);
   uv -= step(1., uv); // 处理UV越界
 
   return normalTexture(_texture, uv);

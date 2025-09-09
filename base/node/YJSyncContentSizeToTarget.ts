@@ -157,13 +157,14 @@ export class YJSyncContentSizeToTarget extends Component {
         let size = no.size(from);
         // 计算缩放影响后的实际尺寸
         if (this.syncScale) {
-            let scale = no.scale(from);
+            const scale = no.scale(from);
             size.width *= scale.x;
             size.height *= scale.y;
         }
+        const toScale = no.scale(to);
         //按比例缩放
-        size.width *= this.ratio.x;
-        size.height *= this.ratio.y;
+        size.width *= this.ratio.x / toScale.x;
+        size.height *= this.ratio.y / toScale.y;
         // 应用偏移量
         size.width += this.offset.width;
         size.height += this.offset.height;
