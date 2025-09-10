@@ -20,7 +20,6 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
  */
 
 @ccclass('SetList')
-@menu('NoUi/ui/SetList(设置列表:array)')
 @executeInEditMode()
 /**
  * 列表数据设置组件
@@ -312,11 +311,19 @@ export class SetList extends HackUi {
      * onDataChange([1,2,3,4,5]) -> 转换为[[1,2,3], [4,5]]
      */
     protected async onDataChange(data: any) {
+        if (!(data instanceof Array)) {
+            if (data.start != null && data.data) {
+                this.lastIndex = data.start;
+                data = data.data;
+            }
+        }
         // 将输入数据转换为标准数组（支持类数组对象）
-        let a = [].concat(data);
+        if (!(data instanceof Array)) {
+            data = [].concat(data);
+        }
 
         // 空数据情况处理
-        if (a.length == 0) {
+        if (data.length == 0) {
             this.content.children.forEach(child => no.visible(child.children[0], false));
             no.EventHandlerInfo.execute(this.onComplete);
             return;
@@ -338,13 +345,13 @@ export class SetList extends HackUi {
 
         // 处理多列布局（将一维数组转换为二维数组）
         if (this.columnNumber > 1) {
-            a = no.arrayToArrays(a, this.columnNumber);
+            data = no.arrayToArrays(data, this.columnNumber);
         }
 
         // 自动回滚到列表起始位置
-        if (this.autoScrollBack && listItems.length > 0) {
+        if (this.allNum > 0 && this.autoScrollBack && listItems.length > 0) {
             this.lastIndex = 0;
-            no.position(this.scrollViewContent, v3(0, 0));
+            this.setScrollViewContentPos();
             // 使用标准for循环重置所有项位置
             for (let i = 0, n = listItems.length; i < n; i++) {
                 let item = listItems[i];
@@ -353,15 +360,32 @@ export class SetList extends HackUi {
         }
 
         // 初始化列表容器尺寸（当数据量变化时）
-        if (this.allNum != a.length) {
-            this.allNum = a.length;
+        if (this.allNum != data.length) {
+            this.allNum = data.length;
             this.showNum = Math.min(this.showMax, this.allNum);
             this.initItems();
         }
 
+        if (this.lastIndex > 0) {
+            this.lastIndex = Math.min(this.lastIndex, this.allNum - this.showNum + 2);
+            this.setScrollViewContentPos();
+            for (let i = 0, n = listItems.length; i < n; i++) {
+                let item = listItems[i];
+                this.setItemPosition(item, i + this.lastIndex);
+            }
+        }
+
         // 更新列表数据并触发界面刷新
-        this.listData = a;
+        this.listData = data;
         this.setList();
+    }
+
+    private setScrollViewContentPos() {
+        if (this.isVertical) {
+            this.scrollViewContent.setPosition(0, this.lastIndex * this.itemSize.height);
+        } else {
+            this.scrollViewContent.setPosition(-this.lastIndex * this.itemSize.width, 0);
+        }
     }
 
     /**
@@ -463,7 +487,7 @@ export class SetList extends HackUi {
         // 获取当前索引对应的列表项
         let item = this.content.children[i];
         let isNew = false;
-
+        i += this.lastIndex;
         // 如果节点不存在则创建新节点
         if (!item) {
             // 实例化模板节点并设置基础属性
@@ -506,11 +530,11 @@ export class SetList extends HackUi {
             no.TweenSet.play(no.parseTweenData([
                 {
                     set: 1,
-                    props: { scale: [0, 0] }  // 初始状态：完全缩小
+                    props: { scale: [.8, .8] }  // 初始状态
                 }, {
                     duration: .1,
                     to: 1,
-                    props: { scale: [1, 1] }  // 动画终点：正常尺寸
+                    props: { scale: [1, 1] }  // 动画终点
                 }
             ], item.children[0]));
         }
