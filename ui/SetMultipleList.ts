@@ -515,14 +515,32 @@ export class SetMultipleList extends HackUi {
         // 再次检查节点和内容容器有效性
         if (!this?.node?.isValid || !this?.content?.isValid) return;
 
+        let resetContentPos = false;
+        if (!(data instanceof Array)) {
+            if (data.start != null && data.data) {
+                resetContentPos = true;
+                this.lastIndex = data.start;
+                data = data.data;
+            }
+        }
+        if (!(data instanceof Array)) {
+            data = [].concat(data);
+        }
         // 创建数据副本以避免污染原始数据
-        let a = [].concat(data);
-        this.listData = a;      // 存储当前列表数据
-        this.allNum = a.length; // 记录数据总量
+        this.listData = data;      // 存储当前列表数据
+        this.allNum = data.length; // 记录数据总量
 
         // 计算并设置内容容器尺寸
         this.setContentSize();
-
+        if (resetContentPos) {
+            this.lastIndex = Math.min(this.lastIndex, this.positionMap.length - 3);
+            const p = this.positionMap[this.lastIndex];
+            if (this.isVertical) {
+                this.scrollViewContent.setPosition(0, -p);
+            } else {
+                this.scrollViewContent.setPosition(-p, 0);
+            }
+        }
         // 更新列表项显示
         this.setList();
 

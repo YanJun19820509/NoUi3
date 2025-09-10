@@ -5,7 +5,8 @@ import { PopuPanel } from './PopuPanel';
 import { LayerType } from '../../../base/node/LayerType';
 
 @ccclass('PopupWindow')
-@panelPrefabUuid('e20dfedd-375c-4ae7-b1a9-13ee7e86522c')
+// @panelPrefabUuid('e20dfedd-375c-4ae7-b1a9-13ee7e86522c')
+// @panelPrefabPath('db://assets/WJCY_scripts/common/base/node/popu/popu_panel1.prefab')
 @AllowMultipleOpen()
 export class PopupWindow extends PopuPanel {
 

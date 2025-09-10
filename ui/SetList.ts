@@ -522,7 +522,7 @@ export class SetList extends HackUi {
         no.visible(item.children[0], i < this.allNum);
 
         // 动画处理逻辑
-        if (this.uiAnim?.enabled) {
+        if (isNew && this.uiAnim?.enabled) {
             // 播放预设动画
             this.uiAnim.playOtherNode(item.children[0]);
         } else if (this.isFirst && isNew) {
