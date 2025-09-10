@@ -116,16 +116,16 @@ export class SetList extends HackUi {
     clearOnDisable: boolean = true;
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
     recreateOnEnable: boolean = false;
-    /**
-     * @example
-     * // 典型应用场景：
-     * // 当列表需要频繁显隐时，开启可优化内存使用
-     */
+    // /**
+    //  * @example
+    //  * // 典型应用场景：
+    //  * // 当列表需要频繁显隐时，开启可优化内存使用
+    //  */
 
-    // ================== 编辑器工具属性 ==================
-    @property({ displayName: '设置元素模板相关数据' })
-    public get setTemplateInfo(): boolean { return false; }
-    public set setTemplateInfo(v: boolean) { this.preInitItems(); }
+    // // ================== 编辑器工具属性 ==================
+    // @property({ displayName: '设置元素模板相关数据' })
+    // public get setTemplateInfo(): boolean { return false; }
+    // public set setTemplateInfo(v: boolean) { this.preInitItems(); }
     /**
      * @example
      * // 在编辑器中点击该按钮可预计算：
@@ -134,10 +134,10 @@ export class SetList extends HackUi {
      */
 
     // ================== 运行时状态属性 ==================
-    @property({ displayName: '所需元素节点个数' })
-    showMax: number = 0; // 根据可视区域计算的动态值
-    @property({ visible() { return false; } })
-    itemSize: Size = size(); // 通过preInitItems计算的元素实际尺寸
+    // @property({ displayName: '所需元素节点个数' })
+    private showMax: number = 0; // 根据可视区域计算的动态值
+    // @property({ visible() { return false; } })
+    private itemSize: Size = size(); // 通过preInitItems计算的元素实际尺寸
 
     // ================== 私有运行时状态 ==================
     private listData: any[]; // 当前列表数据（支持数组/对象）
@@ -367,11 +367,13 @@ export class SetList extends HackUi {
         }
 
         if (this.lastIndex > 0) {
-            this.lastIndex = Math.min(this.lastIndex, this.allNum - this.showNum + 2);
-            this.setScrollViewContentPos();
-            for (let i = 0, n = listItems.length; i < n; i++) {
-                let item = listItems[i];
-                this.setItemPosition(item, i + this.lastIndex);
+            this.lastIndex = Math.min(Math.max(this.lastIndex - Math.ceil(this.showNum / 2), 0), this.allNum - this.showNum + 2);
+            if (this.lastIndex > 0) {
+                this.setScrollViewContentPos();
+                for (let i = 0, n = listItems.length; i < n; i++) {
+                    let item = listItems[i];
+                    this.setItemPosition(item, this.lastIndex + i);
+                }
             }
         }
 
@@ -382,9 +384,9 @@ export class SetList extends HackUi {
 
     private setScrollViewContentPos() {
         if (this.isVertical) {
-            this.scrollViewContent.setPosition(0, this.lastIndex * this.itemSize.height);
+            this.scrollViewContent.setPosition(0, Math.min(this.lastIndex * this.itemSize.height, this.contentSize - no.height(this.scrollView.node)));
         } else {
-            this.scrollViewContent.setPosition(-this.lastIndex * this.itemSize.width, 0);
+            this.scrollViewContent.setPosition(Math.min(-this.lastIndex * this.itemSize.width, no.width(this.scrollView.node) - this.contentSize), 0);
         }
     }
 
@@ -514,12 +516,11 @@ export class SetList extends HackUi {
 
         // 绑定数据（当数据存在时）
         const data_idx = item['__dataIndex'];
-        if (this.listData[data_idx]) {
-            this.setItemData(item, this.listData[data_idx]);
-        }
+        this.setItemData(item, this.listData[data_idx]);
 
         // 控制可见性（当索引超出总数时隐藏）
-        no.visible(item.children[0], i < this.allNum);
+        if (i >= this.allNum)
+            no.visible(item.children[0], false);
 
         // 动画处理逻辑
         if (isNew && this.uiAnim?.enabled) {
@@ -730,6 +731,6 @@ export class SetList extends HackUi {
         } else {
             showMax = no.ceil(viewSize.width / this.itemSize.width); // 水平方向计算列数
         }
-        this.showMax = showMax + 1; // 增加缓冲项
+        this.showMax = showMax + 2; // 增加缓冲项
     }
 }

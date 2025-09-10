@@ -104,6 +104,7 @@ export class SetSpine extends HackUi {
                 const path = url.replace('db://assets/', '').replace('.json', '');
                 no.EditorMode.getBundleName(path).then(bundleName => {
                     if (bundleName) this.spineUrl = path;
+                    else this.spineUrl = '';
                 })
             });
         }
