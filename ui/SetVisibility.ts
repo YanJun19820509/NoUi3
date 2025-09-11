@@ -125,7 +125,7 @@ export class SetVisibility extends HackUi {
     protected onDataChange(data: any) {
         this._needSetDefault = false;
         if (!this.enabled) return;
-        
+
         if (data instanceof Object) {
             let allTrue = true;
             // 遍历对象所有属性检查是否全为真值
@@ -137,6 +137,8 @@ export class SetVisibility extends HackUi {
                 }
             }
             this.show(allTrue);
+        } else if (typeof data == 'number') {
+            this.show(data > 0);
         } else {
             // 处理特殊字符串'null'情况
             if (data == 'null') this.show(false);
@@ -208,8 +210,8 @@ export class SetVisibility extends HackUi {
      * 当前显示时调用后隐藏，反之亦然
      */
     public a_changeVisible(): void {
-        const currentVisible = this.isOpacity ? 
-            no.visibleByOpacity(this.node) : 
+        const currentVisible = this.isOpacity ?
+            no.visibleByOpacity(this.node) :
             no.visible(this.node);
         this.a_setData(!currentVisible);
     }

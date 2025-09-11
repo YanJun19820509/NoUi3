@@ -1101,8 +1101,9 @@ export class YJCharLabel extends Sprite {
         ctx.imageSmoothingQuality = 'high'; // 高精度抗锯齿
 
         // 构建字体字符串（例："italic bold 24px Arial"）
-        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this._font._fontFamily}`;
         ctx.fillStyle = color; // 设置填充颜色
+        // console.log('setFontStyle', ctx.font);
     }
 
     /**
@@ -2287,7 +2288,7 @@ export class YJCharLabel extends Sprite {
      */
     public removeLabel() {
         this.spriteFrame = null;  // 释放精灵帧资源
-        this._font = null;        // 清空字体引用
+        // this._font = null;        // 清空字体引用
         this._needSetLabel = false; // 标记不需要更新标签
     }
 

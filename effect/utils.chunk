@@ -332,7 +332,7 @@ vec4 blurTexture(vec4 _o, vec2 _uv, float _offset){
  * dissolve(color, 0.8) // 溶解80%的像素
  * @note 实际使用建议配合噪声贴图实现更自然的溶解效果
  */
-vec4 dissolve(vec4 _o, float _time) {
+void dissolve(vec4 _o, float _time) {
   // 计算颜色亮度作为溶解依据
   float h = (_o.g + _o.r + _o.b)/3.0;
   
@@ -340,7 +340,6 @@ vec4 dissolve(vec4 _o, float _time) {
   if(h < _time) {
     discard; // 完全丢弃低于阈值的像素
   }
-  return _o;
 }
 
 

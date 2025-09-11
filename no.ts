@@ -1823,6 +1823,9 @@ export namespace no {
             i = indexOfArray(array, value, key);
         }
         if (i > -1) array.splice(i, 1);
+        else {
+            console.log('removeFromArray fail', value);
+        }
     }
 
     /**
