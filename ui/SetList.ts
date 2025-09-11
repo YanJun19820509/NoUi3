@@ -386,9 +386,9 @@ export class SetList extends HackUi {
 
     private setScrollViewContentPos() {
         if (this.isVertical) {
-            this.scrollViewContent.setPosition(0, Math.min(this.lastIndex * this.itemSize.height, this.contentSize - no.height(this.scrollView.node)));
+            this.scrollViewContent.setPosition(0, Math.min(this.lastIndex * this.itemSize.height, Math.max(0, this.contentSize - no.height(this.scrollView.node))));
         } else {
-            this.scrollViewContent.setPosition(Math.min(-this.lastIndex * this.itemSize.width, no.width(this.scrollView.node) - this.contentSize), 0);
+            this.scrollViewContent.setPosition(Math.max(-this.lastIndex * this.itemSize.width, Math.min(0, no.width(this.scrollView.node) - this.contentSize)), 0);
         }
     }
 
