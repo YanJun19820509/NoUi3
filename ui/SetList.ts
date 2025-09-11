@@ -311,11 +311,13 @@ export class SetList extends HackUi {
      * onDataChange([1,2,3,4,5]) -> 转换为[[1,2,3], [4,5]]
      */
     protected async onDataChange(data: any) {
+        let newIndex = 0;
         if (!(data instanceof Array)) {
-            if (data.start != null && data.data) {
-                this.lastIndex = data.start;
-                data = data.data;
+            if (data.start != null) {
+                newIndex = data.start;
+                this.clearDataValue(`${this.bind_keys}.start`);
             }
+            if (data.data) data = data.data;
         }
         // 将输入数据转换为标准数组（支持类数组对象）
         if (!(data instanceof Array)) {
@@ -366,8 +368,8 @@ export class SetList extends HackUi {
             this.initItems();
         }
 
-        if (this.lastIndex > 0) {
-            this.lastIndex = Math.min(Math.max(this.lastIndex - Math.ceil(this.showNum / 2), 0), this.allNum - this.showNum + 2);
+        if (newIndex > 0) {
+            this.lastIndex = Math.min(Math.max(newIndex - Math.ceil(this.showNum / 2), 0), this.allNum - this.showNum + 2);
             if (this.lastIndex > 0) {
                 this.setScrollViewContentPos();
                 for (let i = 0, n = listItems.length; i < n; i++) {
