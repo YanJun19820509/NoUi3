@@ -39,7 +39,7 @@ export class SetMoveBy extends HackUi {
      * - 每次位移操作都基于此基准点进行累加
      * - 重置位置时清空此基准点
      */
-    private _pos: Vec3;
+    private _pos: { x: number, y: number, z: number };
 
     /**
      * 处理位置数据变更

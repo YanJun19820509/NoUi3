@@ -4,7 +4,7 @@ import { KdTree } from "./kdtree";
 
 
 export class Simulator {
-    private agentId: number = 0;
+    private agentId: number = 1;
     private agentIdLst: number[] = [];
     aid2agent: { [key: string]: Agent } = Object.create(null);
 

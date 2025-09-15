@@ -5,7 +5,6 @@ import { PrefabInfo } from '../../types';
 
 @ccclass
 @menu('NoUi/node/YJLoadPrefab(加载预制体)')
-@executeInEditMode()
 /**
  * 预制体加载组件
  * Author mqsy_yj

@@ -118,7 +118,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         if (startPos) {
             if (!this._curPos) this._curPos = v3(); // 初始化位置对象
             this._curPos.set(startPos[0], startPos[1], 0); // 设置Z轴为0（2D场景）
-            no.position(this.node, this._curPos); // 应用节点位置
+            // no.position(this.node, this._curPos); // 应用节点位置
             this.setTiles(); // 触发地砖布局
             this.clearDataValue(`${this.bind_keys}.startPos`);
         }
@@ -127,7 +127,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         if (moveBy) {
             if (!this._curPos) return;
             this._curPos.add3f(moveBy[0], moveBy[1], 0); // 累加偏移量
-            no.position(this.node, this._curPos); // 更新节点位置
+            // no.position(this.node, this._curPos); // 更新节点位置
             this.setTiles(); // 重新计算可见地砖
             this.clearDataValue(`${this.bind_keys}.moveBy`);
         }
@@ -163,7 +163,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         if (!this._gridColRow.length) return;
 
         // 获取节点位置并转换为世界坐标（取反处理）
-        const pos = this.node.position;
+        const pos = this._curPos;
         const x = -pos.x; // 转换为世界坐标系X
         const y = -pos.y; // 转换为世界坐标系Y
         const uv = this.xyToUv(x, y); // 计算中心点UV坐标

@@ -82,7 +82,7 @@ class YJVertexColorTransitionData {
             this._data.z = c.b / 255;
         } else {
             // 压缩存储格式：R通道存类型，G通道存(r*1000 + g)，B通道存(b*1000)
-            let rg = c.r * 1000 + c.g, ba = c.b * 1000;
+            let rg = c.r + c.g / 1000, ba = c.b;
             this._data.y = rg;
             this._data.z = ba;
         }
@@ -424,20 +424,19 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
     public lateUpdate() {
         // 处理延迟删除
         if (this.removeSet.length > 0) {
-            this.list.forEach((item, uuid) => {
+            for (const [uuid, item] of this.list) {
                 if (this.removeSet.indexOf(uuid) > -1) {
                     this.list.delete(uuid);  // 删除标记的组件
                 } else {
                     item.lateUpdate();  // 更新未删除的组件
                 }
-            });
-
+            }
             this.removeSet.length = 0;  // 清空删除标记
         } else {
             // 常规更新所有组件
-            this.list.forEach(item => {
+            for (const [key, item] of this.list) {
                 item.lateUpdate();
-            });
+            }
         }
     }
 }

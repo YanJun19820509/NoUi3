@@ -238,7 +238,16 @@ export class YJWindowManager extends Component {
         let content: Node = self.getContent(to);
         const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
         if (!allowMultipleOpen) {
-            let a = content.getComponentInChildren(comp);
+            let a: YJPanel;
+            const children = content.children;
+            for (let i = 0, n = children.length; i < n; i++) {
+                const child = children[i];
+                const panel = child.getComponent(comp);
+                if (panel) {
+                    a = panel;
+                    break;
+                }
+            }
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(() => {
@@ -325,6 +334,24 @@ export class YJWindowManager extends Component {
         const self = YJWindowManager._ins,
             content: Node = self.getContent(to);
         panel.node.parent = content;
+    }
+
+    public static hideContents(tos: string[]) {
+        let self = YJWindowManager._ins;
+        for (let i = 0, n = self.infos.length; i < n; i++) {
+            if (!tos.includes(self.infos[i].type)) continue;
+            let content: Node = self.infos[i].content;
+            content.active = false;
+        }
+    }
+
+    public static showContents(tos: string[]) {
+        let self = YJWindowManager._ins;
+        for (let i = 0, n = self.infos.length; i < n; i++) {
+            if (!tos.includes(self.infos[i].type)) continue;
+            let content: Node = self.infos[i].content;
+            content.active = true;
+        }
     }
 
     /**
@@ -427,9 +454,15 @@ export class YJWindowManager extends Component {
             return;
         }
         let content: Node = YJWindowManager._ins.getContent(to);
-        let a = content.getComponentInChildren(comp);
-        if (!a) return null
-        return a as T;
+        if (content) {
+            const children = content.children;
+            for (let i = 0, n = children.length; i < n; i++) {
+                const child = children[i];
+                const panel = child.getComponent(comp);
+                if (panel) return panel as T;
+            }
+        }
+        return null;
     }
 
     /**
@@ -444,17 +477,21 @@ export class YJWindowManager extends Component {
         if (to) {
             const content: Node = YJWindowManager._ins.getContent(to);
             if (content) {
-                const panels = content.getComponentsInChildren(YJPanel);
-                for (let i = 0, n = panels.length; i < n; i++) {
-                    if (panels[i].panelType == panelType) return panels[i] as T;
+                const children = content.children;
+                for (let i = 0, n = children.length; i < n; i++) {
+                    const child = children[i];
+                    const panel = child.getComponent(YJPanel);
+                    if (panel?.panelType == panelType) return panel as T;
                 }
             }
         }
         for (let i = 0, n = self.infos.length; i < n; i++) {
             const content = YJWindowManager._ins.getContent(self.infos[i].type);
-            const panels = content.getComponentsInChildren(YJPanel);
-            for (let i = 0, n = panels.length; i < n; i++) {
-                if (panels[i].panelType == panelType) return panels[i] as T;
+            const children = content.children;
+            for (let i = 0, n = children.length; i < n; i++) {
+                const child = children[i];
+                const panel = child.getComponent(YJPanel);
+                if (panel?.panelType == panelType) return panel as T;
             }
         }
         return null;

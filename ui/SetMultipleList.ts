@@ -362,7 +362,7 @@ export class SetMultipleList extends HackUi {
      * // - 创建3个图片模板实例
      * // - 总显示容量为8个元素
      */
-    private async initTemplates() {
+    private initTemplates() {
         if (this._loaded) return;
         // 确定滚动方向（true=垂直滚动，false=水平滚动）
         this.isVertical = this.scrollView.vertical;
@@ -502,7 +502,7 @@ export class SetMultipleList extends HackUi {
      * 3. 更新列表数据并重新计算布局
      * 4. 执行完成回调
      */
-    protected async onDataChange(data: any) {
+    protected onDataChange(data: any) {
         // 取消所有可能影响数据完整性的异步操作
         this.unscheduleAllCallbacks();
 
@@ -510,7 +510,7 @@ export class SetMultipleList extends HackUi {
         if (!this?.node?.isValid) return;
 
         // 初始化模板系统（如果未初始化）
-        await this.initTemplates();
+        this.initTemplates();
 
         // 再次检查节点和内容容器有效性
         if (!this?.node?.isValid || !this?.content?.isValid) return;
@@ -756,14 +756,14 @@ export class SetMultipleList extends HackUi {
      */
     private setItemPosition(item: Node, index: number) {
         item['__dataIndex'] = index; // 更新节点绑定的数据索引
-        let p = item.getPosition();
         // 根据滚动方向设置坐标
         if (this.isVertical) {
-            p.y = this.positionMap[index]; // 垂直布局设置Y坐标
+            // 垂直布局设置Y坐标
+            no.y(item, this.positionMap[index])
         } else {
-            p.x = this.positionMap[index]; // 水平布局设置X坐标
+            // 水平布局设置X坐标
+            no.x(item, this.positionMap[index])
         }
-        item.setPosition(p);
     }
 
     /**

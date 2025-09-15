@@ -16,7 +16,7 @@ type ProfilerData = {
     size: number
 }
 
-const profiler = !EDITOR && no.isDebug();
+const profiler = !EDITOR && no.isDebug() && false;
 
 class _TextureInfoInGPU {
     private uuids: ProfilerData[] = window["uuids"] = [];

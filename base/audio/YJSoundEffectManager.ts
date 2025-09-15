@@ -23,6 +23,8 @@ export class SoundEffectInfo {
     assetUrl: string = '';
     @property
     assetUuid: string = '';
+    @property({ displayName: '间隔时间' })
+    interval: number = 0;
 }
 
 @ccclass('YJSoundEffectManager')
@@ -150,6 +152,7 @@ export class YJSoundEffectManager extends Component {
     private static _ins: YJSoundEffectManager;
 
     private _loopEffectMap: { [url: string]: any } = {};
+    private _intervalPlay: { [alias: string]: { d: number, t: number, n: number, v: number } } = {};
 
     /** 
      * 获取单例实例
@@ -177,7 +180,11 @@ export class YJSoundEffectManager extends Component {
         this._map = {};
         for (let i = 0; i < this.soundEffects.length; i++) {
             let info = this.soundEffects[i];
-            if (info.alias) this._map[info.alias] = info.assetUrl.replace('db://assets/', '');
+            if (info.alias) {
+                this._map[info.alias] = info.assetUrl.replace('db://assets/', '');
+                this._intervalPlay[info.alias] = { d: info.interval, t: 0, n: 0, v: 1 };
+                YJAudioManager.ins.loadAudioClip(info.assetUrl);
+            }
         }
     }
 
@@ -230,9 +237,14 @@ export class YJSoundEffectManager extends Component {
      * }
      */
     public playEffectByAlias(alias: string, volume = 1): void {
-        let url = this._map[alias];
-        if (url) YJAudioManager.ins.playEffect(url, volume);
-        else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
+        if (this._intervalPlay[alias]) {
+            this._intervalPlay[alias].n++;
+            this._intervalPlay[alias].v = volume;
+        } else {
+            let url = this._map[alias];
+            if (url) YJAudioManager.ins.playEffect(url, volume);
+            else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
+        }
     }
 
     public playLoopEffectByAlias(alias: string, volume = 1): void {
@@ -296,5 +308,19 @@ export class YJSoundEffectManager extends Component {
      */
     public playCloseSoundEffect(): void {
         if (this.closeAtlas) this.playEffectByAlias(this.closeAtlas);
+    }
+
+    update(dt: number): void {
+        for (const alias in this._intervalPlay) {
+            const a = this._intervalPlay[alias];
+            if (a.n == 0) continue;
+            a.t += dt;
+            if (a.t >= a.d) {
+                a.t = 0;
+                a.n--;
+                let url = this._map[alias];
+                if (url) YJAudioManager.ins.playEffect(url, a.v);
+            }
+        }
     }
 }

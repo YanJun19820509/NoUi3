@@ -160,6 +160,7 @@ export class YJDataWork extends Component {
      */
     protected onLoad() {
         YJDataWorkManager.ins().add(this);
+        this._data.needUpdateDataChangeEvent = false;
         this._loaded = true;
         // this.init();
     }

@@ -496,7 +496,7 @@ export class SetList extends HackUi {
         if (!item) {
             // 实例化模板节点并设置基础属性
             const node = instantiate(this.template);
-            no.position(node, v3(0, 0));  // 重置位置
+            no.position(node, { x: 0, y: 0 });  // 重置位置
 
             // 创建容器节点并配置尺寸
             const box = no.newNode('box');
@@ -592,20 +592,20 @@ export class SetList extends HackUi {
      */
     private setItemPosition(item: Node, index: number) {
         item['__dataIndex'] = index;  // 存储数据索引
-        let p = item.getPosition();
         let itemAnchor = item.getComponent(UITransform).anchorPoint;
         let contentSize = this.content.getComponent(UITransform).getBoundingBox().size;
 
         if (this.isVertical) {
             // 垂直滚动布局计算
-            p.y = -(index + 1 - itemAnchor.y) * this.itemSize.height
+            const y = -(index + 1 - itemAnchor.y) * this.itemSize.height
                 + contentSize.height * (1 - no.anchorY(this.content));
+            no.y(item, y);
         } else {
             // 水平滚动布局计算
-            p.x = (index + itemAnchor.x) * this.itemSize.width
+            const x = (index + itemAnchor.x) * this.itemSize.width
                 - contentSize.width * no.anchorX(this.content);
+            no.x(item, x);
         }
-        item.setPosition(p);
     }
 
     /**

@@ -28,7 +28,7 @@ export class YJGameData extends no.Data {
     private static _insMap: { [objectName: string]: { [key: string]: any } } = {};
     /** 数据状态管理器 */
     private _state: no.State;
-
+    public needUpdateDataChangeEvent: boolean = false;
 
     private static get objectName() {
         return this['_singleObjectName'];

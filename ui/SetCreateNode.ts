@@ -324,7 +324,7 @@ export class SetCreateNode extends HackUi {
      */
     private initItem(item: Node) {
         // 重置节点位置到原点
-        no.position(item, v3(0, 0));
+        no.position(item, { x: 0, y: 0 });
 
         // 需要动画效果或首次创建时创建包装容器
         if (this.uiAnim?.enabled || this.isFirst) {

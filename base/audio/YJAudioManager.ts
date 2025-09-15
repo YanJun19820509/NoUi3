@@ -578,7 +578,7 @@ export class YJAudioManager extends Component {
      *   console.log('BGM预加载完成');
      * });
      */
-    private loadAudioClip(path: string, callback: (clip: AudioClip) => void) {
+    public loadAudioClip(path: string, callback?: (clip: AudioClip) => void) {
         no.assetBundleManager.loadAudio(path, (clip) => {
             if (clip) {
                 this.setClip(path, clip);  // 缓存到clip集合

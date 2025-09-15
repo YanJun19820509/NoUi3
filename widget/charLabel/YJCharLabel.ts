@@ -1743,7 +1743,9 @@ export class YJCharLabel extends Sprite {
         const texture = new Texture2D();
         texture['_uuid'] = 'yjchar@' + this._uid;
         texture.image = image;
-        TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
+        if (TextureInfoInGPU.isWork) {
+            TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
+        }
         let spriteFrame = new SpriteFrame();
         spriteFrame['_uuid'] = this._uid;
         spriteFrame.texture = texture;

@@ -3677,14 +3677,14 @@ export namespace no {
      *   .to(0.5, { x: no.x(this.targetNode) })
      *   .start();
      */
-    export function x(node: Node, x?: number): number {
+    export function x(node: Node, x1?: number): number {
         if (!node) return;
-        node.getPosition(_tempPos);
-        if (x != undefined) {
-            _tempPos.x = x;
-            node.setPosition(_tempPos);
+        let { x, y } = node.position;
+        if (x1 != undefined) {
+            x = x1;
+            node.setPosition(x, y);
         }
-        return _tempPos.x;
+        return x;
     }
 
     /**
@@ -3706,14 +3706,14 @@ export namespace no {
      *   .by(2, { y: -200 })
      *   .start();
      */
-    export function y(node: Node, y?: number): number {
+    export function y(node: Node, y1?: number): number {
         if (!node) return;
-        node.getPosition(_tempPos);
-        if (y != undefined) {
-            _tempPos.y = y;
-            node.setPosition(_tempPos);
+        let { x, y } = node.position;
+        if (y1 != undefined) {
+            y = y1;
+            node.setPosition(x, y);
         }
-        return _tempPos.y;
+        return y;
     }
 
     /**
@@ -3734,14 +3734,14 @@ export namespace no {
      *   no.z(this.layer2, no.z(this.layer2) + delta * 0.2);
      * }
      */
-    export function z(node: Node, z?: number): number {
+    export function z(node: Node, z1?: number): number {
         if (!node) return;
-        node.getPosition(_tempPos);
-        if (z != undefined) {
-            _tempPos.z = z;
-            node.setPosition(_tempPos);
+        let { x, y, z } = node.position;
+        if (z1 != undefined) {
+            z = z1;
+            node.setPosition(x, y, z);
         }
-        return _tempPos.z;
+        return z;
     }
     /**
      * 获取或设置节点在父容器中的渲染顺序（siblingIndex）
@@ -3789,13 +3789,14 @@ export namespace no {
      *   .to(1, { position: no.v3(0, 100, 0) })
      *   .start();
      */
-    export function position(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): Vec3 {
+    export function position(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): { x: number, y: number, z: number } | null {
         if (!node) return;
         if (pos != undefined) {
             node.setPosition(pos.x, pos.y, pos.z);
+        } else {
+            const { x, y, z } = node.position;
+            return { x, y, z }; // 返回克隆避免外部修改影响实际坐标
         }
-        node.getPosition(_tempPos);
-        return _tempPos.clone(); // 返回克隆避免外部修改影响实际坐标
     }
 
     /**
@@ -4331,6 +4332,8 @@ export namespace no {
 
         private _data: any = {};
         private _updateScheduled: boolean = false;
+        /** 是否需要更新数据变更事件 */
+        public needUpdateDataChangeEvent: boolean = true;
 
         /** 获取原始数据对象 */
         public get data(): any {
@@ -4444,7 +4447,7 @@ export namespace no {
 
         /** 延迟更新调度（避免频繁触发变更事件） */
         private _scheduleUpdate(): void {
-            if (this._updateScheduled) return;
+            if (!this.needUpdateDataChangeEvent || this._updateScheduled) return;
 
             this._updateScheduled = true;
             // requestAnimationFrame(() => {
@@ -6086,12 +6089,9 @@ export namespace no {
          */
         public decRef(asset: Asset): void {
             if (!asset) return;
-            scheduleOnce(() => {
-                if (asset.refCount > 0) {
-                    asset.decRef();
-                    // log('decRef', asset._uuid, asset.refCount);
-                }
-            }, .02);
+            if (asset.refCount > 0) {
+                asset.decRef();
+            }
         }
 
         /**
@@ -9536,7 +9536,7 @@ export namespace no {
             return r;
         }
 
-        private updateRect(size: Size, pos: Vec3) {
+        private updateRect(size: Size, pos: { x: number, y: number, z: number }) {
             const xMin = pos.x - size.width / 2,
                 xMax = xMin + size.width,
                 yMin = pos.y - size.height / 2,

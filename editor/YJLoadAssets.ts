@@ -26,7 +26,6 @@ import YJLoadPrefab from '../base/node/YJLoadPrefab';
 
 @ccclass('YJLoadAssets')
 @menu('NoUi/editor/YJLoadAssets(资源加载与释放)')
-@executeInEditMode()
 /**
  * 资源加载与释放组件
  * @description 负责管理界面相关资源的动态加载和释放，支持纹理集管理、材质共享、编辑器模式下的资源预览等功能
@@ -251,13 +250,13 @@ export class YJLoadAssets extends Component {
     @property({ visible() { return false; } })
     _materialKey: string = '';
 
-    onLoad() {
-        if (EDITOR) {
-            this.textureInfos.forEach(info => {
-                info.resetInfo();
-            });
-        }
-    }
+    // onLoad() {
+    //     if (EDITOR) {
+    //         this.textureInfos.forEach(info => {
+    //             info.resetInfo();
+    //         });
+    //     }
+    // }
 
     onDestroy() {
         this.release();

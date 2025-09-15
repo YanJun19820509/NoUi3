@@ -73,7 +73,7 @@ export class YJNodeTarget extends Component {
      * @remarks 用于持续检测节点位置变化，当位置改变时自动更新到nodeTargetManager
      */
     private pos: Vec3;
-    
+
     /** 
      * 最后一次触摸触发时间戳
      * @private {number} lastTriggerTouchTime - 记录最近交互时间（单位：毫秒）
@@ -177,7 +177,7 @@ export class YJNodeTarget extends Component {
      * // 获取UI元素在画布中的相对位置：
      * const localPos = target.nodePosition;
      */
-    public get nodePosition(): Vec3 {
+    public get nodePosition(): { x: number, y: number, z: number } {
         return no.position(this.node);
     }
 
