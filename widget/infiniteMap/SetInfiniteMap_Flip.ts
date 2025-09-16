@@ -82,7 +82,11 @@ export class SetInfiniteMap_Flip extends HackUi {
     private _curPos: Vec3;
 
     protected onDataChange(data: any) {
-        const { tileSize, tileInfos, startPos, moveBy } = data;
+        const { tileSize, tileInfos, startPos, moveBy, flip } = data;
+        if (flip != null) {
+            this.isHorizontalFlip = flip;
+            this.clearDataValue(`${this.bind_keys}.flip`);
+        }
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {

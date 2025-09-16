@@ -11338,5 +11338,18 @@ export namespace no {
 
         return angles;
     }
+
+    /**
+     * 设置节点及子节点层级
+     * @param node 
+     * @param layer 
+     */
+    export function setLayer(node: Node, layer: number) {
+        if (!node || node.layer == layer) return;
+        node.layer = layer;
+        for (let child of node.children) {
+            setLayer(child, layer);
+        }
+    }
 }
 no.addToWindowForDebug('no', no);

@@ -141,7 +141,8 @@ export class YJGuideManager extends Component {
      */
     public check(step: string): boolean {
         if (!this.isWork) return false;
-        if (this.saveSteps.indexOf(step) != -1) return false;
+        const pre_step = this.getGuideInfo('guide_config.' + step).pre_id;
+        if (this.saveSteps.includes(step) || (pre_step && !this.saveSteps.includes(pre_step))) return false;
         YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
             panel.curStep = step;
         });

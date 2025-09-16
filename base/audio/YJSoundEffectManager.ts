@@ -237,7 +237,7 @@ export class YJSoundEffectManager extends Component {
      * }
      */
     public playEffectByAlias(alias: string, volume = 1): void {
-        if (this._intervalPlay[alias]) {
+        if (this._intervalPlay[alias] && this._intervalPlay[alias].n == 0) {
             this._intervalPlay[alias].n++;
             this._intervalPlay[alias].v = volume;
         } else {

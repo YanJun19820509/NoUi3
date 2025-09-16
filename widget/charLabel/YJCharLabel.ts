@@ -1422,7 +1422,7 @@ export class YJCharLabel extends Sprite {
 
         // 初始化绘制起点坐标
         let x = 2, // 基础水平偏移
-            y = 0; // 垂直起始位置
+            y = 4; // 垂直起始位置
 
         // 垂直位置调整（应对描边和阴影偏移）
         if (this.outlineWidth > 0) y += this.outlineWidth / 2; // 描边居中补偿
@@ -1542,7 +1542,7 @@ export class YJCharLabel extends Sprite {
             if (this.shadowBlur > 0) this.setShadowStyle(ctx);
 
             // 计算垂直起始位置
-            let y = hh * i; // 基础行位置
+            let y = hh * i + 4; // 基础行位置
             if (this.outlineWidth > 0) y += this.outlineWidth / 2; // 描边垂直偏移
             if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
                 y -= this.shadowOffset.y; // 阴影垂直偏移补偿
@@ -2066,7 +2066,7 @@ export class YJCharLabel extends Sprite {
 
         // 初始化绘制起点（示例：当outlineWidth=2时，x=2+2+2=6）
         let x = 2; // 基础边距
-        let y = 0; // 垂直起始位置
+        let y = 4; // 垂直起始位置
         // 垂直偏移处理（描边和阴影可能影响垂直位置）
         if (this.outlineWidth > 0) y += this.outlineWidth / 2; // 描边垂直补偿（示例：2px描边下移1px）
         if (this.shadowBlur > 0 && this.shadowOffset.y < 0) {
@@ -2190,7 +2190,7 @@ export class YJCharLabel extends Sprite {
         for (let i = 0, lineCount = lines.length; i < lineCount; i++) {
             const line = lines[i];
             // 计算垂直起始位置（考虑多行叠加）
-            let yPos = lineHeightWithExt * i;
+            let yPos = lineHeightWithExt * i + 4;
 
             // 垂直位置补偿（描边居中/阴影偏移）
             if (this.outlineWidth > 0) yPos += this.outlineWidth / 2; // 示例：2px描边下移1px

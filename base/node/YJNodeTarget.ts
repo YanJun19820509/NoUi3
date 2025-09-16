@@ -4,6 +4,7 @@ import { no } from '../../no';
 import { YJJobManager } from '../YJJobManager';
 import { YJTouchListener } from '../touch/YJTouchListener';
 import { nodeTargetManager } from '../../NodeTargetManager';
+import { YJButton } from '../../fix/YJButton';
 
 /**
  * Predefined variables
@@ -247,9 +248,16 @@ export class YJNodeTarget extends Component {
         if (a && trigger) {
             const btn = this.getComponent(Button);
             if (btn) {
-                if (btn.clickEvents.length > 0) no.executeHandlers(btn.clickEvents, e, btn);
-                if (btn instanceof Toggle)
-                    btn.isChecked = true;
+                if (btn.clickEvents.length > 0) {
+                    no.executeHandlers(btn.clickEvents, e, btn);
+                    if (btn instanceof Toggle)
+                        btn.isChecked = true;
+                } else {
+                    const btn1 = this.getComponent(YJButton);
+                    if (btn1?.clickEvents.length > 0) {
+                        no.executeHandlers(btn1.clickEvents, e, btn1);
+                    }
+                }
             } else {
                 const touchListener = this.getComponent(YJTouchListener);
                 if (touchListener) {
