@@ -214,7 +214,6 @@ export class YJCharLabel extends Sprite {
         this._font = v;
         this._fontUuid = v ? v._uuid : '';
         this.fontFamily = v ? v['_fontFamily'] : 'Arial';
-        this._fontFamilyWx = v ? v.name : 'Arial';
         this.setLabel();
     }
 
@@ -235,7 +234,6 @@ export class YJCharLabel extends Sprite {
         this._font = null;
         this._fontUuid = '';
         this._foitnFamily = 'Arial';
-        this._fontFamilyWx = 'Arial';
     }
 
     /** 
@@ -248,8 +246,7 @@ export class YJCharLabel extends Sprite {
      */
     @property({ readonly: true })
     public get fontFamily(): string {
-        if (window['wx']) return this._fontFamilyWx;
-        return this._foitnFamily;
+        return this._font?._fontFamily || this._foitnFamily;
     }
 
     public set fontFamily(v: string) {
@@ -705,8 +702,6 @@ export class YJCharLabel extends Sprite {
     /** 备用字体名称（当TTF加载失败时使用） */
     @property({ serializable: true })
     protected _foitnFamily: string = 'Arial';
-    @property({ serializable: true })
-    protected _fontFamilyWx: string = 'Arial';
 
     /** 是否自动计算行高（默认true） 
      * @example this.autoLineHeight = false */
@@ -1098,10 +1093,12 @@ export class YJCharLabel extends Sprite {
         // 配置基础文本属性
         ctx.textBaseline = 'top';  // 文本基线对齐方式
         ctx.textAlign = 'left';    // 文本水平对齐方式
+        ctx.lineJoin = "round";
+        ctx.lineCap="round";
         ctx.imageSmoothingQuality = 'high'; // 高精度抗锯齿
 
         // 构建字体字符串（例："italic bold 24px Arial"）
-        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this._font._fontFamily}`;
+        ctx.font = `${italic ? 'italic' : 'normal'} ${bold ? 'bold' : ''} ${fontSize}px ${this.fontFamily}`;
         ctx.fillStyle = color; // 设置填充颜色
         // console.log('setFontStyle', ctx.font);
     }
@@ -1467,7 +1464,6 @@ export class YJCharLabel extends Sprite {
         // 逐字符绘制（支持等宽/变宽字体）
         for (let i = 0, n = v.length; i < n; i++) {
             const c = v[i]; // 当前字符
-            const w = this.getCharWidth(c, fontSize); // 获取字符宽度
 
             // 先绘制描边（如果有）
             if (this.outlineWidth > 0) {
@@ -1477,6 +1473,7 @@ export class YJCharLabel extends Sprite {
             // 绘制填充文字
             ctx.fillText(c, x1, y);
 
+            const w = this.getCharWidth(c, fontSize); // 获取字符宽度
             x1 += w; // 移动到下一个字符位置
         }
 
