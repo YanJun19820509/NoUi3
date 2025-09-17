@@ -1,4 +1,4 @@
-import { ccclass, Component, property, requireComponent, Camera, view } from "hackUi/yj";
+import { ccclass, Component, property, requireComponent, Camera, screen } from "hackUi/yj";
 /**
  * 设置相机
  * Author mqsy_yj
@@ -17,7 +17,7 @@ export class YJSetCamera extends Component {
     onLoad(): void {
         const camera = this.getComponent(Camera);
         if (this.orthoHeight) {
-            camera.orthoHeight = view.getVisibleSizeInPixel().height * (this.halfScreen ? .5 : 1);
+            camera.orthoHeight = screen.windowSize.height / screen.devicePixelRatio * (this.halfScreen ? .5 : 1);
         }
     }
 }

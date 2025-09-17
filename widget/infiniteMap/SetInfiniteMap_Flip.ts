@@ -189,8 +189,10 @@ export class SetInfiniteMap_Flip extends HackUi {
                 const data = this.getDataByUvKey(key);
                 if (data) {
                     // 使用对象池获取或创建节点
-                    let item = this._tileNodes[i] || instantiate(this.template);
-                    if (!item.parent) {
+                    let item = this._tileNodes[i];
+                    if (!item) {
+                        item = instantiate(this.template);
+                        no.setLayer(item, this.node.layer);
                         item.parent = this.node;
                         no.visible(item, true);
                         this._tileNodes.push(item);
@@ -230,8 +232,10 @@ export class SetInfiniteMap_Flip extends HackUi {
                 const data = this.getDataByUvKey(key);
                 if (data) {
                     // 优先使用回收的节点，没有则创建新节点
-                    let item = needMoveTileNode.shift() || instantiate(this.template);
-                    if (!item.parent) {
+                    let item = needMoveTileNode.shift();
+                    if (!item) {
+                        item = instantiate(this.template);
+                        no.setLayer(item, this.node.layer);
                         item.parent = this.node;
                         no.visible(item, true);
                         this._tileNodes.push(item);
