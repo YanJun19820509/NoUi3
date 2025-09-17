@@ -7,7 +7,8 @@ import {
     EventTouch,
     Toggle,
     resources, JSB,
-    rendererCamera
+    rendererCamera,
+    screen
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -10851,7 +10852,7 @@ export namespace no {
                     return null;
                 }
                 // this._visible(cache.o, true);
-                visibleByActiveInHierarchy(cache.o, true);
+                visible(cache.o, true);
                 return cache.o;
             }
             return null;
@@ -10867,7 +10868,7 @@ export namespace no {
          */
         public put(type: string, node: Node) {
             // this._visible(node, false);
-            visibleByActiveInHierarchy(node, false);
+            visible(node, false);
             if (!this.cacheMap.has(type)) {
                 this.cacheMap.set(type, []);
             }
@@ -11350,6 +11351,16 @@ export namespace no {
         for (let child of node.children) {
             setLayer(child, layer);
         }
+    }
+
+    /**
+     * 获取视口大小
+     * @returns 视口大小
+     */
+    export function viewSize() {
+        const size = screen.windowSize;
+        const ratio = screen.devicePixelRatio;
+        return { width: size.width / ratio, height: size.height / ratio };
     }
 }
 no.addToWindowForDebug('no', no);
