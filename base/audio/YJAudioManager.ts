@@ -497,7 +497,7 @@ export class YJAudioManager extends Component {
      */
     public setClip(path: string, clip: AudioClip): void {
         if (path && !this.clips?.has(path))
-            this.clips.set(path, clip);
+            this.clips?.set(path, clip);
     }
 
     /**
@@ -523,6 +523,7 @@ export class YJAudioManager extends Component {
      * this._playClip(sfxClip, false);
      */
     private _playClip(clip: AudioClip, volume = 1, loop = true): void {
+        if (!this.audioSource) return;
         if (loop) {
             this.audioSource.stop();
             this.audioSource.clip = clip;

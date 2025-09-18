@@ -17,7 +17,7 @@ import { YJDataWork } from '../YJDataWork';
  *
  */
 
-let _nodeSiblingIndex_: number = 0;
+let _nodeSiblingIndex_: number = 100;
 @ccclass('YJPanel')
 @menu('NoUi/node/YJPanel(面板基类)')
 @executeInEditMode()
