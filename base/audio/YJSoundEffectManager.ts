@@ -23,8 +23,10 @@ export class SoundEffectInfo {
     assetUrl: string = '';
     @property
     assetUuid: string = '';
-    @property({ displayName: '间隔时间' })
-    interval: number = 0;
+    @property({ displayName: '音量(0-1)', min: 0, max: 1 })
+    volume: number = 1;
+    @property({ displayName: '间隔时间(s)', min: 0 })
+    interval: number = 0.1;
 }
 
 @ccclass('YJSoundEffectManager')
@@ -146,13 +148,14 @@ export class YJSoundEffectManager extends Component {
      *   "item_pickup": "audio/item/coin.mp3"
      * }
      */
-    private _map: any;
+    private _map: { [alias: string]: { path: string, volume: number } };
 
     /** 单例实例 */
     private static _ins: YJSoundEffectManager;
 
     private _loopEffectMap: { [url: string]: any } = {};
-    private _intervalPlay: { [alias: string]: { d: number, t: number, n: number, v: number } } = {};
+    private _intervalMap: { [alias: string]: { d: number, v: number } } = {};
+    private _intervalPlay: { [alias: string]: number } = {};
 
     /** 
      * 获取单例实例
@@ -181,8 +184,8 @@ export class YJSoundEffectManager extends Component {
         for (let i = 0; i < this.soundEffects.length; i++) {
             let info = this.soundEffects[i];
             if (info.alias) {
-                this._map[info.alias] = info.assetUrl.replace('db://assets/', '');
-                this._intervalPlay[info.alias] = { d: info.interval, t: 0, n: 0, v: 1 };
+                this._map[info.alias] = { path: info.assetUrl.replace('db://assets/', ''), volume: info.volume };
+                this._intervalMap[info.alias] = { d: info.interval || .1, v: info.volume };
                 YJAudioManager.ins.loadAudioClip(info.assetUrl);
             }
         }
@@ -211,15 +214,15 @@ export class YJSoundEffectManager extends Component {
      *   this.playMusicByAlias('menu_bgm');
      * }
      */
-    public playMusicByAlias(alias: string, volume = 1): void {
-        let url = this._map[alias];
-        if (url) YJAudioManager.ins.playBGM(url, volume);
+    public playMusicByAlias(alias: string, volume?: number): void {
+        let d = this._map[alias];
+        if (d.path) YJAudioManager.ins.playBGM(d.path, volume || d.volume);
         else console.error('YJSoundEffectManager.playMusicByAlias: 没有找到音乐资源:', alias);
     }
 
-    public playForeverMusicByAlias(alias: string, volume = 1): void {
-        let url = this._map[alias];
-        if (url) YJAudioManager.ins.playForever(url, volume);
+    public playForeverMusicByAlias(alias: string, volume?: number): void {
+        let d = this._map[alias];
+        if (d.path) YJAudioManager.ins.playForever(d.path, volume || d.volume);
         else console.error('YJSoundEffectManager.playForeverMusicByAlias: 没有找到音乐资源:', alias);
     }
 
@@ -236,30 +239,29 @@ export class YJSoundEffectManager extends Component {
      *   this.playEffectByAlias('weapon_switch');
      * }
      */
-    public playEffectByAlias(alias: string, volume = 1): void {
-        if (this._intervalPlay[alias] && this._intervalPlay[alias].n == 0) {
-            this._intervalPlay[alias].n++;
-            this._intervalPlay[alias].v = volume;
-        } else {
-            let url = this._map[alias];
-            if (url) YJAudioManager.ins.playEffect(url, volume);
-            else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
+    public playEffectByAlias(alias: string, volume?: number): void {
+        if (this._intervalPlay[alias] > 0) return;
+        if (this._intervalMap[alias]) {
+            this._intervalPlay[alias] = this._intervalMap[alias].d;
         }
+        let d = this._map[alias];
+        if (d.path) YJAudioManager.ins.playEffect(d.path, volume || d.volume);
+        else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
     }
 
-    public playLoopEffectByAlias(alias: string, volume = 1): void {
-        let url = this._map[alias];
-        if (url) {
-            YJAudioManager.ins.playLoopEffect(url, volume);
+    public playLoopEffectByAlias(alias: string, volume?: number): void {
+        let d = this._map[alias];
+        if (d.path) {
+            YJAudioManager.ins.playLoopEffect(d.path, volume || d.volume);
         } else {
             console.error('YJSoundEffectManager.playLoopEffectByAlias: 没有找到音效资源:', alias);
         }
     }
 
     public stopLoopEffectByAlias(alias: string): void {
-        let url = this._map[alias];
-        if (url) {
-            YJAudioManager.ins.stopLoopEffect(url);
+        let d = this._map[alias];
+        if (d.path) {
+            YJAudioManager.ins.stopLoopEffect(d.path);
         }
     }
 
@@ -312,15 +314,7 @@ export class YJSoundEffectManager extends Component {
 
     update(dt: number): void {
         for (const alias in this._intervalPlay) {
-            const a = this._intervalPlay[alias];
-            if (a.n == 0) continue;
-            a.t += dt;
-            if (a.t >= a.d) {
-                a.t = 0;
-                a.n--;
-                let url = this._map[alias];
-                if (url) YJAudioManager.ins.playEffect(url, a.v);
-            }
+            this._intervalPlay[alias] -= dt;
         }
     }
 }

@@ -895,8 +895,8 @@ export class YJCharLabel extends Sprite {
         // 运行时材质和图集初始化
         if (this.packToAtlas || !this.customMaterial) {
             // 从材质管理器获取动态图集示例：materialInfoUuid="mat-info-001"
-            this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid).dynamicAtlas;
-            this.customMaterial = this.dynamicAtlas.customMaterial; // 关联自定义材质
+            this.dynamicAtlas = YJSample2DMaterialManager.ins.getMaterialInfo(this.materialInfoUuid)?.dynamicAtlas;
+            this.customMaterial = this.dynamicAtlas?.customMaterial; // 关联自定义材质
         }
 
         // 初始需要更新时执行文本渲染
@@ -1094,7 +1094,7 @@ export class YJCharLabel extends Sprite {
         ctx.textBaseline = 'top';  // 文本基线对齐方式
         ctx.textAlign = 'left';    // 文本水平对齐方式
         ctx.lineJoin = "round";
-        ctx.lineCap="round";
+        ctx.lineCap = "round";
         ctx.imageSmoothingQuality = 'high'; // 高精度抗锯齿
 
         // 构建字体字符串（例："italic bold 24px Arial"）
