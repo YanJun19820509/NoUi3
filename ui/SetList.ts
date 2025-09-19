@@ -446,7 +446,7 @@ export class SetList extends HackUi {
      */
     private setList() {
         // 按数据索引排序子节点
-        no.sortArray(this.content.children, (a, b) => a['__dataIndex'] - b['__dataIndex']);
+        // no.sortArray(this.content.children, (a, b) => a['__dataIndex'] - b['__dataIndex']);
 
         // 动画模式或强制更新模式
         if (this.uiAnim?.enabled || this._1b1) {
@@ -520,10 +520,6 @@ export class SetList extends HackUi {
         const data_idx = item['__dataIndex'];
         this.setItemData(item, this.listData[data_idx]);
 
-        // 控制可见性（当索引超出总数时隐藏）
-        if (i >= this.allNum)
-            no.visible(item.children[0], false);
-
         // 动画处理逻辑
         if (isNew && this.uiAnim?.enabled) {
             // 播放预设动画
@@ -555,7 +551,7 @@ export class SetList extends HackUi {
      * // 当item包含SetCreateNode组件时：
      * // 调用a_setData(data)方法设置数据
      */
-    private setItemData(item: Node, data = []) {
+    private setItemData(item: Node, data: any) {
         if (data == null) {
             no.visible(item.children[0], false);
             return;
