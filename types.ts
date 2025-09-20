@@ -1030,4 +1030,4 @@ export const EasingTypeName = {
     41: 'bounceOutIn',
     42: 'smooth',
     43: 'fade',
-}
+};

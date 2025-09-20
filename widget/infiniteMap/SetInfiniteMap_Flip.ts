@@ -137,12 +137,17 @@ export class SetInfiniteMap_Flip extends HackUi {
         }
     }
 
+    private _getDataByUvKeyCache: { img: string, dir: number[], x: number, y: number } = { img: '', dir: [], x: 0, y: 0 };
     private getDataByUvKey(uvKey: string) {
         const uv = uvKey.split('_').map(Number);
         const xy = this.uvToXy(uv[0], uv[1]);
         const k = Math.abs(this.isHorizontalFlip ? uv[0] : uv[1]) % 2;
-        const data = this._tileMap.get(k);
-        return { ...data, x: xy[0], y: xy[1] };
+        const { img, dir } = this._tileMap.get(k);
+        this._getDataByUvKeyCache.img = img;
+        this._getDataByUvKeyCache.dir = dir;
+        this._getDataByUvKeyCache.x = xy[0];
+        this._getDataByUvKeyCache.y = xy[1];
+        return this._getDataByUvKeyCache;
     }
 
     /**

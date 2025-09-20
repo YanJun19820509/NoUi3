@@ -1,7 +1,7 @@
 import { no } from '../../no';
 import { ccclass, Component, EventTouch, property, Size, sys, v2, v3, Vec2, Vec3, view } from '../../yj';
 import { YJHandShank } from '../handShank/YJHandShank';
-import { YJMoveHandleDelegate } from './YJMoveHandleDelegate';
+import { MoveHandleData, YJMoveHandleDelegate } from './YJMoveHandleDelegate';
 
 @ccclass('YJMoveHandle')
 /**
@@ -55,14 +55,13 @@ export class YJMoveHandle extends Component {
 
     /** 触摸起点坐标（相对屏幕中心坐标系） */
     private startTouchPos: Vec3;
-    /** 移动方向数据（包含角度和弧度两种表示方式） */
-    private _dir: { angle: number, radian: number };
     /** 移动状态标记（true表示正在持续移动） */
     private _isMoving: boolean = false;
     /** 触摸开始时间戳（用于计算点击时长） */
     private _touchTime: number = 0;
 
     private _tempVec: Vec3 = new Vec3();
+    private _moveData: MoveHandleData = { type: 'moveby', dir: { angle: 0, radian: 0 }, dt: 0, pos: { x: 0, y: 0 } };
 
     /**
      * 触摸开始事件处理
@@ -83,9 +82,11 @@ export class YJMoveHandle extends Component {
     public onMove(e: EventTouch) {
         const pos = this.touchUILocationAR(e);
         // 计算当前触摸点相对于起点的方向（角度和弧度）
-        this._dir = no.angleTo(this.startTouchPos, pos);
+        const { angle, radian } = no.angleTo(this.startTouchPos, pos);
+        this._moveData.dir.angle = angle;
+        this._moveData.dir.radian = radian;
         this._isMoving = true;
-        this.handShank?.onMove(this._dir.radian);
+        this.handShank?.onMove(this._moveData.dir.radian);
     }
 
     /**
@@ -100,11 +101,17 @@ export class YJMoveHandle extends Component {
         // 短按判定（150ms内松开）
         if (this.clickMove && sys.now() - this._touchTime < 150) {
             // 计算相对于屏幕中心的方向
-            const dir = no.angleTo(v2(0, 0), pos);
-            this.delegate?.moveHandleEvent({ type: 'moveto', pos, dir });
+            const { angle, radian } = no.angleTo(v2(0, 0), pos);
+            this._moveData.type = 'moveto';
+            this._moveData.pos.x = pos.x;
+            this._moveData.pos.y = pos.y;
+            this._moveData.dir.angle = angle;
+            this._moveData.dir.radian = radian;
+            this.delegate?.moveHandleEvent(this._moveData);
         } else {
             // 触发停止事件并传递最终方向
-            this.delegate?.moveHandleEvent({ type: 'stop' });
+            this._moveData.type = 'stop';
+            this.delegate?.moveHandleEvent(this._moveData);
         }
         this.handShank?.onStop();
     }
@@ -132,7 +139,9 @@ export class YJMoveHandle extends Component {
      */
     update(dt: number) {
         if (this._isMoving) {
-            this.delegate?.moveHandleEvent({ type: 'moveby', dir: this._dir, dt });
+            this._moveData.type = 'moveby';
+            this._moveData.dt = dt;
+            this.delegate?.moveHandleEvent(this._moveData);
         }
     }
 }

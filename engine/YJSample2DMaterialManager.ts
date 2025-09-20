@@ -191,6 +191,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         return materialInfo.uuid;
     }
 
+    private _reuseMaterialCache: { maxMaterialInfo: YJSample2DMaterialInfo, maxDiff: string[] } = { maxMaterialInfo: null, maxDiff: [] };
     /**
      * 材质复用算法
      * @param textureInfos 需要匹配的纹理信息数组
@@ -204,7 +205,11 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      * // 差异计算为[4]，若材质A剩余槽位>=1则复用
      */
     private reuseMaterial(textureInfos: TextureInfo[]) {
-        if (this.materialInfos.length == 0) return {};
+        this._reuseMaterialCache.maxMaterialInfo = null;
+        this._reuseMaterialCache.maxDiff = [];
+        if (this.materialInfos.length == 0) {
+            return this._reuseMaterialCache;
+        }
         const assetPaths: string[] = [];
 
         // 提取纯路径列表用于比较
@@ -213,9 +218,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         }
 
         const l = assetPaths.length;
-        let maxCount = l, // 初始化最大差异数为需求纹理总数
-            maxMaterialInfo: YJSample2DMaterialInfo = null,
-            maxDiff: string[] = [];
+        let maxCount = l; // 初始化最大差异数为需求纹理总数
 
         // 遍历所有可复用材质寻找最佳匹配
         for (let i = 0; i < this.materialInfos.length; i++) {
@@ -227,11 +230,11 @@ export class YJSample2DMaterialManager extends no.SingleObject {
             // 验证条件：差异数更小且纹理槽位充足（最大索引+差异数不超过8）
             if (count < maxCount && (materialInfo.maxIdx + count) < 8) {
                 maxCount = count;
-                maxMaterialInfo = materialInfo;
-                maxDiff = diff;
+                this._reuseMaterialCache.maxMaterialInfo = materialInfo;
+                this._reuseMaterialCache.maxDiff = diff;
             }
         }
-        return { maxMaterialInfo, maxDiff };
+        return this._reuseMaterialCache;
     }
 
     /**

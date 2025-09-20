@@ -29,25 +29,37 @@ export class YJScrollPanel extends Component {
     support2FingerScale: boolean = false;
     @property({ displayName: '支持双击缩放', tooltip: '是否启用双击缩放功能\n示例：地图浏览中双击放大关键区域' })
     doubleClick: boolean = false;
-    @property({ displayName: '双击检测时长(s)', min: .1, visible() { return this.doubleClick; }, 
-        tooltip: '两次点击的最大间隔时间（秒）\n示例：设为0.3表示300ms内两次点击视为双击' })
+    @property({
+        displayName: '双击检测时长(s)', min: .1, visible() { return this.doubleClick; },
+        tooltip: '两次点击的最大间隔时间（秒）\n示例：设为0.3表示300ms内两次点击视为双击'
+    })
     doubleClickDuration: number = 1;
-    @property({ displayName: '双击放大', min: .1, visible() { return this.doubleClick; }, 
-        tooltip: '双击时是否放大到maxScale\n示例：地图组件双击后放大到最大比例' })
+    @property({
+        displayName: '双击放大', min: .1, visible() { return this.doubleClick; },
+        tooltip: '双击时是否放大到maxScale\n示例：地图组件双击后放大到最大比例'
+    })
     doubleClickScaleMax: boolean = true;
-    @property({ displayName: '双击缩小', min: .1, visible() { return this.doubleClick; }, 
-        tooltip: '双击时是否缩小到minScale（与双击放大同时启用时交替切换）' })
+    @property({
+        displayName: '双击缩小', min: .1, visible() { return this.doubleClick; },
+        tooltip: '双击时是否缩小到minScale（与双击放大同时启用时交替切换）'
+    })
     doubleClickScaleMin: boolean = false;
-    @property({ min: .1, visible() { return this.support2FingerScale; }, 
-        tooltip: '最小缩放比例（0.1-1.0）\n示例：0.5表示最小缩小到50%' })
+    @property({
+        min: .1, visible() { return this.support2FingerScale; },
+        tooltip: '最小缩放比例（0.1-1.0）\n示例：0.5表示最小缩小到50%'
+    })
     minScale: number = .5;
-    @property({ min: .1, visible() { return this.support2FingerScale; }, 
-        tooltip: '最大缩放比例（1.0-3.0）\n示例：2.0表示最大放大到200%' })
+    @property({
+        min: .1, visible() { return this.support2FingerScale; },
+        tooltip: '最大缩放比例（1.0-3.0）\n示例：2.0表示最大放大到200%'
+    })
     maxScale: number = 1.5;
     @property({ displayName: '滚动偏移', tooltip: '滚动到目标点后需要应用的额外偏移量（单位：像素）\n示例：v2(10, -5)表示向右偏移10px，向下偏移5px' })
     offset: Vec2 = math.v2();
-    @property({ displayName: '动画时长(s)', min: 0, 
-        tooltip: '滚动/缩放动画的持续时间（0表示无动画）\n示例：0.5表示半秒完成动画' })
+    @property({
+        displayName: '动画时长(s)', min: 0,
+        tooltip: '滚动/缩放动画的持续时间（0表示无动画）\n示例：0.5表示半秒完成动画'
+    })
     duration: number = .5;
     @property({ type: no.EventHandlerInfo, tooltip: '滚动开始事件（参数：当前滚动位置）\n示例：播放滚动音效/显示加载状态' })
     onMoveStart: no.EventHandlerInfo[] = [];
@@ -89,11 +101,11 @@ export class YJScrollPanel extends Component {
                 widget.top = 0;               // 上边距0像素
                 widget.isAlignBottom = true;  // 底部对齐
                 widget.bottom = 0;            // 下边距0像素
-                
+
                 /* 示例：在编辑器中创建滚动面板时自动生成全屏适配的容器
                  * 开发者只需拖拽组件到节点，即可自动生成适配父节点的布局 */
             }
-            
+
             // 自动创建默认内容容器（如果不存在）
             if (!this.content && this.node.children.length == 0) {
                 let content = new Node('content');
@@ -101,12 +113,12 @@ export class YJScrollPanel extends Component {
                 content.addComponent(UITransform);  // 添加变换组件
                 content.parent = this.node;         // 挂载到当前节点
                 this.content = content;             // 设为内容容器
-                
+
                 /* 示例：当开发者首次添加组件时自动创建内容容器节点
                  * 后续只需将需要滚动的内容（如图片/文本）拖入content节点即可 */
             }
         }
-        
+
         // 初始化双击缩放方向（默认使用配置的初始方向）
         this.doubleClickScaleToMax = this.doubleClickScaleMax;
     }
@@ -114,13 +126,13 @@ export class YJScrollPanel extends Component {
     onEnable() {
         // 确保内容容器存在（默认为当前节点）
         this.content = this.content || this.node;
-        
+
         // 注册触摸事件监听（使用捕获阶段确保优先处理）
         this.node.on(Node.EventType.TOUCH_START, this.onTouchStart, this, true);  // 触摸开始
         this.node.on(Node.EventType.TOUCH_MOVE, this.onTouchMove, this, true);    // 触摸移动
         this.node.on(Node.EventType.TOUCH_END, this.onTouchEnd, this, true);      // 触摸结束
         // this.node.on(Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this, true); // 触摸取消（根据需求启用）
-        
+
         /* 示例：玩家在移动设备上拖动地图时
          * 1. 手指按下触发TOUCH_START记录初始位置
          * 2. 移动手指触发TOUCH_MOVE更新内容位置
@@ -130,7 +142,7 @@ export class YJScrollPanel extends Component {
     onDisable() {
         // 移除所有事件监听（防止内存泄漏）
         this.node.targetOff(this);
-        
+
         /* 示例：当切换场景或关闭界面时自动解除事件绑定
          * 避免界面不可见时仍响应触摸事件 */
     }
@@ -307,7 +319,7 @@ export class YJScrollPanel extends Component {
         let touches = e.getAllTouches();
         this.startDis = null; // 重置双指距离
         this.startScale = null; // 重置初始缩放值
-        
+
         if (touches.length < 2) {
             e.preventSwallow = true;
             // 初始化双击检测参数
@@ -385,7 +397,7 @@ export class YJScrollPanel extends Component {
             e.preventSwallow = true;
             return;
         }
-        
+
         // 判断是否为有效点击（移动距离小于10像素）
         if (math.Vec2.distance(e.getStartLocation(), e.getLocation()) > 10)
             e.propagationStopped = true;  // 阻止事件冒泡（有效拖动）
@@ -455,12 +467,12 @@ export class YJScrollPanel extends Component {
         // 计算触摸偏移量
         let delta = math.v2();
         e.touch.getDelta(delta);
-        
+
         // 计算新位置（考虑缩放比例对移动速度的影响）
         let pos = this.content.getPosition();
         let scale = this.content.scale.x;
         let newPos = pos.add3f(delta.x * scale, delta.y * scale, 0);
-        
+
         // 限制位置在有效范围内并更新
         this.fitPos(newPos, scale);
         this.content.setPosition(pos);
@@ -527,7 +539,7 @@ export class YJScrollPanel extends Component {
         pos.y -= this.startTouchPos.y * s;
         // 计算适配后的合法位置
         this.fitPos(pos, scale);
-        
+
         if (!tween) {
             // 立即设置缩放和位置
             this.content.setScale(scale, scale);
@@ -586,7 +598,7 @@ export class YJScrollPanel extends Component {
         let ut = this.node.getComponent(UITransform);
         let size = ut.contentSize.clone();
         let ar = ut.anchorPoint;
-        
+
         // 计算锚点偏移
         pos.subtract3f(size.width * ar.x, size.height * ar.y, 0);
         // 转换为世界坐标
@@ -599,6 +611,7 @@ export class YJScrollPanel extends Component {
         return math.v2(pos.x, pos.y);
     }
 
+    private _xyXYCache: { minX: number, minY: number, maxX: number, maxY: number } = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
     /**
      * 计算内容节点的边界范围
      * @param scale 当前缩放比例
@@ -612,13 +625,12 @@ export class YJScrollPanel extends Component {
         let csize = this.content.getComponent(UITransform).contentSize;
         let nar = this.node.getComponent(UITransform).anchorPoint;
         let car = this.content.getComponent(UITransform).anchorPoint;
-        
-        return {
-            minX: (car.x - 1) * csize.width * scale + (1 - nar.x) * nsize.width,
-            minY: (car.y - 1) * csize.height * scale + (1 - nar.y) * nsize.height,
-            maxX: car.x * csize.width * scale - nar.x * nsize.width,
-            maxY: car.y * csize.height * scale - nar.y * nsize.height
-        };
+
+        this._xyXYCache.minX = (car.x - 1) * csize.width * scale + (1 - nar.x) * nsize.width;
+        this._xyXYCache.minY = (car.y - 1) * csize.height * scale + (1 - nar.y) * nsize.height;
+        this._xyXYCache.maxX = car.x * csize.width * scale - nar.x * nsize.width;
+        this._xyXYCache.maxY = car.y * csize.height * scale - nar.y * nsize.height;
+        return this._xyXYCache;
     }
 
     /**

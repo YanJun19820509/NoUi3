@@ -67,7 +67,8 @@ export class SetMoveBy extends HackUi {
 
         // 初始化基准点：首次移动或重置后，记录当前实际位置
         if (!this._pos) {
-            this._pos = no.position(this.node);
+            const { x, y, z } = no.position(this.node);
+            this._pos = { x, y, z };
         }
 
         let x: number, y: number;

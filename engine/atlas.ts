@@ -9,6 +9,7 @@ export class Atlas {
     private _dynamicTextureRect: any;
     public readonly uuid: string;
     // private _innerSpriteFrames: SpriteFrame[];
+    private _temp: { x: number, y: number, w: number, h: number, rotate: boolean, texture: DynamicAtlasTexture } = { x: 0, y: 0, w: 0, h: 0, rotate: false, texture: null };
 
     constructor(width: number, height: number, uuid?: string) {
         if (no.notUseDynamicAtlas) {
@@ -29,14 +30,13 @@ export class Atlas {
     public getPackedFrame(uuid: string): PackedFrameData | null {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
-            return {
-                x: info.x,
-                y: info.y,
-                w: info.w,
-                h: info.h,
-                rotate: info.rotate,
-                texture: this._texture
-            };
+            this._temp.x = info.x;
+            this._temp.y = info.y;
+            this._temp.w = info.w;
+            this._temp.h = info.h;
+            this._temp.rotate = info.rotate;
+            this._temp.texture = this._texture;
+            return this._temp;
         }
         return null;
     }
@@ -64,33 +64,28 @@ export class Atlas {
 
         const plat_not_mini_game = sys.platform == sys.Platform.ANDROID || sys.platform == sys.Platform.IOS;
 
-        let needRotated = plat_not_mini_game && canRotate && frameSize.width > frameSize.height;
-        let width = needRotated ? frameSize.height : frameSize.width,
-            height = needRotated ? frameSize.width : frameSize.height;
+        this._temp.rotate = plat_not_mini_game && canRotate && frameSize.width > frameSize.height;
+        this._temp.w = this._temp.rotate ? frameSize.height : frameSize.width;
+        this._temp.h = this._temp.rotate ? frameSize.width : frameSize.height;
 
-        let p = this._maxRect.find(width, height);
+        let p = this._maxRect.find(this._temp.w, this._temp.h);
         if (!p) {
             noSpace();
             return null;
         }
 
-        let x = p.x, y = p.y;
-        this.setSpriteFrameTextureRect(_uuid, x, y, width, height, needRotated);
-        this.drawImageAt(spriteFrame, x, y, needRotated);
+        this._temp.x = p.x;
+        this._temp.y = p.y;
+        this._temp.texture = this._texture;
+        this.setSpriteFrameTextureRect(_uuid, p.x, p.y, this._temp.w, this._temp.h, this._temp.rotate);
+        this.drawImageAt(spriteFrame, p.x, p.y, this._temp.rotate);
         // if (plat_not_mini_game)
         //     this.drawImageAt(spriteFrame, x, y, needRotated);
         // else {
         //     if (!spriteFrame.texture['image']?.['data']) return null;
         //     this.drawTextureAt(spriteFrame, x, y);
         // }
-        return {
-            x: x,
-            y: y,
-            w: width,
-            h: height,
-            rotate: needRotated,
-            texture: this._texture
-        };
+        return this._temp;
     }
 
     public drawTexture(texture: Texture2D): PackedFrameData {
@@ -99,50 +94,41 @@ export class Atlas {
         if (info) {
             return null;
         }
-        let rotate = false;
-        let width = rotate ? texture.height : texture.width;
-        let height = rotate ? texture.width : texture.height;
-        let p = this._maxRect.find(width, height);
+        this._temp.rotate = false;
+        this._temp.w = this._temp.rotate ? texture.height : texture.width;
+        this._temp.h = this._temp.rotate ? texture.width : texture.height;
+        let p = this._maxRect.find(this._temp.w, this._temp.h);
         if (!p) return null;
-        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, width, height, false);
+        this.setSpriteFrameTextureRect(texture._uuid, p.x, p.y, this._temp.w, this._temp.h, false);
         this._setSubImage(texture._mipmaps[0], p.x, p.y);
-        return {
-            x: p.x,
-            y: p.y,
-            w: width,
-            h: height,
-            rotate: false,
-            texture: this._texture
-        };
+        this._temp.x = p.x;
+        this._temp.y = p.y;
+        this._temp.texture = this._texture;
+        return this._temp;
     }
 
     public drawCanvas(canvas: HTMLCanvasElement, uuid: string): PackedFrameData {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
-            return {
-                x: info.x,
-                y: info.y,
-                w: info.w,
-                h: info.h,
-                rotate: info.rotate,
-                texture: this._texture
-            };
+            this._temp.x = info.x;
+            this._temp.y = info.y;
+            this._temp.w = info.w;
+            this._temp.h = info.h;
+            this._temp.rotate = info.rotate;
+            this._temp.texture = this._texture;
+            return this._temp;
         }
-        let rotate = false;
-        let width = rotate ? canvas.height : canvas.width;
-        let height = rotate ? canvas.width : canvas.height;
-        let p = this._maxRect.find(width, height);
+        this._temp.rotate = false;
+        this._temp.w = this._temp.rotate ? canvas.height : canvas.width;
+        this._temp.h = this._temp.rotate ? canvas.width : canvas.height;
+        let p = this._maxRect.find(this._temp.w, this._temp.h);
         if (!p) return null;
-        this.setSpriteFrameTextureRect(uuid, p.x, p.y, width, height, rotate);
+        this.setSpriteFrameTextureRect(uuid, p.x, p.y, this._temp.w, this._temp.h, this._temp.rotate);
         this._setSubImage(canvas, p.x, p.y);
-        return {
-            x: p.x,
-            y: p.y,
-            w: width,
-            h: height,
-            rotate: false,
-            texture: this._texture
-        };
+        this._temp.x = p.x;
+        this._temp.y = p.y;
+        this._temp.texture = this._texture;
+        return this._temp;
     }
 
     public setSpriteFrameTextureRect(uuid: string, x: number, y: number, w: number, h: number, rotate: boolean) {

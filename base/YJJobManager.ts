@@ -294,15 +294,15 @@ export class YJJobManager {
         return false;
     }
 
+    private _performanceStatsCache: { averageFrameTime: number, currentFrameBudget: number, taskCount: number } = { averageFrameTime: 0, currentFrameBudget: 0, taskCount: 0 };
     /**
      * 获取性能统计信息
      */
     public getPerformanceStats() {
-        return {
-            averageFrameTime: this.metricsHistory.reduce((a, b) => a + b, 0) / this.metricsHistory.length,
-            currentFrameBudget: this.frameTimeBudget,
-            taskCount: Array.from(this.taskQueue.values()).reduce((sum, tasks) => sum + tasks.length, 0)
-        };
+        this._performanceStatsCache.averageFrameTime = this.metricsHistory.reduce((a, b) => a + b, 0) / this.metricsHistory.length;
+        this._performanceStatsCache.currentFrameBudget = this.frameTimeBudget;
+        this._performanceStatsCache.taskCount = Array.from(this.taskQueue.values()).reduce((sum, tasks) => sum + tasks.length, 0);
+        return this._performanceStatsCache;
     }
 
     private performanceStatsInterval;

@@ -1,3 +1,4 @@
+import { FixedSizeArray } from "./FixedSizeArray";
 import {
     AnimationClip, Asset, AudioClip, BufferAsset, Color, Component, DEBUG, EDITOR, EffectAsset, EventHandler, Font, JsonAsset, Material, Prefab, Quat,
     Rect, Scheduler, Size, SpriteAtlas, SpriteFrame, TextAsset, Texture2D, UIOpacity, UITransform, Vec2, Vec3, WECHAT, assetManager, ccclass, color,
@@ -147,7 +148,7 @@ export namespace no {
         //         v = c == 'x' ? r : (r & 0x3 | 0x8);
         //     return v.toString(16);
         // });
-        return ++_uuidCount + '';
+        return `${++_uuidCount}`;
     }
 
     const _scheduler: Scheduler = director.getScheduler();
@@ -1917,6 +1918,7 @@ export namespace no {
         }
     }
 
+    const _angleToCache: { angle: number, radian: number } = { angle: 0, radian: 0 };
     /**
      * 计算两点之间的角度（以p1为圆心，从水平正X轴到p2的夹角）
      * @param p1 圆心/起点坐标（支持Vec2或Vec3类型）
@@ -1935,12 +1937,15 @@ export namespace no {
      * console.log(no.angleTo(from, to).radian); // 输出1.5708（π/2）
      */
     export function angleTo(p1: Vec2 | Vec3 | { x: number, y: number }, p2: Vec2 | Vec3 | { x: number, y: number }): { angle: number, radian: number } {
-        if (p1 == null || p2 == null) return { angle: 0, radian: 0 };
+        if (p1 == null || p2 == null) {
+            _angleToCache.angle = 0;
+            _angleToCache.radian = 0;
+            return _angleToCache;
+        }
         const b = Math.atan2(p2.y - p1.y, p2.x - p1.x);
-        return {
-            'angle': radianToAngle(b),
-            'radian': b
-        };
+        _angleToCache.angle = radianToAngle(b);
+        _angleToCache.radian = b;
+        return _angleToCache;
     }
 
     /**
@@ -1976,6 +1981,21 @@ export namespace no {
      */
     export function distance(p1: Vec2 | Vec3 | { x: number, y: number }, p2: Vec2 | Vec3 | { x: number, y: number }): number {
         return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+
+    /**
+     * 粗略判断两个点是否靠近
+     * @param pos1 点1坐标
+     * @param pos2 点2坐标
+     * @param radius1 点1的检测半径
+     * @param radius2 点2的检测半径
+     * @returns 是否在范围内
+     */
+    export function isNear(pos1: { x: number, y: number }, pos2: { x: number, y: number }, radius1: number, radius2: number) {
+        return !(pos2.x < pos1.x - radius1 - radius2
+            || pos2.x > pos1.x + radius1 + radius2
+            || pos2.y < pos1.y - radius1 - radius2
+            || pos2.y > pos1.y + radius1 + radius2);
     }
 
     /**
@@ -2199,6 +2219,7 @@ export namespace no {
         return Math.floor(t.getTime() * .001);
     }
 
+    const _parseSecondsCache: { d: number, h: number, M: number, s: number } = { d: 0, h: 0, M: 0, s: 0 };
     /**
      * 将秒数解析为日时分秒
      * @param v 总秒数
@@ -2212,13 +2233,14 @@ export namespace no {
      * console.log(`剩余${d}天${h}小时`);
      */
     export function parseSeconds(v: number): { d: number, h: number, M: number, s: number } {
-        let d = floor(v / 86400);
-        let h = floor(v / 3600) % 24;
-        let M = floor((v % 3600) / 60);
-        let s = v % 60;
-        return { d: d, h: h, M: M, s: s };
+        _parseSecondsCache.d = floor(v / 86400);
+        _parseSecondsCache.h = floor(v / 3600) % 24;
+        _parseSecondsCache.M = floor((v % 3600) / 60);
+        _parseSecondsCache.s = v % 60;
+        return _parseSecondsCache;
     }
 
+    const _parseTimestampCache: { y: number, m: number, d: number, h: number, M: number, s: number } = { y: 0, m: 0, d: 0, h: 0, M: 0, s: 0 };
     /**
      * 将时间戳解析为年月日时分秒
      * @param v 时间戳总秒数
@@ -2233,13 +2255,13 @@ export namespace no {
      */
     export function parseTimestamp(v: number): { y: number, m: number, d: number, h: number, M: number, s: number } {
         let t = new Date(v * 1000);
-        let y: any = t.getFullYear();
-        let m: any = t.getMonth() + 1;
-        let d: any = t.getDate();
-        let h: any = t.getHours();
-        let M: any = t.getMinutes();
-        let s: any = t.getSeconds();
-        return { y: y, m: m, d: d, h: h, M: M, s: s };
+        _parseTimestampCache.y = t.getFullYear();
+        _parseTimestampCache.m = t.getMonth() + 1;
+        _parseTimestampCache.d = t.getDate();
+        _parseTimestampCache.h = t.getHours();
+        _parseTimestampCache.M = t.getMinutes();
+        _parseTimestampCache.s = t.getSeconds();
+        return _parseTimestampCache;
     }
 
     /**
@@ -3790,13 +3812,12 @@ export namespace no {
      *   .to(1, { position: no.v3(0, 100, 0) })
      *   .start();
      */
-    export function position(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): { x: number, y: number, z: number } | null {
+    export function position(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): Vec3 {
         if (!node) return;
         if (pos != undefined) {
             node.setPosition(pos.x, pos.y, pos.z);
         } else {
-            const { x, y, z } = node.position;
-            return { x, y, z }; // 返回克隆避免外部修改影响实际坐标
+            return node.position;
         }
     }
 
@@ -3978,11 +3999,11 @@ export namespace no {
      * // 获取当前锚点用于计算
      * const currentAnchor = no.anchor(this.draggableItem);
      */
-    export function anchor(node: Node, ...args: number[]): { x: number, y: number } {
+    export function anchor(node: Node, ...args: number[]): Vec2 {
         if (!node) return;
         let t = node.getComponent(UITransform);
         if (args != undefined && args.length > 0) t.setAnchorPoint(args[0], args[1] == null ? args[0] : args[1]);
-        return { x: t.anchorX, y: t.anchorY };
+        else return t.anchorPoint;
     }
 
     /**
@@ -4759,18 +4780,6 @@ export namespace no {
                 this._json.setKV(key, value);
                 return false;
             });
-        }
-
-        /**
-         * 获取全局临时数据对象
-         * @param key - 临时数据键名
-         * @returns 包含键值对的对象
-         * @example
-         * // 获取临时会话数据
-         * const tempData = dataCache.getTmpData('combat_session');
-         */
-        public getTmpData(key: string): any {
-            return { [key]: this.getTmpValue(key) };
         }
 
         /**
@@ -5716,6 +5725,7 @@ export namespace no {
             });
         }
 
+        private _assetPathCache: { bundle: string, file: string, type: typeof Asset, path: string } = { bundle: '', file: '', type: null, path: '' };
         /**
          * 解析资源路径获取bundle名称、文件名及资源类型
          * @param path - 完整资源路径，格式应为包含assets目录的路径（如：'assets/bundleName/.../fileName.ext'）
@@ -5746,28 +5756,33 @@ export namespace no {
             path = path.split('/assets/').pop();
             let p = path.split('/');
 
+            this._assetPathCache.bundle = '';
+            this._assetPathCache.file = '';
+            this._assetPathCache.type = null;
+            this._assetPathCache.path = '';
+
             // 遍历路径层级查找有效bundle名称
-            let bundle: string;
             for (let i = 0, n = p.length; i < n; i++) {
                 const b = p.shift();
                 if (assetManager.bundles.has(b)) {
-                    bundle = b;
+                    this._assetPathCache.bundle = b;
                     break;
                 }
             }
 
             // 未找到有效bundle时返回空对象
-            if (!bundle) return {};
+            if (!this._assetPathCache.bundle) {
+                return this._assetPathCache;
+            }
 
             // 解析文件名和扩展名
             let file = p.pop().split('.');
-            let fileType = file.pop(),
-                fileName = file.join('.') || fileType;
+            let fileType = file.pop();
+            this._assetPathCache.file = file.join('.') || fileType;
 
             // 构建返回对象基础信息
-            let a: AssetPath = { bundle: bundle, file: fileName };
-            p[p.length] = fileName;
-            a.path = p.join('/');
+            p[p.length] = this._assetPathCache.file;
+            this._assetPathCache.path = p.join('/');
 
             // 根据文件扩展名确定资源类型
             let s: any;
@@ -5790,9 +5805,9 @@ export namespace no {
                         s = SpriteAtlas;
                         break;
                 }
-                a.type = s;
+                this._assetPathCache.type = s;
             }
-            return a;
+            return this._assetPathCache;
         }
 
         /**
@@ -8370,6 +8385,7 @@ export namespace no {
         close?: boolean,
     };
 
+    const _createGraphicLineDataCache: GraphicsData = { points: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建线段路径数据
      * @param d 线段配置参数
@@ -8386,20 +8402,22 @@ export namespace no {
      *   strokeColor: '#FF0000'
      * });
      */
-    export function createGraphicLineData(d: { points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        let ps: number[] = [];
-        for (let i = 0; i < d.points.length; i++) {
-            ps[ps.length] = d.points[i].x;
-            ps[ps.length] = d.points[i].y;
+    export function createGraphicLineData(points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicLineDataCache.points = [];
+        _createGraphicLineDataCache.lineWidth = 0;
+        _createGraphicLineDataCache.strokeColor = '';
+        _createGraphicLineDataCache.fillColor = '';
+        for (let i = 0; i < points.length; i++) {
+            _createGraphicLineDataCache.points[_createGraphicLineDataCache.points.length] = points[i].x;
+            _createGraphicLineDataCache.points[_createGraphicLineDataCache.points.length] = points[i].y;
         }
-        return {
-            points: ps,
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+        _createGraphicLineDataCache.lineWidth = lineWidth || 0;
+        _createGraphicLineDataCache.strokeColor = strokeColor;
+        _createGraphicLineDataCache.fillColor = fillColor;
+        return _createGraphicLineDataCache;
     }
 
+    const _createGraphicArcDataCache: GraphicsData = { points: [], radius: [], startEndAngles: [], counterclockwise: false, lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制圆弧路径的数据
      * @param d 圆弧配置参数
@@ -8433,18 +8451,18 @@ export namespace no {
      *   close: true
      * });
      */
-    export function createGraphicArcData(d: { center: Vec2, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        return {
-            points: [d.center.x, d.center.y],
-            radius: [d.radius],
-            startEndAngles: [d.startAngle, d.endAngle],
-            counterclockwise: d.counterclockwise || false,
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+    export function createGraphicArcData(center: Vec2, radius: number, startAngle: number, endAngle: number, counterclockwise?: boolean, lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicArcDataCache.points = [center.x, center.y];
+        _createGraphicArcDataCache.radius = [radius];
+        _createGraphicArcDataCache.startEndAngles = [startAngle, endAngle];
+        _createGraphicArcDataCache.counterclockwise = counterclockwise || false;
+        _createGraphicArcDataCache.lineWidth = lineWidth || 0;
+        _createGraphicArcDataCache.strokeColor = strokeColor;
+        _createGraphicArcDataCache.fillColor = fillColor;
+        return _createGraphicArcDataCache;
     }
 
+    const _createGraphicEllipseDataCache: GraphicsData = { points: [], radius: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制椭圆路径的数据
      * @param d 椭圆配置参数
@@ -8473,16 +8491,16 @@ export namespace no {
      *   fillColor: '#00FF00'
      * });
      */
-    export function createGraphicEllipseData(d: { center: Vec2, rx: number, ry: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        return {
-            points: [d.center.x, d.center.y],
-            radius: [d.rx, d.ry],
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+    export function createGraphicEllipseData(center: Vec2, rx: number, ry: number, lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicEllipseDataCache.points = [center.x, center.y];
+        _createGraphicEllipseDataCache.radius = [rx, ry];
+        _createGraphicEllipseDataCache.lineWidth = lineWidth || 0;
+        _createGraphicEllipseDataCache.strokeColor = strokeColor;
+        _createGraphicEllipseDataCache.fillColor = fillColor;
+        return _createGraphicEllipseDataCache;
     }
 
+    const _createGraphicCircleDataCache: GraphicsData = { points: [], radius: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制圆路径的数据
      * @param center 
@@ -8492,16 +8510,16 @@ export namespace no {
      * @param fillColor 
      * @returns 
      */
-    export function createGraphicCircleData(d: { center: Vec2, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        return {
-            points: [d.center.x, d.center.y],
-            radius: [d.r],
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+    export function createGraphicCircleData(center: Vec2, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicCircleDataCache.points = [center.x, center.y];
+        _createGraphicCircleDataCache.radius = [r];
+        _createGraphicCircleDataCache.lineWidth = lineWidth || 0;
+        _createGraphicCircleDataCache.strokeColor = strokeColor;
+        _createGraphicCircleDataCache.fillColor = fillColor;
+        return _createGraphicCircleDataCache;
     }
 
+    const _createGraphicRectDataCache: GraphicsData = { points: [], size: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制矩形路径的数据
      * @param d.x 矩形左上角X坐标
@@ -8528,16 +8546,16 @@ export namespace no {
      *   fillColor: '#0000FF'
      * });
      */
-    export function createGraphicRectData(d: { x: number, y: number, width: number, height: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        return {
-            points: [d.x, d.y],
-            size: [d.width, d.height],
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+    export function createGraphicRectData(x: number, y: number, width: number, height: number, lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicRectDataCache.points = [x, y];
+        _createGraphicRectDataCache.size = [width, height];
+        _createGraphicRectDataCache.lineWidth = lineWidth || 0;
+        _createGraphicRectDataCache.strokeColor = strokeColor;
+        _createGraphicRectDataCache.fillColor = fillColor;
+        return _createGraphicRectDataCache;
     }
 
+    const _createGraphicRoundRectDataCache: GraphicsData = { points: [], size: [], radius: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制圆角矩形路径的数据
      * @param d.x 矩形左上角X坐标
@@ -8567,17 +8585,17 @@ export namespace no {
      *   fillColor: '#FFA500'
      * });
      */
-    export function createGraphicRoundRectData(d: { x: number, y: number, width: number, height: number, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
-        return {
-            points: [d.x, d.y],
-            size: [d.width, d.height],
-            radius: [d.r],
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+    export function createGraphicRoundRectData(x: number, y: number, width: number, height: number, r: number, lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
+        _createGraphicRoundRectDataCache.points = [x, y];
+        _createGraphicRoundRectDataCache.size = [width, height];
+        _createGraphicRoundRectDataCache.radius = [r];
+        _createGraphicRoundRectDataCache.lineWidth = lineWidth || 0;
+        _createGraphicRoundRectDataCache.strokeColor = strokeColor;
+        _createGraphicRoundRectDataCache.fillColor = fillColor;
+        return _createGraphicRoundRectDataCache;
     }
 
+    const _createGraphicBezierDataCache: GraphicsData = { points: [], lineWidth: 0, strokeColor: '', fillColor: '' };
     /**
      * 创建绘制贝塞尔曲线路径的数据
      * @param d.points 控制点坐标数组（格式说明）：
@@ -8612,20 +8630,20 @@ export namespace no {
      *   strokeColor: '#00FFFF'
      * });
      */
-    export function createBezierData(d: { points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string }): GraphicsData {
+    export function createBezierData(points: Vec2[] | { x: number, y: number }[], lineWidth?: number, strokeColor?: string, fillColor?: string): GraphicsData {
         let ps: number[] = [];
-        for (let i = 0; i < d.points.length; i++) {
-            ps[ps.length] = d.points[i].x;
-            ps[ps.length] = d.points[i].y;
+        for (let i = 0; i < points.length; i++) {
+            ps[ps.length] = points[i].x;
+            ps[ps.length] = points[i].y;
         }
-        return {
-            points: ps,
-            lineWidth: d.lineWidth || 0,
-            strokeColor: d.strokeColor,
-            fillColor: d.fillColor
-        };
+        _createGraphicBezierDataCache.points = ps;
+        _createGraphicBezierDataCache.lineWidth = lineWidth || 0;
+        _createGraphicBezierDataCache.strokeColor = strokeColor;
+        _createGraphicBezierDataCache.fillColor = fillColor;
+        return _createGraphicBezierDataCache;
     }
 
+    const _getGraphicUVInWorldCache: { minX: number, minY: number, maxX: number, maxY: number } = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
     /**
      * 计算自定义图形在屏幕空间中的UV范围（归一化坐标，左上角为原点）
      * @param cx 图形中心点x（本地坐标系）
@@ -8639,12 +8657,20 @@ export namespace no {
      * const buttonUV = getGraphicUVInWorld(0, 0, 200, 50, buttonNode);
      * // 结果可能为：[0.3, 0.8, 0.5, 0.85] 表示占据屏幕横向30%-50%，纵向80%-85%区域
      */
-    export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): number[] {
+    export function getGraphicUVInWorld(cx: number, cy: number, width: number, height: number, graphicsNode: Node): { minX: number, minY: number, maxX: number, maxY: number } {
+        _getGraphicUVInWorldCache.minX = 0;
+        _getGraphicUVInWorldCache.minY = 0;
+        _getGraphicUVInWorldCache.maxX = 0;
+        _getGraphicUVInWorldCache.maxY = 0;
         let worldSize = view.getVisibleSize();
         // 世界坐标系原点为左下角，需要转换为左上角为原点的UV坐标系
         let p1 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx - width / 2, cy - height / 2));
         let p2 = graphicsNode.getComponent(UITransform).convertToWorldSpaceAR(v3(cx + width / 2, cy + height / 2));
-        return [p1.x / worldSize.width, 1 - p2.y / worldSize.height, p2.x / worldSize.width, 1 - p1.y / worldSize.height];
+        _getGraphicUVInWorldCache.minX = p1.x / worldSize.width;
+        _getGraphicUVInWorldCache.minY = 1 - p2.y / worldSize.height;
+        _getGraphicUVInWorldCache.maxX = p2.x / worldSize.width;
+        _getGraphicUVInWorldCache.maxY = 1 - p1.y / worldSize.height;
+        return _getGraphicUVInWorldCache;
     }
 
     /**
@@ -10824,7 +10850,7 @@ export namespace no {
      * nodePool.put('enemy', deadEnemyNode);
      */
     export class NodePool {
-        private cacheMap: Map<string, { o: Node, t: number }[]>;
+        private cacheMap: Map<string, FixedSizeArray<Node>>;
         private static _ins: NodePool = null;
 
         /** 获取缓存池单例实例 */
@@ -10834,13 +10860,13 @@ export namespace no {
         }
 
         constructor() {
-            this.cacheMap = new Map<string, { o: Node, t: number }[]>();
+            this.cacheMap = new Map<string, FixedSizeArray<Node>>();
         }
 
         /**
          * 从缓存池获取节点对象
          * @param type - 节点类型标识符
-         * @returns 可用节点对象或null
+         * @returns 可用节点对象或null,需要手动设置父节点
          * @example
          * // 获取UI弹窗节点
          * const popup = nodePool.get('settingsPopup');
@@ -10852,8 +10878,8 @@ export namespace no {
                     return null;
                 }
                 // this._visible(cache.o, true);
-                visible(cache.o, true);
-                return cache.o;
+                visible(cache, true);
+                return cache;
             }
             return null;
         }
@@ -10869,18 +10895,20 @@ export namespace no {
         public put(type: string, node: Node) {
             // this._visible(node, false);
             visible(node, false);
+            //从节点树中移除，减少渲染遍历开销
+            node.parent = null;
             if (!this.cacheMap.has(type)) {
-                this.cacheMap.set(type, []);
+                this.cacheMap.set(type, new FixedSizeArray<Node>(100));
             }
-            this.cacheMap.get(type).push({ o: node, t: Date.now() });
+            this.cacheMap.get(type).push(node);
         }
 
         /** 根据类型清空缓存节点 */
         public clearByType(type: string) {
             if (this.cacheMap.has(type)) {
                 const v = this.cacheMap.get(type);
-                for (let i = 0; i < v.length; i++) {
-                    v[i].o.destroy();
+                for (let i = 0; i < v.length(); i++) {
+                    v[i]?.destroy();
                 }
                 this.cacheMap.delete(type);
             }
@@ -10889,9 +10917,7 @@ export namespace no {
         /** 清空所有缓存节点 */
         public clear() {
             this.cacheMap.forEach((v, k) => {
-                for (let i = 0; i < v.length; i++) {
-                    v[i].o.destroy();
-                }
+                this.clearByType(k)
             });
             this.cacheMap.clear();
         }
@@ -10930,6 +10956,53 @@ export namespace no {
     /** 全局节点缓存池实例 */
     export const nodePool = NodePool.ins();
     //////////////////node缓存池//////////////////
+
+
+    //////////////////数据object缓存池//////////////////
+
+    export class DataObjectPool {
+        private cacheMap: Map<string, FixedSizeArray<any>>;
+        private static _ins: DataObjectPool = null;
+
+        public static ins(): DataObjectPool {
+            if (!this._ins) this._ins = new DataObjectPool();
+            return this._ins;
+        }
+
+        constructor() {
+            this.cacheMap = new Map<string, FixedSizeArray<any>>();
+        }
+
+        public get(type: string): any {
+            if (this.cacheMap.has(type)) {
+                return this.cacheMap.get(type).shift();
+            }
+            return null;
+        }
+
+        public put(type: string, data: any) {
+            if (!this.cacheMap.has(type)) {
+                this.cacheMap.set(type, new FixedSizeArray<any>(100));
+            }
+            this.cacheMap.get(type).push(data);
+        }
+
+        public clearByType(type: string) {
+            if (this.cacheMap.has(type)) {
+                this.cacheMap.get(type).clear();
+                this.cacheMap.delete(type);
+            }
+        }
+
+        public clear() {
+            this.cacheMap.forEach((v, k) => {
+                this.clearByType(k);
+            });
+            this.cacheMap.clear();
+        }
+
+    }
+    //////////////////数据object缓存池//////////////////
 
     /**
      * 获取对象精确类型（比typeof更准确识别包装对象和null）
@@ -11161,13 +11234,12 @@ export namespace no {
      * @returns 旋转后的点
      */
     export function rotatePoint(point: { x: number, y: number }, radian: number) {
-        if (radian == 0) return { x: point.x, y: point.y };
+        if (radian == 0) return point;
         const cos = Math.cos(radian);
         const sin = Math.sin(radian);
-        return {
-            x: point.x * cos - point.y * sin,
-            y: point.x * sin + point.y * cos
-        }
+        point.x = point.x * cos - point.y * sin;
+        point.y = point.x * sin + point.y * cos;
+        return point;
     }
 
     /**
@@ -11178,15 +11250,12 @@ export namespace no {
      * @returns 旋转后的点
      */
     export function rotatePointByCenter(point: { x: number, y: number }, center: { x: number, y: number }, radian: number) {
-        const translated = {
-            x: point.x - center.x,
-            y: point.y - center.y
-        }
-        const rotated = rotatePoint(translated, radian);
-        return {
-            x: rotated.x + center.x,
-            y: rotated.y + center.y
-        }
+        point.x -= center.x;
+        point.y -= center.y;
+        const rotated = rotatePoint(point, radian);
+        point.x += center.x;
+        point.y += center.y;
+        return point;
     }
 
     /**
@@ -11205,7 +11274,15 @@ export namespace no {
     }
 
 
-
+    const _calculateProjectileMotionCache: {
+        timeToPeak: number,
+        maxHeight: number,
+        totalTime: number,
+        range: number,
+        horizontalSpeed: number,
+        verticalSpeed: number,
+        peakVelocity: number
+    } = { timeToPeak: 0, maxHeight: 0, totalTime: 0, range: 0, horizontalSpeed: 0, verticalSpeed: 0, peakVelocity: 0 };
     /**
      * 计算斜抛运动参数（考虑重力加速度）
      * @param initialSpeed 初速度（单位：米/秒）
@@ -11240,32 +11317,25 @@ export namespace no {
         const angleRad = no.angleToRadian(angle);
 
         // 分解速度分量
-        const horizontalSpeed = initialSpeed * Math.cos(angleRad);
-        const verticalSpeed = initialSpeed * Math.sin(angleRad);
+        _calculateProjectileMotionCache.horizontalSpeed = initialSpeed * Math.cos(angleRad);
+        _calculateProjectileMotionCache.verticalSpeed = initialSpeed * Math.sin(angleRad);
 
         // 计算到达最高点的时间（垂直速度减为0的时间）
-        const timeToPeak = Math.abs(verticalSpeed / gravity);
+        _calculateProjectileMotionCache.timeToPeak = Math.abs(_calculateProjectileMotionCache.verticalSpeed / gravity);
 
         // 计算最大高度（使用运动学公式：h = v0*t - 0.5*g*t²）
-        const maxHeight = verticalSpeed * timeToPeak - 0.5 * gravity * timeToPeak * timeToPeak;
+        _calculateProjectileMotionCache.maxHeight = _calculateProjectileMotionCache.verticalSpeed * _calculateProjectileMotionCache.timeToPeak - 0.5 * gravity * _calculateProjectileMotionCache.timeToPeak * _calculateProjectileMotionCache.timeToPeak;
 
         // 计算总飞行时间（从发射到落地的时间）
-        const totalTime = maxDistance ? Math.abs(maxDistance / horizontalSpeed) : 0;
+        _calculateProjectileMotionCache.totalTime = maxDistance ? Math.abs(maxDistance / _calculateProjectileMotionCache.horizontalSpeed) : 0;
 
         // 计算水平射程
-        const range = horizontalSpeed * timeToPeak * 2;
+        _calculateProjectileMotionCache.range = _calculateProjectileMotionCache.horizontalSpeed * _calculateProjectileMotionCache.timeToPeak * 2;
 
-        return {
-            timeToPeak,
-            maxHeight,
-            totalTime,
-            range,
-            horizontalSpeed,
-            verticalSpeed,
-            peakVelocity: horizontalSpeed // 最高点时只有水平速度
-        };
+        return _calculateProjectileMotionCache;
     }
 
+    const _calculateProjectileMotionAtTimeCache: { x: number, y: number, angleChange: number, horizontalDistance: number, verticalDistance: number } = { x: 0, y: 0, angleChange: 0, horizontalDistance: 0, verticalDistance: 0 };
     /**
      * 计算斜抛物体在指定时间的运动参数
      * @param initialSpeed 初速度（单位：米/秒）
@@ -11274,16 +11344,16 @@ export namespace no {
      * @param gravity 重力加速度（单位：米/秒²，默认9.8）
      */
     export function calculateProjectileMotionAtTime(horizontalSpeed: number, verticalSpeed: number, time: number, gravity: number) {
-        const x = horizontalSpeed * time;
-        const y = verticalSpeed * time - 0.5 * gravity * time * time;
+        _calculateProjectileMotionAtTimeCache.x = horizontalSpeed * time;
+        _calculateProjectileMotionAtTimeCache.y = verticalSpeed * time - 0.5 * gravity * time * time;
         const newVerticalSpeed = verticalSpeed - gravity * time;
 
         //计算角度变化
-        let angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
-        if (horizontalSpeed < 0) angleChange += 180;
-        const horizontalDistance = horizontalSpeed * time;
-        const verticalDistance = verticalSpeed * time - 0.5 * gravity * time * time;
-        return { x, y, angleChange, horizontalDistance, verticalDistance };
+        _calculateProjectileMotionAtTimeCache.angleChange = Math.atan(newVerticalSpeed / horizontalSpeed) * 180 / Math.PI;
+        if (horizontalSpeed < 0) _calculateProjectileMotionAtTimeCache.angleChange += 180;
+        _calculateProjectileMotionAtTimeCache.horizontalDistance = horizontalSpeed * time;
+        _calculateProjectileMotionAtTimeCache.verticalDistance = verticalSpeed * time - 0.5 * gravity * time * time;
+        return _calculateProjectileMotionAtTimeCache;
     }
 
     /**
@@ -11353,14 +11423,18 @@ export namespace no {
         }
     }
 
+    const _viewSizeCache: { width: number, height: number } = { width: 0, height: 0 };
     /**
      * 获取视口大小
      * @returns 视口大小
      */
     export function viewSize() {
-        const size = screen.windowSize;
-        const ratio = screen.devicePixelRatio;
-        return { width: size.width / ratio, height: size.height / ratio };
+        // const ratio = screen.devicePixelRatio;
+        // _viewSizeCache.width = screen.windowSize.width / ratio;
+        // _viewSizeCache.height = screen.windowSize.height / ratio;
+        _viewSizeCache.width = view.getDesignResolutionSize().width;
+        _viewSizeCache.height = view.getDesignResolutionSize().height;
+        return _viewSizeCache;
     }
 }
 no.addToWindowForDebug('no', no);

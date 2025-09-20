@@ -218,13 +218,13 @@ export class SetMultipleList extends HackUi {
     private scrollViewContent: Node;
     private scrollViewSize: Size;
 
-    private templateMap: { [type: string]: { size: Size, anchor: { x: number, y: number }, showNum: number } };
+    private templateMap: { [type: string]: { size: Size, showNum: number } };
     /**
      * 模板尺寸映射表
      * @example
      * {
-     *   'text': { size: cc.size(200,100), anchor: cc.v2(0,1), showNum: 5 },
-     *   'image': { size: cc.size(300,150), anchor: cc.v2(0,1), showNum: 3 }
+     *   'text': { size: cc.size(200,100),  showNum: 5 },
+     *   'image': { size: cc.size(300,150),  showNum: 3 }
      * }
      */
 
@@ -391,7 +391,6 @@ export class SetMultipleList extends HackUi {
             // 存储模板元数据
             this.templateMap[t.type] = {
                 size: t.itemSize,          // 模板尺寸
-                anchor: no.anchor(t.template), // 模板锚点
                 showNum: t.showMax         // 最大显示数量
             };
         }
@@ -469,21 +468,21 @@ export class SetMultipleList extends HackUi {
         no.size(this.content, s);
 
         // 处理内容容器位置
-        let p = no.position(this.content);
+        let { x, y } = no.position(this.content);
         if (this.autoScrollBack) {
             // 自动回滚到起始位置
-            p.x = 0;
-            p.y = 0;
-            no.position(this.content, p);
+            x = 0;
+            y = 0;
+            this.content.setPosition(x, y);
             this.lastIndex = 0;
         } else {
             // 保持当前滚动位置（限制在合理范围内）
             if (this.isVertical) {
-                p.y = Math.min(p.y, Math.max(0, s.height - this.scrollViewSize.height));
+                y = Math.min(y, Math.max(0, s.height - this.scrollViewSize.height));
             } else {
-                p.x = Math.max(p.x, Math.min(0, this.scrollViewSize.width - s.width));
+                x = Math.max(x, Math.min(0, this.scrollViewSize.width - s.width));
             }
-            no.position(this.content, p);
+            this.content.setPosition(x, y);
         }
 
         // 添加新的滚动事件监听

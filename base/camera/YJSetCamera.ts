@@ -18,7 +18,7 @@ export class YJSetCamera extends Component {
     onLoad(): void {
         const camera = this.getComponent(Camera);
         if (this.orthoHeight) {
-            camera.orthoHeight = no.viewSize().height * (this.halfScreen ? .5 : 1);
+            camera.orthoHeight = no.viewSize().height * (this.halfScreen ? .25 : .5);
         }
     }
 }

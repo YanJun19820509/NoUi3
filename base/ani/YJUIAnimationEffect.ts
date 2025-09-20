@@ -761,7 +761,8 @@ class AnimationEffect {
      */
     private jump(node: Node) {
         if (!node['__yj_ui_pos']) {
-            node['__yj_ui_pos'] = no.position(node);
+            const { x, y } = no.position(node);
+            node['__yj_ui_pos'] = { x, y };
         }
         const pos = node['__yj_ui_pos'];
         return [{
@@ -800,7 +801,8 @@ class AnimationEffect {
      */
     private shake(node: Node) {
         if (!node['__yj_ui_pos']) {
-            node['__yj_ui_pos'] = no.position(node);
+            const { x, y } = no.position(node);
+            node['__yj_ui_pos'] = { x, y };
         }
         const pos = node['__yj_ui_pos'];
         const n = Math.ceil(this.duration / .1) - 1;

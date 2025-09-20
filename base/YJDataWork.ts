@@ -159,7 +159,6 @@ export class YJDataWork extends Component {
      * }
      */
     protected onLoad() {
-        YJDataWorkManager.ins().add(this);
         this._data.needUpdateDataChangeEvent = false;
         this._loaded = true;
         // this.init();
@@ -177,7 +176,12 @@ export class YJDataWork extends Component {
      */
     onEnable() {
         if (EDITOR) return;
+        YJDataWorkManager.ins().add(this);
         this.afterInit();
+    }
+
+    onDisable(): void {
+        YJDataWorkManager.ins().remove(this);
     }
 
     /**
