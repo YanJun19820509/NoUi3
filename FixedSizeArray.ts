@@ -1,3 +1,5 @@
+import { no } from "./no";
+
 /**
  * 固定大小数组
  * @example
@@ -66,6 +68,25 @@ export class FixedSizeArray<T> {
 
     isFull(): boolean {
         return this.size === this.capacity;
+    }
+
+    indexOf(element: any, key?: string): number {
+        let index = 0;
+        if (key) {
+            index = no.indexOfArray(this.buffer, element, key);
+        } else
+            index = this.buffer.indexOf(element);
+        return (this.head + index) % this.capacity;
+    }
+
+    splice(index: number, count: number): void {
+        for (let i = index; i < index + count; i++) {
+            this.buffer[i] = undefined;
+        }
+    }
+
+    remove(element: any, key?: string) {
+        this.splice(this.indexOf(element, key), 1);
     }
 
     clear(): void {
