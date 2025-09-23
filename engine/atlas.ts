@@ -382,6 +382,7 @@ export class DynamicAtlasTexture extends Texture2D {
         gfxDevice.copyBuffersToTexture([buffer], gfxTexture, [region]);
     }
 
+    //当图片被纹理压缩后，调用无效
     public getTextureBuffer(texture: Texture2D, rect: Rect): Uint8Array {
         const gfxTexture = texture.getGFXTexture();
         if (!gfxTexture) {

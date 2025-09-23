@@ -76,6 +76,20 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         return super.instance() as YJSample2DMaterialManager;
     }
 
+    public clear() {
+        for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+            this.materialInfos[i].destroy(true);
+        }
+        for (let i = 0, n = this.noShareMaterialInfos.length; i < n; i++) {
+            this.noShareMaterialInfos[i].destroy(true);
+        }
+        this.materialInfos = [];
+        this.noShareMaterialInfos = [];
+        this.atlasJson = new Map();
+        this.atlasJsonKeys = new Map();
+        this.keyToMaterialUuid = new Map();
+    }
+
     /**
      * 创建材质信息对象并存入对应池
      * @param name 材质标识名称 
@@ -406,8 +420,8 @@ export class YJSample2DMaterialInfo {
      * // 当材质不再需要时调用：
      * materialInfo.destroy();
      */
-    public destroy() {
-        if (--this.refCount > 0) {
+    public destroy(force: boolean = false) {
+        if (--this.refCount > 0 && !force) {
             return; // 仍有其他引用，不执行实际销毁
         }
         // 清理调试组件和动态图集资源

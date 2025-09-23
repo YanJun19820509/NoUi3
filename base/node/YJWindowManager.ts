@@ -591,7 +591,7 @@ export class YJWindowManager extends Component {
         YJWindowManager._ins.clearAll();
         no.evn.clear();
         no.SingleObjectManager.clearAll();
-        no.assetBundleManager.clearCachedAssets();
+        no.assetBundleManager.clear();
     }
 
     /**

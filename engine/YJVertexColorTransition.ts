@@ -169,9 +169,13 @@ class YJVertexColorTransitionData {
             YJVertexColorTransitionManager.ins().remove(this._uuid);
             return;
         }
+        if (!this.renderComp?.node?.activeInHierarchy) return;
         // 脏检查：无更新需求时提前返回
-        if (!this._needUpdate) return;
-        this._updateVB(); // 执行顶点缓冲区更新
+        if (this._needUpdate || this.renderComp?.renderData.vertDirty) {
+            // console.log('YJVertexColorTransition vertDirty', this.renderComp?.renderData.vertDirty);
+            this._needUpdate = false;
+            this._updateVB(); // 执行顶点缓冲区更新
+        }
     }
 
     /**

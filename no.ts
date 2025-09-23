@@ -6332,8 +6332,20 @@ export namespace no {
          *   assetBundleManager.clear();
          * }
          */
-        public clear() {
-            assetManager.releaseAll();
+        public clear(all: boolean = false) {
+            this._cacheAsset.forEach(asset => {
+                this.release(asset, true);
+            });
+            this._cacheAsset.clear();
+            this._pathToUuid.clear();
+            this._loadingAssets.clear();
+            for (const key in this._ttfFont) {
+                this.release(this._ttfFont[key], true);
+            }
+            this._ttfFont = {};
+            if (all) {
+                assetManager.releaseAll();
+            }
         }
 
         /**
@@ -10908,7 +10920,7 @@ export namespace no {
             if (this.cacheMap.has(type)) {
                 const v = this.cacheMap.get(type);
                 for (let i = 0; i < v.length(); i++) {
-                    v[i]?.destroy();
+                    v.get(i)?.destroy();
                 }
                 this.cacheMap.delete(type);
             }
