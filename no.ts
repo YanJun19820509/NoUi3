@@ -6326,11 +6326,6 @@ export namespace no {
          *   assetBundleManager.clear();
          *   // ...其他清理逻辑
          * }
-         * 
-         * // 处理内存警告时调用
-         * onMemoryWarning() {
-         *   assetBundleManager.clear();
-         * }
          */
         public clear(all: boolean = false) {
             this._cacheAsset.forEach(asset => {
