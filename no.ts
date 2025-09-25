@@ -6334,13 +6334,16 @@ export namespace no {
             this._cacheAsset.clear();
             this._pathToUuid.clear();
             this._loadingAssets.clear();
+            if (all) {
+                assetManager.releaseAll();
+            }
+        }
+
+        public clearFontCache() {
             for (const key in this._ttfFont) {
                 this.release(this._ttfFont[key], true);
             }
             this._ttfFont = {};
-            if (all) {
-                assetManager.releaseAll();
-            }
         }
 
         /**
@@ -10884,7 +10887,7 @@ export namespace no {
                 if (!cache) {
                     return null;
                 }
-                // this._visible(cache.o, true);
+                // this._visible(cache, true);
                 visible(cache, true);
                 return cache;
             }
