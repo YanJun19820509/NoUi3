@@ -54,6 +54,7 @@ export class FixedSizeArray<T> {
             this.tail = (this.tail + 1) % this.capacity;
             this.head = (this.head + 1) % this.capacity; // 头指针后移（覆盖旧数据）
         }
+        return this;
     }
 
     /**
@@ -97,6 +98,17 @@ export class FixedSizeArray<T> {
         // 实际物理位置 = (head + index) % capacity
         const physicalIndex = (this.head + index) % this.capacity;
         return this.buffer[physicalIndex];
+    }
+
+    set(index: number, value: T) {
+        if (index < 0) return;
+        if (index >= this.size) {
+            this.expandCapacity();
+        }
+        // 实际物理位置 = (head + index) % capacity
+        const physicalIndex = (this.head + index) % this.capacity;
+        this.buffer[physicalIndex] = value;
+        return this;
     }
 
     length(): number {
@@ -194,7 +206,7 @@ export class FixedSizeArray<T> {
         return deleted;
     }
 
-    remove(element: any, key?: string) {
+    remove(element: T, key?: string) {
         if (key) {
             this.splice(this.indexOf({ key, value: element }), 1);
         } else {

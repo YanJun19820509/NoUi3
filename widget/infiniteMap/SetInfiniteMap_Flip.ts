@@ -1,7 +1,9 @@
 import { YJDataWork } from "../../base/YJDataWork";
+import { FixedSizeArray } from "../../FixedSizeArray";
 import { no } from "../../no";
 import { HackUi } from "../../ui/HackUi";
 import { ccclass, instantiate, property, v3, Vec3, view, Node } from "../../yj";
+import { YJTempData } from "../../YJTempData";
 
 /**
  * 无限地图组件，用于实现地图的无限滚动效果，该组件适用于一张图左右翻转来实现无限连接
@@ -51,7 +53,7 @@ export class SetInfiniteMap_Flip extends HackUi {
      * 当需要获取(2,3)坐标的地砖节点时：
      * const node = this._tileNodeMap.get("2_3");
      */
-    private _tileNodeMap: Map<string, Node> = new Map();
+    private _tileNodeMap: Map<string, YJDataWork> = new Map();
 
     /**
      * 临时三维向量，用于优化位置计算（避免频繁创建新对象）
@@ -65,14 +67,14 @@ export class SetInfiniteMap_Flip extends HackUi {
      * @description 在完成所有位置计算后统一显示节点，避免中间态渲染
      * @example 当地图移动时，先将新节点加入此队列，移动结束后统一显示
      */
-    private _lateShowNodes: Node[] = [];
+    private _lateShowNodes: FixedSizeArray<YJDataWork> = new FixedSizeArray(10);
 
     /**
      * 地砖节点对象池，用于复用已创建的地砖节点
      * @description 存储所有已创建的地砖节点，当地图移动时重复利用不可见区域的节点
      * @example 当地图向右移动时，左侧移出视口的节点会被回收并用于右侧新区域
      */
-    private _tileNodes: Node[] = [];
+    private _tileNodes: FixedSizeArray<YJDataWork> = new FixedSizeArray(10);
 
     /**
      * 当前地图视口的中心位置（世界坐标）
@@ -90,12 +92,13 @@ export class SetInfiniteMap_Flip extends HackUi {
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
-            const s = this.isFullScreen ? view.getVisibleSize() : no.size(this.node);
+            let s = this.isFullScreen ? view.getVisibleSize() : no.size(this.node);
             // 计算可见区域网格行列数：横向列数 = 可见宽度/(tileSize*2) + 缓冲列
             // 例如：tileSize=64，屏幕宽1280 => 1280/(64*2)=10，+2缓冲 => 总12列
             this._gridColRow = [Math.ceil(s.width / tileSize[0] / 2) + Math.floor(s.width / tileSize[0]), Math.ceil(s.height / tileSize[1] / 2) + Math.floor(s.height / tileSize[1])];
             this._tileSize = tileSize;
             this.clearDataValue(`${this.bind_keys}.tileSize`);
+            s = null;
         }
 
         // 全量地砖数据更新（通常用于地图初始化或重置）
@@ -105,15 +108,13 @@ export class SetInfiniteMap_Flip extends HackUi {
             this._tileMap.clear();
 
             // 停用所有现有节点（后续会复用）
-            for (let i = 0, n = this._tileNodes.length; i < n; i++) {
-                const item = this._tileNodes[i];
-                item['_activeInHierarchy'] = false; // 优化性能的隐藏方式
+            for (let i = 0, n = this._tileNodes.length(); i < n; i++) {
+                this._tileNodes.get(i).node['_activeInHierarchy'] = false; // 优化性能的隐藏方式
             }
 
             // 构建新的地砖数据映射表
             for (let i = 0, n = tileInfos.length; i < n; i++) {
-                const tileInfo = tileInfos[i];
-                this._tileMap.set(i, tileInfo);
+                this._tileMap.set(i, tileInfos[i]);
             }
             this.clearDataValue(`${this.bind_keys}.tileInfos`);
         }
@@ -176,8 +177,8 @@ export class SetInfiniteMap_Flip extends HackUi {
         const x = -pos.x; // 转换为世界坐标系X
         const y = -pos.y; // 转换为世界坐标系Y
         const uv = this.xyToUv(x, y); // 计算中心点UV坐标
-        const visibleUv: string[] = []; // 存储可见区域的UV键值
-
+        const visibleUv = YJTempData.array<string>('visibleUv'); // 存储可见区域的UV键值
+        visibleUv.clear();
         // 生成可见区域UV坐标集合
         for (let i = -this._gridColRow[0]; i <= this._gridColRow[0]; i++) {
             for (let j = -this._gridColRow[1]; j <= this._gridColRow[1]; j++) {
@@ -189,76 +190,73 @@ export class SetInfiniteMap_Flip extends HackUi {
 
         // 首次创建流程
         if (this._tileNodeMap.size == 0) {
-            for (let i = 0, n = visibleUv.length; i < n; i++) {
-                const key = visibleUv[i];
+            for (let i = 0, n = visibleUv.size(); i < n; i++) {
+                const key = visibleUv.get(i);
                 const data = this.getDataByUvKey(key);
                 if (data) {
                     // 使用对象池获取或创建节点
                     let item = this._tileNodes[i];
                     if (!item) {
-                        item = instantiate(this.template);
-                        no.setLayer(item, this.node.layer);
-                        item.parent = this.node;
-                        no.visible(item, true);
+                        const node = instantiate(this.template);
+                        no.setLayer(node, this.node.layer);
+                        node.parent = this.node;
+                        no.visible(node, true);
+                        item = node.getComponent(YJDataWork);
                         this._tileNodes.push(item);
                     }
 
                     // 初始化节点数据
                     this._tileNodeMap.set(key, item);
-                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                    if (dataWork) {
-                        dataWork.initWithData(data); // 示例数据格式：{x: 100, y: 200, type: 'grass'}
-                    }
+                    item.initWithData(data); // 示例数据格式：{x: 100, y: 200, type: 'grass'}
 
                     // 设置节点位置并标记延迟显示
                     this._tempV3.set(data.x, data.y, 0);
-                    no.position(item, this._tempV3);
+                    no.position(item.node, this._tempV3);
                     this._lateShowNodes.push(item);
                 }
             }
         }
         // 节点复用流程
         else {
-            const needMoveTileNode: Node[] = [];
+            const needMoveTileNode: YJDataWork[] = [];
             const entries = Array.from(this._tileNodeMap.entries());
             //遍历子节点，将不可见的节点加入到needMoveTileNode列表中
             for (let i = 0; i < entries.length; i++) {
-                const [key, node] = entries[i];
+                const [key, item] = entries[i];
                 if (!visibleUv.includes(key)) {
-                    needMoveTileNode.push(node);
+                    needMoveTileNode.push(item);
                     this._tileNodeMap.delete(key);
-                    node['_activeInHierarchy'] = false; // 标记节点为可复用状态
+                    item.node['_activeInHierarchy'] = false; // 标记节点为可复用状态
                 }
             }
             //遍历可见区域，将needMoveTileNode中的节点移动到可见区域
-            for (let i = 0, n = visibleUv.length; i < n; i++) {
-                const key = visibleUv[i];
+            for (let i = 0, n = visibleUv.size(); i < n; i++) {
+                const key = visibleUv.get(i);
                 if (this._tileNodeMap.has(key)) continue;
                 const data = this.getDataByUvKey(key);
                 if (data) {
                     // 优先使用回收的节点，没有则创建新节点
                     let item = needMoveTileNode.shift();
                     if (!item) {
-                        item = instantiate(this.template);
-                        no.setLayer(item, this.node.layer);
-                        item.parent = this.node;
-                        no.visible(item, true);
+                        const node = instantiate(this.template);
+                        no.setLayer(node, this.node.layer);
+                        node.parent = this.node;
+                        no.visible(node, true);
+                        item = node.getComponent(YJDataWork);
                         this._tileNodes.push(item);
                     }
 
                     // 更新节点数据和位置
                     this._tileNodeMap.set(key, item);
-                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-                    if (dataWork) {
-                        dataWork.initWithData(data);
-                    }
+                    item.initWithData(data);
                     this._tempV3.set(data.x, data.y, 0);
-                    no.position(item, this._tempV3);
+                    no.position(item.node, this._tempV3);
                     this._lateShowNodes.push(item); // 新节点需要延迟激活
                 }
             }
         }
     }
+
 
     /**
      * 世界坐标转UV坐标
@@ -269,13 +267,17 @@ export class SetInfiniteMap_Flip extends HackUi {
      * @returns UV坐标数组[u,v]
      */
     private xyToUv(x: number, y: number) {
-        const u = Math.floor(x / this._tileSize[0]),
-            v = Math.floor(y / this._tileSize[1]);
-        return [u, v];
+        const a = YJTempData.array<number>('xyTouv');
+        a.set(0, Math.floor(x / this._tileSize[0]))
+            .set(1, Math.floor(y / this._tileSize[1]));
+        return a.all();
     }
 
     private uvToXy(u: number, v: number) {
-        return [u * this._tileSize[0], v * this._tileSize[1]];
+        const a = YJTempData.array<number>('uvToXy');
+        a.set(0, u * this._tileSize[0])
+            .set(1, v * this._tileSize[1]);
+        return a.all();
     }
 
     /**
@@ -284,11 +286,12 @@ export class SetInfiniteMap_Flip extends HackUi {
      * @param dt 帧间隔时间
      */
     protected lateUpdate(dt: number): void {
-        if (this._lateShowNodes.length == 0) return;
-        for (let i = 0, n = this._lateShowNodes.length; i < n; i++) {
-            this._lateShowNodes[i]['_activeInHierarchy'] = true;
+        const n = this._lateShowNodes.length();
+        if (n == 0) return;
+        for (let i = 0; i < n; i++) {
+            this._lateShowNodes.get(i).node['_activeInHierarchy'] = true;
         }
-        this._lateShowNodes.length = 0;
+        this._lateShowNodes.clear();
     }
 }
 

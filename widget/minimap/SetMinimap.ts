@@ -119,6 +119,7 @@ export class SetMinimap extends HackUi {
         }
         // 释放动态纹理资源
         this._texture?.destroy();
+        this.minimapSprite?.spriteFrame?.destroy();
     }
 
     /**

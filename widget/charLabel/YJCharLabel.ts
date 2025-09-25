@@ -1734,19 +1734,22 @@ export class YJCharLabel extends Sprite {
         const canvas = this.shareCanvas();
         if (!canvas.canvas.width || !canvas.canvas.height) return;
         if (!(this.spriteFrame?.texture instanceof DynamicAtlasTexture)) {
-            this.spriteFrame?.texture?.destroy();
+            // this.spriteFrame?.texture?.destroy();
+            this.spriteFrame?.destroy();
+            this.spriteFrame = null;
         }
-        const image = new ImageAsset(canvas.canvas);
-        const texture = new Texture2D();
-        texture['_uuid'] = 'yjchar@' + this._uid;
-        texture.image = image;
-        if (TextureInfoInGPU.isWork) {
-            TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
-        }
-        let spriteFrame = new SpriteFrame();
-        spriteFrame['_uuid'] = this._uid;
-        spriteFrame.texture = texture;
-        this.spriteFrame = spriteFrame;
+        // const image = new ImageAsset(canvas.canvas);
+        // const texture = new Texture2D();
+        // texture.image = image;
+        // if (TextureInfoInGPU.isWork) {
+        //     texture['_uuid'] = 'yjchar@' + this._uid;
+        //     TextureInfoInGPU.addTextureUuidToPanel(texture['_uuid'], this.panelName);
+        // }
+        // let spriteFrame = new SpriteFrame();
+        // spriteFrame['_uuid'] = this._uid;
+        // spriteFrame.texture = texture;
+        // this.spriteFrame = spriteFrame;
+        this.spriteFrame = SpriteFrame.createWithImage(canvas.canvas);
 
         if (this.packToAtlas && this.dynamicAtlas) {
             YJJobManager.ins.addTask(this.packSpriteFrame.bind(this));

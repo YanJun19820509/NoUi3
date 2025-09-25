@@ -1826,7 +1826,7 @@ export namespace no {
         }
         if (i > -1) array.splice(i, 1);
         else {
-            console.log('removeFromArray fail', value);
+            // console.log('removeFromArray fail', value);
         }
     }
 

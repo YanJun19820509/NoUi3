@@ -50,6 +50,7 @@ export class SetSpriteAtlasAni extends HackUi {
     private loadAtlas(path: string, cb: () => void) {
         no.assetBundleManager.loadAtlas(path, atlas => {
             this._curSpriteAtlas = atlas;
+            this._sprite.spriteAtlas = null;
             this._sprite.spriteAtlas = atlas;
             cb();
         });

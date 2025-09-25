@@ -77,10 +77,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
     }
 
     public clear() {
-        for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+        for (let i = this.materialInfos.length - 1; i >= 0; i--) {
             this.materialInfos[i].destroy(true);
         }
-        for (let i = 0, n = this.noShareMaterialInfos.length; i < n; i++) {
+        for (let i = this.noShareMaterialInfos.length - 1; i >= 0; i--) {
             this.noShareMaterialInfos[i].destroy(true);
         }
         this.materialInfos = [];
