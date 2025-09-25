@@ -93,7 +93,7 @@ export class YJTouchListener extends Component {
      * @desc 异步确保dispatcher已初始化
      */
     async onEnable() {
-        this.dispatcher?.addListener(this);
+        this.a_addToDispatcher();
     }
 
     /**
@@ -101,12 +101,20 @@ export class YJTouchListener extends Component {
      * @desc 确保事件监听不会残留
      */
     onDisable() {
-        this.dispatcher?.removeListener(this);
+        this.a_removeFromDispatcher();
     }
 
     public readdListener() {
-        this.dispatcher?.removeListener(this);
+        this.a_removeFromDispatcher();
+        this.a_addToDispatcher();
+    }
+
+    public a_addToDispatcher() {
         this.dispatcher?.addListener(this);
+    }
+
+    public a_removeFromDispatcher() {
+        this.dispatcher?.removeListener(this);
     }
 
     /**
