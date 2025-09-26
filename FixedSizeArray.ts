@@ -84,7 +84,6 @@ export class FixedSizeArray<T> {
     // 删除并返回最旧元素（类似 shift）
     shift(): T {
         if (this.size === 0) return undefined; // 数组为空
-
         const oldestElement = this.buffer[this.head];
         this.buffer[this.head] = undefined; // 可选：显式清空
         this.head = (this.head + 1) % this.capacity;
@@ -102,11 +101,12 @@ export class FixedSizeArray<T> {
 
     set(index: number, value: T) {
         if (index < 0) return;
-        if (index >= this.size) {
+        if (index >= this.size && this.isFull()) {
             this.expandCapacity();
         }
         // 实际物理位置 = (head + index) % capacity
         const physicalIndex = (this.head + index) % this.capacity;
+        if (this.buffer[physicalIndex] === undefined) this.size++;
         this.buffer[physicalIndex] = value;
         return this;
     }
@@ -123,6 +123,10 @@ export class FixedSizeArray<T> {
         return this.size === this.capacity;
     }
 
+    includes(element: T): boolean {
+        return this.indexOf(element) > -1;
+    }
+
     /**
      * 查找元素第一次出现的逻辑索引（支持对象属性匹配或自定义回调）
      * @param {any|Object|Function} targetOrOptions 匹配目标（可选配置或回调）
@@ -130,8 +134,8 @@ export class FixedSizeArray<T> {
      * @param {any} [options.value] 属性值（当targetOrOptions为对象时）
      * @returns {number} 逻辑索引（未找到返回-1）
      */
-    indexOf(targetOrOptions: any | { key: string, value: any } | ((element: any) => boolean)): number {
-        let matchFn: (element: any) => boolean; // 匹配函数
+    indexOf(targetOrOptions: any | { key: string, value: any } | ((element: T) => boolean)): number {
+        let matchFn: (element: T) => boolean; // 匹配函数
 
         // 解析匹配逻辑
         if (typeof targetOrOptions === 'function') {

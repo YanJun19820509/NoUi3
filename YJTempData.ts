@@ -4,79 +4,57 @@
 
 import { FixedSizeArray } from "./FixedSizeArray";
 
-class TempObject {
-    private _data: any;
-
-    constructor() {
-        this._data = {};
-    }
-
-    public set(key: string, value: any) {
-        this._data[key] = value;
-        return this;
-    }
-
-    public get(key: string) {
-        return this._data[key];
-    }
-}
-
-class TempArray<T> {
-    private _data: FixedSizeArray<T>;
-
-    constructor() {
-        this._data = new FixedSizeArray<T>(10);
-    }
-    public push(v: T) {
-        this._data.push(v);
-        return this;
-    }
-    public shift() {
-        return this._data.shift();
-    }
-    public all(): FixedSizeArray<T> {
-        return this._data;
-    }
-    public set(index: number, v: T) {
-        this._data.set(index, v);
-        return this;
-    }
-    public get(index: number): T {
-        return this._data[index];
-    }
-    public size() {
-        return this._data.length();
-    }
-    public includes(v: T) {
-        return this._data.indexOf(v) > -1;
-    }
-    public clear() {
-        this._data.clear();
-        return this;
-    }
-}
 export class YJTempData {
-    private static _arrays: Map<string, TempArray<any>> = new Map();
-    private static _objects: Map<string, TempObject> = new Map();
+    private static _arrays: Map<string, FixedSizeArray<any>> = new Map();
+    private static _objects: Map<string, { [key: string]: any }> = new Map();
+    private static _maps: Map<string, Map<any, any>> = new Map();
 
-    public static object(name: string) {
+    /**
+     * 获取临时对象
+     * @param name 对象名称
+     * @returns 临时对象
+     */
+    public static object(name: string, v: any) {
         if (!this._objects.has(name)) {
-            this._objects.set(name, new TempObject());
+            this._objects.set(name, v || {});
         }
         return this._objects.get(name);
     }
 
-    public static array<T>(name: string): TempArray<T> {
+    /**
+     * 获取临时数组
+     * @param name 数组名称
+     * @param initialCapacity 初始容量
+     * @returns 临时数组
+     */
+    public static array<T>(name: string, initialCapacity = 10): FixedSizeArray<T> {
         if (!this._arrays.has(name)) {
-            this._arrays.set(name, new TempArray<T>());
+            this._arrays.set(name, new FixedSizeArray<T>(initialCapacity));
         }
-        return this._arrays.get(name) as TempArray<T>;
+        return this._arrays.get(name) as FixedSizeArray<T>;
     }
 
+    /**
+     * 获取临时map
+     * @param name map名称
+     * @returns 
+     */
+    public static map<K, T>(name: string) {
+        if (!this._maps.has(name)) {
+            this._maps.set(name, new Map<K, T>());
+        }
+        return this._maps.get(name) as Map<K, T>;
+    }
+
+    /**
+     * 清除所有临时数据
+     */
     public static clear() {
-        this._arrays.forEach(v => v = null);
+        this._arrays.forEach(v => v?.clear());
         this._objects.forEach(v => v = null);
+        this._maps.forEach(v => v?.clear());
         this._arrays.clear();
         this._objects.clear();
+        this._maps.clear();
     }
 }
