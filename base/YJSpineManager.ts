@@ -292,10 +292,11 @@ export class YJSpineManager extends no.SingleObject {
 
         // 收集需要释放的资源（同时统计总内存）
         YJSpineManager._map.forEach((resource, key) => {
-            totalSize += resource.size;
             // 释放条件：超过缓存时间 且 无外部引用
             if (resource.t <= releaseTime && resource.ref === 0) {
                 toRelease.push(key);
+            } else {
+                totalSize += resource.size;
             }
         });
 
@@ -304,8 +305,7 @@ export class YJSpineManager extends no.SingleObject {
             const key = toRelease[i];
             const resource = YJSpineManager._map.get(key);
             if (resource) {
-                totalSize -= resource.size; // 更新剩余内存统计
-                no.assetBundleManager.release(resource.data, true); // 强制释放资源
+                no.assetBundleManager.release(resource.data); // 强制释放资源
                 YJSpineManager._map.delete(key); // 移除缓存记录
             }
         }
@@ -314,6 +314,15 @@ export class YJSpineManager extends no.SingleObject {
         if (toRelease.length > 0) {
             no.warn(`Spine内存使用: ${Math.ceil(totalSize / 1048576)}MB, 释放数量: ${toRelease.length}`);
         }
+    }
+
+    private releaseAll() {
+        YJSpineManager._map.forEach((resource, key) => {
+            if (resource) {
+                no.assetBundleManager.release(resource.data); // 强制释放资源
+            }
+        });
+        YJSpineManager._map.clear();
     }
 
     /**
@@ -339,8 +348,7 @@ export class YJSpineManager extends no.SingleObject {
      */
     public clear(): void {
         this.stopReleaseTimer();
-        this.release();
-        YJSpineManager._map.clear();
+        this.releaseAll();
         YJSpineManager._loading.clear();
     }
 }

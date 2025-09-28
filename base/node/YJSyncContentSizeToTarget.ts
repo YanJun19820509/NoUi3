@@ -84,6 +84,12 @@ export class YJSyncContentSizeToTarget extends Component {
     @property({ displayName: '是否按高度适应' })
     fitHeight: boolean = false;
 
+    @property({ displayName: '最小尺寸' })
+    minSize: Size = math.size();
+
+    @property({ displayName: '最大尺寸' })
+    maxSize: Size = math.size();
+
     /** 
      * 测试模式开关 
      * @tip 编辑器模式下用于手动触发尺寸检查
@@ -168,6 +174,18 @@ export class YJSyncContentSizeToTarget extends Component {
         // 应用偏移量
         size.width += this.offset.width;
         size.height += this.offset.height;
+        if (this.minSize.width > 0) {
+            size.width = Math.max(size.width, this.minSize.width);
+        }
+        if (this.minSize.height > 0) {
+            size.height = Math.max(size.height, this.minSize.height);
+        }
+        if (this.maxSize.width > 0) {
+            size.width = Math.min(size.width, this.maxSize.width);
+        }
+        if (this.maxSize.height > 0) {
+            size.height = Math.min(size.height, this.maxSize.height);
+        }
         if (this._isRenderComp) {
             if (!this._originSize) {
                 this._originSize = no.size(to);
@@ -182,10 +200,12 @@ export class YJSyncContentSizeToTarget extends Component {
             else if (this.fitHeight && !this.fitWidth) {
                 const s = size.height / toSize.height;
                 no.scale(to, v3(s, s, 1));
-            } else {
+            } else if (this.fitWidth && this.fitHeight) {
                 const s1 = size.width / toSize.width;
                 const s2 = size.height / toSize.height;
                 no.scale(to, v3(s1, s2, 1));
+            } else {
+                no.size(to, size);
             }
         } else {
             no.size(to, size);

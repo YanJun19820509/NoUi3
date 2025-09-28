@@ -518,7 +518,8 @@ export namespace no {
                         a.splice(i, 1);
                     }
                 }
-                this._map.set(type, a);
+                if (a.length == 0) this._map.delete(type);
+                else this._map.set(type, a);
             }
         }
 
@@ -573,7 +574,8 @@ export namespace no {
                     b.h.apply(b.t, args);
                 }
             }
-            this._map.set(type, a);
+            if (a.length == 0) this._map.delete(type);
+            else this._map.set(type, a);
         }
 
         /**
@@ -608,6 +610,10 @@ export namespace no {
                     if (b.t == target) b.o = true;
                 } else b.o = true;
             }
+        }
+
+        public isEmpty(): boolean {
+            return this._map.size == 0;
         }
 
         /**
@@ -1948,16 +1954,33 @@ export namespace no {
         return _angleToCache;
     }
 
+    export const RAD_TO_DEG = 180 / Math.PI;
     /**
      * 将弧度转换为角度
      * @param radian 弧度
      * @returns 角度
      */
     export function radianToAngle(radian: number): number {
-        const angle = radian / Math.PI * 180;
+        const angle = radian * RAD_TO_DEG;
         return angle >= 0 ? angle : angle + 360;
     }
 
+    const sinTable: number[] = [];
+    const cosTable: number[] = [];
+    const SinCosSize = 93;
+    for (let i = 0; i <= SinCosSize; i++) {
+        const angle = (i - 31) * 0.1;
+        sinTable[i] = Math.sin(angle);
+        cosTable[i] = Math.cos(angle);
+    }
+    export function fastSin(radian: number): number {
+        const index = (radian * 10 + 31) | 0;
+        return sinTable[index] || 0;
+    }
+    export function fastCos(radian: number): number {
+        const index = (radian * 10 + 31) | 0;
+        return cosTable[index] || 0;
+    }
     /**
      * 将角度转换为弧度
      * @param angle 角度
@@ -4355,7 +4378,7 @@ export namespace no {
         private _data: any = {};
         private _updateScheduled: boolean = false;
         /** 是否需要更新数据变更事件 */
-        public needUpdateDataChangeEvent: boolean = true;
+        public needUpdateDataChangeEvent: boolean = false;
 
         /** 获取原始数据对象 */
         public get data(): any {
@@ -4532,12 +4555,14 @@ export namespace no {
          * }, this);
          */
         public onChange(handler: (d?: Data) => void, target?: any): void {
+            this.needUpdateDataChangeEvent = true;
             this.on(Data.DataChangeEvent, handler, target);
         }
 
         /** 移除数据变更监听 */
         public offChange(handler: (d?: Data) => void, target?: any): void {
             this.off(Data.DataChangeEvent, handler, target);
+            if (this.isEmpty()) this.needUpdateDataChangeEvent = false;
         }
 
         /** 手动触发数据变更事件 */

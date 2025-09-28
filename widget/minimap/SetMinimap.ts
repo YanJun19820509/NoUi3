@@ -267,8 +267,8 @@ export class SetMinimap extends HackUi {
         const p = e.getUILocation();
         this._tempV32.set(p.x, p.y, 0);
         no.worldPositionInNode(this._tempV32, this.minimapSprite.node, this._tempV32);
-        const dir = no.angleTo(this._tempV31, this._tempV32);
+        const { angle, radian } = no.angleTo(this._tempV31, this._tempV32);
         const s = this._minimapScale * this.scale;
-        no.EventHandlerInfo.execute(this.clickEvent, { type: 'moveto', pos: { x: (this._tempV32.x - this._tempV31.x) / s, y: (this._tempV32.y - this._tempV31.y) / s }, dir });
+        no.EventHandlerInfo.execute(this.clickEvent, { type: 'moveto', pos: { x: (this._tempV32.x - this._tempV31.x) / s, y: (this._tempV32.y - this._tempV31.y) / s }, dir: { angle, radian } });
     }
 }

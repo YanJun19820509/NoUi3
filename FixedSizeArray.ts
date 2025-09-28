@@ -210,11 +210,17 @@ export class FixedSizeArray<T> {
         return deleted;
     }
 
+    spliceReturnThis(startIndex: number, deleteCount = 0, ...items: T[]) {
+        let deleted = this.splice(startIndex, deleteCount, ...items);
+        deleted.length = 0;
+        return this;
+    }
+
     remove(element: T, key?: string) {
         if (key) {
-            this.splice(this.indexOf({ key, value: element }), 1);
+            return this.spliceReturnThis(this.indexOf({ key, value: element }), 1);
         } else {
-            this.splice(this.indexOf(element), 1);
+            return this.spliceReturnThis(this.indexOf(element), 1);
         }
     }
 

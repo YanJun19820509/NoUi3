@@ -213,13 +213,6 @@ export class SetSpine extends HackUi {
         // // 销毁Spine节点释放资源
         // spine.node?.destroy();
         // this._curSpine = null;
-        this.destroySpineNode(this._curSpine);
-        this._curSpine = null;
-        this.node.children.forEach(child => {
-            if (child.name == 'spine') {
-                child.destroy();
-            }
-        });
     }
 
     /**
@@ -231,6 +224,13 @@ export class SetSpine extends HackUi {
      */
     onDestroy() {
         YJSpineManager.ins.set(this.curPath);
+        this.destroySpineNode(this._curSpine);
+        this._curSpine = null;
+        this.node.children.forEach(child => {
+            if (child.name == 'spine') {
+                child.destroy();
+            }
+        });
     }
 
     /**

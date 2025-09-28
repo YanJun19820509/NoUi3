@@ -477,9 +477,13 @@ export class SetScanPath extends HackUi {
      * @param v2 目标点Y坐标
      */
     protected angleTo(u1: number, v1: number, u2: number, v2: number) {
-        const a = no.angleTo({ x: u1, y: v1 }, { x: u2, y: v2 });
         //因为纹理坐标系原点在左上角，所以需要转换
-        return 360 - a.angle;
+        let p1 = { x: u1, y: v1 };
+        let p2 = { x: u2, y: v2 };
+        const a = 360 - no.angleTo(p1, p2).angle;
+        p1 = null;
+        p2 = null;
+        return a;
     }
 
     /**
