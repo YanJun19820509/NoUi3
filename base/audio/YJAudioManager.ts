@@ -1,5 +1,5 @@
 
-import { ccclass, menu, requireComponent, Component, AudioSource, AudioClip } from '../../yj';
+import { ccclass, menu, requireComponent, Component, AudioSource, AudioClip, property } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -16,11 +16,14 @@ import { no } from '../../no';
 
 @ccclass('YJAudioManager')
 @menu('NoUi/audio/YJAudioManager(音频管理组件)')
-@requireComponent(AudioSource)
 /**
  * 音频管理组件,用于管理游戏中的音频播放
  */
 export class YJAudioManager extends Component {
+    @property({ type: AudioSource })
+    audioSource: AudioSource = null;
+    @property({ type: AudioSource })
+    audioSourceForever: AudioSource = null;
     /** 
      * 背景音乐开关的本地存储key 
      * @存储格式 '1'表示开启，'0'表示关闭
@@ -45,20 +48,6 @@ export class YJAudioManager extends Component {
      * this._lastBGM = 'audio/bgm/main';
      */
     private _lastBGM: string;
-
-    /** 
-     * 音频源组件 
-     * @实现说明 通过getComponent(AudioSource)获取
-     * @注意 需确保节点已挂载AudioSource组件
-     */
-    private audioSource: AudioSource = null;
-
-    /**
-     * 永久音频源组件 
-     * @实现说明 通过getComponent(AudioSource)获取
-     * @注意 需确保节点已挂载AudioSource组件
-     */
-    private audioSourceForever: AudioSource = null;
 
     /** 
      * 单例实例 
@@ -320,26 +309,18 @@ export class YJAudioManager extends Component {
      * @param volume 音量
      */
     public playForever(path: string, volume = 1): void {
-        if (!this._isBGMOn) return;
-        if (!this.audioSourceForever) {
-            const node = no.newNode('audio_forever', [AudioSource]);
-            this.audioSourceForever = node.getComponent(AudioSource);
-            this.audioSourceForever.playOnAwake = true;
+        if (!this._isBGMOn || !this.audioSourceForever) return;
+        if (this.clips.has(path)) {
+            this.audioSourceForever.stop();
+            let c = this.clips.get(path);
+            this.audioSourceForever.clip = c;
+            this.audioSourceForever.volume = volume;
             this.audioSourceForever.loop = true;
-            node.setParent(this.node);
-        }
-        if (this.audioSourceForever) {
-            if (this.clips.has(path)) {
-                this.audioSourceForever.stop();
-                let c = this.clips.get(path);
-                this.audioSourceForever.clip = c;
-                this.audioSourceForever.volume = volume;
-                this.audioSourceForever.play();
-            } else {
-                this.loadAudioClip(path, () => {
-                    this.playForever(path, volume);
-                });
-            }
+            this.audioSourceForever.play();
+        } else {
+            this.loadAudioClip(path, () => {
+                this.playForever(path, volume);
+            });
         }
     }
 
