@@ -1967,18 +1967,20 @@ export namespace no {
 
     const sinTable: number[] = [];
     const cosTable: number[] = [];
-    const SinCosSize = 93;
+    const SinCosSize = 124;
     for (let i = 0; i <= SinCosSize; i++) {
-        const angle = (i - 31) * 0.1;
+        const angle = (i - 62) * 0.1;
         sinTable[i] = Math.sin(angle);
         cosTable[i] = Math.cos(angle);
     }
     export function fastSin(radian: number): number {
-        const index = (radian * 10 + 31) | 0;
+        radian = radian % (2 * Math.PI);
+        const index = (radian * 10 + 62) | 0;
         return sinTable[index] || 0;
     }
     export function fastCos(radian: number): number {
-        const index = (radian * 10 + 31) | 0;
+        radian = radian % (2 * Math.PI);
+        const index = (radian * 10 + 62) | 0;
         return cosTable[index] || 0;
     }
     /**
