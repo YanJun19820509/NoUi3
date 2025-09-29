@@ -11277,6 +11277,7 @@ export namespace no {
         const sin = Math.sin(radian);
         _tempPoint.x = point.x * cos - point.y * sin;
         _tempPoint.y = point.x * sin + point.y * cos;
+        point = null;
         return _tempPoint;
     }
 
