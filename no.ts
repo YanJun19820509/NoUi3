@@ -11264,6 +11264,7 @@ export namespace no {
         return (dis1 + dis2) <= (dis3 + precision);
     }
 
+    const _tempPoint: { x: number, y: number } = { x: 0, y: 0 };
     /**
      * 旋转点
      * @param point 点
@@ -11274,9 +11275,9 @@ export namespace no {
         if (radian == 0) return point;
         const cos = Math.cos(radian);
         const sin = Math.sin(radian);
-        point.x = point.x * cos - point.y * sin;
-        point.y = point.x * sin + point.y * cos;
-        return point;
+        _tempPoint.x = point.x * cos - point.y * sin;
+        _tempPoint.y = point.x * sin + point.y * cos;
+        return _tempPoint;
     }
 
     /**
@@ -11287,12 +11288,12 @@ export namespace no {
      * @returns 旋转后的点
      */
     export function rotatePointByCenter(point: { x: number, y: number }, center: { x: number, y: number }, radian: number) {
-        point.x -= center.x;
-        point.y -= center.y;
-        const rotated = rotatePoint(point, radian);
-        point.x += center.x;
-        point.y += center.y;
-        return point;
+        let x = point.x - center.x;
+        let y = point.y - center.y;
+        const rotated = rotatePoint({ x, y }, radian);
+        rotated.x += center.x;
+        rotated.y += center.y;
+        return rotated;
     }
 
     /**
