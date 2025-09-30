@@ -339,8 +339,8 @@ export class SetSpine extends HackUi {
 
             // 异步加载spine资源
             YJSpineManager.ins.get(path, this.spineUuid).then(res => {
-                if (!res) {
-                    no.err(`spine资源${path}不存在`);
+                if (!res || !res.isValid) {
+                    no.err(`spine资源${path}不存在或已销毁`);
                     return;
                 }
                 // 组件有效性检查
