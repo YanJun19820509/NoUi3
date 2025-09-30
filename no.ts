@@ -9,7 +9,8 @@ import {
     Toggle,
     resources, JSB,
     rendererCamera,
-    screen
+    screen,
+    ResolutionPolicy
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -11462,17 +11463,17 @@ export namespace no {
         }
     }
 
-    const _viewSizeCache: { width: number, height: number } = { width: 0, height: 0 };
+    let _viewSizeCache: { width: number, height: number };
     /**
      * 获取视口大小
      * @returns 视口大小
      */
     export function viewSize() {
-        // const ratio = screen.devicePixelRatio;
-        // _viewSizeCache.width = screen.windowSize.width / ratio;
-        // _viewSizeCache.height = screen.windowSize.height / ratio;
-        _viewSizeCache.width = view.getDesignResolutionSize().width;
-        _viewSizeCache.height = view.getDesignResolutionSize().height;
+        if (!_viewSizeCache) {
+            _viewSizeCache = { width: 0, height: 0 };
+            _viewSizeCache.width = view.getVisibleSize().width;
+            _viewSizeCache.height = view.getVisibleSize().height;
+        }
         return _viewSizeCache;
     }
 }

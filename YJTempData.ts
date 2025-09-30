@@ -14,7 +14,7 @@ export class YJTempData {
      * @param name 对象名称
      * @returns 临时对象
      */
-    public static object(name: string, v: any) {
+    public static object(name: string, v?: any) {
         if (!this._objects.has(name)) {
             this._objects.set(name, v || {});
         }

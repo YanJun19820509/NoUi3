@@ -402,6 +402,7 @@ export class YJWindowManager extends Component {
      * @param excepts 不关闭的窗口列表
      */
     public static closePanelIn(nodeName: string, excepts: string[] = []) {
+        no.log('YJWindowManager closePanelIn', nodeName, excepts);
         let content: Node = YJWindowManager._ins.getContent(nodeName);
         const children = content.children.slice(),
             len = children.length;
