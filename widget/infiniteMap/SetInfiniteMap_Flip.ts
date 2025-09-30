@@ -36,7 +36,7 @@ export class SetInfiniteMap_Flip extends HackUi {
      *   ["2_4", {x: 2, y: 4, type: "water"}]
      * ])
      */
-    private _tileMap: Map<number, any> = YJTempData.map<number, any>('SetInfiniteMap_Flip:tileMap');
+    private _tileMap: Map<number, any> = YJTempData.map<number, any>(`SetInfiniteMap_Flip:tileMap_${this.uuid}`);
 
     /**
      * 单个地砖的尺寸（单位：像素）
@@ -53,7 +53,7 @@ export class SetInfiniteMap_Flip extends HackUi {
      * 当需要获取(2,3)坐标的地砖节点时：
      * const node = this._tileNodeMap.get("2_3");
      */
-    private _tileNodeMap: Map<string, YJDataWork> = YJTempData.map<string, YJDataWork>('SetInfiniteMap_Flip:tileNodeMap');
+    private _tileNodeMap: Map<string, YJDataWork> = YJTempData.map<string, YJDataWork>(`SetInfiniteMap_Flip:tileNodeMap_${this.uuid}`);
 
     /**
      * 延迟显示的节点队列，用于优化批量操作时的性能
@@ -85,7 +85,7 @@ export class SetInfiniteMap_Flip extends HackUi {
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
-            let s = this.isFullScreen ? view.getVisibleSize() : no.size(this.node);
+            let s = this.isFullScreen ? no.viewSize() : no.size(this.node);
             // 计算可见区域网格行列数：横向列数 = 可见宽度/(tileSize*2) + 缓冲列
             // 例如：tileSize=64，屏幕宽1280 => 1280/(64*2)=10，+2缓冲 => 总12列
             this._gridColRow = [Math.ceil(s.width / tileSize[0] / 2) + Math.floor(s.width / tileSize[0]), Math.ceil(s.height / tileSize[1] / 2) + Math.floor(s.height / tileSize[1])];
@@ -136,7 +136,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         const xy = this.uvToXy(uv[0], uv[1]);
         const k = Math.abs(this.isHorizontalFlip ? uv[0] : uv[1]) % 2;
         const { img, dir } = this._tileMap.get(k);
-        const temp = YJTempData.object('SetInfiniteMap_Flip:getDataByUvKeyCache');
+        const temp = YJTempData.object(`SetInfiniteMap_Flip:getDataByUvKeyCache_${this.uuid}`);
         temp['img'] = img;
         temp['dir'] = dir;
         temp['x'] = xy.get(0);
@@ -169,7 +169,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         const x = -this._curPos.x; // 转换为世界坐标系X
         const y = -this._curPos.y; // 转换为世界坐标系Y
         const uv = this.xyToUv(x, y); // 计算中心点UV坐标
-        const visibleUv = YJTempData.array<string>('SetInfiniteMap_Flip:visibleUv'); // 存储可见区域的UV键值
+        const visibleUv = YJTempData.array<string>(`SetInfiniteMap_Flip:visibleUv_${this.uuid}`); // 存储可见区域的UV键值
         visibleUv.clear();
         // 生成可见区域UV坐标集合
         for (let i = -this._gridColRow[0]; i <= this._gridColRow[0]; i++) {
@@ -209,7 +209,7 @@ export class SetInfiniteMap_Flip extends HackUi {
         }
         // 节点复用流程
         else {
-            const needMoveTileNode = YJTempData.array<YJDataWork>('SetInfiniteMap_Flip:needMoveTileNode');
+            const needMoveTileNode = YJTempData.array<YJDataWork>(`SetInfiniteMap_Flip:needMoveTileNode_${this.uuid}`);
             needMoveTileNode.clear();
             const entries = Array.from(this._tileNodeMap.entries());
             //遍历子节点，将不可见的节点加入到needMoveTileNode列表中
@@ -231,13 +231,13 @@ export class SetInfiniteMap_Flip extends HackUi {
                     let item = needMoveTileNode.shift();
                     if (!item) {
                         const node = instantiate(this.template);
-                        no.setLayer(node, this.node.layer);
                         node.parent = this.node;
                         no.visible(node, true);
                         item = node.getComponent(YJDataWork);
                         this._tileNodes.push(item);
                     }
 
+                    no.setLayer(item.node, this.node.layer);
                     // 更新节点数据和位置
                     this._tileNodeMap.set(key, item);
                     item.initWithData(data);
@@ -258,14 +258,14 @@ export class SetInfiniteMap_Flip extends HackUi {
      * @returns UV坐标数组[u,v]
      */
     private xyToUv(x: number, y: number) {
-        const a = YJTempData.array<number>('SetInfiniteMap_Flip:xyTouv', 2);
+        const a = YJTempData.array<number>(`SetInfiniteMap_Flip:xyTouv_${this.uuid}`, 2);
         a.set(0, Math.floor(x / this._tileSize[0]))
             .set(1, Math.floor(y / this._tileSize[1]));
         return a;
     }
 
     private uvToXy(u: number, v: number) {
-        const a = YJTempData.array<number>('SetInfiniteMap_Flip:uvToXy', 2);
+        const a = YJTempData.array<number>(`SetInfiniteMap_Flip:uvToXy_${this.uuid}`, 2);
         a.set(0, u * this._tileSize[0])
             .set(1, v * this._tileSize[1]);
         return a;

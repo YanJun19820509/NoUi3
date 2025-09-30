@@ -654,6 +654,7 @@ export class SetMultipleList extends HackUi {
             for (let index = lastIndex; index < curIndex; index++) {
                 // 获取当前数据项的模板类型
                 const d = this.listData[index];
+                if (!d) continue;
                 const templateType = d[templateTypeKey];
                 // 获取该模板类型的配置参数
                 const showNum = this.templateMap[templateType].showNum; // 该类型最大显示数量
@@ -685,6 +686,7 @@ export class SetMultipleList extends HackUi {
             // 处理向下滚动（加载先前数据）
             for (let index = lastIndex - 1; index >= curIndex; index--) {
                 const d = this.listData[index];
+                if (!d) continue;
                 const templateType = d[templateTypeKey];
                 const showNum = this.templateMap[templateType].showNum;
                 const items = this.itemsMap[templateType];
