@@ -389,8 +389,9 @@ export class YJPanel extends Component {
      * panel.clear(true);
      */
     public clear(force = false) {
-        this.onClosePanel();
         if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+        if (this.status == 'open')
+            this.onClosePanel();
         no.setPrototype(this, { [YJPanelCreated]: '0' });
         this.node.destroy();
     }
