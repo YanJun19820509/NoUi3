@@ -10927,9 +10927,14 @@ export namespace no {
          */
         public get(type: string): Node {
             if (this.cacheMap.has(type)) {
-                const cache = this.cacheMap.get(type).shift();
+                let cache = this.cacheMap.get(type).shift();
                 if (!cache) {
                     return null;
+                }
+                if (!cache.isValid) {
+                    cache.destroy();
+                    cache = null;
+                    return this.get(type);
                 }
                 // this._visible(cache, true);
                 visible(cache, true);
