@@ -96,7 +96,6 @@ export class YJAudioManager extends Component {
             return;
         }
         YJAudioManager._ins = this;
-        this.audioSource = this.getComponent(AudioSource);
         let a = localStorage.getItem(this.musicOn) || '1'; // 默认开启音乐
         let b = localStorage.getItem(this.effectOn) || '1'; // 默认开启音效
         this.setBGMOn(a == '1');
@@ -347,9 +346,7 @@ export class YJAudioManager extends Component {
      * 停止永久音效播放
      */
     public stopForever(): void {
-        if (this.audioSourceForever) {
-            this.audioSourceForever.stop();
-        }
+        this.audioSourceForever?.stop();
     }
 
     /**
@@ -610,21 +607,17 @@ export class YJAudioManager extends Component {
             clearInterval(timer);
         });
         this.loopEffectMap.clear();
-        this.audioSource.stop();
+        this.audioSource?.stop();
     }
 
     public pauseAll(): void {
         this.pause();
-        if (this.audioSourceForever) {
-            this.audioSourceForever.pause();
-        }
+        this.audioSourceForever?.pause();
     }
 
     public resumeAll(): void {
         this.resume();
-        if (this.audioSourceForever) {
-            this.audioSourceForever.play();
-        }
+        this.audioSourceForever?.play();
     }
 
     /**
