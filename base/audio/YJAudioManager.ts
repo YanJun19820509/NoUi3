@@ -1,5 +1,5 @@
 
-import { ccclass, menu, requireComponent, Component, AudioSource, AudioClip, property } from '../../yj';
+import { ccclass, menu, requireComponent, Component, AudioSource, AudioClip, property, executeInEditMode, EDITOR } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -16,6 +16,7 @@ import { no } from '../../no';
 
 @ccclass('YJAudioManager')
 @menu('NoUi/audio/YJAudioManager(音频管理组件)')
+@executeInEditMode()
 /**
  * 音频管理组件,用于管理游戏中的音频播放
  */
@@ -77,6 +78,23 @@ export class YJAudioManager extends Component {
      * this.setEffectOn(localStorage.getItem('effect') === '1');
      */
     onLoad() {
+        if (EDITOR) {
+            if (!this.audioSource) {
+                const n = no.newComponentNode('AudioSource', [AudioSource]);
+                n.parent = this.node;
+                this.audioSource = n.getComponent(AudioSource);
+                this.audioSource.loop = false;
+                this.audioSource.playOnAwake = false;
+            }
+            if (!this.audioSourceForever) {
+                const n1 = no.newComponentNode('AudioSourceForever', [AudioSource]);
+                n1.parent = this.node;
+                this.audioSourceForever = n1.getComponent(AudioSource);
+                this.audioSourceForever.loop = true;
+                this.audioSourceForever.playOnAwake = false;
+            }
+            return;
+        }
         YJAudioManager._ins = this;
         this.audioSource = this.getComponent(AudioSource);
         let a = localStorage.getItem(this.musicOn) || '1'; // 默认开启音乐
@@ -93,6 +111,7 @@ export class YJAudioManager extends Component {
      * this.node.destroy();
      */
     onDestroy() {
+        if (EDITOR) return;
         YJAudioManager._ins = null;
     }
 

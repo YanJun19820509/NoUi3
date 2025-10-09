@@ -9793,6 +9793,22 @@ export namespace no {
     }
 
     /**
+     * 创建组件节点
+     * @param name 节点名称
+     * @param components 需要预添加的组件列表（支持组件类或组件名）
+     * @returns 配置好的节点对象
+     */
+    export function newComponentNode(name: string, components: typeof Component[] | string[]): Node {
+        const n = new Node(name);
+        if (components) {
+            for (let i = 0; i < components.length; i++) {
+                n.addComponent(components[i] as any);
+            }
+        };
+        return n;
+    }
+
+    /**
      * 构建敏感词DFA字典树（基于确定性有限自动机算法）
      * @param words 敏感词列表 
      * @returns DFA字典树结构
