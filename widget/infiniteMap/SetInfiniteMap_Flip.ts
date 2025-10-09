@@ -13,9 +13,6 @@ export class SetInfiniteMap_Flip extends HackUi {
     @property({ type: Node, displayName: '元素模板', tooltip: '元素模板内不需要SetPosition组件，也不需要添加设置坐标的逻辑，本组件内会主动按需要修改子元素的坐标' })
     template: Node = null;
 
-    @property({ displayName: '是否水平翻转', tooltip: '如果为true，则水平翻转,否则垂直翻转' })
-    isHorizontalFlip: boolean = true;
-
     @property({ displayName: '是否全屏' })
     isFullScreen: boolean = true;
 
@@ -77,11 +74,7 @@ export class SetInfiniteMap_Flip extends HackUi {
     private _curPos: Vec3;
 
     protected onDataChange(data: any) {
-        const { tileSize, tileInfos, startPos, moveBy, flip } = data;
-        if (flip != null) {
-            this.isHorizontalFlip = flip;
-            this.clearDataValue(`${this.bind_keys}.flip`);
-        }
+        const { tileSize, tileInfos, startPos, moveBy } = data;
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
@@ -134,7 +127,7 @@ export class SetInfiniteMap_Flip extends HackUi {
     private getDataByUvKey(uvKey: string) {
         const uv = uvKey.split('_').map(Number);
         const xy = this.uvToXy(uv[0], uv[1]);
-        const k = Math.abs(this.isHorizontalFlip ? uv[0] : uv[1]) % 2;
+        const k = Math.abs(uv[0]) % 2;
         const { img, dir } = this._tileMap.get(k);
         const temp = YJTempData.object(`SetInfiniteMap_Flip:getDataByUvKeyCache_${this.uuid}`);
         temp['img'] = img;
