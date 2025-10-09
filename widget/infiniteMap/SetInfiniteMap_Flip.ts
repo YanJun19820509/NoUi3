@@ -7,6 +7,15 @@ import { YJTempData } from "../../YJTempData";
 
 /**
  * 无限地图组件，用于实现地图的无限滚动效果，该组件适用于一张图左右翻转来实现无限连接
+ * data: {
+ *  tileSize: number[], //地砖尺寸变更（通常只在初始化时设置）
+ *  tileInfos: {
+ *    img: string, //地砖图片
+ *    dir: number[] //地砖方向,修改节点scale来实现翻转
+ *  }[], //地砖数据（通常用于地图初始化或重置）
+ *  startPos: number[], //初始位置设置（通常用于地图初始化或重置位置）
+ *  moveBy: number[] //相对移动处理（用于平滑滚动效果）
+ * }
  */
 @ccclass('SetInfiniteMap_Flip')
 export class SetInfiniteMap_Flip extends HackUi {
