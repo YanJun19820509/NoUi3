@@ -215,14 +215,16 @@ export class YJSoundEffectManager extends Component {
      * }
      */
     public playMusicByAlias(alias: string, volume?: number): void {
+        if (!alias) return;
         let d = this._map[alias];
-        if (d.path) YJAudioManager.ins.playBGM(d.path, volume || d.volume);
+        if (d?.path) YJAudioManager.ins.playBGM(d.path, volume || d.volume);
         else console.error('YJSoundEffectManager.playMusicByAlias: 没有找到音乐资源:', alias);
     }
 
     public playForeverMusicByAlias(alias: string, volume?: number): void {
+        if (!alias) return;
         let d = this._map[alias];
-        if (d.path) YJAudioManager.ins.playForever(d.path, volume || d.volume);
+        if (d?.path) YJAudioManager.ins.playForever(d.path, volume || d.volume);
         else console.error('YJSoundEffectManager.playForeverMusicByAlias: 没有找到音乐资源:', alias);
     }
 
@@ -250,8 +252,9 @@ export class YJSoundEffectManager extends Component {
     }
 
     public playLoopEffectByAlias(alias: string, volume?: number): void {
+        if (!alias) return;
         let d = this._map[alias];
-        if (d.path) {
+        if (d?.path) {
             YJAudioManager.ins.playLoopEffect(d.path, volume || d.volume);
         } else {
             console.error('YJSoundEffectManager.playLoopEffectByAlias: 没有找到音效资源:', alias);
@@ -259,8 +262,9 @@ export class YJSoundEffectManager extends Component {
     }
 
     public stopLoopEffectByAlias(alias: string): void {
+        if (!alias) return;
         let d = this._map[alias];
-        if (d.path) {
+        if (d?.path) {
             YJAudioManager.ins.stopLoopEffect(d.path);
         }
     }

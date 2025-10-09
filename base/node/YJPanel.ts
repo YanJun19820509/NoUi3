@@ -344,6 +344,7 @@ export class YJPanel extends Component {
             this.lastCloseTime = no.sysTime.now; // 记录关闭时间戳
             this.hide(); // 执行隐藏逻辑
         } else {
+            this.onClosePanel();
             this.clear(true);
         }
     }
