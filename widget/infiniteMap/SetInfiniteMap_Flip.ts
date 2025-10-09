@@ -7,14 +7,20 @@ import { YJTempData } from "../../YJTempData";
 
 /**
  * 无限地图组件，用于实现地图的无限滚动效果，该组件适用于一张图左右翻转来实现无限连接
+ * data: {
+ *  tileSize: number[], //地砖尺寸变更（通常只在初始化时设置）
+ *  tileInfos: {
+ *    img: string, //地砖图片
+ *    dir: number[] //地砖方向,修改节点scale来实现翻转
+ *  }[], //地砖数据（通常用于地图初始化或重置）
+ *  startPos: number[], //初始位置设置（通常用于地图初始化或重置位置）
+ *  moveBy: number[] //相对移动处理（用于平滑滚动效果）
+ * }
  */
 @ccclass('SetInfiniteMap_Flip')
 export class SetInfiniteMap_Flip extends HackUi {
     @property({ type: Node, displayName: '元素模板', tooltip: '元素模板内不需要SetPosition组件，也不需要添加设置坐标的逻辑，本组件内会主动按需要修改子元素的坐标' })
     template: Node = null;
-
-    @property({ displayName: '是否水平翻转', tooltip: '如果为true，则水平翻转,否则垂直翻转' })
-    isHorizontalFlip: boolean = true;
 
     @property({ displayName: '是否全屏' })
     isFullScreen: boolean = true;
@@ -77,11 +83,7 @@ export class SetInfiniteMap_Flip extends HackUi {
     private _curPos: Vec3;
 
     protected onDataChange(data: any) {
-        const { tileSize, tileInfos, startPos, moveBy, flip } = data;
-        if (flip != null) {
-            this.isHorizontalFlip = flip;
-            this.clearDataValue(`${this.bind_keys}.flip`);
-        }
+        const { tileSize, tileInfos, startPos, moveBy } = data;
 
         // 处理地砖尺寸变更（通常只在初始化时设置）
         if (tileSize) {
@@ -134,7 +136,7 @@ export class SetInfiniteMap_Flip extends HackUi {
     private getDataByUvKey(uvKey: string) {
         const uv = uvKey.split('_').map(Number);
         const xy = this.uvToXy(uv[0], uv[1]);
-        const k = Math.abs(this.isHorizontalFlip ? uv[0] : uv[1]) % 2;
+        const k = Math.abs(uv[0]) % 2;
         const { img, dir } = this._tileMap.get(k);
         const temp = YJTempData.object(`SetInfiniteMap_Flip:getDataByUvKeyCache_${this.uuid}`);
         temp['img'] = img;
