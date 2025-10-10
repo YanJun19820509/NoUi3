@@ -1,4 +1,4 @@
-import { EffectAsset, Material, Sprite, SpriteFrame, ccclass, game, requireComponent, sys, v2 } from '../../../common/yj';
+import { EffectAsset, Material, Sprite, SpriteFrame, ccclass, game, requireComponent, sys, v2 } from '../../yj';
 import { no } from '../../no';
 import { HackUi } from '../HackUi';
 

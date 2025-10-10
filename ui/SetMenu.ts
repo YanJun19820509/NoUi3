@@ -1,4 +1,4 @@
-import { ccclass, requireComponent } from '../../common/yj';
+import { ccclass, requireComponent } from '../yj';
 import { YJMenu } from '../widget/menu/YJMenu';
 import { HackUi } from './HackUi';
 

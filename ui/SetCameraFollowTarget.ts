@@ -1,5 +1,5 @@
-import { ccclass, property, Node, Vec2, v2, view } from '../../common/yj';
-import { HackUi } from '../../common/ui/HackUi';
+import { ccclass, property, Node, Vec2, v2, view } from '../yj';
+import { HackUi } from '../ui/HackUi';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { nodeTargetManager } from '../NodeTargetManager';

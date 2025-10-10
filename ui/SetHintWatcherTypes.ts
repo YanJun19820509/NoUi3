@@ -1,4 +1,4 @@
-import { ccclass } from '../../common/yj';
+import { ccclass } from '../yj';
 import { YJHintWatcher } from '../base/YJHintWatcher';
 import { HackUi } from './HackUi';
 

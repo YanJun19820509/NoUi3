@@ -1,4 +1,4 @@
-import { ccclass, Component, Node, property, Vec3 } from "../../../common/yj";
+import { ccclass, Component, Node, property, Vec3 } from "../../yj";
 /**
  * 手柄
  * Author mqsy_yj

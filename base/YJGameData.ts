@@ -1,4 +1,4 @@
-import { ccclass } from '../../common/yj';
+import { ccclass } from '../yj';
 import { no } from '../no';
 
 /**

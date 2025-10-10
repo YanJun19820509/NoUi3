@@ -1,5 +1,5 @@
-import { ccclass, macro, requireComponent, Sprite, SpriteAtlas } from '../../common/yj';
-import { HackUi } from '../../common/ui/HackUi';
+import { ccclass, macro, requireComponent, Sprite, SpriteAtlas } from '../yj';
+import { HackUi } from '../ui/HackUi';
 import { no } from '../no';
 
 /**
