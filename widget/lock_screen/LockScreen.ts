@@ -1,7 +1,7 @@
 import { _decorator } from 'cc';
-import { YJPanel } from '../../../common/base/node/YJPanel';
-import { panelPrefabPath } from '../../../common/types';
-import { no } from '../../../common/no';
+import { YJPanel } from '../../base/node/YJPanel';
+import { panelPrefabPath } from '../../types';
+import { no } from '../../no';
 import { YJWindowManager } from '../../base/node/YJWindowManager';
 const { ccclass, property } = _decorator;
 

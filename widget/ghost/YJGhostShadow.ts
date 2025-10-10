@@ -1,4 +1,4 @@
-import { ccclass, Component, EDITOR, executeInEditMode, Node, property, requireComponent, Sprite, UIOpacity } from "../../../common/yj";
+import { ccclass, Component, EDITOR, executeInEditMode, Node, property, requireComponent, Sprite, UIOpacity } from "../../yj";
 import { no } from "../../no";
 /**
  * 残影

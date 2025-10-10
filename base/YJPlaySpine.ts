@@ -1,4 +1,4 @@
-import { ccclass, Component, property, requireComponent, Skeleton } from "hackUi/yj";
+import { ccclass, Component, property, requireComponent, Skeleton } from "../yj";
 import { no } from "../no";
 /**
  * 

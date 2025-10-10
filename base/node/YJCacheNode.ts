@@ -1,4 +1,4 @@
-import { ccclass, Component, property } from "../../../common/yj";
+import { ccclass, Component, property } from "../../yj";
 import { no } from "../../no";
 /**
  * 将节点放入缓存池的组件

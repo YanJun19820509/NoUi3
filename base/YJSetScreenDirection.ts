@@ -1,4 +1,4 @@
-import { ccclass, Component, Enum, macro, property, ResolutionPolicy, view } from "../../common/yj";
+import { ccclass, Component, Enum, macro, property, ResolutionPolicy, view } from "../yj";
 /**
  * 设置屏幕方向
  * Author mqsy_yj

@@ -1,4 +1,4 @@
-import { ccclass, isValid, property } from '../../common/yj';
+import { ccclass, isValid, property } from '../yj';
 import { no } from '../no';
 import { SetTimeCountDown } from './SetTimeCountDown';
 

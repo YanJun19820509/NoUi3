@@ -1,4 +1,4 @@
-import { ccclass, Component, property, requireComponent, Camera, screen } from "hackUi/yj";
+import { ccclass, Component, property, requireComponent, Camera, screen } from "./../../yj";
 import { no } from "../../no";
 /**
  * 设置相机
