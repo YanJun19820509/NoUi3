@@ -11491,9 +11491,7 @@ export namespace no {
      */
     export function viewSize() {
         if (!_viewSizeCache) {
-            _viewSizeCache = { width: 0, height: 0 };
-            _viewSizeCache.width = view.getVisibleSize().width;
-            _viewSizeCache.height = view.getVisibleSize().height;
+            _viewSizeCache = { width: view.getVisibleSize().width, height: view.getVisibleSize().height };
         }
         return _viewSizeCache;
     }
