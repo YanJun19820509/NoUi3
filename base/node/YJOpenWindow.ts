@@ -92,6 +92,10 @@ export class YJOpenWindow extends Component {
         this.openAt(idx);
     }
 
+    public a_openAll() {
+        this.a_open();
+    }
+
     /**
      * 打开指定索引的窗口
      * @param i 窗口索引
