@@ -631,7 +631,7 @@ export class YJAudioManager extends Component {
     public clear(): void {
         this.loopEffectMap.clear();
         for (const clip of this.clips.values()) {
-            no.assetBundleManager.release(clip, true);
+            no.assetBundleManager.release(clip, false);
         }
         this.clips.clear();
     }

@@ -11512,5 +11512,15 @@ export namespace no {
     export function isLandscape() {
         return !isPortrait();
     }
+
+    /**
+     * 设备是否有安全区域
+     * @returns 
+     */
+    export function hasSafeArea() {
+        const rect = sys.getSafeAreaRect();
+        const size = viewSize();
+        return rect.height < size.height;
+    }
 }
 no.addToWindowForDebug('no', no);
