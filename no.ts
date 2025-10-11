@@ -11495,5 +11495,22 @@ export namespace no {
         }
         return _viewSizeCache;
     }
+
+    /**
+     * 是否竖屏
+     * @returns 是否竖屏
+     */
+    export function isPortrait() {
+        const { width, height } = viewSize();
+        return height > width;
+    }
+
+    /**
+     * 是否横屏
+     * @returns 是否横屏
+     */
+    export function isLandscape() {
+        return !isPortrait();
+    }
 }
 no.addToWindowForDebug('no', no);
