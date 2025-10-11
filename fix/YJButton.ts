@@ -73,6 +73,10 @@ export class YJButton extends Component {
     private needWait: boolean = false; // 等待间隔标记
     private interactable: boolean; // 原始交互状态缓存
 
+    private _delayCb() {
+        this.needWait = false;
+    }
+
     start() {
         this.needWait = false;
         // 首次激活时接管原始点击事件
@@ -121,9 +125,7 @@ export class YJButton extends Component {
         // 执行所有缓存的事件处理器
         no.executeHandlers(this.clickEvents, event);
         // 重置点击状态（实现防连点间隔）
-        this.scheduleOnce(() => {
-            this.needWait = false;
-        }, this.delay);
+        this.scheduleOnce(this._delayCb, this.delay);
     }
 
     /** 设置按钮全局点击开关（同时控制交互状态） */

@@ -11491,11 +11491,36 @@ export namespace no {
      */
     export function viewSize() {
         if (!_viewSizeCache) {
-            _viewSizeCache = { width: 0, height: 0 };
-            _viewSizeCache.width = view.getVisibleSize().width;
-            _viewSizeCache.height = view.getVisibleSize().height;
+            _viewSizeCache = { width: view.getVisibleSize().width, height: view.getVisibleSize().height };
         }
         return _viewSizeCache;
+    }
+
+    /**
+     * 是否竖屏
+     * @returns 是否竖屏
+     */
+    export function isPortrait() {
+        const { width, height } = viewSize();
+        return height > width;
+    }
+
+    /**
+     * 是否横屏
+     * @returns 是否横屏
+     */
+    export function isLandscape() {
+        return !isPortrait();
+    }
+
+    /**
+     * 设备是否有安全区域
+     * @returns 
+     */
+    export function hasSafeArea() {
+        const rect = sys.getSafeAreaRect();
+        const size = viewSize();
+        return rect.height < size.height;
     }
 }
 no.addToWindowForDebug('no', no);
