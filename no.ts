@@ -65,6 +65,7 @@ export namespace no {
      */
     export function setDebug(v: boolean) {
         _debug = v;
+        _isLogEnabled = v;
         log('isDebug', _debug);
     }
 
