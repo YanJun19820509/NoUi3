@@ -57,6 +57,8 @@ export class YJToggleGroupManager extends ToggleContainer {
      */
     @property(no.EventHandlerInfo)
     onToggleChecked: no.EventHandlerInfo[] = [];
+    @property(no.EventHandlerInfo)
+    onToggleUnchecked: no.EventHandlerInfo[] = [];
 
     /** 
      * 当前选中toggle的唯一标识 
@@ -98,6 +100,7 @@ export class YJToggleGroupManager extends ToggleContainer {
      */
     public ensureValidState() {
         const toggles = this.toggleItems;
+        if (toggles.length == 0) return;
         // 如果不允许全部关闭且有toggle时,确保默认选中项被选中
         if (!this._allowSwitchOff && toggles.length !== 0) {
             const toggle = toggles[this.defaultCheckedIdx];
@@ -124,6 +127,12 @@ export class YJToggleGroupManager extends ToggleContainer {
                 toggle.isChecked = false;
             }
         }
+
+        if (this._allowSwitchOff) {
+            for (let i = 0, n = toggles.length; i < n; i++) {
+                toggles[i].clickEvents.push(no.createEventHandler(this.node, YJToggleGroupManager, 'a_onUncheck'))
+            }
+        }
     }
 
     /** 
@@ -143,6 +152,18 @@ export class YJToggleGroupManager extends ToggleContainer {
         this.checkedToggleUuid = toggle.uuid;
         const index = this.toggleItems.indexOf(toggle);
         no.EventHandlerInfo.execute(this.onToggleChecked, index);
+    }
+
+    public a_onUncheck(d: any): void {
+        // 解析事件源获取Toggle组件
+        let toggle: Toggle = d instanceof Toggle ? d :
+            d instanceof EventTouch ? d.target.getComponent(Toggle) : null;
+        if (!toggle || !toggle.isChecked) return;
+
+        // 更新选中状态并触发事件
+        this.checkedToggleUuid = null;
+        const index = this.toggleItems.indexOf(toggle);
+        no.EventHandlerInfo.execute(this.onToggleUnchecked, index);
     }
 
     /** 
@@ -186,6 +207,21 @@ export class YJToggleGroupManager extends ToggleContainer {
         const items = this.getComponentsInChildren(Toggle);
         for (let i = 0, n = items.length; i < n; i++) {
             items[i].setIsCheckedWithoutNotify(i == idx);
+        }
+    }
+
+    public a_uncheck(idx: number) {
+        idx = Number(idx);
+        const items = this.getComponentsInChildren(Toggle);
+
+        if (!items[idx]) {
+            return;
+        }
+
+        // 避免重复触发事件
+        if (items[idx].isChecked) {
+            this.a_onUncheck(items[idx]);
+            items[idx].isChecked = false;
         }
     }
 }

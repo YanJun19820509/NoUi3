@@ -134,6 +134,8 @@ export class YJDataWork extends Component {
      */
     private _loaded: boolean = false;
 
+    private _dirty: boolean = false;
+
     /**
      * 组件销毁时调用
      * 执行资源清理和反注册操作
@@ -299,8 +301,9 @@ export class YJDataWork extends Component {
      * this.setValue('score', 100)
      *    .setValue('time', 60);
      */
-    public setValue(key: string, value: any) {
+    public setValue(key: string, value: any): YJDataWork {
         if (key == null) return this;
+        this._dirty = true;
         this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
         return this.repeatSetValue(key);
@@ -313,7 +316,7 @@ export class YJDataWork extends Component {
      * @returns {YJDataWork} 返回自身以支持链式调用
      * @example
      */
-    public setValueAndUpdateUi(key: string, value: any) {
+    public setValueAndUpdateUi(key: string, value: any): YJDataWork {
         if (key == null) return this;
         this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
@@ -331,7 +334,7 @@ export class YJDataWork extends Component {
      * @param key 数据的key
      * @returns {YJDataWork} 返回自身以支持链式调用
      */
-    public repeatSetValue(key: string) {
+    public repeatSetValue(key: string): YJDataWork {
         this.onValueChange(key);
         return this;//支持链式写法
     }
@@ -348,7 +351,7 @@ export class YJDataWork extends Component {
      *   armor: 'steel'
      * });
      */
-    public resetValue(key: string, value: any) {
+    public resetValue(key: string, value: any): YJDataWork {
         this.bindSubHackUis();
         this._data?.set(key, value, false);
         return this.repeatSetValue(key);
@@ -364,7 +367,7 @@ export class YJDataWork extends Component {
      * this.onlyUpdateValue('debugMode', true)
      *    .onlyUpdateValue('logLevel', 3);
      */
-    public onlyUpdateValue(key: string, value: any) {
+    public onlyUpdateValue(key: string, value: any): YJDataWork {
         this._data?.set(key, value, false);
         return this;//支持链式写法
     }
@@ -414,10 +417,12 @@ export class YJDataWork extends Component {
             YJDataWorkManager.ins().remove(this);
             return;
         }
+        if (!this._dirty) return;
         for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
             const ui = this.subFuckUis[i];
             ui.syncData();
         }
+        this._dirty = false;
     }
 
     /**
