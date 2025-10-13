@@ -69,18 +69,29 @@ export class SetColor extends HackUi {
             color = data;
         }
 
+        let comp: YJCharLabel | LabelOutline | UIRenderer;
         // 根据模式选择目标组件并应用颜色
         if (this.isOutline) {
-            if (this.getComponent(YJCharLabel)) {
-                this.getComponent(YJCharLabel).outlineColor = color;
-            } else if (this.getComponent(LabelOutline)) {
-                this.getComponent(LabelOutline).color = color;
+            comp = this.getComponent(YJCharLabel);
+            if (comp) {
+                (comp as YJCharLabel).outlineColor = color;
+            } else {
+                comp = this.getComponent(LabelOutline);
+                if (comp) {
+                    comp.color = color;
+                }
             }
         } else {
-            if (this.getComponent(YJCharLabel)) {
-                this.getComponent(YJCharLabel).fontColor = color;
-            } else if (this.getComponent(UIRenderer)) {
-                this.getComponent(UIRenderer).color = color;
+            comp = this.getComponent(YJCharLabel);
+            if (comp) {
+                (comp as YJCharLabel).fontColor = color;
+            } else {
+                comp = this.getComponent(UIRenderer);
+                if (comp) {
+                    comp.color = color;
+                    if (comp.renderData)
+                        comp.renderData.vertDirty = true;
+                }
             }
         }
     }

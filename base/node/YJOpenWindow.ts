@@ -44,6 +44,14 @@ export class OpenWindowInfo {
             YJWindowManager.createPanelByPrefab(this.prefabPath, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
         }
     }
+
+    public close() {
+        if (this.windowName != '') {
+            YJWindowManager.closePanel(this.windowName, LayerType[this.to]);
+        } else if (this.prefabPath != '') {
+
+        }
+    }
 }
 
 @ccclass('YJOpenWindow')
@@ -65,12 +73,14 @@ export class YJOpenWindow extends Component {
         this.autoOpen && this.openAt(this.autoOpenIndex);
     }
 
+    private _idx: number = 0;
+    private openAllCb() {
+        this.openAt(this._idx++, this.openAllCb.bind(this));
+    }
     /** 按顺序打开所有窗口,每个窗口间隔0.2秒 */
     public a_open() {
-        let n = this.infos.length, i = 0;
-        this.schedule(() => {
-            this.openAt(i++);
-        }, .2, n - 1);
+        this._idx = 0;
+        this.openAllCb();
     }
 
     /** 
@@ -80,6 +90,10 @@ export class YJOpenWindow extends Component {
      */
     public a_openAt(event: EventTouch, idx: string): void {
         this.openAt(Number(idx || event));
+    }
+
+    public a_closeAt(event: EventTouch, idx: string): void {
+        this.closeAt(Number(idx || event));
     }
 
     /**
@@ -92,8 +106,19 @@ export class YJOpenWindow extends Component {
         this.openAt(idx);
     }
 
+    public a_closeName(event: EventTouch, name: string): void {
+        const idx = no.indexOfArray(this.infos, name || event, 'windowName');
+        this.closeAt(idx);
+    }
+
     public a_openAll() {
         this.a_open();
+    }
+
+    public a_closeAll() {
+        for (let i = 0; i < this.infos.length; i++) {
+            this.closeAt(i);
+        }
     }
 
     /**
@@ -102,8 +127,11 @@ export class YJOpenWindow extends Component {
      * @param onOpended 窗口打开后的回调
      */
     public openAt(i: number, onOpended?: (panel: YJPanel) => void) {
-        let info = this.infos[i];
-        info?.open(onOpended);
+        this.infos[i]?.open(onOpended);
+    }
+
+    public closeAt(i: number) {
+        this.infos[i]?.close();
     }
 
     /**

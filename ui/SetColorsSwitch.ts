@@ -99,6 +99,8 @@ export class ColorInfo {
             if (this.isLabel && comp.getComponent(LabelOutline))
                 comp.getComponent(LabelOutline).color = this.outlineColor;
         }
+        if (comp.renderData)
+            comp.renderData.vertDirty = true;
     }
 }
 
@@ -159,7 +161,7 @@ export class SetColorsSwitch extends HackUi {
     protected onDataChange(data: any) {
         // 统一转换为字符串进行条件匹配
         const condition = String(data);
-        
+
         // 遍历所有颜色配置寻找匹配项
         for (let i = 0, n = this.infos.length; i < n; i++) {
             const info = this.infos[i];
