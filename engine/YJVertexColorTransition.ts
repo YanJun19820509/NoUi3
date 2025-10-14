@@ -173,6 +173,7 @@ class YJVertexColorTransitionData {
         // 脏检查：无更新需求时提前返回
         if (this.renderComp?.renderData.vertDirty) {
             this._setColor();
+            this._needUpdate = true;
         }
         if (this._needUpdate) {
             // console.log('YJVertexColorTransition vertDirty', this.renderComp?.renderData.vertDirty);
