@@ -65,6 +65,7 @@ export class YJToggleGroupManager extends ToggleContainer {
      * @private 用于防止重复触发相同toggle的事件
      */
     private checkedToggleUuid: string = null;
+    private checkedToggle: Toggle = null;
 
     /** 
      * 组件加载时初始化
@@ -107,6 +108,7 @@ export class YJToggleGroupManager extends ToggleContainer {
             if (toggle && !toggle.isChecked) {
                 // 强制设置默认选中项
                 toggle.isChecked = true;
+                this.checkedToggle = toggle;
                 this.notifyToggleCheck(toggle);
             } else {
                 // 触发选中回调
@@ -128,6 +130,7 @@ export class YJToggleGroupManager extends ToggleContainer {
             }
         }
 
+        if (EDITOR) return;
         if (this._allowSwitchOff) {
             for (let i = 0, n = toggles.length; i < n; i++) {
                 toggles[i].clickEvents.push(no.createEventHandler(this.node, YJToggleGroupManager, 'a_onUncheck'))
@@ -147,9 +150,13 @@ export class YJToggleGroupManager extends ToggleContainer {
         let toggle: Toggle = d instanceof Toggle ? d :
             d instanceof EventTouch ? d.target.getComponent(Toggle) : null;
         if (!toggle || this.checkedToggleUuid === toggle.uuid) return;
-
+        if (this.checkedToggle) {
+            const index = this.toggleItems.indexOf(this.checkedToggle);
+            no.EventHandlerInfo.execute(this.onToggleUnchecked, index);
+        }
         // 更新选中状态并触发事件
         this.checkedToggleUuid = toggle.uuid;
+        this.checkedToggle = toggle;
         const index = this.toggleItems.indexOf(toggle);
         no.EventHandlerInfo.execute(this.onToggleChecked, index);
     }
