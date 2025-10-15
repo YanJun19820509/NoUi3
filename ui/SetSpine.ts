@@ -1,4 +1,4 @@
-import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR, isValid, Node, SpineSocket } from '../yj';
+import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR, isValid, Node, SpineSocket, SkeletonData } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
@@ -265,16 +265,13 @@ export class SetSpine extends HackUi {
     }
 
     // 修改销毁节点的通用方法
-    private destroySpineNode(spine: Skeleton, path = this.curPath) {
+    private destroySpineNode(spine: Skeleton) {
         if (!spine) return;
         this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
         // 在销毁节点前更新引用计数
         if (isValid(spine?.node, true)) {
             spine.node.parent = null;
             spine.node.destroy();
-            if (this.curPath) {
-                YJSpineManager.ins.set(path);
-            }
         }
     }
 
@@ -338,79 +335,7 @@ export class SetSpine extends HackUi {
             if (!path) path = this.curPath;
 
             // 异步加载spine资源
-            YJSpineManager.ins.get(path, this.spineUuid).then(res => {
-                if (!res || !res.isValid) {
-                    no.err(`spine资源${path}不存在或已销毁`);
-                    return;
-                }
-                // 组件有效性检查
-                if (!isValid(this.node, true)) {
-                    this.destroySpineNode(this._curSpine, path);
-                    this._curSpine = null;
-                    return;
-                }
-
-                this.curPath = path;
-
-                // 销毁旧spine节点（异步加载后需要重新获取引用）
-                this.destroySpineNode(this._curSpine);
-                this._curSpine = null;
-                // 创建新spine节点
-                const newSpineNode = no.newNode('spine', [Skeleton]);
-                newSpineNode.layer = this.node.layer;
-                newSpineNode.parent = this.node;
-                const spine = newSpineNode.getComponent(Skeleton);
-                this._curSpine = spine;
-
-                // 继承基础spine组件属性
-                const bSpine = this.getComponent(Skeleton);
-                spine.customMaterial = bSpine.customMaterial;
-                this.defaultScale = bSpine.timeScale;
-                spine.premultipliedAlpha = bSpine.premultipliedAlpha;
-                spine.defaultCacheMode = bSpine.defaultCacheMode;
-                // spine.enableBatch = bSpine.enableBatch;
-
-                // 设置骨骼数据
-                spine.skeletonData = res;
-                if (this.scokets.length) {
-                    for (let i = 0, n = this.scokets.length; i < n; i++) {
-                        const { path, node } = this.scokets[i];
-                        spine.sockets.push(new SpineSocket(path, node));
-                    }
-                    spine.sockets = spine.sockets;
-                }
-                // 时间缩放计算（全局缩放系数 * 配置缩放系数）
-                spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
-
-                // 自动设置节点尺寸
-                const width = res.getRuntimeData().width;
-                const height = res.getRuntimeData().height;
-                if (!this.useNodeSize) {
-                    if (width > 0 && height > 0) {
-                        no.size(this.node, size(width, height));
-                    }
-                } else {
-                    const nodeSize = no.size(this.node);
-                    newSpineNode.setScale(nodeSize.width / width, nodeSize.height / height);
-                }
-
-                // 构建动画标识（皮肤:动画名）
-                let tempStr = (skin ? (skin + ':') : '') + animation;
-
-                // 播放控制逻辑
-                if (pause) {
-                    this._pause(tempStr); // 示例：暂停动画
-                } else if (loop) {
-                    this._playLoop(tempStr); // 示例：循环播放
-                } else if (loopNum > 1) {
-                    this.loopNum = loopNum;
-                    this.playLoopNum(tempStr); // 示例：指定次数循环
-                } else {
-                    this._playOnce(tempStr); // 示例：单次播放
-                }
-
-                this.playDuration(duration); // 设置播放时长限制
-            });
+            YJSpineManager.ins.get(path, this.spineUuid).then(this.getSpineCb.bind(this, path, timeScale, skin, animation, pause, loop, loopNum, duration));
         } else if (animation != null) { // 使用现有资源播放动画
             if (!spine) return;
             spine.node.active = true;
@@ -433,6 +358,78 @@ export class SetSpine extends HackUi {
             this.needClearTracks && !spine.isAnimationCached() && spine.clearTracks();
             spine.enabled = false; // 禁用组件
         }
+    }
+
+    private getSpineCb(path: string, timeScale: number, skin: string, animation: string, pause: boolean, loop: boolean, loopNum: number, duration: number, res: SkeletonData) {
+        if (!res || !res.isValid) {
+            no.err(`spine资源${path}不存在或已销毁`);
+            return;
+        }
+        this.curPath = path;
+        // 组件有效性检查
+        if (!isValid(this.node, true)) {
+            this.destroySpineNode(this._curSpine);
+            this._curSpine = null;
+            return;
+        }
+        // 销毁旧spine节点（异步加载后需要重新获取引用）
+        this.destroySpineNode(this._curSpine);
+        this._curSpine = null;
+        // 创建新spine节点
+        const newSpineNode = no.newNode('spine', [Skeleton]);
+        newSpineNode.layer = this.node.layer;
+        newSpineNode.parent = this.node;
+        const spine = newSpineNode.getComponent(Skeleton);
+        this._curSpine = spine;
+
+        // 继承基础spine组件属性
+        const bSpine = this.getComponent(Skeleton);
+        spine.customMaterial = bSpine.customMaterial;
+        this.defaultScale = bSpine.timeScale;
+        spine.premultipliedAlpha = bSpine.premultipliedAlpha;
+        spine.defaultCacheMode = bSpine.defaultCacheMode;
+        // spine.enableBatch = bSpine.enableBatch;
+
+        // 设置骨骼数据
+        spine.skeletonData = res;
+        if (this.scokets.length) {
+            for (let i = 0, n = this.scokets.length; i < n; i++) {
+                const { path, node } = this.scokets[i];
+                spine.sockets.push(new SpineSocket(path, node));
+            }
+            spine.sockets = spine.sockets;
+        }
+        // 时间缩放计算（全局缩放系数 * 配置缩放系数）
+        spine.timeScale = ((timeScale || bSpine.timeScale) * this.GlobalScale);
+
+        // 自动设置节点尺寸
+        const width = res.getRuntimeData().width;
+        const height = res.getRuntimeData().height;
+        if (!this.useNodeSize) {
+            if (width > 0 && height > 0) {
+                no.size(this.node, size(width, height));
+            }
+        } else {
+            const nodeSize = no.size(this.node);
+            newSpineNode.setScale(nodeSize.width / width, nodeSize.height / height);
+        }
+
+        // 构建动画标识（皮肤:动画名）
+        let tempStr = (skin ? (skin + ':') : '') + animation;
+
+        // 播放控制逻辑
+        if (pause) {
+            this._pause(tempStr); // 示例：暂停动画
+        } else if (loop) {
+            this._playLoop(tempStr); // 示例：循环播放
+        } else if (loopNum > 1) {
+            this.loopNum = loopNum;
+            this.playLoopNum(tempStr); // 示例：指定次数循环
+        } else {
+            this._playOnce(tempStr); // 示例：单次播放
+        }
+
+        this.playDuration(duration); // 设置播放时长限制
     }
 
     /**
