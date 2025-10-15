@@ -55,10 +55,13 @@ export class YJToggleGroupManager extends ToggleContainer {
      * @property {no.EventHandlerInfo[]} onToggleChecked
      * @tip 事件回调参数为选中toggle的索引号
      */
-    @property(no.EventHandlerInfo)
+    @property({ type: no.EventHandlerInfo, displayName: '选中时' })
     onToggleChecked: no.EventHandlerInfo[] = [];
-    @property(no.EventHandlerInfo)
+    @property({ type: no.EventHandlerInfo, displayName: '取消选中时' })
     onToggleUnchecked: no.EventHandlerInfo[] = [];
+    @property({ displayName: '间隔时间s', tooltip: '切换间隔,用于避免快速切换时未及时响应', min: 0 })
+    intervalTime: number = 0;
+
 
     /** 
      * 当前选中toggle的唯一标识 
@@ -150,6 +153,7 @@ export class YJToggleGroupManager extends ToggleContainer {
         let toggle: Toggle = d instanceof Toggle ? d :
             d instanceof EventTouch ? d.target.getComponent(Toggle) : null;
         if (!toggle || this.checkedToggleUuid === toggle.uuid) return;
+        this.setTogglesInteractable(false);
         if (this.checkedToggle) {
             const index = this.toggleItems.indexOf(this.checkedToggle);
             no.EventHandlerInfo.execute(this.onToggleUnchecked, index);
@@ -229,6 +233,26 @@ export class YJToggleGroupManager extends ToggleContainer {
         if (items[idx].isChecked) {
             this.a_onUncheck(items[idx]);
             items[idx].isChecked = false;
+        }
+    }
+
+    private setTogglesInteractable(v: boolean) {
+        if (this.intervalTime <= 0) return;
+        let toggle: Toggle;
+        for (let i = 0, n = this.toggleItems.length; i < n; i++) {
+            toggle = this.toggleItems[i];
+            if (toggle.isChecked) continue;
+            toggle.interactable = v;
+        }
+        this._t = this.intervalTime;
+    }
+
+    private _t: number = 0;
+    protected lateUpdate(dt: number): void {
+        if (this.intervalTime <= 0 || this._t <= 0) return;
+        this._t -= dt;
+        if (this._t <= 0) {
+            this.setTogglesInteractable(true);
         }
     }
 }
