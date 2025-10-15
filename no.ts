@@ -1350,7 +1350,6 @@ export namespace no {
      * @param n 要转换的数字
      * @param units 单位数组（按单位从小到大排列，如[ 'K', 'M', 'B']）
      * @param unitLen 每个单位对应的数字长度（如3表示每3位换一个单位）
-     * @param intDigits 整数保留位数（默认1）
      * @param digits 小数保留位数（默认2）
      * @example num2strWithUnit(123456, ['K', 'M', 'B'], 3) -> "123.45K"
      * num2strWithUnit(123456, ['万', '亿'], 4) -> "12.34万"
