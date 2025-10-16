@@ -236,6 +236,10 @@ export class FixedSizeArray<T> {
         }
     }
 
+    toArray(): T[] {
+        return this.buffer.slice(this.head, this.head + this.size);
+    }
+
     clear(): void {
         this.head = 0;
         this.tail = 0;

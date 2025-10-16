@@ -1651,6 +1651,13 @@ export namespace no {
         return joinStrings('.', ...strs);
     }
 
+    export function toArray(v: any) {
+        if (!v) return [];
+        if (v instanceof Array) return v;
+        let t = [].concat(v);
+        return t;
+    }
+
     /**
      * 将一维数组分割为二维数组
      * @param array 原始数组

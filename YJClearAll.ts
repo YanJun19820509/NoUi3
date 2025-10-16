@@ -7,8 +7,8 @@ import { YJTempData } from "./YJTempData";
  * 清理所有数据,用于场景切换时清理所有数据
  */
 export function clearAll() {
-    YJAudioManager.ins.stopAll();
-    YJAudioManager.ins.clear();
+    YJAudioManager.ins?.stopAll();
+    YJAudioManager.ins?.clear();
     YJWindowManager.clearAll();
     no.nodePool.clear();
     no.evn.clear();

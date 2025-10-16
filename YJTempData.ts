@@ -22,6 +22,21 @@ export class YJTempData {
     }
 
     /**
+     * 给临时对象赋值
+     * @param name 对象名称
+     * @param v 值（KV），赋值完后会置为null
+     * @returns 
+     */
+    public static setObject(name: string, v: any) {
+        const o = this.object(name);
+        for (const k in v) {
+            o[k] = v[k];
+        }
+        v = null;
+        return o;
+    }
+
+    /**
      * 获取临时数组
      * @param name 数组名称
      * @param initialCapacity 初始容量

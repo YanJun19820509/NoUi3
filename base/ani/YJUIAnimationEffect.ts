@@ -1247,6 +1247,7 @@ export class YJUIAnimationEffect extends Component {
      */
     public a_play(e?: any, type?: string) {
         if (!this.enabled) return;
+        type = type || e;
         this.a_stop();
         let info: AnimationEffectInfo;
         if (type) {

@@ -242,6 +242,7 @@ export class YJSoundEffectManager extends Component {
      * }
      */
     public playEffectByAlias(alias: string, volume?: number): void {
+        // console.log('playEffectByAlias', alias);
         if (this._intervalPlay[alias] > 0) return;
         if (this._intervalMap[alias]) {
             this._intervalPlay[alias] = this._intervalMap[alias].d;

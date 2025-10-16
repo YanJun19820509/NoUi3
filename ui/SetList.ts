@@ -320,9 +320,7 @@ export class SetList extends HackUi {
             if (data.data) data = data.data;
         }
         // 将输入数据转换为标准数组（支持类数组对象）
-        if (!(data instanceof Array)) {
-            data = [].concat(data);
-        }
+        data = no.toArray(data);
 
         // 空数据情况处理
         if (data.length == 0) {
