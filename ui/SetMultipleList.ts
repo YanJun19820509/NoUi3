@@ -175,7 +175,6 @@ export class SetMultipleList extends HackUi {
         }
     }
 
-    private listData: any[];
     /**
      * 列表数据存储
      * @description 存储格式示例：
@@ -184,8 +183,8 @@ export class SetMultipleList extends HackUi {
      *   { type: 'image', url: 'image1.png' }
      * ]
      */
+    private listData: any[];
 
-    private isVertical: boolean;
     /**
      * 横向时指宽，纵向时指高
      * @example
@@ -194,15 +193,16 @@ export class SetMultipleList extends HackUi {
      * // 水平滚动时：
      * // contentSize 表示内容区域总宽度
      */
+    private isVertical: boolean;
     private contentSize: number;
 
-    private showNum: number;
     /**
      * 实际最多可显示的itemPanel个数
      * @description 
      * - 考虑不同尺寸模板的混合排列
      * - 根据滚动视图尺寸和模板尺寸动态计算
      */
+    private showNum: number;
 
     private allNum: number;
     /**
@@ -218,7 +218,6 @@ export class SetMultipleList extends HackUi {
     private scrollViewContent: Node;
     private scrollViewSize: Size;
 
-    private templateMap: { [type: string]: { size: Size, showNum: number } };
     /**
      * 模板尺寸映射表
      * @example
@@ -227,8 +226,8 @@ export class SetMultipleList extends HackUi {
      *   'image': { size: cc.size(300,150),  showNum: 3 }
      * }
      */
+    private templateMap: { [type: string]: { size: Size, showNum: number } };
 
-    private itemsMap: { [type: string]: Node[] };
     /**
      * 可用节点池
      * @description 按类型分类存储可复用节点
@@ -238,8 +237,8 @@ export class SetMultipleList extends HackUi {
      *   'image': [node4, node5]
      * }
      */
+    private itemsMap: { [type: string]: Node[] };
 
-    private positionMap: number[] = [];
     /**
      * 位置索引映射表
      * @description 存储每个数据项的位置坐标
@@ -247,8 +246,8 @@ export class SetMultipleList extends HackUi {
      * // 垂直布局：
      * [0, 100, 200, 300,...] // 每个元素对应y坐标
      */
+    private positionMap: number[] = [];
 
-    private typeDataIndexMap: { [type: string]: number[] } = {};
     /**
      * 类型数据索引映射
      * @description 记录各类型模板使用的数据索引
@@ -258,6 +257,9 @@ export class SetMultipleList extends HackUi {
      *   'image': [1, 3]
      * }
      */
+    private typeDataIndexMap: { [type: string]: number[] } = {};
+
+    private _1b1: boolean = false;
 
     /**
      * 当组件启用时的回调
@@ -525,6 +527,8 @@ export class SetMultipleList extends HackUi {
         if (!(data instanceof Array)) {
             data = [].concat(data);
         }
+        //是否第1次
+        this._1b1 = !!this.listData;
         // 创建数据副本以避免污染原始数据
         this.listData = data;      // 存储当前列表数据
         this.allNum = data.length; // 记录数据总量
@@ -608,7 +612,12 @@ export class SetMultipleList extends HackUi {
                         //     }
                         // }
                         let j = 0;
-                        this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.06, items.length - 1);
+                        if (this._1b1)//第1次加载，使用定时器逐个更新
+                            this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.06, items.length - 1);
+                        else//非第1次加载，逐个更新
+                            while (j < items.length) {
+                                this.setItem(items, dataIndexes, i, j++)
+                            }
                         break; // 找到第一个有效区间后跳出循环
                     }
                 }

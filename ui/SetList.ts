@@ -446,16 +446,20 @@ export class SetList extends HackUi {
         // 按数据索引排序子节点
         // no.sortArray(this.content.children, (a, b) => a['__dataIndex'] - b['__dataIndex']);
 
+        let i = 0;
         // 动画模式或强制更新模式
         if (this.uiAnim?.enabled || this._1b1) {
             this._1b1 = false; // 重置强制更新标记
-            let i = 0;
             // 使用定时器逐个更新（支持动画效果）
             this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
         }
+        else if (!this._1b1) {
+            while (i < this.showMax) {
+                this.setItem(i++);
+            }
+        }
         // 普通模式
         else {
-            let i = 0;
             // // 使用任务管理器分帧处理
             // YJJobManager.ins.addTask(() => {
             //     this.setItem(i++);
