@@ -50,6 +50,7 @@ export class YJGameData extends no.Data {
             a._state = new no.State();
             a.onInit();
             b[key] = a;
+            no.log('YJGameData instance', this.objectName, key);
         }
         return b[key];
     }
@@ -63,6 +64,7 @@ export class YJGameData extends no.Data {
         if (this._insMap[this.objectName]?.[key]) {
             this._insMap[this.objectName][key] = null;
             delete this._insMap[this.objectName][key];
+            no.log('YJGameData destroy', this.objectName, key);
         }
     }
 
