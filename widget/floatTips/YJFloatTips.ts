@@ -1,7 +1,6 @@
 
 import { ccclass, property, easing } from '../../yj';
 import { YJDataWork } from '../../base/YJDataWork';
-import { EasingTypeName } from '../../types';
 
 /**
  * Predefined variables
