@@ -976,10 +976,10 @@ export namespace no {
          */
         public execute(...args: any[]): void {
             if (isValid(this.handler?.target, true)) {
-                if (this.handler.handler == '') {
-                    console.error('EventHandlerInfo handler is empty', this.handler.target.name, this.handler._componentName);
-                }
-                this.handler.emit(args);
+                if (this.handler._componentName == '' || this.handler.handler == '') {
+                    console.error('EventHandlerInfo componentName or handler is empty', this.handler.target.name, this.handler._componentName, this.handler.handler);
+                } else
+                    this.handler.emit(args);
             }
         }
     }
