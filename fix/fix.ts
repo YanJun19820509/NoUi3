@@ -1,3 +1,4 @@
+import { BaseNode } from 'cc';
 import { no } from '../no';
 import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect, EDITOR, LabelOutline } from '../yj';
 import { YJButton } from './YJButton';
@@ -233,3 +234,32 @@ js.mixin(Skeleton.prototype, {
 js.mixin(LabelOutline.prototype, {
     onDisable() { }
 })
+
+
+const _getComponent = BaseNode.prototype.getComponent;
+const _getComponents = BaseNode.prototype.getComponents;
+const _getComponentInChildren = BaseNode.prototype.getComponentInChildren;
+const _getComponentsInChildren = BaseNode.prototype.getComponentsInChildren;
+js.mixin(BaseNode.prototype, {
+    getComponent(typeOrClassName: any) {
+        if (!typeOrClassName)
+            console.error('getComponent', typeOrClassName, this.name);
+        return _getComponent.call(this, typeOrClassName);
+    },
+    getComponents(typeOrClassName: any) {
+        if (!typeOrClassName) {
+            console.error('getComponents', typeOrClassName, this.name);
+        }
+        return _getComponents.call(this, typeOrClassName);
+    },
+    getComponentInChildren(typeOrClassName: any) {
+        if (!typeOrClassName)
+            console.error('getComponentInChildren', typeOrClassName, this.name);
+        return _getComponentInChildren.call(this, typeOrClassName);
+    },
+    getComponentsInChildren(typeOrClassName: any) {
+        if (!typeOrClassName)
+            console.error('getComponentsInChildren', typeOrClassName, this.name);
+        return _getComponentsInChildren.call(this, typeOrClassName);
+    }
+});

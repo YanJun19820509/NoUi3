@@ -975,8 +975,12 @@ export namespace no {
          * );
          */
         public execute(...args: any[]): void {
-            if (isValid(this.handler?.target, true))
+            if (isValid(this.handler?.target, true)) {
+                if (this.handler.handler == '') {
+                    console.error('EventHandlerInfo handler is empty', this.handler.target.name, this.handler._componentName);
+                }
                 this.handler.emit(args);
+            }
         }
     }
 
