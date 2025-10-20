@@ -8,7 +8,7 @@ export class YJPreloadJson extends YJPreloadDelegate {
     @property({ type: no.EventHandlerInfo, displayName: '加载完成' })
     completeCall: no.EventHandlerInfo[] = [];
 
-    onJsonLoaded(assets: JsonAsset[]) {
+    onJsonLoaded(assets: JsonAsset[], next?: Function) {
         let asset: JsonAsset;
         for (let i = 0, n = assets.length; i < n; i++) {
             asset = assets[i];
@@ -17,6 +17,7 @@ export class YJPreloadJson extends YJPreloadDelegate {
             asset.decRef();
         }
         no.EventHandlerInfo.execute(this.completeCall);
+        next?.();
     }
 }
 

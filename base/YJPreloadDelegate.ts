@@ -40,7 +40,7 @@ export class YJPreloadDelegate extends Component {
      *     });
      * }
      */
-    onJsonLoaded(assets: JsonAsset[]) { }
+    onJsonLoaded(assets: JsonAsset[], next: Function) { }
 
     /**
      * 全部资源加载完成回调

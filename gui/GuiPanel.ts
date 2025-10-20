@@ -4,11 +4,10 @@ import { GUINodeTree } from "@core/gui/Defines";
 import { YJPanel } from "../base/node/YJPanel";
 import { no } from "../no";
 import { YJDataWork } from "../base/YJDataWork";
+import { YJPanelCreated } from "../types";
 
 @ccclass('GuiPanel')
-export class GuiPanel extends DelegateComponent {
-    @property({ type: YJPanel })
-    panel: YJPanel = null;
+export class GuiPanel extends YJPanel {
 
     /**
      * 节点添加到层级以后的回调（onLoad之后），在组件内onAdded回调之后执行
@@ -20,10 +19,11 @@ export class GuiPanel extends DelegateComponent {
      * @returns
      */
     onAdded(params: any, nodeTree: GUINodeTree): void {
-        this.panel.initPanel().then(this._initData.bind(this, params)).catch(this.onError.bind(this));
+        this._initData(params);
+        this.initPanel().catch(this.onError.bind(this));
     }
     private _initData(params: any) {
-        const dataWork: YJDataWork = this.panel['dataWork'];
+        const dataWork: YJDataWork = this['dataWork'];
         if (dataWork) {
             dataWork.clear().initWithData(params);
         }
@@ -35,9 +35,8 @@ export class GuiPanel extends DelegateComponent {
      * 比如希望节点做一个FadeOut然后删除，则可以在`onBeforeRemoved`当中播放action动画，动画结束后调用next
      *
      * */
-    onBeforeRemove(node: Node, next: () => void): void {
-        this.panel.closePanel();
-        next();
+    onBeforeRemove(): void {
+        this.closePanel();
     }
 
     /**
@@ -54,5 +53,14 @@ export class GuiPanel extends DelegateComponent {
      */
     onError(error: any): void {
         no.err('GuiPanel', error);
+    }
+
+    public clear(force = false) {
+        if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+        if (this.status == 'open')
+            this.onClosePanel();
+        no.setPrototype(this, { [YJPanelCreated]: '0' });
+        const dc = this.getComponent(DelegateComponent);
+        dc ? dc.removeView() : this.node.destroy();
     }
 }

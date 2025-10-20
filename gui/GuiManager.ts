@@ -34,7 +34,8 @@ export class GuiManager {
                 }
             }
             if (a != null) {
-                a.initPanel().then(this._initData.bind(this, a, params)).catch(e => { no.err('GuiManager', e.stack, e.message); });
+                this._initData(a, params);
+                a.initPanel().catch(e => { no.err('GuiManager', e.stack, e.message); });
                 return;
             }
         }

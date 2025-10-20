@@ -137,7 +137,7 @@ export class YJPreload extends Component {
     /** 是否预加载远程资源包（需要先配置远程资源服务器地址） */
     @property({ displayName: '预加载远程包' })
     preloadRemoteBundles: boolean = false;
-    
+
     /** 需要加载的资源包名称列表（例如：['base', 'ui']） */
     @property({ type: CCString, displayName: '加载包' })
     bundles: string[] = [];
@@ -157,7 +157,7 @@ export class YJPreload extends Component {
     /** 需要加载JSON文件的文件夹路径列表（格式："bundleName/json/folder"） */
     @property({ type: CCString, displayName: '加载json文件夹' })
     jsonFiles: string[] = [];
-    
+
     /** Prefab文件配置列表（在编辑器中拖入预制体后自动生成元数据） 
      * @example
      * // 编辑器操作：
@@ -167,19 +167,19 @@ export class YJPreload extends Component {
      */
     @property({ type: PrefabFileInfo, displayName: '加载prefab文件' })
     prefabFiles: PrefabFileInfo[] = [];
-    
+
     /** 是否在添加prefab后自动执行元数据检查（生成name/uuid/url信息） */
     @property({ displayName: '加了prefab后check一下' })
     needCheck: boolean = false;
-    
+
     /** 是否预加载纹理资源（启用后会显示纹理相关配置项） */
     @property({ displayName: '预加载纹理' })
     loadTexture: boolean = false;
-    
+
     /** 需要单独加载的纹理路径列表（格式："bundleName/textures/xxx"） */
     @property({ type: CCString, displayName: '加载单个纹理', visible() { return this.loadTexture; } })
     texturePaths: string[] = [];
-    
+
     /** 需要加载整个文件夹下纹理的路径列表（格式："bundleName/textures/folder"） */
     @property({ type: CCString, displayName: '加载文件夹下所有纹理', visible() { return this.loadTexture; } })
     textureFolders: string[] = [];
@@ -248,6 +248,9 @@ export class YJPreload extends Component {
     private finished: number = 0;             // 已完成任务数量
     private showNewScene: boolean = false;    // 是否显示新场景的标记
 
+    private _preloadRemoteBundlesCb() {
+        this.auto && this.a_startLoad();
+    }
     /**
      * 组件启用时自动触发预加载流程
      * @description 根据配置决定是否预加载远程资源包后开始加载
@@ -259,9 +262,7 @@ export class YJPreload extends Component {
     protected onEnable(): void {
         if (EDITOR) return;
         if (this.preloadRemoteBundles) {
-            no.assetBundleManager.preloadRemoteBundles(() => {
-                this.auto && this.a_startLoad();
-            });
+            no.assetBundleManager.preloadRemoteBundles(this._preloadRemoteBundlesCb.bind(this));
         } else {
             this.auto && this.a_startLoad();
         }
@@ -290,6 +291,9 @@ export class YJPreload extends Component {
         if (this.loadTexture) this.loadTextures();
     }
 
+    private _loadSceneCb() {
+        no.assetBundleManager.loadScene(this.scene, null);
+    }
     /**
      * 延迟加载目标场景（通常由completeCall触发）
      * @description 使用0.5秒延迟避免画面卡顿，实际项目可根据需要调整延迟时间
@@ -299,9 +303,7 @@ export class YJPreload extends Component {
      * 组件方法：showScene
      */
     public showScene() {
-        this.showNewScene && this.scheduleOnce(() => {
-            no.assetBundleManager.loadScene(this.scene, null);
-        }, 0.5);
+        this.showNewScene && this.scheduleOnce(this._loadSceneCb, 0.5);
     }
 
     /**
@@ -325,11 +327,12 @@ export class YJPreload extends Component {
         this.finished = 0;
         this.progress = 0;
         this.fileInfo = new Map<string, string[]>();
+        let path: string, p: any, b: string, f: string, j: string[];
         // 解析files配置中的每个路径
         for (let i = 0; i < this.files.length; i++) {
-            let path = this.files[i];
-            let p = no.assetBundleManager.assetPath(path);
-            let b = p.bundle;
+            path = this.files[i];
+            p = no.assetBundleManager.assetPath(path);
+            b = p.bundle;
             // 收集需要加载的bundle名称（去重）
             if (this.bundles.indexOf(b) == -1) {
                 this.bundles.push(b);
@@ -338,18 +341,24 @@ export class YJPreload extends Component {
             if (!this.fileInfo.has(b)) {
                 this.fileInfo.set(b, []);
             }
-            let f = p.path;
-            let j = this.fileInfo.get(b);
+            f = p.path;
+            j = this.fileInfo.get(b);
             if (j.indexOf(f) == -1) {
                 j.push(f);
             }
         }
         // 计算总任务数 = 各配置项数量之和 + 场景加载标记
-        this.total = this.bundles.length + this.fileInfo.size + this.bundleFiles.length 
-            + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length 
+        this.total = this.bundles.length + this.fileInfo.size + this.bundleFiles.length
+            + this.folderFiles.length + this.jsonFiles.length + this.prefabFiles.length
             + (this.scene != '' ? 1 : 0);
     }
 
+    private _loadBundlesCb(p: number) {
+        if (p == 1) { // 当单个bundle加载完成时
+            this.finished++;
+            this.loadNext = true; // 标记可以继续下一步加载
+        }
+    }
     /**
      * 加载配置的资源包
      * @description 首阶段加载流程：
@@ -371,12 +380,7 @@ export class YJPreload extends Component {
             return;
         }
         // 加载所有配置的bundle，进度回调处理
-        no.assetBundleManager.loadBundles(this.bundles, (p) => {
-            if (p == 1) { // 当单个bundle加载完成时
-                this.finished++;
-                this.loadNext = true; // 标记可以继续下一步加载
-            }
-        });
+        no.assetBundleManager.loadBundles(this.bundles, this._loadBundlesCb.bind(this));
     }
 
     /**
@@ -469,6 +473,14 @@ export class YJPreload extends Component {
         }
     }
 
+    private _loadAnyFilesProgress(p: number) {
+        if (p == 1) {
+            this.progress = 0;
+            this.loadNext = true;
+        } else {
+            this.progress = p / this.total;
+        }
+    }
     /**
      * 加载预制体文件并进行预实例化
      * @description 第六阶段加载流程：
@@ -500,25 +512,19 @@ export class YJPreload extends Component {
                 request[request.length] = { url: this.prefabFiles[i].url };
             }
             this.finished += request.length;
-            
+
             // 执行批量加载
-            no.assetBundleManager.loadAnyFiles(request, 
+            no.assetBundleManager.loadAnyFiles(
+                request,
                 // 加载进度回调
-                p => {
-                    if (p == 1) {
-                        this.progress = 0;
-                        this.loadNext = true;
-                    } else {
-                        this.progress = p / this.total;
-                    }
-                }
+                this._loadAnyFilesProgress.bind(this)
                 // 加载完成回调
                 // items => {
                 //     for (let i = 0; i < items.length; i++) {
                 //         let item = items[i] as Prefab;
                 //         // 设置优化策略（2=高频实例化优化）
                 //         item.optimizationPolicy = 2;
-                        
+
                 //         // 预实例化并执行缓存初始化
                 //         let a = instantiate(item);
                 //         // 调用缓存对象的预创建方法（如果存在）
@@ -529,6 +535,15 @@ export class YJPreload extends Component {
         }
     }
 
+    private _preloadSceneProgressCb(p: number) {
+        if (p == 1) {
+            this.progress = 0;
+            this.finished++;
+            this.showNewScene = true; // 设置场景切换标志
+        } else {
+            this.progress = p / this.total; // 更新整体进度比例
+        }
+    }
     /**
      * 场景预加载方法
      * @description 执行场景资源的预加载，更新加载进度，并在完成后设置场景切换标志
@@ -550,15 +565,7 @@ export class YJPreload extends Component {
         }
         this.progress = 0.9 / this.total;
         // 通过资源管理器预加载场景
-        no.assetBundleManager.preloadScene(this.scene, (p) => {
-            if (p == 1) {
-                this.progress = 0;
-                this.finished++;
-                this.showNewScene = true; // 设置场景切换标志
-            } else {
-                this.progress = p / this.total; // 更新整体进度比例
-            }
-        });
+        no.assetBundleManager.preloadScene(this.scene, this._preloadSceneProgressCb.bind(this));
     }
 
     /**
@@ -610,6 +617,9 @@ export class YJPreload extends Component {
         }
     }
 
+    private _completeCb() {
+        no.EventHandlerInfo.execute(this.completeCall);
+    }
     /**
      * 检查预加载状态并更新进度
      * @returns 是否完成所有加载任务
@@ -645,9 +655,7 @@ export class YJPreload extends Component {
             // 通知代理加载完成
             this.delegate?.onLoadComplete();
             // 延迟0.5秒触发完成回调（确保后续逻辑执行）
-            this.scheduleOnce(() => {
-                no.EventHandlerInfo.execute(this.completeCall);
-            }, 0.5);
+            this.scheduleOnce(this._completeCb, 0.5);
         } else {
             // 更新进行中的进度数据
             if (this.dataWork) {
@@ -662,6 +670,18 @@ export class YJPreload extends Component {
         }
     }
 
+    private _loadFilesInFileInfoProgressCb(nextIndex: number, p: number) {
+        if (p == 1) {
+            // 单个包加载完成
+            this.progress = 0;
+            this.finished++;
+            // 递归加载下一个包
+            this.loadFilesInFileInfo(nextIndex);
+        } else {
+            // 更新当前包加载进度
+            this.progress = p / this.total;
+        }
+    }
     /**
      * 递归加载资源包中的文件列表
      * @param index 当前加载的资源包索引
@@ -681,28 +701,29 @@ export class YJPreload extends Component {
             this.loadNext = true; // 触发下一阶段加载
             return;
         }
+        index++;
         // 获取当前资源包的文件列表
         let files = this.fileInfo.get(b);
         if (files == null) {
             // 跳过空包继续下一个
-            this.loadFilesInFileInfo(index + 1);
+            this.loadFilesInFileInfo(index);
             return;
         }
         // 实际加载逻辑
-        no.assetBundleManager.loadFiles(b, files, (p) => {
-            if (p == 1) {
-                // 单个包加载完成
-                this.progress = 0;
-                this.finished++;
-                // 递归加载下一个包
-                this.loadFilesInFileInfo(index + 1);
-            } else {
-                // 更新当前包加载进度
-                this.progress = p / this.total;
-            }
-        }, null);
+        no.assetBundleManager.loadFiles(b, files, this._loadFilesInFileInfoProgressCb.bind(this, index), null);
     }
 
+    private _loadFilesInBundleProgressCb(nextIndex: number, p: number) {
+        if (p == 1) {
+            // 当前包加载完成时：
+            this.progress = 0;      // 重置进度计数器
+            this.finished++;        // 完成计数器+1
+            this.loadFilesInBundle(nextIndex); // 递归加载下一个包
+        } else {
+            // 更新当前包加载进度（按总任务数比例计算）
+            this.progress = p / this.total;
+        }
+    }
     /**
      * 加载指定资源包内的所有文件
      * @param index 当前加载的资源包索引（对应bundleFiles数组下标）
@@ -730,26 +751,28 @@ export class YJPreload extends Component {
             this.loadNext = true;
             return;
         }
+        index++;
         // 跳过空包配置项
         if (b == '') {
-            this.loadFilesInBundle(index + 1);
+            this.loadFilesInBundle(index);
             return;
         }
-        
+
         // 实际执行资源包加载
-        no.assetBundleManager.preloadAllFilesInBundle(b, (p: number) => {
-            if (p == 1) {
-                // 当前包加载完成时：
-                this.progress = 0;      // 重置进度计数器
-                this.finished++;        // 完成计数器+1
-                this.loadFilesInBundle(index + 1); // 递归加载下一个包
-            } else {
-                // 更新当前包加载进度（按总任务数比例计算）
-                this.progress = p / this.total;
-            }
-        });
+        no.assetBundleManager.preloadAllFilesInBundle(b, this._loadFilesInBundleProgressCb.bind(this, index));
     }
 
+    private _loadFilesInFolderProgressCb(nextIndex: number, p: number) {
+        if (p == 1) {
+            // 当前文件夹加载完成：
+            this.progress = 0;      // 重置进度计数器
+            this.finished++;        // 完成计数器+1
+            this.loadFilesInFolder(nextIndex); // 递归加载下一个文件夹
+        } else {
+            // 更新当前加载进度（按总任务数比例计算）
+            this.progress = p / this.total;
+        }
+    }
     /**
      * 加载指定文件夹下的所有资源文件
      * @param index 当前加载的文件夹索引（对应folderFiles数组下标）
@@ -777,33 +800,24 @@ export class YJPreload extends Component {
             this.loadNext = true;
             return;
         }
+        index++;
         // 跳过空路径配置项
         if (b == '') {
-            this.loadFilesInFolder(index + 1);
+            this.loadFilesInFolder(index);
             return;
         }
 
         // 执行文件夹资源预加载
-        no.assetBundleManager.preloadAllFilesInFolder(b, 
+        no.assetBundleManager.preloadAllFilesInFolder(b,
             // 加载进度回调
-            (p) => {
-                if (p == 1) {
-                    // 当前文件夹加载完成：
-                    this.progress = 0;      // 重置进度计数器
-                    this.finished++;        // 完成计数器+1
-                    this.loadFilesInFolder(index + 1); // 递归加载下一个文件夹
-                } else {
-                    // 更新当前加载进度（按总任务数比例计算）
-                    this.progress = p / this.total;
-                }
-            }, 
+            this._loadFilesInFolderProgressCb.bind(this, index),
             // 加载完成后的资源处理回调
             items => {
                 // 此处可添加资源后处理逻辑，例如：
                 // 1. 预制体优化设置（降低运行时实例化开销）
                 // 2. 预创建对象缓存（提升运行时性能）
                 // 3. 资源依赖分析（记录加载的资产信息）
-                
+
                 // 示例代码（需取消注释使用）：
                 // items.forEach(item => {
                 //     if (item instanceof Prefab) {
@@ -818,6 +832,21 @@ export class YJPreload extends Component {
         );
     }
 
+    private _loadJsonFilesInFolderProgressCb(p: number) {
+        // 进度更新处理
+        if (p == 1) {
+            this.progress = 0;      // 重置当前进度
+            this.finished++;        // 完成计数器+1
+        } else {
+            // 计算整体进度（当前文件进度/总任务数）
+            this.progress = p / this.total;
+        }
+    }
+    private _loadJsonFilesInFolderCompleteCb(nextIndex: number, items: JsonAsset[]) {
+        // 加载完成回调
+        this.delegate?.onJsonLoaded(items, this.loadJsonFilesInFolder.bind(this, nextIndex)); // 通知代理处理加载的JSON
+        // this.loadJsonFilesInFolder(index + 1); // 递归处理下一个配置
+    }
     /**
      * 加载指定文件夹下的所有JSON文件
      * @param index 当前要处理的jsonFiles数组索引
@@ -836,27 +865,20 @@ export class YJPreload extends Component {
             this.loadNext = true;
             return;
         }
+        index++;
         // 跳过空路径配置
         if (b == '') {
-            this.loadJsonFilesInFolder(index + 1);
+            this.loadJsonFilesInFolder(index);
             return;
         }
-        
+
         // 加载文件夹内所有JSON文件
-        no.assetBundleManager.loadAllFilesInFolder(b, (p) => {
-            // 进度更新处理
-            if (p == 1) {
-                this.progress = 0;      // 重置当前进度
-                this.finished++;        // 完成计数器+1
-            } else {
-                // 计算整体进度（当前文件进度/总任务数）
-                this.progress = p / this.total;
-            }
-        }, async (items: JsonAsset[]) => {
-            // 加载完成回调
-            this.delegate?.onJsonLoaded(items); // 通知代理处理加载的JSON
-            this.loadJsonFilesInFolder(index + 1); // 递归处理下一个配置
-        }, [JsonAsset]); // 指定只加载JSON类型资源
+        no.assetBundleManager.loadAllFilesInFolder(
+            b,
+            this._loadJsonFilesInFolderProgressCb.bind(this),
+            this._loadJsonFilesInFolderCompleteCb.bind(this, index),
+            [JsonAsset]// 指定只加载JSON类型资源
+        );
     }
 
     /**
@@ -880,7 +902,7 @@ export class YJPreload extends Component {
             const path = this.texturePaths[i];
             const p = no.assetBundleManager.assetPath(path);
             // 构造纹理加载请求（自动添加/texture后缀）
-            requests[requests.length] = { 
+            requests[requests.length] = {
                 path: p.path + '/texture', // Cocos纹理资源路径规范
                 bundle: p.bundle,          // 所属资源包
                 type: Texture2D            // 指定资源类型
@@ -888,11 +910,11 @@ export class YJPreload extends Component {
         }
         // 批量加载单独纹理
         no.assetBundleManager.loadAnyFiles(requests);
-        
+
         // 处理纹理文件夹
         for (let i = 0; i < this.textureFolders.length; i++) {
             let folder = this.textureFolders[i];
-            no.assetBundleManager.loadAllFilesInFolder(folder, 
+            no.assetBundleManager.loadAllFilesInFolder(folder,
                 null, // 不监听进度（由上层统一处理）
                 (items) => {
                     // 此处可添加纹理后处理逻辑：
@@ -900,7 +922,7 @@ export class YJPreload extends Component {
                     // 2. 预缓存纹理资源
                     // 3. 初始化材质球
                     // console.log(items.length)
-                }, 
+                },
                 [Texture2D] // 指定只加载纹理类型
             );
         }

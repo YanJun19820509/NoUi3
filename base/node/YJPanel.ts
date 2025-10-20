@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component, BlockInputEvents, js, UIOpacity, Node } from '../../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, js } from '../../yj';
 import { YJLoadAssets } from '../../editor/YJLoadAssets';
 import { no } from '../../no';
 import { YJPanelCreated, YJPanelPrefabMetaKey } from '../../types';
