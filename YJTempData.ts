@@ -6,7 +6,7 @@ import { FixedSizeArray } from "./FixedSizeArray";
 
 export class YJTempData {
     private static _arrays: Map<string, FixedSizeArray<any>> = new Map();
-    private static _objects: Map<string, { [key: string]: any }> = new Map();
+    private static _objects: Map<string, { [key: string]: any } | any> = new Map();
     private static _maps: Map<string, Map<any, any>> = new Map();
 
     /**
