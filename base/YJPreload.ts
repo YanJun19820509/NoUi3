@@ -3,6 +3,7 @@ import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CC
 import { no } from '../no';
 import { YJDataWork } from './YJDataWork';
 import { YJPreloadDelegate } from './YJPreloadDelegate';
+import { YJTempData } from '../YJTempData';
 
 /**
  * Predefined variables
@@ -666,22 +667,10 @@ export class YJPreload extends Component {
                     allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
-            requestAnimationFrame(this.checkState.bind(this));
+            requestAnimationFrame(() => this.checkState());
         }
     }
 
-    private _loadFilesInFileInfoProgressCb(nextIndex: number, p: number) {
-        if (p == 1) {
-            // 单个包加载完成
-            this.progress = 0;
-            this.finished++;
-            // 递归加载下一个包
-            this.loadFilesInFileInfo(nextIndex);
-        } else {
-            // 更新当前包加载进度
-            this.progress = p / this.total;
-        }
-    }
     /**
      * 递归加载资源包中的文件列表
      * @param index 当前加载的资源包索引
@@ -699,6 +688,7 @@ export class YJPreload extends Component {
         let b = this.bundles[index];
         if (b == null) {
             this.loadNext = true; // 触发下一阶段加载
+            YJTempData.clearFun('_loadFilesInFileInfoProgressCb');
             return;
         }
         index++;
@@ -710,20 +700,23 @@ export class YJPreload extends Component {
             return;
         }
         // 实际加载逻辑
-        no.assetBundleManager.loadFiles(b, files, this._loadFilesInFileInfoProgressCb.bind(this, index), null);
+        if (!YJTempData.hasFun('_loadFilesInFileInfoProgressCb')) {
+            YJTempData.fun('_loadFilesInFileInfoProgressCb', (nextIndex: number, p: number) => {
+                if (p == 1) {
+                    // 单个包加载完成
+                    this.progress = 0;
+                    this.finished++;
+                    // 递归加载下一个包
+                    this.loadFilesInFileInfo(nextIndex);
+                } else {
+                    // 更新当前包加载进度
+                    this.progress = p / this.total;
+                }
+            });
+        }
+        no.assetBundleManager.loadFiles(b, files, p => YJTempData.runFun('_loadFilesInFileInfoProgressCb', index, p), null);
     }
 
-    private _loadFilesInBundleProgressCb(nextIndex: number, p: number) {
-        if (p == 1) {
-            // 当前包加载完成时：
-            this.progress = 0;      // 重置进度计数器
-            this.finished++;        // 完成计数器+1
-            this.loadFilesInBundle(nextIndex); // 递归加载下一个包
-        } else {
-            // 更新当前包加载进度（按总任务数比例计算）
-            this.progress = p / this.total;
-        }
-    }
     /**
      * 加载指定资源包内的所有文件
      * @param index 当前加载的资源包索引（对应bundleFiles数组下标）
@@ -749,6 +742,7 @@ export class YJPreload extends Component {
         // 当所有包加载完成时触发下一阶段
         if (b == null) {
             this.loadNext = true;
+            YJTempData.clearFun('YJPreload._loadFilesInBundleProgressCb');
             return;
         }
         index++;
@@ -758,21 +752,24 @@ export class YJPreload extends Component {
             return;
         }
 
+        if (!YJTempData.hasFun('YJPreload._loadFilesInBundleProgressCb')) {
+            YJTempData.fun('YJPreload._loadFilesInBundleProgressCb', (nextIndex: number, p: number) => {
+                if (p == 1) {
+                    // 当前包加载完成时：
+                    this.progress = 0;      // 重置进度计数器
+                    this.finished++;        // 完成计数器+1
+                    this.loadFilesInBundle(nextIndex); // 递归加载下一个包
+                } else {
+                    // 更新当前包加载进度（按总任务数比例计算）
+                    this.progress = p / this.total;
+                }
+            })
+        }
+
         // 实际执行资源包加载
-        no.assetBundleManager.preloadAllFilesInBundle(b, this._loadFilesInBundleProgressCb.bind(this, index));
+        no.assetBundleManager.preloadAllFilesInBundle(b, p => YJTempData.runFun('YJPreload._loadFilesInBundleProgressCb', index, p));
     }
 
-    private _loadFilesInFolderProgressCb(nextIndex: number, p: number) {
-        if (p == 1) {
-            // 当前文件夹加载完成：
-            this.progress = 0;      // 重置进度计数器
-            this.finished++;        // 完成计数器+1
-            this.loadFilesInFolder(nextIndex); // 递归加载下一个文件夹
-        } else {
-            // 更新当前加载进度（按总任务数比例计算）
-            this.progress = p / this.total;
-        }
-    }
     /**
      * 加载指定文件夹下的所有资源文件
      * @param index 当前加载的文件夹索引（对应folderFiles数组下标）
@@ -798,6 +795,7 @@ export class YJPreload extends Component {
         // 当所有文件夹加载完成时触发下一阶段
         if (b == null) {
             this.loadNext = true;
+            YJTempData.clearFun('YJPreload._loadFilesInFolderProgressCb');
             return;
         }
         index++;
@@ -807,10 +805,24 @@ export class YJPreload extends Component {
             return;
         }
 
+        if (!YJTempData.hasFun('YJPreload._loadFilesInFolderProgressCb')) {
+            YJTempData.fun('YJPreload._loadFilesInFolderProgressCb', (nextIndex: number, p: number) => {
+                if (p == 1) {
+                    // 当前文件夹加载完成：
+                    this.progress = 0;      // 重置进度计数器
+                    this.finished++;        // 完成计数器+1
+                    this.loadFilesInFolder(nextIndex); // 递归加载下一个文件夹
+                } else {
+                    // 更新当前加载进度（按总任务数比例计算）
+                    this.progress = p / this.total;
+                }
+            })
+        }
+
         // 执行文件夹资源预加载
         no.assetBundleManager.preloadAllFilesInFolder(b,
             // 加载进度回调
-            this._loadFilesInFolderProgressCb.bind(this, index),
+            p => YJTempData.runFun('YJPreload._loadFilesInFolderProgressCb', index, p),
             // 加载完成后的资源处理回调
             items => {
                 // 此处可添加资源后处理逻辑，例如：
@@ -832,21 +844,6 @@ export class YJPreload extends Component {
         );
     }
 
-    private _loadJsonFilesInFolderProgressCb(p: number) {
-        // 进度更新处理
-        if (p == 1) {
-            this.progress = 0;      // 重置当前进度
-            this.finished++;        // 完成计数器+1
-        } else {
-            // 计算整体进度（当前文件进度/总任务数）
-            this.progress = p / this.total;
-        }
-    }
-    private _loadJsonFilesInFolderCompleteCb(nextIndex: number, items: JsonAsset[]) {
-        // 加载完成回调
-        this.delegate?.onJsonLoaded(items, this.loadJsonFilesInFolder.bind(this, nextIndex)); // 通知代理处理加载的JSON
-        // this.loadJsonFilesInFolder(index + 1); // 递归处理下一个配置
-    }
     /**
      * 加载指定文件夹下的所有JSON文件
      * @param index 当前要处理的jsonFiles数组索引
@@ -863,6 +860,8 @@ export class YJPreload extends Component {
         // 结束条件：处理完所有配置项
         if (b == null) {
             this.loadNext = true;
+            YJTempData.clearFun('YJPreload._loadJsonFilesInFolderProgressCb');
+            YJTempData.clearFun('YJPreload._loadJsonFilesInFolderCompleteCb');
             return;
         }
         index++;
@@ -872,11 +871,32 @@ export class YJPreload extends Component {
             return;
         }
 
+        if (!YJTempData.hasFun('YJPreload._loadJsonFilesInFolderProgressCb')) {
+            YJTempData.fun('YJPreload._loadJsonFilesInFolderProgressCb', (p: number) => {
+                // 进度更新处理
+                if (p == 1) {
+                    this.progress = 0;      // 重置当前进度
+                    this.finished++;        // 完成计数器+1
+                } else {
+                    // 计算整体进度（当前文件进度/总任务数）
+                    this.progress = p / this.total;
+                }
+            })
+        }
+
+        if (!YJTempData.hasFun('YJPreload._loadJsonFilesInFolderCompleteCb')) {
+            YJTempData.fun('YJPreload._loadJsonFilesInFolderCompleteCb', (nextIndex: number, items: JsonAsset[]) => {
+                this.delegate?.onJsonLoaded(items, () => {
+                    this.loadJsonFilesInFolder(nextIndex);
+                }); // 通知代理处理加载的JSON
+            })
+        }
+
         // 加载文件夹内所有JSON文件
         no.assetBundleManager.loadAllFilesInFolder(
             b,
-            this._loadJsonFilesInFolderProgressCb.bind(this),
-            this._loadJsonFilesInFolderCompleteCb.bind(this, index),
+            p => YJTempData.runFun('YJPreload._loadJsonFilesInFolderProgressCb', p),
+            items => YJTempData.runFun('YJPreload._loadJsonFilesInFolderCompleteCb', index, items),
             [JsonAsset]// 指定只加载JSON类型资源
         );
     }

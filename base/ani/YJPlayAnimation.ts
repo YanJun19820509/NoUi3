@@ -1,6 +1,7 @@
 
 import { Component, Animation, AnimationClip, ccclass, property, requireComponent, WrapMode } from '../../yj';
 import { no } from '../../no';
+import { YJTempData } from '../../YJTempData';
 
 /**
  * Predefined variables
@@ -93,15 +94,19 @@ export class YJPlayAnimation extends Component {
     public play(wrapMode?: WrapMode) {
         let ani = this.getComponent(Animation);
         if (ani.clips.length == 0) return;
-        ani.on(Animation.EventType.PLAY, this.onPlay, this);
-        ani.on(Animation.EventType.FINISHED, this.onFinished, this);
         let state = ani.getState(ani.clips[0].name);
         if (!state) {
-            this.scheduleOnce(() => {
-                this.play(wrapMode);
-            });
+            if (!YJTempData.hasFun('YJPlayAnimation.play')) {
+                YJTempData.fun('YJPlayAnimation.play', (wrapMode?: WrapMode) => {
+                    this.play(wrapMode);
+                });
+            }
+            this.scheduleOnce(() => YJTempData.runFun('YJPlayAnimation.play', wrapMode));
             return;
         }
+        YJTempData.clearFun('YJPlayAnimation.play');
+        ani.on(Animation.EventType.PLAY, this.onPlay, this);
+        ani.on(Animation.EventType.FINISHED, this.onFinished, this);
         if (wrapMode != undefined)
             state.wrapMode = wrapMode;
         state.play();

@@ -8,6 +8,7 @@ export class YJTempData {
     private static _arrays: Map<string, FixedSizeArray<any>> = new Map();
     private static _objects: Map<string, { [key: string]: any } | any> = new Map();
     private static _maps: Map<string, Map<any, any>> = new Map();
+    private static _funs: Map<string, { f: Function, args: any[] }> = new Map();
 
     /**
      * 获取临时对象
@@ -62,14 +63,57 @@ export class YJTempData {
     }
 
     /**
+     * 设置临时函数
+     * @param name 函数名
+     * @param f 函数体
+     */
+    public static fun(name: string, f: Function, ...args: any[]) {
+        this._funs.set(name, { f, args });
+    }
+
+    /**
+     * 是否存在临时函数
+     * @param name 函数名
+     * @returns 是否存在
+     */
+    public static hasFun(name: string): boolean {
+        return this._funs.has(name);
+    }
+
+    /**
+     * 执行临时函数
+     * @param name 函数名
+     */
+    public static runFun(name: string, ...args1: any[]) {
+        if (!this._funs.has(name)) return;
+        const { f, args } = this._funs.get(name);
+        f(...args, ...args1);
+    }
+
+    /**
+     * 清空临时函数
+     * @param name 函数名
+     */
+    public static clearFun(name: string) {
+        if (!this._funs.has(name)) return;
+        let f = this._funs.get(name);
+        f.f = null;
+        f.args = null;
+        f = null;
+        this._funs.delete(name);
+    }
+
+    /**
      * 清除所有临时数据
      */
     public static clear() {
         this._arrays.forEach(v => v?.clear());
         this._objects.forEach(v => v = null);
         this._maps.forEach(v => v?.clear());
+        this._funs.forEach((v, k) => this.clearFun(k));
         this._arrays.clear();
         this._objects.clear();
         this._maps.clear();
+        this._funs.clear();
     }
 }

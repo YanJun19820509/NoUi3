@@ -2,6 +2,7 @@ import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR,
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
+import { YJTempData } from '../YJTempData';
 
 /**
  * Predefined variables
@@ -333,9 +334,15 @@ export class SetSpine extends HackUi {
         // 需要加载新资源的情况
         if (!spine?.isValid || (path && this.curPath != path)) {
             if (!path) path = this.curPath;
-
+            const k = `SetSpine.getSpineCb_${this.uuid}`;
+            if (!YJTempData.hasFun(k)) {
+                YJTempData.fun(k, (key: string, path: string, timeScale: number, skin: string, animation: string, pause: boolean, loop: boolean, loopNum: number, duration: number, res: SkeletonData) => {
+                    this.getSpineCb(path, timeScale, skin, animation, pause, loop, loopNum, duration, res);
+                    YJTempData.clearFun(key);
+                }, k, path, timeScale, skin, animation, pause, loop, loopNum, duration);
+            }
             // 异步加载spine资源
-            YJSpineManager.ins.get(path, this.spineUuid).then(this.getSpineCb.bind(this, path, timeScale, skin, animation, pause, loop, loopNum, duration));
+            YJSpineManager.ins.get(path, this.spineUuid).then(res => YJTempData.runFun(`SetSpine.getSpineCb_${this.uuid}`, res));
         } else if (animation != null) { // 使用现有资源播放动画
             if (!spine) return;
             spine.node.active = true;
