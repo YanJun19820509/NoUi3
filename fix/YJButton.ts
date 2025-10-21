@@ -43,7 +43,7 @@ import { YJSoundEffectManager } from '../base/audio/YJSoundEffectManager';
 export class YJButton extends Component {
     /** 防连点间隔时间（单位：秒），设置为0时关闭防连点功能 */
     @property({ displayName: '防连点间隔时长(s)' })
-    delay: number = 1;
+    delay: number = 0.5;
 
     /** 按钮激活后延迟生效时间（单位：秒），用于实现按钮渐显后生效等场景 */
     @property({ displayName: '延时生效(s)', min: 0 })
