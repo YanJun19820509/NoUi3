@@ -18,7 +18,7 @@ export class FixedSizeArray<T> {
      * @param {number} [initialCapacity=10] 初始容量（默认10）
      * @param {boolean} [autoExpand=true] 是否自动扩容（默认true）
      */
-    constructor(initialCapacity = 10, autoExpand = true) {
+    constructor(initialCapacity: number = 10, autoExpand: boolean = true) {
         if (initialCapacity <= 0) throw new Error("Initial capacity must be positive");
         this.autoExpand = autoExpand; // 是否自动扩容
         this.capacity = initialCapacity; // 当前容量
@@ -67,10 +67,12 @@ export class FixedSizeArray<T> {
         // 创建新底层数组
         const newBuffer = new Array(newCapacity);
 
+        let oldPhysicalIndex: number;
+        let newPhysicalIndex: number;
         // 迁移有效元素到新数组（从head开始，取size个元素，按顺序存储）
         for (let i = 0; i < this.size; i++) {
-            const oldPhysicalIndex = (this.head + i) % oldCapacity;
-            const newPhysicalIndex = i; // 新数组从0开始连续存储
+            oldPhysicalIndex = (this.head + i) % oldCapacity;
+            newPhysicalIndex = i; // 新数组从0开始连续存储
             newBuffer[newPhysicalIndex] = this.buffer[oldPhysicalIndex];
         }
 
@@ -153,10 +155,12 @@ export class FixedSizeArray<T> {
             matchFn = (element) => element === targetOrOptions;
         }
 
+        let element: T;
+        let physicalIndex: number;
         // 遍历有效元素，查找第一个匹配项
         for (let i = 0; i < this.size; i++) {
-            const physicalIndex = (this.head + i) % this.capacity;
-            const element = this.buffer[physicalIndex];
+            physicalIndex = (this.head + i) % this.capacity;
+            element = this.buffer[physicalIndex];
             if (matchFn(element)) {
                 return i; // 返回逻辑索引
             }
@@ -172,7 +176,7 @@ export class FixedSizeArray<T> {
      * @param {...any} items 要插入的新元素
      * @returns {any[]} 被删除的元素数组
      */
-    splice(startIndex: number, deleteCount = 0, ...items: T[]): T[] {
+    splice(startIndex: number, deleteCount: number = 0, ...items: T[]): T[] {
         // 1. 规范化startIndex（支持负数，范围0到size）
         startIndex = startIndex < 0
             ? Math.max(this.size + startIndex, 0)  // 负数转换为正数索引（如-1对应最后一个元素）
@@ -229,8 +233,9 @@ export class FixedSizeArray<T> {
      * @param callback 回调函数，返回true时终止遍历
      */
     forEach(callback: (element: T, index: number) => boolean) {
+        let element: T;
         for (let i = 0; i < this.size; i++) {
-            const element = this.get(i);
+            element = this.get(i);
             if (!element) continue;
             if (callback(element, i)) break;
         }

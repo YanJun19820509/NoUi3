@@ -117,11 +117,12 @@ class _YJTextureManager extends no.SingleObject {
         no.warn('纹理缓存已超过上限，开始释放较早的纹理');
         const keys = Object.keys(this.textureMap);
         keys.sort((a, b) => this.textureMap[a].time - this.textureMap[b].time);
+        let key: string, item: any, size: number;
         for (let i = 0, n = keys.length; i < n; i++) {
-            let key = keys[i];
-            let item = this.textureMap[key] || null;
+            key = keys[i];
+            item = this.textureMap[key] || null;
             if (item && item.ref === 0) {
-                let size = item.size;
+                size = item.size;
                 this.TextureAllSize -= size;
                 item.texture.destroy();
                 delete this.textureMap[key];

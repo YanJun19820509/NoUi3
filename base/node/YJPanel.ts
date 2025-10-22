@@ -266,7 +266,7 @@ export class YJPanel extends Component {
      *     this.fetchUserData();    // 自定义数据初始化
      * }
      */
-    public async initPanel(): Promise<void> {
+    public async initPanel(): Promise<YJPanel> {
         // 关闭状态下解除旧事件绑定
         if (this.status == 'close')
             no.evn.targetOff(this);
@@ -298,6 +298,7 @@ export class YJPanel extends Component {
         this._lastMultiTouchState = no.multiTouch();
         no.multiTouch(this.multiTouch);
         no.evn.emit(YJPanel.PanelOpenEvent, this.panelType, key); // 全局事件通知
+        return this;
     }
 
     /**

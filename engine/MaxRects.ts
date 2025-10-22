@@ -63,7 +63,7 @@ class Rect {
     public cut(x: number, y: number, w: number, h: number): Rect[] {
         let r = this.rect;
         let a: Rect[] = [];
-        
+
         // 处理左侧/上方的剩余空间
         if (x > r.x + _padding)
             a[a.length] = Rect.new(r.x, r.y, x - r.x - _padding, r.height);
@@ -306,8 +306,9 @@ export class MaxRects {
      * @returns 合并后的新数组
      */
     private _joinRects(r: Rect, target: Rect[]): Rect[] {
+        let b: Rect;
         for (let j = target.length - 1; j >= 0; j--) {
-            const b = target[j];
+            b = target[j];
             // 垂直方向相邻检测
             if (b.rect.x === r.rect.x && b.rect.width === r.rect.width) {
                 if (this._tryMergeVertical(r, b)) {

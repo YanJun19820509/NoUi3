@@ -262,14 +262,17 @@ export class Atlas {
         }
         cw && (dd = dd.reverse());
         let bb = [];
-        for (var y = 0; y < height; y++) {
-            for (var x = 0; x < width; x++) {
-                const [_x, _y] = [y, width - x - 1];
+        let _x: number;
+        let _y: number;
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                _x = y;
+                _y = width - x - 1;
                 bb[_y * height + _x] = dd[y * width + x];
             }
         }
-        for (var i = 0; i < length; i++) {
-            for (var j = 0; j < 4; j++) {
+        for (let i = 0; i < length; i++) {
+            for (let j = 0; j < 4; j++) {
                 buffer[i * 4 + j] = bb[i][j];
             }
         }

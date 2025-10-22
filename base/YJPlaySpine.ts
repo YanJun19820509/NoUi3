@@ -19,13 +19,14 @@ export class YJPlaySpine extends Component {
     @property({ type: no.EventHandlerInfo, displayName: '动画播放结束回调' })
     endCall: no.EventHandlerInfo = new no.EventHandlerInfo();
 
+    private _curSpine: Skeleton;
     onEnable() {
-        let spine = this.getComponent(Skeleton);
+        this._curSpine = this.getComponent(Skeleton);
         // 自动播放配置检查
-        if (this.autoPlayOnEnable && spine.enabled) {
-            this.bindStartCall(spine); // 动画开始回调
-            this.bindEndCall(spine); // 动画结束回调
-            this._play(spine); // 执行播放
+        if (this.autoPlayOnEnable && this._curSpine.enabled) {
+            this.bindStartCall(); // 动画开始回调
+            this.bindEndCall(); // 动画结束回调
+            this._play(this._curSpine); // 执行播放
         }
     }
 
@@ -54,48 +55,50 @@ export class YJPlaySpine extends Component {
 
     /**
      * 绑定动画开始回调
-     * @param spine Spine骨架组件
      * @规则：
      * - 当Spine功能可用时使用原生事件监听
      * - 不可用时使用定时器模拟
      * - 通过_startIndexes过滤需要处理的队列索引
      * @示例
      * // 在加载Spine资源时调用：
-     * this.bindStartCall(spineComponent);
+     * this.bindStartCall();
      */
-    private bindStartCall(spine: Skeleton) {
+    private bindStartCall() {
         if (no.spineEnable()) {
             // 原生事件监听模式
-            spine?.setStartListener(() => {
-                spine?.setStartListener(() => { }); // 单次监听自动移除
-                this?.startCall.execute(spine);
+            this._curSpine?.setStartListener(() => {
+                this._startCb();
             });
         } else {
-            this?.startCall.execute(spine);
+            this._startCb();
         }
+    }
+    private _startCb() {
+        this._curSpine?.setStartListener(() => { }); // 单次监听自动移除
+        this?.startCall.execute(this._curSpine);
     }
 
     /**
      * 绑定动画结束回调
-     * @param spine Spine骨架组件
      * @规则：
      * - 动画结束后自动重置Spine数据
      * - 处理逻辑同bindStartCall
      * @示例
      * // 在播放动画时调用：
-     * this.bindEndCall(spineComponent);
+     * this.bindEndCall();
      */
-    private bindEndCall(spine: Skeleton) {
+    private bindEndCall() {
         if (no.spineEnable()) {
-            spine?.setCompleteListener(() => {
-                spine?.setCompleteListener(() => { }); // 单次监听自动移除
-                this?.endCall.execute(spine);
+            this._curSpine?.setCompleteListener(() => {
+                this._endCb();
             });
         } else {
             // 模拟模式：延迟1秒后执行
-            this.scheduleOnce(() => {
-                this?.endCall.execute(spine);
-            }, 1);
+            this.scheduleOnce(this._endCb, 1);
         }
+    }
+    private _endCb() {
+        this._curSpine?.setCompleteListener(() => { }); // 单次监听自动移除
+        this?.endCall.execute(this._curSpine);
     }
 }

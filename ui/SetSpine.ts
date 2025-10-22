@@ -464,14 +464,14 @@ export class SetSpine extends HackUi {
         spine.loop = false; // 禁用自动循环
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
 
-        this.bindStartCall(spine); // 绑定开始回调
+        this.bindStartCall(); // 绑定开始回调
 
         // 循环次数控制逻辑
         this.loopNum--;
         if (this.loopNum == 0)
-            this.bindEndCall(spine); // 最后一次播放绑定结束回调
+            this.bindEndCall(); // 最后一次播放绑定结束回调
         else
-            this.bindLoop1EndCall(spine); // 非最后一次绑定循环结束回调
+            this.bindLoop1EndCall(); // 非最后一次绑定循环结束回调
 
         this._play(spine, name, false); // 执行播放
     }
@@ -514,8 +514,8 @@ export class SetSpine extends HackUi {
         spine.loop = false; // 单次播放模式
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
 
-        this.bindStartCall(spine); // 动画开始回调
-        this.bindEndCall(spine); // 动画结束回调
+        this.bindStartCall(); // 动画开始回调
+        this.bindEndCall(); // 动画结束回调
         this._play(spine, name, false); // 执行播放
     }
 
@@ -552,6 +552,7 @@ export class SetSpine extends HackUi {
         spine.loop = true; // 循环播放模式
         !!skin && spine.setSkin(skin); // 设置皮肤（如果存在）
 
+        this.bindStartCall(); // 动画开始回调
         this._play(spine, name, true); // 执行播放
     }
 
@@ -685,21 +686,22 @@ export class SetSpine extends HackUi {
      * // 在加载Spine资源时调用：
      * this.bindStartCall(spineComponent);
      */
-    private bindStartCall(spine: Skeleton) {
+    private bindStartCall() {
         if (no.spineEnable()) {
             // 原生事件监听模式
-            spine?.setStartListener(() => {
-                spine?.setStartListener(() => { }); // 单次监听自动移除
-                this.emitStartEvent();
-                if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                    this?.startCall.execute(spine, this.queueIndex);
+            this._curSpine?.setStartListener(() => {
+                this._startCb();
             });
         } else {
             // 模拟模式：立即执行回调
-            this.emitStartEvent();
-            if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
-                this?.startCall.execute(spine, this.queueIndex);
+            this._startCb();
         }
+    }
+    private _startCb() {
+        this._curSpine?.setStartListener(() => { }); // 单次监听自动移除
+        this.emitStartEvent();
+        if (!this._startIndexes || this._startIndexes.includes(String(this.queueIndex)))
+            this?.startCall.execute(this._curSpine, this.queueIndex);
     }
 
     /**
@@ -712,24 +714,22 @@ export class SetSpine extends HackUi {
      * // 在播放动画时调用：
      * this.bindEndCall(spineComponent);
      */
-    private bindEndCall(spine: Skeleton) {
+    private bindEndCall() {
         if (no.spineEnable()) {
-            spine?.setCompleteListener(() => {
-                spine?.setCompleteListener(() => { }); // 单次监听自动移除
-                this.emitEndEvent();
-                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine, this.queueIndex);
-                this.setSpineData(); // 重置动画数据
+            this._curSpine?.setCompleteListener(() => {
+                this._endCb();
             });
         } else {
             // 模拟模式：延迟1秒后执行
-            this.scheduleOnce(() => {
-                this.emitEndEvent();
-                if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
-                    this?.endCall.execute(spine, this.queueIndex);
-                this.setSpineData(); // 重置动画数据
-            }, 1);
+            this.scheduleOnce(this._endCb, 1);
         }
+    }
+    private _endCb() {
+        this._curSpine?.setCompleteListener(() => { }); // 单次监听自动移除
+        this.emitEndEvent();
+        if (!this._endIndexes || this._endIndexes.includes(String(this.queueIndex)))
+            this?.endCall.execute(this._curSpine, this.queueIndex);
+        this.setSpineData(); // 重置动画数据
     }
 
     /**
@@ -743,21 +743,21 @@ export class SetSpine extends HackUi {
      * // 在播放循环动画时调用：
      * this.bindLoop1EndCall(spineComp);
      */
-    private bindLoop1EndCall(spine: Skeleton) {
+    private bindLoop1EndCall() {
         if (no.spineEnable()) {
             // 原生模式：使用Spine内置事件系统
-            spine?.setCompleteListener(() => {
-                spine?.setCompleteListener(() => { }); // 单次监听自动移除
-                this.emitEndEvent();
-                this.playLoopNum(spine.animation); // 处理循环计数逻辑
+            this._curSpine?.setCompleteListener(() => {
+                this._loop1EndCb();
             });
         } else {
             // 模拟模式：延迟1秒后执行（假设动画时长约1秒）
-            this.scheduleOnce(() => {
-                this.emitEndEvent();
-                this.playLoopNum(spine.animation);
-            }, 1);
+            this.scheduleOnce(this._loop1EndCb, 1);
         }
+    }
+    private _loop1EndCb() {
+        this._curSpine?.setCompleteListener(() => { }); // 单次监听自动移除
+        this.emitEndEvent();
+        this.playLoopNum(this._curSpine.animation); // 处理循环计数逻辑
     }
 
     //todo 对循环播放的动画考虑按需暂停（待实现逻辑）

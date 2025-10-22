@@ -300,10 +300,12 @@ export class YJSpineManager extends no.SingleObject {
             }
         });
 
+        let key: string;
+        let resource: SpineResource;
         // 执行实际资源释放操作
         for (let i = 0; i < toRelease.length; i++) {
-            const key = toRelease[i];
-            const resource = YJSpineManager._map.get(key);
+            key = toRelease[i];
+            resource = YJSpineManager._map.get(key);
             if (resource) {
                 no.assetBundleManager.release(resource.data); // 强制释放资源
                 YJSpineManager._map.delete(key); // 移除缓存记录

@@ -209,8 +209,10 @@ export class HackUi extends Component {
         // 多键组合成对象
         else {
             a = {};
+            let key: string;
             for (let i = 0; i < keys.length; i++) {
-                a[keys[i]] = this._oldData.data[keys[i]];
+                key = keys[i];
+                a[key] = this._oldData.data[key];
             }
         }
         return a;

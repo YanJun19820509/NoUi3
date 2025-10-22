@@ -157,13 +157,14 @@ export class YJPageView extends PageView {
         }
     }
 
+    private _idx: number = 0;
     onLoad() {
         // 注册滚动结束事件监听
         this.node.on(PageView.EventType.SCROLL_ENDED, this.onScrollEnded, this);
         // 分帧创建页面预制体（避免卡顿）
-        let i = 0;
+        this._idx = 0;
         this.schedule(() => {
-            this.createPage(i++);
+            this.createPage();
         }, 0.05, this.pagePrefabs.length - 1);
     }
 
@@ -184,8 +185,8 @@ export class YJPageView extends PageView {
      * 2. 加载关联资源
      * 3. 添加到PageView
      */
-    private async createPage(i: number) {
-        let p = this.pagePrefabs[i];
+    private async createPage() {
+        let p = this.pagePrefabs[this._idx++];
         if (!p) return;
         let n = await p.loadPrefab();
         if (!this?.node?.isValid) return;

@@ -667,7 +667,7 @@ export class YJPreload extends Component {
                     allProgress: p + (this.progress + this.finished / this.total) * this.maxProgress
                 }
             }
-            requestAnimationFrame(() => this.checkState());
+            this.scheduleOnce(this.checkState);
         }
     }
 
@@ -918,9 +918,11 @@ export class YJPreload extends Component {
     private loadTextures() {
         // 处理单独纹理路径
         let requests: any[] = [];
+        let path: string;
+        let p: any;
         for (let i = 0; i < this.texturePaths.length; i++) {
-            const path = this.texturePaths[i];
-            const p = no.assetBundleManager.assetPath(path);
+            path = this.texturePaths[i];
+            p = no.assetBundleManager.assetPath(path);
             // 构造纹理加载请求（自动添加/texture后缀）
             requests[requests.length] = {
                 path: p.path + '/texture', // Cocos纹理资源路径规范
@@ -931,9 +933,10 @@ export class YJPreload extends Component {
         // 批量加载单独纹理
         no.assetBundleManager.loadAnyFiles(requests);
 
+        let folder: string;
         // 处理纹理文件夹
         for (let i = 0; i < this.textureFolders.length; i++) {
-            let folder = this.textureFolders[i];
+            folder = this.textureFolders[i];
             no.assetBundleManager.loadAllFilesInFolder(folder,
                 null, // 不监听进度（由上层统一处理）
                 (items) => {

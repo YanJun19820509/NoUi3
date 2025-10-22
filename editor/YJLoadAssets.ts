@@ -160,14 +160,16 @@ export class YJLoadAssets extends Component {
     private showSubSpriteFrame(v: boolean) {
         this.setMaterialKey();
         const name = this._materialKey;
+        let a: any;
         // 处理各种类型的组件显示状态
         let list: any[] = this.getComponentsInChildren(SetSpriteFrameInSampler2D);
         for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetSprite();
+            a = list[i];
+            if (v) a.resetSprite();
             else {
-                list[i].removeSprite();
-                list[i].materialInfoUuid = name;
-                list[i].panelName = name;
+                a.removeSprite();
+                a.materialInfoUuid = name;
+                a.panelName = name;
             }
         }
         // 处理多语言图片组件
@@ -182,10 +184,11 @@ export class YJLoadAssets extends Component {
         // 处理位图字体组件
         list = this.getComponentsInChildren(YJBitmapFont);
         for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetFont();
+            a = list[i];
+            if (v) a.resetFont();
             else {
-                list[i].removeFont();
-                list[i].materialInfoUuid = name;
+                a.removeFont();
+                a.materialInfoUuid = name;
             }
         }
         // 处理多语言文本组件
@@ -199,11 +202,12 @@ export class YJLoadAssets extends Component {
         // 处理字符标签组件
         list = this.getComponentsInChildren(YJCharLabel);
         for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetLabel();
+            a = list[i];
+            if (v) a.resetLabel();
             else {
-                list[i].removeLabel();
-                list[i].materialInfoUuid = name;
-                list[i].panelName = name;
+                a.removeLabel();
+                a.materialInfoUuid = name;
+                a.panelName = name;
             }
         }
         list = this.getComponentsInChildren(SetText);
@@ -221,16 +225,17 @@ export class YJLoadAssets extends Component {
         // 处理精灵帧设置组件
         list = this.getComponentsInChildren(SetSpriteFrame);
         for (let i = 0; i < list.length; i++) {
-            if (v) list[i].resetSprite();
+            a = list[i];
+            if (v) a.resetSprite();
             else {
-                list[i].removeSprite();
+                a.removeSprite();
             }
         }
         // 处理按钮状态
         if (!v) {
             list = this.getComponentsInChildren(Button);
             for (let i = 0; i < list.length; i++) {
-                let a = list[i] as Button;
+                a = list[i] as Button;
                 if (a.getComponent(SetSpriteFrameInSampler2D) || a.getComponent(SetSpriteFrame)) {
                     a.normalSprite = null;
                     a.hoverSprite = null;

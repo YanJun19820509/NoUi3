@@ -82,10 +82,11 @@ export class PopuPanelContent extends Component {
      * 初始化界面内容
      * 可在prefab实例化时调用
      */
-    public async initContent() {
+    public async initContent(panel: PopuPanel, data?: any) {
         if (this.getComponent(YJLoadAssets)) {
             await this.getComponent(YJLoadAssets).load();
         }
+        this.init(panel, data);
     }
 
     /** 关闭弹窗(带动画) */

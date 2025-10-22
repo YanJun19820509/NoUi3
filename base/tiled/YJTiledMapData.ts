@@ -46,20 +46,20 @@ export class YJTiledMapData {
      * // mapSize = (10+0.5)*64, (10-1)*64*0.75 + 64 = 672x640
      */
     public mapSize: Size;
-    
+
     /** 
      * 单个网格单元尺寸（像素单位）
      * @example new Size(32, 32) 表示32x32像素的单元格
      */
     public tileSize: Size;
-    
+
     /** 
      * 地图锚点位置（标准化坐标）
      * @desc 根据renderorder计算得出，影响地图坐标系原点位置
      * @example v2(0,1) 表示锚点在左上角
      */
     public anchor: Vec2;
-    
+
     /** 
      * 图层数据存储结构
      * @desc 
@@ -73,7 +73,7 @@ export class YJTiledMapData {
      * }
      */
     private layers: Map<string, any>;
-    
+
     /** 
      * 图集数据存储
      * @desc 
@@ -89,10 +89,10 @@ export class YJTiledMapData {
      * }
      */
     private tilesets: Map<number, any>;
-    
-    /** 网格数量（列数x行数） */ 
+
+    /** 网格数量（列数x行数） */
     private uv: Size;
-    
+
     /** 
      * 网格缩放系数
      * @desc 根据地编方向计算得出：
@@ -107,10 +107,10 @@ export class YJTiledMapData {
 
     constructor(mapJson: any) {
         // 根据地编方向计算网格缩放系数
-        this.gridScale = mapJson.orientation == 'orthogonal' ? v2(1, 1) 
-            : (mapJson.orientation == 'hexagonal' ? v2(0.5, .75) 
-            : v2(.5, .5));
-        
+        this.gridScale = mapJson.orientation == 'orthogonal' ? v2(1, 1)
+            : (mapJson.orientation == 'hexagonal' ? v2(0.5, .75)
+                : v2(.5, .5));
+
         // 初始化基础尺寸
         this.tileSize = new Size(mapJson.tilewidth, mapJson.tileheight);
         this.uv = new Size(mapJson.width, mapJson.height);
@@ -129,7 +129,7 @@ export class YJTiledMapData {
                 (this.uv.height - 1) * this.tileSize.height * this.gridScale.y + this.tileSize.height
             );
         }
-        
+
         // 初始化其他数据
         this.setAnchor(mapJson.renderorder);
         this.setTilesets(mapJson.tilesets);
@@ -164,27 +164,30 @@ export class YJTiledMapData {
     private setLayers(layers: any[]): void {
         this.layers = new Map<string, any>();
         this.layerTypes = [];
-        
+        let layer: any;
+        let p: any;
+        let objects: any[];
+        let existing: any;
         for (let i = 0, len = layers.length; i < len; i++) {
-            let layer = layers[i];
+            layer = layers[i];
             if (!layer.visible) continue;
-            
+
             // 提取图层属性
-            let p = this.propertiesOf(layer);
+            p = this.propertiesOf(layer);
             if (!p) continue;
-            
+
             // 解析图层数据
-            let objects = layer.data ? this.getTiles(layer.data) : this.getObjects(layer.objects);
-            
+            objects = layer.data ? this.getTiles(layer.data) : this.getObjects(layer.objects);
+
             // 按类型存储
             if (!this.layers.has(p.type)) {
                 this.layers.set(p.type, { [layer.id]: objects });
             } else {
-                const existing = this.layers.get(p.type);
+                existing = this.layers.get(p.type);
                 existing[layer.id] = objects;
                 this.layers.set(p.type, existing);
             }
-            
+
             no.addToArray(this.layerTypes, p.type);
         }
     }
@@ -223,36 +226,44 @@ export class YJTiledMapData {
      */
     private setTilesets(tilesets: any[]): void {
         this.tilesets = new Map<number, any>();
+        let tileset: any;
+        let firstgid: number;
+        let offset: any;
+        let tile: any;
+        let imgpath: string[];
+        let a: any;
+        let prop: any;
+        let p: any;
         // 遍历所有图块集
         for (let i = 0, len = tilesets.length; i < len; i++) {
-            let tileset = tilesets[i];
-            let firstgid = tileset.firstgid; // 当前图块集的起始全局ID
-            const offset = tileset.tileoffset || { x: 0, y: 0 }; // 图块偏移量
-            
+            tileset = tilesets[i];
+            firstgid = tileset.firstgid; // 当前图块集的起始全局ID
+            offset = tileset.tileoffset || { x: 0, y: 0 }; // 图块偏移量
+
             // 处理图块集中的每个图块
             for (let j = 0, len1 = tileset.tiles.length; j < len1; j++) {
-                let tile = tileset.tiles[j];
+                tile = tileset.tiles[j];
                 // 清理图片路径：移除相对路径和扩展名，保留纯文件名
-                const imgpath: string[] = tile.image.replace(new RegExp('\\.\\./|\\.png', 'g'), '').replace('\\', '/').split('/');
-                
+                imgpath = tile.image.replace(new RegExp('\\.\\./|\\.png', 'g'), '').replace('\\', '/').split('/');
+
                 // 构建图块信息对象
-                let a: any = {
+                a = {
                     image: imgpath.pop(),       // 图片文件名
                     width: tile.imagewidth,     // 图块宽度
                     height: tile.imageheight,   // 图块高度
                     offset: offset              // 图块偏移量
                 };
-                
+
                 // 解析图块自定义属性
                 if (tile.properties != null) {
-                    let prop: any = {};
+                    prop = {};
                     for (let i = 0; i < tile.properties.length; i++) {
-                        const p = tile.properties[i];
+                        p = tile.properties[i];
                         prop[p.name] = p.value; // 属性名值对存储
                     }
                     a.prop = prop;
                 }
-                
+
                 // 计算全局ID并存入Map
                 this.tilesets.set(firstgid + tile.id, a);
             }
@@ -272,8 +283,9 @@ export class YJTiledMapData {
     private propertiesOf(d: any): any {
         if (d.properties == null) return null;
         let a: any = new Object();
+        let p: any;
         for (let i = 0; i < d.properties.length; i++) {
-            const p = d.properties[i];
+            p = d.properties[i];
             a[p.name] = p.value;
         }
         return a;
@@ -303,23 +315,27 @@ export class YJTiledMapData {
     private getObjects(objects: any[]): any[] {
         if (!objects) return [];
         let arr: any[] = [];
+        let obj: any;
+        let a: any;
+        let tile: any;
+        let p: any;
         for (let i = 0, len = objects.length; i < len; i++) {
-            let obj = objects[i];
-            let a: any = {
+            obj = objects[i];
+            a = {
                 x: obj.x,
                 y: this.mapSize.height - obj.y, // 坐标系转换
             };
-            
+
             // 添加对象自定义属性
             if (obj.properties != null)
                 for (let i = 0; i < obj.properties.length; i++) {
-                    const p = obj.properties[i];
+                    p = obj.properties[i];
                     a[p.name] = p.value;
                 }
-            
+
             // 合并图块属性
             if (obj.gid != null && this.tilesets.has(obj.gid)) {
-                let tile = this.tilesets.get(obj.gid);
+                tile = this.tilesets.get(obj.gid);
                 no.forEachKV(tile, (key, value) => {
                     a[key] = value;
                     return false;
@@ -348,14 +364,16 @@ export class YJTiledMapData {
     private getTiles(data: number[]): any[] {
         if (!data) return [];
         let arr: any[] = [];
+        let id: number;
+        let tileInfo: any;
         // 遍历网格的每个位置
         for (let i = 0; i < this.uv.height; i++) {    // 行循环
             for (let j = 0; j < this.uv.width; j++) { // 列循环
-                const id = data[i * this.uv.width + j];
+                id = data[i * this.uv.width + j];
                 if (id == 0) continue; // 跳过空图块
-                let tileInfo = this.tilesets.get(id);
+                tileInfo = this.tilesets.get(id);
                 if (!tileInfo) continue;
-                
+
                 // 计算图块世界坐标
                 arr[arr.length] = {
                     image: tileInfo.image,

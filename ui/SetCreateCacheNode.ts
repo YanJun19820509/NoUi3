@@ -84,6 +84,8 @@ export class SetCreateCacheNode extends HackUi {
         this.setItems([].concat(data));
     }
 
+    private _idx: number = 0;
+    private _data: any[];
     /**
      * 异步初始化并创建节点
      * @param data 节点数据数组
@@ -103,8 +105,9 @@ export class SetCreateCacheNode extends HackUi {
             if (!this?.node?.isValid) return;
         }
         if (!this.container) this.container = this.node;
-
-        this.setItem(data, 0);
+        this._idx = 0;
+        this._data = data;
+        this.setItem();
     }
 
     /**
@@ -117,10 +120,11 @@ export class SetCreateCacheNode extends HackUi {
      * - 自动绑定数据到YJDataWork组件
      * - 支持跳过空数据项
      */
-    private setItem(data: any[], i: number) {
-        if (i >= data.length) return;
-        if (!data[i]) {
-            this.setItem(data, ++i);
+    private setItem() {
+        if (this._idx >= this._data.length) return;
+        if (!this._data[this._idx]) {
+            this._idx++;
+            this.setItem();
             return;
         };
         // 尝试从缓存池获取节点
@@ -135,14 +139,15 @@ export class SetCreateCacheNode extends HackUi {
         // 绑定数据到YJDataWork组件
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         if (a) {
-            a.clear().initWithData(data[i]);
+            a.clear().initWithData(this._data[this._idx]);
         }
         no.visible(item, true);
+        this._idx++;
         // 新建节点需要等待一帧继续创建（防止卡顿）
         if (needWait) this.scheduleOnce(() => {
-            this.setItem(data, ++i);
+            this.setItem();
         });
-        else this.setItem(data, ++i);
+        else this.setItem();
     }
 
     ///////////////////////////EDITOR///////////////

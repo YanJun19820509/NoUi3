@@ -29,9 +29,9 @@ export class PopuPanel extends YJPanel {
             const a = YJWindowManager.opennedPanelByType<PopuPanel>(compName, to);
             if (a) {
                 a.setContentPanelData(data);
-                a.initPanel().then(() => {
-                    a.playOpenAnimation?.a_play();
-                    no.visible(a.node, true);
+                a.initPanel().then((panel: PopuPanel) => {
+                    panel.playOpenAnimation?.a_play();
+                    no.visible(panel.node, true);
                 }).catch(e => { no.err('popupanel', e); });
                 cb?.();
                 no.evn.emit('__popu_panel_open');
@@ -62,9 +62,7 @@ export class PopuPanel extends YJPanel {
         const ppc = this.content.getComponentInChildren(PopuPanelContent);
         if (!ppc && this.tryNum > 0) {
             this.tryNum--;
-            this.scheduleOnce(() => {
-                this.a_closePanel();
-            }, .1);
+            this.scheduleOnce(this.a_closePanel, .1);
             return;
         }
         ppc?.onClose();
@@ -106,9 +104,8 @@ export class PopuPanel extends YJPanel {
         const ppc = node.getComponent(PopuPanelContent);
         this.needCache = ppc.needCache;
         this.needClear = ppc.needClear;
-        ppc.initContent().then(() => {
-            ppc.init(this, data);
-            node.parent = this.content;
+        node.parent = this.content;
+        ppc.initContent(this, data).then(() => {
             no.visibleByOpacity(this.node, true);
             this.playOpenAnimation?.a_play();
         });

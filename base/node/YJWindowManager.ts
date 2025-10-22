@@ -171,9 +171,7 @@ export class YJWindowManager extends Component {
     onLoad() {
         YJWindowManager._ins = this;
         if (this.autoClear)
-            this.schedule(() => {
-                this.clearClosedPanel();
-            }, 3);
+            this.schedule(this.clearClosedPanel, 3);
     }
 
     onDestroy() {
@@ -241,18 +239,16 @@ export class YJWindowManager extends Component {
             let a: YJPanel;
             const children = content.children;
             for (let i = 0, n = children.length; i < n; i++) {
-                const child = children[i];
-                const panel = child.getComponent(comp);
-                if (panel) {
-                    a = panel;
+                a = children[i].getComponent(comp);
+                if (a) {
                     break;
                 }
             }
             if (a != null) {
                 beforeInit?.(a as T);
-                a.initPanel().then(() => {
+                a.initPanel().then((panel: T) => {
                     // a.onEnable();
-                    afterInit?.(a as T);
+                    afterInit?.(panel);
                 }).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 // no.siblingIndex(a.node, content.children.length - 1);
                 return;
@@ -338,18 +334,20 @@ export class YJWindowManager extends Component {
 
     public static hideContents(tos: string[]) {
         let self = YJWindowManager._ins;
+        let content: Node;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             if (!tos.includes(self.infos[i].type)) continue;
-            let content: Node = self.infos[i].content;
+            content = self.infos[i].content;
             content.active = false;
         }
     }
 
     public static showContents(tos: string[]) {
         let self = YJWindowManager._ins;
+        let content: Node;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             if (!tos.includes(self.infos[i].type)) continue;
-            let content: Node = self.infos[i].content;
+            content = self.infos[i].content;
             content.active = true;
         }
     }
@@ -361,12 +359,15 @@ export class YJWindowManager extends Component {
      */
     public static hidePanel(name: string, to?: string) {
         let self = YJWindowManager._ins;
+        let content: Node;
+        let children: Node[];
+        let node: Node;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             if (to && self.infos[i].type != to) continue;
-            let content: Node = self.infos[i].content;
-            let children = content.children;
+            content = self.infos[i].content;
+            children = content.children;
             for (let i = children.length - 1; i >= 0; i--) {
-                let node = children[i];
+                node = children[i];
                 if (node.getComponent(name)) {
                     (node.getComponent(name) as YJPanel).hide();
                     break;
@@ -382,12 +383,15 @@ export class YJWindowManager extends Component {
      */
     public static closePanel(name: string, to?: string) {
         let self = YJWindowManager._ins;
+        let content: Node;
+        let children: Node[];
+        let node: Node;
         for (let i = 0, n = self.infos.length; i < n; i++) {
             if (to && self.infos[i].type != to) continue;
-            let content: Node = self.infos[i].content;
-            let children = content.children;
+            content = self.infos[i].content;
+            children = content.children;
             for (let i = children.length - 1; i >= 0; i--) {
-                let node = children[i];
+                node = children[i];
                 if (node.getComponent(name)) {
                     (node.getComponent(name) as YJPanel).closePanel();
                     break;
@@ -404,13 +408,16 @@ export class YJWindowManager extends Component {
     public static closePanelIn(nodeName: string, excepts: string[] = []) {
         no.log('YJWindowManager closePanelIn', nodeName, excepts);
         let content: Node = YJWindowManager._ins.getContent(nodeName);
-        const children = content.children.slice(),
+        const children: Node[] = content.children.slice(),
             len = children.length;
+        let node: Node;
+        let panel: YJPanel;
+        let name: string;
         for (let i = len - 1; i >= 0; i--) {
-            const node = children[i];
-            const panel = node.getComponent(PopuPanel) || node.getComponent(YJPanel);
+            node = children[i];
+            panel = node.getComponent(PopuPanel) || node.getComponent(YJPanel);
             if (panel?.enabledInHierarchy) {
-                let name = js.getClassName(panel);
+                name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;
                 if (panel['closePopuPanel']) panel['closePopuPanel']();
                 else
@@ -457,9 +464,11 @@ export class YJWindowManager extends Component {
         let content: Node = YJWindowManager._ins.getContent(to);
         if (content) {
             const children = content.children;
+            let child: Node;
+            let panel: YJPanel;
             for (let i = 0, n = children.length; i < n; i++) {
-                const child = children[i];
-                const panel = child.getComponent(comp);
+                child = children[i];
+                panel = child.getComponent(comp);
                 if (panel) return panel as T;
             }
         }
@@ -475,23 +484,27 @@ export class YJWindowManager extends Component {
     public static opennedPanelByType<T extends YJPanel>(panelType: string, to?: string): T | null {
         if (!panelType) return null;
         let self = YJWindowManager._ins;
+        let content: Node;
+        let children: Node[];
+        let child: Node;
+        let panel: YJPanel;
         if (to) {
-            const content: Node = YJWindowManager._ins.getContent(to);
+            content = YJWindowManager._ins.getContent(to);
             if (content) {
-                const children = content.children;
+                children = content.children;
                 for (let i = 0, n = children.length; i < n; i++) {
-                    const child = children[i];
-                    const panel = child.getComponent(YJPanel);
+                    child = children[i];
+                    panel = child.getComponent(YJPanel);
                     if (panel?.panelType == panelType) return panel as T;
                 }
             }
         }
         for (let i = 0, n = self.infos.length; i < n; i++) {
-            const content = YJWindowManager._ins.getContent(self.infos[i].type);
-            const children = content.children;
+            content = YJWindowManager._ins.getContent(self.infos[i].type);
+            children = content.children;
             for (let i = 0, n = children.length; i < n; i++) {
-                const child = children[i];
-                const panel = child.getComponent(YJPanel);
+                child = children[i];
+                panel = child.getComponent(YJPanel);
                 if (panel?.panelType == panelType) return panel as T;
             }
         }
@@ -535,12 +548,15 @@ export class YJWindowManager extends Component {
     public clearClosedPanel() {
         let t = no.sysTime.now;
         const duration = no.isDebug() ? 5 : this.duration;
+        let content: Node;
+        let node: Node;
+        let panel: YJPanel;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            let content = YJWindowManager._ins.getContent(this.infos[i].type);
-            for (let i = 0; i < content?.children.length; i++) {
-                const node = content.children[i];
+            content = YJWindowManager._ins.getContent(this.infos[i].type);
+            for (let j = 0; j < content?.children.length; j++) {
+                node = content.children[j];
                 if (node.isValid) {
-                    let panel = node.getComponent(YJPanel);
+                    panel = node.getComponent(YJPanel);
                     if (panel && panel.status == 'close' && panel.lastCloseTime > 0 && t - panel.lastCloseTime >= duration) {
                         // no.log('YJWindowManager release panel', panel.panelType);
                         panel.clear();
@@ -554,12 +570,15 @@ export class YJWindowManager extends Component {
      * 清理隐藏的面板
      */
     public clearHidePanel() {
+        let content: Node;
+        let node: Node;
+        let panel: YJPanel;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            let content = YJWindowManager._ins.getContent(this.infos[i].type);
-            for (let i = 0; i < content?.children.length; i++) {
-                const node = content.children[i];
+            content = YJWindowManager._ins.getContent(this.infos[i].type);
+            for (let j = 0; j < content?.children.length; j++) {
+                node = content.children[j];
                 if (node.isValid) {
-                    let panel = node.getComponent(YJPanel);
+                    panel = node.getComponent(YJPanel);
                     if (panel?.status == 'hide') {
                         panel.clear();
                     }
@@ -572,12 +591,14 @@ export class YJWindowManager extends Component {
      * 清理所有面板
      */
     public clearAll() {
+        let content: Node;
+        let child: Node;
+        let panel: YJPanel;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            let content = this.getContent(this.infos[i].type);
-
+            content = this.getContent(this.infos[i].type);
             for (let j = content.children.length - 1; j >= 0; j--) {
-                const child = content.children[j];
-                const panel = child.getComponent(YJPanel);
+                child = content.children[j];
+                panel = child.getComponent(YJPanel);
                 if (panel)
                     panel.clear(true);
                 else child.destroy();
@@ -612,11 +633,13 @@ export class YJWindowManager extends Component {
      * @returns 最上层面板节点
      */
     public static getTopPanel(from?: number) {
-        const me = this._ins;
+        let me = this._ins;
+        let content: Node;
+        let child: Node;
         for (let i = from || me.infos.length - 1; i >= 0; i--) {
-            let content = me.getContent(me.infos[i].type);
+            content = me.getContent(me.infos[i].type);
             for (let j = content.children.length - 1; j >= 0; j--) {
-                const child = content.children[j];
+                child = content.children[j];
                 if (no.visible(child)) {
                     return child;
                 }

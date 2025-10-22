@@ -47,27 +47,20 @@ class NodeTargetManager {
      * @param type - 目标节点类型
      * @returns 目标节点
      */
-    public getTargetAsync<T>(type: string): Promise<T> {
-        if (type == null || type == '') return null;
-        return new Promise<T>((resolve, reject) => {
-            let tryNum = 50;
-            const timer = setInterval(() => {
-                const target = this.get<T>(type);
-                if (target) {
-                    clearInterval(timer);
-                    resolve(target);
-                } else {
-                    if (--tryNum <= 0) {
-                        clearInterval(timer);
-                        console.error('getTargetAsync获取目标失败', type);
-                        resolve(null);
-                    }
-                }
-            }, 40);
-        }).catch(err => {
-            console.error('getTargetAsync获取目标失败 error', type, err);
-            return null;
-        });
+    public getTargetAsync<T>(type: string, cb: (target: T) => void): void {
+        if (type == null || type == '') return cb?.(null);
+        this._tryGetTarget(type, 50, cb);
+    }
+    private _tryGetTarget<T>(type: string, tryNum: number, cb: (target: T) => void) {
+        const target = this.get<T>(type);
+        if (target) {
+            cb?.(target);
+        } else if (--tryNum <= 0) {
+            console.error('getTargetAsync获取目标失败', type);
+            cb?.(null);
+        } else {
+            setTimeout((t, n, c) => this._tryGetTarget(t, n, c), 40, type, tryNum, cb);
+        }
     }
 
     /**

@@ -16,8 +16,7 @@ import { YJDataWork } from "../../../base/YJDataWork";
 import { YJPanel } from "../../../base/node/YJPanel";
 import { YJWindowManager } from "../../../base/node/YJWindowManager";
 import { no } from "../../../no";
-import { panelPrefabPath, panelPrefabUuid } from "../../../types";
-import { ccclass, macro, property } from "../../../yj";
+import { ccclass, macro, property, Node } from "../../../yj";
 
 //通用loading面板，当有界面将要显示时会自动出现在最上层，当界面关闭时会移到下层界面之下，如果当前没有任何界面将关闭
 @ccclass('LoadingPanel')
@@ -79,26 +78,28 @@ export class LoadingPanel extends YJPanel {
     //     this._isChecking = false;
     // }
 
+    private _checkSiblingIndex() {
+        let all = this.node.parent.children.length, opened = 0;
+        let c: Node;
+        for (let i = 0; i < all; i++) {
+            c = this.node.parent.children[i];
+            if (c.getComponent(YJPanel)?.status == 'open') opened++;
+        }
+        if (opened == 1) {
+            this.onHide();
+            this.unscheduleAllCallbacks();
+            return;
+        }
+        if (this.status == 'open') {
+            no.siblingIndex(this.node, all - 2);
+        }
+    }
     private onPanelClose() {
         if (this.curTo != 'popu') {
             YJWindowManager.setPanelTo(this, 'popu');
             this.curTo = 'popu';
         }
-        this.schedule(() => {
-            let all = 0, opened = 0;
-            this.node.parent.children.forEach(c => {
-                all++;
-                if (c.getComponent(YJPanel)?.status == 'open') opened++;
-            });
-            if (opened == 1) {
-                this.onHide();
-                this.unscheduleAllCallbacks();
-                return;
-            }
-            if (this.status == 'open') {
-                no.siblingIndex(this.node, all - 2);
-            }
-        }, 0, 30);
+        this.schedule(this._checkSiblingIndex, 0, 30);
     }
 
     public static show(cb?: () => void) {

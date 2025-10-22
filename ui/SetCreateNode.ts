@@ -224,6 +224,8 @@ export class SetCreateNode extends HackUi {
         this.setItems(); // 执行节点创建/更新
     }
 
+    private _startIdx: number = 0;
+    private _dataIdx: number = 0;
     /**
      * 核心节点创建/更新方法
      * @param data 要展示的数据数组
@@ -248,16 +250,15 @@ export class SetCreateNode extends HackUi {
             console.error('SetCreateNode: container is null', this.bind_keys);
             return;
         }
-        const data = this._data;
-        if (!data) return;
+        if (!this._data) return;
         // 单节点特殊处理模式
         if (this.onlyOne) {
-            this.setDynamicAtlasNode(data[0]);
+            this.setDynamicAtlasNode(this._data[0]);
             return;
         }
 
         // 空数据处理
-        const n = data.length;
+        const n = this._data.length;
         if (!n) {
             this._items.forEach(item => item.destroy());
             this._items = [];
@@ -276,12 +277,12 @@ export class SetCreateNode extends HackUi {
         }
 
         // 批量创建调度逻辑
-        const start = !this.onlyAdd ? 0 : l; // 起始索引计算
-        let dataIdx = 0; // 数据索引指针
+        this._startIdx = !this.onlyAdd ? 0 : l; // 起始索引计算
+        this._dataIdx = 0; // 数据索引指针
 
         if (immediate) {
-            while (dataIdx < n) {
-                this.setItem(data, start, dataIdx++, true);
+            while (this._dataIdx < n) {
+                this.setItem(true);
             }
             return;
         }
@@ -291,7 +292,7 @@ export class SetCreateNode extends HackUi {
             this._1b1 = false; // 重置首次标记
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
-                    this.setItem(data, start, dataIdx++);
+                    this.setItem();
                 }
             }, 0.06, Math.ceil(n / this.batchNum));
         } else {
@@ -300,8 +301,8 @@ export class SetCreateNode extends HackUi {
             //     this.setItem(data, start, dataIdx++);
             //     return dataIdx >= n; // 任务完成条件
             // });
-            while (dataIdx < n) {
-                this.setItem(data, start, dataIdx++);
+            while (this._dataIdx < n) {
+                this.setItem();
             }
         }
 
@@ -385,14 +386,15 @@ export class SetCreateNode extends HackUi {
      * setItem([data1, data2, data3], 0, 1)
      * setItem([data1, data2, data3], 0, 2)
      */
-    private setItem(data: any[], childIdxStart = 0, dataIdx = 0, immediate: boolean = false) {
-        const childIdx = childIdxStart + dataIdx;
+    private setItem(immediate: boolean = false) {
 
         // 数据越界检查
-        if (dataIdx >= data.length) {
+        if (this._dataIdx >= this._data.length) {
             no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
             return;
         }
+        const data = this._data[this._dataIdx];
+        const childIdx = this._startIdx + this._dataIdx++;
 
         let isNew = false;
         let item = this._items[childIdx];
@@ -403,7 +405,7 @@ export class SetCreateNode extends HackUi {
             this.container.addChild(item);
             this._items.push(item);
             isNew = true;
-        } else if ((!item.children[0] || !isValid(item.children[0], true)) && data[dataIdx] != null) {
+        } else if ((!item.children[0] || !isValid(item.children[0], true)) && data != null) {
             this.container.removeChild(item);
             item = this.initItem(instantiate(this.template));
             this.container.addChild(item);
@@ -411,7 +413,7 @@ export class SetCreateNode extends HackUi {
         }
 
         // 处理空数据节点
-        if (data[dataIdx] == null) {
+        if (data == null) {
             no.visible(item, false);
             return;
         }
@@ -427,7 +429,7 @@ export class SetCreateNode extends HackUi {
         // 数据绑定到YJDataWork组件
         let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
         // 初始化数据绑定
-        a?.clear().initWithData(data[dataIdx]);
+        a?.clear().initWithData(data);
 
         if (immediate) return;
         // 处理动画效果
