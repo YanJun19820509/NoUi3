@@ -86,12 +86,18 @@ export class YJGhostShadow extends Component {
     }
 
     private shadowFollow() {
+        let shadow: Node;
+        let index: number;
+        let x: number;
+        let y: number;
+        let angle: number;
+        let scale: number[];
         for (let i = 0; i < this.num; i++) {
-            const shadow = this._shadows[i];
+            shadow = this._shadows[i];
             if (!shadow) break;
-            const index = this._frameNum - this._intervalFrame * (i + 1);
+            index = this._frameNum - this._intervalFrame * (i + 1);
             if (index < 0 || !this._poses.has(index)) continue;
-            const [x, y, angle, scale] = this._poses.get(index);
+            [x, y, angle, scale] = this._poses.get(index);
             shadow.setPosition(x, y, 0);
             shadow.angle = angle;
             shadow.setScale(scale[0], scale[1], scale[2]);

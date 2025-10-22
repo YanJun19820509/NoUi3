@@ -104,8 +104,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createLines(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             this._moveLineTo(g, d.points);
             if (d.lineWidth) g.lineWidth = d.lineWidth;
             if (d.fillColor) g.fillColor.fromHEX(d.fillColor);
@@ -128,8 +129,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createArcs(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             g.arc(d.points[0], d.points[1], d.radius[0], d.startEndAngles[0], d.startEndAngles[1], d.counterclockwise);
             this._fillWidthColor(g, d);
         }
@@ -146,8 +148,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createEllipses(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             g.ellipse(d.points[0], d.points[1], d.radius[0], d.radius[1]);
             this._fillWidthColor(g, d);
         }
@@ -164,8 +167,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createCircles(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             g.circle(d.points[0], d.points[1], d.radius[0]);
             this._fillWidthColor(g, d);
         }
@@ -183,8 +187,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createRects(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             if (d.radius?.[0])
                 g.roundRect(d.points[0], d.points[1], d.size[0], d.size[1], d.radius[0]);
             else
@@ -205,8 +210,9 @@ export class SetGraphics extends HackUi {
      * }]
      */
     private createBeziers(g: Graphics, data: no.GraphicsData[]) {
-        for (let i = 0; i < data.length; i++) {
-            const d = data[i];
+        let d: no.GraphicsData;
+        for (let i = 0, n = data.length; i < n; i++) {
+            d = data[i];
             if (d.points.length == 4)
                 this.createQuadratic(g, d);
             else if (d.points.length == 6)

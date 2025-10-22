@@ -61,7 +61,10 @@ export class SetBezier extends SetNodeTweenAction {
                 }
             });
         }
-        return no.parseTweenData(d, this.node);
+        const a = no.parseTweenData(d, this.node);
+        points = null;
+        d = null;
+        return a;
     }
 
     // /**

@@ -29,19 +29,19 @@ export class SetComponentPropertyValue extends HackUi {
     // 目标节点（需要设置属性的节点）
     @property(Node)
     target: Node = null;
-    
+
     // 组件类型枚举选择（自动生成）
     @property({ type: Enum(ComponentName) })
     component: number = 0;
-    
+
     // 组件名称列表（存储实际组件类名）
     @property({ visible() { return false } })
     componentNames: string[] = [];
-    
+
     // 属性名称枚举选择（自动生成）
     @property({ type: Enum(PropertyName) })
     property: number = 0;
-    
+
     // 属性名称列表（存储实际属性名）
     @property({ visible() { return false } })
     propertyNames: string[] = [];
@@ -90,9 +90,10 @@ export class SetComponentPropertyValue extends HackUi {
         } else {
             let cs = this._target.components;
             let a: any = {};
+            let name: string;
             // 遍历所有组件，排除自身类型
-            for (let i = 0; i < cs.length; i++) {
-                let name = js.getClassName(cs[i]);
+            for (let i = 0, n = cs.length; i < n; i++) {
+                name = js.getClassName(cs[i]);
                 if (name == 'SetComponentPropertyValue') continue;
                 a[name] = i;
                 this.componentNames[i] = name;
@@ -130,14 +131,14 @@ export class SetComponentPropertyValue extends HackUi {
         const attrs = CCClass.Attr.getClassAttrs(clazz);
         const aa = '$_$type'; // 属性类型标记
         let a: any = {}, i = 0;
-        
+        let name: string;
         // 遍历所有类属性
         for (const key in attrs) {
             // 过滤内部属性
             if (key.indexOf('$$') > -1 || key.indexOf('_') == 0) continue;
             // 提取有类型定义的属性
             if (key.indexOf(aa) > -1) {
-                const name = key.split(aa)[0];
+                name = key.split(aa)[0];
                 a[name] = i;
                 this.propertyNames[i] = name;
                 i++;

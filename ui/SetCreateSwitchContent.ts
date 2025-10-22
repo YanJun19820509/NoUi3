@@ -211,8 +211,9 @@ export class SetCreateSwitchContent extends HackUi {
      */
     private hideContent(exceptName: string) {
         // 遍历所有内容配置
-        for (let i = 0; i < this.contents?.length; i++) {
-            const info = this.contents[i];
+        let info: ContentInfo;
+        for (let i = 0, n = this.contents?.length; i < n; i++) {
+            info = this.contents[i];
             if (this.noCache && info.name != exceptName) {
                 // 非缓存模式直接清除实例
                 info.clear();

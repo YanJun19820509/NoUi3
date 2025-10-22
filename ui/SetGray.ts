@@ -2,7 +2,6 @@
 import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, UIRenderer, Sprite } from '../yj';
 import { HackUi } from './HackUi';
 import { SetEffect } from './SetEffect';
-import { no } from '../no';
 
 /**
  * Predefined variables
@@ -39,19 +38,19 @@ export class SetGray extends HackUi {
     /** 是否在加载时自动启用灰态（需配合dataWork使用） */
     @property({ displayName: '默认置灰' })
     autoGray: boolean = false;
-    
+
     /** 是否使用遮罩效果替代普通灰态（需要shader支持） */
     @property({ displayName: '遮罩效果' })
     isMask: boolean = false;
-    
+
     /** 是否反转控制逻辑（true时数据为false启用灰态） */
     @property({ displayName: '取反' })
     reverse: boolean = false;
-    
+
     /** 是否递归影响子节点的灰态设置 */
     @property({ displayName: '影响子节点' })
     recursive: boolean = false;
-    
+
     /** 编辑器专用：自动为子节点添加灰态组件 */
     @property({ tooltip: '编辑器模式下自动为子节点添加SetGray组件' })
     autoSetChildren: boolean = false;
@@ -80,7 +79,7 @@ export class SetGray extends HackUi {
     }
 
     private _num = 30; // 材质加载重试计数器
-    
+
     /**
      * 设置灰态核心方法
      * @param v 是否启用灰态
@@ -115,8 +114,9 @@ export class SetGray extends HackUi {
         // 递归处理子节点
         if (this.recursive) {
             let children = this.getComponentsInChildren(UIRenderer);
-            for (let i = 0; i < children.length; i++) {
-                let child = children[i];
+            let child: UIRenderer;
+            for (let i = 0, n = children.length; i < n; i++) {
+                child = children[i];
                 if (renderer?.uuid == child.uuid) continue; // 跳过自身
                 child.getComponent(SetGray)?.a_setData(v);
             }
@@ -146,9 +146,11 @@ export class SetGray extends HackUi {
 
         if (this.recursive) {
             let children = this.getComponentsInChildren(UIRenderer);
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
-                const comp = child.getComponent(SetGray) || child.addComponent(SetGray);
+            let child: UIRenderer;
+            let comp: SetGray;
+            for (let i = 0, n = children.length; i < n; i++) {
+                child = children[i];
+                comp = child.getComponent(SetGray) || child.addComponent(SetGray);
                 comp.isMask = this.isMask;
             }
         }

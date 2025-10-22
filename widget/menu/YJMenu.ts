@@ -84,25 +84,29 @@ export class YJMenu extends Component {
         this.container = this.container || this.node;
         if (!force && this.container.children.length > 0) return;
         this.container.removeAllChildren();
-        
+
+        let info: YJMenuItemInfo;
+        let item: Node;
+        let list: any[];
+        let a: any;
         for (let i = 0; i < menuItems.length; i++) {
-            const info = menuItems[i];
+            info = menuItems[i];
             // 过滤调试专用菜单项
             if (!no.isDebug() && info.DEBUG) continue;
 
             // 实例化菜单项
-            const item = instantiate(this.itemTemp);
-            
+            item = instantiate(this.itemTemp);
+
             // 设置菜单项标题
             if (info.title) {
                 // 查找所有文本组件（优先Label组件）
-                let list: any[] = item.getComponentsInChildren(Label);
+                list = item.getComponentsInChildren(Label);
                 if (list.length == 0) {
                     list = item.getComponentsInChildren(YJCharLabel);
                 }
                 // 更新所有找到的文本组件
                 for (let j = 0; j < list.length; j++) {
-                    const a = list[j];
+                    a = list[j];
                     a.getComponent(HackUi)?.a_setData(info.title);
                 }
             }

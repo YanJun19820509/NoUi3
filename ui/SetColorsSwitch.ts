@@ -1,6 +1,6 @@
 
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
-import { ccclass, property, menu, Color, UIRenderer, Component, LabelOutline } from '../yj';
+import { ccclass, property, menu, Color, UIRenderer, Component, LabelOutline, Node } from '../yj';
 import { HackUi } from './HackUi';
 
 /**
@@ -162,18 +162,21 @@ export class SetColorsSwitch extends HackUi {
         // 统一转换为字符串进行条件匹配
         const condition = String(data);
 
+        let info: ColorInfo;
+        let children: Node[];
+        let child: Node;
         // 遍历所有颜色配置寻找匹配项
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            const info = this.infos[i];
+            info = this.infos[i];
             if (info.condition === condition) {
                 // 设置当前节点颜色
                 this.setColor(info, this.node.getComponent(UIRenderer));
 
                 // 递归设置子节点颜色
                 if (this.recursive) {
-                    const children = this.node.children;
-                    for (let index = 0; index < children.length; index++) {
-                        const child = children[index];
+                    children = this.node.children;
+                    for (let index = 0, m = children.length; index < m; index++) {
+                        child = children[index];
                         this.setColor(info, child.getComponent(UIRenderer));
                     }
                 }

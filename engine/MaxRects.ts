@@ -206,13 +206,15 @@ export class MaxRects {
         let cuts = use.cut(use.rect.x, use.rect.y, w, h);
         let a = this._createRect(use.rect.origin.x, use.rect.origin.y, w, h);
 
+        let b: Rect;
+        let c: Rect[];
         // 处理重叠区域
         for (let i = this._rects.length - 1; i >= 0; i--) {
             if (a.contains(this._rects[i])) {
                 this._rects.splice(i, 1);
             } else if (this._rects[i].rect.intersects(a.rect)) {
-                let b = this._rects.splice(i, 1)[0];
-                let c = b.cut(a.rect.x, a.rect.y, a.rect.width, a.rect.height);
+                b = this._rects.splice(i, 1)[0];
+                c = b.cut(a.rect.x, a.rect.y, a.rect.width, a.rect.height);
                 cuts = this._mergeRects(c, cuts);
             }
         }

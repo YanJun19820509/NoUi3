@@ -124,8 +124,9 @@ export class YJToggleGroupManager extends ToggleContainer {
         if (activeToggles.length > 1) {
             // 保留默认选中项，关闭其他toggle
             const firstToggle = activeToggles[this.defaultCheckedIdx];
+            let toggle: Toggle;
             for (let i = 0; i < activeToggles.length; ++i) {
-                const toggle = activeToggles[i];
+                toggle = activeToggles[i];
                 if (toggle === firstToggle) {
                     continue;
                 }

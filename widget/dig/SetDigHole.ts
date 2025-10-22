@@ -88,10 +88,11 @@ export class SetDigHole extends SetScanPath {
             }, 0);
             return;
         }
+        let info: any;
         for (let i = 0, n = infos.length; i < n; i++) {
-            const { x, y, radius } = infos[i];
-            this._holesInfo.push({ x, y, radius });
-            this.digHole(x, y, radius);
+            info = infos[i];
+            this._holesInfo.push(info);
+            this.digHole(info.x, info.y, info.radius);
             // this.digEllipseHole(x, y, radius, info.radian);
         }
         this.updateScanState();
@@ -316,12 +317,14 @@ export class SetDigHole extends SetScanPath {
      */
     private drawOutline() {
         if (!this.showOutline) return;
+        let u: number, v: number;
+        let idx: number;
         for (let k = 0, n = this._holesEdges.length; k < n; k += 2) {
-            const u = this._holesEdges[k];
-            const v = this._holesEdges[k + 1];
+            u = this._holesEdges[k];
+            v = this._holesEdges[k + 1];
             if (this._drawOutlineUv.has(`${u},${v}`)) continue;
             this._drawOutlineUv.add(`${u},${v}`);
-            const idx = this.uvToPixelIndex(u, v);
+            idx = this.uvToPixelIndex(u, v);
             this._textureBuffer[idx] = 0;
             this._textureBuffer[idx + 1] = 0;
             this._textureBuffer[idx + 2] = 0;
@@ -354,9 +357,11 @@ export class SetDigHole extends SetScanPath {
 
     private drawLine(u1: number, v1: number, u2: number, v2: number) {
         const dy = (v2 - v1) / (u2 - u1);
+        let v: number;
+        let idx: number;
         for (let u = u1; u <= u2; u++) {
-            const v = v1 + Math.floor(dy * (u - u1));
-            const idx = this.uvToPixelIndex(u, v);
+            v = v1 + Math.floor(dy * (u - u1));
+            idx = this.uvToPixelIndex(u, v);
             if (!this._textureBuffer[idx + 3]) continue;
             this._textureBuffer[idx] = 0;
             this._textureBuffer[idx + 1] = 0;

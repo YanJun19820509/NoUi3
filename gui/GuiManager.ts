@@ -2,7 +2,7 @@ import { gui } from "@core/gui/GUI";
 import { YJPanel } from "../base/node/YJPanel";
 import { no } from "../no";
 import { YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
-import { ccclass, js } from "../yj";
+import { ccclass, js, Node } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 
 @ccclass('GuiManager')
@@ -25,9 +25,11 @@ export class GuiManager {
         if (!allowMultipleOpen) {
             let a: YJPanel;
             const children = gui[to].children;
+            let child: Node;
+            let panel: YJPanel;
             for (let i = 0, n = children.length; i < n; i++) {
-                const child = children[i];
-                const panel = child.getComponent(comp);
+                child = children[i];
+                panel = child.getComponent(comp);
                 if (panel) {
                     a = panel;
                     break;

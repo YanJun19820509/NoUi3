@@ -348,13 +348,14 @@ export class SetList extends HackUi {
             data = no.arrayToArrays(data, this.columnNumber);
         }
 
+        let item: Node;
         // 自动回滚到列表起始位置
         if (this.allNum > 0 && this.autoScrollBack && listItems.length > 0) {
             this.lastIndex = 0;
             this.setScrollViewContentPos();
             // 使用标准for循环重置所有项位置
             for (let i = 0, n = listItems.length; i < n; i++) {
-                let item = listItems[i];
+                item = listItems[i];
                 this.setItemPosition(item, i);
             }
         }
@@ -371,7 +372,7 @@ export class SetList extends HackUi {
             if (this.lastIndex > 0) {
                 this.setScrollViewContentPos();
                 for (let i = 0, n = listItems.length; i < n; i++) {
-                    let item = listItems[i];
+                    item = listItems[i];
                     this.setItemPosition(item, this.lastIndex + i);
                 }
             }
@@ -669,16 +670,19 @@ export class SetList extends HackUi {
             this.lastIndex = startIndex; // 更新最后已知索引
             const n = listItems.length; // 当前存在的列表项数量
             let j = 1;
+            let item: Node;
+            let dataIndex: number;
+            let idx: number;
             // 使用标准for循环遍历所有列表项
             for (let i = 0; i < n; i++) {
-                const item = listItems[i];
-                const dataIndex = item['__dataIndex']; // 获取元素关联的数据索引
+                item = listItems[i];
+                dataIndex = item['__dataIndex']; // 获取元素关联的数据索引
 
                 if (diff < 0) { // 向下/向右滚动
                     // 检查元素是否超出可见范围且可以循环到顶部/左侧
                     if (dataIndex - startIndex > this.showNum - 1 && dataIndex - n >= 0) {
                         // 示例：当向下滚动时，将底部元素移动到顶部并更新数据
-                        const idx = dataIndex - n;
+                        idx = dataIndex - n;
                         this.setItemData(item, this.listData[idx]);
                         this.setItemPosition(item, idx);
                     }
@@ -686,7 +690,7 @@ export class SetList extends HackUi {
                     // 检查元素是否超出可见范围且可以循环到底部/右侧
                     if (dataIndex < startIndex && dataIndex + n < this.allNum) {
                         // 示例：当向上滚动时，将顶部元素移动到底部并更新数据
-                        let idx = startIndex - j++ + n;
+                        idx = startIndex - j++ + n;
                         while (idx >= this.allNum) {
                             idx = startIndex - j++ + n;
                         }

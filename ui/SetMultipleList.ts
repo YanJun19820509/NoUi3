@@ -155,18 +155,19 @@ export class SetMultipleList extends HackUi {
         let viewSize = no.size(this.scrollView.view.node);
         let isVertical = this.scrollView.vertical;
 
+        let t: SetMultipleListInfo;
         // 使用传统for循环替代for...of
         if (isVertical) {
-            for (let i = 0; i < this.templates.length; i++) {
-                const t = this.templates[i];
+            for (let i = 0, n = this.templates.length; i < n; i++) {
+                t = this.templates[i];
                 if (t.template) {
                     t.itemSize = no.size(t.template);
                     t.showMax = no.ceil(viewSize.height / t.itemSize.height);
                 }
             }
         } else {
-            for (let i = 0; i < this.templates.length; i++) {
-                const t = this.templates[i];
+            for (let i = 0, n = this.templates.length; i < n; i++) {
+                t = this.templates[i];
                 if (t.template) {
                     t.itemSize = no.size(t.template);
                     t.showMax = no.ceil(viewSize.width / t.itemSize.width);
@@ -384,9 +385,10 @@ export class SetMultipleList extends HackUi {
         this.templateMap = {};
         this.itemsMap = {};
         this.showNum = 0;
+        let t: SetMultipleListInfo;
         // 遍历所有模板配置（使用标准for循环）
         for (let i = 0, n = this.templates.length; i < n; i++) {
-            const t = this.templates[i];
+            t = this.templates[i];
             this.showNum += t.showMax; // 累计总显示元素数量
             // 初始化模板实例并建立映射
             this.itemsMap[t.type] = t.initTemplate(this.content);
@@ -431,43 +433,46 @@ export class SetMultipleList extends HackUi {
         let lastItemSize = 0;      // 上一个元素尺寸（用于计算偏移）
         this.typeDataIndexMap = {}; // 数据类型索引映射
 
+        let d: any;
+        let templateType: string;
+        let template: { size: Size, showNum: number };
+        let _size: Size;
         // 遍历所有数据计算内容尺寸（使用标准for循环）
-        for (let index = 0; index < this.listData.length; index++) {
-            const d = this.listData[index];
-            const templateType = d[templateTypeKey];
+        for (let index = 0, n = this.listData.length; index < n; index++) {
+            d = this.listData[index];
+            templateType = d[templateTypeKey];
             // 建立类型-索引映射关系
             this.typeDataIndexMap[templateType] = this.typeDataIndexMap[templateType] || [];
             this.typeDataIndexMap[templateType][this.typeDataIndexMap[templateType].length] = index;
 
             if (templateType) {
-                const template = this.templateMap[templateType],
-                    size = template.size;
+                template = this.templateMap[templateType];
+                _size = template.size;
                 if (this.isVertical) {
                     // 垂直模式：累加高度，记录最大宽度
-                    this.contentSize += size.height + this.offset.height;
-                    if (size.width > maxSize) maxSize = size.width;
+                    this.contentSize += _size.height + this.offset.height;
+                    if (_size.width > maxSize) maxSize = _size.width;
                     // 计算元素Y轴位置（从上往下排列）
                     this.positionMap.push((this.positionMap[this.positionMap.length - 1] || 0) - lastItemSize - this.offset.height);
-                    lastItemSize = size.height;
+                    lastItemSize = _size.height;
                 } else {
                     // 水平模式：累加宽度，记录最大高度
-                    this.contentSize += size.width + this.offset.width;
-                    if (size.height > maxSize) maxSize = size.height;
+                    this.contentSize += _size.width + this.offset.width;
+                    if (_size.height > maxSize) maxSize = _size.height;
                     // 计算元素X轴位置（从左往右排列）
                     this.positionMap.push((this.positionMap[this.positionMap.length - 1] || 0) + lastItemSize + this.offset.width);
-                    lastItemSize = size.width;
+                    lastItemSize = _size.width;
                 }
             }
         }
 
         // 设置最终内容容器尺寸
-        let s: Size;
         if (this.isVertical) {
-            s = size(maxSize, this.contentSize); // 垂直：宽=最大元素宽，高=总高
+            _size = size(maxSize, this.contentSize); // 垂直：宽=最大元素宽，高=总高
         } else {
-            s = size(this.contentSize, maxSize);  // 水平：宽=总宽，高=最大元素高
+            _size = size(this.contentSize, maxSize);  // 水平：宽=总宽，高=最大元素高
         }
-        no.size(this.content, s);
+        no.size(this.content, _size);
 
         // 处理内容容器位置
         let { x, y } = no.position(this.content);
@@ -480,9 +485,9 @@ export class SetMultipleList extends HackUi {
         } else {
             // 保持当前滚动位置（限制在合理范围内）
             if (this.isVertical) {
-                y = Math.min(y, Math.max(0, s.height - this.scrollViewSize.height));
+                y = Math.min(y, Math.max(0, _size.height - this.scrollViewSize.height));
             } else {
-                x = Math.max(x, Math.min(0, this.scrollViewSize.width - s.width));
+                x = Math.max(x, Math.min(0, this.scrollViewSize.width - _size.width));
             }
             this.content.setPosition(x, y);
         }
@@ -581,10 +586,10 @@ export class SetMultipleList extends HackUi {
             // 当前类型没有对应数据的情况
             if (!dataIndexes) {
                 const items = this.itemsMap[type];
-
+                let item: Node;
                 // 隐藏所有该类型元素并重置数据索引
                 for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-                    const item = items[itemIndex];
+                    item = items[itemIndex];
                     no.visible(item, false);
                     item['__dataIndex'] = -1; // 使用数字类型-1表示未使用
                 }
@@ -658,33 +663,44 @@ export class SetMultipleList extends HackUi {
      * // 元素会重新定位并更新为对应索引的数据
      */
     private setItemAt(lastIndex: number, curIndex: number, asc: boolean) {
+        let d: any;
+        let templateType: string;
+        let showNum: number;
+        let indexs: number[];
+        let i: number;
+        let items: Node[];
+        let ni: number;
+        let nIndex: number;
+        let nItem: Node;
+        let item: Node;
+        let nd: any;
         if (asc) {
             // 处理向上滚动（加载后续数据）
             for (let index = lastIndex; index < curIndex; index++) {
                 // 获取当前数据项的模板类型
-                const d = this.listData[index];
+                d = this.listData[index];
                 if (!d) continue;
-                const templateType = d[templateTypeKey];
+                templateType = d[templateTypeKey];
                 // 获取该模板类型的配置参数
-                const showNum = this.templateMap[templateType].showNum; // 该类型最大显示数量
-                const indexs = this.typeDataIndexMap[templateType];    // 该类型数据索引数组
-                const i = indexs.indexOf(index);                       // 当前数据在类型数组中的位置
-                const items = this.itemsMap[templateType];             // 该类型所有节点实例
+                showNum = this.templateMap[templateType].showNum; // 该类型最大显示数量
+                indexs = this.typeDataIndexMap[templateType];    // 该类型数据索引数组
+                i = indexs.indexOf(index);                       // 当前数据在类型数组中的位置
+                items = this.itemsMap[templateType];             // 该类型所有节点实例
 
                 // 计算需要更新的目标索引
-                const ni = i + showNum;                // 目标位置偏移量
-                const nIndex = indexs[ni];             // 实际目标数据索引
-                const nItem: Node = no.itemOfArray(items, nIndex, '__dataIndex'); // 查找已绑定该索引的节点
+                ni = i + showNum;                // 目标位置偏移量
+                nIndex = indexs[ni];             // 实际目标数据索引
+                nItem = no.itemOfArray(items, nIndex, '__dataIndex'); // 查找已绑定该索引的节点
 
                 // 如果目标节点已存在则跳过
                 if (nItem) continue;
 
                 // 获取当前索引绑定的节点
-                const item: Node = no.itemOfArray(items, index, '__dataIndex');
+                item = no.itemOfArray(items, index, '__dataIndex');
                 if (!item) continue;
 
                 // 更新节点数据和位置
-                const nd = this.listData[nIndex];
+                nd = this.listData[nIndex];
                 if (nd) {
                     this.setItemData(item, nd);        // 绑定新数据
                     this.setItemPosition(item, nIndex);// 设置新位置
@@ -694,27 +710,27 @@ export class SetMultipleList extends HackUi {
         } else {
             // 处理向下滚动（加载先前数据）
             for (let index = lastIndex - 1; index >= curIndex; index--) {
-                const d = this.listData[index];
+                d = this.listData[index];
                 if (!d) continue;
-                const templateType = d[templateTypeKey];
-                const showNum = this.templateMap[templateType].showNum;
-                const items = this.itemsMap[templateType];
+                templateType = d[templateTypeKey];
+                showNum = this.templateMap[templateType].showNum;
+                items = this.itemsMap[templateType];
 
                 // 跳过已处理的节点
                 if (no.itemOfArray(items, index, '__dataIndex')) continue;
 
                 // 计算需要复用的节点索引
-                const indexs = this.typeDataIndexMap[templateType];
-                const i = indexs.indexOf(index) + showNum; // 向后偏移showNum个位置
-                let nIndex = indexs[i];
+                indexs = this.typeDataIndexMap[templateType];
+                ni = indexs.indexOf(index) + showNum; // 向后偏移showNum个位置
+                nIndex = indexs[ni];
                 if (nIndex == undefined) nIndex = -1;      // 处理越界情况
 
                 // 获取可复用的节点
-                let item: Node = no.itemOfArray(items, nIndex, '__dataIndex');
+                item = no.itemOfArray(items, nIndex, '__dataIndex');
                 if (!item) continue;
 
                 // 更新节点为当前数据
-                const nd = this.listData[index];
+                nd = this.listData[index];
                 if (nd) {
                     this.setItemData(item, nd);
                     this.setItemPosition(item, index);

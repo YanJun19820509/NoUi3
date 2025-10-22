@@ -31,7 +31,7 @@ import { YJGameData } from './YJGameData';
 export class YJDataMapInfo {
     @property({ displayName: '数据key', tooltip: '如果对应多个key用,分隔，将解析为kv结构' })
     dataKeys: string = '';
-    
+
     @property({ displayName: 'UI组件key' })
     uiKey: string = '';
 
@@ -62,9 +62,11 @@ export class YJDataMapInfo {
             }
         }
         let a: any = {};
+        let k: string;
+        let v: any;
         for (let i = 0, n = keys.length; i < n; i++) {
-            let k = keys[i];
-            let v = dataSource[k];
+            k = keys[i];
+            v = dataSource[k];
             if (v == null) v = dataSource.get(k);
             a[k] = v;
         }
@@ -93,7 +95,7 @@ export class YJDataMap extends YJDataWork {
      */
     @property({ displayName: '数据源', tooltip: '数据对象类名，继承YJGameData' })
     dataSourceClassName: string = '';
-    
+
     /** 
      * 数据键映射配置列表 
      * @remarks 每个配置项定义一组数据到UI的映射关系
@@ -144,8 +146,9 @@ export class YJDataMap extends YJDataWork {
      */
     protected syncWithDataSource() {
         if (!this._dataSource) return;
+        let km: YJDataMapInfo;
         for (let i = 0; i < this.keyMaps.length; i++) {
-            const km = this.keyMaps[i];
+            km = this.keyMaps[i];
             this.setValue(km.uiKey, km.getData(this._dataSource));
         }
     }

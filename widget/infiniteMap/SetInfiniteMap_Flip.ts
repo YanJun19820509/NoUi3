@@ -173,25 +173,31 @@ export class SetInfiniteMap_Flip extends HackUi {
         const uv = this.xyToUv(x, y); // 计算中心点UV坐标
         const visibleUv = YJTempData.array<string>(`SetInfiniteMap_Flip:visibleUv_${this.uuid}`); // 存储可见区域的UV键值
         visibleUv.clear();
+        let u: number;
+        let v: number;
         // 生成可见区域UV坐标集合
         for (let i = -this._gridColRow[0]; i <= this._gridColRow[0]; i++) {
             for (let j = -this._gridColRow[1]; j <= this._gridColRow[1]; j++) {
-                const u = uv.get(0) + i;  // 横向扩展网格
-                const v = uv.get(1) + j;  // 纵向扩展网格
+                u = uv.get(0) + i;  // 横向扩展网格
+                v = uv.get(1) + j;  // 纵向扩展网格
                 visibleUv.push(`${u}_${v}`); // 生成UV键格式如"1_-2"
             }
         }
 
         // 首次创建流程
         if (this._tileNodeMap.size == 0) {
+            let key: string;
+            let data: any;
+            let item: YJDataWork;
+            let node: Node;
             for (let i = 0, n = visibleUv.length(); i < n; i++) {
-                const key = visibleUv.get(i);
-                const data = this.getDataByUvKey(key);
+                key = visibleUv.get(i);
+                data = this.getDataByUvKey(key);
                 if (data) {
                     // 使用对象池获取或创建节点
-                    let item = this._tileNodes.get(i);
+                    item = this._tileNodes.get(i);
                     if (!item) {
-                        const node = instantiate(this.template);
+                        node = instantiate(this.template);
                         no.setLayer(node, this.node.layer);
                         node.parent = this.node;
                         no.visible(node, true);
@@ -214,9 +220,13 @@ export class SetInfiniteMap_Flip extends HackUi {
             const needMoveTileNode = YJTempData.array<YJDataWork>(`SetInfiniteMap_Flip:needMoveTileNode_${this.uuid}`);
             needMoveTileNode.clear();
             const entries = Array.from(this._tileNodeMap.entries());
+            let key: string;
+            let item: YJDataWork;
+            let data: any;
+            let node: Node;
             //遍历子节点，将不可见的节点加入到needMoveTileNode列表中
             for (let i = 0; i < entries.length; i++) {
-                const [key, item] = entries[i];
+                [key, item] = entries[i];
                 if (!visibleUv.includes(key)) {
                     needMoveTileNode.push(item);
                     this._tileNodeMap.delete(key);
@@ -225,14 +235,14 @@ export class SetInfiniteMap_Flip extends HackUi {
             }
             //遍历可见区域，将needMoveTileNode中的节点移动到可见区域
             for (let i = 0, n = visibleUv.length(); i < n; i++) {
-                const key = visibleUv.get(i);
+                key = visibleUv.get(i);
                 if (this._tileNodeMap.has(key)) continue;
-                const data = this.getDataByUvKey(key);
+                data = this.getDataByUvKey(key);
                 if (data) {
                     // 优先使用回收的节点，没有则创建新节点
-                    let item = needMoveTileNode.shift();
+                    item = needMoveTileNode.shift();
                     if (!item) {
-                        const node = instantiate(this.template);
+                        node = instantiate(this.template);
                         node.parent = this.node;
                         no.visible(node, true);
                         item = node.getComponent(YJDataWork);

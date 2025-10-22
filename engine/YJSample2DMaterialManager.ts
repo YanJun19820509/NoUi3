@@ -183,8 +183,9 @@ export class YJSample2DMaterialManager extends no.SingleObject {
             } else {
                 // 过滤出需要新增的纹理信息
                 let newTextureInfos = [];
+                let info: TextureInfo;
                 for (let i = 0, n = textureInfos.length; i < n; i++) {
-                    let info = textureInfos[i];
+                    info = textureInfos[i];
                     // 检查当前纹理是否在差异列表中
                     for (let j = 0, m = maxDiff.length; j < m; j++) {
                         if (info.path === maxDiff[j]) {
@@ -227,19 +228,22 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         const assetPaths: string[] = [];
 
         // 提取纯路径列表用于比较
-        for (let i = 0; i < textureInfos.length; i++) {
-            assetPaths.push(textureInfos[i].path);
+        for (let i = 0, n = textureInfos.length; i < n; i++) {
+            assetPaths[assetPaths.length] = textureInfos[i].path;
         }
 
         const l = assetPaths.length;
         let maxCount = l; // 初始化最大差异数为需求纹理总数
 
+        let materialInfo: YJSample2DMaterialInfo;
+        let diff: string[];
+        let count: number;
         // 遍历所有可复用材质寻找最佳匹配
-        for (let i = 0; i < this.materialInfos.length; i++) {
-            const materialInfo = this.materialInfos[i];
+        for (let i = 0, n = this.materialInfos.length; i < n; i++) {
+            materialInfo = this.materialInfos[i];
             // 获取当前材质缺少的纹理列表
-            const diff = materialInfo.compareTexturePaths(assetPaths),
-                count = diff.length;
+            diff = materialInfo.compareTexturePaths(assetPaths);
+            count = diff.length;
 
             // 验证条件：差异数更小且纹理槽位充足（最大索引+差异数不超过8）
             if (count < maxCount && (materialInfo.maxIdx + count) < 8) {
@@ -288,9 +292,10 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      */
     public async loadTextures(materialInfo: YJSample2DMaterialInfo, textureInfos: TextureInfo[]) {
         const promises: Promise<void>[] = [];
+        let textureInfo: TextureInfo;
         // 并行创建所有纹理加载任务
         for (let i = 0, n = textureInfos.length; i < n; i++) {
-            const textureInfo = textureInfos[i];
+            textureInfo = textureInfos[i];
             promises.push(this.loadTextureAssets(textureInfo, materialInfo));
         }
         // 等待所有资源加载完成

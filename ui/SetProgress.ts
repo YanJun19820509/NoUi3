@@ -80,15 +80,14 @@ export class SetProgress extends HackUi {
     protected onDataChange(data: any) {
         if (!this.speed)
             this.speed = 1000 / this.motionSpeed; // 转换为每秒进度变化量
-        
+
         // 处理对象类型数据（非数组）
         if (data instanceof Object && !(data instanceof Array)) {
             const keys = Object.keys(data);
             let a: number[] = [];
             // 遍历对象属性值（兼容非数组对象）
             for (let i = 0; i < keys.length; i++) {
-                const key = keys[i];
-                a[a.length] = data[key];
+                a[a.length] = data[keys[i]];
             }
             data = a;
         }
@@ -107,7 +106,7 @@ export class SetProgress extends HackUi {
             data = this.initValue;
 
         this.targetValue = data;
-        
+
         // 直接设置进度的情况（首次/无动画/逆向变化）
         if (this.motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
             this.progressBar.progress = data;
@@ -122,16 +121,16 @@ export class SetProgress extends HackUi {
     // 每帧更新进度动画
     lateUpdate(dt: number) {
         if (this.targetValue == this.progressBar.progress) return;
-        
+
         if (this.targetValue >= 0) {
             let p = this.progressBar.progress + this.speed * this.dir * dt;
-            
+
             // 到达目标值时精确设置
-            if ((this.dir > 0 && p >= this.targetValue) || 
+            if ((this.dir > 0 && p >= this.targetValue) ||
                 (this.dir < 0 && p <= this.targetValue)) {
                 p = this.targetValue;
             }
-            
+
             this.progressBar.progress = p;
         }
     }
@@ -139,7 +138,7 @@ export class SetProgress extends HackUi {
     // 更新进度文本显示
     private setLabel(data: any) {
         if (!this.label && !this.charLabel) return;
-        
+
         let s: string = '';
         if (typeof data == 'number') {
             // 格式化为百分比（保留1位小数）
@@ -148,7 +147,7 @@ export class SetProgress extends HackUi {
             // 显示分数格式 如"3/10"
             s = `${data[0]}/${data[1]}`;
         }
-        
+
         // 更新对应类型的标签组件
         if (this.label) {
             this.label.string = s;

@@ -51,9 +51,10 @@ export class SwitchInfo {
         // 判断当前值是否匹配条件
         const isMatch = this.conditions.indexOf(v) !== -1;
 
+        let node: Node;
         // 遍历所有节点进行显隐控制
-        for (let i = 0; i < this.nodes.length; i++) {
-            const node = this.nodes[i];
+        for (let i = 0, n = this.nodes.length; i < n; i++) {
+            node = this.nodes[i];
             if (!isValid(node)) continue; // 跳过无效节点
 
             // 缓存原始X坐标（用于位移方式的显隐控制）
@@ -72,8 +73,9 @@ export class SwitchInfo {
      * （通常在组件首次激活时调用）
      */
     public init() {
-        for (let i = 0; i < this.nodes.length; i++) {
-            const node = this.nodes[i];
+        let node: Node;
+        for (let i = 0, n = this.nodes.length; i < n; i++) {
+            node = this.nodes[i];
             // no.visibleByActiveInHierarchy(node, false);
             node.active = false;
         }
@@ -142,8 +144,7 @@ export class SetNodesSwitch extends HackUi {
     private check() {
         // 遍历所有配置信息（使用索引循环避免for...of迭代器）
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            let info = this.infos[i];
-            info.checkShow(this._data);
+            this.infos[i].checkShow(this._data);
         }
     }
 }

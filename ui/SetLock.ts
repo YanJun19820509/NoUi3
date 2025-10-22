@@ -90,7 +90,7 @@ export class SetLock extends HackUi {
         // 编辑器模式下同步锁定类型变化
         if (this._lockType == this.lockType) return;
         this._lockType = this.lockType;
-        
+
         // 根据锁定类型动态添加/移除组件
         if (this.lockType == LockType.Gray && !this.getComponent(SetGray)) {
             this.addComponent(SetGray);
@@ -101,9 +101,11 @@ export class SetLock extends HackUi {
                 if (a.recursive) {
                     // 递归移除子节点灰度组件
                     let grays = a.getComponentsInChildren(SetGray);
-                    for (let i = 0; i < grays.length; i++) {
-                        const aa = grays[i];
-                        const bb = aa.getComponent(SetEffect);
+                    let aa: SetGray;
+                    let bb: SetEffect;
+                    for (let i = 0, n = grays.length; i < n; i++) {
+                        aa = grays[i];
+                        bb = aa.getComponent(SetEffect);
                         aa?.destroy();
                         bb?.destroy();
                     }
@@ -205,7 +207,7 @@ export class SetLock extends HackUi {
         let target = this.target;
         if (target.getChildByName('_lock_')) return;
         let lock: Node;
-        
+
         // 使用自定义模板或创建默认节点
         if (this.lockNode) {
             lock = instantiate(this.lockNode);
@@ -220,7 +222,7 @@ export class SetLock extends HackUi {
             ut.setContentSize(nodeUt.getBoundingBox().size);
             ut.setAnchorPoint(nodeUt.anchorPoint);
         }
-        
+
         // 设置节点属性和事件
         lock.setPosition(0, 0);
         no.addClickEventsToButton(lock.addComponent(Button), target, 'SetLock', 'a_check');

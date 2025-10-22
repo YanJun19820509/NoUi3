@@ -210,8 +210,9 @@ export class SetMinimap extends HackUi {
      */
     private setMinimap(tileInfos: { type: number, x: number, y: number }[]) {
         if (!this.minimapSprite || tileInfos.length == 0) return;
+        let info: any;
         for (let i = 0, n = tileInfos.length; i < n; i++) {
-            const info = tileInfos[i];
+            info = tileInfos[i];
             if (info.type < 0) continue;
             this._drawTile(info.x, info.y, info.type);
         }
@@ -248,9 +249,12 @@ export class SetMinimap extends HackUi {
     private setImageSetTileData() {
         this._imageSetTileData = new Map();
         const cellSize = this.minimapCellSize;
+        let x: number;
+        let y: number;
+        let buffer: ArrayBufferView;
         for (let i = 0, n = this.minimapSetPoses.length; i < n; i++) {
-            const { x, y } = this.minimapSetPoses[i];
-            const buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
+            ({ x, y } = this.minimapSetPoses[i]);
+            buffer = this._texture.getTextureBuffer(this.minimapImageSet, rect(x, y, cellSize, cellSize));
             this._imageSetTileData.set(`${i}`, buffer);
         }
     }

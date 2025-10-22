@@ -138,16 +138,19 @@ export class SetDynamicMap extends HackUi {
             this._tileNodeMap.clear();
             this._tileMap.clear();
 
+            let item: Node;
             // 停用所有现有节点（后续会复用）
             for (let i = 0, n = this._tileNodes.length; i < n; i++) {
-                const item = this._tileNodes[i];
+                item = this._tileNodes[i];
                 item['_activeInHierarchy'] = false; // 优化性能的隐藏方式
             }
 
+            let tileInfo: any;
+            let uv: number[];
             // 构建新的地砖数据映射表
             for (let i = 0, n = tileInfos.length; i < n; i++) {
-                const tileInfo = tileInfos[i];
-                const uv = this.xyToUv(tileInfo.x, tileInfo.y); // 转换世界坐标到UV坐标
+                tileInfo = tileInfos[i];
+                uv = this.xyToUv(tileInfo.x, tileInfo.y); // 转换世界坐标到UV坐标
                 this._tileMap.set(`${uv[0]}_${uv[1]}`, tileInfo); // 使用"u_v"格式作为键
             }
             this.clearDataValue(`${this.bind_keys}.tileInfos`);
@@ -155,18 +158,23 @@ export class SetDynamicMap extends HackUi {
 
         // 增量地砖变更处理（适用于动态更新部分地砖）
         if (tileChangeInfos) {
+            let tileChangeInfo: any;
+            let uv: number[];
+            let key: string;
+            let node: Node;
+            let a: any;
             for (let i = 0, n = tileChangeInfos.length; i < n; i++) {
-                const tileChangeInfo = tileChangeInfos[i];
-                const uv = this.xyToUv(tileChangeInfo.x, tileChangeInfo.y);
-                const key = `${uv[0]}_${uv[1]}`;
+                tileChangeInfo = tileChangeInfos[i];
+                uv = this.xyToUv(tileChangeInfo.x, tileChangeInfo.y);
+                key = `${uv[0]}_${uv[1]}`;
 
                 // 更新数据存储
                 this._tileMap.set(key, tileChangeInfo);
 
                 // 如果对应节点已存在，立即更新显示
                 if (this._tileNodeMap.has(key)) {
-                    const node = this._tileNodeMap.get(key);
-                    let a = node.getComponent(YJDataWork) || node.getComponentInChildren(YJDataWork);
+                    node = this._tileNodeMap.get(key);
+                    a = node.getComponent(YJDataWork) || node.getComponentInChildren(YJDataWork);
                     if (a) {
                         a.initWithData(tileChangeInfo); // 触发子节点的数据更新
                     }
@@ -221,23 +229,29 @@ export class SetDynamicMap extends HackUi {
         const uv = this.xyToUv(x, y); // 计算中心点UV坐标
         const visibleUv: string[] = []; // 存储可见区域的UV键值
 
+        let u: number;
+        let v: number;
         // 生成可见区域UV坐标集合
         for (let i = -this._gridColRow[0]; i <= this._gridColRow[0]; i++) {
             for (let j = -this._gridColRow[1]; j <= this._gridColRow[1]; j++) {
-                const u = uv[0] + i;  // 横向扩展网格
-                const v = uv[1] + j;  // 纵向扩展网格
+                u = uv[0] + i;  // 横向扩展网格
+                v = uv[1] + j;  // 纵向扩展网格
                 visibleUv.push(`${u}_${v}`); // 生成UV键格式如"1_-2"
             }
         }
 
         // 首次创建流程
         if (this._tileNodeMap.size == 0) {
+            let key: string;
+            let data: any;
+            let item: Node;
+            let dataWork: YJDataWork;
             for (let i = 0, n = visibleUv.length; i < n; i++) {
-                const key = visibleUv[i];
-                const data = this._tileMap.get(key);
+                key = visibleUv[i];
+                data = this._tileMap.get(key);
                 if (data) {
                     // 使用对象池获取或创建节点
-                    let item = this._tileNodes[i] || instantiate(this.template);
+                    item = this._tileNodes[i] || instantiate(this.template);
                     if (!item.parent) {
                         item.parent = this.node;
                         no.visible(item, true);
@@ -246,7 +260,7 @@ export class SetDynamicMap extends HackUi {
 
                     // 初始化节点数据
                     this._tileNodeMap.set(key, item);
-                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                    dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                     if (dataWork) {
                         dataWork.initWithData(data); // 示例数据格式：{x: 100, y: 200, type: 'grass'}
                     }
@@ -262,23 +276,28 @@ export class SetDynamicMap extends HackUi {
         else {
             const needMoveTileNode: Node[] = [];
             const entries = Array.from(this._tileNodeMap.entries());
+            let key: string;
+            let node: Node;
             //遍历子节点，将不可见的节点加入到needMoveTileNode列表中
             for (let i = 0; i < entries.length; i++) {
-                const [key, node] = entries[i];
+                [key, node] = entries[i];
                 if (!visibleUv.includes(key)) {
                     needMoveTileNode.push(node);
                     this._tileNodeMap.delete(key);
                     node['_activeInHierarchy'] = false; // 标记节点为可复用状态
                 }
             }
+            let data: any;
+            let item: Node;
+            let dataWork: YJDataWork;
             //遍历可见区域，将needMoveTileNode中的节点移动到可见区域
             for (let i = 0, n = visibleUv.length; i < n; i++) {
-                const key = visibleUv[i];
+                key = visibleUv[i];
                 if (this._tileNodeMap.has(key)) continue;
-                const data = this._tileMap.get(key);
+                data = this._tileMap.get(key);
                 if (data) {
                     // 优先使用回收的节点，没有则创建新节点
-                    let item = needMoveTileNode.shift() || instantiate(this.template);
+                    item = needMoveTileNode.shift() || instantiate(this.template);
                     if (!item.parent) {
                         item.parent = this.node;
                         no.visible(item, true);
@@ -288,7 +307,7 @@ export class SetDynamicMap extends HackUi {
 
                     // 更新节点数据和位置
                     this._tileNodeMap.set(key, item);
-                    const dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                    dataWork = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                     if (dataWork) {
                         dataWork.initWithData(data);
                     }

@@ -86,14 +86,15 @@ export class YJHintWatcher extends Component {
         // 数值型红点：累加所有监听key的数值
         if (this.hint.isNumber) {
             for (let i = 0; i < this.typeList.length; i++) {
-                n += no.hintCenter.getHintValue(this.typeList[i]); 
+                n += no.hintCenter.getHintValue(this.typeList[i]);
             }
-        } 
+        }
         // 布尔型红点：任一key有值即显示
         else if (v < 1) {
             let len = this.typeList?.length || 0;
+            let type: string;
             for (let i = 0; i < len; i++) {
-                let type = this.typeList[i];
+                type = this.typeList[i];
                 if (no.hintCenter.getHintValue(type) > 0) {
                     n = 1;
                     break;

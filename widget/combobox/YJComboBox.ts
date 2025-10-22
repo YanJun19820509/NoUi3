@@ -54,15 +54,15 @@ export class YJComboBox extends YJDataWork {
     /** 自定义事件类型，用于跨组件通信 */
     @property({ displayName: '事件类型' })
     type: string = '';
-    
+
     /** 列表展开时触发的事件 */
     @property(no.EventHandlerInfo)
     onShow: no.EventHandlerInfo[] = [];
-    
+
     /** 列表收起时触发的事件 */
     @property(no.EventHandlerInfo)
     onHide: no.EventHandlerInfo[] = [];
-    
+
     /** 选项变更时触发的事件，传递选中项数据 */
     @property(no.EventHandlerInfo)
     onChange: no.EventHandlerInfo[] = [];
@@ -176,8 +176,9 @@ export class YJComboBox extends YJDataWork {
     private setChecked(id: string) {
         let list = this.data.list;
         if (list) {
+            let a: any;
             for (let i = 0, n = list.length; i < n; i++) {
-                const a = list[i];
+                a = list[i];
                 a.checked = a.id == id;
                 if (a.checked) {
                     this.data = a;  // 更新当前选中项数据

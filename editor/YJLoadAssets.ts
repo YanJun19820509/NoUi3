@@ -1,4 +1,4 @@
-import { ccclass, property, menu, Component, Node, Sprite, Button, EDITOR, executeInEditMode, Label, } from '../yj';
+import { ccclass, property, menu, Component, Node, Sprite, Button, EDITOR, executeInEditMode, Label, SpriteFrame, } from '../yj';
 import { no } from '../no';
 import { TextureInfo } from '../types';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
@@ -64,12 +64,15 @@ export class YJLoadAssets extends Component {
         // 遍历所有子节点的SetSpriteFrameInSampler2D组件
         const list: any[] = this.getComponentsInChildren(SetSpriteFrameInSampler2D),
             textureUuid: string[] = [];
-        for (let i = 0; i < list.length; i++) {
-            const a = list[i];
+        let a: any;
+        let sf: SpriteFrame;
+        let uuid: string;
+        for (let i = 0, n = list.length; i < n; i++) {
+            a = list[i];
             if (a.loadFromAtlas) {
-                const sf = a.getComponent(Sprite).spriteFrame;
+                sf = a.getComponent(Sprite).spriteFrame;
                 if (sf) {
-                    let uuid = sf.texture._uuid;
+                    uuid = sf.texture._uuid;
                     no.addToArray(textureUuid, uuid);
                 } else {
                     no.warn(`需要手动添加相关的纹理：节点${a.node.name},bindKeys${a.bind_keys}`);
@@ -79,10 +82,11 @@ export class YJLoadAssets extends Component {
         console.log('textureUuid', textureUuid);
         // 根据收集到的纹理UUID创建TextureInfo
         this.textureInfos.length = 0;
-        for (let i = 0; i < textureUuid.length; i++) {
-            const info = new TextureInfo();
+        let info: TextureInfo;
+        for (let i = 0, n = textureUuid.length; i < n; i++) {
+            info = new TextureInfo();
             info.addTexture(textureUuid[i]);
-            this.textureInfos[this.textureInfos.length] = info
+            this.textureInfos[this.textureInfos.length] = info;
         }
     }
 
@@ -110,8 +114,9 @@ export class YJLoadAssets extends Component {
         }
         // 重新获取所有纹理的UUID
         const ps: Promise<string>[] = [];
-        for (let i = 0; i < this.textureInfos.length; i++) {
-            const a = this.textureInfos[i];
+        let a: TextureInfo;
+        for (let i = 0, n = this.textureInfos.length; i < n; i++) {
+            a = this.textureInfos[i];
             if (a.path.indexOf('db://assets/') == 0)
                 ps.push(no.EditorMode.getAssetUuidByUrl(a.path.replace('/texture', '.png/texture')));
             else
@@ -120,8 +125,9 @@ export class YJLoadAssets extends Component {
         // 更新纹理信息列表
         Promise.all(ps).then(uuids => {
             this.textureInfos.length = 0;
-            for (let i = 0; i < uuids.length; i++) {
-                const info = new TextureInfo();
+            let info: TextureInfo;
+            for (let i = 0, n = uuids.length; i < n; i++) {
+                info = new TextureInfo();
                 info.addTexture(uuids[i]).then(v => { if (v) this.textureInfos[this.textureInfos.length] = info });
             }
         });

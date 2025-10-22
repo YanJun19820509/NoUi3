@@ -11,7 +11,6 @@
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/zh/
  *
  */
-
 import { YJDataWork } from "../../../base/YJDataWork";
 import { YJPanel } from "../../../base/node/YJPanel";
 import { YJWindowManager } from "../../../base/node/YJWindowManager";

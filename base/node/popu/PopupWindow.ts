@@ -1,4 +1,4 @@
-import { AllowMultipleOpen, panelPrefabPath, panelPrefabUuid } from '../../../types';
+import { AllowMultipleOpen } from '../../../types';
 import { ccclass } from '../../../yj';
 import { LoadingPanel } from './LoadingPanel';
 import { PopuPanel } from './PopuPanel';

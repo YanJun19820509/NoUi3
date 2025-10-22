@@ -154,10 +154,12 @@ export class SetRepeatNode extends HackUi {
             return;
         }
 
+        let item: Node;
+        let comp: SetSpriteFrameInSampler2D;
         // 使用传统for循环处理节点（避免使用for...of）
         for (let i = 0; i < max; i++) {
             // 尝试复用已有节点
-            let item = this.node.children[i];
+            item = this.node.children[i];
 
             // 需要时创建新节点
             if (!item) {
@@ -169,15 +171,16 @@ export class SetRepeatNode extends HackUi {
             }
 
             // 设置节点显示内容（使用SetSpriteFrameInSampler2D组件）
-            const comp = item.getComponent(SetSpriteFrameInSampler2D);
-            const useShow = i < count; // 判断是否使用显示图
-            comp.a_setData(useShow ? show : fill);
+            comp = item.getComponent(SetSpriteFrameInSampler2D);
+            // 判断是否使用显示图
+            comp.a_setData(i < count ? show : fill);
         }
     }
 
     private setNotStar(n: number) {
+        let item: Node;
         for (let i = 0; i < n; i++) {
-            let item = this.node.children[i];
+            item = this.node.children[i];
             if (!item) {
                 item = instantiate(this.tempNode);
                 if (item) {

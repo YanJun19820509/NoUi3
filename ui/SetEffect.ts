@@ -157,10 +157,11 @@ export class SetEffect extends HackUi {
         if (defines) material.recompileShaders(defines);
         // 设置材质属性
         if (properties) {
+            let v: number | Vec2 | Vec3 | Vec4;
+            let p: any;
             for (const key in properties) {
                 if (no.materialHasProperty(material, 0, 0, key)) {
-                    let v: number | Vec2 | Vec3 | Vec4;
-                    const p = [].concat(properties[key]);
+                    p = [].concat(properties[key]);
                     switch (p.length) {
                         case 1: // 标量
                             v = p[0];

@@ -27,7 +27,6 @@ class YJVertexColorTransitionData {
     private _data: Vec4 = new Vec4(0, 0, 0, 0);
     private _needUpdate: boolean = false;
     private _defineIds: number[][] = [[], []];
-    private _dirtyVersion: number = 0;
     private _updateColorLate: Function;
     private _uuid: string = '';
 
@@ -57,7 +56,6 @@ class YJVertexColorTransitionData {
     public setEffect(defines: any, properties?: number[]) {
         if (!this.renderComp || !defines) return;
         this._needUpdate = true;  // 标记需要更新顶点缓冲区
-        this._dirtyVersion = 0;   // 重置脏数据版本
         this._setDefines(defines); // 处理着色器宏定义
         this._setProperties(properties); // 设置扩展属性
     }
@@ -75,7 +73,7 @@ class YJVertexColorTransitionData {
      */
     private _setColor() {
         let c = this.renderComp.color;
-        if (this._data.x == 0) {
+        if (this._data.x >= 0) {
             // 初始状态直接存储归一化颜色值
             this._data.x = c.r / 255;
             this._data.y = c.g / 255;
@@ -120,13 +118,18 @@ class YJVertexColorTransitionData {
      * });
      */
     private _setDefines(defines: any) {
+        let v: boolean;
+        let keys: string[];
+        let offset: number;
+        let id: number;
+        let ids: number[];
         // 处理每个宏定义
         for (let key in defines) {
-            let v = defines[key];
-            let keys = key.split('-');
-            let offset = Number(keys[0]); // 分组索引
-            let id = Number(keys[1]);     // 宏ID
-            let ids = this._defineIds[offset];
+            v = defines[key];
+            keys = key.split('-');
+            offset = Number(keys[0]); // 分组索引
+            id = Number(keys[1]);     // 宏ID
+            ids = this._defineIds[offset];
 
             // 更新宏定义状态
             if (v) {
@@ -138,13 +141,14 @@ class YJVertexColorTransitionData {
 
         // 计算各分组的宏值总和
         let type: number[] = [];
-        for (let i = 0; i < this._defineIds.length; i++) {
-            let sum = 0;
-            let ids = this._defineIds[i];
-            for (let j = 0; j < ids.length; j++) {
+        let sum: number;
+        for (let i = 0, n = this._defineIds.length; i < n; i++) {
+            sum = 0;
+            ids = this._defineIds[i];
+            for (let j = 0, m = ids.length; j < m; j++) {
                 sum += ids[j]; // 累加当前分组所有激活的宏ID
             }
-            type[i] = sum;
+            type[type.length] = sum;
         }
 
         // 将分组宏值合并为浮点数（如分组0=1，分组1=2 → -1.2）
@@ -399,9 +403,9 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
      * // 通过UUID移除：
      * mgr.remove('3e2ab5d0-12f3-4dde-b6ab-2a0e1c7a8c1d');
      */
-    public remove(uuid: string);
-    public remove(renderComp: Sprite);
-    public remove(a: string | Sprite) {
+    public remove(uuid: string): void;
+    public remove(renderComp: Sprite): void;
+    public remove(a: string | Sprite): void {
         const uuid = typeof a === 'string' ? a : a.uuid;
         this.removeSet.push(uuid);
     }

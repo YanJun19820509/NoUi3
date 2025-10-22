@@ -104,10 +104,12 @@ export class YJNotBatchItemManager extends Component {
         if (parent && parent.name != '_batch_layer') {
             let children = parent['_children'];
             if (children.length == 0) return;
+            let child: Node;
+            let notBatchItem: YJNotBatchItem;
             for (let i = children.length - 1; i >= 0; i--) {
-                let child = children[i];
+                child = children[i];
                 if (isValid(child, true)) {
-                    const notBatchItem = child.getComponent(YJNotBatchItem);
+                    notBatchItem = child.getComponent(YJNotBatchItem);
                     if (notBatchItem && notBatchItem.enabled) {
                         // 保存节点属性并移动到容器层
                         notBatchItem.saveProperties();
@@ -138,12 +140,15 @@ export class YJNotBatchItemManager extends Component {
         const n = this._subNodes.length;
         if (n == 0) return;
         let nodes: Node[] = [];
+        let child: Node;
+        let notBatchItem: YJNotBatchItem;
+        let children: Node[];
         for (let i = 0; i < n; i++) {
-            let children = this._subNodes[i]['_children'];
-            for (let i = 0; i < children.length; i++) {
-                const child = children[i];
+            children = this._subNodes[i]['_children'];
+            for (let j = 0; j < children.length; j++) {
+                child = children[j];
                 // 为子节点添加或获取YJNotBatchItem组件
-                const notBatchItem = child.getComponent(YJNotBatchItem) || child.addComponent(YJNotBatchItem);
+                notBatchItem = child.getComponent(YJNotBatchItem) || child.addComponent(YJNotBatchItem);
                 notBatchItem.saveProperties();
                 this._layer['_children'].push(child);
                 if (child['_children'].length > 0) nodes.push(child);
@@ -169,8 +174,9 @@ export class YJNotBatchItemManager extends Component {
     public resetNotBatchChildrenToOldLayer() {
         if (!this.enabledInHierarchy) return;
         const batchItems = this._layer.children;
+        let item: Node;
         while (1) {
-            const item = batchItems.pop();
+            item = batchItems.pop();
             if (!item) {
                 break;
             }
@@ -182,8 +188,9 @@ export class YJNotBatchItemManager extends Component {
 
 director.on(Director.EVENT_BEFORE_DRAW, (dt) => {
     let nodes = YJNotBatchItemManager.batchNodes;
+    let node: Node;
     for (let i = 0; i < nodes.length; i++) {
-        let node = nodes[i];
+        node = nodes[i];
         if (node.active && node.isValid) {
             node.getComponent(YJNotBatchItemManager).setNotBatchChildrenToNewLayer();
         }
@@ -193,8 +200,9 @@ director.on(Director.EVENT_BEFORE_DRAW, (dt) => {
 
 director.on(Director.EVENT_AFTER_DRAW, (dt) => {
     let nodes = YJNotBatchItemManager.batchNodes;
+    let node: Node;
     for (let i = 0; i < nodes.length; i++) {
-        let node = nodes[i];
+        node = nodes[i];
         if (node.active && node.isValid) {
             node.getComponent(YJNotBatchItemManager).resetNotBatchChildrenToOldLayer();
         }

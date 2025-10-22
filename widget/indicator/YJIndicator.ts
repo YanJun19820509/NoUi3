@@ -92,11 +92,12 @@ export class YJIndicator extends YJDataWork {
                 layout.spacingX = spaceX;
             }
         }
-        
+
         // 动态创建标签节点
         let l = this.container.children.length;
+        let c: Node;
         for (let i = l; i < n; i++) {
-            let c = instantiate(this.template);
+            c = instantiate(this.template);
             c.parent = this.container;
             c.active = true; // 激活实例化的节点
         }

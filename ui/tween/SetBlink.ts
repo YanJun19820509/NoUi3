@@ -70,8 +70,10 @@ export class SetBlink extends SetNodeTweenAction {
                 repeat: data.repeat // 重复次数（0=无限循环，1=执行1次完整循环）
             }
         ];
-        
+
         // 将配置数据转换为实际的动画对象
-        return no.parseTweenData(d, this.node);
+        const a = no.parseTweenData(d, this.node);
+        d = null;
+        return a;
     }
 }

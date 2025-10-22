@@ -194,19 +194,25 @@ export class SetFogOfWar extends HackUi {
         const startY = Math.max(0, centerY - effectiveRadius - 2);
         const endY = Math.min(this._mapHeight - 1, centerY + effectiveRadius + 2);
 
+        let dx: number;
+        let dy: number;
+        let distance: number;
+        let pixelIndex: number;
+        let smoothFactor: number;
+        let newAlpha: number;
         // 遍历区域内的每个像素
         for (let y = startY; y <= endY; y++) {
             for (let x = startX; x <= endX; x++) {
                 // 计算像素到中心的距离
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                dx = x - centerX;
+                dy = y - centerY;
+                distance = Math.sqrt(dx * dx + dy * dy);
 
                 // 计算像素索引
-                const pixelIndex = (y * this._mapWidth + x) * 4;
+                pixelIndex = (y * this._mapWidth + x) * 4;
 
                 // 使用平滑函数计算过渡效果
-                const smoothFactor = no.smoothStep(distance, effectiveRadius, effectiveRadius + transitionWidth);
+                smoothFactor = no.smoothStep(distance, effectiveRadius, effectiveRadius + transitionWidth);
 
                 // 根据距离设置透明度
                 if (smoothFactor === 1) continue; // 完全在视野外
@@ -215,7 +221,7 @@ export class SetFogOfWar extends HackUi {
                     this.textureBuffer[pixelIndex + 3] = 0; // 完全可见
                 } else {
                     // 计算混合后的透明度（保留最低值）
-                    const newAlpha = Math.floor(this.exploredAlpha * 255 * smoothFactor);
+                    newAlpha = Math.floor(this.exploredAlpha * 255 * smoothFactor);
                     if (this.textureBuffer[pixelIndex + 3] > newAlpha) {
                         this.textureBuffer[pixelIndex + 3] = newAlpha;
                     }

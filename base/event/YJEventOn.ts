@@ -55,8 +55,10 @@ export class YJEventOn extends Component {
      * 根据ListenerInfo中的配置为每个事件类型注册监听
      */
     private init() {
-        for (let i = 0; i < this.infos.length; i++) {
-            let info = this.infos[i];
+        let info: ListenerInfo;
+        let n: number = this.infos.length;
+        for (let i = 0; i < n; i++) {
+            info = this.infos[i];
             if (info.type == '') continue;
             if (info.once) {
                 no.evn.once(info.type, this._on, this);
@@ -77,8 +79,9 @@ export class YJEventOn extends Component {
         }
         let type = args.pop();
         no.log('YJEventOn', type, args);
+        let info: ListenerInfo;
         for (let i = 0, n = this.infos.length; i < n; i++) {
-            let info = this.infos[i];
+            info = this.infos[i];
             if (info.type == type) {
                 no.EventHandlerInfo.execute(info.calls, ...args);
             }

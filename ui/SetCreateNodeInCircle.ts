@@ -52,9 +52,11 @@ export class SetCreateNodeInCircle extends HackUi {
         this.posInfos.length = 0;
         const a = 360 / this.num, b = Math.PI / 180;
         const center = math.v2(size.width * (0.5 - anchor.x), size.height * (0.5 - anchor.y));
+        let pi: CirclePositionInfo;
+        let ro: number;
         for (let i = 0; i < this.num; i++) {
-            let pi = new CirclePositionInfo();
-            let ro = this.startRotation + a * i;
+            pi = new CirclePositionInfo();
+            ro = this.startRotation + a * i;
             pi.pos.x = this.radius * Math.sin(b * ro) + center.x;
             pi.pos.y = this.radius * Math.cos(b * ro) + center.y;
             pi.rotation = - ro;
@@ -70,8 +72,9 @@ export class SetCreateNodeInCircle extends HackUi {
     set preview(v: boolean) {
         if (!this.template) return;
         this.container.removeAllChildren();
+        let item: Node;
         for (let i = 0; i < this.num; i++) {
-            let item = instantiate(this.template);
+            item = instantiate(this.template);
             this.setPos(item, i);
             item.parent = this.container;
             item.active = true;
@@ -109,21 +112,23 @@ export class SetCreateNodeInCircle extends HackUi {
 
     protected setItems(data: any[]) {
         let l = this.container.children.length;
+        let item: Node;
         if (l == 0) {
             for (let i = 0; i < this.num; i++) {
-                let item = instantiate(this.template);
+                item = instantiate(this.template);
                 this.setPos(item, i);
                 item.parent = this.container;
             }
 
             l = this.num;
         }
+        let a: YJDataWork;
         for (let i = 0; i < l; i++) {
-            let item = this.container.children[i];
+            item = this.container.children[i];
             if (data[i] == null) {
                 item.active = false;
             } else {
-                let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+                a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
                 a?.clear().initWithData(data[i]);
                 item.active = true;
                 if (this.uiAnim?.enabled) {

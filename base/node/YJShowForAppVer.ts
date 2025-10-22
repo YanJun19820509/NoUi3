@@ -65,16 +65,18 @@ export class YJShowForAppVer extends Component {
     onLoad() {
         // 组件未启用或浏览器环境直接返回
         if (!this.enabled || sys.platform == sys.Platform.DESKTOP_BROWSER) return;
-        
+
         // 拆分版本号为数字数组（空版本视为0.0.0...）
         const min = this.minAppVer.split('.').map(Number);
         const cur = no.appVer().split('.').map(Number);
-        
+
+        let minVer: number;
+        let curVer: number;
         // 逐段比较版本号（处理不同长度版本号）
         for (let i = 0, n = Math.max(min.length, cur.length); i < n; i++) {
-            const minVer = min[i] || 0;    // 缺失版本段视为0
-            const curVer = cur[i] || 0;    // 例如：1.2 vs 1.2.3 → 1.2.0 vs 1.2.3
-            
+            minVer = min[i] || 0;    // 缺失版本段视为0
+            curVer = cur[i] || 0;    // 例如：1.2 vs 1.2.3 → 1.2.0 vs 1.2.3
+
             // 发现当前版本段小于最低要求版本段
             if (curVer < minVer) {
                 this.node.destroy(); // 立即销毁节点

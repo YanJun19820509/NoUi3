@@ -208,10 +208,10 @@ export class YJWindowManager extends Component {
     private static initNode<T extends YJPanel>(node: Node, comp: typeof YJPanel, content: Node, beforeInit?: (panel: T) => void, afterInit?: (panel: T) => void) {
         let a = node.getComponent(comp);
         beforeInit?.(a as T);
-        a.initPanel().then(() => {
-            content.addChild(node);
+        a.initPanel().then((panel: T) => {
+            content.addChild(panel.node);
             YJSoundEffectManager.ins?.playOpenSoundEffect();
-            afterInit?.(a as T);
+            afterInit?.(panel);
         }).catch(e => { no.err('windowmanager', e.stack); });
     }
 
@@ -246,10 +246,7 @@ export class YJWindowManager extends Component {
             }
             if (a != null) {
                 beforeInit?.(a as T);
-                a.initPanel().then((panel: T) => {
-                    // a.onEnable();
-                    afterInit?.(panel);
-                }).catch(e => { no.err('windowmanager', e.stack, e.message); });
+                a.initPanel().then(afterInit).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 // no.siblingIndex(a.node, content.children.length - 1);
                 return;
             }
@@ -290,10 +287,7 @@ export class YJWindowManager extends Component {
             const a = this.opennedPanelByType(name, to);
             if (a != null) {
                 beforeInit?.(a);
-                a.initPanel().then(() => {
-                    // a.onEnable();
-                    afterInit?.(a);
-                }).catch(e => { no.err('windowmanager', e.stack, e.message); });
+                a.initPanel().then(afterInit).catch(e => { no.err('windowmanager', e.stack, e.message); });
                 // no.siblingIndex(a.node, content.children.length - 1);
                 return;
             }

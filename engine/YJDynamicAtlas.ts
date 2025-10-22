@@ -1,7 +1,8 @@
 
 import {
     EDITOR, ccclass, SpriteFrame, Label, UIRenderer, Texture2D,
-    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager
+    Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager,
+    Vec2
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -201,16 +202,17 @@ export class YJDynamicAtlas {
         let texture = frames[0].texture as Texture2D;
         const p = this.atlas.drawTexture(texture);
         if (p) {
+            let frame: SpriteFrame;
+            let offset: Vec2;
             // 更新所有子SpriteFrame的坐标偏移
-            for (let i = 0; i < frames.length; i++) {
-                let frame = frames[i];
-                let offset = frame.rect.origin;
-                let pp = {
+            for (let i = 0, n = frames.length; i < n; i++) {
+                frame = frames[i];
+                offset = frame.rect.origin;
+                frame._setDynamicAtlasFrame({
                     x: p.x + offset.x,  // 计算在动态图集中的实际X坐标
                     y: p.y + offset.y,  // 计算在动态图集中的实际Y坐标
                     texture: p.texture  // 指向动态图集纹理
-                };
-                frame._setDynamicAtlasFrame(pp);
+                });
             }
         }
     }

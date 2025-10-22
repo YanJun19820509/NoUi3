@@ -149,9 +149,11 @@ export class SetScanPath extends HackUi {
         }
         const { pixels, pathes }: { pixels: number[], pathes: number[][] } = data;
         this._edgePixelsMap.clear();
+        let u: number;
+        let v: number;
         for (let i = 0, n = pixels.length; i < n; i += 2) {
-            const u = pixels[i];
-            const v = pixels[i + 1];
+            u = pixels[i];
+            v = pixels[i + 1];
             this._edgePixelsMap.set(this.key(u, v), [u, v, 0]);
         }
         this._pathes = pathes.slice();
@@ -210,9 +212,11 @@ export class SetScanPath extends HackUi {
      */
     protected parsePath() {
         const pathes: number[][] = [];
+        let path: number[];
+        let len: number;
         while (1) {
-            const path = this.splitPath();
-            const len = path.length;
+            path = this.splitPath();
+            len = path.length;
             if (len > 5) {
                 pathes.push(path);
             } else if (len === 0) break;
@@ -227,14 +231,23 @@ export class SetScanPath extends HackUi {
                 return a[0] - b[0];
             });
             let i = 0;
+            let path1: number[];
+            let end1: { x: number, y: number };
+            let arr: { path1: number, path2: number, dis: number }[];
+            let j: number;
+            let path2: number[];
+            let start2: { x: number, y: number };
+            let dis: number;
+            let idx: number;
+            let nextPath: number[];
             while (n > 1) {
-                const path1 = pathes[i];
-                const end1 = { x: path1[path1.length - 2], y: path1[path1.length - 1] };
-                const arr: { path1: number, path2: number, dis: number }[] = [];
-                for (let j = i + 1; j < n; j++) {
-                    const path2 = pathes[j];
-                    const start2 = { x: path2[0], y: path2[1] };
-                    const dis = no.distance(end1, start2);
+                path1 = pathes[i];
+                end1 = { x: path1[path1.length - 2], y: path1[path1.length - 1] };
+                arr = [];
+                for (j = i + 1; j < n; j++) {
+                    path2 = pathes[j];
+                    start2 = { x: path2[0], y: path2[1] };
+                    dis = no.distance(end1, start2);
                     if (dis <= maxDis) {
                         arr.push({ path1: 0, path2: j, dis: dis });
                     }
@@ -248,8 +261,8 @@ export class SetScanPath extends HackUi {
                 no.sortArray(arr, (a, b) => {
                     return a.dis - b.dis;
                 });
-                const idx = arr[0].path2;
-                const nextPath = pathes.splice(idx, 1)[0];
+                idx = arr[0].path2;
+                nextPath = pathes.splice(idx, 1)[0];
                 path1.push(...nextPath);
                 n--;
             }
@@ -278,18 +291,23 @@ export class SetScanPath extends HackUi {
         let curU = path[0];
         let curV = path[1];
         let lastDir: number = -1;
+        let d: { x: number, y: number };
+        let u: number;
+        let v: number;
+        let key: string;
+        let value: number[];
         while (true) {
             let found = false;
 
             // 检查8个方向的邻居
             for (let i = 0; i < 8; i++) {
-                const d = this._dir8[i];
-                const u = curU + d.x;
+                d = this._dir8[i];
+                u = curU + d.x;
                 if (u < 0 || u >= this._size.width) continue;
-                const v = curV + d.y;
+                v = curV + d.y;
                 if (v < 0 || v >= this._size.height) continue;
-                const key = this.key(u, v);
-                const value = this._edgePixelsMap.get(key);
+                key = this.key(u, v);
+                value = this._edgePixelsMap.get(key);
                 if (value && value[2] === 0) {
                     // 从Set中移除已访问的点
                     value[2] = 1;
@@ -341,13 +359,22 @@ export class SetScanPath extends HackUi {
     protected updateToData() {
         if (!this.needUpdatePathToData) return;
         const pathesData: { x: number, y: number }[][] = [];
+        let path: number[];
+        let pathData: { x: number, y: number }[];
+        let lastX: number;
+        let lastY: number;
+        let j: number;
+        let m: number;
+        let x: number;
+        let y: number;
         for (let i = 0, n = this._pathes.length; i < n; i++) {
-            const path = this._pathes[i];
+            path = this._pathes[i];
             if (path.length < 4) continue;
-            const pathData: { x: number, y: number }[] = [];
-            let lastX = 0, lastY = 0;
-            for (let j = 0, m = path.length; j < m; j += 2) {
-                const [x, y] = this.uvToXy(path[j], path[j + 1]);
+            pathData = [];
+            lastX = 0;
+            lastY = 0;
+            for (j = 0, m = path.length; j < m; j += 2) {
+                [x, y] = this.uvToXy(path[j], path[j + 1]);
                 // if (j == 0) {
                 //     lastX = x;
                 //     lastY = y;
@@ -425,10 +452,11 @@ export class SetScanPath extends HackUi {
                 console.log('showPoints', len, k)
                 return;
             }
+            let idx: number;
             for (let i = u - 3; i <= u + 3; i++) {
                 for (let j = v - 3; j <= v + 3; j++) {
                     if (this.isPixelAlpha0(i, j)) continue;
-                    const idx = this.uvToPixelIndex(i, j);
+                    idx = this.uvToPixelIndex(i, j);
                     this._pathPoints.push(idx);
                     this._pathPointTextureBuffer[idx] = r;
                     this._pathPointTextureBuffer[idx + 1] = g;
@@ -443,8 +471,9 @@ export class SetScanPath extends HackUi {
     protected clearPathPoints() {
         if (!this.showPathPoints) return;
         if (this._pathPoints.length == 0) return;
+        let idx: number;
         for (let i = 0, n = this._pathPoints.length; i < n; i++) {
-            const idx = this._pathPoints[i];
+            idx = this._pathPoints[i];
             this._pathPointTextureBuffer[idx] = 0;
             this._pathPointTextureBuffer[idx + 1] = 0;
             this._pathPointTextureBuffer[idx + 2] = 0;
@@ -624,10 +653,11 @@ export class SetScanPath extends HackUi {
 
     protected initEdgePixels() {
         this._edgePixelsMap.clear();
+        let key: string;
         for (let i = 0; i < this._size.width; i++) {
             for (let j = 0; j < this._size.height; j++) {
                 if (!this.isEdgePixel(i, j)) continue;
-                const key = this.key(i, j);
+                key = this.key(i, j);
                 this._edgePixelsMap.set(key, [i, j]);
             }
         }
@@ -642,8 +672,9 @@ export class SetScanPath extends HackUi {
     protected isEdgePixel(u: number, v: number) {
         if (this.isPixelAlpha0(u, v)) return false;
         let hasAlpha0 = false;
+        let d: { x: number, y: number };
         for (let i = 0; i < 4; i++) {
-            const d = this._dir4[i];
+            d = this._dir4[i];
             if (this.isPixelAlpha0(u + d.x, v + d.y)) {
                 hasAlpha0 = true;
                 break;
@@ -652,7 +683,7 @@ export class SetScanPath extends HackUi {
         if (!hasAlpha0) return false;
         let neighborCount = 0;
         for (let j = 0; j < 8; j++) {
-            const d = this._dir8[j];
+            d = this._dir8[j];
             if (!this.isPixelAlpha0(u + d.x, v + d.y)) {
                 neighborCount++;
                 // 如果已经有3个邻居，可以提前退出内层循环

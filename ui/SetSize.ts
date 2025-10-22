@@ -1,5 +1,5 @@
 
-import { ccclass, menu, property, Node, Size, size, v3, NodeEventType, isValid } from '../yj';
+import { ccclass, menu, property, Node, Size, size, v3, NodeEventType, isValid, Rect } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 
@@ -87,8 +87,9 @@ export class SetSize extends HackUi {
             this.node.off(NodeEventType.CHILD_ADDED, this._childAdded, this);
             this.node.off(NodeEventType.CHILD_REMOVED, this._childRemoved, this);
             const children = this.node.children;
+            let child: Node;
             for (let i = 0, n = children.length; i < n; i++) {
-                const child = children[i];
+                child = children[i];
                 if (!isValid(child)) continue;
                 child.off(NodeEventType.SIZE_CHANGED, this.checkSize, this);
             }
@@ -140,8 +141,9 @@ export class SetSize extends HackUi {
                 no.scale(this.node, v3(s, s, 1));
             }
             if (this.syncOtherNodeScale.length > 0) {
+                let node: Node;
                 for (let i = 0, n = this.syncOtherNodeScale.length; i < n; i++) {
-                    const node = this.syncOtherNodeScale[i];
+                    node = this.syncOtherNodeScale[i];
                     no.scale(node, v3(s, s, 1));
                 }
             }
@@ -149,10 +151,12 @@ export class SetSize extends HackUi {
         // 尺寸同步模式处理
         else if (this.syncSize) {
             let rect = { minX: 0, minY: 0, maxX: 0, maxY: 0 };
+            let child: Node;
+            let r: Rect;
             // 遍历所有子节点获取最大尺寸
             for (let i = 0, n = this.node.children.length; i < n; i++) {
-                const child = this.node.children[i];
-                const r = no.nodeRect(child);
+                child = this.node.children[i];
+                r = no.nodeRect(child);
                 rect.minX = Math.min(rect.minX, r.xMin);
                 rect.minY = Math.min(rect.minY, r.yMin);
                 rect.maxX = Math.max(rect.maxX, r.xMax);

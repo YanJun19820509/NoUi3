@@ -51,7 +51,7 @@ export class SetTiledMap extends HackUi {
     protected onDataChange(data: any) {
         // 预处理回调
         this.delegate?.onBeforeInitMap();
-        
+
         // 异步加载JSON资源
         no.assetBundleManager.loadJSON(data, (jsonAsset: JsonAsset) => {
             // 创建地图数据实例
@@ -72,11 +72,12 @@ export class SetTiledMap extends HackUi {
     private initMap() {
         // 初始化基础地图
         this.delegate?.onInitMap(this.mapData);
-        
+
         // 获取所有图层类型（使用传统for循环替代foreach/for of）
         const layers = this.mapData.layerTypes || [];
+        let layerType: string;
         for (let i = 0, n = layers.length; i < n; i++) {
-            const layerType = layers[i];
+            layerType = layers[i];
             // 初始化每个图层的对象
             this.delegate?.onInitObjects(
                 layerType,
@@ -86,7 +87,7 @@ export class SetTiledMap extends HackUi {
 
         // 安全校验节点有效性
         if (!this?.node?.isValid) return;
-        
+
         // 初始化完成回调
         this.delegate?.onInitComplete();
     }

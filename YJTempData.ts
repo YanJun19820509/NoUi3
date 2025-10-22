@@ -83,11 +83,24 @@ export class YJTempData {
     /**
      * 执行临时函数
      * @param name 函数名
+     * @param args1 参数
+     * @returns 是否执行成功
      */
     public static runFun(name: string, ...args1: any[]) {
-        if (!this._funs.has(name)) return;
+        if (!this._funs.has(name)) return false;
         const { f, args } = this._funs.get(name);
         f(...args, ...args1);
+        return true;
+    }
+
+    /**
+     * 执行临时函数并清除
+     * @param name 函数名
+     * @param args1 参数
+     * @returns 是否执行成功
+     */
+    public static runFunAndClear(name: string, ...args1: any[]) {
+        return this.runFun(name, ...args1) && this.clearFun(name);
     }
 
     /**
@@ -101,6 +114,21 @@ export class YJTempData {
         f.args = null;
         f = null;
         this._funs.delete(name);
+    }
+
+    /**
+     * 临时回调函数，用于避免闭包长时间持有外部变量，导致内存泄漏
+     * @param cb 回调函数
+     * @param args 参数
+     * @returns 临时回调函数
+     */
+    public static tempCb(cb: Function, ...args: any[]) {
+        let f = (...args1: any[]) => {
+            cb(...args, ...args1);
+            cb = null;
+            f = null;
+        }
+        return f;
     }
 
     /**

@@ -1,3 +1,4 @@
+import { FixedSizeArray } from '../FixedSizeArray';
 import { no } from '../no';
 import { ccclass } from '../yj';
 
@@ -74,11 +75,11 @@ interface ITask {
 export class YJJobManager {
     private static _instance: YJJobManager;
 
-    private taskQueue: Map<TaskPriority, ITask[]> = new Map();
+    private taskQueue: Map<TaskPriority, FixedSizeArray<ITask>> = new Map();
     private taskIdCounter: number = 0;
     private isRunning: boolean = false;
     private frameTimeBudget: number = 16; // 默认16ms
-    private metricsHistory: number[] = [];
+    private metricsHistory: FixedSizeArray<number> = new FixedSizeArray<number>(60);
     private readonly METRICS_SAMPLE_SIZE = 60; // 保存60帧的性能数据
 
     // 性能监控阈值
@@ -99,10 +100,11 @@ export class YJJobManager {
     constructor() {
         // 初始化优先级队列
         let priorities = Object.values(TaskPriority);
+        let priority: string | TaskPriority;
         for (let i = 0; i < priorities.length; i++) {
-            let priority = priorities[i];
+            priority = priorities[i];
             if (typeof priority === 'number') {
-                this.taskQueue.set(priority, []);
+                this.taskQueue.set(priority, new FixedSizeArray<ITask>(20));
             }
         }
     }
@@ -159,39 +161,48 @@ export class YJJobManager {
     private async update(timestamp: number): Promise<void> {
         const frameStartTime = Date.now();
         let timeRemaining = this.frameTimeBudget;
-
+        let tasks: FixedSizeArray<ITask>;
+        let task: ITask;
+        let n: number;
+        let result: boolean;
+        let taskStartTime: number;
         // 按优先级遍历任务队列
         for (let priority = TaskPriority.IMMEDIATE; priority <= TaskPriority.IDLE; priority++) {
-            const tasks = this.taskQueue.get(priority)!;
-
-            if (tasks.length === 0) continue;
+            tasks = this.taskQueue.get(priority)!;
+            n = tasks.length();
+            if (n === 0) continue;
 
             // 执行当前优先级的任务
-            for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
+            for (let i = 0; i < n; i++) {
+                task = tasks.get(i);
 
                 // 检查是否还有足够的时间片
                 if (timeRemaining <= 0 && priority !== TaskPriority.IMMEDIATE) {
                     break;
                 }
 
-                const taskStartTime = Date.now();
+                taskStartTime = Date.now();
 
                 try {
-                    const result = await task.execute();
+                    result = await task.execute();
 
                     if (result) {
                         // 任务完成
                         task.status = TaskStatus.COMPLETED;
-                        tasks.splice(i--, 1);
                     }
                 } catch (error) {
                     console.error(`Task ${task.id} failed:`, error);
-                    tasks.splice(i--, 1);
+                    task.status = TaskStatus.COMPLETED;
                 }
+                timeRemaining -= Date.now() - taskStartTime;
+            }
 
-                const taskDuration = Date.now() - taskStartTime;
-                timeRemaining -= taskDuration;
+            //移除已完成的任务
+            for (let i = n - 1; i >= 0; i--) {
+                task = tasks.get(i);
+                if (task.status === TaskStatus.COMPLETED) {
+                    tasks.splice(i, 1);
+                }
             }
         }
 
@@ -210,7 +221,7 @@ export class YJJobManager {
      */
     private updateMetrics(frameDuration: number): void {
         this.metricsHistory.push(frameDuration);
-        if (this.metricsHistory.length > this.METRICS_SAMPLE_SIZE) {
+        if (this.metricsHistory.length() > this.METRICS_SAMPLE_SIZE) {
             this.metricsHistory.shift();
         }
     }
@@ -219,9 +230,9 @@ export class YJJobManager {
      * 动态调整帧时间预算
      */
     private adjustFrameBudget(): void {
-        if (this.metricsHistory.length < this.METRICS_SAMPLE_SIZE) return;
+        if (this.metricsHistory.length() < this.METRICS_SAMPLE_SIZE) return;
 
-        const avgFrameTime = this.metricsHistory.reduce((a, b) => a + b) / this.metricsHistory.length;
+        const avgFrameTime = this.metricsHistory.toArray().reduce((a, b) => a + b) / this.metricsHistory.length();
 
         if (avgFrameTime > this.Date_THRESHOLDS.CRITICAL) {
             this.frameTimeBudget = Math.max(this.frameTimeBudget - 2, 8);
@@ -235,11 +246,14 @@ export class YJJobManager {
      */
     public cancelTask(taskId: number): boolean {
         let taskQueueValues = Array.from(this.taskQueue.values());
+        let tasks: FixedSizeArray<ITask>;
+        let task: ITask;
         for (let i = 0, n = taskQueueValues.length; i < n; i++) {
-            let tasks = taskQueueValues[i];
-            for (let j = 0, m = tasks.length; j < m; j++) {
-                if (tasks[j].id === taskId) {
-                    tasks[j].status = TaskStatus.CANCELED;
+            tasks = taskQueueValues[i];
+            for (let j = tasks.length() - 1; j >= 0; j--) {
+                task = tasks.get(j);
+                if (task.id === taskId) {
+                    task.status = TaskStatus.CANCELED;
                     tasks.splice(j, 1);
                     return true;
                 }
@@ -253,19 +267,16 @@ export class YJJobManager {
      */
     public pauseTask(taskId: number): boolean {
         let taskQueueValues = Array.from(this.taskQueue.values());
+        let tasks: FixedSizeArray<ITask>;
+        let task: ITask;
         for (let i = 0, n = taskQueueValues.length; i < n; i++) {
-            let tasks = taskQueueValues[i];
-            let task = null;
-            for (let j = 0, m = tasks.length; j < m; j++) {
-                let t = tasks[j];
-                if (t.id === taskId) {
-                    task = t;
-                    break;
+            tasks = taskQueueValues[i];
+            for (let j = 0, m = tasks.length(); j < m; j++) {
+                task = tasks.get(j);
+                if (task.id === taskId) {
+                    task.status = TaskStatus.PAUSED;
+                    return true;
                 }
-            }
-            if (task) {
-                task.status = TaskStatus.PAUSED;
-                return true;
             }
         }
         return false;
@@ -276,19 +287,16 @@ export class YJJobManager {
      */
     public resumeTask(taskId: number): boolean {
         let taskQueueValues = Array.from(this.taskQueue.values());
+        let tasks: FixedSizeArray<ITask>;
+        let task: ITask;
         for (let i = 0, n = taskQueueValues.length; i < n; i++) {
-            let tasks = taskQueueValues[i];
-            let task = null;
-            for (let j = 0, m = tasks.length; j < m; j++) {
-                let t = tasks[j];
-                if (t.id === taskId) {
-                    task = t;
-                    break;
+            tasks = taskQueueValues[i];
+            for (let j = 0, m = tasks.length(); j < m; j++) {
+                task = tasks.get(j);
+                if (task.id === taskId) {
+                    task.status = TaskStatus.PENDING;
+                    return true;
                 }
-            }
-            if (task && task.status === TaskStatus.PAUSED) {
-                task.status = TaskStatus.PENDING;
-                return true;
             }
         }
         return false;
@@ -299,13 +307,13 @@ export class YJJobManager {
      * 获取性能统计信息
      */
     public getPerformanceStats() {
-        this._performanceStatsCache.averageFrameTime = this.metricsHistory.reduce((a, b) => a + b, 0) / this.metricsHistory.length;
+        this._performanceStatsCache.averageFrameTime = this.metricsHistory.toArray().reduce((a, b) => a + b, 0) / this.metricsHistory.length();
         this._performanceStatsCache.currentFrameBudget = this.frameTimeBudget;
-        this._performanceStatsCache.taskCount = Array.from(this.taskQueue.values()).reduce((sum, tasks) => sum + tasks.length, 0);
+        this._performanceStatsCache.taskCount = Array.from(this.taskQueue.values()).reduce((sum, tasks) => sum + tasks.length(), 0);
         return this._performanceStatsCache;
     }
 
-    private performanceStatsInterval;
+    private performanceStatsInterval: any;
     public startPerformanceStats() {
         // 监控性能
         this.performanceStatsInterval = setInterval(() => {

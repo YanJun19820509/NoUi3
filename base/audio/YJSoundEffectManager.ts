@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, Component, requireComponent } from '../../yj';
+import { EDITOR, ccclass, property, Component, requireComponent, _AssetInfo } from '../../yj';
 import { no } from '../../no';
 import { YJAudioManager } from './YJAudioManager';
 
@@ -75,14 +75,18 @@ export class YJSoundEffectManager extends Component {
             if (!infos.length) {
                 return;
             }
+            let info: _AssetInfo;
+            let effectInfo: SoundEffectInfo;
+            let name: string;
+            let i: number;
             for (let j = 0; j < infos.length; j++) {
-                let info = infos[j];
-                let effectInfo = new SoundEffectInfo();
-                let name = info.name.split('.')[0];
+                info = infos[j];
+                effectInfo = new SoundEffectInfo();
+                name = info.name.split('.')[0];
                 effectInfo.alias = name;
                 effectInfo.assetUrl = info.url;
                 effectInfo.assetUuid = info.uuid;
-                let i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
+                i = no.indexOfArray(this.soundEffects, effectInfo, 'assetUuid');
                 if (i > -1) {
                     effectInfo.alias = this.soundEffects[i].alias;
                     this.soundEffects.splice(i, 1, effectInfo);
@@ -181,8 +185,9 @@ export class YJSoundEffectManager extends Component {
         YJSoundEffectManager._ins = this;
         if (EDITOR) return;
         this._map = {};
+        let info: SoundEffectInfo;
         for (let i = 0; i < this.soundEffects.length; i++) {
-            let info = this.soundEffects[i];
+            info = this.soundEffects[i];
             if (info.alias) {
                 this._map[info.alias] = { path: info.assetUrl.replace('db://assets/', ''), volume: info.volume };
                 this._intervalMap[info.alias] = { d: info.interval || .1, v: info.volume };

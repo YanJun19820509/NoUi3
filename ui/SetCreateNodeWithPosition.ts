@@ -47,15 +47,15 @@ export class SetCreateNodeWithPosition extends HackUi {
     // 预制体加载组件，用于动态加载节点模板
     @property({ type: YJLoadPrefab, displayName: '元素预制体' })
     loadPrefab: YJLoadPrefab = null;
-    
+
     // 实际使用的节点模板（预制体加载完成后自动赋值）
     @property({ type: Node, displayName: '元素模板' })
     template: Node = null;
-    
+
     // 是否在禁用组件时清除所有子节点
     @property({ tooltip: 'disable时清除子节点' })
     clearOnDisable: boolean = false;
-    
+
     // 是否在启用组件时重新创建子节点（需clearOnDisable为true时生效）
     @property({ tooltip: 'enable时重新创建子节点', visible() { return this.clearOnDisable; } })
     recreateOnEnable: boolean = false;
@@ -63,23 +63,23 @@ export class SetCreateNodeWithPosition extends HackUi {
     // 容器节点，用于存放生成的子节点
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
-    
+
     // 预设位置配置集合（不同数量对应不同布局）
     @property({ type: PositionInfo })
     positionTypes: PositionInfo[] = [];
-    
+
     // 编辑器专用属性：保存当前子节点位置到positionTypes
     @property({ editorOnly: true })
     saveCurrentPositions: boolean = false;
-    
+
     // 编辑器专用属性：预览指定数量的位置布局
     @property({ editorOnly: true })
     previewNum: number = 0;
-    
+
     // 编辑器专用属性：触发位置预览创建
     @property({ editorOnly: true })
     previewCreate: boolean = false;
-    
+
     // 所有节点创建完成后的事件回调
     @property({ type: no.EventHandlerInfo })
     afterCreated: no.EventHandlerInfo[] = [];
@@ -101,15 +101,17 @@ export class SetCreateNodeWithPosition extends HackUi {
                 this.saveCurrentPositions = false;
                 let pos: Vec3[] = [];
                 // 使用传统for循环遍历子节点
-                for (let i = 0; i < this.node.children.length; i++) {
-                    const child = this.node.children[i];
+                let child: Node;
+                for (let i = 0, n = this.node.children.length; i < n; i++) {
+                    child = this.node.children[i];
                     pos[pos.length] = child.position.clone();
                 }
-                
+
                 // 更新或添加位置配置
                 let setted = false;
+                let info: PositionInfo;
                 for (let i = 0, n = this.positionTypes.length; i < n; i++) {
-                    const info = this.positionTypes[i];
+                    info = this.positionTypes[i];
                     if (info.positions.length == pos.length) {
                         setted = true;
                         info.positions = pos;
@@ -117,20 +119,21 @@ export class SetCreateNodeWithPosition extends HackUi {
                     }
                 }
                 if (!setted) {
-                    const info = new PositionInfo();
+                    info = new PositionInfo();
                     info.positions = pos;
                     this.positionTypes[this.positionTypes.length] = info;
                 }
             }
-            
+
             // 预览位置布局
             if (this.previewCreate) {
                 this.previewCreate = false;
                 let posinfo = this.getPositions(this.previewNum);
                 if (!posinfo) return;
                 let size = this.template?.getComponent(UITransform).contentSize.clone() || math.size(100, 100);
-                for (let i = 0; i < posinfo.positions.length; i++) {
-                    let node = new Node();
+                let node: Node;
+                for (let i = 0, n = posinfo.positions.length; i < n; i++) {
+                    node = new Node();
                     node.addComponent(UITransform).setContentSize(size);
                     node.setPosition(posinfo.positions[i]);
                     node.parent = this.container;
@@ -215,34 +218,35 @@ export class SetCreateNodeWithPosition extends HackUi {
 
         let n = data.length;
         let l = this.container.children.length;
-        
+
         // 隐藏多余节点
         for (let i = 0; i < l; i++) {
             no.visible(this.container.children[i], !!data[i]);
         }
 
         let positionInfo = this.getPositions(n);
-        
+
+        let item: Node;
         // 创建缺失节点
         if (n > l) {
             let max = n;
             while (max > 0) {
-                let item = instantiate(this.template);
+                item = instantiate(this.template);
                 item.setPosition(positionInfo.positions[this.container.children.length]);
                 item.parent = this.container;
                 max--;
             }
         } else if (n - l == 1) {
-            let item = instantiate(this.template);
+            item = instantiate(this.template);
             item.setPosition(positionInfo.positions[this.container.children.length]);
             item.parent = this.container;
         }
-        
+
         // 初始化所有节点
         for (let i = 0; i < n; i++) {
             this.setItem(data, 0, i);
         }
-        
+
         this._isSettingData = false;
         no.EventHandlerInfo.execute(this.afterCreated);
     }
@@ -275,8 +279,9 @@ export class SetCreateNodeWithPosition extends HackUi {
      * @returns 匹配的位置配置信息
      */
     private getPositions(len: number): PositionInfo {
+        let info: PositionInfo;
         for (let i = 0, n = this.positionTypes.length; i < n; i++) {
-            const info = this.positionTypes[i];
+            info = this.positionTypes[i];
             if (info.positions.length == len) return info;
         }
         return null;

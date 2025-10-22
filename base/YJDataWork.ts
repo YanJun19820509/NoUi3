@@ -37,13 +37,15 @@ export class YJDataWork extends Component {
     }
 
     public set autoRegister(v: boolean) {
-        let list = this.getComponentsInChildren(HackUi);
+        let list: HackUi[] = this.getComponentsInChildren(HackUi);
+        let sub: Node;
+        let a: HackUi;
         for (let i = 0, n = this.subFuckUiNodes.length; i < n; i++) {
-            const sub = this.subFuckUiNodes[i];
+            sub = this.subFuckUiNodes[i];
             list = list.concat(sub.getComponentsInChildren(HackUi));
         }
         for (let i = 0, n = list.length; i < n; i++) {
-            const a = list[i];
+            a = list[i];
             if (!a.registerNode) {
                 a.registerNode = this.node;
             }
@@ -51,7 +53,7 @@ export class YJDataWork extends Component {
 
         this.subFuckUis = [];
         for (let i = 0, n = list.length; i < n; i++) {
-            const a = list[i];
+            a = list[i];
             if (a.registerNode == this.node && a.bind_keys != '') {
                 this.subFuckUis[this.subFuckUis.length] = a;
             }
@@ -322,8 +324,9 @@ export class YJDataWork extends Component {
         this._data?.set(key, value, this.onlyDiff);
         let ui: HackUi[] = this.getUis(key);
         if (!ui) return this;
+        let a: HackUi;
         for (let i = 0, n = ui.length; i < n; i++) {
-            const a = ui[i];
+            a = ui[i];
             a.updateUiValue();
         }
         return this;
@@ -418,8 +421,9 @@ export class YJDataWork extends Component {
             return;
         }
         if (!this._dirty) return;
+        let ui: HackUi;
         for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
-            const ui = this.subFuckUis[i];
+            ui = this.subFuckUis[i];
             ui.syncData();
         }
         this._dirty = false;
@@ -455,8 +459,9 @@ export class YJDataWork extends Component {
      */
     private setUiDataDirty(uis: HackUi[]) {
         if (!uis?.length) return;
+        let ui: HackUi;
         for (let i = 0, n = uis.length; i < n; i++) {
-            const ui = uis[i];
+            ui = uis[i];
             ui.dataDirty = true;
             if (ui.once) {
                 this.remove(ui);
@@ -485,10 +490,12 @@ export class YJDataWork extends Component {
      */
     private remove(ui: HackUi) {
         let keys = ui.bindKeys;
+        let a: HackUi[];
+        let i: number;
         for (let j = 0, n = keys.length; j < n; j++) {
-            let a: HackUi[] = this.getUis(keys[j]);
+            a = this.getUis(keys[j]);
             if (a) {
-                let i = a.indexOf(ui);
+                i = a.indexOf(ui);
                 a.splice(i, 1);
             }
         }
@@ -506,14 +513,18 @@ export class YJDataWork extends Component {
         if (this._isBound) return;
         this._isBound = true;
         let list = this.subFuckUis;
+        let ui: HackUi;
+        let keys: string[];
+        let key: string;
+        let a: HackUi[];
         for (let i = 0, n = list.length; i < n; i++) {
-            let ui = list[i];
+            ui = list[i];
             ui['setData'](this._data);
-            let keys = ui.bindKeys;
+            keys = ui.bindKeys;
             for (let j = 0, n = keys.length; j < n; j++) {
-                const key = keys[j];
+                key = keys[j];
                 if (!!key) {
-                    let a = this._data2ui.get(key);
+                    a = this._data2ui.get(key);
                     if (!a) {
                         a = [];
                         this._data2ui.set(key, a);
@@ -546,17 +557,20 @@ export class YJDataWork extends Component {
             if (!this._preDataWork) return;
         }
         const keys = this.bind_keys.split(',');
+        let ks: string[];
+        let data: any;
+        let index: number;
         for (let i = 0, n = keys.length; i < n; i++) {
-            const ks = keys[i].split('.');
+            ks = keys[i].split('.');
             if (ks.length == 1) {
                 // 直接更新一级属性
                 this._preDataWork.changeValueByUi(ks[0], d);
             } else {
                 // 处理嵌套属性（支持数组）
-                const data = this._preDataWork.getValue(ks[0]);
+                data = this._preDataWork.getValue(ks[0]);
                 if (Array.isArray(data)) {
                     // 解析数组索引（支持数字下标或通过key查找）
-                    let index = parseInt(ks[1]);
+                    index = parseInt(ks[1]);
                     if (isNaN(index)) {
                         index = no.indexOfArray(data, d[ks[1]], ks[1]);
                     }

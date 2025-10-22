@@ -2,6 +2,7 @@ import { no } from '../no';
 import { YJDataWork } from './YJDataWork';
 import { singleObject } from '../types';
 import { ccclass } from '../yj';
+import { FixedSizeArray } from '../FixedSizeArray';
 /**
  * dataWork管理器,延时处理dataWork数据同步逻辑
  */
@@ -19,9 +20,9 @@ import { ccclass } from '../yj';
  */
 export class YJDataWorkManager extends no.SingleObject {
     // 存储所有需要同步的数据工作实例
-    private list: YJDataWork[] = [];
+    private list: FixedSizeArray<YJDataWork> = new FixedSizeArray<YJDataWork>(50);
     // 待移除的实例UUID列表
-    private removeList: string[] = [];
+    private removeList: FixedSizeArray<string> = new FixedSizeArray<string>(50);
 
     /**
      * 获取单例实例
@@ -63,8 +64,8 @@ export class YJDataWorkManager extends no.SingleObject {
      * YJDataWorkManager.ins().clear();
      */
     public clear(): void {
-        this.list.length = 0;
-        this.removeList.length = 0;
+        this.list.clear();
+        this.removeList.clear();
     }
 
     /**
@@ -78,22 +79,23 @@ export class YJDataWorkManager extends no.SingleObject {
      * manager.lastUpdate();
      */
     lastUpdate() {
-        if (this.removeList.length > 0) {
+        if (this.removeList.length() > 0) {
             // 逆序遍历避免删除导致的数组索引错乱
-            for (let i = this.list.length - 1; i >= 0; i--) {
-                const item = this.list[i];
-                if (this.removeList.indexOf(item.uuid) >= 0) {
+            for (let i = this.list.length() - 1; i >= 0; i--) {
+                const item = this.list.get(i);
+                if (this.removeList.includes(item.uuid)) {
                     this.list.splice(i, 1);
                 } else {
                     item.syncDataToUi();
                 }
             }
-            this.removeList.length = 0;
+            this.removeList.clear();
         } else {
             // 常规遍历执行同步
-            for (let i = 0; i < this.list.length; i++) {
-                this.list[i].syncDataToUi();
-            }
+            this.list.forEach(item => {
+                item.syncDataToUi();
+                return false;
+            });
         }
     }
 }

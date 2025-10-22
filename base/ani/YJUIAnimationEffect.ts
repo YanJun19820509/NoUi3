@@ -1317,6 +1317,8 @@ export class YJUIAnimationEffect extends Component {
             this.playParallel(node, info);
     }
 
+    private _children: Node[] = [];
+    private _childrenIndex: number = 0;
     /**
      * 子节点动画播放器
      * @param node 父级容器节点
@@ -1336,11 +1338,11 @@ export class YJUIAnimationEffect extends Component {
      */
     public playOnChildren(node: Node, info: AnimationEffectInfo) {
         if (!this.enabled) return;
-        const children = node.children;
-        let i = 0;
+        this._children = node.children;
+        this._childrenIndex = 0;
         this.schedule(() => {
-            this.play(children[i++], info);
-        }, 0.1, children.length - 1);
+            this.play(this._children[this._childrenIndex++], info);
+        }, 0.1, this._children.length - 1);
     }
 
     /**
@@ -1364,6 +1366,8 @@ export class YJUIAnimationEffect extends Component {
         });
     }
 
+    private _all: number = 0;
+    private _n: number = 0;
     /**
      * 并行动画播放控制器
      * @param node 目标节点 
@@ -1380,18 +1384,17 @@ export class YJUIAnimationEffect extends Component {
      */
     private playParallel(node: Node, info: AnimationEffectInfo) {
         if (!isValid(node)) return;
-        let all = info.parallelAnimationEffects.length,
-            n = 0;
-        if (all == 0) return;
-        for (let i = 0; i < all; i++) {
-            const a = info.parallelAnimationEffects[i];
-            this._playSerial(node, a.serialAnimationEffects, () => {
-                n++;
-            });
+        this._all = info.parallelAnimationEffects.length;
+        if (this._all == 0) return;
+        this._n = 0;
+        let a: AnimationEffectArray;
+        for (let i = 0; i < this._all; i++) {
+            a = info.parallelAnimationEffects[i];
+            this._playSerial(node, a.serialAnimationEffects, () => this._n++);
         }
         let repeat = info.repeat;
         no.scheduleUpdateCheck(() => {
-            return n === all;
+            return this._n === this._all;
         }, () => {
             if (info.repeat == 0 || --repeat > 0) this.playParallel(node, info);
         }, this);
