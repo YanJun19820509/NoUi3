@@ -103,13 +103,14 @@ export class BigNumber {
 
     /**
      * 转换为字符串
+     * @param digits - 保留的小数位数
      * @returns 字符串
      */
-    public toString(): string {
+    public toString(digits: number = this.digits): string {
         if (this.unitIndex > -1) {
             return `${this.value}${UNITS[this.unitIndex]}`;
         } else {
-            return `${this.value * Math.pow(10, this.unitIndex * 3)}`;
+            return `${Math.floor(this.value * Math.pow(10, this.unitIndex * 3) * Math.pow(10, digits)) / Math.pow(10, digits)}`;
         }
     }
 
@@ -226,8 +227,8 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static add(a: string, b: string): string {
-        return this.new(a).add(this.new(b)).toString();
+    public static add(a: string, b: string, digits: number = 1): string {
+        return this.new(a).add(this.new(b)).toString(digits);
     }
 
     /**
@@ -236,8 +237,8 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static minus(a: string, b: string): string {
-        return this.new(a).minus(this.new(b)).toString();
+    public static minus(a: string, b: string, digits: number = 1): string {
+        return this.new(a).minus(this.new(b)).toString(digits);
     }
     /**
      * 静态乘法运算
@@ -245,8 +246,8 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static multiply(a: string, b: string): string {
-        return this.new(a).multiply(this.new(b)).toString();
+    public static multiply(a: string, b: string, digits: number = 1): string {
+        return this.new(a).multiply(this.new(b)).toString(digits);
     }
 
     /**
@@ -255,8 +256,8 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static divide(a: string, b: string): string {
-        return this.new(a).divide(this.new(b)).toString();
+    public static divide(a: string, b: string, digits: number = 1): string {
+        return this.new(a).divide(this.new(b)).toString(digits);
     }
 
     /**
