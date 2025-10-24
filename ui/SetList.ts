@@ -592,17 +592,16 @@ export class SetList extends HackUi {
     private setItemPosition(item: Node, index: number) {
         item['__dataIndex'] = index;  // 存储数据索引
         let itemAnchor = item.getComponent(UITransform).anchorPoint;
-        let contentSize = this.content.getComponent(UITransform).getBoundingBox().size;
 
         if (this.isVertical) {
             // 垂直滚动布局计算
             const y = -(index + 1 - itemAnchor.y) * this.itemSize.height
-                + contentSize.height * (1 - no.anchorY(this.content));
+                + this.contentSize * (1 - no.anchorY(this.content));
             no.y(item, y);
         } else {
             // 水平滚动布局计算
             const x = (index + itemAnchor.x) * this.itemSize.width
-                - contentSize.width * no.anchorX(this.content);
+                - this.contentSize * no.anchorX(this.content);
             no.x(item, x);
         }
     }
