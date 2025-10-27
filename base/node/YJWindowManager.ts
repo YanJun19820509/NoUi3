@@ -604,14 +604,14 @@ export class YJWindowManager extends Component {
      * 清理所有面板(静态方法)
      */
     public static clearAll() {
-        YJWindowManager._ins.clearAll();
+        YJWindowManager._ins?.clearAll();
     }
 
     /**
      * 清理已关闭的面板(静态方法)
      */
     public static clearClosedPanel() {
-        YJWindowManager._ins.clearClosedPanel();
+        YJWindowManager._ins?.clearClosedPanel();
     }
 
     /**
