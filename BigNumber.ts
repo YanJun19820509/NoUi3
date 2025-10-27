@@ -222,6 +222,28 @@ export class BigNumber {
     }
 
     /**
+     * 是否等于
+     * @param other - 数字或字符串或BigNumber对象
+     * @returns 是否等于
+     */
+    public isEqual(other: number | string | BigNumber): boolean {
+        if (other instanceof BigNumber) {
+            return this.value == other.value && this.unitIndex == other.unitIndex;
+        } else {
+            return this.isEqual(BigNumber.new(other, this.digits));
+        }
+    }
+
+    /**
+     * 是否大于等于
+     * @param other - 数字或字符串或BigNumber对象
+     * @returns 是否大于等于
+     */
+    public isBiggerOrEqual(other: number | string | BigNumber): boolean {
+        return this.isBigger(other) || this.isEqual(other);
+    }
+
+    /**
      * 静态加法运算
      * @param a - 数字或字符串
      * @param b - 数字或字符串
@@ -266,7 +288,27 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 是否大于
      */
-    public static isBigger(a: string, b: string): boolean {
+    public static isBigger(a: string | number, b: string | number): boolean {
         return this.new(a).isBigger(this.new(b));
+    }
+
+    /**
+     * 静态是否等于
+     * @param a - 数字或字符串
+     * @param b - 数字或字符串
+     * @returns 是否等于
+     */
+    public static isEqual(a: string, b: string): boolean {
+        return this.new(a).isEqual(this.new(b));
+    }
+
+    /**
+     * 静态是否大于等于
+     * @param a - 数字或字符串
+     * @param b - 数字或字符串
+     * @returns 是否大于等于
+     */
+    public static isBiggerOrEqual(a: string | number, b: string | number): boolean {
+        return this.new(a).isBiggerOrEqual(this.new(b));
     }
 }

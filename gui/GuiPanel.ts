@@ -55,8 +55,7 @@ export class GuiPanel extends YJPanel {
         no.err('GuiPanel', error);
     }
 
-    public clear(force = false) {
-        if (!force && YJPanel.cacheOpened && this.needCache && !this.needClear) return;
+    public clear() {
         if (this.status == 'open')
             this.onClosePanel();
         no.setPrototype(this, { [YJPanelCreated]: '0' });
