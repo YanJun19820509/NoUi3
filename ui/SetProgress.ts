@@ -1,7 +1,7 @@
-
-import { ProgressBar, ccclass, property, menu, Label } from '../yj';
+import { ProgressBar, ccclass, property, menu, Label, Node } from '../yj';
 import { HackUi } from './HackUi';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
+import { no } from '../no';
 
 /**
  * Predefined variables
@@ -49,6 +49,8 @@ export class SetProgress extends HackUi {
     // 字符动画标签组件
     @property({ type: YJCharLabel })
     charLabel: YJCharLabel = null;
+    @property({ type: Node, displayName: '光标节点' })
+    cursor: Node = null;
 
     // 以下为私有属性
     private speed: number;      // 实际计算用的速度值
@@ -111,6 +113,7 @@ export class SetProgress extends HackUi {
         if (this.motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
             this.progressBar.progress = data;
             this.isFirst = false;
+            this.setCursor();
         } else {
             // 计算动画方向
             this.dir = data > this.progressBar.progress ? 1 : -1;
@@ -132,6 +135,7 @@ export class SetProgress extends HackUi {
             }
 
             this.progressBar.progress = p;
+            this.setCursor();
         }
     }
 
@@ -153,6 +157,20 @@ export class SetProgress extends HackUi {
             this.label.string = s;
         } else if (this.charLabel) {
             this.charLabel.string = s;
+        }
+    }
+
+    private setCursor() {
+        if (!this.cursor) return;
+        const mode = this.progressBar.mode;
+        const bar = this.progressBar.barSprite.node;
+        const total = this.progressBar.totalLength;
+        if (mode == 0) {
+            const x = no.x(bar) + total * this.progressBar.progress;
+            no.x(this.cursor, x);
+        } else if (mode == 1) {
+            const y = no.y(bar) + total * this.progressBar.progress;
+            no.y(this.cursor, y);
         }
     }
 }
