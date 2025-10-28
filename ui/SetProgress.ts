@@ -51,6 +51,10 @@ export class SetProgress extends HackUi {
     charLabel: YJCharLabel = null;
     @property({ type: Node, displayName: '光标节点' })
     cursor: Node = null;
+    @property({ type: no.EventHandlerInfo, displayName: '缓动中回调' })
+    onMotioning: no.EventHandlerInfo[] = [];
+    @property({ type: no.EventHandlerInfo, displayName: '缓动完成回调' })
+    onMotionEnd: no.EventHandlerInfo[] = [];
 
     // 以下为私有属性
     private speed: number;      // 实际计算用的速度值
@@ -80,16 +84,22 @@ export class SetProgress extends HackUi {
      * updateProgress({cur:7, max:10}) // 设置70%进度
      */
     protected onDataChange(data: any) {
-        if (!this.speed)
-            this.speed = 1000 / this.motionSpeed; // 转换为每秒进度变化量
-
+        let motionSpeed = this.motionSpeed;
         // 处理对象类型数据（非数组）
         if (data instanceof Object && !(data instanceof Array)) {
             const keys = Object.keys(data);
             let a: number[] = [];
+            let key: string;
             // 遍历对象属性值（兼容非数组对象）
             for (let i = 0; i < keys.length; i++) {
-                a[a.length] = data[keys[i]];
+                key = keys[i];
+                if (key == 'speed') {
+                    motionSpeed = data[key];
+                    this.isFirst = motionSpeed == 0;
+                } else if (key == 'last') {
+                    this.progressBar.progress = data[key];
+                } else
+                    a[a.length] = data[keys[i]];
             }
             data = a;
         }
@@ -107,18 +117,20 @@ export class SetProgress extends HackUi {
         if (data > 0 && data < this.initValue)
             data = this.initValue;
 
-        this.targetValue = data;
+        this.targetValue = Math.max(0, data);
 
         // 直接设置进度的情况（首次/无动画/逆向变化）
-        if (this.motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
-            this.progressBar.progress = data;
+        if (motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
+            this.progressBar.progress = this.targetValue;
             this.isFirst = false;
             this.setCursor();
         } else {
+            if (!this.speed || motionSpeed != this.motionSpeed)
+                this.speed = 1000 / motionSpeed; // 转换为每秒进度变化量
             // 计算动画方向
             this.dir = data > this.progressBar.progress ? 1 : -1;
         }
-        this.lastValue = data;
+        this.lastValue = this.targetValue;
     }
 
     // 每帧更新进度动画
@@ -136,6 +148,10 @@ export class SetProgress extends HackUi {
 
             this.progressBar.progress = p;
             this.setCursor();
+            no.EventHandlerInfo.execute(this.onMotioning, this.speed * dt * this.progressBar.totalLength * this.dir);
+            if (this.targetValue == this.progressBar.progress) {
+                no.EventHandlerInfo.execute(this.onMotionEnd);
+            }
         }
     }
 
