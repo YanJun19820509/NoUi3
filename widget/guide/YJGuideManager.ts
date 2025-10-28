@@ -55,6 +55,9 @@ export class YJGuideManager extends Component {
     @property({ tooltip: '总开关，控制整个引导系统是否工作' })
     isWork: boolean = true;
 
+    @property({ displayName: '缓存key' })
+    cacheKey: string = 'guide_steps';
+
     /** 已完成的引导步骤记录（持久化存储） 
      * @example ['step1_start', 'step2_dialog'] 表示已完成这两个步骤
      */
@@ -94,7 +97,7 @@ export class YJGuideManager extends Component {
             item.decRef(); // 释放资源引用
         });
         // 初始化完成步骤记录
-        this.saveSteps = no.dataCache.getLocal('guide_steps', []);
+        this.saveSteps = no.dataCache.getLocal(this.cacheKey, []);
     }
 
     /** 组件销毁时清理单例 */

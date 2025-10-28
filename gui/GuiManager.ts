@@ -49,6 +49,11 @@ export class GuiManager {
         const uuid = gui[to].add(url, params || {});
         if (cb) this.afterCreated(to, uuid, cb);
     }
+
+    public static closePanel(panel: GuiPanel) {
+        gui.delete(panel.node);
+    }
+
     private static _initData(panel: GuiPanel, params: any) {
         const dataWork: YJDataWork = panel['dataWork'];
         if (dataWork) {
