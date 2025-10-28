@@ -453,11 +453,18 @@ export class SetList extends HackUi {
             this._1b1 = false; // 重置强制更新标记
             // 使用定时器逐个更新（支持动画效果）
             this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
+            this.scheduleOnce(() => {
+                // 执行完成回调
+                no.EventHandlerInfo.execute(this.onComplete);
+            }, 0.06 * this.showMax);
         }
         else if (!this._1b1) {
             while (i < this.showMax) {
                 this.setItem(i++);
             }
+
+            // 执行完成回调
+            no.EventHandlerInfo.execute(this.onComplete);
         }
         // 普通模式
         else {
@@ -467,13 +474,14 @@ export class SetList extends HackUi {
             //     return i >= this.showMax; // 终止条件
             // });
             this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
+            this.scheduleOnce(() => {
+                // 执行完成回调
+                no.EventHandlerInfo.execute(this.onComplete);
+            }, 0.06 * this.showMax);
         }
 
         // 安全校验节点状态
         if (!this?.node?.isValid) return;
-
-        // 执行完成回调
-        no.EventHandlerInfo.execute(this.onComplete);
         // 释放数据更新锁
         this._isSettingData = false;
     }
