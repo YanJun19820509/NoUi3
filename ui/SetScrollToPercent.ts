@@ -157,5 +157,8 @@ export class SetScrollToPercent extends HackUi {
         offset.y = Math.max(0, Math.min(offset.y, maxOffset.y));
         // 执行滚动
         this.scrollView.scrollToOffset(offset, duration);
+        if (duration == 0) {
+            this.scrollView.node.emit(ScrollView.EventType.SCROLLING);
+        }
     }
 }
