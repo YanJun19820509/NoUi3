@@ -1,5 +1,5 @@
 
-import { ccclass, menu, Component, Node } from '../../yj';
+import { ccclass, menu, Component, EventTouch } from '../../yj';
 import { no } from '../../no';
 
 /**
@@ -30,7 +30,16 @@ export class YJEventEmit extends Component {
      * - a_emit(event, "open:panel1") 发送open事件,参数为["open", "panel1"]
      */
     public a_emit(e: any, v?: string) {
-        let args = (v || e).split(':');
-        no.evn.emit(args[0], args);
+        let args: string[];
+        if (v) {
+            args = v.split(':');
+            if (!(e instanceof EventTouch)) {
+                args.push(e);
+            }
+        } else {
+            args = e.split(':');
+        }
+
+        no.evn.emit(args.shift(), ...args);
     }
 }
