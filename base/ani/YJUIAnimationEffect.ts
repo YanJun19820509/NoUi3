@@ -22,6 +22,7 @@ enum AnimType {
     Rotation = 17,//旋转变化
     ScaleOut = 8,//缩小
     ScaleIn = 9,//放大
+    ScaleOutIn = 27,//缩小并放大
     ScaleTo = 10,//在当前缩放的基础上缩放至指定大小，比如当前缩放为1.2，ScaleToArgs为0.5，则最终缩放为0.6
     ScaleXOut = 11,//x轴缩小
     ScaleXIn = 12,//x轴放大
@@ -128,6 +129,7 @@ class AnimationEffect {
             case AnimType.RightSlideIn: a = this.rightSlideIn(node); break; // 右侧滑入
             case AnimType.ScaleOut: a = this.scaleOut(node); break;  // 缩放退出
             case AnimType.ScaleIn: a = this.scaleIn(node); break;   // 缩放进入
+            case AnimType.ScaleOutIn: a = this.scaleOutIn(node); break; // 缩小并放大
             case AnimType.ScaleTo: a = this.scaleTo(node); break;   // 缩放到指定比例
             case AnimType.ScaleXOut: a = this.scaleXOut(node); break; // X轴缩放退出
             case AnimType.ScaleXIn: a = this.scaleXIn(node); break;  // X轴缩放进入
@@ -291,6 +293,26 @@ class AnimationEffect {
         }];
     }
 
+    private scaleOutIn(node: Node) {
+        // 缓存原始缩放值（避免多次获取）
+        if (!node["__yj_ui_scale"])
+            node["__yj_ui_scale"] = no.scale(node);
+
+        const s = node["__yj_ui_scale"];
+        return [{
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                scale: [0, 0]  // 二维缩放归零
+            }
+        }, {
+            duration: this.duration / 2,
+            to: 1,
+            props: {
+                scale: [s.x, s.y]  // 恢复缓存的原始缩放值
+            }
+        }];
+    }
     /**
      * 缩放到指定大小动画
      * @param node 目标节点
@@ -1128,6 +1150,14 @@ export class YJUIAnimationEffect extends Component {
         tooltip: '当启用时，动画效果将作用于目标节点的所有子节点\n@示例\n// 菜单容器所有子项执行序列动画\n// 每个菜单项会依次执行入场效果'
     })
     onChildren: boolean = false;
+    @property({
+        displayName: '子节点间隔时间',
+        tooltip: '子节点间隔时间\n@示例\n// 每个子节点间隔0.1秒执行动画',
+        min: 0,
+        step: 0.1,
+        visible() { return this.onChildren; }
+    })
+    childrenInterval: number = 0.1;
 
     @property({
         type: AnimationEffectInfo,
@@ -1176,6 +1206,11 @@ export class YJUIAnimationEffect extends Component {
         tooltip: '组件启用时自动开始播放动画\n@示例\n// 用于场景开场动画自动播放\n// 或敌人出现时自动执行特效'
     })
     auto: boolean = false;
+    @property({
+        displayName: '自动运行动画类型',
+        visible() { return this.auto; }
+    })
+    autoRunType: string = '';
 
     // onLoad() {
     //     // 编辑器环境下自动关联相关组件
@@ -1193,9 +1228,9 @@ export class YJUIAnimationEffect extends Component {
         if (EDITOR) return;
         if (this.auto) {
             if (this.onChildren) {
-                this.playOnChildren(this.node, this.animationEffectInfos[0]);  // 示例：用于菜单子项集体入场动画
+                this.playOnChildren(this.node, this.getAnimationEffectInfoByType(this.autoRunType));  // 示例：用于菜单子项集体入场动画
             } else {
-                this.play(this.node, this.animationEffectInfos[0]);  // 示例：单个UI元素的自动展示动画
+                this.play(this.node, this.getAnimationEffectInfoByType(this.autoRunType));  // 示例：单个UI元素的自动展示动画
             }
         }
     }
@@ -1205,6 +1240,14 @@ export class YJUIAnimationEffect extends Component {
         // @实现说明 使用TweenSet.stop确保完全停止节点上的所有缓动
         // @示例 场景切换时自动停止正在进行的UI动画
         no.TweenSet.stop(this.node);
+    }
+
+    private getAnimationEffectInfoByType(type: string) {
+        if (type) {
+            return this.animationEffectInfos.find(i => i.type === type) || this.animationEffectInfos[0];
+        } else {
+            return this.animationEffectInfos[0];
+        }
     }
 
     /**
@@ -1249,12 +1292,7 @@ export class YJUIAnimationEffect extends Component {
         if (!this.enabled) return;
         type = type || e;
         this.a_stop();
-        let info: AnimationEffectInfo;
-        if (type) {
-            info = this.animationEffectInfos.find(i => i.type === type);
-        } else {
-            info = this.animationEffectInfos[0];
-        }
+        let info: AnimationEffectInfo = this.getAnimationEffectInfoByType(type);
 
         const node = this.target || this.node;
         if (this.onChildren) {
@@ -1342,7 +1380,7 @@ export class YJUIAnimationEffect extends Component {
         this._childrenIndex = 0;
         this.schedule(() => {
             this.play(this._children[this._childrenIndex++], info);
-        }, 0.1, this._children.length - 1);
+        }, this.childrenInterval, this._children.length - 1);
     }
 
     /**
