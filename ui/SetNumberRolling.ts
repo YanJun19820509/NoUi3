@@ -25,16 +25,16 @@ import { HackUi } from './HackUi';
 export class SetNumberRolling extends HackUi {
     @property({ displayName: '时长s', min: 0, tooltip: '动画总持续时间（秒）' })
     duration: number = 1;
-    
-    @property({ displayName: '滚动次数', min: 0, tooltip: '数值变化的次数（0表示持续变化）' })
+
+    @property({ displayName: '滚动次数', min: 0, tooltip: '数值变化的次数（为0时用数值变量作为次数，最多5次）' })
     num: number = 1;
-    
+
     @property({ displayName: '保留小数位', min: 0, step: 1, tooltip: '数值显示的小数位精度' })
     decimal: number = 0;
-    
+
     @property({ displayName: '格式化模板', tooltip: '使用{0}作为数值占位符\n示例：\'Score: {0}\'' })
     formatter: string = '{0}';
-    
+
     @property({ type: no.EventHandlerInfo, tooltip: '动画结束时的回调事件' })
     onEnd: no.EventHandlerInfo[] = [];
 
@@ -47,6 +47,10 @@ export class SetNumberRolling extends HackUi {
      * 示例数据：{from: 100, to: 500, format: '￥{0}'}
      */
     protected onDataChange(data: any) {
+        if (typeof data == 'number') {
+            this.setLabel(data);
+            return;
+        }
         if (data.format) this.formatter = data.format;
         this.rolling(data);
     }
@@ -62,9 +66,13 @@ export class SetNumberRolling extends HackUi {
     private rolling(data: any) {
         const from = data.from;
         const to = data.to;
+        let num = this.num;
+        if (num == 0) {
+            num = Math.min(5, Math.abs(to - from));
+        }
         // 计算每次增量（保留指定位数的小数）
-        const add = no.float((to - from) / this.num, this.decimal);
-        
+        const add = no.float((to - from) / num, this.decimal);
+
         // 初始化显示
         this.setLabel(from);
         if (from == to) return;
@@ -76,8 +84,8 @@ export class SetNumberRolling extends HackUi {
                 currentValue += add;
                 this.setLabel(no.floor(currentValue));
             },
-            this.duration / this.num, // 每次更新的间隔时间
-            this.num,                 // 总执行次数
+            this.duration / num, // 每次更新的间隔时间
+            num,                 // 总执行次数
             0,                        // 初始延迟
             this,
             () => { // 完成回调
@@ -97,14 +105,14 @@ export class SetNumberRolling extends HackUi {
      */
     private setLabel(v: number) {
         if (!isValid(this.node)) return;
-        
+
         // 延迟获取文本组件
         if (!this.label) {
-            this.label = this.node.getComponent(Label) || 
-                        this.node.getComponent(RichText) || 
-                        this.node.getComponent(YJCharLabel);
+            this.label = this.node.getComponent(Label) ||
+                this.node.getComponent(RichText) ||
+                this.node.getComponent(YJCharLabel);
         }
-        
+
         // 格式化显示数值（示例：当formatter为'Rank:{0}'时显示'Rank:100'）
         this.label.string = no.formatString(this.formatter, { '0': v.toFixed(this.decimal) });
     }

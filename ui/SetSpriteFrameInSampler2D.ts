@@ -57,7 +57,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     // @规则：
     // - true: 从图集加载精灵帧
     // - false: 使用单独纹理资源
-    @property({ displayName: '从图集加载', readonly: true })
+    @property({ displayName: '从图集加载' })
     loadFromAtlas: boolean = true;
 
     // 是否允许动态合图（仅在非图集模式有效）
