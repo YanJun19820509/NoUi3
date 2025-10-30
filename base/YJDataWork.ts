@@ -305,7 +305,6 @@ export class YJDataWork extends Component {
      */
     public setValue(key: string, value: any): YJDataWork {
         if (key == null) return this;
-        this._dirty = true;
         this.bindSubHackUis();
         this._data?.set(key, value, this.onlyDiff);
         return this.repeatSetValue(key);
@@ -339,6 +338,7 @@ export class YJDataWork extends Component {
      */
     public repeatSetValue(key: string): YJDataWork {
         this.onValueChange(key);
+        this._dirty = true;
         return this;//支持链式写法
     }
 
