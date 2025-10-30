@@ -98,7 +98,7 @@ export class PopuPanel extends YJPanel {
         }
     }
 
-    private async setContent(node: Node, data?: any) {
+    private setContent(node: Node, data?: any) {
         if (!no.checkValid(this.content)) return;
         // no.visible(node, false);
         const ppc = node.getComponent(PopuPanelContent);
