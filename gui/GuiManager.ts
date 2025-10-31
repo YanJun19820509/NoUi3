@@ -96,6 +96,6 @@ export class GuiManager {
             clearInterval(this._afterCreatedTimer);
             this._afterCreatedTimer = null;
         }
-        this._afterCreatedTimer = setInterval(() => this._afterCreatedCb(to, uuid, cb), 10);
+        this._afterCreatedTimer = setInterval(() => this._afterCreatedCb(to, uuid, cb));
     }
 }
