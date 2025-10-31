@@ -83,15 +83,11 @@ export class YJAudioManager extends Component {
                 const n = no.newComponentNode('AudioSource', [AudioSource]);
                 n.parent = this.node;
                 this.audioSource = n.getComponent(AudioSource);
-                this.audioSource.loop = false;
-                this.audioSource.playOnAwake = false;
             }
             if (!this.audioSourceForever) {
                 const n1 = no.newComponentNode('AudioSourceForever', [AudioSource]);
                 n1.parent = this.node;
                 this.audioSourceForever = n1.getComponent(AudioSource);
-                this.audioSourceForever.loop = true;
-                this.audioSourceForever.playOnAwake = false;
             }
             return;
         }

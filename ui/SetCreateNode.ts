@@ -284,17 +284,22 @@ export class SetCreateNode extends HackUi {
             while (this._dataIdx < n) {
                 this.setItem(true);
             }
+            no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
             return;
         }
 
         if (this._1b1) {
             // 动画模式/首次创建：分批次定时创建
             this._1b1 = false; // 重置首次标记
+            let nn = Math.ceil(n / this.batchNum);
             this.schedule(() => {
                 for (let j = 0; j < this.batchNum; j++) {
                     this.setItem();
                 }
-            }, 0.06, Math.ceil(n / this.batchNum));
+            }, 0.06, nn);
+            this.scheduleOnce(() => {
+                no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
+            }, 0.06 * (nn + 1));
         } else {
             // 普通模式：使用JobManager优化性能
             // YJJobManager.ins.addTask(() => {
@@ -304,6 +309,7 @@ export class SetCreateNode extends HackUi {
             while (this._dataIdx < n) {
                 this.setItem();
             }
+            no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
         }
 
         this._isSettingData = false; // 释放数据设置锁
@@ -390,7 +396,6 @@ export class SetCreateNode extends HackUi {
 
         // 数据越界检查
         if (this._dataIdx >= this._data.length) {
-            no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
             return;
         }
         const data = this._data[this._dataIdx];
