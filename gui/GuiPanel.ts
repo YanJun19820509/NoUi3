@@ -5,6 +5,7 @@ import { YJPanel } from "../base/node/YJPanel";
 import { no } from "../no";
 import { YJDataWork } from "../base/YJDataWork";
 import { YJPanelCreated } from "../types";
+import { GuiManager } from "./GuiManager";
 
 @ccclass('GuiPanel')
 export class GuiPanel extends YJPanel {
@@ -53,6 +54,11 @@ export class GuiPanel extends YJPanel {
      */
     onError(error: any): void {
         no.err('GuiPanel', error);
+    }
+
+    protected onClosePanel() {
+        super.onClosePanel();
+        GuiManager.closePanel(this);
     }
 
     public clear() {

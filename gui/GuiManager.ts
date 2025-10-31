@@ -20,7 +20,8 @@ export class GuiManager {
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof GuiPanel);
         if (!comp) return;
-        const url = this.parsePrefabUrl(comp);
+        let url: string = no.getPrototype(comp, YJPanelPrefabMetaKey);
+        url = this.parsePrefabUrl(url);
         // const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
         // if (!allowMultipleOpen) {
         //     let a: GuiPanel;
@@ -47,6 +48,21 @@ export class GuiManager {
         // }
 
         const uuid = gui[to].add(url, params || {});
+        if (cb)
+            this.afterCreated(to, uuid, node => {
+                cb(node.getComponent(comp.name) as T);
+            });
+    }
+
+    /**
+     * 通过url创建面板
+     * @param url 面板url
+     * @param to 面板层级
+     * @param cb 创建后的回调
+     */
+    public static createPanelByUrl(url: string, to: 'ui' | 'popup' | 'dialog' | 'notify', cb?: (node: Node) => void) {
+        url = this.parsePrefabUrl(url);
+        const uuid = gui[to].add(url, {});
         if (cb) this.afterCreated(to, uuid, cb);
     }
 
@@ -61,18 +77,25 @@ export class GuiManager {
         }
     }
 
-    private static parsePrefabUrl(comp: any) {
-        let url: string = no.getPrototype(comp, YJPanelPrefabMetaKey);
+    private static parsePrefabUrl(url: string) {
         const { bundle, path } = no.assetBundleManager.assetPath(url);
         return `${bundle}|${path}`;
     }
 
-    private static afterCreated<T extends GuiPanel>(to: string, uuid: number, cb: (panel: T) => void) {
+    private static _afterCreatedTimer: any = null;
+    private static _afterCreatedCb(to: string, uuid: number, cb: (node: Node) => void) {
         const node = gui[to].get(uuid);
-        if (!node) {
-            return setTimeout(this.afterCreated, 100, to, uuid, cb);
+        if (node) {
+            cb(node);
+            clearInterval(this._afterCreatedTimer);
+            this._afterCreatedTimer = null;
         }
-        const panel = node.getComponent(GuiPanel);
-        cb(panel as T);
+    }
+    private static afterCreated(to: string, uuid: number, cb: (node: Node) => void) {
+        if (this._afterCreatedTimer) {
+            clearInterval(this._afterCreatedTimer);
+            this._afterCreatedTimer = null;
+        }
+        this._afterCreatedTimer = setInterval(() => this._afterCreatedCb(to, uuid, cb), 10);
     }
 }
