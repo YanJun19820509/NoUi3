@@ -1,6 +1,8 @@
 import { YJWindowManager } from '../../base/node/YJWindowManager';
+import { GuiManager } from '../../gui/GuiManager';
 import { no } from '../../no';
 import { Component, DEBUG, ccclass, property } from '../../yj';
+import { GuiGuidePanel } from './GuiGuidePanel';
 
 /**
  * Predefined variables
@@ -50,6 +52,8 @@ export class YJGuideManager extends Component {
      */
     @property({ displayName: '引导主窗口类名' })
     guidePanel: string = '';
+    @property({ displayName: '是否GuiPanel' })
+    isGuiPanel: boolean = false;
 
     /** 是否启用引导系统 */
     @property({ tooltip: '总开关，控制整个引导系统是否工作' })
@@ -146,9 +150,15 @@ export class YJGuideManager extends Component {
         if (!this.isWork) return false;
         const pre_step = this.getGuideInfo('guide_config.' + step).pre_id;
         if (this.saveSteps.includes(step) || (pre_step && !this.saveSteps.includes(pre_step))) return false;
-        YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
-            panel.curStep = step;
-        });
+        if (!this.isGuiPanel) {
+            YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
+                panel.curStep = step;
+            });
+        } else {
+            GuiManager.createPanel<GuiGuidePanel>(this.guidePanel, 'dialog', null, (panel: GuiGuidePanel) => {
+                panel.curStep = step;
+            });
+        }
         return true;
     }
 
