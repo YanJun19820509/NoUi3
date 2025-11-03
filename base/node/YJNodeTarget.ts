@@ -65,7 +65,7 @@ export class YJNodeTarget extends Component {
         // 生成层级名称：父节点名称 + 当前节点名称
         let name = [this.node.name];
         if (this.node.parent) name.unshift(this.node.parent.name);
-        this.type = name.join('.');
+        this.type = name.join(':');
     }
 
     /** 
@@ -262,6 +262,9 @@ export class YJNodeTarget extends Component {
                 const touchListener = this.getComponent(YJTouchListener);
                 if (touchListener) {
                     no.EventHandlerInfo.execute(touchListener.endHandlers);
+                } else {
+                    e.target = this.node;
+                    this.node.emit(Node.EventType.TOUCH_END, e);
                 }
             }
         }

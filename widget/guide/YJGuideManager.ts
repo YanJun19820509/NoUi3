@@ -155,9 +155,7 @@ export class YJGuideManager extends Component {
                 panel.curStep = step;
             });
         } else {
-            GuiManager.createPanel<GuiGuidePanel>(this.guidePanel, 'dialog', null, (panel: GuiGuidePanel) => {
-                panel.curStep = step;
-            });
+            GuiManager.createPanel<GuiGuidePanel>(this.guidePanel, 'dialog', { curStep: step });
         }
         return true;
     }

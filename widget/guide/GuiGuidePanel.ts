@@ -84,6 +84,7 @@ export class GuiGuidePanel extends GuiPanel {
      * @description 重置引导状态并移除所有事件监听
      */
     protected onClosePanel() {
+        super.onClosePanel();
         this.isGuiding = false;
         no.evn.targetOff(this);
     }
