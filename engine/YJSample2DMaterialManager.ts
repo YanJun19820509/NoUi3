@@ -83,11 +83,11 @@ export class YJSample2DMaterialManager extends no.SingleObject {
         for (let i = this.noShareMaterialInfos.length - 1; i >= 0; i--) {
             this.noShareMaterialInfos[i].destroy(true);
         }
-        this.materialInfos = [];
-        this.noShareMaterialInfos = [];
-        this.atlasJson = new Map();
-        this.atlasJsonKeys = new Map();
-        this.keyToMaterialUuid = new Map();
+        this.materialInfos.length = 0;
+        this.noShareMaterialInfos.length = 0;
+        this.atlasJson.clear();
+        this.atlasJsonKeys.clear();
+        this.keyToMaterialUuid.clear();
     }
 
     /**
