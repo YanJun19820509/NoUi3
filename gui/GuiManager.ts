@@ -22,30 +22,32 @@ export class GuiManager {
         if (!comp) return;
         let url: string = no.getPrototype(comp, YJPanelPrefabMetaKey);
         url = this.parsePrefabUrl(url);
-        // const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
-        // if (!allowMultipleOpen) {
-        //     let a: GuiPanel;
-        //     const children = gui[to].children;
-        //     let child: Node;
-        //     let panel: GuiPanel;
-        //     for (let i = 0, n = children.length; i < n; i++) {
-        //         child = children[i];
-        //         panel = child.getComponent(comp);
-        //         if (panel) {
-        //             a = panel;
-        //             break;
-        //         }
-        //     }
-        //     if (a != null) {
-        //         this._initData(a, params);
-        //         a.initPanel().catch(e => { no.err('GuiManager', e.stack, e.message); });
-        //         return;
-        //     }
-        // }
-        // if (!allowMultipleOpen) {
-        //     if (no.isPrototypeEquals(comp, YJPanelCreated, '1')) return;
-        //     else no.setPrototype(comp, { [YJPanelCreated]: '1' });
-        // }
+        const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
+        if (!allowMultipleOpen) {
+            let a: GuiPanel;
+            const children = gui[to].children;
+            let child: Node;
+            let panel: GuiPanel;
+            for (let i = 0, n = children.length; i < n; i++) {
+                child = children[i];
+                panel = child.getComponent(comp);
+                if (panel) {
+                    a = panel;
+                    break;
+                }
+            }
+            if (a != null) {
+                this._initData(a, params);
+                a.initPanel().catch(e => { no.err('GuiManager', e.stack, e.message); });
+                return;
+            } else {
+                no.setPrototype(comp, { [YJPanelCreated]: '0' });
+            }
+        }
+        if (!allowMultipleOpen) {
+            if (no.isPrototypeEquals(comp, YJPanelCreated, '1')) return;
+            else no.setPrototype(comp, { [YJPanelCreated]: '1' });
+        }
 
         const uuid = gui[to].add(url, params || {});
         if (cb)

@@ -247,8 +247,9 @@ export class YJWindowManager extends Component {
             if (a != null) {
                 beforeInit?.(a as T);
                 a.initPanel().then(afterInit).catch(e => { no.err('windowmanager', e.stack, e.message); });
-                // no.siblingIndex(a.node, content.children.length - 1);
                 return;
+            } else {
+                no.setPrototype(comp, { [YJPanelCreated]: '0' });
             }
         }
         if (!allowMultipleOpen) {
