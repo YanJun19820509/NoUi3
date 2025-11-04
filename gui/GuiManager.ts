@@ -39,6 +39,7 @@ export class GuiManager {
             if (a != null) {
                 this._initData(a, params);
                 a.initPanel().catch(e => { no.err('GuiManager', e.stack, e.message); });
+                cb?.(a as T);
                 return;
             } else {
                 no.setPrototype(comp, { [YJPanelCreated]: '0' });
@@ -50,10 +51,11 @@ export class GuiManager {
         }
 
         const uuid = gui[to].add(url, params || {});
-        if (cb)
+        if (cb) {
             this.afterCreated(to, uuid, node => {
                 cb(node.getComponent(comp.name) as T);
             });
+        }
     }
 
     /**
