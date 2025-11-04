@@ -60,6 +60,7 @@ export class SetProgress extends HackUi {
     private speed: number;      // 实际计算用的速度值
     private dir: number;        // 进度变化方向（1: 增加，-1: 减少）
     private targetValue: number = -1; // 目标进度值（-1表示未设置）
+    private actualValue: number = -1; // 实际进度值
     private isFirst: boolean = true;  // 是否是第一次设置
     private lastValue: number = 0;    // 上次设置的进度值
 
@@ -118,6 +119,7 @@ export class SetProgress extends HackUi {
             data = this.initValue;
 
         this.targetValue = Math.max(0, data);
+        this.actualValue = data;
 
         // 直接设置进度的情况（首次/无动画/逆向变化）
         if (motionSpeed == 0 || this.isFirst || data <= this.lastValue) {
@@ -177,16 +179,16 @@ export class SetProgress extends HackUi {
     }
 
     private setCursor() {
-        if (!this.cursor) return;
+        if (!this.cursor || this.actualValue < 0) return;
         const mode = this.progressBar.mode;
         const bar = this.progressBar.barSprite.node;
         const total = this.progressBar.totalLength;
+        let { x, y } = no.worldPosition(this.cursor);
         if (mode == 0) {
-            const x = no.x(bar) + total * this.progressBar.progress;
-            no.x(this.cursor, x);
+            x = bar.worldPosition.x + total * this.progressBar.progress;
         } else if (mode == 1) {
-            const y = no.y(bar) + total * this.progressBar.progress;
-            no.y(this.cursor, y);
+            y = bar.worldPosition.y + total * this.progressBar.progress;
         }
+        no.worldPosition(this.cursor, { x, y });
     }
 }

@@ -3858,6 +3858,15 @@ export namespace no {
         }
     }
 
+    export function worldPosition(node: Node, pos?: Vec3 | { x: number, y: number, z?: number }): Vec3 {
+        if (!node) return;
+        if (pos != undefined) {
+            node.setWorldPosition(pos.x, pos.y, pos.z || 0);
+        } else {
+            return node.worldPosition;
+        }
+    }
+
     /**
      * 获取或设置节点欧拉角旋转（单位：角度制）
      * @param node 目标节点
