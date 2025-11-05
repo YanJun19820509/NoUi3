@@ -2,7 +2,8 @@
 import {
     EDITOR, ccclass, SpriteFrame, Label, UIRenderer, Texture2D,
     Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager,
-    Vec2
+    Vec2,
+    v2
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -572,6 +573,7 @@ export class YJDynamicAtlas {
         newSpriteFrame.originalSize = size(spriteFrame.originalSize[0], spriteFrame.originalSize[1]);
         // 设置纹理区域（实际像素坐标）
         newSpriteFrame.rect = rect(spriteFrame.rect[0], spriteFrame.rect[1], spriteFrame.rect[2], spriteFrame.rect[3]);
+        newSpriteFrame.offset = v2(spriteFrame.offset[0], spriteFrame.offset[1]);
         // 设置UV坐标（纹理采样坐标）
         newSpriteFrame.uv = spriteFrame.uv;
         // 设置旋转标记（影响渲染时的顶点顺序）

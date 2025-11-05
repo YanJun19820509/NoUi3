@@ -145,6 +145,7 @@ export type SpriteFrameDataType = {
     rect: number[],
     originalSize: number[],
     textureSize: number[],
+    offset: number[],
     uv: number[],
     uvSliced?: IUV[],
     capInsets?: number[],
