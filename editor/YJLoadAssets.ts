@@ -11,6 +11,7 @@ import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { SetText } from '../ui/SetText';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
+import { YJLabel } from '../widget/charLabel/YJLabel';
 
 /**
  * Predefined variables
@@ -45,6 +46,10 @@ export class YJLoadAssets extends Component {
     /** 是否共享材质（开启后相同纹理的节点会共享材质实例） */
     @property({ displayName: '共享材质' })
     share: boolean = true;
+
+    /** 是否文本打包到图集 */
+    @property({ displayName: '文本打包到图集' })
+    packLabel: boolean = false;
 
     /** 
      * 自动搜索子节点需要加载的纹理 
@@ -216,6 +221,12 @@ export class YJLoadAssets extends Component {
                 a.panelName = name;
             }
         }
+        list = this.getComponentsInChildren(YJLabel);
+        for (let i = 0; i < list.length; i++) {
+            a = list[i];
+            a.removeLabel();
+            a.materialInfoUuid = name;
+        }
         list = this.getComponentsInChildren(SetText);
         for (let i = 0; i < list.length; i++) {
             if (!v) list[i].getComponent(Label).string = '';
@@ -283,7 +294,7 @@ export class YJLoadAssets extends Component {
      */
     public load() {
         this.setMaterialKey();
-        return YJSample2DMaterialManager.ins.createAtlasMaterial(this._materialKey, this.textureInfos, this.share);
+        return YJSample2DMaterialManager.ins.createAtlasMaterial(this._materialKey, this.textureInfos, this.share, this.packLabel);
     }
 
     /**

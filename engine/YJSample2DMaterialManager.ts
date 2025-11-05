@@ -101,8 +101,8 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      * // 创建独占材质：
      * this.createMaterialInfo('boss_special_effect', false);
      */
-    private createMaterialInfo(name: string, reuse: boolean) {
-        const materialInfo = new YJSample2DMaterialInfo(name, reuse);
+    private createMaterialInfo(name: string, reuse: boolean, packLabel: boolean = false) {
+        const materialInfo = new YJSample2DMaterialInfo(name, reuse, packLabel);
 
         if (reuse)
             this.materialInfos.push(materialInfo);
@@ -167,19 +167,19 @@ export class YJSample2DMaterialManager extends no.SingleObject {
      * ];
      * const effectUuid = await materialManager.createAtlasMaterial('fire_effect', effectTextures, false);
      */
-    public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean): Promise<string> {
+    public async createAtlasMaterial(name: string, textureInfos: TextureInfo[], share: boolean, packLabel: boolean = false): Promise<string> {
         let materialInfo: YJSample2DMaterialInfo;
 
         // 非共享模式或全局禁用材质复用时，直接创建新材质
         if (!share || !REUSE_MATERIAL) {
-            materialInfo = this.createMaterialInfo(name, false);
+            materialInfo = this.createMaterialInfo(name, false, packLabel);
         } else {
             // 尝试复用现有材质
             const { maxMaterialInfo, maxDiff } = this.reuseMaterial(textureInfos);
 
             if (!maxMaterialInfo) {
                 // 没有合适材质可复用，创建新的可复用材质
-                materialInfo = this.createMaterialInfo(name, true);
+                materialInfo = this.createMaterialInfo(name, true, packLabel);
             } else {
                 // 过滤出需要新增的纹理信息
                 let newTextureInfos = [];
@@ -405,14 +405,14 @@ export class YJSample2DMaterialInfo {
      * // 创建临时特效材质：
      * new YJSample2DMaterialInfo('skill_effect', false);
      */
-    constructor(name: string, reuse: boolean) {
+    constructor(name: string, reuse: boolean, packLabel: boolean = false) {
         this.uuid = no.uuid();
         this.refCount++;
         this.name = name;
 
-        // 根据复用配置选择图集尺寸（可复用材质使用2048尺寸，临时材质使用512）
+        // 根据复用配置选择图集尺寸（可复用材质使用2048尺寸，临时材质使用1024）
         const material = createMaterial();
-        const size = 2;//reuse ? 2048 : 512;
+        const size = reuse && packLabel ? 2048 : (packLabel ? 1024 : 2);
         const atlas = new Atlas(size, size, name);
         this.dynamicAtlas = new YJDynamicAtlas(atlas, material);
         // 注册到调试显示组件

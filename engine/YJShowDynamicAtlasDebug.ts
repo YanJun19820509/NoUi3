@@ -126,7 +126,7 @@ export class YJShowDynamicAtlasDebug {
         });
         if (!this._debugNode || !this._debugNode.isValid) {
 
-            no.assetBundleManager.loadPrefab('../../engine/dynamic_atlas_debug_node', item => {
+            no.assetBundleManager.loadPrefab('HackUi/engine/dynamic_atlas_debug_node', item => {
                 this._debugNode = instantiate(item);
                 this._debugNode.parent = find('Canvas');
                 let scrollView = this._debugNode.getComponentInChildren(ScrollView);

@@ -143,11 +143,11 @@ export class Atlas {
 
     public clearTexture(frame: SpriteFrame) {
         let uuid = frame._uuid;
-        let rect = this._dynamicTextureRect[uuid];
-        if (!rect) return;
-        this._maxRect.reuseRect(rect.x, rect.y, rect.w, rect.h);
-        let img = this._createEmptyImage(rect(rect.x, rect.y, rect.w, rect.h));
-        this._setSubImage(img, rect.x, rect.y);
+        let _rect = this._dynamicTextureRect[uuid];
+        if (!_rect) return;
+        this._maxRect.reuseRect(_rect.x, _rect.y, _rect.w, _rect.h);
+        let img = this._createEmptyImage(rect(_rect.x, _rect.y, _rect.w, _rect.h));
+        this._setSubImage(img, _rect.x, _rect.y);
         delete this._dynamicTextureRect[uuid];
     }
 

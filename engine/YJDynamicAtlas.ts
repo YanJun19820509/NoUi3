@@ -233,7 +233,7 @@ export class YJDynamicAtlas {
      */
     public packToDynamicAtlas(comp: UIRenderer, frame: SpriteFrame, canRotate: boolean, onFail?: () => void) {
         // 标签组件和系统未启用时直接返回
-        if (!this.isWork || comp instanceof Label) {
+        if (!this.isWork) {//|| comp instanceof Label
             onFail?.();
             return;
         }
