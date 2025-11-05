@@ -118,6 +118,7 @@ export class YJGuideManager extends Component {
      */
     public save(steps: string) {
         no.addToArray(this.saveSteps, steps);
+        no.dataCache.setLocal(this.cacheKey, this.saveSteps);
     }
 
     /**
