@@ -2704,7 +2704,7 @@ export namespace no {
     export function nodeWorldPosition(node: Node, out?: Vec3): Vec3 {
         if (!checkValid(node)) return;
         out = out || _tempPos;
-        out.set(node.worldPosition.clone());
+        node.getWorldPosition(out);
         return out;
     }
 
