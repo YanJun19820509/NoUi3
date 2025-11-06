@@ -230,7 +230,7 @@ export class SetTimeCountDown extends HackUi {
         this.setPercent(remaining);
 
         // 倒计时结束处理
-        if (remaining <= 0) {
+        if (remaining < 0) {
             no.sysTime.offTickTock(this);
             no.EventHandlerInfo.execute(this.endCalls);
             return;
