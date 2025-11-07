@@ -15,7 +15,7 @@ export class GuiManager {
      * @param params 用于dataWork的初始化参数
      * @returns 
      */
-    public static createPanel<T extends GuiPanel>(comp: typeof GuiPanel | string, to: 'ui' | 'popup' | 'dialog' | 'notify', params?: any, cb?: (panel: T) => void) {
+    public static createPanel(comp: typeof GuiPanel | string, to: 'ui' | 'popup' | 'dialog' | 'notify', params?: any, cb?: (panel: Node) => void) {
         if (!comp) return;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof GuiPanel);
@@ -39,7 +39,7 @@ export class GuiManager {
             if (a != null) {
                 this._initData(a, params);
                 a.initPanel().catch(e => { no.err('GuiManager', e.stack, e.message); });
-                cb?.(a as T);
+                cb?.(a.node);
                 return;
             } else {
                 no.setPrototype(comp, { [YJPanelCreated]: '0' });
@@ -52,9 +52,7 @@ export class GuiManager {
 
         const uuid = gui[to].add(url, params || {});
         if (cb) {
-            this.afterCreated(to, uuid, node => {
-                cb(node.getComponent(comp.name) as T);
-            });
+            this.afterCreated(to, uuid, cb);
         }
     }
 
