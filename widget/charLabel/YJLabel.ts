@@ -1,7 +1,8 @@
 import { YJDynamicAtlas } from "../../engine/YJDynamicAtlas";
 import { YJSample2DMaterialManager } from "../../engine/YJSample2DMaterialManager";
+import { YJMacroConfig } from "../../macro";
 import { no } from "../../no";
-import { BitmapFont, CacheMode, ccclass, EDITOR, ImageAsset, Label, LabelOutline, property, SpriteFrame, Texture2D } from "../../yj";
+import { BitmapFont, CacheMode, ccclass, Color, EDITOR, Label, LabelOutline, LabelShadow, property, TTFFont, v2, Vec2 } from "../../yj";
 /**
  * 
  * Author mqsy_yj
@@ -11,6 +12,54 @@ import { BitmapFont, CacheMode, ccclass, EDITOR, ImageAsset, Label, LabelOutline
 
 @ccclass('YJLabel')
 export class YJLabel extends Label {
+    get useSystemFont() {
+        return this._isSystemFontUsed;
+    }
+    set useSystemFont(value) {
+        if (this._isSystemFontUsed === value) {
+            return;
+        }
+
+        super.useSystemFont = value;
+        if (!value) {
+            // 未指定字体时使用宏配置的默认字体
+            const font = YJMacroConfig.TTF_FONT; // 默认字体配置
+            if (font) {
+                // 异步加载TTF字体资源示例：no.EditorMode.getAssetByFileName("msyh.ttf")
+                no.EditorMode.getAssetByFileName<TTFFont>(font).then(ttf => {
+                    this.font = ttf; // 设置字体实例
+                });
+            }
+        }
+    }
+    @property({ displayName: '添加描边' })
+    get outline(): boolean {
+        return this._outline;
+    }
+    set outline(v: boolean) {
+        if (v == this._outline) return;
+        this._outline = v;
+        if (v) {
+            if (!this.getComponent(LabelOutline))
+                this.addComponent(LabelOutline);
+        } else {
+            this.getComponent(LabelOutline)?.destroy();
+        }
+    }
+    @property({ displayName: '添加阴影' })
+    get shadow(): boolean {
+        return this._shadow;
+    }
+    set shadow(v: boolean) {
+        if (v == this._shadow) return;
+        this._shadow = v;
+        if (v) {
+            if (!this.getComponent(LabelShadow))
+                this.addComponent(LabelShadow);
+        } else {
+            this.getComponent(LabelShadow)?.destroy();
+        }
+    }
     @property({ tooltip: '将文本打包到动态图集提升性能' })
     public get packToAtlas(): boolean {
         return this._packToAtlas;
@@ -22,9 +71,16 @@ export class YJLabel extends Label {
         // 注意：修改后需要手动调用setLabel()才会生效
     }
 
+    /** 文字描边宽度（0=无描边） */
+    @property({ serializable: true })
+    protected _outline: boolean = false;
+
+    /** 描边颜色（默认黑色） */
+    @property({ serializable: true })
+    protected _shadow: boolean = false;
     /** 动态图集打包开关（见packToAtlas属性） */
     @property({ serializable: true })
-    protected _packToAtlas: boolean = true;
+    protected _packToAtlas: boolean = false;
     /** 材质信息UUID（渲染系统使用） */
     @property({ visible() { return false; } })
     materialInfoUuid: string = '';
@@ -40,19 +96,27 @@ export class YJLabel extends Label {
      */
     private dynamicAtlas: YJDynamicAtlas = null;
 
-    /** 
-     * 组件实例唯一标识符
-     * @特性说明：
-     * - 用于字体资源关联和缓存查找
-     * - 通过no._uuid()生成唯一值
-     * @示例
-     * this._uid = 'a1b2c3d4-e5f6-7890';
-     */
-    private _uid: string = '';
+    private _uids: string[] = [];
+
+    private _needPackSpriteFrame: boolean = false;
+
+    onDestroy(): void {
+        super.onDestroy?.();
+
+        if (this.packToAtlas && this.dynamicAtlas)
+            this.dynamicAtlas.removeFromDynamicAtlas(this.ttfSpriteFrame);
+        this.dynamicAtlas.clearPackedTextures(this._uids);
+        this._uids.length = 0;
+    }
 
     update(dt: number) {
         super.update?.(dt);
+        if (EDITOR) return;
         this.initMaterialInfo();
+        if (this._needPackSpriteFrame) {
+            this.dynamicPackSpriteFrame();
+        }
+
     }
 
     public removeLabel() {
@@ -73,25 +137,33 @@ export class YJLabel extends Label {
     }
 
     protected _applyFontTexture() {
-        if (this.packToAtlas && this.dynamicAtlas)
-            this.dynamicAtlas.removeFromDynamicAtlas(this.ttfSpriteFrame);
-        super._applyFontTexture();
-        this.dynamicPack();
+        if (EDITOR) {
+            super._applyFontTexture();
+            return;
+        }
+        if (!this._ttfSpriteFrame) {
+            super._applyFontTexture();
+            this._needPackSpriteFrame = true;
+        } else if (!this._needPackSpriteFrame) {
+            if (this._ttfSpriteFrame.original)
+                this._ttfSpriteFrame._resetDynamicAtlasFrame();
+            this._needPackSpriteFrame = true;
+        }
     }
 
-    private dynamicPack() {
-        if (this.font instanceof BitmapFont)
+    private dynamicPackSpriteFrame() {
+        if (this._font instanceof BitmapFont || this.cacheMode === CacheMode.CHAR) {
+            this._needPackSpriteFrame = false;
             return;
+        }
         if (this.packToAtlas && !this.dynamicAtlas) {
-            return requestAnimationFrame(this.dynamicPack.bind(this));
+            return;
         }
 
+        this._needPackSpriteFrame = false;
+        const uid = this.updateUuid();
         let frame = this.ttfSpriteFrame;
-        if (!frame || frame.original)
-            return;
-
-        this.updateUuid();
-        frame._uuid = this._uid;
+        frame._uuid = uid;
         frame.rotated = false;
         this.dynamicAtlas?.packToDynamicAtlas(this, frame, false);
     }
@@ -108,6 +180,8 @@ export class YJLabel extends Label {
             (this.isItalic ? '1' : '0');
 
         // 生成哈希标识
-        this._uid = no.Hash(styleSignature).toString();
+        const uid = no.Hash(styleSignature).toString();
+        no.addToArray(this._uids, uid);
+        return uid;
     }
 }

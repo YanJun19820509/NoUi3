@@ -6,7 +6,7 @@ import { MaxRects } from "./MaxRects";
 export class Atlas {
     public _texture: DynamicAtlasTexture;
     private _maxRect: MaxRects;
-    private _dynamicTextureRect: any;
+    private _dynamicTextureRect: { [key: string]: { x: number, y: number, w: number, h: number, rotate: boolean, ref: number } };
     public readonly uuid: string;
     // private _innerSpriteFrames: SpriteFrame[];
     private _temp: { x: number, y: number, w: number, h: number, rotate: boolean, texture: DynamicAtlasTexture } = { x: 0, y: 0, w: 0, h: 0, rotate: false, texture: null };
@@ -92,7 +92,14 @@ export class Atlas {
         if (!texture._mipmaps[0]) return null;
         let info = this._dynamicTextureRect[texture._uuid];
         if (info) {
-            return null;
+            info.ref++;
+            this._temp.x = info.x;
+            this._temp.y = info.y;
+            this._temp.w = info.w;
+            this._temp.h = info.h;
+            this._temp.rotate = info.rotate;
+            this._temp.texture = this._texture;
+            return this._temp;
         }
         this._temp.rotate = false;
         this._temp.w = this._temp.rotate ? texture.height : texture.width;
@@ -110,6 +117,7 @@ export class Atlas {
     public drawCanvas(canvas: HTMLCanvasElement, uuid: string): PackedFrameData {
         let info = this._dynamicTextureRect[uuid];
         if (info) {
+            info.ref++;
             this._temp.x = info.x;
             this._temp.y = info.y;
             this._temp.w = info.w;
@@ -137,14 +145,20 @@ export class Atlas {
             y: y,
             w: w,
             h: h,
-            rotate: rotate
+            rotate: rotate,
+            ref: 1
         };
     }
 
     public clearTexture(frame: SpriteFrame) {
-        let uuid = frame._uuid;
+        this.clearTextureByUuid(frame._uuid)
+    }
+
+    public clearTextureByUuid(uuid: string) {
         let _rect = this._dynamicTextureRect[uuid];
         if (!_rect) return;
+        _rect.ref--;
+        if (_rect.ref > 0) return;
         this._maxRect.reuseRect(_rect.x, _rect.y, _rect.w, _rect.h);
         let img = this._createEmptyImage(rect(_rect.x, _rect.y, _rect.w, _rect.h));
         this._setSubImage(img, _rect.x, _rect.y);

@@ -3,7 +3,8 @@ import {
     EDITOR, ccclass, SpriteFrame, Label, UIRenderer, Texture2D,
     Sprite, BitmapFont, Node, rect, SpriteAtlas, Material, size, director, dynamicAtlasManager,
     Vec2,
-    v2
+    v2,
+    RenderData
 } from '../yj';
 import { PackedFrameData, SpriteFrameDataType } from '../types';
 import { Atlas } from './atlas';
@@ -349,6 +350,20 @@ export class YJDynamicAtlas {
     }
 
     /**
+     * 清除已打包的纹理
+     * @param uuids 需要清除的精灵帧唯一标识
+     * @example
+     * // 清除已打包的纹理:
+     * dynamicAtlas.clearPackedTextures(['font_01', 'sprite_01']);
+     */
+    public clearPackedTextures(uuids: string[]) {
+        if (!this.atlas) return;
+        for (let i = 0, n = uuids.length; i < n; i++) {
+            this.atlas.clearTextureByUuid(uuids[i]);
+        }
+    }
+
+    /**
      * 设置组件使用的打包后帧数据
      * @param comp 需要更新的UI渲染组件（Label/Sprite）
      * @param frame 原始精灵帧
@@ -370,6 +385,7 @@ export class YJDynamicAtlas {
 
             // 处理Label组件
             if (comp instanceof Label) {
+                if (!frame) frame = comp['_texture'] as SpriteFrame;
                 // 确保使用自定义材质
                 if (!comp.customMaterial)
                     comp.customMaterial = this.customMaterial;
@@ -377,7 +393,7 @@ export class YJDynamicAtlas {
                 // 位图字体处理分支
                 if (comp.font instanceof BitmapFont) {
                     // 克隆原始帧并应用动态图集参数
-                    let ff = frame.clone();
+                    let ff = frame?.clone() || new SpriteFrame();
                     ff.rotated = packedFrame.rotate;
                     ff._setDynamicAtlasFrame(packedFrame);
 
@@ -396,13 +412,33 @@ export class YJDynamicAtlas {
                 }
                 // 系统字体处理分支
                 else {
+                    let renderData: RenderData, vData: Float32Array;
+                    // if (!frame) {
+                    //     frame = this.getSpriteFrameInstance(_uuid);
+                    //     comp['_ttfSpriteFrame'] = frame;
+                    //     renderData = comp['_renderData'];
+                    //     vData = renderData.chunk.vb;
+                    //     const { width, height } = packedFrame.texture;
+                    //     // 手动更新顶点缓冲区的UV数据
+                    //     vData[3] = packedFrame.x / width;   // 左下U
+                    //     vData[4] = (packedFrame.y + packedFrame.h) / height;   // 左下V
+                    //     vData[12] = (packedFrame.x + packedFrame.w) / width;  // 右下U
+                    //     vData[13] = vData[4];  // 右下V 
+                    //     vData[21] = vData[12];  // 右上U
+                    //     vData[22] = packedFrame.y / height;  // 右上V
+                    //     vData[30] = vData[3];  // 左上U
+                    //     vData[31] = vData[22];  // 左上V
+
+                    //     // 标记纹理数据变更并更新渲染
+                    //     renderData.textureDirty = true;
+                    // } else {
                     // 直接修改原始帧参数
                     frame.rotated = packedFrame.rotate;
                     frame._setDynamicAtlasFrame(packedFrame);
 
                     // 获取渲染数据并更新UV坐标
-                    const renderData = comp['_renderData'];
-                    const vData = renderData.chunk.vb;
+                    renderData = comp['_renderData'];
+                    vData = renderData.chunk.vb;
                     const uv = comp['_ttfSpriteFrame'].uv;
 
                     // 手动更新顶点缓冲区的UV数据
@@ -417,6 +453,8 @@ export class YJDynamicAtlas {
 
                     // 标记纹理数据变更并更新渲染
                     renderData.textureDirty = true;
+                    // }
+
                     comp.markForUpdateRenderData(false);
                     renderData.updateRenderData(comp, comp['_ttfSpriteFrame']);
 
