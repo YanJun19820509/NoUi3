@@ -49,7 +49,14 @@ export class YJLoadAssets extends Component {
 
     /** 是否文本打包到图集 */
     @property({ displayName: '文本打包到图集' })
-    packLabel: boolean = false;
+    get packLabel(): boolean {
+        return this._packLabel;
+    }
+    set packLabel(v: boolean) {
+        this._packLabel = v;
+        const yjLabels = this.getComponentsInChildren(YJLabel);
+        yjLabels.forEach(c => c.packToAtlas = v);
+    }
 
     /** 
      * 自动搜索子节点需要加载的纹理 
@@ -226,6 +233,7 @@ export class YJLoadAssets extends Component {
             a = list[i];
             a.removeLabel();
             a.materialInfoUuid = name;
+            if (a.packToAtlas) this._packLabel = true;
         }
         list = this.getComponentsInChildren(SetText);
         for (let i = 0; i < list.length; i++) {
@@ -271,6 +279,9 @@ export class YJLoadAssets extends Component {
     /** 材质信息唯一标识（自动生成） */
     @property({ visible() { return false; } })
     _materialKey: string = '';
+
+    @property
+    _packLabel: boolean = false;
 
     // onLoad() {
     //     if (EDITOR) {
