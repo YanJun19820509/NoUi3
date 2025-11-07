@@ -1,8 +1,10 @@
 
-import { ccclass, property, menu, PageView, Vec2, EventTouch, UITransform } from '../yj';
+import { ccclass, property, menu, PageView, Vec2, EventTouch, UITransform, Layout } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
+import { Node } from 'cc';
+import { YJIndicator } from '../widget/indicator/YJIndicator';
 
 /**
  * Predefined variables
@@ -35,6 +37,8 @@ import { no } from '../no';
  * pageView.a_show(2); // 跳转到第三页
  */
 export class YJPageView extends PageView {
+    @property({ type: YJIndicator })
+    yjIndicator: YJIndicator = null;
     /** 触发页面切换的最小滑动距离（单位：像素） */
     @property({ displayName: '触发切换的偏移量' })
     offset: number = 30;
@@ -52,6 +56,21 @@ export class YJPageView extends PageView {
     onPageChanged: no.EventHandlerInfo[] = [];
 
     private max: number; // 总页数缓存
+    private _needUpdateView: boolean = true;
+    private _needUpdataIndicator: boolean = false;
+    private _pageCount: number = 0;
+
+    private _viewSize: number;
+
+    private _layout: Layout;
+
+    lateUpdate(dt: number) {
+        super.lateUpdate?.(dt);
+        if (this._needUpdataIndicator) {
+            this._needUpdataIndicator = false;
+            this.updateIndicator();
+        }
+    }
 
     /**
      * 触摸开始事件处理
@@ -144,18 +163,18 @@ export class YJPageView extends PageView {
         this.scrollToPage(idx, 0.1);
     }
 
-    /**
-     * 移除所有页面并销毁
-     * @description 用于手动释放页面资源
-     */
-    public a_removeAllPages() {
-        let pages = this.getPages();
-        if (pages) {
-            for (let i = 0; i < pages.length; i++) {
-                pages[i].destroy();
-            }
-        }
-    }
+    // /**
+    //  * 移除所有页面并销毁
+    //  * @description 用于手动释放页面资源
+    //  */
+    // public a_removeAllPages() {
+    //     let pages = this.getPages();
+    //     if (pages) {
+    //         for (let i = 0; i < pages.length; i++) {
+    //             pages[i].destroy();
+    //         }
+    //     }
+    // }
 
     private _idx: number = 0;
     onLoad() {
@@ -170,11 +189,43 @@ export class YJPageView extends PageView {
 
     onDisable() {
         if (!this.releasePagesOnDisable) return;
-        this.a_removeAllPages();
+        this.removeAllPages();
     }
 
     onDestroy() {
         this.node.targetOff(this);
+    }
+
+    private get layout(): Layout {
+        if (!this._layout) {
+            this._layout = this.content.getComponent(Layout);
+        }
+        return this._layout;
+    }
+
+    private get viewSize() {
+        if (!this._viewSize) {
+            if (this.direction === 0) {
+                this._viewSize = no.width(this.node);
+            } else {
+                this._viewSize = no.height(this.node);
+            }
+        }
+        return this._viewSize;
+    }
+
+    private updateIndicator() {
+        if (this.yjIndicator) {
+            this.yjIndicator.clear().initWithData({ num: this._pageCount, cur: this._curPageIdx });
+        }
+    }
+
+    public initContentSize(pageSize: number) {
+        if (this.direction === 0) {
+            no.width(this.content, this.viewSize * pageSize);
+        } else {
+            no.height(this.content, this.viewSize * pageSize);
+        }
     }
 
     /**
@@ -195,11 +246,100 @@ export class YJPageView extends PageView {
         this.addPage(n);
     }
 
+    private setPagePos(page: Node, index: number) {
+        page['__pageIdx'] = index;
+        if (this.direction === 0) {
+            no.x(page, this.viewSize * (index + .5))
+        } else {
+            no.y(page, this.viewSize * (index + .5))
+        }
+    }
+
+    public moveToPage(idx: number) {
+        this.scrollToOffset(this._moveOffsetValue(idx), 0, true);
+    }
+
+    public scrollToPage(idx: number, timeInSecond = 0.3) {
+        if (idx < 0 || idx >= this._pages.length) {
+            return;
+        }
+
+        this._curPageIdx = idx;
+        this.scrollToOffset(this._moveOffsetValue(idx), timeInSecond, true);
+        this._needUpdataIndicator = true;
+    }
+
     /**
      * 滚动结束事件回调
      * @description 触发onPageChanged事件
      */
     private onScrollEnded() {
         no.EventHandlerInfo.execute(this.onPageChanged, this.curPageIdx);
+    }
+
+    public addPage(page: Node): void {
+        if (!this._needUpdateView) {
+            if (page['__pageIdx'] == undefined)
+                this.setPagePos(page, this._pages.length);
+        }
+        this._pageCount++;
+        super.addPage(page);
+    }
+
+    public insertPage(page: Node, index: number): void {
+        if (!this._needUpdateView) {
+            this.setPagePos(page, index);
+        }
+        if (index < this._pageCount) {
+            this._pageCount++;
+        }
+        super.insertPage(page, index);
+    }
+
+    public removePageAtIndex(index: number): void {
+        this.markUpdatePageView();
+        if (index < this._pageCount) {
+            this._pageCount--;
+        }
+        super.removePageAtIndex(index);
+    }
+
+    protected _updatePageView() {
+        // 当页面数组变化时修改 content 大小
+        if (!this.content) {
+            return;
+        }
+
+        const pageCount = this._pages.length;
+        // 进行排序
+        const contentPos = this._initContentPos;
+        for (let i = 0; i < pageCount; ++i) {
+            const page = this._pages[i];
+            // page.setSiblingIndex(i);
+            const pos = page.position;
+            if (this.direction === 0) {
+                this._scrollCenterOffsetX[i] = Math.abs(contentPos.x + pos.x);
+            } else {
+                this._scrollCenterOffsetY[i] = Math.abs(contentPos.y + pos.y);
+            }
+        }
+
+        if (this._needUpdateView) {
+            if (this._curPageIdx >= pageCount) {
+                this._curPageIdx = pageCount === 0 ? 0 : pageCount - 1;
+                this._lastPageIdx = this._curPageIdx;
+            }
+            this._needUpdataIndicator = true;
+        }
+    }
+
+    public markNotUpdatePageView() {
+        this._needUpdateView = false;
+        this.layout.enabled = false;
+    }
+
+    public markUpdatePageView() {
+        this._needUpdateView = true;
+        this.layout.enabled = true;
     }
 }

@@ -1,11 +1,12 @@
 
-import { EDITOR, ccclass, property, executeInEditMode, instantiate, PageView, Node, isValid, Size, size } from '../yj';
+import { EDITOR, ccclass, property, executeInEditMode, instantiate, Node, Size, size } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { HackUi } from './HackUi';
 import { SetCreateNode } from './SetCreateNode';
 import { no } from '../no';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
+import { YJPageView } from '../fix/YJPageView';
 
 /**
  * Predefined variables
@@ -34,8 +35,8 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
  * }
  */
 export class SetPage extends HackUi {
-    @property(PageView)
-    pageView: PageView = null;
+    @property(YJPageView)
+    pageView: YJPageView = null;
     @property({ type: YJLoadPrefab, displayName: '页面', tooltip: '需要挂载SetCreateNode组件' })
     pagePrefab: YJLoadPrefab = null;
     @property(Node)
@@ -57,6 +58,8 @@ export class SetPage extends HackUi {
     // private allNum: number;     // 总数据量
     private _isFirst: boolean = false; // 是否第一个
 
+    private _defaultTurningTime: number;
+
     /**
      * 数据变更处理入口
      * @param data 支持两种操作类型：
@@ -67,7 +70,7 @@ export class SetPage extends HackUi {
      * onDataChange([{a:1}, {b:2}, {c:3}, 1]); 
      */
     protected async onDataChange(data: any) {
-        const { list, show, remove } = data;
+        const { list, show, turningTime, remove } = data;
         if (list) {
             if (list.length == 0) {
                 this._clear();
@@ -84,9 +87,12 @@ export class SetPage extends HackUi {
                 this.setPages(show || 0);
             }
             this.clearDataValue(`${this.bind_keys}.list`);
-        } else if (show != undefined) {
-            this.showPage(show);
             this.clearDataValue(`${this.bind_keys}.show`);
+            this.clearDataValue(`${this.bind_keys}.turningTime`);
+        } else if (show != undefined) {
+            this.showPage(show, turningTime);
+            this.clearDataValue(`${this.bind_keys}.show`);
+            this.clearDataValue(`${this.bind_keys}.turningTime`);
         } else if (remove != undefined) {
             this._remove(remove);
             this.clearDataValue(`${this.bind_keys}.remove`);
@@ -98,17 +104,35 @@ export class SetPage extends HackUi {
      * @param data 操作队列，使用任务管理器分帧处理
      */
     private setPages(show: number) {
+        let n = this.listData.length;
+        this.pageView.initContentSize(n);
+        this.pageView.markNotUpdatePageView();
+        let idxes: number[] = [];
         let i = 0;
+        for (; i < n; i++) {
+            idxes.push(i);
+        }
+        if (show > 0) {
+            idxes.splice(show, 1);
+            idxes.unshift(show);
+            this.pageView.moveToPage(show);
+        }
+        i = 0;
         this._isFirst = true;
-        this.schedule(() => this.setPage(i++), 0.06, this.listData.length - 1);
-        this.scheduleOnce(() => this.showPage(show), 0.06 * (show + 1))
+        this.schedule(() => this.setPage(idxes[i++]), 0.06, n - 1);
     }
 
-    private showPage(i: number) {
+    private showPage(i: number, turningTime?: number) {
+        if (this._defaultTurningTime == null) this._defaultTurningTime = this.pageView.pageTurningSpeed;
+        if (turningTime != null) this.pageView.pageTurningSpeed = turningTime;
+        else this.pageView.pageTurningSpeed = this._defaultTurningTime;
         // 如果节点不存在则创建新节点
         if (this.pageView.getPages().length <= i) {
+            this.pageView.markUpdatePageView();
             this.setPage(i);
-        } else this.pageView.setCurrentPageIndex(i);
+            no.scheduleOnce(() => this.pageView.scrollToPage(i, this.pageView.pageTurningSpeed), 0.06, this)
+        } else
+            this.pageView.scrollToPage(i, this.pageView.pageTurningSpeed);
     }
 
     /**
@@ -118,6 +142,7 @@ export class SetPage extends HackUi {
      * setPage({ title: "新页面", content: "..." });
      */
     private setPage(i: number) {
+        if (i >= this.listData.length) return;
         // 实例化模板节点并设置基础属性
         const node = instantiate(this.template);
         no.position(node, { x: 0, y: 0 });  // 重置位置
@@ -133,7 +158,7 @@ export class SetPage extends HackUi {
         // 构建节点层级
         box.addChild(node);  // 将模板节点放入容器
         // box.parent = this.content;  // 挂载到滚动容器
-        this.pageView.addPage(box);
+        this.pageView.insertPage(box, i);
 
         // 绑定数据（当数据存在时）
         this.setItemData(box, this.listData[i]);
@@ -208,6 +233,6 @@ export class SetPage extends HackUi {
         if (!EDITOR) return;
 
         // 编辑器模式下自动获取组件引用
-        if (!this.pageView) this.pageView = this.getComponent(PageView);
+        if (!this.pageView) this.pageView = this.getComponent(YJPageView);
     }
 }

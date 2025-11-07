@@ -95,11 +95,17 @@ export class YJIndicator extends YJDataWork {
 
         // 动态创建标签节点
         let l = this.container.children.length;
-        let c: Node;
-        for (let i = l; i < n; i++) {
-            c = instantiate(this.template);
-            c.parent = this.container;
-            c.active = true; // 激活实例化的节点
+        if (l > n) {
+            for (let i = l; i > n; i--) {
+                this.container.children[i - 1].destroy();
+            }
+        } else {
+            let c: Node;
+            for (let i = l; i < n; i++) {
+                c = instantiate(this.template);
+                c.parent = this.container;
+                c.active = true; // 激活实例化的节点
+            }
         }
     }
 
