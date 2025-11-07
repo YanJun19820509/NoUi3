@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, PageView, Vec2, EventTouch, UITransform, Layout } from '../yj';
+import { ccclass, property, menu, PageView, Vec2, EventTouch, UITransform, Layout, Vec3 } from '../yj';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
@@ -55,7 +55,6 @@ export class YJPageView extends PageView {
     @property({ type: no.EventHandlerInfo })
     onPageChanged: no.EventHandlerInfo[] = [];
 
-    private max: number; // 总页数缓存
     private _needUpdateView: boolean = true;
     private _needUpdataIndicator: boolean = false;
     private _pageCount: number = 0;
@@ -63,6 +62,8 @@ export class YJPageView extends PageView {
     private _viewSize: number;
 
     private _layout: Layout;
+    // private _touchStartPos: Vec2;
+    // private _contentTouchStartPos: Vec3 = new Vec3();
 
     lateUpdate(dt: number) {
         super.lateUpdate?.(dt);
@@ -72,84 +73,77 @@ export class YJPageView extends PageView {
         }
     }
 
-    /**
-     * 触摸开始事件处理
-     * @param event 触摸事件
-     * @param start 起始坐标
-     * @param end 结束坐标
-     * @description 初始化总页数，用于后续边界判断
-     */
-    public a_onTouchDown(event: Event, start: Vec2, end: Vec2) {
-        this.max = this.getPages().length;
-    }
+    // /**
+    //  * 触摸开始事件处理
+    //  * @param event 触摸事件
+    //  * @param start 起始坐标
+    //  * @param end 结束坐标
+    //  * @description 初始化总页数，用于后续边界判断
+    //  */
+    // public a_onTouchDown(event: EventTouch) {
+    //     this._touchStartPos = event.getLocation();
+    //     this.content.getPosition(this._contentTouchStartPos);
+    // }
 
-    /**
-     * 触摸移动事件处理
-     * @param event 触摸事件
-     * @param start 起始坐标
-     * @param end 结束坐标
-     * @description 实时更新内容位置并限制边界
-     * @example
-     * // 水平滑动时：
-     * // - 限制content的x坐标在 [nodeWidth - contentWidth, 0] 范围内
-     * // 垂直滑动时：
-     * // - 限制content的y坐标在 [0, nodeHeight - contentHeight] 范围内
-     */
-    public a_onTouchMove(event: EventTouch, start: Vec2, end: Vec2) {
-        const nodeTransform = this.node.getComponent(UITransform);
-        const contentTransform = this.content.getComponent(UITransform);
-        if (this.direction == PageView.Direction.Horizontal) {
-            let x = this.content.position.x;
-            x += event.getDeltaX();
-            if (x > 0) x = 0;
-            else if (x < nodeTransform.width - contentTransform.width) x = nodeTransform.width - contentTransform.width;
-            this.content.setPosition(x, this.content.position.y);
-        } else if (this.direction == PageView.Direction.Vertical) {
-            let y = this.content.position.y;
-            y += event.getDeltaY();
-            if (y < 0) y = 0;
-            else if (y > nodeTransform.height - contentTransform.height) y = nodeTransform.height - contentTransform.height;
-            this.content.setPosition(this.content.position.x, y);
-        }
-    }
+    // /**
+    //  * 触摸移动事件处理
+    //  * @param event 触摸事件
+    //  * @param start 起始坐标
+    //  * @param end 结束坐标
+    //  * @description 实时更新内容位置并限制边界
+    //  * @example
+    //  * // 水平滑动时：
+    //  * // - 限制content的x坐标在 [nodeWidth - contentWidth, 0] 范围内
+    //  * // 垂直滑动时：
+    //  * // - 限制content的y坐标在 [0, nodeHeight - contentHeight] 范围内
+    //  */
+    // public a_onTouchMove(event: EventTouch) {
+    //     const start = this._touchStartPos;
+    //     const end = event.getLocation();
+    //     if (this.direction == PageView.Direction.Horizontal) {
+    //         let x = this._contentTouchStartPos.x + end.x - start.x;
+    //         no.x(this.content, x);
+    //     } else if (this.direction == PageView.Direction.Vertical) {
+    //         let y = this._contentTouchStartPos.y + end.y - start.y;
+    //         no.y(this.content, y);
+    //     }
+    // }
 
-    /**
-     * 触摸结束事件处理
-     * @param event 触摸事件
-     * @param start 起始坐标
-     * @param end 结束坐标
-     * @description 根据滑动距离判断是否需要切换页面
-     * @example
-     * // 水平滑动：
-     * // - 向右滑动超过offset：切换到上一页
-     * // - 向左滑动超过offset：切换到下一页
-     * // 垂直滑动：
-     * // - 向上滑动超过offset：切换到下一页
-     * // - 向下滑动超过offset：切换到上一页
-     */
-    public a_onTouchEnd(event: EventTouch, start: Vec2, end: Vec2) {
-        let i = this.getCurrentPageIndex();
-        if (this.direction == PageView.Direction.Horizontal) {
-            if (end.x - start.x > this.offset) i--;
-            else if (start.x - end.x > this.offset) i++;
-            if (i < 0) i = 0;
-        }
-        else if (this.direction == PageView.Direction.Vertical) {
-            if (end.y - start.y > this.offset) i++;
-            else if (start.y - end.y > this.offset) i--;
-            if (i < 0) i = 0;
-        }
+    // /**
+    //  * 触摸结束事件处理
+    //  * @param event 触摸事件
+    //  * @param start 起始坐标
+    //  * @param end 结束坐标
+    //  * @description 根据滑动距离判断是否需要切换页面
+    //  * @example
+    //  * // 水平滑动：
+    //  * // - 向右滑动超过offset：切换到上一页
+    //  * // - 向左滑动超过offset：切换到下一页
+    //  * // 垂直滑动：
+    //  * // - 向上滑动超过offset：切换到下一页
+    //  * // - 向下滑动超过offset：切换到上一页
+    //  */
+    // public a_onTouchEnd(event: EventTouch) {
+    //     const start = this._touchStartPos;
+    //     const end = event.getLocation();
+    //     let i = this._curPageIdx;
+    //     if (this.direction == PageView.Direction.Horizontal) {
+    //         if (end.x - start.x > this.offset) i--;
+    //         else if (start.x - end.x > this.offset) i++;
+    //     }
+    //     else if (this.direction == PageView.Direction.Vertical) {
+    //         if (end.y - start.y > this.offset) i++;
+    //         else if (start.y - end.y > this.offset) i--;
+    //     }
+    //     this.scrollToPage(i, 0.1);
+    // }
 
-        else if (i >= this.max) i = this.max - 1;
-        this.scrollToPage(i, 0.1);
-    }
-
-    /**
-     * 触摸取消事件处理（直接调用触摸结束逻辑）
-     */
-    public a_onTouchCancel(event: EventTouch, start: Vec2, end: Vec2) {
-        this.a_onTouchEnd(event, start, end);
-    }
+    // /**
+    //  * 触摸取消事件处理（直接调用触摸结束逻辑）
+    //  */
+    // public a_onTouchCancel(event: EventTouch) {
+    //     this.a_onTouchEnd(event);
+    // }
 
     /**
      * 立即跳转到指定页面
@@ -159,7 +153,7 @@ export class YJPageView extends PageView {
      * pageView.a_show(1);
      */
     public a_show(idx: number) {
-        if (this.curPageIdx == idx) return;
+        if (idx == this._curPageIdx) return;
         this.scrollToPage(idx, 0.1);
     }
 
@@ -180,6 +174,10 @@ export class YJPageView extends PageView {
     onLoad() {
         // 注册滚动结束事件监听
         this.node.on(PageView.EventType.SCROLL_ENDED, this.onScrollEnded, this);
+        // this.node.on(Node.EventType.TOUCH_START, this.a_onTouchDown, this);
+        // this.node.on(Node.EventType.TOUCH_MOVE, this.a_onTouchMove, this);
+        // this.node.on(Node.EventType.TOUCH_END, this.a_onTouchEnd, this);
+        // this.node.on(Node.EventType.TOUCH_CANCEL, this.a_onTouchCancel, this);
         // 分帧创建页面预制体（避免卡顿）
         this._idx = 0;
         this.schedule(() => {
@@ -205,7 +203,7 @@ export class YJPageView extends PageView {
 
     private get viewSize() {
         if (!this._viewSize) {
-            if (this.direction === 0) {
+            if (this.direction === PageView.Direction.Horizontal) {
                 this._viewSize = no.width(this.node);
             } else {
                 this._viewSize = no.height(this.node);
@@ -216,16 +214,18 @@ export class YJPageView extends PageView {
 
     private updateIndicator() {
         if (this.yjIndicator) {
-            this.yjIndicator.clear().initWithData({ num: this._pageCount, cur: this._curPageIdx });
+            this.yjIndicator.initWithData({ num: this._pageCount, cur: this._curPageIdx });
         }
     }
 
-    public initContentSize(pageSize: number) {
-        if (this.direction === 0) {
+    public initPageView(pageSize: number, showIndex: number) {
+        if (this.direction === PageView.Direction.Horizontal) {
             no.width(this.content, this.viewSize * pageSize);
         } else {
             no.height(this.content, this.viewSize * pageSize);
         }
+        this.yjIndicator?.clear().initWithData({ num: pageSize, cur: showIndex });
+        this._curPageIdx = showIndex;
     }
 
     /**
@@ -248,7 +248,7 @@ export class YJPageView extends PageView {
 
     private setPagePos(page: Node, index: number) {
         page['__pageIdx'] = index;
-        if (this.direction === 0) {
+        if (this.direction === PageView.Direction.Horizontal) {
             no.x(page, this.viewSize * (index + .5))
         } else {
             no.y(page, this.viewSize * (index + .5))
@@ -317,7 +317,7 @@ export class YJPageView extends PageView {
             const page = this._pages[i];
             // page.setSiblingIndex(i);
             const pos = page.position;
-            if (this.direction === 0) {
+            if (this.direction === PageView.Direction.Horizontal) {
                 this._scrollCenterOffsetX[i] = Math.abs(contentPos.x + pos.x);
             } else {
                 this._scrollCenterOffsetY[i] = Math.abs(contentPos.y + pos.y);

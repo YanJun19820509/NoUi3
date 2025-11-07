@@ -105,7 +105,7 @@ export class SetPage extends HackUi {
      */
     private setPages(show: number) {
         let n = this.listData.length;
-        this.pageView.initContentSize(n);
+        this.pageView.initPageView(n, show);
         this.pageView.markNotUpdatePageView();
         let idxes: number[] = [];
         let i = 0;
