@@ -1,6 +1,8 @@
 import { no } from "../../no";
+import { nodeTargetManager } from "../../NodeTargetManager";
 import { EasingType, Range } from "../../types";
 import { Component, DEBUG, EDITOR, Enum, Node, UIOpacity, Vec2, ccclass, director, executeInEditMode, isValid, property, v2 } from "../../yj";
+import { YJNodeTarget } from "../node/YJNodeTarget";
 import { YJTweenTest, getEasingFn } from "./YJTween";
 
 
@@ -70,6 +72,8 @@ class AnimationEffect {
     @property({ displayName: "MoveTo参数", visible() { return this.type === AnimType.MoveTo; } })
     moveToArgs: Vec2 = v2(0, 0); // 绝对目标位置（世界坐标X，世界坐标Y）
     // 示例：v2(300, 200)表示移动到画布坐标(300,200)的位置
+    @property({ displayName: "MoveTo参数,目标节点", visible() { return this.type === AnimType.MoveTo; } })
+    moveToTarget: string = ''; // 目标节点标识符
 
     @property({ displayName: "ScaleTo参数", visible() { return this.type === AnimType.ScaleTo || this.type === AnimType.ScaleX || this.type === AnimType.ScaleY; } })
     scaleToArgs: number = .5; // 目标缩放比例（1.0为原始尺寸）
@@ -633,6 +637,14 @@ class AnimationEffect {
      * moveTo(icon) // 1秒内指数缓动到屏幕中心
      */
     private moveTo(node: Node) {
+        if (this.moveToTarget) {
+            const target = nodeTargetManager.get<YJNodeTarget>(this.moveToTarget)?.node;
+            if (target) {
+                let p = no.nodePositionInOtherNode(target, node.parent);
+                this.moveToArgs.x = p.x;
+                this.moveToArgs.y = p.y;
+            }
+        }
         return [{
             duration: this.duration,
             [this.duration == 0 ? 'set' : 'to']: 1,
