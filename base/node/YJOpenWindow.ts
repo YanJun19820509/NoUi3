@@ -1,7 +1,9 @@
 
+import { GuiManager } from '../../gui/GuiManager';
+import { GuiPanel } from '../../gui/GuiPanel';
 import { no } from '../../no';
 import { ccclass, property, menu, Component, Node, EventTouch, js, Enum } from '../../yj';
-import { LayerType, LayerTypeEnum } from './LayerType';
+import { GuiLayerType, LayerType, LayerTypeEnum } from './LayerType';
 import { YJPanel } from './YJPanel';
 import { YJWindowManager } from './YJWindowManager';
 
@@ -38,8 +40,11 @@ export class OpenWindowInfo {
             }
             const clazz = js.getClassByName(this.windowName);
             if (typeof clazz['show'] == 'function') clazz['show'](...args);
+            else if (clazz['$super'] == GuiPanel)
+                GuiManager.createPanel(this.windowName, GuiLayerType[LayerType[this.to]], args, node => onOpended?.(node.getComponent(GuiPanel)));
             else if (clazz['$super'] == YJPanel)
                 YJWindowManager.createPanel(this.windowName, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
+
         } else if (this.prefabPath != '') {
             YJWindowManager.createPanelByPrefab(this.prefabPath, LayerType[this.to], panel => this.panelType = panel.panelType, onOpended);
         }
@@ -47,7 +52,11 @@ export class OpenWindowInfo {
 
     public close() {
         if (this.windowName != '') {
-            YJWindowManager.closePanel(this.windowName, LayerType[this.to]);
+            const clazz = js.getClassByName(this.windowName);
+            if (clazz['$super'] == GuiPanel)
+                GuiManager.closePanel(this.windowName, GuiLayerType[LayerType[this.to]]);
+            else if (clazz['$super'] == YJPanel)
+                YJWindowManager.closePanel(this.windowName, LayerType[this.to]);
         } else if (this.prefabPath != '') {
 
         }

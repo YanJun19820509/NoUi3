@@ -45,6 +45,21 @@ export const LayerType = {
     // 9: 'top',
 };
 
+export const GuiLayerType = {
+    Base: 'ui',
+    Navigation: 'float',
+    Window: 'ui',
+    Popup: 'popup',
+    Guide: 'dialog',
+    Message: 'notify',
+    base: 'ui',
+    navi: 'float',
+    wind: 'ui',
+    popu: 'popup',
+    guide: 'dialog',
+    mess: 'notify',
+};
+
 export const LayerTypeDesc = {
     Base: '地图层',
     Navigation: '导航层',

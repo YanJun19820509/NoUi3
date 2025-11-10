@@ -1,9 +1,10 @@
 import { gui } from "@core/gui/GUI";
 import { no } from "../no";
-import { YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
+import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
 import { ccclass, js, Node } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
+import { GuiLayerType } from "../base/node/LayerType";
 
 @ccclass('GuiManager')
 export class GuiManager {
@@ -15,11 +16,12 @@ export class GuiManager {
      * @param params 用于dataWork的初始化参数
      * @returns 
      */
-    public static createPanel(comp: typeof GuiPanel | string, to: 'ui' | 'popup' | 'dialog' | 'notify', params?: any, cb?: (panel: Node) => void) {
+    public static createPanel(comp: typeof GuiPanel | string, to?: string, params?: any, cb?: (panel: Node) => void) {
         if (!comp) return;
         if (typeof comp == 'string')
             comp = js.getClassByName(comp) as (typeof GuiPanel);
         if (!comp) return;
+        to = to || no.getPrototype(comp, YJAddPanelToMetaKey);
         let url: string = no.getPrototype(comp, YJPanelPrefabMetaKey);
         url = this.parsePrefabUrl(url);
         const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
@@ -50,7 +52,7 @@ export class GuiManager {
             else no.setPrototype(comp, { [YJPanelCreated]: '1' });
         }
 
-        const uuid = gui[to].add(url, params || {});
+        const uuid = gui[to].add(url, params || {}, { modal: false });
         if (cb) {
             this.afterCreated(to, uuid, cb);
         }
@@ -68,8 +70,27 @@ export class GuiManager {
         if (cb) this.afterCreated(to, uuid, cb);
     }
 
-    public static closePanel(panel: GuiPanel) {
-        gui.delete(panel.node);
+    /**
+     * 关闭面板
+     * @param panel 面板或面板类名
+     * @param to 面板层级,当panel为面板类名字符串时，必须指定to
+     */
+    public static closePanel(panel: GuiPanel | string, to?: string) {
+        if (typeof panel == 'string') {
+            const children = gui[to].children;
+            let child: Node;
+            let p: GuiPanel;
+            for (let i = 0, n = children.length; i < n; i++) {
+                child = children[i];
+                p = child.getComponent(panel) as GuiPanel;
+                if (p) {
+                    gui.delete(child);
+                    break;
+                }
+            }
+        } else {
+            gui.delete(panel.node);
+        }
     }
 
     private static _initData(panel: GuiPanel, params: any) {
@@ -84,20 +105,16 @@ export class GuiManager {
         return `${bundle}|${path}`;
     }
 
-    private static _afterCreatedTimer: any = null;
+    private static _afterCreatedTimer: { [uuid: number]: any } = {};
     private static _afterCreatedCb(to: string, uuid: number, cb: (node: Node) => void) {
         const node = gui[to].get(uuid);
         if (node) {
             cb(node);
-            clearInterval(this._afterCreatedTimer);
-            this._afterCreatedTimer = null;
+            clearInterval(this._afterCreatedTimer[uuid]);
+            delete this._afterCreatedTimer[uuid];
         }
     }
-    private static afterCreated(to: string, uuid: number, cb: (node: Node) => void) {
-        if (this._afterCreatedTimer) {
-            clearInterval(this._afterCreatedTimer);
-            this._afterCreatedTimer = null;
-        }
-        this._afterCreatedTimer = setInterval(() => this._afterCreatedCb(to, uuid, cb));
+    public static afterCreated(to: string, uuid: number, cb: (node: Node) => void) {
+        this._afterCreatedTimer[uuid] = setInterval(() => this._afterCreatedCb(to, uuid, cb));
     }
 }
