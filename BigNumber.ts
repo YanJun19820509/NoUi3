@@ -107,7 +107,7 @@ export class BigNumber {
      * @returns 字符串
      */
     public toString(digits: number = this.digits): string {
-        if (this.unitIndex > -1) {
+        if (this.unitIndex > 0) {
             return `${this.value}${UNITS[this.unitIndex]}`;
         } else {
             return `${Math.floor(this.value * Math.pow(10, this.unitIndex * 3) * Math.pow(10, digits)) / Math.pow(10, digits)}`;
