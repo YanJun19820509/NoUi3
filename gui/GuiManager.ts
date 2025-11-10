@@ -53,9 +53,7 @@ export class GuiManager {
         }
 
         const uuid = gui[to].add(url, params || {}, { modal: false });
-        if (cb) {
-            this.afterCreated(to, uuid, cb);
-        }
+        this.afterCreated(to, uuid, cb);
     }
 
     /**
@@ -106,15 +104,20 @@ export class GuiManager {
     }
 
     private static _afterCreatedTimer: { [uuid: number]: any } = {};
-    private static _afterCreatedCb(to: string, uuid: number, cb: (node: Node) => void) {
-        const node = gui[to].get(uuid);
+    private static _afterCreatedCb(to: string, uuid: number, cb?: (node: Node) => void) {
+        const node: Node = gui[to].get(uuid);
         if (node) {
-            cb(node);
+            no.assetBundleManager.release(node['_prefab'].asset);
+            cb?.(node);
             clearInterval(this._afterCreatedTimer[uuid]);
             delete this._afterCreatedTimer[uuid];
         }
     }
-    public static afterCreated(to: string, uuid: number, cb: (node: Node) => void) {
+    public static afterCreated(to: string, uuid: number, cb?: (node: Node) => void) {
         this._afterCreatedTimer[uuid] = setInterval(() => this._afterCreatedCb(to, uuid, cb));
+    }
+
+    public static clearAll() {
+        gui.releaseAll();
     }
 }

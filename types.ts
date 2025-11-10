@@ -569,8 +569,8 @@ export class LoadAssetsInfo {
                 if (e) {
                     no.err('LoadAssetsInfo.loadAsset', this.path, e.message);
                 }
-                cb(asset);
                 asset.addRef(); // 增加资源引用计数防止被自动释放
+                cb(asset);
             });
         } else {
             no.err('LoadAssetsInfo.loadAsset bundle 不存在', this.path, this.bundleName);

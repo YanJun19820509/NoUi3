@@ -93,6 +93,7 @@ export default class YJLoadPrefab extends Component {
             this.prefabInfo.loadAsset<Prefab>(prefab => {
                 if (prefab) {
                     this._tempNode = instantiate(prefab);
+                    prefab.decRef();
                     // 应用材质配置到所有子节点
                     YJLoadAssets.setMaterialInfoUuidToSubNode(this._tempNode, this.materialInfoUuid);
                     this.loaded = true;

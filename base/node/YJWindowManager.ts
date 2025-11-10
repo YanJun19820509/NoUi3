@@ -266,6 +266,7 @@ export class YJWindowManager extends Component {
                 return
             }
             this.initNode(instantiate(pf), comp as (typeof YJPanel), content, beforeInit, afterInit);
+            no.assetBundleManager.release(pf);
         });
     }
 
@@ -297,6 +298,7 @@ export class YJWindowManager extends Component {
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             const node = instantiate(pf);
+            no.assetBundleManager.release(pf);
             self.prefabPathToNodeName[prefabPath] = node.getComponent(YJPanel).panelType;
             if (!content?.isValid) {
                 return
@@ -520,6 +522,7 @@ export class YJWindowManager extends Component {
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             const node = instantiate(pf);
+            no.assetBundleManager.release(pf);
             self._prefabPathToView[viewPath] = node;
             content.addChild(node);
         });

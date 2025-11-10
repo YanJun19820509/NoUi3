@@ -350,7 +350,7 @@ export class YJSample2DMaterialManager extends no.SingleObject {
                             this.atlasJson.set(jsonPath, json.json);
                             this.atlasJsonKeys.set(jsonPath, Object.keys(json.json));
                             // 减少JSON资源的引用计数
-                            no.assetBundleManager.decRef(json);
+                            no.assetBundleManager.release(json);
                         }
 
                         // 构建图集配置信息对象
@@ -391,6 +391,7 @@ export class YJSample2DMaterialInfo {
     public uuid: string;
     public refCount: number = 0;
     private texturePaths: string[] = []; // 当前材质使用的所有纹理路径
+    private textures: Texture2D[] = [];
     private atlasMap: Map<string, { idx: number, jsonName: any }> = new Map(); // 精灵名称映射表（名称 -> {纹理槽位, 图集配置路径}）
     public maxIdx: number = 1; // 当前最大纹理槽位索引
     private name: string; // 材质名称
@@ -434,6 +435,10 @@ export class YJSample2DMaterialInfo {
         this.dynamicAtlas.destroy();
         this.atlasMap.clear();
         this.texturePaths.length = 0;
+        this.textures.forEach(texture => {
+            no.assetBundleManager.release(texture);
+        });
+        this.textures.length = 0;
         YJSample2DMaterialManager.ins.deleteMaterial(this);
     }
 
@@ -486,6 +491,7 @@ export class YJSample2DMaterialInfo {
      * });
      */
     public setAtlases(texture: Texture2D, jsonInfo?: { jsonName: string, names: string[] }) {
+        this.textures.push(texture);
         const material = this.dynamicAtlas.customMaterial;
         const key = `atlas${this.maxIdx}`;
         // 设置材质属性
