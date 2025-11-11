@@ -168,6 +168,8 @@ export class YJWindowManager extends Component {
      */
     private static _ins: YJWindowManager;
 
+    private static _loadedPrefabs: Prefab[] = [];
+
     onLoad() {
         YJWindowManager._ins = this;
         if (this.autoClear)
@@ -265,8 +267,8 @@ export class YJWindowManager extends Component {
             if (!content?.isValid) {
                 return
             }
+            this._loadedPrefabs.push(pf);
             this.initNode(instantiate(pf), comp as (typeof YJPanel), content, beforeInit, afterInit);
-            no.assetBundleManager.release(pf);
         });
     }
 
@@ -298,7 +300,7 @@ export class YJWindowManager extends Component {
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             const node = instantiate(pf);
-            no.assetBundleManager.release(pf);
+            this._loadedPrefabs.push(pf);
             self.prefabPathToNodeName[prefabPath] = node.getComponent(YJPanel).panelType;
             if (!content?.isValid) {
                 return
@@ -522,7 +524,7 @@ export class YJWindowManager extends Component {
         no.assetBundleManager.loadAny<Prefab>(request, pf => {
             if (!pf) return;
             const node = instantiate(pf);
-            no.assetBundleManager.release(pf);
+            this._loadedPrefabs.push(pf);
             self._prefabPathToView[viewPath] = node;
             content.addChild(node);
         });
@@ -608,7 +610,11 @@ export class YJWindowManager extends Component {
      * 清理所有面板(静态方法)
      */
     public static clearAll() {
-        YJWindowManager._ins?.clearAll();
+        this._ins?.clearAll();
+        this._loadedPrefabs.forEach(prefab => {
+            no.assetBundleManager.release(prefab);
+        });
+        this._loadedPrefabs.length = 0;
     }
 
     /**

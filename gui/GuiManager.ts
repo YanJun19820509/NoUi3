@@ -1,14 +1,13 @@
 import { gui } from "@core/gui/GUI";
 import { no } from "../no";
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
-import { ccclass, js, Node } from "../yj";
+import { ccclass, js, Node, Prefab } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
-import { GuiLayerType } from "../base/node/LayerType";
 
 @ccclass('GuiManager')
 export class GuiManager {
-
+    private static _loadedPrefabs: Prefab[] = [];
     /**
      * 通过gui显示界面
      * @param comp yjpanel
@@ -107,7 +106,7 @@ export class GuiManager {
     private static _afterCreatedCb(to: string, uuid: number, cb?: (node: Node) => void) {
         const node: Node = gui[to].get(uuid);
         if (node) {
-            no.assetBundleManager.release(node['_prefab'].asset);
+            this._loadedPrefabs.push(node['_prefab'].asset);
             cb?.(node);
             clearInterval(this._afterCreatedTimer[uuid]);
             delete this._afterCreatedTimer[uuid];
@@ -119,5 +118,9 @@ export class GuiManager {
 
     public static clearAll() {
         gui.releaseAll();
+        this._loadedPrefabs.forEach(prefab => {
+            no.assetBundleManager.release(prefab);
+        });
+        this._loadedPrefabs.length = 0;
     }
 }
