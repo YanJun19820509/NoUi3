@@ -1,0 +1,1 @@
+git config http.proxy http://192.168.10.230:80
