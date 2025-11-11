@@ -6139,6 +6139,11 @@ export namespace no {
                 this._ttfFont[asset._fontFamily] = asset;
             }
             asset.addRef();
+            if (asset instanceof SkeletonData) {
+                asset.textures.forEach(texture => {
+                    texture.addRef();
+                });
+            }
         }
 
         /**
@@ -6201,9 +6206,20 @@ export namespace no {
                 asset = assetManager.assets.get(asset);
             }
             if (!asset) return;
-            if (force) assetManager.releaseAsset(asset);
-            else {
+            if (force) {
+                if (asset instanceof SkeletonData) {
+                    asset.textures.forEach(texture => {
+                        assetManager.releaseAsset(texture);
+                    });
+                }
+                assetManager.releaseAsset(asset);
+            } else {
                 scheduleOnce(() => {
+                    if (asset instanceof SkeletonData) {
+                        asset.textures.forEach(texture => {
+                            texture.decRef();
+                        });
+                    }
                     (<Asset>asset).decRef();
                 }, .02);
             }

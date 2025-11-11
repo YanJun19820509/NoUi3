@@ -307,9 +307,6 @@ export class YJSpineManager extends no.SingleObject {
             key = toRelease[i];
             resource = YJSpineManager._map.get(key);
             if (resource) {
-                resource.data.textures.forEach(texture => {
-                    no.assetBundleManager.release(texture); // 释放资源
-                });
                 no.assetBundleManager.release(resource.data); // 释放资源
                 YJSpineManager._map.delete(key); // 移除缓存记录
             }
@@ -324,9 +321,6 @@ export class YJSpineManager extends no.SingleObject {
     private releaseAll() {
         YJSpineManager._map.forEach((resource, key) => {
             if (resource) {
-                resource.data.textures.forEach(texture => {
-                    no.assetBundleManager.release(texture); // 释放资源
-                });
                 no.assetBundleManager.release(resource.data); // 释放资源
             }
         });
