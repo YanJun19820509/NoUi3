@@ -6208,7 +6208,7 @@ export namespace no {
             if (!asset) return;
             if (force) {
                 if (asset instanceof SkeletonData) {
-                    asset.textures.forEach(texture => {
+                    asset.textures?.forEach(texture => {
                         assetManager.releaseAsset(texture);
                     });
                 }
@@ -6216,7 +6216,7 @@ export namespace no {
             } else {
                 scheduleOnce(() => {
                     if (asset instanceof SkeletonData) {
-                        asset.textures.forEach(texture => {
+                        asset.textures?.forEach(texture => {
                             texture.decRef();
                         });
                     }

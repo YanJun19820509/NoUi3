@@ -116,8 +116,14 @@ export class YJGuideManager extends Component {
      * // 保存步骤ID为'shop_first_buy'
      * this.save('shop_first_buy');
      */
-    public save(steps: string) {
-        no.addToArray(this.saveSteps, steps);
+    public save(steps: string | string[]) {
+        if (Array.isArray(steps)) {
+            for (const step of steps) {
+                no.addToArray(this.saveSteps, step);
+            }
+        } else {
+            no.addToArray(this.saveSteps, steps);
+        }
         no.dataCache.setLocal(this.cacheKey, this.saveSteps);
     }
 
@@ -150,6 +156,7 @@ export class YJGuideManager extends Component {
     public check(step: string): boolean {
         if (!this.isWork) return false;
         const pre_step = this.getGuideInfo('guide_config.' + step).pre_id;
+        no.log(`YJGuideManager check step:${step} pre_step:${pre_step} saveSteps:${this.saveSteps}`);
         if (this.saveSteps.includes(step) || (pre_step && !this.saveSteps.includes(pre_step))) return false;
         if (!this.isGuiPanel) {
             YJWindowManager.createPanel(this.guidePanel, null, (panel: any) => {
