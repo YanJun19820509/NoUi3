@@ -249,7 +249,7 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static add(a: string, b: string, digits: number = 1): string {
+    public static add(a: string | number, b: string | number, digits: number = 1): string {
         return this.new(a).add(this.new(b)).toString(digits);
     }
 
@@ -259,7 +259,7 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static minus(a: string, b: string, digits: number = 1): string {
+    public static minus(a: string | number, b: string | number, digits: number = 1): string {
         return this.new(a).minus(this.new(b)).toString(digits);
     }
     /**
@@ -268,7 +268,7 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static multiply(a: string, b: string, digits: number = 1): string {
+    public static multiply(a: string | number, b: string | number, digits: number = 1): string {
         return this.new(a).multiply(this.new(b)).toString(digits);
     }
 
@@ -278,7 +278,7 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 字符串
      */
-    public static divide(a: string, b: string, digits: number = 1): string {
+    public static divide(a: string | number, b: string | number, digits: number = 1): string {
         return this.new(a).divide(this.new(b)).toString(digits);
     }
 
@@ -298,7 +298,7 @@ export class BigNumber {
      * @param b - 数字或字符串
      * @returns 是否等于
      */
-    public static isEqual(a: string, b: string): boolean {
+    public static isEqual(a: string | number, b: string | number): boolean {
         return this.new(a).isEqual(this.new(b));
     }
 
