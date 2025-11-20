@@ -156,6 +156,29 @@ class YJVertexColorTransitionData {
         this._setColor(); // 同步更新颜色数据
     }
 
+    private _lastColor: Color = null;
+    private _lastOpacity: number = 0;
+    /**
+     * 检查颜色是否发生变化
+     */
+    private checkColorChange() {
+        let color = this.renderComp.color.clone();
+        if (!this._lastColor) {
+            this._lastColor = color;
+        } else if (!this._lastColor.equals(color)) {
+            this._lastColor = color;
+            return true;
+        }
+        let opacity = this.renderComp.node._uiProps.opacity;
+        if (!this._lastOpacity) {
+            this._lastOpacity = opacity;
+        } else if (this._lastOpacity != opacity) {
+            this._lastOpacity = opacity;
+            return true;
+        }
+        return false;
+    }
+
     /**
      * 每帧更新顶点颜色数据
      * @description
@@ -175,7 +198,7 @@ class YJVertexColorTransitionData {
         }
         if (!this.renderComp?.node?.activeInHierarchy) return;
         // 脏检查：无更新需求时提前返回
-        if (this.renderComp?.renderData.vertDirty) {
+        if (this.renderComp?.renderData.vertDirty || this.checkColorChange()) {
             this._setColor();
             this._needUpdate = true;
         }

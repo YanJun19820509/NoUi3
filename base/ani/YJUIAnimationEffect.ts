@@ -72,7 +72,7 @@ class AnimationEffect {
     @property({ displayName: "MoveTo参数", visible() { return this.type === AnimType.MoveTo; } })
     moveToArgs: Vec2 = v2(0, 0); // 绝对目标位置（世界坐标X，世界坐标Y）
     // 示例：v2(300, 200)表示移动到画布坐标(300,200)的位置
-    @property({ displayName: "MoveTo参数,目标节点", visible() { return this.type === AnimType.MoveTo; } })
+    @property({ displayName: "MoveTo参数,目标节点", tooltip: '用.来指定subType,如：type.subType', visible() { return this.type === AnimType.MoveTo; } })
     moveToTarget: string = ''; // 目标节点标识符
 
     @property({ displayName: "ScaleTo参数", visible() { return this.type === AnimType.ScaleTo || this.type === AnimType.ScaleX || this.type === AnimType.ScaleY; } })
@@ -638,7 +638,8 @@ class AnimationEffect {
      */
     private moveTo(node: Node) {
         if (this.moveToTarget) {
-            const target = nodeTargetManager.get<YJNodeTarget>(this.moveToTarget)?.node;
+            let [type, subType] = this.moveToTarget.split('.');
+            const target = nodeTargetManager.get<YJNodeTarget>(type, subType)?.node;
             if (target) {
                 let p = no.nodePositionInOtherNode(target, node.parent);
                 this.moveToArgs.x = p.x;

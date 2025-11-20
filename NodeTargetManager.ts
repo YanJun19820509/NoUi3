@@ -11,19 +11,31 @@ import { YJNodeTarget } from "./base/node/YJNodeTarget";
      */
 class NodeTargetManager {
 
-    private targetMap: Map<string, any> = new Map();
+    private targetMap: Map<string, YJNodeTarget[]> = new Map();
 
     /**
-     * 注册节点到管理器
+     * 注册节点到管理器,如果type相同,则将target添加到数组中,如果subType为空,则自动设置为数组索引
      * @param type - 节点类型标识（如：'ui_root'/'player'）
      * @param target - 要注册的节点或组件
      * @example
      * // 注册任务追踪组件
      * nodeTargetManager.register('quest_tracker', this.questComponent);
      */
-    public register(type: string, target: any) {
+    public register(type: string, target: YJNodeTarget) {
         if (type == null || type == '' || target == null) return;
-        this.targetMap.set(type, target);
+        if (!this.targetMap.has(type)) {
+            this.targetMap.set(type, [target]);
+        } else {
+            if (this.targetMap.get(type).indexOf(target) == -1) {
+                const arr = this.targetMap.get(type);
+                arr.push(target);
+                arr.forEach((t, i) => {
+                    if (!t.subType) {
+                        t.subType = i.toString();
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -37,9 +49,13 @@ class NodeTargetManager {
      * // 获取玩家控制器
      * const player = nodeTargetManager.get<PlayerController>('player');
      */
-    public get<T>(type: string): T {
+    public get<T extends YJNodeTarget>(type: string, subType?: string): T {
         if (!this.targetMap.has(type)) return null;
-        return this.targetMap.get(type) as T;
+        if (subType) {
+            return this.targetMap.get(type).find(t => t.subType == subType) as T;
+        } else {
+            return this.targetMap.get(type)[0] as T;
+        }
     }
 
     /**
@@ -47,11 +63,11 @@ class NodeTargetManager {
      * @param type - 目标节点类型
      * @returns 目标节点
      */
-    public getTargetAsync<T>(type: string, cb: (target: T) => void): void {
+    public getTargetAsync<T extends YJNodeTarget>(type: string, cb: (target: T) => void): void {
         if (type == null || type == '') return cb?.(null);
         this._tryGetTarget(type, 50, cb);
     }
-    private _tryGetTarget<T>(type: string, tryNum: number, cb: (target: T) => void) {
+    private _tryGetTarget<T extends YJNodeTarget>(type: string, tryNum: number, cb: (target: T) => void) {
         const target = this.get<T>(type);
         if (target) {
             cb?.(target);
@@ -71,11 +87,14 @@ class NodeTargetManager {
      * // 安全移除玩家节点
      * nodeTargetManager.remove('player', this.playerController);
      */
-    public remove(type: string, target: any) {
+    public remove(type: string, target: YJNodeTarget) {
         if (type == null || type == '' || target == null) return;
         if (this.targetMap.has(type)) {
             let a = this.targetMap.get(type);
-            if (a['uuid'] == target['uuid'])
+            let i = a.indexOf(target);
+            if (i != -1)
+                a.splice(i, 1);
+            if (a.length == 0)
                 this.targetMap.delete(type);
         }
     }

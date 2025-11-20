@@ -15,7 +15,7 @@ export function clearAll() {
     no.nodePool.clear();
     no.evn.clear();
     no.SingleObjectManager.clearAll();
-    no.assetBundleManager.clear();
+    // no.assetBundleManager.clear();
     YJTempData.clear();
     YJSpineManager.ins.clear();
     GuiManager.clearAll();
