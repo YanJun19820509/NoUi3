@@ -1,5 +1,5 @@
 
-import { ccclass, property, menu, ScrollView, v2, Vec2, UITransform } from '../yj';
+import { ccclass, property, menu, ScrollView, v2, Vec2, UITransform, Size, size } from '../yj';
 import { HackUi } from './HackUi';
 
 /**
@@ -32,14 +32,14 @@ export class SetScrollToPercent extends HackUi {
     scrollView: ScrollView = null;
 
     /**
-     * 滚动位置偏移量（像素）
-     * @property {Vec2} offset
+     * 单个元素尺寸
+     * @property {Size} itemSize
      * @example
-     * // 向右偏移10像素，向上偏移20像素
-     * this.offset = v2(10, -20);
+     * // 单个元素尺寸为100x100
+     * this.itemSize = size(100, 100);
      */
     @property
-    offset: Vec2 = v2();
+    itemSize: Size = size();
 
     /**
      * 目标位置在可视范围内的相对位置（0-1）
@@ -119,11 +119,29 @@ export class SetScrollToPercent extends HackUi {
         let cs = this.scrollView.content.getComponent(UITransform).getBoundingBox().size;
         // 获取视口尺寸
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
+        let at = this.at;
+
+        // 获取当前滚动百分比
+        let curOffet = this.scrollView.getScrollOffset();
+        let curPerMax: number, curPerMin: number;
+        if (!this.scrollView.vertical) {
+            curPerMax = (ns.width - curOffet.x - this.itemSize.width) / cs.width;
+            curPerMin = - curOffet.x / cs.width;
+        }
+        if (!this.scrollView.horizontal) {
+            curPerMax = (ns.height + curOffet.y - this.itemSize.height) / cs.height;
+            curPerMin = curOffet.y / cs.height;
+        }
+        // 如果目标百分比在当前滚动范围内，则不进行滚动
+        if (per >= curPerMin && per <= curPerMax) return;
+
+        if (per < .5 && at > 0.5) at = 1 - at;
+        else if (per > .5 && at < 0.5) at = 1 - at;
 
         // 计算目标偏移量（考虑视口相对位置和自定义偏移）
         let offset = v2(
-            cs.width * per - ns.width * this.at + this.offset.x,
-            cs.height * per - ns.height * this.at + this.offset.y
+            cs.width * per - ns.width * at + (at < 0.5 ? this.itemSize.width : 0),
+            cs.height * per - ns.height * at + (at < 0.5 ? this.itemSize.height : 0)
         );
 
         // 根据滚动方向重置不需要的轴向偏移
