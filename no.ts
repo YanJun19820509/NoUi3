@@ -11558,5 +11558,24 @@ export namespace no {
         const size = viewSize();
         return rect.height < size.height;
     }
+
+    /**
+     * 保存数据到文件
+     * @param data 数据
+     * @param fileName 文件名
+     */
+    export function saveDataToFile(data: any, fileName: string) {
+        if (!EDITOR) return;
+        const blob = new Blob([data], { type: 'application/octet-stream' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }
 }
 no.addToWindowForDebug('no', no);
