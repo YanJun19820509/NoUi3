@@ -1,7 +1,7 @@
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { no } from '../../no';
 import { HackUi } from '../../ui/HackUi';
-import { ccclass, EDITOR, executeInEditMode, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
+import { BufferAsset, ccclass, EDITOR, executeInEditMode, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
 
 /**
  * 扫描路径组件，扫描图片透明交界处，生成路径
@@ -13,6 +13,8 @@ import { ccclass, EDITOR, executeInEditMode, property, Rect, requireComponent, S
 @requireComponent([Sprite])
 @executeInEditMode()
 export class SetScanPath extends HackUi {
+    @property({ displayName: '导入buffer数据' })
+    importBuffer: boolean = false;
     @property({ displayName: '同步路径数据', tooltip: '将路径数据更新到dataWork中' })
     needUpdatePathToData: boolean = true;
     @property({ displayName: '路径数据key', tooltip: '路径数据将以该key更新到dataWork中', visible() { return this.needUpdatePathToData } })
@@ -85,7 +87,7 @@ export class SetScanPath extends HackUi {
     }
 
     protected onDataChange(data: any): void {
-        const { path, dataPath } = data;
+        const { path, size, dataPath } = data;
         if (path) {
             no.unschedule(this);
             this._pathReady = false;
@@ -106,9 +108,16 @@ export class SetScanPath extends HackUi {
                 this._pathPointTextureBuffer = null;
                 this._pathPoints.length = 0;
             }
-            no.assetBundleManager.loadTexture(path + '/texture', t => {
-                this.init(t);
-            });
+            if (this.importBuffer) {
+                this._size = size;
+                no.assetBundleManager.loadBuffer(path, buffer => {
+                    this.initWithBuffer(buffer);
+                });
+            } else {
+                no.assetBundleManager.loadTexture(path + '/texture', t => {
+                    this.init(t);
+                });
+            }
             this.clearDataValue(this.bind_keys + '.path');
         }
         if (dataPath) {
@@ -138,6 +147,18 @@ export class SetScanPath extends HackUi {
         //     this.initEdgePixels();
         //     this.updateScanState();
         // });
+    }
+
+    protected initWithBuffer(bufferAsset: BufferAsset) {
+        let buffer = no.ArrayBuffer2Uint8Array(bufferAsset.buffer());
+        this._texture = new DynamicAtlasTexture();
+        this._texture.initWithSize(this._size.width, this._size.height);
+        this._texture.uploadData(buffer);
+        this._spriteFrame = new SpriteFrame();
+        this._spriteFrame.texture = this._texture;
+        this._sprite.spriteFrame = this._spriteFrame;
+        bufferAsset.decRef();
+        buffer = null;
     }
 
     protected initPixelData(data: any) {
