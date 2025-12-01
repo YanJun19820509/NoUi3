@@ -1,36 +1,37 @@
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { no } from '../../no';
+import { decompress } from '../../pako/YJCompress';
 import { HackUi } from '../../ui/HackUi';
-import { Asset, BufferAsset, ccclass, EDITOR, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
+import { BufferAsset, ccclass, executeInEditMode, property, requireComponent, Size, Sprite, SpriteFrame } from '../../yj';
 /**
  * 读取buffer文件中的数据并创建spriteFrame,buffer文件格式为dat
  */
 @ccclass('SetSpriteFrameFromBuffer')
 @requireComponent(Sprite)
+@executeInEditMode()
 export class SetSpriteFrameFromBuffer extends HackUi {
-    @property({ displayName: '导出buffer' })
-    get exportBuffer(): boolean {
-        return false;
+    @property({ type: Size, displayName: '图片大小', editorOnly: true })
+    size: Size = new Size(100, 100);
+    @property({ type: BufferAsset, displayName: '图片buffer'})
+    get imageBuffer(): BufferAsset {
+        return null;
     }
-    set exportBuffer(v: boolean) {
-        if (!EDITOR) return;
-        if (v) {
-            const sprite = this.getComponent(Sprite);
-            if (!sprite.spriteFrame) return;
-            const texture = sprite.spriteFrame.texture as Texture2D;
-            const size = { width: texture.width, height: texture.height };
-            const dat = new DynamicAtlasTexture();
-            dat.initWithSize(size.width, size.height);
-            const buffer = dat.getTextureBuffer(texture, new Rect(0, 0, size.width, size.height));
-            no.saveDataToFile(buffer, `${sprite.spriteFrame.name}_buffer.bin`);
-        }
+    set imageBuffer(asset: BufferAsset) {
+        let buffer = decompress(asset.buffer());
+        if (!buffer) return;
+        this.setSpriteFrame(this.getComponent(Sprite), this.size, buffer);
     }
 
     private _spriteFrame: SpriteFrame | null = null;
 
     protected onDataChange(data: any): void {
         const { path, size } = data;
-        no.assetBundleManager.loadBuffer(path, asset => this.setSpriteFrame(size, asset));
+        no.assetBundleManager.loadBuffer(path, asset => {
+            let buffer = decompress(asset.buffer());
+            this.setSpriteFrame(this.getComponent(Sprite), size, buffer);
+            asset.decRef();
+            buffer = null;
+        });
     }
 
     protected onDestroy(): void {
@@ -38,9 +39,7 @@ export class SetSpriteFrameFromBuffer extends HackUi {
         this._spriteFrame = null;
     }
 
-    private setSpriteFrame(size: { width: number, height: number }, bufferAsset: BufferAsset) {
-        let buffer = no.ArrayBuffer2Uint8Array(bufferAsset.buffer());
-        const sprite = this.getComponent(Sprite);
+    private setSpriteFrame(sprite: Sprite, size: { width: number, height: number }, buffer: Uint8Array) {
         const texture = new DynamicAtlasTexture();
         texture.initWithSize(size.width, size.height);
         texture.uploadData(buffer);
@@ -48,8 +47,6 @@ export class SetSpriteFrameFromBuffer extends HackUi {
         this._spriteFrame = new SpriteFrame();
         this._spriteFrame.texture = texture;
         sprite.spriteFrame = this._spriteFrame;
-        bufferAsset.decRef();
-        buffer = null;
     }
 }
 

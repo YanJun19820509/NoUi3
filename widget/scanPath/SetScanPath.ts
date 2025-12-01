@@ -1,5 +1,6 @@
 import { DynamicAtlasTexture } from '../../engine/atlas';
 import { no } from '../../no';
+import { decompress } from '../../pako/YJCompress';
 import { HackUi } from '../../ui/HackUi';
 import { BufferAsset, ccclass, EDITOR, executeInEditMode, property, Rect, requireComponent, Sprite, SpriteFrame, Texture2D } from '../../yj';
 
@@ -109,7 +110,7 @@ export class SetScanPath extends HackUi {
                 this._pathPoints.length = 0;
             }
             if (this.importBuffer) {
-                this._size = size;
+                this._size = { width: size[0], height: size[1] };
                 no.assetBundleManager.loadBuffer(path, buffer => {
                     this.initWithBuffer(buffer);
                 });
@@ -150,15 +151,15 @@ export class SetScanPath extends HackUi {
     }
 
     protected initWithBuffer(bufferAsset: BufferAsset) {
-        let buffer = no.ArrayBuffer2Uint8Array(bufferAsset.buffer());
+        const buffer = decompress(bufferAsset.buffer());
         this._texture = new DynamicAtlasTexture();
         this._texture.initWithSize(this._size.width, this._size.height);
+        this._textureBuffer = buffer;
         this._texture.uploadData(buffer);
         this._spriteFrame = new SpriteFrame();
         this._spriteFrame.texture = this._texture;
         this._sprite.spriteFrame = this._spriteFrame;
         bufferAsset.decRef();
-        buffer = null;
     }
 
     protected initPixelData(data: any) {

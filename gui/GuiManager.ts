@@ -117,6 +117,7 @@ export class GuiManager {
     }
 
     public static clearAll() {
+        if (this._loadedPrefabs.length == 0) return;
         gui.releaseAll();
         this._loadedPrefabs.forEach(prefab => {
             no.assetBundleManager.release(prefab);
