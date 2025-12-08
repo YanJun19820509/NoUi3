@@ -56,8 +56,8 @@ export class SetCreateCacheNode extends HackUi {
     @property({ type: Node, displayName: '容器' })
     container: Node = null;
 
-    @property({ type: String, displayName: '缓存池回收类型' })
-    recycleType: string;
+    @property({ displayName: '缓存池回收类型' })
+    recycleType: string = '';
 
     /**
      * 组件销毁时清理资源
