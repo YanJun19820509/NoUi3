@@ -1,5 +1,3 @@
-import Comm_Platform from "../../myCommon/Comm_Platform";
-import userInfo from "../../scripts/newScripts/SRXYX_Userinfo";
 import { no } from "../no";
 import { ccclass, EDITOR, Layers, requireComponent, Sprite, UITransform, Node } from "../yj";
 import { HackUi } from "./HackUi";
@@ -57,19 +55,9 @@ export class SetPlayerAvatar extends HackUi {
     }
 
     private loadAvatar(url: string, cb: (sf) => void) {
-        // no.assetBundleManager.loadRemoteImage(url, '.jpg', sf => {
-        //     cb?.(sf);
-        // });
-        if(!userInfo.headImg) {
-            Comm_Platform.createSpriteFrameByUrl(url, (sp) => {
-                if (sp) {
-                    cb?.(sp);
-                    userInfo.headImg = sp;
-                }
-            });
-        }else {
-            cb?.(userInfo.headImg);
-        }
+        no.assetBundleManager.loadRemoteImage(url, '.jpg', sf => {
+            cb?.(sf);
+        });
     }
 }
 
