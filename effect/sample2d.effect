@@ -32,9 +32,9 @@ CCProgram vs %{
 
 CCProgram unlit-fs %{
   precision highp float;
-  #include <cc-global>
-  #include <embedded-alpha>
-  #include <alpha-test>
+  #include <builtin/uniforms/cc-global>
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
   #include <./common-fs>
   #include <./utils>
 
