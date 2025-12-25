@@ -33,9 +33,15 @@ export class LanguageComp extends LanguageLabel {
     }
 
     public setLabel(data: any) {
-        const { key, params } = data;
-        this.dataID = this.keyToId(key);
-        this.setParams(params);
+        if (!data) {
+            this.dataID = '';
+            if (this.comp)
+                this.comp.string = '';
+        } else {
+            const { key, params } = data;
+            this.dataID = this.keyToId(key);
+            this.setParams(params);
+        }
     }
 
     /**

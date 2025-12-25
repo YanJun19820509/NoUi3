@@ -11650,7 +11650,6 @@ export namespace no {
      * @param fileName 文件名
      */
     export function saveDataToFile(data: any, fileName: string) {
-        if (!EDITOR) return;
         const blob = new Blob([data], { type: 'application/octet-stream' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
