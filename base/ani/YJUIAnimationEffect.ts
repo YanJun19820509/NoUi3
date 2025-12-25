@@ -1315,6 +1315,19 @@ export class YJUIAnimationEffect extends Component {
         }
     }
 
+    public a_playAll() {
+        if (!this.enabled) return;
+        this.a_stop();
+        const node = this.target || this.node;
+        this.animationEffectInfos.forEach(info => {
+            if (this.onChildren) {
+                this.playOnChildren(node, info);
+            } else {
+                this.play(node, info);
+            }
+        });
+    }
+
     /**
      * 停止动画核心方法
      * @特性

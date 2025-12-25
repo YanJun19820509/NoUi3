@@ -1,7 +1,8 @@
 
-import { ccclass, property, requireComponent, AnimationClip, Animation } from '../yj';
+import { ccclass, property, requireComponent, Animation } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { AnimationClip } from 'cc';
 
 /**
  * Predefined variables
@@ -119,16 +120,16 @@ export class SetAnimation extends HackUi {
         if (!ani.enabled) return; // 确保动画组件已启用
 
         // 解析参数（使用默认值填充缺失参数）
-        let { path, name, speed, repeat } = data;
+        let { path, name, speed, repeat, wrapMode } = data;
         name = name || this.defaultName;
 
         if (name) {
             this._curCb = this.cbs.find(cb => cb.animationName == name);
             // 判断是否需要加载新动画
             if (!ani.getState(name) && path) {
-                this._loadClipAndPlay(path, name, speed, repeat);
+                this._loadClipAndPlay(path, name, speed, repeat, wrapMode);
             } else {
-                this._play(name, speed, repeat);
+                this._play(name, speed, repeat, wrapMode);
             }
         }
     }
@@ -147,12 +148,12 @@ export class SetAnimation extends HackUi {
      * 3. 加入资源释放队列
      * 4. 执行播放逻辑
      */
-    private _loadClipAndPlay(path: string, name: string, speed = 1, repeat?: number) {
+    private _loadClipAndPlay(path: string, name: string, speed = 1, repeat?: number, wrapMode?: AnimationClip.WrapMode) {
         no.assetBundleManager.loadAnimationClip(path, (clip) => {
             // 校验节点有效性（防止加载完成时组件已销毁）
             if (this?.node?.isValid) {
                 this.getComponent(Animation).createState(clip, name);
-                this._play(name, speed, repeat);
+                this._play(name, speed, repeat, wrapMode);
                 no.addToArray(this.needReleaseClips, clip); // 记录需释放的资源
             }
         });
@@ -170,7 +171,7 @@ export class SetAnimation extends HackUi {
      * - 自动处理事件监听
      * - 灵活的循环控制
      */
-    private _play(name: string, speed = 1, repeat?: number) {
+    private _play(name: string, speed = 1, repeat?: number, wrapMode?: AnimationClip.WrapMode) {
         let ani: Animation = this.getComponent(Animation);
         let state = ani.getState(name);
 
@@ -188,7 +189,8 @@ export class SetAnimation extends HackUi {
 
             // 配置循环参数
             if (repeat == null || repeat == -1) repeat = 999;
-            state.wrapMode = AnimationClip.WrapMode.Loop;
+            if (wrapMode != null)
+                state.wrapMode = wrapMode;
             state.repeatCount = repeat;
             state.speed = speed;
             state.play();

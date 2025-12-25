@@ -12,12 +12,23 @@ import { HackUi } from './HackUi';
 @ccclass('SetPlayUiAnimationEffect')
 @requireComponent(YJUIAnimationEffect)
 export class SetPlayUiAnimationEffect extends HackUi {
+    @property({ displayName: '播放所有动画' })
+    playAll: boolean = false;
 
     protected onDataChange(data: any) {
-        if (typeof data === 'boolean') {
-            this.getComponent(YJUIAnimationEffect)?.a_playOrStop(data);
-        } else if (typeof data === 'string') {
-            this.getComponent(YJUIAnimationEffect)?.a_play(null, data);
+        const comp = this.getComponent(YJUIAnimationEffect);
+        if (this.playAll) {
+            if (data === true) {
+                comp?.a_playAll();
+            } else if (data === false) {
+                comp?.a_stop();
+            }
+        } else {
+            if (typeof data === 'boolean') {
+                comp?.a_playOrStop(data);
+            } else if (typeof data === 'string') {
+                comp?.a_play(null, data);
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 
-import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate, Texture2D } from '../yj';
+import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, CCString, JsonAsset, Prefab, instantiate, Texture2D, Asset } from '../yj';
 import { no } from '../no';
 import { YJDataWork } from './YJDataWork';
 import { YJPreloadDelegate } from './YJPreloadDelegate';
@@ -146,6 +146,10 @@ export class YJPreload extends Component {
     /** 需要单独加载的完整文件路径列表（格式："bundleName/path/to/file"） */
     @property({ type: CCString, displayName: '加载单个文件' })
     files: string[] = [];
+
+    /** 需要单独加载的完整文件路径列表（格式："bundleName/path/to/file"） */
+    @property({ type: Asset, displayName: '加载主包下单个文件' })
+    noBundlefiles: Asset[] = [];
 
     /** 需要加载整个资源包下所有文件的包名列表（例如：['character']将加载character包内所有资源） */
     @property({ type: CCString, displayName: '加载包下所有文件' })
@@ -335,16 +339,16 @@ export class YJPreload extends Component {
             p = no.assetBundleManager.assetPath(path);
             b = p.bundle;
             // 收集需要加载的bundle名称（去重）
-            if (this.bundles.indexOf(b) == -1) {
+            if (b && this.bundles.indexOf(b) == -1) {
                 this.bundles.push(b);
             }
             // 按bundle分类存储文件路径
-            if (!this.fileInfo.has(b)) {
+            if (b && !this.fileInfo.has(b)) {
                 this.fileInfo.set(b, []);
             }
             f = p.path;
             j = this.fileInfo.get(b);
-            if (j.indexOf(f) == -1) {
+            if (j?.indexOf(f) == -1) {
                 j.push(f);
             }
         }

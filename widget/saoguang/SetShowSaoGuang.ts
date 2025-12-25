@@ -51,6 +51,10 @@ export class SetShowSaoGuang extends SetEffect {
         }
     }
 
+    public a_playLoop() {
+        this.a_setData({ loop: true, duration: 0 });
+    }
+
     public a_playOnce() {
         this.a_setData({ loop: false, duration: this.speed });
     }

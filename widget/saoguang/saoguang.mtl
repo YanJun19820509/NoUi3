@@ -10,7 +10,8 @@
   "_techIdx": 0,
   "_defines": [
     {
-      "USE_TEXTURE": true
+      "USE_TEXTURE": true,
+      "USE_PIXEL_ALIGNMENT": true
     }
   ],
   "_states": [
@@ -29,9 +30,7 @@
       "alphaThreshold": 0.1,
       "width": 0.2,
       "strength": 1,
-      "direction": 1,
-      "angle": 0.18,
-      "speed": 2
+      "direction": 1
     }
   ]
 }

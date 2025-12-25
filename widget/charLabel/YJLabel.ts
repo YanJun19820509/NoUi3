@@ -103,10 +103,11 @@ export class YJLabel extends Label {
     onDestroy(): void {
         super.onDestroy?.();
 
-        if (this.packToAtlas && this.dynamicAtlas)
+        if (this.packToAtlas && this.dynamicAtlas) {
             this.dynamicAtlas.removeFromDynamicAtlas(this.ttfSpriteFrame);
-        this.dynamicAtlas.clearPackedTextures(this._uids);
-        this._uids.length = 0;
+            this.dynamicAtlas.clearPackedTextures(this._uids);
+            this._uids.length = 0;
+        }
     }
 
     update(dt: number) {
@@ -119,9 +120,9 @@ export class YJLabel extends Label {
 
     }
 
-    public removeLabel() {
-        this._texture = null;  // 释放精灵帧资源
-    }
+    // public removeLabel() {
+    //     this._texture = null;  // 释放精灵帧资源
+    // }
 
     private initMaterialInfo() {
         // 不需要加载材质的情况：非图集模式且不允许动态合图

@@ -5,7 +5,6 @@ import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefab
 import { YJPanel } from './YJPanel';
 import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
 import { LayerType, LayerTypeDesc } from './LayerType';
-import { PopuPanel } from './popu/PopuPanel';
 
 /**
  * Predefined variables
@@ -414,7 +413,7 @@ export class YJWindowManager extends Component {
         let name: string;
         for (let i = len - 1; i >= 0; i--) {
             node = children[i];
-            panel = node.getComponent(PopuPanel) || node.getComponent(YJPanel);
+            panel = node.getComponent(YJPanel);
             if (panel?.enabledInHierarchy) {
                 name = js.getClassName(panel);
                 if (excepts.indexOf(name) > -1) return;

@@ -36,6 +36,8 @@ import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransitio
  * });
  */
 export class SetEffect extends HackUi {
+    @property({ displayName: '是否使用采样2D纹理' })
+    isSample2D: boolean = true;
     /** 缓存的UI渲染组件（Sprite/Label等） */
     protected _renderComp: UIRenderer;
 
@@ -77,14 +79,16 @@ export class SetEffect extends HackUi {
     protected setMaterial(path: string, defines: any, properties: any) {
         if (!path) {
             if (this._renderComp instanceof Sprite) {
-                // 使用顶点颜色过渡管理器
-                YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
+                if (this.isSample2D) {
+                    // 使用顶点颜色过渡管理器
+                    YJVertexColorTransitionManager.ins().add(this._renderComp as Sprite, defines, properties);
+                } else {
+                    this.setProperties(this._renderComp.material, defines, properties);
+                    this.work();
+                }
             }
             else if (this._renderComp instanceof Skeleton) {
                 this.setSkeletonMaterial(defines, properties);
-            } else {
-                this.setProperties(this._renderComp.material, defines, properties);
-                this.work();
             }
         }
         else if (path) {

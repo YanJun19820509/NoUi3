@@ -83,9 +83,9 @@ CCProgram sprite-vs %{
 
 CCProgram sprite-fs %{
   precision highp float;
-  #include <builtin/internal/embedded-alpha>
-  #include <builtin/internal/alpha-test>
-  #include <builtin/uniforms/cc-global>
+  #include <embedded-alpha>
+  #include <alpha-test>
+  #include <cc-global>
 
   in vec4 v_color;
 
@@ -107,17 +107,20 @@ CCProgram sprite-fs %{
 
   vec4 frag () {
     vec4 o = vec4(1, 1, 1, 1);
-    // o *= CCSampleWithAlphaSeparated(cc_spriteTexture, v_uv0);
+    o *= CCSampleWithAlphaSeparated(cc_spriteTexture, v_uv0);
+    if (o.a < 1.0) {
+        discard;
+    }
     float k = angle;
     float time_step = 0.0;
 
     if(direction == 1.0){
-        time_step = -1.0 - v_uv0.y * k;  // 从左边开始，保持斜向
+        time_step = - v_uv0.y * k;  // 从左边开始，保持斜向
         if(auto == 1.0){
             time_step += mod(cc_time.x * speed, 2.0 + width);
         }
         else if(auto == 0.0){
-            time_step += mod(aniTime * 1.1, 2.0 + width);
+            time_step += mod(aniTime , 2.0 + width);
         }
     }
     else{
@@ -126,7 +129,7 @@ CCProgram sprite-fs %{
             time_step += 1.0 - mod(cc_time.x * speed, 2.0 + width);
         }
         else if(auto == 0.0){
-            time_step += 1.0 - mod(aniTime * 1.1, 2.0 + width);
+            time_step += 1.0 - mod(aniTime, 2.0 + width);
         }
     }
 

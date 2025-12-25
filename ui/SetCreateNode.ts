@@ -432,9 +432,16 @@ export class SetCreateNode extends HackUi {
         }
 
         // 数据绑定到YJDataWork组件
-        let a = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
-        // 初始化数据绑定
-        a?.clear().initWithData(data);
+        let a: YJDataWork | SetCreateNode = item.getComponent(YJDataWork) || item.getComponentInChildren(YJDataWork);
+        if (a) {
+            // 初始化数据绑定
+            a.clear().initWithData(data);
+        } else {
+            a = item.getComponent(SetCreateNode);
+            if (a) {
+                a.a_setData(data);
+            }
+        }
 
         if (immediate) return;
         // 处理动画效果

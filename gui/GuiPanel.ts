@@ -9,6 +9,8 @@ import { GuiManager } from "./GuiManager";
 
 @ccclass('GuiPanel')
 export class GuiPanel extends YJPanel {
+    @property({ displayName: '回退到', tooltip: '当面板关闭时，回退到哪个面板' })
+    backTo: string = '';
 
     /**
      * 节点添加到层级以后的回调（onLoad之后），在组件内onAdded回调之后执行
@@ -58,7 +60,11 @@ export class GuiPanel extends YJPanel {
 
     protected onClosePanel() {
         super.onClosePanel();
-        GuiManager.closePanel(this);
+        if (this.backTo) {
+            GuiManager.createPanel(this.backTo, null, null, () => GuiManager.closePanel(this));
+        } else {
+            GuiManager.closePanel(this);
+        }
     }
 
     public clear() {

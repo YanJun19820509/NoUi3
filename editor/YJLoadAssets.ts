@@ -3,7 +3,6 @@ import { no } from '../no';
 import { TextureInfo } from '../types';
 import { TextureInfoInGPU } from '../engine/TextureInfoInGPU';
 import { YJSample2DMaterialManager } from '../engine/YJSample2DMaterialManager';
-import { PopuPanelContent } from '../base/node/popu/PopuPanelContent';
 import { YJPanel } from '../base/node/YJPanel';
 import { SetSpriteFrame } from '../ui/SetSpriteFrame';
 import { SetSpriteFrameInSampler2D } from '../ui/SetSpriteFrameInSampler2D';
@@ -164,7 +163,7 @@ export class YJLoadAssets extends Component {
 
     private setMaterialKey() {
         if (this._materialKey) return;
-        const name = no.getPrototype(this.node.getComponent(PopuPanelContent) || this.node.getComponent(YJPanel))?.name || this.node.name;
+        const name = no.getPrototype(this.node.getComponent(YJPanel))?.name || this.node.name;
         this._materialKey = name;
     }
 
@@ -210,13 +209,15 @@ export class YJLoadAssets extends Component {
             }
         }
         // 处理多语言文本组件
-        // list = this.getComponentsInChildren(YJLanguageLabel);
-        // for (let i = 0; i < list.length; i++) {
-        //     if (v) list[i].resetLabel();
-        //     else {
-        //         list[i].removeLabel();
-        //     }
-        // }
+        list = this.getComponentsInChildren('GuiLabel');
+        for (let i = 0; i < list.length; i++) {
+            if (v) {
+                list[i].resetLabel();
+                list[i].materialInfoUuid = name;
+            } else {
+                list[i].removeLabel();
+            }
+        }
         // 处理字符标签组件
         list = this.getComponentsInChildren(YJCharLabel);
         for (let i = 0; i < list.length; i++) {
@@ -231,7 +232,6 @@ export class YJLoadAssets extends Component {
         list = this.getComponentsInChildren(YJLabel);
         for (let i = 0; i < list.length; i++) {
             a = list[i];
-            a.removeLabel();
             a.materialInfoUuid = name;
             if (a.packToAtlas) this._packLabel = true;
         }

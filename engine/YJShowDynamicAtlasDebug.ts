@@ -3,7 +3,6 @@ import { ccclass, Node, ScrollView, Sprite, SpriteFrame, UITransform, Layers, fi
 import { no } from '../no';
 import { Atlas } from './atlas';
 import { YJWindowManager } from '../base/node/YJWindowManager';
-import { PopuPanelContent } from '../base/node/popu/PopuPanelContent';
 import { YJPanel } from '../base/node/YJPanel';
 
 /**
@@ -195,7 +194,7 @@ export class YJShowDynamicAtlasDebug {
     public showNewestAtlas(): any {
         const topPanel = YJWindowManager.getTopPanel(3);
         if (topPanel) {
-            const name = no.getPrototype(topPanel.getComponentInChildren(PopuPanelContent) || topPanel.getComponent(YJPanel))?.name || topPanel.name;
+            const name = no.getPrototype(topPanel.getComponent(YJPanel))?.name || topPanel.name;
             if (this.names.includes(name)) {
                 this.showDebug(name);
                 return;

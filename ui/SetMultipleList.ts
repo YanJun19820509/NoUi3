@@ -541,12 +541,21 @@ export class SetMultipleList extends HackUi {
         // 计算并设置内容容器尺寸
         this.setContentSize();
         if (resetContentPos) {
-            this.lastIndex = Math.min(this.lastIndex, this.positionMap.length - 3);
-            const p = this.positionMap[this.lastIndex];
-            if (this.isVertical) {
-                this.scrollViewContent.setPosition(0, -p);
-            } else {
-                this.scrollViewContent.setPosition(-p, 0);
+            this.lastIndex = Math.max(0, Math.min(this.lastIndex, this.positionMap.length - 3));
+            if (this.lastIndex > 0) {
+                const p = this.positionMap[this.lastIndex];
+                if (this.isVertical) {
+                    this.scrollViewContent.setPosition(0, -p);
+                } else {
+                    this.scrollViewContent.setPosition(-p, 0);
+                }
+                for (let type in this.itemsMap) {
+                    let items = this.itemsMap[type];
+                    for (let i = 0; i < items.length; i++) {
+                        let item = items[i];
+                        item['__dataIndex'] = -1;
+                    }
+                }
             }
         }
         // 更新列表项显示

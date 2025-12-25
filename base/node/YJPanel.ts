@@ -94,6 +94,10 @@ export class YJPanel extends Component {
      */
     public status: 'close' | 'open' | 'hide' = 'close';
 
+
+    @property(YJDataWork)
+    dataWork: YJDataWork = null;
+
     /** 
      * 面板类型标识
      * @remarks 需保证唯一性，建议使用枚举值
@@ -216,6 +220,7 @@ export class YJPanel extends Component {
         // 编辑器环境下自动设置面板类型
         if (EDITOR) {
             if (this.panelType == '') this.panelType = this.node.name;
+            if (!this.dataWork) this.dataWork = this.node.getComponent(YJDataWork);
         }
         // 生成缓存键（用于对象池缓存）
         if (!this.nodeCacheKey) this.nodeCacheKey = js.getClassName(this);

@@ -102,6 +102,14 @@ export class ColorInfo {
         if (comp.renderData)
             comp.renderData.vertDirty = true;
     }
+
+    private _conditions: string[];
+    public matchCondition(condition: string) {
+        if (!this._conditions) {
+            this._conditions = this.condition.split(',');
+        }
+        return this._conditions.includes(condition);
+    }
 }
 
 @ccclass('SetColorsSwitch')
@@ -168,7 +176,7 @@ export class SetColorsSwitch extends HackUi {
         // 遍历所有颜色配置寻找匹配项
         for (let i = 0, n = this.infos.length; i < n; i++) {
             info = this.infos[i];
-            if (info.condition === condition) {
+            if (info.matchCondition(condition)) {
                 // 设置当前节点颜色
                 this.setColor(info, this.node.getComponent(UIRenderer));
 

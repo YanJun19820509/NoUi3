@@ -1,7 +1,7 @@
 import { gui } from "@core/gui/GUI";
 import { no } from "../no";
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
-import { ccclass, js, Node, Prefab } from "../yj";
+import { ccclass, js, Node, Prefab, tween, view } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
 
@@ -53,6 +53,27 @@ export class GuiManager {
 
         const uuid = gui[to].add(url, params || {}, { modal: false });
         this.afterCreated(to, uuid, cb);
+    }
+
+    public static switchPanel(comp: typeof GuiPanel | string, dir: 'left' | 'right', to: string, params?: any, cb?: (panel: Node) => void) {
+        this.createPanel(comp, to, params, panel => {
+            const size = view.getVisibleSize();
+            panel.setPosition(dir == 'left' ? -size.width : size.width, 0);
+            const children = gui[to].children;
+            let child: Node;
+            let tweenData = {
+                duration: .3,
+                by: 1,
+                props: {
+                    pos: [dir == 'left' ? size.width : -size.width, 0]
+                }
+            };
+            for (let i = 0, n = children.length; i < n; i++) {
+                child = children[i];
+                no.TweenSet.play(no.parseTweenData(tweenData, child))
+            }
+            no.scheduleOnce(() => cb?.(panel), .6, this);
+        });
     }
 
     /**

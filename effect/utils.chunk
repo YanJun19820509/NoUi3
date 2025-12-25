@@ -292,27 +292,32 @@ vec4 fadeOut(vec4 _o,vec2 _uv,  float _time, float _width, bool _vertical){
  * blurTexture(color, uv, 0.005) // 中等强度模糊
  * blurTexture(color, uv, 0.01)  // 高强度模糊
  */
-vec4 blurTexture(vec4 _o, vec2 _uv, float _offset){
+vec4 blurTexture(vec4 _o, vec2 _uv, vec2 _offset){
   // 采用10个方向采样实现近似高斯模糊
-  const float repeats = 10.;
+  const int repeats = 10;
   
+  vec2 q[10];
+  q[0] = vec2(1.,0.);
+  q[1] = vec2(0.8092,0.5875);
+  q[2] = vec2(0.3096,0.9508);
+  q[3] = vec2(-0.3081,0.9513);
+  q[4] = vec2(-0.8082,0.5888);
+  q[5] = vec2(-1.,0.0015);
+  q[6] = vec2(-0.8101,-0.5862);
+  q[7] = vec2(-0.3111,-0.9503);
+  q[8] = vec2(0.3065,-0.9518);
+  q[9] = vec2(0.8073,-0.5901);
   // 多方向采样混合
-  for(float i=0.0; i<repeats ; i++) {
-      // 生成圆周采样方向向量
-      vec2 q = vec2(
-        cos(radians(i*360.0/repeats)), // 将角度转换为弧度
-        sin(radians(i*360.0/repeats))
-      );
+  for(int i=0; i<repeats ; i++) {
       // 添加随机偏移避免规则采样带来的图案重复感
-      q *= (rand(vec2(i, _uv.x + _uv.y )) + _offset);
-      vec2 uv2 = _uv + q * _offset;
+      vec2 uv2 = _uv + q[i] * rand(vec2(i, _uv.x + _uv.y )) * _offset;
       
       // 累加周边采样颜色
       _o += normalTexture(cc_spriteTexture, uv2);
   }
 
   // 平均采样结果（简单盒式模糊）
-  _o /= repeats;
+  _o /= float(repeats);
 
   // 后处理：降低亮度并二值化透明度
   float light = 0.7; // 亮度衰减系数

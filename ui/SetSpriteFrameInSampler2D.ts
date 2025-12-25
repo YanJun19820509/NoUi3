@@ -402,6 +402,11 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      */
     private changeData() {
         const data = this._data;
+        // 特殊空值处理
+        if (data == 'null') {
+            this.a_setEmpty();
+            return;
+        }
         // 非图集资源处理路径
         if (!this.loadFromAtlas) {
             this.setSingleSpriteFrame(data);
@@ -695,6 +700,12 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     private setSingleSpriteFrame(name: string) {
         // 验证组件和节点有效性
         if (!isValid(this)) return;
+
+        // 特殊空值处理
+        if (name == 'null') {
+            this.a_setEmpty();
+            return;
+        }
 
         // 获取Sprite组件并设置自定义材质
         if (!this._sprite) this._sprite = this.getComponent(Sprite);

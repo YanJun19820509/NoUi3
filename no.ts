@@ -994,7 +994,7 @@ export namespace no {
      * no.log('拾取物品:', itemId, '剩余背包空间:', backpack.space);
      */
     export function log(...Evns: any[]): void {
-        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.['enabled'])) && console.log.call(console, '#NoUi#Log', jsonStringify(Evns));
     }
 
     /**
@@ -1007,7 +1007,7 @@ export namespace no {
      * no.warn('玩家处于异常状态:', currentState, '位置:', player.position);
      */
     export function warn(...Evns: any[]): void {
-        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.warn('#NoUi#Warn', Evns);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.['enabled'])) && console.warn('#NoUi#Warn', Evns);
     }
 
     /**
@@ -1033,7 +1033,7 @@ export namespace no {
      * no.logTimeStart('battle_calculation');
      */
     export function logTimeStart(type?: string) {
-        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.time(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.['enabled'])) && console.time(`#NoUi#time-${type ? type : ''}`);
     }
 
     /**
@@ -1046,7 +1046,7 @@ export namespace no {
      * no.logTimeEnd('battle_calculation');
      */
     export function logTimeEnd(type?: string) {
-        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.enabled)) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
+        (_isLogEnabled || (JSB && window?.['DBT']?.Console?.['enabled'])) && console.timeEnd(`#NoUi#time-${type ? type : ''}`);
     }
 
 
@@ -4876,7 +4876,7 @@ export namespace no {
     export class AssetBundleManager {
 
         // 远程资源缓存（键：资源路径，值：资源对象）
-        private remoteAssetsCache: any = {};
+        private remoteAssetsCache: { [url: string]: Asset } = {};
         // 资源缓存映射表（键：资源路径，值：资源实例）
         private _cacheAsset: Map<string, Asset> = new Map();
         // 资源引用计数与时间戳（用于资源回收）
@@ -5670,6 +5670,25 @@ export namespace no {
             director.loadScene(name, callback);
         }
 
+        private parseExt(path: string): '.png' | '.jpg' | '.webp' | '.txt' | '.mp3' | '.json' {
+            const ext = path.split('.').pop();
+            switch (ext) {
+                case 'png':
+                    return '.png';
+                case 'jpg':
+                    return '.jpg';
+                case 'webp':
+                    return '.webp';
+                case 'txt':
+                    return '.txt';
+                case 'mp3':
+                    return '.mp3';
+                case 'json':
+                    return '.json';
+            }
+            return null;
+        }
+
         /**
          * 从远程服务器加载任意类型资源文件（带缓存机制）
          * @param url - 远程资源完整URL地址
@@ -5685,32 +5704,35 @@ export namespace no {
          *   if (clip) audioEngine.playMusic(clip);
          * });
          */
-        public loadRemoteFile<T extends Asset>(url: string, callback: (file: T) => void) {
-            if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
-            else
-                assetManager.loadRemote<T>(url, (err, file) => {
-                    if (file == null) {
-                        log('loadRemoteFile', url, err.message);
-                        callback?.(null);
-                    } else {
-                        this.remoteAssetsCache[url] = file;
-                        callback?.(file);
-                    }
-                });
+        public loadRemoteFile<T extends Asset>(url: string, callback: (file: T | null) => void) {
+            assetManager.loadRemote<T>(url, (err, file) => {
+                if (file == null) {
+                    log('loadRemoteFile', url, err.message);
+                    callback?.(null);
+                } else {
+                    callback?.(file);
+                }
+            });
         }
 
         /**
-         * 加载远程文本文件（返回TextAsset类型）
+         * 加载远程文本文件（返回文件内容string）,文件内容不缓存
          * @param url - 文本文件URL地址
          * @param callback - 加载完成回调
          * @example
          * // 加载游戏公告文本
-         * assetBundleManager.loadRemoteText('https://cdn.example.com/notice.txt', (textAsset) => {
-         *   if (textAsset) this.noticeLabel.string = textAsset.text;
+         * assetBundleManager.loadRemoteText('https://cdn.example.com/notice.txt', (str) => {
+         *   if (str) this.noticeLabel.string = str;
          * });
          */
-        public loadRemoteText(url: string, callback: (file: TextAsset) => void) {
-            this.loadRemoteFile<TextAsset>(url, callback);
+        public loadRemoteText(url: string, callback: (text: string) => void) {
+            this.loadRemoteFile<TextAsset>(url, (file: TextAsset) => {
+                if (file) {
+                    callback?.(file.text);
+                } else {
+                    callback?.('');
+                }
+            });
         }
 
         /**
@@ -5729,22 +5751,70 @@ export namespace no {
          *   if (sf) this.bgImage.spriteFrame = sf;
          * });
          */
-        public loadRemoteImage(url: string, ext: '.png' | '.jpg', callback: (sf: SpriteFrame) => void) {
-            if (this.remoteAssetsCache[url]) callback?.(this.remoteAssetsCache[url]);
-            else
-                assetManager.loadRemote<ImageAsset>(url, { ext: ext }, (err, file) => {
+        public loadRemoteImage(url: string, callback: (sf: SpriteFrame | null) => void) {
+            if (this.remoteAssetsCache[url]?.isValid) {
+                this.remoteAssetsCache[url].addRef();
+                callback?.(this.remoteAssetsCache[url] as SpriteFrame);
+            } else {
+                assetManager.loadRemote<ImageAsset>(url, null, (err, file) => {
                     if (file == null) {
-                        log('loadRemoteFile', url, err.message);
+                        log('loadRemoteImage', url, err.message);
                         callback?.(null);
                     } else {
                         const spriteFrame = new SpriteFrame();
                         const texture = new Texture2D();
                         texture.image = file;
                         spriteFrame.texture = texture;
+                        spriteFrame.addRef();
                         this.remoteAssetsCache[url] = spriteFrame;
                         callback?.(spriteFrame);
                     }
                 });
+            }
+        }
+
+        public preloadRemoteImage(url: string, onComplete?: () => void) {
+            this.loadRemoteFile(url, onComplete);
+
+        }
+
+        public async loadRemoteFileAsync<T extends Asset>(url: string): Promise<T | null> {
+            return new Promise<T>((resolve, reject) => {
+                this.loadRemoteFile<T>(url, (file) => {
+                    resolve(file);
+                });
+            });
+        }
+
+        public async loadRemoteImageAsync(url: string): Promise<SpriteFrame | null> {
+            return new Promise<SpriteFrame | null>(resolve => {
+                this.loadRemoteImage(url, (sf) => {
+                    resolve(sf);
+                });
+            });
+        }
+
+        public async preloadRemoteImageAsync(url: string): Promise<void> {
+            return new Promise<void>(resolve => {
+                this.preloadRemoteImage(url, resolve);
+            });
+        }
+
+        /**
+         * 预加载远程图片
+         * @param url - 图片文件URL地址
+         * @param onComplete - 加载完成回调
+         */
+        public preloadRemoteImages(urls: string[], onComplete?: () => void) {
+            const promises: Promise<Asset>[] = [];
+            let url: string;
+            for (let i = 0, n = urls.length; i < n; i++) {
+                url = urls[i];
+                promises.push(this.loadRemoteFileAsync(url));
+            }
+            Promise.all(promises).then(() => {
+                onComplete?.();
+            });
         }
 
         /**
@@ -5808,11 +5878,11 @@ export namespace no {
             this._assetPathCache.file = '';
             this._assetPathCache.type = null;
             this._assetPathCache.path = '';
-
+            const bundles: string[] = assetManager['_projectBundles'];
             // 遍历路径层级查找有效bundle名称
             for (let i = 0, n = p.length; i < n; i++) {
                 const b = p.shift();
-                if (assetManager.bundles.has(b)) {
+                if (bundles.includes(b)) {
                     this._assetPathCache.bundle = b;
                     break;
                 }
@@ -6382,6 +6452,20 @@ export namespace no {
             return assetManager.downloader.bundleVers[bundleName];
         }
 
+        public releaseRemoteAssets() {
+            let asset: Asset;
+            for (const key in this.remoteAssetsCache) {
+                asset = this.remoteAssetsCache[key];
+                if (asset?.isValid) {
+                    asset.decRef();
+                }
+                if (asset.refCount == 0) {
+                    assetManager.releaseAsset(asset);
+                }
+            }
+            this.remoteAssetsCache = {};
+        }
+
         /**
          * 释放所有已加载资源（慎用，会清空所有缓存）
          * @example
@@ -6398,6 +6482,7 @@ export namespace no {
             this._cacheAsset.clear();
             this._pathToUuid.clear();
             this._loadingAssets.clear();
+            this.releaseRemoteAssets();
             if (all) {
                 assetManager.releaseAll();
             }
@@ -11576,6 +11661,20 @@ export namespace no {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+    }
+
+    /**
+     * 填充0
+     * @param num 数字
+     * @param length 长度
+     * @returns 填充0后的字符串
+     */
+    export function fill0(num: number, length: number) {
+        let s = num.toString();
+        while (s.length < length) {
+            s = '0' + s;
+        }
+        return s;
     }
 }
 no.addToWindowForDebug('no', no);

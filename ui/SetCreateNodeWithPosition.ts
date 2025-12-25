@@ -85,7 +85,7 @@ export class SetCreateNodeWithPosition extends HackUi {
     afterCreated: no.EventHandlerInfo[] = [];
 
     // 数据设置锁，防止重复设置
-    private _isSettingData: boolean = false;
+    protected _isSettingData: boolean = false;
 
     /**
      * 编辑器更新循环
@@ -263,7 +263,7 @@ export class SetCreateNodeWithPosition extends HackUi {
      *   node.getComponent(Enemy).init(data[i]);
      * }
      */
-    private setItem(data: any[], start: number, i: number) {
+    protected setItem(data: any[], start: number, i: number) {
         if (data[i] == null) {
             return;
         }
