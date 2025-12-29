@@ -253,7 +253,7 @@ export class YJSoundEffectManager extends Component {
             this._intervalPlay[alias] = this._intervalMap[alias].d;
         }
         let d = this._map[alias];
-        if (d.path) YJAudioManager.ins.playEffect(d.path, volume || d.volume);
+        if (d?.path) YJAudioManager.ins.playEffect(d.path, volume || d.volume);
         else console.error('YJSoundEffectManager.playEffectByAlias: 没有找到音效资源:', alias);
     }
 
