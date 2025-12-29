@@ -67,7 +67,7 @@ export class GuiManager {
                 props: {
                     pos: [dir == 'left' ? size.width : -size.width, 0]
                 },
-                easing: easing.expoOut
+                easing: easing.quadOut
             };
             for (let i = 0, n = children.length; i < n; i++) {
                 child = children[i];
