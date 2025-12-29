@@ -5761,10 +5761,7 @@ export namespace no {
                         log('loadRemoteImage', url, err.message);
                         callback?.(null);
                     } else {
-                        const spriteFrame = new SpriteFrame();
-                        const texture = new Texture2D();
-                        texture.image = file;
-                        spriteFrame.texture = texture;
+                        const spriteFrame = SpriteFrame.createWithImage(file);
                         spriteFrame.addRef();
                         this.remoteAssetsCache[url] = spriteFrame;
                         callback?.(spriteFrame);
