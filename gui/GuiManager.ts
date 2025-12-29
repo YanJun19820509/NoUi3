@@ -1,7 +1,7 @@
 import { gui } from "@core/gui/GUI";
 import { no } from "../no";
 import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefabMetaKey } from "../types";
-import { ccclass, js, Node, Prefab, tween, view } from "../yj";
+import { ccclass, easing, js, Node, Prefab, view } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
 
@@ -62,11 +62,12 @@ export class GuiManager {
             const children = gui[to].children;
             let child: Node;
             let tweenData = {
-                duration: .3,
+                duration: 1,
                 by: 1,
                 props: {
                     pos: [dir == 'left' ? size.width : -size.width, 0]
-                }
+                },
+                easing: easing.expoOut
             };
             for (let i = 0, n = children.length; i < n; i++) {
                 child = children[i];
