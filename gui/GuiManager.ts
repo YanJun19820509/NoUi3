@@ -61,8 +61,8 @@ export class GuiManager {
             panel.setPosition(dir == 'left' ? -size.width : size.width, 0);
             const children = gui[to].children;
             let child: Node;
-            let tweenData = {
-                duration: 1,
+            const tweenData = {
+                duration: .5,
                 by: 1,
                 props: {
                     pos: [dir == 'left' ? size.width : -size.width, 0]
