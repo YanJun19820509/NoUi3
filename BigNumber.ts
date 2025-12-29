@@ -122,6 +122,10 @@ export class BigNumber {
         return `${this.value}e${this.unitIndex >= 0 ? '+' : ''}${this.unitIndex * 3}`;
     }
 
+    public toNumber(): number {
+        return this.value * Math.pow(10, this.unitIndex * 3);
+    }
+
     /**
      * 加法
      * @param other - 数字或字符串或BigNumber对象
