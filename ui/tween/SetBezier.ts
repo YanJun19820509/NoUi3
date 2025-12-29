@@ -54,6 +54,7 @@ export class SetBezier extends SetNodeTweenAction {
         let t = data.duration / points.length; // 计算每段持续时间
         for (let i = 0; i < points.length; i++) {
             d.push({
+                delay: data.delay || 0,
                 duration: t,
                 to: 1, // 插值方式：1表示线性插值
                 props: {
