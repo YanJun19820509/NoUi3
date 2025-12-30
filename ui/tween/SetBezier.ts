@@ -50,7 +50,7 @@ export class SetBezier extends SetNodeTweenAction {
         points.shift(); // 移除起始点（节点当前位置）
 
         // 构建每段动画数据
-        let arr = [];
+        let arr: any[] = [];
         if (data.delay) {
             arr.push({ delay: data.delay });
         }
@@ -124,11 +124,11 @@ export class SetBezier extends SetNodeTweenAction {
      *   Vec3(150,200)
      * ]
      */
-    private getControlPoints(points: { x: number, y: number }[]): Vec3[] {
+    private getControlPoints(points: { x: number, y: number }[]): { x: number, y: number }[] {
         let p = this.node.position;
-        let ps: Vec3[] = [p];
+        let ps: { x: number, y: number }[] = [{ x: p.x, y: p.y }];
         for (let i = 0; i < points.length; i++) {
-            ps[ps.length] = v3(points[i].x + p.x, points[i].y + p.y);
+            ps[ps.length] = { x: points[i].x, y: points[i].y };
         }
         return ps;
     }

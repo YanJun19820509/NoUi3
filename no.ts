@@ -11385,7 +11385,7 @@ export namespace no {
 
         // 添加终点确保精度
         let end = points[points.length - 1];
-        arr[arr.length] = v2(end.x, end.y);
+        arr[arr.length] = { x: end.x, y: end.y };
         return arr;
     }
 
