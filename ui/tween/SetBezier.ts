@@ -50,11 +50,13 @@ export class SetBezier extends SetNodeTweenAction {
         points.shift(); // 移除起始点（节点当前位置）
 
         // 构建每段动画数据
-        let d = [];
+        let arr = [];
+        if (data.delay) {
+            arr.push({ delay: data.delay });
+        }
         let t = data.duration / points.length; // 计算每段持续时间
         for (let i = 0; i < points.length; i++) {
-            d.push({
-                delay: data.delay || 0,
+            arr.push({
                 duration: t,
                 to: 1, // 插值方式：1表示线性插值
                 props: {
@@ -62,10 +64,10 @@ export class SetBezier extends SetNodeTweenAction {
                 }
             });
         }
-        const a = no.parseTweenData(d, this.node);
+        const tweenData = no.parseTweenData(arr, this.node);
         points = null;
-        d = null;
-        return a;
+        arr = null;
+        return tweenData;
     }
 
     // /**
