@@ -1,4 +1,4 @@
-if (cc.env.EDITOR) {
+if (CC_EDITOR) {
   cc.game.once(cc.Game.EVENT_ENGINE_INITED, function () {
     cc.js.mixin(cc.internal.SpineSkeleton.prototype, {
       update(dt) {
