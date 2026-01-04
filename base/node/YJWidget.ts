@@ -1,5 +1,4 @@
 import { no } from "@hackUi/no";
-import { Range } from "@hackUi/types";
 import { ccclass, Component, Enum, property, requireComponent, view, Widget } from "@hackUi/yj";
 /**
  * 
