@@ -541,14 +541,24 @@ export class SetMultipleList extends HackUi {
         // 计算并设置内容容器尺寸
         this.setContentSize();
         if (resetContentPos) {
-            this.lastIndex = Math.max(0, Math.min(this.lastIndex, this.positionMap.length - 3));
-            if (this.lastIndex > 0) {
-                const p = this.positionMap[this.lastIndex];
-                if (this.isVertical) {
-                    this.scrollViewContent.setPosition(0, -p);
+            let p = -this.positionMap[this.lastIndex];
+            let maxOffset = this.scrollView.getMaxScrollOffset();
+            if (this.isVertical) {
+                p = Math.min(p, maxOffset.y);
+                if (p == maxOffset.y) {
+                    this.lastIndex = 0;
                 } else {
-                    this.scrollViewContent.setPosition(-p, 0);
+                    this.scrollViewContent.setPosition(0, Math.min(-p, maxOffset.y));
                 }
+            } else {
+                p = Math.max(p, maxOffset.x);
+                if (p == maxOffset.x) {
+                    this.lastIndex = 0;
+                } else {
+                    this.scrollViewContent.setPosition(Math.min(-p, maxOffset.x), 0);
+                }
+            }
+            if (this.lastIndex > 0) {
                 for (let type in this.itemsMap) {
                     let items = this.itemsMap[type];
                     for (let i = 0; i < items.length; i++) {
