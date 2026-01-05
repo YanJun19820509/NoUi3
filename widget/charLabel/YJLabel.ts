@@ -2,7 +2,7 @@ import { YJDynamicAtlas } from "../../engine/YJDynamicAtlas";
 import { YJSample2DMaterialManager } from "../../engine/YJSample2DMaterialManager";
 import { YJMacroConfig } from "../../macro";
 import { no } from "../../no";
-import { BitmapFont, CacheMode, ccclass, Color, EDITOR, Label, LabelOutline, LabelShadow, property, TTFFont, v2, Vec2 } from "../../yj";
+import { BitmapFont, CacheMode, ccclass, Color, EDITOR, instantiate, Label, LabelOutline, property, TTFFont, v2, Vec2, Node, LabelShadow, executeInEditMode } from "../../yj";
 /**
  * 
  * Author mqsy_yj
@@ -11,6 +11,7 @@ import { BitmapFont, CacheMode, ccclass, Color, EDITOR, Label, LabelOutline, Lab
  */
 
 @ccclass('YJLabel')
+@executeInEditMode()
 export class YJLabel extends Label {
     get useSystemFont() {
         return this._isSystemFontUsed;
@@ -30,6 +31,16 @@ export class YJLabel extends Label {
                     this.font = ttf; // 设置字体实例
                 });
             }
+        }
+    }
+    @property
+    get string(): string {
+        return super.string;
+    }
+    set string(v: string) {
+        super.string = v;
+        if (this._shadowNode) {
+            this._shadowNode.getComponent(Label).string = v;
         }
     }
     @property({ displayName: '添加描边' })
@@ -54,12 +65,47 @@ export class YJLabel extends Label {
         if (v == this._shadow) return;
         this._shadow = v;
         if (v) {
-            if (!this.getComponent(LabelShadow))
-                this.addComponent(LabelShadow);
+            this.createShadow();
         } else {
             this.getComponent(LabelShadow)?.destroy();
+            this.destroyShadow();
         }
     }
+    @property({ visible() { return this.shadow } })
+    public get shadowColor(): Color {
+        return this._shadowColor;
+    }
+
+    public set shadowColor(v: Color) {
+        if (v.equals(this._shadowColor)) return;
+        this._shadowColor = v;
+        if (this._shadowNode) {
+            this._shadowNode.getComponent(Label).color = v;
+        }
+    }
+
+    /** 
+     * 阴影偏移量（单位：逻辑像素）
+     * @特性说明：
+     * - 实际偏移量 = 设置值 * hdpScale（当启用HDP时）
+     * - 正方向：x向右，y向下
+     * - 返回新Vec2对象，修改返回值不会影响原始值
+     * @示例
+     * this.shadowOffset = new Vec2(2, 2); // 右下偏移2像素
+     * this.shadowOffset = new Vec2(-1, 0); // 向左偏移1像素
+     */
+    @property({ visible() { return this.shadow } })
+    public get shadowOffset(): Vec2 {
+        return this._shadowOffset
+    }
+
+    public set shadowOffset(v: Vec2) {
+        if (v.equals(this._shadowOffset)) return;
+        this._shadowOffset = v;
+        let pos = this._shadowNode.position;
+        this.node.setPosition(pos.x - this._shadowOffset.x, pos.y - this._shadowOffset.y, 0);
+    }
+
     @property({ tooltip: '将文本打包到动态图集提升性能' })
     public get packToAtlas(): boolean {
         return this._packToAtlas;
@@ -85,6 +131,16 @@ export class YJLabel extends Label {
     @property({ visible() { return false; } })
     materialInfoUuid: string = '';
 
+    /** 阴影偏移量（x,y方向偏移） */
+    @property({ serializable: true })
+    protected _shadowOffset: Vec2 = v2();
+
+    /** 阴影颜色（默认黑色） */
+    @property({ serializable: true })
+    protected _shadowColor: Color = Color.BLACK.clone();
+    @property({ visible() { return this.shadow } })
+    protected _shadowNode: Node = null;
+
     /** 
      * 动态图集管理实例
      * @类型 YJDynamicAtlas
@@ -99,6 +155,18 @@ export class YJLabel extends Label {
     private _uids: string[] = [];
 
     private _needPackSpriteFrame: boolean = false;
+
+    onLoad() {
+        if (!EDITOR) return;
+        let shadow = this.getComponent(LabelShadow);
+        if (shadow) {
+            this.shadow = true;
+            this.shadowColor = shadow.color;
+            this.shadowOffset = shadow.offset;
+            this.createShadow();
+            shadow.destroy();
+        }
+    }
 
     onDestroy(): void {
         super.onDestroy?.();
@@ -184,5 +252,34 @@ export class YJLabel extends Label {
         const uid = no.Hash(styleSignature).toString();
         no.addToArray(this._uids, uid);
         return uid;
+    }
+
+    private createShadow() {
+        if (this._shadowNode) return;
+        this._shadowNode = no.newNode(`${this.node.name}_shadow`, [Label]);
+        this._shadowNode.parent = this.node.parent;
+        this._shadowNode.getComponent(Label).color = this._shadowColor;
+        this._shadowNode.getComponent(Label).fontSize = this.fontSize;
+        this._shadowNode.getComponent(Label).font = this.font;
+        this._shadowNode.getComponent(Label).isBold = this.isBold;
+        this._shadowNode.getComponent(Label).isItalic = this.isItalic;
+        this._shadowNode.getComponent(Label).isUnderline = this.isUnderline;
+        this._shadowNode.getComponent(Label).string = this.string;
+        this._shadowNode.getComponent(Label).horizontalAlign = this.horizontalAlign;
+        this._shadowNode.getComponent(Label).verticalAlign = this.verticalAlign;
+        this._shadowNode.getComponent(Label).overflow = this.overflow;
+        this._shadowNode.getComponent(Label).lineHeight = this.lineHeight;
+        this._shadowNode.getComponent(Label).enableWrapText = this.enableWrapText;
+        let pos = this.node.position;
+        this._shadowNode.setPosition(pos);
+        this.node.setPosition(pos.x - this._shadowOffset.x, pos.y - this._shadowOffset.y, 0);
+        this.node.setSiblingIndex(this.node.parent.children.length - 1);
+    }
+
+    private destroyShadow() {
+        if (!this._shadowNode) return;
+        this.node.setPosition(this._shadowNode.position);
+        this._shadowNode.destroy();
+        this._shadowNode = null;
     }
 }
