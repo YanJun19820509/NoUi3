@@ -10,7 +10,8 @@ import {
     resources, JSB,
     rendererCamera,
     screen,
-    ResolutionPolicy
+    ResolutionPolicy,
+    rect
 } from "./yj";
 
 //用于设置下载的最大并发连接数，若当前连接数超过限制，将会进入等待队列。
@@ -5735,6 +5736,24 @@ export namespace no {
             });
         }
 
+        public createSpriteFrameWithTrim(imageAsset: ImageAsset, trimPixels: number = 1): SpriteFrame {
+            const spriteFrame = SpriteFrame.createWithImage(imageAsset);
+            if (spriteFrame && spriteFrame.texture && imageAsset.width > trimPixels * 2 && imageAsset.height > trimPixels * 2) {
+                // 裁剪边缘，排除边缘的 trimPixels 像素
+                const trimRect = rect(
+                    trimPixels,
+                    trimPixels,
+                    imageAsset.width - trimPixels * 2,
+                    imageAsset.height - trimPixels * 2
+                );
+                spriteFrame.rect = trimRect;
+                // 调整原始尺寸，使其与实际显示区域一致
+                spriteFrame.originalSize = new Size(trimRect.width, trimRect.height);
+            }
+
+            return spriteFrame;
+        }
+
         /**
          * 加载远程图片并转换为SpriteFrame（支持PNG/JPG格式）
          * @param url - 图片文件URL地址
@@ -5761,7 +5780,7 @@ export namespace no {
                         log('loadRemoteImage', url, err.message);
                         callback?.(null);
                     } else {
-                        const spriteFrame = SpriteFrame.createWithImage(file);
+                        const spriteFrame = this.createSpriteFrameWithTrim(file, 1);
                         spriteFrame.addRef();
                         this.remoteAssetsCache[url] = spriteFrame;
                         callback?.(spriteFrame);
