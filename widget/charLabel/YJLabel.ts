@@ -39,8 +39,9 @@ export class YJLabel extends Label {
     }
     set string(v: string) {
         super.string = v;
-        if (this._shadowNode) {
-            this._shadowNode.getComponent(Label).string = v;
+        console.log('string', v);
+        if (this.shadowNode) {
+            this.shadowNode.getComponent(Label).string = v;
         }
     }
     @property({ displayName: '添加描边' })
@@ -79,8 +80,8 @@ export class YJLabel extends Label {
     public set shadowColor(v: Color) {
         if (v.equals(this._shadowColor)) return;
         this._shadowColor = v;
-        if (this._shadowNode) {
-            this._shadowNode.getComponent(Label).color = v;
+        if (this.shadowNode) {
+            this.shadowNode.getComponent(Label).color = v;
         }
     }
 
@@ -102,7 +103,7 @@ export class YJLabel extends Label {
     public set shadowOffset(v: Vec2) {
         if (v.equals(this._shadowOffset)) return;
         this._shadowOffset = v;
-        let pos = this._shadowNode.position;
+        let pos = this.shadowNode.position;
         this.node.setPosition(pos.x - this._shadowOffset.x, pos.y - this._shadowOffset.y, 0);
     }
 
@@ -138,8 +139,8 @@ export class YJLabel extends Label {
     /** 阴影颜色（默认黑色） */
     @property({ serializable: true })
     protected _shadowColor: Color = Color.BLACK.clone();
-    @property({ visible() { return this.shadow } })
-    protected _shadowNode: Node = null;
+    @property({ type: Node, visible() { return this.shadow } })
+    shadowNode: Node = null;
 
     /** 
      * 动态图集管理实例
@@ -255,31 +256,33 @@ export class YJLabel extends Label {
     }
 
     private createShadow() {
-        if (this._shadowNode) return;
-        this._shadowNode = no.newNode(`${this.node.name}_shadow`, [Label]);
-        this._shadowNode.parent = this.node.parent;
-        this._shadowNode.getComponent(Label).color = this._shadowColor;
-        this._shadowNode.getComponent(Label).fontSize = this.fontSize;
-        this._shadowNode.getComponent(Label).font = this.font;
-        this._shadowNode.getComponent(Label).isBold = this.isBold;
-        this._shadowNode.getComponent(Label).isItalic = this.isItalic;
-        this._shadowNode.getComponent(Label).isUnderline = this.isUnderline;
-        this._shadowNode.getComponent(Label).string = this.string;
-        this._shadowNode.getComponent(Label).horizontalAlign = this.horizontalAlign;
-        this._shadowNode.getComponent(Label).verticalAlign = this.verticalAlign;
-        this._shadowNode.getComponent(Label).overflow = this.overflow;
-        this._shadowNode.getComponent(Label).lineHeight = this.lineHeight;
-        this._shadowNode.getComponent(Label).enableWrapText = this.enableWrapText;
+        if (!EDITOR) return;
+        if (this.shadowNode) return;
+        this.shadowNode = no.newNode(`${this.node.name}_shadow`, [Label]);
+        this.shadowNode.parent = this.node.parent;
+        this.shadowNode.getComponent(Label).color = this._shadowColor;
+        this.shadowNode.getComponent(Label).fontSize = this.fontSize;
+        this.shadowNode.getComponent(Label).font = this.font;
+        this.shadowNode.getComponent(Label).isBold = this.isBold;
+        this.shadowNode.getComponent(Label).isItalic = this.isItalic;
+        this.shadowNode.getComponent(Label).isUnderline = this.isUnderline;
+        this.shadowNode.getComponent(Label).string = this.string;
+        this.shadowNode.getComponent(Label).horizontalAlign = this.horizontalAlign;
+        this.shadowNode.getComponent(Label).verticalAlign = this.verticalAlign;
+        this.shadowNode.getComponent(Label).overflow = this.overflow;
+        this.shadowNode.getComponent(Label).lineHeight = this.lineHeight;
+        this.shadowNode.getComponent(Label).enableWrapText = this.enableWrapText;
         let pos = this.node.position;
-        this._shadowNode.setPosition(pos);
+        this.shadowNode.setPosition(pos);
         this.node.setPosition(pos.x - this._shadowOffset.x, pos.y - this._shadowOffset.y, 0);
         this.node.setSiblingIndex(this.node.parent.children.length - 1);
     }
 
     private destroyShadow() {
-        if (!this._shadowNode) return;
-        this.node.setPosition(this._shadowNode.position);
-        this._shadowNode.destroy();
-        this._shadowNode = null;
+        if (!EDITOR) return;
+        if (!this.shadowNode) return;
+        this.node.setPosition(this.shadowNode.position);
+        this.shadowNode.destroy();
+        this.shadowNode = null;
     }
 }
