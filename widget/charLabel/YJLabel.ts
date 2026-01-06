@@ -2,7 +2,7 @@ import { YJDynamicAtlas } from "../../engine/YJDynamicAtlas";
 import { YJSample2DMaterialManager } from "../../engine/YJSample2DMaterialManager";
 import { YJMacroConfig } from "../../macro";
 import { no } from "../../no";
-import { BitmapFont, CacheMode, ccclass, Color, EDITOR, instantiate, Label, LabelOutline, property, TTFFont, v2, Vec2, Node, LabelShadow, executeInEditMode } from "../../yj";
+import { BitmapFont, CacheMode, ccclass, Color, EDITOR, Label, LabelOutline, property, TTFFont, v2, Vec2, Node, LabelShadow, executeInEditMode } from "../../yj";
 /**
  * 
  * Author mqsy_yj
@@ -39,7 +39,6 @@ export class YJLabel extends Label {
     }
     set string(v: string) {
         super.string = v;
-        console.log('string', v);
         if (this.shadowNode) {
             this.shadowNode.getComponent(Label).string = v;
         }
@@ -158,7 +157,10 @@ export class YJLabel extends Label {
     private _needPackSpriteFrame: boolean = false;
 
     onLoad() {
-        if (!EDITOR) return;
+        super.onLoad?.();
+        if (!EDITOR) {
+            return;
+        }
         let shadow = this.getComponent(LabelShadow);
         if (shadow) {
             this.shadow = true;
