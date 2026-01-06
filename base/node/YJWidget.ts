@@ -27,11 +27,24 @@ export class YJWidgetInfo {
 @ccclass('YJWidget')
 @requireComponent(Widget)
 export class YJWidget extends Component {
-    @property({ type: YJWidgetInfo })
+    @property
+    fitScreen: boolean = false;
+    @property({ type: YJWidgetInfo, visible() { return !this.fitScreen } })
     info: YJWidgetInfo[] = [];
 
     protected start() {
         let widget = this.node.getComponent(Widget);
+        if (this.fitScreen) {
+            const viewSize = view.getVisibleSize();
+            widget.isAlignLeft = false;
+            widget.isAlignRight = false;
+            widget.isAlignTop = false;
+            widget.isAlignBottom = false;
+            widget.isAlignHorizontalCenter = false;
+            widget.isAlignVerticalCenter = false;
+            no.size(this.node, viewSize)
+            return;
+        }
         const parentSize = no.size(this.node.parent);
         const nodeSize = no.size(this.node);
         let w = parentSize.width - nodeSize.width;
