@@ -1,7 +1,15 @@
-#if USE_TEXTURE
-  #pragma builtin(local)
-  layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
-#endif
+
+precision highp float;
+#include <builtin/uniforms/cc-global>
+#include <builtin/internal/embedded-alpha>
+#include <builtin/internal/alpha-test>
+#include <builtin/internal/sprite-texture>
+// #if USE_TEXTURE
+//   #pragma builtin(local)
+//   3.7之前用11，之后用12
+//   layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+//   layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+// #endif
 
 in vec4 color;
 in vec2 ext;

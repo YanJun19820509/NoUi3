@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB, executeInEditMode } from '../yj';
+import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB, executeInEditMode, UIOpacity } from '../yj';
 import { no } from '../no';
 import { singleObject } from '../types';
 
@@ -17,6 +17,7 @@ import { singleObject } from '../types';
 
 class YJVertexColorTransitionData {
     public renderComp: Sprite;
+    private opacityComp: UIOpacity;
 
     /**
      * _data数据说明，
@@ -33,6 +34,7 @@ class YJVertexColorTransitionData {
     constructor(renderComp: Sprite) {
         this.renderComp = renderComp;
         this._uuid = renderComp.uuid;
+        this.opacityComp = this.renderComp.getComponent(UIOpacity);
         if (this.renderComp['_assembler']) {
             //hack tiled 的updateColorLate方法
             this._updateColorLate = this.renderComp['_assembler'].updateColorLate;
@@ -73,16 +75,22 @@ class YJVertexColorTransitionData {
      */
     private _setColor() {
         let c = this.renderComp.color;
+        let a = c.a / 255;
+        if (this.opacityComp) {
+            a = this.opacityComp.opacity / 255;
+        }
         if (this._data.x >= 0) {
             // 初始状态直接存储归一化颜色值
             this._data.x = c.r / 255;
             this._data.y = c.g / 255;
             this._data.z = c.b / 255;
+            this._data.w = a;
         } else {
             // 压缩存储格式：R通道存类型，G通道存(r*1000 + g)，B通道存(b*1000)
             let rg = c.r + c.g / 1000, ba = c.b;
             this._data.y = rg;
             this._data.z = ba;
+            this._data.w = a;
         }
     }
 
@@ -157,24 +165,21 @@ class YJVertexColorTransitionData {
     }
 
     private _lastColor: Color = null;
-    private _lastOpacity: number = 0;
     /**
      * 检查颜色是否发生变化
      */
     private checkColorChange() {
         let color = this.renderComp.color.clone();
-        if (!this._lastColor) {
-            this._lastColor = color;
-        } else if (!this._lastColor.equals(color)) {
+        if (!this._lastColor?.equals(color)) {
             this._lastColor = color;
             return true;
         }
-        let opacity = this.renderComp.node._uiProps.opacity;
-        if (!this._lastOpacity) {
-            this._lastOpacity = opacity;
-        } else if (this._lastOpacity != opacity) {
-            this._lastOpacity = opacity;
-            return true;
+        if (this.opacityComp) {
+            let opacity = this.opacityComp.opacity / 255;
+            if (this._data.w != opacity) {
+                this.renderComp.renderEntity.colorDirty = false;
+                return true;
+            }
         }
         return false;
     }
@@ -198,12 +203,12 @@ class YJVertexColorTransitionData {
         }
         if (!this.renderComp?.node?.activeInHierarchy) return;
         // 脏检查：无更新需求时提前返回
-        if (this.renderComp?.renderData.vertDirty || this.checkColorChange()) {
+        if (this.renderComp?.['_renderData'].vertDirty || this.checkColorChange()) {
             this._setColor();
             this._needUpdate = true;
         }
         if (this._needUpdate) {
-            // console.log('YJVertexColorTransition vertDirty', this.renderComp?.renderData.vertDirty);
+            // console.log('YJVertexColorTransition vertDirty', this.renderComp?['_renderData'].vertDirty);
             this._needUpdate = false;
             this._updateVB(); // 执行顶点缓冲区更新
         }
@@ -221,7 +226,7 @@ class YJVertexColorTransitionData {
      * this.renderComp.type = Sprite.Type.FILLED;
      */
     private _updateVB() {
-        if (!this.renderComp.renderData) return;
+        if (!this.renderComp['_renderData']) return;
 
         // 根据精灵类型选择更新策略
         switch (this.renderComp.type) {
@@ -240,6 +245,7 @@ class YJVertexColorTransitionData {
                     : this._updateBarFilledVB();    // 条形填充（直线进度）
                 break;
         }
+        this.renderComp.markForUpdateRenderData(false);
     }
 
     /**
@@ -252,19 +258,19 @@ class YJVertexColorTransitionData {
      * // [x, y, z, u, v, r, g, b, a, ...]
      */
     private _updateSimpleVB() {
-        const renderData = this.renderComp.renderData;
+        const renderData = this.renderComp['_renderData'];
         if (!renderData?.chunk) return;
         const vData = renderData.chunk.vb;
         let colorOffset = 5; // 颜色数据起始偏移量
 
-        // 解构颜色数据（vec3格式）
-        const { x: colorR, y: colorG, z: colorB } = this._data;
-
+        // 解构颜色数据（vec4格式）
+        const { x: colorR, y: colorG, z: colorB, w: colorA } = this._data;
         // 遍历4个顶点更新颜色
         for (let i = 0; i < 4; i++, colorOffset += renderData.floatStride) {
             vData[colorOffset] = colorR;     // R通道
             vData[colorOffset + 1] = colorG; // G通道
             vData[colorOffset + 2] = colorB; // B通道
+            vData[colorOffset + 3] = colorA; // A通道
         }
     }
 
@@ -278,16 +284,17 @@ class YJVertexColorTransitionData {
      * // 如可拉伸对话框背景、动态边框等
      */
     private _updateSlicedVB() {
-        const renderData = this.renderComp.renderData!;
+        const renderData = this.renderComp['_renderData']!;
         const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
-        const { x: colorR, y: colorG, z: colorB } = this._data;
+        const { x: colorR, y: colorG, z: colorB, w: colorA } = this._data;
 
         // 遍历16个顶点（九宫格9个切片*每个切片4顶点）
         for (let i = 0, colorOffset = 5; i < 16; i++, colorOffset += stride) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
+            vData[colorOffset + 3] = colorA;
         }
     }
 
@@ -301,7 +308,7 @@ class YJVertexColorTransitionData {
      * // 如跑酷游戏的地面平铺、横向滚动云层等
      */
     private _updateTiledVB() {
-        const renderData = this.renderComp.renderData!;
+        const renderData = this.renderComp['_renderData']!;
         if (!renderData.chunk) return;
 
         // 执行自定义颜色更新回调（如果有）
@@ -309,13 +316,14 @@ class YJVertexColorTransitionData {
 
         const vData = renderData.chunk.vb;
         const stride = renderData.floatStride;
-        const { x: colorR, y: colorG, z: colorB } = this._data;
+        const { x: colorR, y: colorG, z: colorB, w: colorA } = this._data;
 
         // 根据实际顶点数更新颜色
         for (let i = 0, colorOffset = 5; i < renderData.vertexCount; i++, colorOffset += stride) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
+            vData[colorOffset + 3] = colorA;
         }
     }
 
@@ -326,10 +334,10 @@ class YJVertexColorTransitionData {
      * - 根据顶点数量动态更新颜色
      */
     private _updateRadialFilledVB() {
-        const renderData = this.renderComp.renderData!;
+        const renderData = this.renderComp['_renderData']!;
         const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
-        const { x: colorR, y: colorG, z: colorB } = this._data;
+        const { x: colorR, y: colorG, z: colorB, w: colorA } = this._data;
 
         // 遍历所有顶点（径向填充通常有较多顶点）
         for (let i = 0, colorOffset = 5; i < renderData.vertexCount; i++, colorOffset += stride) {
@@ -349,16 +357,17 @@ class YJVertexColorTransitionData {
      * // 根据百分比改变fillStart值实现填充效果
      */
     private _updateBarFilledVB() {
-        const renderData = this.renderComp.renderData!;
+        const renderData = this.renderComp['_renderData']!;
         const vData = renderData.chunk?.vb || [];
         const stride = renderData.floatStride;
-        const { x: colorR, y: colorG, z: colorB } = this._data;
+        const { x: colorR, y: colorG, z: colorB, w: colorA } = this._data;
 
         // 更新4个顶点（进度条的基础四边形）
         for (let i = 0, colorOffset = 5; i < 4; i++, colorOffset += stride) {
             vData[colorOffset] = colorR;
             vData[colorOffset + 1] = colorG;
             vData[colorOffset + 2] = colorB;
+            vData[colorOffset + 3] = colorA;
         }
     }
 }
