@@ -30,13 +30,6 @@ export class YJLateUpdateManager extends Component {
         // 顶点颜色过渡的后期处理
         YJVertexColorTransitionManager.ins().lateUpdate();
     }
-
-    // protected update(dt: number): void {
-    //     // 数据管理器的最终提交阶段
-    //     YJDataWorkManager.ins().lastUpdate();
-    //     // 顶点颜色过渡的后期处理
-    //     YJVertexColorTransitionManager.ins().lateUpdate();
-    // }
 }
 
 
