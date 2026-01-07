@@ -31,10 +31,6 @@ CCProgram vs %{
 }%
 
 CCProgram unlit-fs %{
-  precision highp float;
-  #include <builtin/uniforms/cc-global>
-  #include <builtin/internal/embedded-alpha>
-  #include <builtin/internal/alpha-test>
   #include <./common-fs>
   #include <./utils>
 
@@ -155,9 +151,9 @@ CCProgram unlit-fs %{
     if (def < 0.){
       int tt1 = int(t1) - 1;
       if (tt1 >= 0){
-        o.r = ffloor(ext.x)/255.;
+        o.r = ffloor(ext.x)*0.0039215686;
         o.g = ffract(ext.x)*3.9215686;
-        o.b = ffloor(ext.y)/255.;
+        o.b = ffloor(ext.y)*0.0039215686;
         o *= setTexture(tt1, uv0);
       }else{
         o *= normalTexture(cc_spriteTexture, uv0);
