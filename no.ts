@@ -4877,7 +4877,7 @@ export namespace no {
     export class AssetBundleManager {
 
         // 远程资源缓存（键：资源路径，值：资源对象）
-        private remoteAssetsCache: { [url: string]: Asset } = {};
+        private remoteAssetsCache: { [url: string]: { asset: Asset, t: number, ref: number } } = {};
         // 资源缓存映射表（键：资源路径，值：资源实例）
         private _cacheAsset: Map<string, Asset> = new Map();
         // 资源引用计数与时间戳（用于资源回收）
@@ -5738,6 +5738,7 @@ export namespace no {
 
         public createSpriteFrameWithTrim(imageAsset: ImageAsset, trimPixels: number = 1): SpriteFrame {
             const spriteFrame = SpriteFrame.createWithImage(imageAsset);
+            spriteFrame['_uuid'] = uuid();
             if (spriteFrame && spriteFrame.texture && imageAsset.width > trimPixels * 2 && imageAsset.height > trimPixels * 2) {
                 // 裁剪边缘，排除边缘的 trimPixels 像素
                 const trimRect = rect(
@@ -5771,9 +5772,10 @@ export namespace no {
          * });
          */
         public loadRemoteImage(url: string, callback: (sf: SpriteFrame | null) => void) {
-            if (this.remoteAssetsCache[url]?.isValid) {
-                this.remoteAssetsCache[url].addRef();
-                callback?.(this.remoteAssetsCache[url] as SpriteFrame);
+            if (this.remoteAssetsCache[url]?.asset?.isValid) {
+                this.remoteAssetsCache[url].ref++;
+                this.remoteAssetsCache[url].t = sysTime.now;
+                callback?.(this.remoteAssetsCache[url].asset as SpriteFrame);
             } else {
                 assetManager.loadRemote<ImageAsset>(url, null, (err, file) => {
                     if (file == null) {
@@ -5782,10 +5784,27 @@ export namespace no {
                     } else {
                         const spriteFrame = this.createSpriteFrameWithTrim(file, 1);
                         spriteFrame.addRef();
-                        this.remoteAssetsCache[url] = spriteFrame;
+                        this.remoteAssetsCache[url] = { asset: spriteFrame, t: sysTime.now, ref: 1 };
                         callback?.(spriteFrame);
                     }
                 });
+            }
+        }
+
+        /**
+         * 放回远程图片
+         * @param url - 图片文件URL地址
+         */
+        public putbackRemoteImage(uuid: string) {
+            let info: any;
+            for (const key in this.remoteAssetsCache) {
+                info = this.remoteAssetsCache[key];
+                if (info.asset?.uuid == uuid) {
+                    info.ref--;
+                    info.t = sysTime.now;
+                    log('putbackRemoteImage', key)
+                    break;
+                }
             }
         }
 
@@ -6468,10 +6487,37 @@ export namespace no {
             return assetManager.downloader.bundleVers[bundleName];
         }
 
+        /**
+         * 自动释放远程资源（引用计数为0且超过60秒未使用）
+         */
+        public autoReleaseRemoteAssets() {
+            setInterval(() => {
+                let now = sysTime.now;
+                let info: any;
+                for (const key in this.remoteAssetsCache) {
+                    info = this.remoteAssetsCache[key];
+                    if (!info.asset?.isValid) {
+                        log('autoReleaseRemoteAssets', key, 'not valid')
+                        delete this.remoteAssetsCache[key];
+                        continue;
+                    }
+                    if (now - info.t > 10) {
+                        if (info.ref <= 0) {
+                            log('autoReleaseRemoteAssets', key);
+                            (info.asset as SpriteFrame).texture.destroy();
+                            info.asset.destroy();
+                            info.asset = null;
+                            delete this.remoteAssetsCache[key];
+                        }
+                    }
+                }
+            }, 10000);
+        }
+
         public releaseRemoteAssets() {
             let asset: Asset;
             for (const key in this.remoteAssetsCache) {
-                asset = this.remoteAssetsCache[key];
+                asset = this.remoteAssetsCache[key].asset;
                 if (asset?.isValid) {
                     asset.decRef();
                 }
