@@ -5781,27 +5781,31 @@ export namespace no {
                 callback?.(this.remoteAssetsCache[url].asset as SpriteFrame);
             } else {
                 this.remoteAssetsCache[url] = { asset: null, t: 0, ref: 0, loading: true, cbs: [callback] };
-                assetManager.loadRemote<ImageAsset>(url, null, (err, file) => {
-                    let sf = null;
-                    if (file == null) {
-                        log('loadRemoteImage', url, err.message);
-                    } else {
-                        sf = this.createSpriteFrameWithTrim(file, 1);
-                        sf.addRef();
-                    }
-                    this.remoteAssetsCache[url].loading = false;
-                    let cbs = this.remoteAssetsCache[url].cbs;
-                    cbs.forEach(cb => cb(sf));
-                    if (sf) {
-                        this.remoteAssetsCache[url].asset = sf;
-                        this.remoteAssetsCache[url].ref = cbs.length;
-                        this.remoteAssetsCache[url].t = sysTime.now;
-                        this.remoteAssetsCache[url].cbs.length = 0;
-                    } else {
-                        delete this.remoteAssetsCache[url];
-                    }
-                });
+                this._loadRemoteImage(url);
             }
+        }
+
+        private _loadRemoteImage(url: string) {
+            assetManager.loadRemote<ImageAsset>(url, null, (err, file) => {
+                let sf = null;
+                if (file == null) {
+                    log('loadRemoteImage', url, err.message);
+                } else {
+                    sf = this.createSpriteFrameWithTrim(file, 1);
+                    sf.addRef();
+                }
+                this.remoteAssetsCache[url].loading = false;
+                let cbs = this.remoteAssetsCache[url].cbs;
+                cbs.forEach(cb => cb(sf));
+                if (sf) {
+                    this.remoteAssetsCache[url].asset = sf;
+                    this.remoteAssetsCache[url].ref = cbs.length;
+                    this.remoteAssetsCache[url].t = sysTime.now;
+                    this.remoteAssetsCache[url].cbs.length = 0;
+                } else {
+                    delete this.remoteAssetsCache[url];
+                }
+            });
         }
 
         /**
