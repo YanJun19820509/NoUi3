@@ -1,4 +1,3 @@
-import { BaseNode } from 'cc';
 import { no } from '../no';
 import { js, StencilManager, Node, director, Layout, UITransform, Asset, SpriteFrame, Skeleton, Button, EventTouch, Vec3, Vec2, Mat4, Rect, EDITOR, LabelOutline } from '../yj';
 import { YJButton } from './YJButton';
@@ -236,11 +235,11 @@ js.mixin(LabelOutline.prototype, {
 })
 
 
-const _getComponent = BaseNode.prototype.getComponent;
-const _getComponents = BaseNode.prototype.getComponents;
-const _getComponentInChildren = BaseNode.prototype.getComponentInChildren;
-const _getComponentsInChildren = BaseNode.prototype.getComponentsInChildren;
-js.mixin(BaseNode.prototype, {
+const _getComponent = Node.prototype.getComponent;
+const _getComponents = Node.prototype.getComponents;
+const _getComponentInChildren = Node.prototype.getComponentInChildren;
+const _getComponentsInChildren = Node.prototype.getComponentsInChildren;
+js.mixin(Node.prototype, {
     getComponent(typeOrClassName: any) {
         if (!typeOrClassName)
             console.error('getComponent', typeOrClassName, this.name);

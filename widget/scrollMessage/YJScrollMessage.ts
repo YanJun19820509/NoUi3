@@ -32,9 +32,6 @@ import { ccclass, property, Node, view } from '../../yj';
  * });
  */
 export class YJScrollMessage extends YJPanel {
-    /** 数据驱动组件（控制显示状态） */
-    @property(YJDataWork)
-    dataWork: YJDataWork = null;
     /** 消息滚动容器节点 */
     @property(Node)
     container: Node = null;

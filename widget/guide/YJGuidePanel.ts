@@ -45,9 +45,6 @@ export class YJGuideTypeInfo {
  * if (YJGuidePanel.isGuiding) return;
  */
 export class YJGuidePanel extends YJPanel {
-    /** 数据驱动组件，用于控制引导步骤的显示逻辑 */
-    @property(YJDataWork)
-    dataWork: YJDataWork = null;
 
     /** 引导类型配置数组（每种引导类型对应一个预制体加载器） */
     @property(YJGuideTypeInfo)

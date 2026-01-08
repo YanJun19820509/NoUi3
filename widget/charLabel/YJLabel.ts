@@ -13,8 +13,10 @@ import { BitmapFont, CacheMode, ccclass, Color, EDITOR, Label, LabelOutline, pro
 @ccclass('YJLabel')
 @executeInEditMode()
 export class YJLabel extends Label {
+
+    @property({ override: true })
     get useSystemFont() {
-        return this._isSystemFontUsed;
+        return super.useSystemFont;
     }
     set useSystemFont(value) {
         if (this._isSystemFontUsed === value) {
@@ -33,23 +35,12 @@ export class YJLabel extends Label {
             }
         }
     }
-    @property
-    get string(): string {
+    @property({ override: true })
+    get string() {
         return super.string;
     }
     set string(value: string) {
-        if (value === null || value === undefined) {
-            value = '';
-        } else {
-            value = value.toString();
-        }
-
-        if (this._string === value) {
-            return;
-        }
-
-        this._string = value;
-        this.markForUpdateRenderData();
+        super.string = value;
         if (this.shadowNode) {
             this.shadowNode.getComponent(Label).string = value;
         }
@@ -202,9 +193,9 @@ export class YJLabel extends Label {
 
     }
 
-    // public removeLabel() {
-    //     this._texture = null;  // 释放精灵帧资源
-    // }
+    public removeLabel() {
+        this._texture = null;  // 释放精灵帧资源
+    }
 
     private initMaterialInfo() {
         // 不需要加载材质的情况：非图集模式且不允许动态合图

@@ -10,9 +10,9 @@ import { BufferAsset, ccclass, executeInEditMode, property, requireComponent, Si
 @requireComponent(Sprite)
 @executeInEditMode()
 export class SetSpriteFrameFromBuffer extends HackUi {
-    @property({ type: Size, displayName: '图片大小', editorOnly: true })
+    @property({ displayName: '图片大小', editorOnly: true })
     size: Size = new Size(100, 100);
-    @property({ type: BufferAsset, displayName: '图片buffer'})
+    @property({ type: BufferAsset, displayName: '图片buffer' })
     get imageBuffer(): BufferAsset {
         return null;
     }
