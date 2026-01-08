@@ -4877,7 +4877,7 @@ export namespace no {
     export class AssetBundleManager {
 
         // 远程资源缓存（键：资源路径，值：资源对象）
-        private remoteAssetsCache: { [url: string]: { asset: Asset, t: number, ref: number } } = {};
+        private remoteAssetsCache: { [url: string]: { asset: Asset, t: number, ref: number, loading: boolean, cbs: ((sf: SpriteFrame | null) => void)[] } } = {};
         // 资源缓存映射表（键：资源路径，值：资源实例）
         private _cacheAsset: Map<string, Asset> = new Map();
         // 资源引用计数与时间戳（用于资源回收）
@@ -5772,20 +5772,33 @@ export namespace no {
          * });
          */
         public loadRemoteImage(url: string, callback: (sf: SpriteFrame | null) => void) {
-            if (this.remoteAssetsCache[url]?.asset?.isValid) {
+            if (this.remoteAssetsCache[url]?.loading) {
+                this.remoteAssetsCache[url].cbs.push(callback);
+                return;
+            } else if (this.remoteAssetsCache[url]?.asset?.isValid) {
                 this.remoteAssetsCache[url].ref++;
                 this.remoteAssetsCache[url].t = sysTime.now;
                 callback?.(this.remoteAssetsCache[url].asset as SpriteFrame);
             } else {
+                this.remoteAssetsCache[url] = { asset: null, t: 0, ref: 0, loading: true, cbs: [callback] };
                 assetManager.loadRemote<ImageAsset>(url, null, (err, file) => {
+                    let sf = null;
                     if (file == null) {
                         log('loadRemoteImage', url, err.message);
-                        callback?.(null);
                     } else {
-                        const spriteFrame = this.createSpriteFrameWithTrim(file, 1);
-                        spriteFrame.addRef();
-                        this.remoteAssetsCache[url] = { asset: spriteFrame, t: sysTime.now, ref: 1 };
-                        callback?.(spriteFrame);
+                        sf = this.createSpriteFrameWithTrim(file, 1);
+                        sf.addRef();
+                    }
+                    this.remoteAssetsCache[url].loading = false;
+                    let cbs = this.remoteAssetsCache[url].cbs;
+                    cbs.forEach(cb => cb(sf));
+                    if (sf) {
+                        this.remoteAssetsCache[url].asset = sf;
+                        this.remoteAssetsCache[url].ref = cbs.length;
+                        this.remoteAssetsCache[url].t = sysTime.now;
+                        this.remoteAssetsCache[url].cbs.length = 0;
+                    } else {
+                        delete this.remoteAssetsCache[url];
                     }
                 });
             }
@@ -5802,7 +5815,6 @@ export namespace no {
                 if (info.asset?.uuid == uuid) {
                     info.ref--;
                     info.t = sysTime.now;
-                    log('putbackRemoteImage', key)
                     break;
                 }
             }

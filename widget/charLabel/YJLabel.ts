@@ -37,10 +37,21 @@ export class YJLabel extends Label {
     get string(): string {
         return super.string;
     }
-    set string(v: string) {
-        super.string = v;
+    set string(value: string) {
+        if (value === null || value === undefined) {
+            value = '';
+        } else {
+            value = value.toString();
+        }
+
+        if (this._string === value) {
+            return;
+        }
+
+        this._string = value;
+        this.markForUpdateRenderData();
         if (this.shadowNode) {
-            this.shadowNode.getComponent(Label).string = v;
+            this.shadowNode.getComponent(Label).string = value;
         }
     }
     @property({ displayName: '添加描边' })
