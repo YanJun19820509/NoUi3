@@ -35,16 +35,16 @@ export class YJLabel extends Label {
             }
         }
     }
-    @property({ override: true })
-    get string() {
-        return super.string;
-    }
-    set string(value: string) {
-        super.string = value;
-        if (this.shadowNode) {
-            this.shadowNode.getComponent(Label).string = value;
-        }
-    }
+    // @property({ override: true })
+    // get string() {
+    //     return super.string;
+    // }
+    // set string(value: string) {
+    //     super.string = value;
+    //     if (this.shadowNode) {
+    //         this.shadowNode.getComponent(Label).string = value;
+    //     }
+    // }
     @property({ displayName: '添加描边' })
     get outline(): boolean {
         return this._outline;
@@ -158,8 +158,12 @@ export class YJLabel extends Label {
 
     private _needPackSpriteFrame: boolean = false;
 
+    private _shadowLabel: Label = null;
+
     onLoad() {
         super.onLoad?.();
+        if (this.shadowNode)
+            this._shadowLabel = this.shadowNode.getComponent(Label);
         if (!EDITOR) {
             return;
         }
@@ -185,12 +189,14 @@ export class YJLabel extends Label {
 
     update(dt: number) {
         super.update?.(dt);
+        if (this._shadowLabel) {
+            this._shadowLabel.string = this._string;
+        }
         if (EDITOR) return;
         this.initMaterialInfo();
         if (this._needPackSpriteFrame) {
             this.dynamicPackSpriteFrame();
         }
-
     }
 
     public removeLabel() {
