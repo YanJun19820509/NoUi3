@@ -5794,6 +5794,9 @@ export namespace no {
                     sf = this.createSpriteFrameWithTrim(file, 1);
                     sf.addRef();
                 }
+                if (!this.remoteAssetsCache[url]) {
+                    this.remoteAssetsCache[url] = { asset: null, t: 0, ref: 0, loading: true, cbs: [] };
+                }
                 this.remoteAssetsCache[url].loading = false;
                 let cbs = this.remoteAssetsCache[url].cbs;
                 cbs.forEach(cb => cb(sf));

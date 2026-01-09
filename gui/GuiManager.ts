@@ -4,6 +4,7 @@ import { YJAddPanelToMetaKey, YJAllowMultipleOpen, YJPanelCreated, YJPanelPrefab
 import { ccclass, easing, js, Node, Prefab, view } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
+import { LayerBase } from "@core/gui/LayerBase";
 
 @ccclass('GuiManager')
 export class GuiManager {
@@ -21,6 +22,7 @@ export class GuiManager {
             comp = js.getClassByName(comp) as (typeof GuiPanel);
         if (!comp) return;
         to = to || no.getPrototype(comp, YJAddPanelToMetaKey);
+        this.createNewLayer(to);
         let url: string = no.getPrototype(comp, YJPanelPrefabMetaKey);
         url = this.parsePrefabUrl(url);
         const allowMultipleOpen = no.isPrototypeEquals(comp, YJAllowMultipleOpen, '1');
@@ -110,6 +112,11 @@ export class GuiManager {
         } else {
             gui.delete(panel.node);
         }
+    }
+
+    private static createNewLayer(name: string) {
+        if (gui[name]) return;
+        gui[name] = gui.layers.$add(name, LayerBase, { size: view.getVisibleSize() });
     }
 
     private static _initData(panel: GuiPanel, params: any) {
