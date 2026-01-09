@@ -10,10 +10,6 @@ import { ccclass, EDITOR, executeInEditMode, Label, property } from "@hackUi/yj"
 @ccclass('LanguageComp')
 @executeInEditMode()
 export class LanguageComp extends LanguageLabel {
-    get string(): string {
-        return super.string || this.dataID;
-    }
-
     @property
     key: string = '';
 
@@ -62,6 +58,8 @@ export class LanguageComp extends LanguageLabel {
             for (let key in params) {
                 this.setVars(key, params[key]);
             }
+        } else {
+            this._weekupUpdate();
         }
     }
 }

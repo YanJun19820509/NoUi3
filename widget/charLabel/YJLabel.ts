@@ -35,16 +35,6 @@ export class YJLabel extends Label {
             }
         }
     }
-    // @property({ override: true })
-    // get string() {
-    //     return super.string;
-    // }
-    // set string(value: string) {
-    //     super.string = value;
-    //     if (this.shadowNode) {
-    //         this.shadowNode.getComponent(Label).string = value;
-    //     }
-    // }
     @property({ displayName: '添加描边' })
     get outline(): boolean {
         return this._outline;
