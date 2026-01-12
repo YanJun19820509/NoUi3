@@ -4831,6 +4831,10 @@ export namespace no {
             });
         }
 
+        public deleteJSON(key: string): void {
+            this._json.delete(key);
+        }
+
         /**
          * 获取全局临时数据值
          * @param key - 临时数据键名
