@@ -32,17 +32,6 @@ export namespace no {
     export const notUseDynamicAtlas = false;//sys.platform == sys.Platform.WECHAT_GAME && sys.os == sys.OS.IOS;
 
     /**
-     * 启用/禁用日志输出功能
-     * @param v 是否启用日志输出
-     * @example
-     * // 在游戏启动时关闭日志
-     * no.setLogEnabled(false);
-     */
-    export function setLogEnabled(v: boolean) {
-        _isLogEnabled = v;
-    }
-
-    /**
      * 获取当前调试模式状态
      * @returns 是否处于调试模式
      * @example
@@ -9969,7 +9958,7 @@ export namespace no {
     export function GC() {
         warn('触发GC，进行垃圾回收');
         if (sys.platform == sys.Platform.WECHAT_GAME)
-            window['wx'].triggerGC();
+            window['wx']?.triggerGC();
         else
             sys.garbageCollect();
     }
