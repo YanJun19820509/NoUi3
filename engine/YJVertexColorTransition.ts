@@ -18,6 +18,10 @@ import { singleObject } from '../types';
 class YJVertexColorTransitionData {
     public renderComp: Sprite;
     private opacityComp: UIOpacity;
+    private _lastOpacity: number = 0;
+    private _lastColor: Color = null;
+    private _colorVec4: Vec4 = new Vec4(0, 0, 0, 0);
+    private _lastPosZ: number = -1;
 
     /**
      * _data数据说明，
@@ -55,11 +59,12 @@ class YJVertexColorTransitionData {
      *   '1-3': true   // UV动画宏
      * });
      */
-    public setEffect(defines: any, properties?: number[]) {
+    public setEffect(defines: any, properties?: number) {
         if (!this.renderComp || !defines) return;
         this._needUpdate = true;  // 标记需要更新顶点缓冲区
         this._setDefines(defines); // 处理着色器宏定义
         this._setProperties(properties); // 设置扩展属性
+        this._setPosition();
     }
 
     /**
@@ -94,6 +99,12 @@ class YJVertexColorTransitionData {
         }
     }
 
+    private _setPosition() {
+        this._lastPosZ = this._data.x + this._data.y;
+        let pos = this.renderComp.node.position;
+        this.renderComp.node.setPosition(pos.x, pos.y, this._lastPosZ);
+    }
+
     /**
      * 设置扩展效果参数
      * @param properties 参数数组 [参数1, 参数2]
@@ -104,10 +115,9 @@ class YJVertexColorTransitionData {
      * // 设置溶解阈值为0.7，滚动速度为2.5：
      * _setProperties([700, 2500]);
      */
-    private _setProperties(properties: number[]) {
-        if (!properties) return;
-        this._data.y = properties[0] || this._data.y; // 保留原有值如果未传入新参数
-        this._data.z = properties[1] || this._data.z;
+    private _setProperties(properties: number) {
+        if (properties == null) return;
+        this._data.y = properties; // 保留原有值如果未传入新参数
     }
 
     /**
@@ -160,28 +170,29 @@ class YJVertexColorTransitionData {
         }
 
         // 将分组宏值合并为浮点数（如分组0=1，分组1=2 → -1.2）
-        this._data.x = -Number(type.join('.'));
-        this._setColor(); // 同步更新颜色数据
+        this._data.x = Number(type.join('.'));
     }
 
-    private _lastColor: Color = null;
     /**
      * 检查颜色是否发生变化
      */
     private checkColorChange() {
         let color = this.renderComp.color.clone();
         if (!this._lastColor?.equals(color)) {
-            this._lastColor = color;
             return true;
         }
         if (this.opacityComp) {
-            let opacity = this.opacityComp.opacity / 255;
-            if (this._data.w != opacity) {
-                this.renderComp.renderEntity.colorDirty = false;
+            let opacity = this.opacityComp.opacity;
+            if (this._lastOpacity != opacity) {
+                this._lastOpacity = opacity;
                 return true;
             }
         }
         return false;
+    }
+
+    private checkPositionChange() {
+        return this._lastPosZ != this.renderComp.node.position.z;
     }
 
     /**
@@ -203,14 +214,18 @@ class YJVertexColorTransitionData {
         }
         if (!this.renderComp?.node?.activeInHierarchy) return;
         // 脏检查：无更新需求时提前返回
-        if (this.renderComp?.['_renderData'].vertDirty || this.checkColorChange()) {
-            this._setColor();
-            this._needUpdate = true;
-        }
-        if (this._needUpdate) {
-            // console.log('YJVertexColorTransition vertDirty', this.renderComp?['_renderData'].vertDirty);
-            this._needUpdate = false;
-            this._updateVB(); // 执行顶点缓冲区更新
+        // if (this.renderComp?.['_renderData'].vertDirty || this.checkColorChange()) {
+        //     this._setColor();
+        //     this._needUpdate = true;
+        // }
+        // if (this._needUpdate) {
+        //     // console.log('YJVertexColorTransition vertDirty', this.renderComp?['_renderData'].vertDirty);
+        //     this._needUpdate = false;
+        //     this._updateVB(); // 执行顶点缓冲区更新
+        // }
+
+        if (this.renderComp?.['_renderData'].vertDirty || this.checkPositionChange()) {
+            this._setPosition();
         }
     }
 
@@ -412,7 +427,7 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
      * // 为按钮添加溶解效果：
      * mgr.add(buttonSprite, { '0-1': true }, [500, 300]);
      */
-    public add(renderComp: Sprite, defines: any, properties?: number[]) {
+    public add(renderComp: Sprite, defines: any, properties: number) {
         let data = this.list.get(renderComp.uuid);
         if (data) {
             // 已存在时更新效果参数

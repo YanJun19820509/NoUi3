@@ -1,5 +1,5 @@
 
-import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid } from '../yj';
+import { ccclass, property, requireComponent, disallowMultiple, EDITOR, Material, Sprite, SpriteFrame, isValid, Node } from '../yj';
 import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransition';
 import { YJDynamicAtlas } from '../engine/YJDynamicAtlas';
 import { no } from '../no';
@@ -103,6 +103,8 @@ export class SetSpriteFrameInSampler2D extends HackUi {
     private materialInfo: YJSample2DMaterialInfo;
 
     private _sprite: Sprite = null;
+    public sampleIndexInHierarchy: number = -1;
+    public sampleIndex: number = -1;
 
     /**
      * 每帧更新逻辑（仅在编辑器模式生效）
@@ -495,18 +497,22 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      */
     private setEffect(idx: number) {
         // 生成形如"1-100"的define字符串
-        const t = `${this.defineIndex}-${(idx + 1) * 100}`;
-        const defines: any = {};
-        defines[t] = true;
+        this.sampleIndex = idx;
+        this.sampleIndexInHierarchy = idx;
+        this.setSampleIndexInHierarchy(this.node, () => {
+            let t: string = `${this.defineIndex}-${(this.sampleIndexInHierarchy) * 100}`;
+            const defines: any = {};
+            defines[t] = true;
 
-        // 关闭之前的效果define
-        if (this.lastDefine && this.lastDefine != t) {
-            defines[this.lastDefine] = false;
-        }
+            // 关闭之前的效果define
+            if (this.lastDefine && this.lastDefine != t) {
+                defines[this.lastDefine] = false;
+            }
 
-        // 更新并应用新define
-        this.lastDefine = t;
-        YJVertexColorTransitionManager.ins().add(this._sprite, defines);
+            // 更新并应用新define
+            this.lastDefine = t;
+            YJVertexColorTransitionManager.ins().add(this._sprite, defines);
+        });
     }
 
     /**
@@ -517,6 +523,21 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      */
     private clearEffect() {
         YJVertexColorTransitionManager.ins().remove(this._sprite);
+    }
+
+    private setSampleIndexInHierarchy(node: Node, cb: () => void) {
+        if (!node) return cb();
+        let parentComp = node.parent?.getComponent(SetSpriteFrameInSampler2D);
+        if (!parentComp) {
+            return this.setSampleIndexInHierarchy(node.parent, cb);
+        }
+
+        if (parentComp.sampleIndex == -1) {
+            return requestAnimationFrame(() => this.setSampleIndexInHierarchy(node, cb))
+        }
+
+        this.sampleIndexInHierarchy = this.sampleIndex - parentComp.sampleIndex;
+        cb();
     }
 
     /**
