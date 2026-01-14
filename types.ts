@@ -40,6 +40,18 @@ export enum AlignType {
     Center, // 水平居中
     Right   // 右侧对齐
 };
+/**
+ * 垂直对齐方式枚举
+ * @example
+ * // 设置垂直对齐方式
+ * widget.verticalAlign = VerticalAlignType.Middle;
+ */
+export enum VerticalAlignType {
+    None = 0,
+    Top,    // 顶部对齐
+    Middle, // 垂直居中
+    Bottom, // 底部对齐
+};
 
 /**
  * 简单值类型枚举（用于数据验证）
