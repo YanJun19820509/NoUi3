@@ -424,6 +424,7 @@ export class YJDataWork extends Component {
         let ui: HackUi;
         for (let i = 0, n = this.subFuckUis.length; i < n; i++) {
             ui = this.subFuckUis[i];
+            if (!ui) continue;
             ui.syncData();
         }
         this._dirty = false;
@@ -519,6 +520,7 @@ export class YJDataWork extends Component {
         let a: HackUi[];
         for (let i = 0, n = list.length; i < n; i++) {
             ui = list[i];
+            if (!ui) continue;
             ui['setData'](this._data);
             keys = ui.bindKeys;
             for (let j = 0, n = keys.length; j < n; j++) {

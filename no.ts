@@ -54,6 +54,7 @@ export namespace no {
      * no.setDebug(false);
      */
     export function setDebug(v: boolean) {
+        if (v === undefined) v = DEBUG;
         _debug = v;
         _isLogEnabled = v;
         log('isDebug', _debug);

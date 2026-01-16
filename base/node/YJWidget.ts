@@ -1,5 +1,5 @@
 import { no } from "@hackUi/no";
-import { ccclass, Component, Enum, property, requireComponent, view, Widget } from "@hackUi/yj";
+import { ccclass, Component, EDITOR, Enum, property, requireComponent, view, Widget } from "@hackUi/yj";
 /**
  * 
  * Author mqsy_yj
@@ -35,6 +35,9 @@ export class YJWidget extends Component {
         this._fitScreen = value;
         if (value) {
             this.getComponent(Widget)?.destroy();
+            if (EDITOR) {
+                no.size(this.node, view.getDesignResolutionSize());
+            }
         } else if (!this.getComponent(Widget)) {
             this.node.addComponent(Widget);
         }
