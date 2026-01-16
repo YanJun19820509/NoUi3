@@ -142,7 +142,7 @@ export class GuiManager {
         }
     }
     public static afterCreated(to: string, uuid: number, cb?: (node: Node) => void) {
-        this._afterCreatedTimer[uuid] = setInterval(() => this._afterCreatedCb(to, uuid, cb));
+        this._afterCreatedTimer[uuid] = setInterval(() => this._afterCreatedCb(to, uuid, cb), 20);
     }
 
     public static clearAll() {

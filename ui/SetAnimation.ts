@@ -76,7 +76,7 @@ export class SetAnimation extends HackUi {
     // ======================== 生命周期管理 ========================
 
     protected onEnable(): void {
-        if (this.autoPlay) {
+        if (this.autoPlay && this.defaultName) {
             this._play(this.defaultName, 1, 1);
         }
     }
