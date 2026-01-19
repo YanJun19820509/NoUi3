@@ -427,7 +427,7 @@ export class YJVertexColorTransitionManager extends no.SingleObject {
      * // 为按钮添加溶解效果：
      * mgr.add(buttonSprite, { '0-1': true }, [500, 300]);
      */
-    public add(renderComp: Sprite, defines: any, properties: number) {
+    public add(renderComp: Sprite, defines: any, properties?: number) {
         let data = this.list.get(renderComp.uuid);
         if (data) {
             // 已存在时更新效果参数
