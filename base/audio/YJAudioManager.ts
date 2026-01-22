@@ -213,6 +213,7 @@ export class YJAudioManager extends Component {
      * YJAudioManager.ins.playBGM();
      */
     public playBGM(path?: string, volume = 1): void {
+        if (path == this._lastBGM) return;
         if (path) this._lastBGM = path;
         else path = this._lastBGM;
         if (!path) return;
