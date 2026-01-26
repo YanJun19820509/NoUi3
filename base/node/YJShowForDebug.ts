@@ -44,7 +44,7 @@ export class YJShowForDebug extends Component {
      */
     onLoad() {
         // 组件未启用时直接返回
-        // if (!this.enabled) return;
+        if (!this.enabled) return;
 
         // // 初始化节点显示状态（根据全局调试标志）
         // this.node.active = window['show_GM_btn'];
