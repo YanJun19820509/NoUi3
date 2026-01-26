@@ -403,6 +403,7 @@ export class YJAudioManager extends Component {
      */
     public setVolume(n: number) {
         this.audioSource.volume = n;
+        this.audioSourceForever.volume = n;
     }
 
     /**
