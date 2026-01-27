@@ -96,8 +96,8 @@ export class SetEffect extends HackUi {
             no.assetBundleManager.loadEffect(path, item => {
                 const material = new Material();
                 material.initialize({ effectAsset: item });
-                this._renderComp.material = material;
-                this.setProperties(this._renderComp.material, defines, properties);
+                this._renderComp.customMaterial = material;
+                this.setProperties(this._renderComp.customMaterial, defines, properties);
                 this.work();
             });
         } else {
