@@ -95,34 +95,6 @@ CCProgram unlit-fs %{
       else if(type == 4.){
         if (uv0.y < (1.-ext)) _color.a = 0.;
       }
-      
-      // //挖方孔
-      // if(type == 3.){ 
-      //     vec2 uv = uv0;
-      //     uv.y *= cc_screenSize.y / cc_screenSize.x;
-      //     float x1 = floor(ext.x) / 100.;
-      //     float y1 = fract(ext.x) * cc_screenSize.y / cc_screenSize.x;
-      //     float x2 = floor(ext.y) / 100.;
-      //     float y2 = fract(ext.y) * cc_screenSize.y / cc_screenSize.x;
-          
-      //     if(uv.x > x1 && uv.x < x2 && uv.y > y1 && uv.y < y2){
-      //       _color.a = 0.;
-      //     }
-      // }
-
-      // //挖圆孔
-      // if(type == 4.){ 
-      //     vec2 uv = uv0;
-      //     uv.y *= cc_screenSize.y / cc_screenSize.x;
-      //     float x = floor(ext.x) / 100.;
-      //     float y = fract(ext.x) * cc_screenSize.y / cc_screenSize.x;
-      //     float r = ext.y;
-      //     float dis = distance(uv, vec2(x,y));
-          
-      //     if(dis<=r){
-      //       _color.a *= smoothstep(.8, 1., dis/r);
-      //     }
-      // }
 
       //遮罩上色
       else if(type == 5.){

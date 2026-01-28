@@ -12,7 +12,6 @@ in vec4 a_color;
 
 out vec4 color;
 out vec2 uv0;
-out float def;
 out float t1;
 out float t2;
 out float ext;

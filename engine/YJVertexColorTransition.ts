@@ -1,5 +1,5 @@
 
-import { ccclass, disallowMultiple, Component, Vec4, Sprite, math, Color, JSB, executeInEditMode, UIOpacity } from '../yj';
+import { ccclass, Vec4, Sprite, Color, UIOpacity } from '../yj';
 import { no } from '../no';
 import { singleObject } from '../types';
 
@@ -169,8 +169,8 @@ class YJVertexColorTransitionData {
             type[type.length] = sum;
         }
 
-        // 将分组宏值合并为浮点数（如分组0=1，分组1=2 → -1.2）
-        this._data.x = Number(type.join('.'));
+        // 将分组宏值合并为浮点数（如分组0=100，分组1=2 → 102）
+        this._data.x = type[0] + type[1];
     }
 
     /**

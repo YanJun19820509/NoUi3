@@ -16,6 +16,37 @@ import { YJVertexColorTransitionManager } from '../engine/YJVertexColorTransitio
  *
  */
 
+/** 材质缓存 */
+const materialCache = new Map<string, Material>();
+/** 材质加载中 */
+const materialLoading = new Map<string, ((material: Material) => void)[]>();
+
+//创建新的材质
+const getMaterialAsync = function (path: string, cb: (material: Material) => void) {
+    if (materialCache.has(path)) {
+        cb(materialCache.get(path));
+        return;
+    }
+    if (materialLoading.has(path)) {
+        materialLoading.get(path).push(cb);
+        return;
+    }
+    materialLoading.set(path, [cb]);
+    // 加载新材质
+    no.assetBundleManager.loadEffect(path, item => {
+        const material = new Material();
+        material.initialize({ effectAsset: item });
+        materialCache.set(path, material);
+        const callbacks = materialLoading.get(path);
+        if (callbacks) {
+            for (const c of callbacks) {
+                c?.(material);
+            }
+        }
+        materialLoading.delete(path);
+    });
+}
+
 @ccclass('SetEffect')
 @menu('NoUi/ui/SetEffect(设置shader:object)')
 /**
@@ -93,12 +124,9 @@ export class SetEffect extends HackUi {
         }
         else if (path) {
             // 加载新材质
-            no.assetBundleManager.loadEffect(path, item => {
-                const material = new Material();
-                material.initialize({ effectAsset: item });
+            getMaterialAsync(path, material => {
                 this._renderComp.customMaterial = material;
-                this.setProperties(this._renderComp.customMaterial, defines, properties);
-                this.work();
+                this.setMaterial(null, defines, properties);
             });
         } else {
             this.reset();
