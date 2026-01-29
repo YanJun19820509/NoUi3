@@ -3,16 +3,15 @@ export namespace DateUtils {
      * 获取某月的总天数
      * @param year 年份
      * @param month 月份（0-11，0表示1月，11表示12月）
-     * @param dateInstance 日期实例
      * @returns 该月的总天数
      */
     export function getDayCountOfMonth(year: number, month: number) {
         let t = new Date();
-        // 设置下个月的第0天，即为本月的最后一天
         t.setFullYear(year);
-        t.setMonth(month + 1);
-        t.setDate(0);
-        // t.setHours(0, 0, 0, 0);
+        t.setDate(1);   // 先设为 1 号，避免当前是 31 号时 setMonth 导致日期进位到下一月
+        t.setMonth(month + 1);  // 下个月
+        t.setDate(0);   // 0 号 = 本月最后一天
+        t.setHours(0, 0, 0, 0);
         let date = t.getDate();
         t = null;
         return date;
@@ -27,10 +26,12 @@ export namespace DateUtils {
     export function getDayCountBetween(start: { year: number, month: number, date: number }, end: { year: number, month: number, date: number }) {
         let t = new Date();
         t.setFullYear(start.year);
+        t.setDate(1); 
         t.setMonth(start.month);
         t.setDate(start.date);
         t.setHours(0, 0, 0, 0);
         const startTimestamp = t.getTime();
+        t.setDate(1); 
         t.setFullYear(end.year);
         t.setMonth(end.month);
         t.setDate(end.date);
