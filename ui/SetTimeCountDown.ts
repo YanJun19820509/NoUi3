@@ -187,8 +187,12 @@ export class SetTimeCountDown extends HackUi {
 
         const now = no.sysTime.now;
 
+        if (data['add']) {
+            this._deadline += data['add'];
+            this.clearDataValue('add');
+        }
         // 处理数组参数格式[剩余时间, 总时间]
-        if (data instanceof Array) {
+        else if (data instanceof Array) {
             const remaining = Number(data[0]);
             if (remaining <= 0) {
                 this.setLabel('');
