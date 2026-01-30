@@ -615,7 +615,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                 }
             } else {
                 // 缓存未命中时回退加载
-                this.loadByUrl();
+                this.loadByUuid();
             }
         }
     }
