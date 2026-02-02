@@ -2,6 +2,7 @@
 import { EDITOR, ccclass, property, menu, executeInEditMode, Component, Node, ToggleContainer, Toggle, EventTouch } from '../../yj';
 import { } from 'cc/env';
 import { no } from '../../no';
+import { YJSoundEffectManager } from '../audio/YJSoundEffectManager';
 
 /**
  * Predefined variables
@@ -133,7 +134,9 @@ export class YJToggleGroupManager extends ToggleContainer {
                 toggle.isChecked = false;
             }
         }
-
+        for (let i = 0, n = toggles.length; i < n; i++) {
+            toggles[i].clickEvents.push(no.createEventHandler(this.node, YJToggleGroupManager, 'onClick'))
+        }
         if (EDITOR) return;
         if (this._allowSwitchOff) {
             for (let i = 0, n = toggles.length; i < n; i++) {
@@ -255,6 +258,10 @@ export class YJToggleGroupManager extends ToggleContainer {
         if (this._t <= 0) {
             this.setTogglesInteractable(true);
         }
+    }
+
+    private onClick() {
+        YJSoundEffectManager.ins.playClickSoundEffect();
     }
 }
 
