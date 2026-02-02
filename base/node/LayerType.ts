@@ -48,6 +48,8 @@ export const LayerType = {
 export const GuiLayerType = {
     Base: 'ui',
     Navigation: 'float',
+    Game: 'game',
+    GameOver: 'gameOver',
     Window: 'ui',
     Popup: 'popup',
     Guide: 'dialog',

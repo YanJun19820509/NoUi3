@@ -114,9 +114,9 @@ export class GuiManager {
         }
     }
 
-    private static createNewLayer(name: string) {
+    public static createNewLayer(name: string, sibling?: number) {
         if (gui[name]) return;
-        gui[name] = gui.layers.$add(name, LayerBase, { size: view.getVisibleSize() });
+        gui[name] = gui.layers.$add('gui_' + name, LayerBase, { size: view.getVisibleSize(), sibling });
     }
 
     private static _initData(panel: GuiPanel, params: any) {
