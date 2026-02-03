@@ -7,6 +7,7 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
+import { TweenSetPlay, parseTweenData } from '@hackUi/extend/TweenSet';
 
 /**
  * Predefined variables
@@ -450,7 +451,7 @@ export class SetCreateNode extends HackUi {
                 this.uiAnim.playOtherNode(item); // 播放指定动画
             } else if (this.isFirst) {
                 // 首次创建默认缩放动画
-                no.TweenSet.play(no.parseTweenData([
+                TweenSetPlay(parseTweenData([
                     {
                         set: 1, // 初始状态
                         props: { scale: [.8, .8] } // 缩放归零

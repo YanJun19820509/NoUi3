@@ -2,6 +2,7 @@
 import { ccclass, menu } from '../../yj';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
 import { no } from '../../no';
+import { TweenSet, parseTweenData } from '@hackUi/extend/TweenSet';
 
 /**
  * Predefined variables
@@ -46,7 +47,7 @@ export class SetBlink extends SetNodeTweenAction {
      * }) 
      * 将生成：淡出(0.166s) → 淡入(0.166s) → 重复1次 → 总共闪烁2次
      */
-    protected createAction(data: any): no.TweenSet | no.TweenSet[] {
+    protected createAction(data: any): TweenSet | TweenSet[] {
         // 构建动画阶段配置数组
         let d = [
             // 淡出阶段：节点透明度从255降到0
@@ -72,7 +73,7 @@ export class SetBlink extends SetNodeTweenAction {
         ];
 
         // 将配置数据转换为实际的动画对象
-        const a = no.parseTweenData(d, this.node);
+        const a = parseTweenData(d, this.node);
         d = null;
         return a;
     }

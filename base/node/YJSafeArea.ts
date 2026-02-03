@@ -34,8 +34,8 @@ export class YJSafeArea extends SafeArea {
         }
 
         if (EDITOR) {
-            widget.top = widget.bottom = widget.left = widget.right = 0;
-            widget.isAlignTop = widget.isAlignBottom = widget.isAlignLeft = widget.isAlignRight = true;
+            // widget.top = widget.bottom = widget.left = widget.right = 0;
+            // widget.isAlignTop = widget.isAlignBottom = widget.isAlignLeft = widget.isAlignRight = true;
             return;
         }
         // IMPORTANT: need to update alignment to get the latest position
@@ -49,7 +49,7 @@ export class YJSafeArea extends SafeArea {
         const safeArea = sys.getSafeAreaRect();
         if (screenHeight > screenWidth) {
             widget.top = this.safeTop ? screenHeight - safeArea.y - safeArea.height : 0;
-            widget.bottom = this.safeBottom ? safeArea.y : 0;
+            widget.bottom = Math.max(widget.bottom, this.safeBottom ? safeArea.y : 0);
         } else {
             // widget.left = safeArea.x;
             // widget.right = screenWidth - safeArea.x - safeArea.width;

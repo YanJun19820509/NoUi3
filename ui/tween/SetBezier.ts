@@ -2,6 +2,7 @@
 import { ccclass, menu, Vec2, v2, Vec3, v3 } from '../../yj';
 import { no } from '../../no';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
+import { TweenSet, parseTweenData } from '@hackUi/extend/TweenSet';
 
 /**
  * Predefined variables
@@ -44,7 +45,7 @@ export class SetBezier extends SetNodeTweenAction {
      *     segment: 30
      * })
      */
-    protected createAction(data: any): no.TweenSet | no.TweenSet[] {
+    protected createAction(data: any): TweenSet | TweenSet[] {
         // 生成贝塞尔曲线路径点（世界坐标）
         let points = no.bezierPoints(this.getControlPoints(data.points), data.segment || 50);
         points.shift(); // 移除起始点（节点当前位置）
@@ -64,7 +65,7 @@ export class SetBezier extends SetNodeTweenAction {
                 }
             });
         }
-        const tweenData = no.parseTweenData(arr, this.node);
+        const tweenData = parseTweenData(arr, this.node);
         points = null;
         arr = null;
         return tweenData;

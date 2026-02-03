@@ -479,7 +479,7 @@ export class YJDataWork extends Component {
      * const goldUIs = this.getUis('gold');
      */
     private getUis(key: string): HackUi[] {
-        return this._data2ui.get(key);
+        return this._data2ui?.get(key);
     }
 
     /**

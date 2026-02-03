@@ -2,6 +2,7 @@
 import { ccclass, property, menu, Node } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { TweenSet, parseTweenData, TweenSetPlay } from '@hackUi/extend/TweenSet';
 
 /**
  * Predefined variables
@@ -62,7 +63,7 @@ export class SetNodeTweenAction extends HackUi {
     canDisable: boolean = false;
 
     // 当前缓动动画实例（支持单个或数组）
-    private _action: no.TweenSet | no.TweenSet[];
+    private _action: TweenSet | TweenSet[];
 
     /**
      * 组件禁用时回调
@@ -98,8 +99,8 @@ export class SetNodeTweenAction extends HackUi {
      * @param data 缓动配置数据
      * @returns 缓动动画实例或实例数组
      */
-    protected createAction(data: any): no.TweenSet | no.TweenSet[] {
-        return no.parseTweenData(data, this.targetNode || this.node);
+    protected createAction(data: any): TweenSet | TweenSet[] {
+        return parseTweenData(data, this.targetNode || this.node);
     }
 
     /**
@@ -107,7 +108,7 @@ export class SetNodeTweenAction extends HackUi {
      * @流程 1.播放动画 2.动画完成后执行endCall回调
      */
     private run() {
-        no.TweenSet.play(this._action, () => {
+        TweenSetPlay(this._action, () => {
             no.EventHandlerInfo.execute(this.endCall);
         });
     }

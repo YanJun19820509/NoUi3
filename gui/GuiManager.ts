@@ -5,6 +5,7 @@ import { ccclass, easing, js, Node, Prefab, view } from "../yj";
 import { YJDataWork } from "../base/YJDataWork";
 import { GuiPanel } from "./GuiPanel";
 import { LayerBase } from "@core/gui/LayerBase";
+import { TweenSetPlay, parseTweenData } from "@hackUi/extend/TweenSet";
 
 @ccclass('GuiManager')
 export class GuiManager {
@@ -73,7 +74,7 @@ export class GuiManager {
             };
             for (let i = 0, n = children.length; i < n; i++) {
                 child = children[i];
-                no.TweenSet.play(no.parseTweenData(tweenData, child))
+                TweenSetPlay(parseTweenData(tweenData, child))
             }
             no.scheduleOnce(() => cb?.(panel), .6, this);
         });

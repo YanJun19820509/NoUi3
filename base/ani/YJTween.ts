@@ -1,6 +1,7 @@
 import { EasingType } from "../../types";
 import { no } from "../../no";
 import { DEBUG, Node, UIOpacity, UITransform, ccclass, easing, isValid, js, quat, size, v2, v3 } from "../../yj";
+import { parseTweenData, TweenSet } from "@hackUi/extend/TweenSet";
 
 /**
  * 缓动库，用法同cocos的Tween，支持链式写法
@@ -1566,15 +1567,15 @@ if (YJTweenTest) {
         }
     };
 
-    js.mixin(no.TweenSet.prototype, a);
-    js.mixin(no.TweenSet, {
+    js.mixin(TweenSet.prototype, a);
+    js.mixin(TweenSet, {
         /**
          * 播放缓动动画
          * @param tweenSets 如果tweenSets是Array，则按并行处理
          * @param endCall 执行完回调
          * @param target 并行时用于处理目标销毁的情况
          */
-        play(tweenSets: no.TweenSet | no.TweenSet[], endCall?: () => void, target?: any) {
+        play(tweenSets: TweenSet | TweenSet[], endCall?: () => void, target?: any) {
             if (tweenSets instanceof Array) {
                 let all = tweenSets.length,
                     n = 0;
@@ -1596,9 +1597,9 @@ if (YJTweenTest) {
         },
     });
 
-    no.parseTweenData = function (data: any, node: Node): no.TweenSet | no.TweenSet[] {
-        const _tween = new no.TweenSet(node);
-        _tween.setTweenData(data);
-        return _tween;
-    };
+    // parseTweenData = function (data: any, node: Node): TweenSet | TweenSet[] {
+    //     const _tween = new TweenSet(node);
+    //     _tween.setTweenData(data);
+    //     return _tween;
+    // };
 }

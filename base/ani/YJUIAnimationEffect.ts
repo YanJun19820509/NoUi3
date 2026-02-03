@@ -1,3 +1,4 @@
+import { parseTweenData, TweenSetPlay, TweenSetStop } from "@hackUi/extend/TweenSet";
 import { no } from "../../no";
 import { nodeTargetManager } from "../../NodeTargetManager";
 import { EasingType, Range } from "../../types";
@@ -1252,7 +1253,7 @@ export class YJUIAnimationEffect extends Component {
         // 当组件被禁用时自动停止所有动画
         // @实现说明 使用TweenSet.stop确保完全停止节点上的所有缓动
         // @示例 场景切换时自动停止正在进行的UI动画
-        no.TweenSet.stop(this.node);
+        TweenSetStop(this.node);
     }
 
     private getAnimationEffectInfoByType(type: string) {
@@ -1344,7 +1345,7 @@ export class YJUIAnimationEffect extends Component {
      * popup.onClose = () => this.a_stop();
      */
     public a_stop() {
-        no.TweenSet.stop(this.node);
+        TweenSetStop(this.node);
     }
 
     /**
@@ -1487,7 +1488,7 @@ export class YJUIAnimationEffect extends Component {
         for (let i = 0; i < serialAnimationEffects.length; i++) {
             a = a.concat(serialAnimationEffects[i].getTweenSet(node));
         }
-        no.TweenSet.play(no.parseTweenData(a, node), () => {
+        TweenSetPlay(parseTweenData(a, node), () => {
             onEnd?.();
         });
     }
