@@ -121,22 +121,29 @@ export class SetScrollToPercent extends HackUi {
         let ns = this.scrollView.node.getComponent(UITransform).getBoundingBox().size;
         let at = this.at;
 
-        // 获取当前滚动百分比
+
+        // 计算per所在位置相对于视口的位置百分比
         let curOffet = this.scrollView.getScrollOffset();
-        let curPerMax: number, curPerMin: number;
+        let targetPos: number;
         if (!this.scrollView.vertical) {
-            curPerMax = (ns.width - curOffet.x - this.itemSize.width) / cs.width;
-            curPerMin = - curOffet.x / cs.width;
+            targetPos = cs.width * per + curOffet.x + this.itemSize.width / 2;
         }
         if (!this.scrollView.horizontal) {
-            curPerMax = (ns.height + curOffet.y - this.itemSize.height) / cs.height;
-            curPerMin = curOffet.y / cs.height;
+            targetPos = cs.height * per - curOffet.y - this.itemSize.height / 2;
         }
-        // 如果目标百分比在当前滚动范围内，则不进行滚动
-        if (per >= curPerMin && per <= curPerMax) return;
+        let targetPer = targetPos / ns.width;
 
-        if (per < .5 && at > 0.5) at = 1 - at;
-        else if (per > .5 && at < 0.5) at = 1 - at;
+        if (targetPer < 1) {
+            if (targetPer < .5) {
+                if (at > 0.5)
+                    at = 1 - at;
+                if (targetPer > at) return;
+            } else if (targetPer > .5) {
+                if (at < 0.5)
+                    at = 1 - at;
+                if (targetPer < at) return;
+            }
+        }
 
         // 计算目标偏移量（考虑视口相对位置和自定义偏移）
         let offset = v2(
