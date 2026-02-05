@@ -1,3 +1,4 @@
+import { no } from "@hackUi/no";
 import { ccclass, disallowMultiple, Component, Node } from "../../yj";
 
 
@@ -57,10 +58,16 @@ export class YJNotBatchItem extends Component {
     public resetProperties() {
         // 还原透明度原始值
         this.node._uiProps.localOpacity = this.opacity;
-        
+
         // 直接操作父节点children数组来精确插入原始位置
         // 注意：使用数组splice方法避免触发节点onChildAdded事件
         this.parent['_children'].splice(this.index, 0, this.node);
+    }
+
+    public setParent(parent: Node) {
+        let pos = no.nodePositionInOtherNode(this.node, parent);
+        no.position(this.node, pos);
+        this.node.parent = parent;
     }
 }
 

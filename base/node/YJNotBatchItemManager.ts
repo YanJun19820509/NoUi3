@@ -1,3 +1,4 @@
+import { no } from '@hackUi/no';
 import { ccclass, Component, director, isValid, UITransform, Node, Director } from '../../yj';
 import { YJNotBatchItem } from './YJNotBatchItem';
 /**
@@ -15,7 +16,7 @@ export class YJNotBatchItemManager extends Component {
      * const allBatchManagers = YJNotBatchItemManager.batchNodes;
      * allBatchManagers.forEach(manager => console.log(manager.name));
      */
-    public static batchNodes: Node[] = [];
+    // public static batchNodes: Node[] = [];
 
     /** 
      * 用于存放不参与合批的节点的临时容器层
@@ -39,15 +40,7 @@ export class YJNotBatchItemManager extends Component {
      * // 添加本组件后会在节点下生成_batch_layer子节点
      */
     protected onLoad(): void {
-        YJNotBatchItemManager.batchNodes.push(this.node);
-        // 创建容器层
-        this._layer = new Node('_batch_layer');
-        const ut = this._layer.addComponent(UITransform);
-        // 设置容器层的大小和锚点与当前节点一致
-        ut.setContentSize(this.node.getComponent(UITransform).contentSize.clone());
-        ut.setAnchorPoint(this.node.getComponent(UITransform).anchorPoint.clone());
-        this._layer.layer = this.node.layer;
-        this._layer.parent = this.node;
+        // YJNotBatchItemManager.batchNodes.push(this.node);
     }
 
     /** 
@@ -56,12 +49,12 @@ export class YJNotBatchItemManager extends Component {
      * // 当节点被销毁时：
      * // 自动从静态管理列表中移除，防止内存泄漏
      */
-    protected onDestroy(): void {
-        let index = YJNotBatchItemManager.batchNodes.indexOf(this.node);
-        if (index > -1) {
-            YJNotBatchItemManager.batchNodes.splice(index, 1);
-        }
-    }
+    // protected onDestroy(): void {
+    //     let index = YJNotBatchItemManager.batchNodes.indexOf(this.node);
+    //     if (index > -1) {
+    //         YJNotBatchItemManager.batchNodes.splice(index, 1);
+    //     }
+    // }
 
     /** 
      * 将不参与合批的子节点移动到新的容器层
@@ -77,8 +70,17 @@ export class YJNotBatchItemManager extends Component {
      */
     public setNotBatchChildrenToNewLayer() {
         if (!this.enabledInHierarchy) return;
+
+        // 创建容器层
+        this._layer = no.newNode('_batch_layer', [UITransform]);
+        // 设置容器层的大小和锚点与当前节点一致
+        no.size(this._layer, no.size(this.node));
+        let anchor = no.anchor(this.node);
+        no.anchor(this._layer, anchor.x, anchor.y);
+        this._layer.layer = this.node.layer;
+        this._layer.parent = this.node;
         this.getNotBatchChildren(this.node);
-        this.getSubNotBatchChildren();
+        // this.getSubNotBatchChildren();
     }
 
     /**
@@ -102,20 +104,23 @@ export class YJNotBatchItemManager extends Component {
      */
     private getNotBatchChildren(parent: Node) {
         if (parent && parent.name != '_batch_layer') {
-            let children = parent['_children'];
-            if (children.length == 0) return;
+            let children = parent.children;
+            let n = children.length;
+            if (n == 0) return;
             let child: Node;
             let notBatchItem: YJNotBatchItem;
-            for (let i = children.length - 1; i >= 0; i--) {
+            for (let i = n - 1; i >= 0; i--) {
                 child = children[i];
                 if (isValid(child, true)) {
                     notBatchItem = child.getComponent(YJNotBatchItem);
                     if (notBatchItem && notBatchItem.enabled) {
                         // 保存节点属性并移动到容器层
-                        notBatchItem.saveProperties();
-                        children.splice(i, 1);
-                        this._layer['_children'].unshift(child);
-                        if (child['_children'].length > 0) this._subNodes.unshift(child);
+                        // notBatchItem.saveProperties();
+                        // children.splice(i, 1);
+                        // this._layer['_children'].unshift(child);
+                        // if (child['_children'].length > 0) this._subNodes.unshift(child);
+                        // child.parent = this._layer;
+                        notBatchItem.setParent(this._layer);
                     } else {
                         this.getNotBatchChildren(child);
                     }
@@ -186,25 +191,25 @@ export class YJNotBatchItemManager extends Component {
 }
 
 
-director.on(Director.EVENT_BEFORE_DRAW, (dt) => {
-    let nodes = YJNotBatchItemManager.batchNodes;
-    let node: Node;
-    for (let i = 0; i < nodes.length; i++) {
-        node = nodes[i];
-        if (node.active && node.isValid) {
-            node.getComponent(YJNotBatchItemManager).setNotBatchChildrenToNewLayer();
-        }
-    }
-});
+// director.on(Director.EVENT_BEFORE_DRAW, (dt) => {
+//     let nodes = YJNotBatchItemManager.batchNodes;
+//     let node: Node;
+//     for (let i = 0; i < nodes.length; i++) {
+//         node = nodes[i];
+//         if (node.active && node.isValid) {
+//             node.getComponent(YJNotBatchItemManager).setNotBatchChildrenToNewLayer();
+//         }
+//     }
+// });
 
 
-director.on(Director.EVENT_AFTER_DRAW, (dt) => {
-    let nodes = YJNotBatchItemManager.batchNodes;
-    let node: Node;
-    for (let i = 0; i < nodes.length; i++) {
-        node = nodes[i];
-        if (node.active && node.isValid) {
-            node.getComponent(YJNotBatchItemManager).resetNotBatchChildrenToOldLayer();
-        }
-    }
-});
+// director.on(Director.EVENT_AFTER_DRAW, (dt) => {
+//     let nodes = YJNotBatchItemManager.batchNodes;
+//     let node: Node;
+//     for (let i = 0; i < nodes.length; i++) {
+//         node = nodes[i];
+//         if (node.active && node.isValid) {
+//             node.getComponent(YJNotBatchItemManager).resetNotBatchChildrenToOldLayer();
+//         }
+//     }
+// });

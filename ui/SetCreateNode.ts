@@ -310,7 +310,9 @@ export class SetCreateNode extends HackUi {
             while (this._dataIdx < n) {
                 this.setItem();
             }
-            no.EventHandlerInfo.execute(this.onComplete); // 执行完成回调
+            this.scheduleOnce(() =>
+                no.EventHandlerInfo.execute(this.onComplete) // 执行完成回调
+                , .1);
         }
 
         this._isSettingData = false; // 释放数据设置锁

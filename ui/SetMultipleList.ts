@@ -575,7 +575,9 @@ export class SetMultipleList extends HackUi {
         if (!this?.node?.isValid) return;
 
         // 执行完成回调（示例：更新滚动条、播放动画等）
-        no.EventHandlerInfo.execute(this.onComplete);
+        this.scheduleOnce(() =>
+            no.EventHandlerInfo.execute(this.onComplete) // 执行完成回调
+            , 1);
 
         // 重置数据设置状态
         this._isSettingData = false;
