@@ -17,6 +17,8 @@ out float t2;
 out float ext;
 
 vec4 vert() {
+  t1 = 0.;
+  t2 = 0.;
   ext = 0.;
   vec4 pos = vec4(a_position, 1);
   if (pos.z > 0.){
