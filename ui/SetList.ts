@@ -326,7 +326,7 @@ export class SetList extends HackUi {
         // 空数据情况处理
         if (data.length == 0) {
             this.content.children.forEach(child => no.visible(child.children[0], false));
-            no.EventHandlerInfo.execute(this.onComplete);
+            this.complete();
             return;
         }
 
@@ -456,7 +456,7 @@ export class SetList extends HackUi {
             this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
             this.scheduleOnce(() => {
                 // 执行完成回调
-                no.EventHandlerInfo.execute(this.onComplete);
+                this.complete();
             }, 0.06 * this.showMax);
         }
         else if (!this._1b1) {
@@ -465,7 +465,7 @@ export class SetList extends HackUi {
             }
 
             // 执行完成回调
-            no.EventHandlerInfo.execute(this.onComplete);
+            this.complete();
         }
         // 普通模式
         else {
@@ -477,7 +477,7 @@ export class SetList extends HackUi {
             this.schedule(() => this.setItem(i++), 0.06, this.showMax - 1);
             this.scheduleOnce(() => {
                 // 执行完成回调
-                no.EventHandlerInfo.execute(this.onComplete);
+                this.complete();
             }, 0.06 * this.showMax);
         }
 
@@ -744,5 +744,11 @@ export class SetList extends HackUi {
             showMax = no.ceil(viewSize.width / this.itemSize.width); // 水平方向计算列数
         }
         this.showMax = showMax + 2; // 增加缓冲项
+    }
+
+    private complete() {
+        this.scheduleOnce(() => {
+            no.EventHandlerInfo.execute(this.onComplete);
+        }, 0.5);
     }
 }

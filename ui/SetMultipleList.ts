@@ -574,11 +574,6 @@ export class SetMultipleList extends HackUi {
         // 最终有效性检查
         if (!this?.node?.isValid) return;
 
-        // 执行完成回调（示例：更新滚动条、播放动画等）
-        this.scheduleOnce(() =>
-            no.EventHandlerInfo.execute(this.onComplete) // 执行完成回调
-            , 1);
-
         // 重置数据设置状态
         this._isSettingData = false;
     }
@@ -620,35 +615,19 @@ export class SetMultipleList extends HackUi {
                     // 找到第一个>=lastIndex的索引作为起始点
                     if (dataIndexes[i] >= this.lastIndex) {
                         const items = this.itemsMap[type];
-
-                        // 批量更新元素显示（示例：同时更新3个相同模板的元素）
-                        // for (let j = 0; j < items.length; j++) {
-                        //     const item = items[j];
-                        //     const dataIndex = dataIndexes[i + j];
-
-                        //     if (dataIndex != undefined) {
-                        //         // 有效数据索引时更新元素
-                        //         this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
-                        //         this.setItemPosition(item, dataIndex);           // 示例：设置位置
-                        //         no.visible(item, true);                          // 显示元素
-                        //     } else {
-                        //         // 超出数据范围时隐藏元素
-                        //         no.visible(item, false);
-                        //         item['__dataIndex'] = -1;
-                        //     }
-                        // }
                         let j = 0;
-                        if (this._1b1)//第1次加载，使用定时器逐个更新
-                            this.schedule(() => this.setItem(items, dataIndexes, i, j++), 0.06, items.length - 1);
-                        else//非第1次加载，逐个更新
-                            while (j < items.length) {
-                                this.setItem(items, dataIndexes, i, j++)
-                            }
+                        while (j < items.length) {
+                            this.setItem(items, dataIndexes, i, j++)
+                        }
                         break; // 找到第一个有效区间后跳出循环
                     }
                 }
             }
         }
+        // 执行完成回调
+        this.scheduleOnce(() => {
+            no.EventHandlerInfo.execute(this.onComplete);
+        }, 0.5);
     }
 
     private setItem(items: Node[], dataIndexes: number[], i: number, j: number) {
