@@ -326,7 +326,7 @@ export class YJAudioManager extends Component {
     public playForever(path: string, volume = 1): void {
         if (!this._isBGMOn || !this.audioSourceForever) return;
         if (this.clips.has(path)) {
-            this.audioSourceForever.stop();
+            // this.audioSourceForever.stop();
             let c = this.clips.get(path);
             this.audioSourceForever.clip = c;
             this.audioSourceForever.volume = volume;
@@ -520,7 +520,7 @@ export class YJAudioManager extends Component {
     private _playClip(clip: AudioClip, volume = 1, loop = true): void {
         if (!this.audioSource) return;
         if (loop) {
-            this.audioSource.stop();
+            // this.audioSource.stop();//好像play中会调用stop
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
             this.audioSource.volume = volume;
