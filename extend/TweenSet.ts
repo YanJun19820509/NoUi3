@@ -376,6 +376,7 @@ export function parseTweenData(data: any, node: Node): TweenSet | TweenSet[] {
  * );
  */
 export function TweenSetPlay(tweenSets: TweenSet | TweenSet[], endCall?: () => void, target?: any) {
+    if (!tweenSets) return;
     if (tweenSets instanceof Array) {
         let all = tweenSets.length,
             n = 0;
