@@ -1,6 +1,6 @@
 import { ccclass, macro, requireComponent, Sprite, SpriteAtlas } from '../yj';
 import { HackUi } from '../ui/HackUi';
-import { no } from '../no';
+import { assetUtils } from '../extend/assetUtils';
 
 /**
  * 精灵图集实现序列帧动画,条件是图集的精灵帧命名是纯数字从1开始递增
@@ -28,7 +28,7 @@ export class SetSpriteAtlasAni extends HackUi {
         const { path, time, loop, duration } = data;
         if (path && path !== this._curPath) {
             this._curPath = path;
-            no.assetBundleManager.decRef(this._curSpriteAtlas);
+            assetUtils.assetBundleManager.decRef(this._curSpriteAtlas);
             this._curSpriteAtlas = null;
         }
         if (!this._sprite) {
@@ -48,7 +48,7 @@ export class SetSpriteAtlasAni extends HackUi {
     }
 
     private loadAtlas(path: string, cb: () => void) {
-        no.assetBundleManager.loadAtlas(path, atlas => {
+        assetUtils.assetBundleManager.loadAtlas(path, atlas => {
             this._curSpriteAtlas = atlas;
             this._sprite.spriteAtlas = null;
             this._sprite.spriteAtlas = atlas;
@@ -90,7 +90,7 @@ export class SetSpriteAtlasAni extends HackUi {
         this._curPath = null;
         this._play = false;
         if (this._curSpriteAtlas) {
-            no.assetBundleManager.decRef(this._curSpriteAtlas);
+            assetUtils.assetBundleManager.decRef(this._curSpriteAtlas);
             this._curSpriteAtlas = null;
         }
     }

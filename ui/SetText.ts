@@ -1,8 +1,9 @@
 
 import { ccclass, property, menu, Label, RichText, EDITOR, BitmapFont, isValid, Layout } from '../yj';
-import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
+import { stringUtils } from '../extend/stringUtils';
 
 /**
  * Predefined variables
@@ -45,7 +46,7 @@ export class SetText extends HackUi {
     onLoad() {
         super.onLoad();
         if (!this.node.parent.getComponent(Layout)) {
-            no.siblingIndex(this.node, this.node.parent.children.length - 1);
+            nodeUtils.siblingIndex(this.node, this.node.parent.children.length - 1);
         }
     }
 
@@ -87,11 +88,11 @@ export class SetText extends HackUi {
         // 字符串类型处理（支持多参数分割）
         if (typeof data == 'string') {
             if (data != '')
-                s = no.formatString(this.formatter, data.split('|'));
+                s = stringUtils.formatString(this.formatter, data.split('|'));
         } else if (typeof data == 'number') { // 数值类型处理
-            s = no.formatString(this.formatter, { '0': data });
+            s = stringUtils.formatString(this.formatter, { '0': data });
         } else { // 对象类型处理
-            s = no.formatString(this.formatter, data);
+            s = stringUtils.formatString(this.formatter, data);
         }
 
         // 编辑器模式直接更新

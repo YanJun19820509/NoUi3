@@ -3,7 +3,7 @@
 import { ccclass, property, requireComponent } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { HackUi } from './HackUi';
-import { no } from '../no';
+import { stringUtils } from '../extend/stringUtils';
 
 /**
  * Predefined variables
@@ -54,15 +54,15 @@ export class SetNodeTarget extends HackUi {
         // 处理字符串类型数据（支持多个参数）
         if (typeof data == 'string') {
             if (data != '')
-                s = no.formatString(this.formatter, data.split('|'));
-        } 
+                s = stringUtils.formatString(this.formatter, data.split('|'));
+        }
         // 处理数字类型数据（转换为包含0属性的对象）
         else if (typeof data == 'number') {
-            s = no.formatString(this.formatter, { '0': data });
-        } 
+            s = stringUtils.formatString(this.formatter, { '0': data });
+        }
         // 处理对象类型数据（直接使用对象属性）
         else {
-            s = no.formatString(this.formatter, data);
+            s = stringUtils.formatString(this.formatter, data);
         }
         // 将格式化后的字符串设置到目标组件
         this.getComponent(YJNodeTarget).setType(s);

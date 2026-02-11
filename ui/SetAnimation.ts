@@ -3,6 +3,9 @@ import { ccclass, property, requireComponent, Animation } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { AnimationClip } from 'cc';
+import { animationUtils } from '../extend/animationUtils';
+import { assetUtils } from '../extend/assetUtils';
+import { arrayUtils } from '../extend/arrayUtils';
 
 /**
  * Predefined variables
@@ -77,7 +80,7 @@ export class SetAnimation extends HackUi {
 
     protected onEnable(): void {
         if (this.autoPlay && this.defaultName) {
-            this._play(this.defaultName, 1, 1);
+            animationUtils.play(this.node, { name: this.defaultName, speed: 1, repeat: 1 });
         }
     }
     /**
@@ -93,7 +96,7 @@ export class SetAnimation extends HackUi {
         while (n-- > 0) {
             let clip = this.needReleaseClips.shift();
             ani.removeState(clip.name);      // 移除动画状态
-            no.assetBundleManager.decRef(clip); // 释放资源引用
+            assetUtils.assetBundleManager.decRef(clip); // 释放资源引用
         }
     }
 
@@ -129,7 +132,7 @@ export class SetAnimation extends HackUi {
             if (!ani.getState(name) && path) {
                 this._loadClipAndPlay(path, name, speed, repeat, wrapMode);
             } else {
-                this._play(name, speed, repeat, wrapMode);
+                animationUtils.play(this.node, { name, speed, repeat, wrapMode, beforeStartCb: () => this.onPlay(), afterEndCb: () => this.onFinished() });
             }
         }
     }
@@ -149,52 +152,14 @@ export class SetAnimation extends HackUi {
      * 4. 执行播放逻辑
      */
     private _loadClipAndPlay(path: string, name: string, speed = 1, repeat?: number, wrapMode?: AnimationClip.WrapMode) {
-        no.assetBundleManager.loadAnimationClip(path, (clip) => {
+        assetUtils.assetBundleManager.loadAnimationClip(path, (clip) => {
             // 校验节点有效性（防止加载完成时组件已销毁）
             if (this?.node?.isValid) {
                 this.getComponent(Animation).createState(clip, name);
-                this._play(name, speed, repeat, wrapMode);
-                no.addToArray(this.needReleaseClips, clip); // 记录需释放的资源
+                animationUtils.play(this.node, { name, speed, repeat, wrapMode, beforeStartCb: () => this.onPlay(), afterEndCb: () => this.onFinished() });
+                arrayUtils.addToArray(this.needReleaseClips, clip); // 记录需释放的资源
             }
         });
-    }
-
-    // ======================== 动画控制逻辑 ========================
-    /**
-     * 执行动画播放
-     * @param name 动画状态名称
-     * @param speed 播放速度
-     * @param repeat 重复次数（null/-1=无限循环，0=停止）
-     * 
-     * @实现特性
-     * - 支持播放控制：播放/停止/重置
-     * - 自动处理事件监听
-     * - 灵活的循环控制
-     */
-    private _play(name: string, speed = 1, repeat?: number, wrapMode?: AnimationClip.WrapMode) {
-        let ani: Animation = this.getComponent(Animation);
-        let state = ani.getState(name);
-
-        // 处理停止指令
-        if (repeat == 0) {
-            state?.stop();
-            state?.setTime(0); // 重置播放进度
-            return;
-        }
-
-        if (state) {
-            // 注册动画事件监听
-            ani.on(Animation.EventType.PLAY, this.onPlay, this);
-            ani.on(Animation.EventType.FINISHED, this.onFinished, this);
-
-            // 配置循环参数
-            if (repeat == null || repeat == -1) repeat = 999;
-            if (wrapMode != null)
-                state.wrapMode = wrapMode;
-            state.repeatCount = repeat;
-            state.speed = speed;
-            state.play();
-        }
     }
 
     // ======================== 事件回调 ========================

@@ -1,6 +1,7 @@
 import { Component, DEBUG, EDITOR, ccclass, executeInEditMode, isValid, property, Node } from '../yj';
 import { no } from '../no';
 import { YJJobManager } from '../base/YJJobManager';
+import { nodeUtils } from '../extend/nodeUtils';
 
 // export const { ccclass, property, executeInEditMode } = _decorator;
 
@@ -133,7 +134,7 @@ export class HackUi extends Component {
             // 编辑器环境下自动配置数据源
             if (!this.registerNode) {
                 // 使用no工具查找父节点中的YJDataWork组件
-                this.registerNode = no.getComponentInParents(this.node, 'YJDataWork')?.node;
+                this.registerNode = nodeUtils.getComponentInParents(this.node, 'YJDataWork')?.node;
             }
         } else {
             // 运行时优化：禁用未使用的update循环

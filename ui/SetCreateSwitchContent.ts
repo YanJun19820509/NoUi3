@@ -5,6 +5,8 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJDataWork } from '../base/YJDataWork';
+import { nodeUtils } from '../extend/nodeUtils';
+import { arrayUtils } from '../extend/arrayUtils';
 
 /**
  * Predefined variables
@@ -85,7 +87,7 @@ class ContentInfo {
             // // 使用透明度控制可见性，位置偏移确保完全隐藏
             // no.visibleByOpacity(this.loadedNode, v);
             // no.x(this.loadedNode, !v ? 20000 : this.loadedNode['__origin_x__']);
-            no.visibleByActiveInHierarchy(this.loadedNode, v);
+            nodeUtils.visibleByActiveInHierarchy(this.loadedNode, v);
             if (v) this.enableDataWork();
         }
     }
@@ -234,7 +236,7 @@ export class SetCreateSwitchContent extends HackUi {
      * }
      */
     public a_showByName(name: string) {
-        let i = no.indexOfArray(this.contents, name, 'name');
+        let i = arrayUtils.indexOfArray(this.contents, name, 'name');
         if (i == -1) return;
         this.a_showByIndex(i);
     }

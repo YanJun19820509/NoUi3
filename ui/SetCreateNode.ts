@@ -7,7 +7,8 @@ import { YJLoadAssets } from '../editor/YJLoadAssets';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
-import { TweenSetPlay, parseTweenData } from '@hackUi/extend/TweenSet';
+import { TweenSetPlay, parseTweenData } from '../extend/TweenSet';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -273,7 +274,7 @@ export class SetCreateNode extends HackUi {
         // 非增量模式时隐藏多余节点
         if (!this.onlyAdd && l > n) {
             for (let i = n; i < l; i++) {
-                no.visible(this._items[i], false);
+                nodeUtils.visible(this._items[i], false);
             }
         }
 
@@ -337,19 +338,18 @@ export class SetCreateNode extends HackUi {
      */
     private initItem(item: Node) {
         // 重置节点位置到原点
-        no.position(item, { x: 0, y: 0 });
+        nodeUtils.position(item, { x: 0, y: 0 });
 
         // 需要动画效果或首次创建时创建包装容器
         if (this.uiAnim?.enabled || this.isFirst) {
-            const box = no.newNode('box'); // 创建布局容器节点
-            box.addComponent(UIOpacity); // 添加透明度组件用于动画效果
+            const box = nodeUtils.newNode('box'); // 创建布局容器节点
 
             // 处理布局属性复制
             const layout = item.getComponent(Layout);
             if (!layout) {
                 // 无布局组件时直接设置容器尺寸
-                if (!this.itemSize) this.itemSize = no.size(item);
-                no.size(box, this.itemSize);
+                if (!this.itemSize) this.itemSize = nodeUtils.size(item);
+                nodeUtils.size(box, this.itemSize);
             } else {
                 // 完整复制布局属性到容器节点
                 const bLayout = box.addComponent(Layout);
@@ -369,8 +369,8 @@ export class SetCreateNode extends HackUi {
             }
 
             // 保持原始锚点设置
-            const a = no.anchor(item);
-            no.anchor(box, a.x, a.y);
+            const a = nodeUtils.anchor(item);
+            nodeUtils.anchor(box, a.x, a.y);
             box.addChild(item); // 将原始节点挂载到容器
             return box;
         }
@@ -422,16 +422,16 @@ export class SetCreateNode extends HackUi {
 
         // 处理空数据节点
         if (data == null) {
-            no.visible(item, false);
+            nodeUtils.visible(item, false);
             return;
         }
 
-        no.visible(item, true); // 确保节点可见
+        nodeUtils.visible(item, true); // 确保节点可见
 
         // 获取实际内容节点（当有包装容器时）
         if (this.uiAnim?.enabled || this.isFirst) {
             item = item.children[0];
-            no.visible(item, true);
+            nodeUtils.visible(item, true);
         }
 
         // 数据绑定到YJDataWork组件
@@ -507,7 +507,7 @@ export class SetCreateNode extends HackUi {
 
             item = this.initItem(item);
             item.parent = this.container;
-            no.visible(item, true);
+            nodeUtils.visible(item, true);
             this._items.push(item);
         }
 

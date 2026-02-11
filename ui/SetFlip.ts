@@ -1,5 +1,6 @@
 
-import { ccclass, property, Component, Node } from '../yj';
+import { ccclass, property } from '../yj';
+import { nodeUtils } from '../extend/nodeUtils';
 import { HackUi } from './HackUi';
 
 /**
@@ -65,13 +66,6 @@ export class SetFlip extends HackUi {
      * }
      */
     public a_flip() {
-        // 克隆原始缩放值避免污染原始数据
-        let scale = this.node.scale.clone();
-        // 水平翻转处理（X轴取反）
-        if (this.horizontal) scale.x *= -1;
-        // 垂直翻转处理（Y轴取反）
-        if (this.vertical) scale.y *= -1;
-        // 应用计算后的缩放值
-        this.node.setScale(scale);
+        nodeUtils.flip(this.node, this.horizontal, this.vertical);
     }
 }

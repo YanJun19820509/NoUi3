@@ -3,6 +3,9 @@ import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetCreateNode } from './SetCreateNode';
+import { nodeUtils } from '../extend/nodeUtils';
+import { mathUtils } from '../extend/mathUtils';
+import { arrayUtils } from '../extend/arrayUtils';
 
 
 const templateTypeKey = '_template_type_';
@@ -152,7 +155,7 @@ export class SetMultipleList extends HackUi {
             console.error('scrollView 为 null!');
             return;
         }
-        let viewSize = no.size(this.scrollView.view.node);
+        let viewSize = nodeUtils.size(this.scrollView.view.node);
         let isVertical = this.scrollView.vertical;
 
         let t: SetMultipleListInfo;
@@ -161,16 +164,16 @@ export class SetMultipleList extends HackUi {
             for (let i = 0, n = this.templates.length; i < n; i++) {
                 t = this.templates[i];
                 if (t.template) {
-                    t.itemSize = no.size(t.template);
-                    t.showMax = no.ceil(viewSize.height / t.itemSize.height);
+                    t.itemSize = nodeUtils.size(t.template);
+                    t.showMax = mathUtils.ceil(viewSize.height / t.itemSize.height);
                 }
             }
         } else {
             for (let i = 0, n = this.templates.length; i < n; i++) {
                 t = this.templates[i];
                 if (t.template) {
-                    t.itemSize = no.size(t.template);
-                    t.showMax = no.ceil(viewSize.width / t.itemSize.width);
+                    t.itemSize = nodeUtils.size(t.template);
+                    t.showMax = mathUtils.ceil(viewSize.width / t.itemSize.width);
                 }
             }
         }
@@ -374,13 +377,13 @@ export class SetMultipleList extends HackUi {
             this.content = this.scrollView.content;
         // 设置内容容器锚点（垂直列表顶部对齐，水平列表左对齐）
         if (this.isVertical) {
-            no.anchorY(this.content, 1); // 垂直列表Y轴锚点置顶
+            nodeUtils.anchorY(this.content, 1); // 垂直列表Y轴锚点置顶
         } else {
-            no.anchorX(this.content, 0); // 水平列表X轴锚点置左
+            nodeUtils.anchorX(this.content, 0); // 水平列表X轴锚点置左
         }
         // 缓存滚动视图相关参数
         this.scrollViewContent = this.scrollView.content;
-        this.scrollViewSize = no.size(this.scrollView.view.node);
+        this.scrollViewSize = nodeUtils.size(this.scrollView.view.node);
         // 初始化模板容器
         this.templateMap = {};
         this.itemsMap = {};
@@ -472,10 +475,10 @@ export class SetMultipleList extends HackUi {
         } else {
             _size = size(this.contentSize, maxSize);  // 水平：宽=总宽，高=最大元素高
         }
-        no.size(this.content, _size);
+        nodeUtils.size(this.content, _size);
 
         // 处理内容容器位置
-        let { x, y } = no.position(this.content);
+        let { x, y } = nodeUtils.position(this.content);
         if (this.autoScrollBack) {
             // 自动回滚到起始位置
             x = 0;
@@ -606,7 +609,7 @@ export class SetMultipleList extends HackUi {
                 // 隐藏所有该类型元素并重置数据索引
                 for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
                     item = items[itemIndex];
-                    no.visible(item, false);
+                    nodeUtils.visible(item, false);
                     item['__dataIndex'] = -1; // 使用数字类型-1表示未使用
                 }
             } else {
@@ -638,10 +641,10 @@ export class SetMultipleList extends HackUi {
             // 有效数据索引时更新元素
             this.setItemData(item, this.listData[dataIndex]); // 示例：更新UI显示
             this.setItemPosition(item, dataIndex);           // 示例：设置位置
-            no.visible(item, true);                          // 显示元素
+            nodeUtils.visible(item, true);                          // 显示元素
         } else {
             // 超出数据范围时隐藏元素
-            no.visible(item, false);
+            nodeUtils.visible(item, false);
             item['__dataIndex'] = -1;
         }
     }
@@ -690,13 +693,13 @@ export class SetMultipleList extends HackUi {
                 // 计算需要更新的目标索引
                 ni = i + showNum;                // 目标位置偏移量
                 nIndex = indexs[ni];             // 实际目标数据索引
-                nItem = no.itemOfArray(items, nIndex, '__dataIndex'); // 查找已绑定该索引的节点
+                nItem = arrayUtils.itemOfArray(items, nIndex, '__dataIndex'); // 查找已绑定该索引的节点
 
                 // 如果目标节点已存在则跳过
                 if (nItem) continue;
 
                 // 获取当前索引绑定的节点
-                item = no.itemOfArray(items, index, '__dataIndex');
+                item = arrayUtils.itemOfArray(items, index, '__dataIndex');
                 if (!item) continue;
 
                 // 更新节点数据和位置
@@ -704,7 +707,7 @@ export class SetMultipleList extends HackUi {
                 if (nd) {
                     this.setItemData(item, nd);        // 绑定新数据
                     this.setItemPosition(item, nIndex);// 设置新位置
-                    no.visible(item, true);            // 确保节点可见
+                    nodeUtils.visible(item, true);            // 确保节点可见
                 }
             }
         } else {
@@ -717,7 +720,7 @@ export class SetMultipleList extends HackUi {
                 items = this.itemsMap[templateType];
 
                 // 跳过已处理的节点
-                if (no.itemOfArray(items, index, '__dataIndex')) continue;
+                if (arrayUtils.itemOfArray(items, index, '__dataIndex')) continue;
 
                 // 计算需要复用的节点索引
                 indexs = this.typeDataIndexMap[templateType];
@@ -726,7 +729,7 @@ export class SetMultipleList extends HackUi {
                 if (nIndex == undefined) nIndex = -1;      // 处理越界情况
 
                 // 获取可复用的节点
-                item = no.itemOfArray(items, nIndex, '__dataIndex');
+                item = arrayUtils.itemOfArray(items, nIndex, '__dataIndex');
                 if (!item) continue;
 
                 // 更新节点为当前数据
@@ -734,7 +737,7 @@ export class SetMultipleList extends HackUi {
                 if (nd) {
                     this.setItemData(item, nd);
                     this.setItemPosition(item, index);
-                    no.visible(item, true);
+                    nodeUtils.visible(item, true);
                 }
             }
         }
@@ -785,10 +788,10 @@ export class SetMultipleList extends HackUi {
         // 根据滚动方向设置坐标
         if (this.isVertical) {
             // 垂直布局设置Y坐标
-            no.y(item, this.positionMap[index])
+            nodeUtils.y(item, this.positionMap[index])
         } else {
             // 水平布局设置X坐标
-            no.x(item, this.positionMap[index])
+            nodeUtils.x(item, this.positionMap[index])
         }
     }
 
@@ -820,11 +823,11 @@ export class SetMultipleList extends HackUi {
         if (this.isVertical) {
             // 垂直滚动：取Y轴负值（因为内容容器向下滚动时坐标为负）
             // 示例：当滚动到第3项时，curPos = 300（假设每项高100）
-            curPos = -no.y(this.scrollViewContent);
+            curPos = -nodeUtils.y(this.scrollViewContent);
         } else {
             // 水平滚动：取X轴负值（因为内容容器向右滚动时坐标为负）
             // 示例：当滚动到第2项时，curPos = 200（假设每项宽100）
-            curPos = -no.x(this.scrollViewContent);
+            curPos = -nodeUtils.x(this.scrollViewContent);
         }
 
         // 计算起始显示索引（当有滚动偏移时）

@@ -6,7 +6,11 @@ import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetCreateNode } from './SetCreateNode';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
-import { TweenSetPlay, parseTweenData } from '@hackUi/extend/TweenSet';
+import { TweenSetPlay, parseTweenData } from '../extend/TweenSet';
+import { nodeUtils } from '../extend/nodeUtils';
+import { arrayUtils } from '../extend/arrayUtils';
+import { scheduleUtils } from '../extend/scheduleUtils';
+import { mathUtils } from '../extend/mathUtils';
 
 /**
  * Predefined variables
@@ -271,7 +275,7 @@ export class SetList extends HackUi {
     public updateData(data: any) {
         let a = [].concat(data);
         if (this.columnNumber > 1) {
-            a = no.arrayToArrays(a, this.columnNumber);
+            a = arrayUtils.arrayToArrays(a, this.columnNumber);
         }
         this.listData = a;
     }
@@ -321,11 +325,11 @@ export class SetList extends HackUi {
             if (data.data) data = data.data;
         }
         // 将输入数据转换为标准数组（支持类数组对象）
-        data = no.toArray(data);
+        data = arrayUtils.toArray(data);
 
         // 空数据情况处理
         if (data.length == 0) {
-            this.content.children.forEach(child => no.visible(child.children[0], false));
+            this.content.children.forEach(child => nodeUtils.visible(child.children[0], false));
             this.complete();
             return;
         }
@@ -346,7 +350,7 @@ export class SetList extends HackUi {
 
         // 处理多列布局（将一维数组转换为二维数组）
         if (this.columnNumber > 1) {
-            data = no.arrayToArrays(data, this.columnNumber);
+            data = arrayUtils.arrayToArrays(data, this.columnNumber);
         }
 
         let item: Node;
@@ -386,9 +390,9 @@ export class SetList extends HackUi {
 
     private setScrollViewContentPos() {
         if (this.isVertical) {
-            this.scrollViewContent.setPosition(0, Math.min(this.lastIndex * this.itemSize.height, Math.max(0, this.contentSize - no.height(this.scrollView.node))));
+            this.scrollViewContent.setPosition(0, Math.min(this.lastIndex * this.itemSize.height, Math.max(0, this.contentSize - nodeUtils.height(this.scrollView.node))));
         } else {
-            this.scrollViewContent.setPosition(Math.max(-this.lastIndex * this.itemSize.width, Math.min(0, no.width(this.scrollView.node) - this.contentSize)), 0);
+            this.scrollViewContent.setPosition(Math.max(-this.lastIndex * this.itemSize.width, Math.min(0, nodeUtils.width(this.scrollView.node) - this.contentSize)), 0);
         }
     }
 
@@ -508,15 +512,15 @@ export class SetList extends HackUi {
         if (!item) {
             // 实例化模板节点并设置基础属性
             const node = instantiate(this.template);
-            no.position(node, { x: 0, y: 0 });  // 重置位置
+            nodeUtils.position(node, { x: 0, y: 0 });  // 重置位置
 
             // 创建容器节点并配置尺寸
-            const box = no.newNode('box');
-            no.size(box, this.itemSize);  // 设置容器尺寸
+            const box = nodeUtils.newNode('box');
+            nodeUtils.size(box, this.itemSize);  // 设置容器尺寸
 
             // 同步锚点配置
-            const a = no.anchor(node);
-            no.anchor(box, a.x, a.y);  // 保持与模板相同的锚点
+            const a = nodeUtils.anchor(node);
+            nodeUtils.anchor(box, a.x, a.y);  // 保持与模板相同的锚点
 
             // 构建节点层级
             box.addChild(node);  // 将模板节点放入容器
@@ -565,10 +569,10 @@ export class SetList extends HackUi {
      */
     private setItemData(item: Node, data: any) {
         if (data == null) {
-            no.visible(item.children[0], false);
+            nodeUtils.visible(item.children[0], false);
             return;
         } else {
-            no.visible(item.children[0], true);
+            nodeUtils.visible(item.children[0], true);
         }
         // 尝试获取YJDataWork组件
         let dataWork = item.children[0].getComponent(YJDataWork);
@@ -605,13 +609,13 @@ export class SetList extends HackUi {
         if (this.isVertical) {
             // 垂直滚动布局计算
             const y = -(index + 1 - itemAnchor.y) * this.itemSize.height
-                + this.contentSize * (1 - no.anchorY(this.content));
-            no.y(item, y);
+                + this.contentSize * (1 - nodeUtils.anchorY(this.content));
+            nodeUtils.y(item, y);
         } else {
             // 水平滚动布局计算
             const x = (index + itemAnchor.x) * this.itemSize.width
-                - this.contentSize * no.anchorX(this.content);
-            no.x(item, x);
+                - this.contentSize * nodeUtils.anchorX(this.content);
+            nodeUtils.x(item, x);
         }
     }
 
@@ -651,7 +655,7 @@ export class SetList extends HackUi {
         const listItems = this.content.children;
         // 数据或元素为空时直接返回
         if (this.listData == null || listItems == null || listItems.length < this.showMax) {
-            no.scheduleOnce(this.updatePos, 0.02, this);
+            scheduleUtils.scheduleOnce(this.updatePos, 0.02, this);
             return;
         }
 
@@ -659,11 +663,11 @@ export class SetList extends HackUi {
         let curPos = 0;
         let startIndex = 0;
         if (this.isVertical) {
-            curPos = no.y(this.scrollViewContent); // 获取垂直方向滚动位置
-            startIndex = no.floor(curPos / this.itemSize.height); // 计算起始项索引
+            curPos = nodeUtils.y(this.scrollViewContent); // 获取垂直方向滚动位置
+            startIndex = mathUtils.floor(curPos / this.itemSize.height); // 计算起始项索引
         } else {
-            curPos = no.x(this.scrollViewContent); // 获取水平方向滚动位置
-            startIndex = no.floor(-curPos / this.itemSize.width); // 计算起始项索引（水平滚动需取反）
+            curPos = nodeUtils.x(this.scrollViewContent); // 获取水平方向滚动位置
+            startIndex = mathUtils.floor(-curPos / this.itemSize.width); // 计算起始项索引（水平滚动需取反）
         }
 
         // 处理滚动边界情况
@@ -730,18 +734,18 @@ export class SetList extends HackUi {
         }
 
         // 计算模板元素实际尺寸
-        this.itemSize = no.size(this.template);
+        this.itemSize = nodeUtils.size(this.template);
         // 获取滚动视图可视区域尺寸
-        const viewSize = no.size(this.scrollView.node);
+        const viewSize = nodeUtils.size(this.scrollView.node);
         // 确定滚动方向
         this.isVertical = this.scrollView.vertical;
 
         // 计算可视区域最大显示数量
         let showMax: number;
         if (this.isVertical) {
-            showMax = no.ceil(viewSize.height / this.itemSize.height); // 垂直方向计算行数
+            showMax = mathUtils.ceil(viewSize.height / this.itemSize.height); // 垂直方向计算行数
         } else {
-            showMax = no.ceil(viewSize.width / this.itemSize.width); // 水平方向计算列数
+            showMax = mathUtils.ceil(viewSize.width / this.itemSize.width); // 水平方向计算列数
         }
         this.showMax = showMax + 2; // 增加缓冲项
     }

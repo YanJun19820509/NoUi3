@@ -1,5 +1,6 @@
+import { assetUtils } from "@hackUi/extend/assetUtils";
 import { no } from "../no";
-import { ccclass, EDITOR, Layers, requireComponent, Sprite, UITransform, Node } from "../yj";
+import { ccclass, EDITOR, Layers, requireComponent, Sprite, UITransform, Node, SpriteFrame } from "../yj";
 import { HackUi } from "./HackUi";
 import { SetSpriteFrameInSampler2D } from "./SetSpriteFrameInSampler2D";
 
@@ -54,8 +55,8 @@ export class SetPlayerAvatar extends HackUi {
         }
     }
 
-    private loadAvatar(url: string, cb: (sf) => void) {
-        no.assetBundleManager.loadRemoteImage(url, '.jpg', sf => {
+    private loadAvatar(url: string, cb: (sf: SpriteFrame) => void) {
+        assetUtils.assetBundleManager.loadRemoteImage(url, sf => {
             cb?.(sf);
         });
     }

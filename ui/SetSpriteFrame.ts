@@ -2,6 +2,7 @@
 import { ccclass, property, menu, executeInEditMode, Sprite, EDITOR, SpriteFrame } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { assetUtils } from '../extend/assetUtils';
 
 /**
  * Predefined variables
@@ -131,13 +132,13 @@ export class SetSpriteFrame extends HackUi {
             }
 
             const path = `${data}/spriteFrame`;
-            const uuid = no.assetBundleManager.getUuidFromPath(path);
+            const uuid = assetUtils.assetBundleManager.getUuidFromPath(path);
 
             // 避免重复加载相同资源
             if (this.sprite.spriteFrame?._uuid == uuid) return;
 
             // 异步加载精灵帧资源
-            no.assetBundleManager.loadSprite(path, spriteFrame => {
+            assetUtils.assetBundleManager.loadSprite(path, spriteFrame => {
                 if (this.sprite?.isValid) {
                     this.sprite.spriteFrame = spriteFrame;
                 }
@@ -145,7 +146,7 @@ export class SetSpriteFrame extends HackUi {
         } else { // 图集模式
             if (data.atlas) {
                 // 加载完整图集并设置精灵帧
-                no.assetBundleManager.loadAtlas(data.atlas, item => {
+                assetUtils.assetBundleManager.loadAtlas(data.atlas, item => {
                     this.sprite.spriteAtlas = item;
                     this.sprite.spriteFrame = this.sprite.spriteAtlas.getSpriteFrame(data.frame);
                 });
@@ -165,7 +166,7 @@ export class SetSpriteFrame extends HackUi {
         if (this.defaultSpriteFrameUuid) {
             no.log('setSpriteFrameByDefaultSpriteFrameUuid', this.defaultSpriteFrameUuid, this.defaultName);
             const sprite = this.getComponent(Sprite);
-            no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
+            assetUtils.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
                 if (!file) {
                     no.err('setSpriteFrameByDefaultSpriteFrameUuid no file', this.defaultSpriteFrameUuid)
                 } else {
@@ -182,7 +183,7 @@ export class SetSpriteFrame extends HackUi {
      */
     public a_setEmpty(): void {
         if (this.sprite) {
-            no.assetBundleManager.release(this.sprite.spriteFrame);
+            assetUtils.assetBundleManager.release(this.sprite.spriteFrame);
             this.sprite.spriteFrame = null;
         }
     }

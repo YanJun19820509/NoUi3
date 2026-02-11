@@ -1,4 +1,5 @@
 
+import { nodeUtils } from '@hackUi/extend/nodeUtils';
 import { ccclass, menu, property, BlockInputEvents } from '../yj';
 import { HackUi } from './HackUi';
 
@@ -43,12 +44,9 @@ export class SetBlockInputEvents extends HackUi {
     protected onDataChange(data: any) {
         data = Boolean(data);
         if (this.reverse) data = !data;
-        let bie = this.getComponent(BlockInputEvents);
-        if (data === true) {
-            if (bie == null) bie = this.addComponent(BlockInputEvents);
-            bie.enabled = true;
-        } else {
-            if (bie != null) bie.enabled = false;
-        }
+        if (data)
+            nodeUtils.componentEnable(this.node, BlockInputEvents);
+        else
+            nodeUtils.componentDisable(this.node, BlockInputEvents);
     }
 }

@@ -4,6 +4,8 @@ import { YJTimeFormatDecorator } from '../base/YJTimeFormatDecorator';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
+import { sysTime } from '../extend/sysTime';
+import { dateUtils } from '../extend/dateUtils';
 
 /**
  * Predefined variables
@@ -138,7 +140,7 @@ export class SetTimeCountDown extends HackUi {
 
     onDisable() {
         // 组件禁用时取消时间监听
-        no.sysTime.offTickTock(this);
+        sysTime.offTickTock(this);
     }
 
     /**
@@ -159,19 +161,19 @@ export class SetTimeCountDown extends HackUi {
      * this.a_setData('resume')   // 恢复倒计时
      */
     protected onDataChange(data: any) {
-        no.sysTime.offTickTock(this);
+        sysTime.offTickTock(this);
 
         if (data == 'pause') {
-            this._pauseTime = no.sysTime.now;
+            this._pauseTime = sysTime.now;
             return;
         }
         if (data == 'resume') {
             if (this._pauseTime > 0) {
-                const a = no.sysTime.now - this._pauseTime;
+                const a = sysTime.now - this._pauseTime;
                 this._deadline += a;
                 this._pauseTime = 0;
             }
-            no.sysTime.onTickTock(this);
+            sysTime.onTickTock(this);
             return;
         }
         if (data == 'stop') {
@@ -185,7 +187,7 @@ export class SetTimeCountDown extends HackUi {
             return;
         }
 
-        const now = no.sysTime.now;
+        const now = sysTime.now;
 
         if (data['add']) {
             this._deadline += data['add'];
@@ -213,7 +215,7 @@ export class SetTimeCountDown extends HackUi {
         }
 
         this.doTickTock(now);
-        no.sysTime.onTickTock(this);
+        sysTime.onTickTock(this);
     }
 
     /**
@@ -235,7 +237,7 @@ export class SetTimeCountDown extends HackUi {
 
         // 倒计时结束处理
         if (remaining < 0) {
-            no.sysTime.offTickTock(this);
+            sysTime.offTickTock(this);
             no.EventHandlerInfo.execute(this.endCalls);
             return;
         }
@@ -253,7 +255,7 @@ export class SetTimeCountDown extends HackUi {
         if (this.isLabel) {
             const formatted = this.decorator
                 ? this.decorator.format(remaining)
-                : no.sec2time(remaining, this.formatter, this.show0);
+                : dateUtils.sec2time(remaining, this.formatter, this.show0);
             this.setLabel(formatted);
         }
     }

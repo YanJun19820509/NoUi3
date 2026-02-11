@@ -3,6 +3,7 @@ import { EDITOR, ccclass, menu, property, executeInEditMode, requireComponent, T
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -84,7 +85,7 @@ export class SetToggleCheck extends HackUi {
     public get bindCheckEvents(): boolean {
         return false;
     }
-    
+
     public set bindCheckEvents(v: boolean) {
         this.getComponent(Toggle).checkEvents = [no.createEventHandler(this.node, SetToggleCheck, 'onCheckChange')];
     }
@@ -93,7 +94,7 @@ export class SetToggleCheck extends HackUi {
         super.onLoad();
         // 编辑器模式下自动获取父级数据工作组件
         if (EDITOR) {
-            this.dataWork = no.getComponentInParents(this.node, YJDataWork);
+            this.dataWork = nodeUtils.getComponentInParents(this.node, YJDataWork);
             return;
         }
     }
@@ -116,9 +117,9 @@ export class SetToggleCheck extends HackUi {
         // 转换为布尔值并应用反向逻辑
         let a = Boolean(data);
         if (this.reverse) a = !a;
-        
+
         const toggle = this.getComponent(Toggle);
-        
+
         // 当设置为选中状态时触发所有点击事件
         if (a) {
             // 使用传统for循环遍历事件列表
@@ -126,7 +127,7 @@ export class SetToggleCheck extends HackUi {
                 toggle.clickEvents[i].emit([toggle]);
             }
         }
-        
+
         // 根据模式设置选中状态
         if (this.setCheckedWithoutNotify)
             toggle.setIsCheckedWithoutNotify(a);

@@ -2,6 +2,7 @@
 import { EDITOR, ccclass, property, menu, executeInEditMode, UIOpacity } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from './assemble/nodeUtils';
 
 /**
  * Predefined variables
@@ -63,7 +64,7 @@ export class SetVisibility extends HackUi {
     public set defaultActive(v: boolean) {
         if (this.default == v) return;
         this.default = v;
-        no.visible(this.node, v);
+        nodeUtils.visible(this.node, v);
     }
 
     /**
@@ -177,9 +178,9 @@ export class SetVisibility extends HackUi {
      */
     private _show(v: boolean) {
         if (this.isOpacity) {
-            no.visibleByOpacity(this.node, v);
+            nodeUtils.visibleByOpacity(this.node, v);
         } else {
-            no.visible(this.node, v);
+            nodeUtils.visible(this.node, v);
         }
     }
 
@@ -211,8 +212,8 @@ export class SetVisibility extends HackUi {
      */
     public a_changeVisible(): void {
         const currentVisible = this.isOpacity ?
-            no.visibleByOpacity(this.node) :
-            no.visible(this.node);
+            nodeUtils.visibleByOpacity(this.node) :
+            nodeUtils.visible(this.node);
         this.a_setData(!currentVisible);
     }
 }

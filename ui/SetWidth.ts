@@ -1,7 +1,7 @@
 
 import { ccclass, menu } from '../yj';
-import { no } from '../no';
 import { SetHeight } from './SetHeight';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -47,6 +47,6 @@ export class SetWidth extends SetHeight {
         // - 数值直接返回
         // - "50%" 转换为父节点宽度的50%
         // - { expression: "data.width * 2" } 使用表达式计算
-        no.width(this.node, this.caculate(data));
+        nodeUtils.width(this.node, this.caculate(data));
     }
 }

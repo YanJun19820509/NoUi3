@@ -1,5 +1,5 @@
 
-import { UITransform, v2, ccclass, menu } from '../yj';
+import { UITransform, v2, ccclass, menu, property, Vec2 } from '../yj';
 import { SetScrollToPercent } from './SetScrollToPercent';
 
 /**
@@ -21,7 +21,8 @@ import { SetScrollToPercent } from './SetScrollToPercent';
  * data:string
  */
 export class SetScrollToNode extends SetScrollToPercent {
-
+    @property
+    offset: Vec2 = v2(0, 0);
     /**
      * 当数据变化时延迟执行滚动到节点操作
      * @param data 目标节点名称 
@@ -43,7 +44,7 @@ export class SetScrollToNode extends SetScrollToPercent {
     public a_scrollToNode(name: string) {
         // 验证ScrollView有效性
         if (!this.scrollView?.isValid) return;
-        
+
         // 获取目标节点
         let node = this.scrollView.content.getChildByName(name);
         if (node == null) return;
@@ -52,7 +53,7 @@ export class SetScrollToNode extends SetScrollToPercent {
         let ut = this.scrollView.content.getComponent(UITransform);
         let anchor = ut.anchorPoint; // 获取锚点坐标
         let size = ut.getBoundingBox().size; // 获取容器总尺寸
-        
+
         // 计算目标节点相对位置
         let pos = node.position;
         // 计算最终偏移量（考虑锚点偏移和自定义偏移）

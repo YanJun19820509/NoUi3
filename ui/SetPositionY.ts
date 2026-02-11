@@ -1,6 +1,6 @@
 import { ccclass, menu, property } from '../yj';
-import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -72,7 +72,7 @@ export class SetPositionY extends HackUi {
             // 延迟计算父节点高度（确保节点树已建立）
             if (!this._parentHeight) {
                 // 使用no.height获取父节点高度（已包含空值保护）
-                this._parentHeight = no.height(this.node.parent);
+                this._parentHeight = nodeUtils.height(this.node.parent);
             }
             // 将比例值转换为实际坐标（自动处理非数值输入）
             data *= this._parentHeight;
@@ -80,6 +80,6 @@ export class SetPositionY extends HackUi {
         
         // 设置最终坐标（Number转换保证类型安全）
         // no.y内部已处理异常值：当data转换失败时保持原坐标不变
-        no.y(this.node, Number(data));
+        nodeUtils.y(this.node, Number(data));
     }
 }

@@ -3,7 +3,7 @@ import { UITransform, v2, ccclass, menu, property, game, Vec2 } from '../yj';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
 import { SetScrollToPercent } from './SetScrollToPercent';
-import { nodeTargetManager } from '../NodeTargetManager';
+import { nodeTargetManager } from '../extend/NodeTargetManager';
 
 /**
  * Predefined variables
@@ -103,7 +103,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
     private startScroll(targetType: string) {
         // 从管理器获取目标节点
         let target = nodeTargetManager.get<YJNodeTarget>(targetType);
-        
+
         if (!target) {
             // 重试逻辑
             if (this.triedNum < this.tryNum) {
@@ -170,10 +170,10 @@ export class SetScrollToTarget extends SetScrollToPercent {
 
         // 视口尺寸获取
         let svSize = this.scrollView.node.getComponent(UITransform).contentSize;
-        
+
         // 计算基础偏移
         let offset = v2(
-            pos.x - svSize.width * this.at, 
+            pos.x - svSize.width * this.at,
             -pos.y - svSize.height * this.at
         );
 
@@ -197,7 +197,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
      */
     private scrollByFrame(dt: number) {
         if (!no.checkValid(this.node)) return;
-        
+
         // 当前滚动偏移量
         let curOffset = this.scrollView.getScrollOffset();
         // 目标总偏移量
@@ -207,7 +207,7 @@ export class SetScrollToTarget extends SetScrollToPercent {
         offset.x += curOffset.x;
         offset.y -= curOffset.y;
         offset.multiplyScalar(Math.min(dt / this.scrollTime, 1));
-        
+
         // 计算最终偏移
         offset.x -= curOffset.x;
         offset.y += curOffset.y;

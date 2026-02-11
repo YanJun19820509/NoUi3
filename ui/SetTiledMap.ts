@@ -2,8 +2,8 @@
 import { JsonAsset, ccclass, property, menu } from '../yj';
 import { YJTiledMapData } from '../base/tiled/YJTiledMapData';
 import { YJTiledMapDelegate } from '../base/tiled/YJTiledMapDelegate';
-import { no } from '../no';
 import { HackUi } from './HackUi';
+import { assetUtils } from '../extend/assetUtils';
 
 /**
  * Predefined variables
@@ -53,13 +53,13 @@ export class SetTiledMap extends HackUi {
         this.delegate?.onBeforeInitMap();
 
         // 异步加载JSON资源
-        no.assetBundleManager.loadJSON(data, (jsonAsset: JsonAsset) => {
+        assetUtils.assetBundleManager.loadJSON(data, (jsonAsset: JsonAsset) => {
             // 创建地图数据实例
             this.mapData = new YJTiledMapData(jsonAsset.json);
             // 初始化地图
             this.initMap();
             // 释放资源引用
-            no.assetBundleManager.decRef(jsonAsset);
+            assetUtils.assetBundleManager.decRef(jsonAsset);
         });
     }
 

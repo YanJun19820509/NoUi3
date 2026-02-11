@@ -1,8 +1,7 @@
 
 import { ccclass, menu } from '../../yj';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
-import { no } from '../../no';
-import { TweenSet, parseTweenData } from '@hackUi/extend/TweenSet';
+import { TweenSet, parseTweenData } from '../../extend/TweenSet';
 
 /**
  * Predefined variables

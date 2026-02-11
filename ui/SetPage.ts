@@ -3,11 +3,12 @@ import { EDITOR, ccclass, property, executeInEditMode, instantiate, Node, Size, 
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { HackUi } from './HackUi';
 import { SetCreateNode } from './SetCreateNode';
-import { no } from '../no';
 import { YJDataWork } from '../base/YJDataWork';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import { YJPageView } from '../fix/YJPageView';
-import { TweenSetPlay, parseTweenData } from '@hackUi/extend/TweenSet';
+import { TweenSetPlay, parseTweenData } from '../extend/TweenSet';
+import { scheduleUtils } from '../extend/scheduleUtils';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -131,7 +132,7 @@ export class SetPage extends HackUi {
         if (this.pageView.getPages().length <= i) {
             this.pageView.markUpdatePageView();
             this.setPage(i);
-            no.scheduleOnce(() => this.pageView.scrollToPage(i, this.pageView.pageTurningSpeed), 0.06, this)
+            scheduleUtils.scheduleOnce(() => this.pageView.scrollToPage(i, this.pageView.pageTurningSpeed), 0.06, this)
         } else
             this.pageView.scrollToPage(i, this.pageView.pageTurningSpeed);
     }
@@ -146,15 +147,15 @@ export class SetPage extends HackUi {
         if (i >= this.listData.length) return;
         // 实例化模板节点并设置基础属性
         const node = instantiate(this.template);
-        no.position(node, { x: 0, y: 0 });  // 重置位置
+        nodeUtils.position(node, { x: 0, y: 0 });  // 重置位置
 
         // 创建容器节点并配置尺寸
-        const box = no.newNode('box');
-        no.size(box, this.itemSize);  // 设置容器尺寸
+        const box = nodeUtils.newNode('box');
+        nodeUtils.size(box, this.itemSize);  // 设置容器尺寸
 
         // 同步锚点配置
-        const a = no.anchor(node);
-        no.anchor(box, a.x, a.y);  // 保持与模板相同的锚点
+        const a = nodeUtils.anchor(node);
+        nodeUtils.anchor(box, a.x, a.y);  // 保持与模板相同的锚点
 
         // 构建节点层级
         box.addChild(node);  // 将模板节点放入容器
@@ -205,15 +206,15 @@ export class SetPage extends HackUi {
         }
 
         // 计算模板元素实际尺寸
-        this.itemSize = no.size(this.template);
+        this.itemSize = nodeUtils.size(this.template);
     }
 
     private setItemData(item: Node, data: any) {
         if (data == null) {
-            no.visible(item.children[0], false);
+            nodeUtils.visible(item.children[0], false);
             return;
         } else {
-            no.visible(item.children[0], true);
+            nodeUtils.visible(item.children[0], true);
         }
         // 尝试获取YJDataWork组件
         let dataWork = item.children[0].getComponent(YJDataWork);

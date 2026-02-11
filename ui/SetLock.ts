@@ -4,6 +4,7 @@ import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetGray } from './SetGray';
 import { SetEffect } from './SetEffect';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -150,7 +151,7 @@ export class SetLock extends HackUi {
      */
     private setLock() {
         if (this.lockType == LockType.Hide) {
-            no.visible(this.target, false);
+            nodeUtils.visible(this.target, false);
         } else {
             this.createLockNode();
             if (this.lockType == LockType.Gray) {
@@ -168,7 +169,7 @@ export class SetLock extends HackUi {
      */
     private setUnlock() {
         if (this.lockType == LockType.Hide) {
-            no.visible(this.target, true);
+            nodeUtils.visible(this.target, true);
         } else {
             this.target.getChildByName('_lock_')?.destroy();
             if (this.lockType == LockType.Gray) {
@@ -186,7 +187,7 @@ export class SetLock extends HackUi {
      * 2. 动态添加/设置SetGray组件
      */
     private setGray(v: boolean) {
-        no.visible(this.lockNode, v);
+        nodeUtils.visible(this.lockNode, v);
         let a = this.target.getComponent(SetGray) || this.target.addComponent(SetGray);
         a.a_setData(v);
     }

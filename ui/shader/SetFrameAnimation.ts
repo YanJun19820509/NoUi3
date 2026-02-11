@@ -1,6 +1,7 @@
 import { EffectAsset, Material, Sprite, SpriteFrame, ccclass, game, requireComponent, sys, v2 } from '../../yj';
 import { no } from '../../no';
 import { HackUi } from '../HackUi';
+import { assetUtils } from '@hackUi/extend/assetUtils';
 
 /**
  * 
@@ -63,7 +64,7 @@ export class SetFrameAnimation extends HackUi {
      */
     private setSpriteFrame(data: any) {
         const path = data.path.replace('.png', '') + '/spriteFrame';
-        no.assetBundleManager.loadSprite(path, spriteFrame => {
+        assetUtils.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {
                 no.err('setSingleSpriteFrame no file', path);
             } else {

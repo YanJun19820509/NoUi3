@@ -1,7 +1,7 @@
 
 import { ccclass, menu, property, Node, Size, size, v3, NodeEventType, isValid, Rect } from '../yj';
-import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -111,7 +111,7 @@ export class SetSize extends HackUi {
         for (let k in data) {
             a.push(data[k]);
         }
-        no.size(this.node, size(a[0], a[1]));
+        nodeUtils.size(this.node, size(a[0], a[1]));
     }
 
     /**
@@ -126,7 +126,7 @@ export class SetSize extends HackUi {
     private checkSize() {
         // 最大尺寸模式处理
         if (this.checkMaxSize) {
-            const { width, height } = no.size(this.node);
+            const { width, height } = nodeUtils.size(this.node);
             const wMax = this.maxSize.width,
                 hMax = this.maxSize.height;
             let s = 1;
@@ -138,13 +138,13 @@ export class SetSize extends HackUi {
             }
             // 执行缩放
             if (s < 1) {
-                no.scale(this.node, v3(s, s, 1));
+                nodeUtils.scale(this.node, [s, s, 1]);
             }
             if (this.syncOtherNodeScale.length > 0) {
                 let node: Node;
                 for (let i = 0, n = this.syncOtherNodeScale.length; i < n; i++) {
                     node = this.syncOtherNodeScale[i];
-                    no.scale(node, v3(s, s, 1));
+                    nodeUtils.scale(node, [s, s, 1]);
                 }
             }
         }
@@ -156,14 +156,14 @@ export class SetSize extends HackUi {
             // 遍历所有子节点获取最大尺寸
             for (let i = 0, n = this.node.children.length; i < n; i++) {
                 child = this.node.children[i];
-                r = no.nodeRect(child);
+                r = nodeUtils.nodeRect(child);
                 rect.minX = Math.min(rect.minX, r.xMin);
                 rect.minY = Math.min(rect.minY, r.yMin);
                 rect.maxX = Math.max(rect.maxX, r.xMax);
                 rect.maxY = Math.max(rect.maxY, r.yMax);
             }
             const width = rect.maxX - rect.minX, height = rect.maxY - rect.minY;
-            no.size(this.node, size(width, height));
+            nodeUtils.size(this.node, size(width, height));
         }
     }
 

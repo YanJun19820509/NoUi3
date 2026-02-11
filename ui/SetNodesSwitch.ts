@@ -1,5 +1,5 @@
+import { nodeUtils } from '../extend/nodeUtils';
 import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
-import { no } from '../no';
 import { ccclass, property, menu, Node, isValid } from '../yj';
 import { HackUi } from './HackUi';
 
@@ -59,7 +59,7 @@ export class SwitchInfo {
 
             // 缓存原始X坐标（用于位移方式的显隐控制）
             if (node['__origin_x__'] == null) {
-                node['__origin_x__'] = no.x(node);
+                node['__origin_x__'] = nodeUtils.x(node);
             }
 
             // 通过激活状态控制显隐（替代直接设置位置的方式）

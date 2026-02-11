@@ -1,6 +1,7 @@
 
 import { Size, v2, Vec2 } from '../../yj';
 import { no } from '../../no';
+import { arrayUtils } from '../../extend/arrayUtils';
 
 /**
  * Predefined variables
@@ -188,7 +189,7 @@ export class YJTiledMapData {
                 this.layers.set(p.type, existing);
             }
 
-            no.addToArray(this.layerTypes, p.type);
+            arrayUtils.addToArray(this.layerTypes, p.type);
         }
     }
 
@@ -336,7 +337,7 @@ export class YJTiledMapData {
             // 合并图块属性
             if (obj.gid != null && this.tilesets.has(obj.gid)) {
                 tile = this.tilesets.get(obj.gid);
-                no.forEachKV(tile, (key, value) => {
+                no.forEach(tile, (key, value) => {
                     a[key] = value;
                     return false;
                 })

@@ -1,6 +1,6 @@
 import { ccclass, property, Vec3 } from '../yj';
 import { HackUi } from './HackUi';
-import { no } from '../no';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * 
@@ -33,15 +33,6 @@ export class SetMoveBy extends HackUi {
     reverse: boolean = false;
 
     /**
-     * 节点位置基准点存储
-     * @description 
-     * - 记录初始位置作为位移计算的基准
-     * - 每次位移操作都基于此基准点进行累加
-     * - 重置位置时清空此基准点
-     */
-    private _pos: { x: number, y: number, z: number };
-
-    /**
      * 处理位置数据变更
      * @param data 移动参数，支持多种格式：
      * @example <caption>重置当前位置</caption>
@@ -59,47 +50,6 @@ export class SetMoveBy extends HackUi {
      * });
      */
     protected onDataChange(data: any) {
-        // 位置重置逻辑：清空基准点，下次移动从当前实际位置开始
-        if (data == 0) {
-            this._pos = null;
-            return;
-        }
-
-        // 初始化基准点：首次移动或重置后，记录当前实际位置
-        if (!this._pos) {
-            const { x, y, z } = no.position(this.node);
-            this._pos = { x, y, z };
-        }
-
-        let x: number, y: number;
-
-        // 极坐标处理逻辑
-        if (data.radian && data.distance) {
-            /**
-             * 极坐标转直角坐标公式：
-             * x = distance * cos(θ)
-             * y = distance * sin(θ)
-             * 其中θ为以x轴正方向为起点的弧度值
-             */
-            x = data.distance * Math.cos(data.radian);
-            y = data.distance * Math.sin(data.radian);
-        } else {
-            // 直角坐标系处理：支持对象和数组两种传参方式
-            x = data.x ?? data[0]; // 优先取对象形式的x值，不存在则取数组第一个元素
-            y = data.y ?? data[1]; // 优先取对象形式的y值，不存在则取数组第二个元素
-        }
-
-        // 反向处理：对位移量取反
-        if (this.reverse) {
-            x = -x;
-            y = -y;
-        }
-
-        // 更新基准点坐标
-        this._pos.x += x;
-        this._pos.y += y;
-
-        // 应用新位置到实际节点
-        no.position(this.node, this._pos);
+        nodeUtils.moveBy(this.node, data, this.reverse);
     }
 }

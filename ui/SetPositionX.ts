@@ -1,7 +1,7 @@
 
 import { ccclass, menu } from '../yj';
-import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -53,6 +53,6 @@ export class SetPositionX extends HackUi {
         // 使用Number强制转换保证数值类型安全
         // no.x方法内部已包含NaN/undefined等异常值处理逻辑
         // 当转换失败时会自动使用当前X坐标值（保持原位置不变）
-        no.x(this.node, Number(data));
+        nodeUtils.x(this.node, Number(data));
     }
 }

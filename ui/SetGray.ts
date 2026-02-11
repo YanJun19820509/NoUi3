@@ -1,7 +1,7 @@
 
-import { ccclass, property, menu, requireComponent, executeInEditMode, EDITOR, UIRenderer, Sprite } from '../yj';
+import { ccclass, property, menu, executeInEditMode, EDITOR, UIRenderer, Sprite } from '../yj';
+import { rendererUtils } from '../extend/rendererUtils';
 import { HackUi } from './HackUi';
-import { SetEffect } from './SetEffect';
 
 /**
  * Predefined variables
@@ -17,7 +17,6 @@ import { SetEffect } from './SetEffect';
 
 @ccclass('SetGray')
 @menu('NoUi/ui/SetGray(设置灰态:bool)')
-@requireComponent(SetEffect)
 @executeInEditMode()
 /**
  * 灰度控制组件
@@ -100,15 +99,13 @@ export class SetGray extends HackUi {
                     this.scheduleOnce(() => this.setGray(v));
                     return;
                 }
-                this.setGrayNoEffect(v);
+                rendererUtils.gray(this.getComponent(Sprite), v);
             } else {
-                // 使用SetEffect组件设置shader参数
-                let setEffect = this.getComponent(SetEffect) || this.addComponent(SetEffect);
-                setEffect.a_setData({
-                    defines: {
-                        [this.isMask ? '0-5' : '0-2']: v // 选择不同的shader宏定义
-                    }
-                });
+                if (this.isMask) {
+                    rendererUtils.maskSample2D(renderer, v);
+                } else {
+                    rendererUtils.graySample2D(renderer, v);
+                }
             }
         }
         // 递归处理子节点
@@ -121,16 +118,6 @@ export class SetGray extends HackUi {
                 child.getComponent(SetGray)?.a_setData(v);
             }
         }
-    }
-
-    /**
-     * 设置无特效灰态（使用Sprite内置灰态）
-     * @param v 是否启用灰态
-     */
-    private setGrayNoEffect(v: boolean) {
-        const sprite = this.getComponent(Sprite);
-        if (!sprite) return;
-        sprite.grayscale = v;
     }
 
     /**

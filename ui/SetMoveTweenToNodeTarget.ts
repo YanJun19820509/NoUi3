@@ -5,7 +5,10 @@ import { no } from '../no';
 import { HackUi } from './HackUi';
 import { SetNodeTweenAction } from './SetNodeTweenAction';
 import { EasingType, EasingTypeName } from '../types';
-import { nodeTargetManager } from '../NodeTargetManager';
+import { nodeTargetManager } from '../extend/NodeTargetManager';
+import { nodeUtils } from '../extend/nodeUtils';
+import { mathUtils } from '../extend/mathUtils';
+import { vecUtils } from '../extend/vecUtils';
 
 /**
  * Predefined variables
@@ -92,7 +95,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
     protected onDataChange(data: any) {
         if (this.boundaryNode && !this._range) {
             const viewSize = view.getVisibleSize();
-            const size = no.size(this.boundaryNode);
+            const size = nodeUtils.size(this.boundaryNode);
             const width = (size.width - viewSize.width) / 2;
             const height = (size.height - viewSize.height) / 2;
             this._range = {
@@ -140,7 +143,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
 
         // 获取目标节点的世界坐标并转换为本地坐标系
         let pos = target.node.worldPosition.clone();
-        no.worldPositionInNode(pos, this.boundaryNode || this.node.parent, pos);
+        nodeUtils.worldPositionInNode(pos, this.boundaryNode || this.node.parent, pos);
         if (this.reverse) {
             pos.x = -pos.x;
             pos.y = -pos.y;
@@ -150,8 +153,8 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         pos.y += this.offset.y;
 
         if (this._range) {
-            pos.x = no.clamp(pos.x, this._range.xMin, this._range.xMax);
-            pos.y = no.clamp(pos.y, this._range.yMin, this._range.yMax);
+            pos.x = mathUtils.clamp(pos.x, this._range.xMin, this._range.xMax);
+            pos.y = mathUtils.clamp(pos.y, this._range.yMin, this._range.yMax);
         }
 
         // 计算移动参数
@@ -162,7 +165,7 @@ export class SetMoveTweenToNodeTarget extends HackUi {
         if (!this.vertical) {
             pos.y = p.y;
         }
-        let dis = no.distance(p, pos); // 三维空间距离计算
+        let dis = vecUtils.distance(p, pos); // 三维空间距离计算
         let duration = this.fixSpeed ? dis / (speed || this.speed) : this.time; // 持续时间计算策略
         this.node.on(Node.EventType.TRANSFORM_CHANGED, this.onMoving, this);
         // 配置缓动动画组件参数

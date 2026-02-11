@@ -1,4 +1,4 @@
-import { ccclass, property, Enum, Node, EDITOR, js, CCClass } from '../yj';
+import { ccclass, property, Enum, Node, EDITOR, js, CCClass, Component } from '../yj';
 import { HackUi } from './HackUi';
 
 //动态设置组件属性值
@@ -147,6 +147,12 @@ export class SetComponentPropertyValue extends HackUi {
         this.setEnum(a, 'property');
     }
 
+    protected getComp(): Component | null {
+        let name = this.componentNames[this.component];
+        if (!name) return null;
+        return this.getComponent(name as any);
+    }
+
     /**
      * 设置实际属性值
      * @param data 要设置的值（自动转换类型）
@@ -156,12 +162,11 @@ export class SetComponentPropertyValue extends HackUi {
      * setPropertyValue(100);  // 设置数值
      */
     public setPropertyValue(data: any) {
-        let name = this.componentNames[this.component];
-        if (!name) return;
         // 当前仅实现enabled属性的设置
         // 派生类应重写此方法实现具体属性设置
-        if (this.getComponent(name))
-            this.getComponent(name).enabled = Boolean(data);
+        let comp = this.getComp();
+        if (comp)
+            comp[this.propertyNames[this.property]] = data;
     }
 }
 

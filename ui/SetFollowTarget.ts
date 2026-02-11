@@ -1,7 +1,7 @@
 import { ccclass, isValid, Node, property, Vec3 } from '../yj';
 import { HackUi } from '../ui/HackUi';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
-import { nodeTargetManager } from '../NodeTargetManager';
+import { nodeTargetManager } from '../extend/NodeTargetManager';
 
 /**
  * 跟随目标,状态同步

@@ -1,6 +1,5 @@
-
-import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
-import { ccclass, property, menu, Color, UIRenderer, Component, LabelOutline, Node } from '../yj';
+import { ccclass, property, menu, Color, UIRenderer, LabelOutline, Node, LabelShadow } from '../yj';
+import { rendererUtils } from './assemble/rendererUtils';
 import { HackUi } from './HackUi';
 
 /**
@@ -49,60 +48,6 @@ export class ColorInfo {
     @property
     color: Color = Color.WHITE.clone();
 
-    /**
-     * 是否为文本类型
-     * @配置说明
-     * - true: 需要同时设置描边颜色
-     * - false: 仅设置主颜色（默认）
-     */
-    @property
-    isLabel: boolean = false;
-
-    /**
-     * 描边颜色配置
-     * @配置说明
-     * - 当isLabel为true时显示并生效
-     * - 需要与color配合使用形成对比
-     */
-    @property({ visible() { return this.isLabel; } })
-    outlineColor: Color = Color.WHITE.clone();
-
-    /**
-     * 应用颜色到指定组件
-     * @param comp 目标渲染组件，可以是：
-     * - YJCharLabel: 自定义字符标签组件
-     * - UIRenderer: Cocos基础渲染组件
-     * - 包含LabelOutline组件的节点
-     * 
-     * @实现逻辑
-     * 1. 对YJCharLabel特殊处理字体和描边
-     * 2. 普通UI组件设置color属性
-     * 3. 当需要描边时查找LabelOutline组件
-     * 
-     * @示例
-     * // 应用到普通Label节点：
-     * setColor(labelComponent); // 设置字体颜色
-     * 
-     * // 应用到YJCharLabel节点：
-     * setColor(charLabel); // 同时设置字体和描边
-     */
-    public setColor(comp: UIRenderer) {
-        // 处理自定义字符标签组件
-        if (comp instanceof YJCharLabel) {
-            comp.fontColor = this.color;
-            // 需要时设置描边颜色
-            if (this.isLabel) comp.outlineColor = this.outlineColor;
-        } else {
-            // 设置普通UI组件颜色
-            comp.color = this.color;
-            // 查找并设置描边组件
-            if (this.isLabel && comp.getComponent(LabelOutline))
-                comp.getComponent(LabelOutline).color = this.outlineColor;
-        }
-        if (comp.renderData)
-            comp.renderData.vertDirty = true;
-    }
-
     private _conditions: string[];
     public matchCondition(condition: string) {
         if (!this._conditions) {
@@ -144,6 +89,10 @@ export class SetColorsSwitch extends HackUi {
     @property({ type: ColorInfo, displayName: '状态信息' })
     infos: ColorInfo[] = [];
 
+    @property({ displayName: '设置文本描边' })
+    isOutline: boolean = false;
+    @property({ displayName: '设置文本阴影' })
+    isShadow: boolean = false;
     /**
      * 递归控制开关
      * @功能说明
@@ -178,14 +127,14 @@ export class SetColorsSwitch extends HackUi {
             info = this.infos[i];
             if (info.matchCondition(condition)) {
                 // 设置当前节点颜色
-                this.setColor(info, this.node.getComponent(UIRenderer));
+                this.setColor(info, this.node);
 
                 // 递归设置子节点颜色
                 if (this.recursive) {
                     children = this.node.children;
                     for (let index = 0, m = children.length; index < m; index++) {
                         child = children[index];
-                        this.setColor(info, child.getComponent(UIRenderer));
+                        this.setColor(info, child);
                     }
                 }
                 break; // 找到第一个匹配项后立即退出循环
@@ -203,7 +152,16 @@ export class SetColorsSwitch extends HackUi {
      * - 其次处理原生LabelOutline组件
      * - 最后处理普通UIRenderer组件
      */
-    private setColor(info: ColorInfo, comp: UIRenderer) {
-        info.setColor(comp);
+    private setColor(info: ColorInfo, node: Node) {
+        let comp: LabelOutline | UIRenderer | LabelShadow;
+        if (this.isOutline) {
+            comp = node.getComponent(LabelOutline);
+        } else if (this.isShadow) {
+            comp = node.getComponent(LabelShadow);
+        } else {
+            comp = node.getComponent(UIRenderer);
+        }
+        if (!comp) return;
+        rendererUtils.color(comp, info.color);
     }
 }

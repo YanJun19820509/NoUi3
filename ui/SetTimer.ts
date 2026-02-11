@@ -1,6 +1,8 @@
 import { ccclass, isValid, property } from '../yj';
 import { no } from '../no';
 import { SetTimeCountDown } from './SetTimeCountDown';
+import { sysTime } from '../extend/sysTime';
+import { dateUtils } from '../extend/dateUtils';
 
 /**
  * 计时器
@@ -30,7 +32,7 @@ export class SetTimer extends SetTimeCountDown {
     protected _start: number;
 
     protected onDataChange(data: any) {
-        no.sysTime.offTickTock(this);
+        sysTime.offTickTock(this);
 
         if (data == 'stop') {
             return;
@@ -42,7 +44,7 @@ export class SetTimer extends SetTimeCountDown {
             return;
         }
 
-        const now = no.sysTime.now;
+        const now = sysTime.now;
 
         // 处理数组参数格式[已计时时长，最大时长]
         if (data instanceof Array) {
@@ -68,7 +70,7 @@ export class SetTimer extends SetTimeCountDown {
         }
 
         this.doTickTock(now);
-        no.sysTime.onTickTock(this);
+        sysTime.onTickTock(this);
     }
 
     /**
@@ -90,7 +92,7 @@ export class SetTimer extends SetTimeCountDown {
 
         // 计时结束处理
         if (duration >= this._max) {
-            no.sysTime.offTickTock(this);
+            sysTime.offTickTock(this);
             no.EventHandlerInfo.execute(this.endCalls);
             return;
         }
@@ -112,7 +114,7 @@ export class SetTimer extends SetTimeCountDown {
         if (this.isLabel) {
             const formatted = this.decorator
                 ? this.decorator.format(duration)
-                : no.sec2time(duration, this.formatter, this.show0);
+                : dateUtils.sec2time(duration, this.formatter, this.show0);
             this.setLabel(formatted);
         }
     }

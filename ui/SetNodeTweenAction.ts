@@ -2,7 +2,7 @@
 import { ccclass, property, menu, Node } from '../yj';
 import { no } from '../no';
 import { HackUi } from './HackUi';
-import { TweenSet, parseTweenData, TweenSetPlay } from '@hackUi/extend/TweenSet';
+import { TweenSet, parseTweenData, TweenSetPlay } from '../extend/TweenSet';
 
 /**
  * Predefined variables

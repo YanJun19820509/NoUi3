@@ -1,6 +1,5 @@
-
-import { no } from '../no';
-import { ccclass, property, menu, UITransform } from '../yj';
+import { ccclass, property, menu } from '../yj';
+import { nodeUtils } from '../extend/nodeUtils';
 import { HackUi } from './HackUi';
 
 /**
@@ -46,7 +45,7 @@ export class SetHeight extends HackUi {
      * - 当percent=false时，直接使用原始数值
      */
     protected onDataChange(data: any): void {
-        no.height(this.node, this.caculate(data));
+        nodeUtils.height(this.node, this.caculate(data));
     }
 
     /**

@@ -3,7 +3,7 @@ import { YJUIAnimationEffect } from '../base/ani/YJUIAnimationEffect';
 import YJLoadPrefab from '../base/node/YJLoadPrefab';
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
-import { ccclass, executeInEditMode, instantiate, math, property, UITransform, v3, Vec3, Node } from '../yj';
+import { ccclass, instantiate, math, property, UITransform, v3, Vec3, Node } from '../yj';
 import { HackUi } from './HackUi';
 
 /**

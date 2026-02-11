@@ -3,6 +3,8 @@ import { ccclass, requireComponent, menu, property, EDITOR, Node, EditBox } from
 import { YJDataWork } from '../base/YJDataWork';
 import { no } from '../no';
 import { HackUi } from './HackUi';
+import { nodeUtils } from '../extend/nodeUtils';
+import { stringUtils } from '../extend/stringUtils';
 
 /**
  * Predefined variables
@@ -90,7 +92,7 @@ export class SetEditBox extends HackUi {
     onLoad() {
         super.onLoad();
         if (EDITOR) {
-            this.dataWork = no.getComponentInParents(this.node, YJDataWork);
+            this.dataWork = nodeUtils.getComponentInParents(this.node, YJDataWork);
             return;
         }
     }
@@ -133,7 +135,7 @@ export class SetEditBox extends HackUi {
     private onEditEnd(v: string) {
         if (this.maxLen > 0) {
             // 应用字符串截断规则
-            let v1 = no.cutString(v, this.maxLen, this.chinese2);
+            let v1 = stringUtils.cutString(v, this.maxLen, this.chinese2);
             if (v != v1) {
                 v = v1;
                 // 延迟更新保证界面刷新

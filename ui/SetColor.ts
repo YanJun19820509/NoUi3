@@ -1,8 +1,7 @@
 
-import { ccclass, menu, Color, UIRenderer, property, LabelOutline } from '../yj';
-import { no } from '../no';
+import { ccclass, menu, UIRenderer, property, LabelOutline, LabelShadow } from '../yj';
 import { HackUi } from './HackUi';
-import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
+import { rendererUtils } from './assemble/rendererUtils';
 
 /**
  * Predefined variables
@@ -38,61 +37,26 @@ import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
  * a_setData("#0000ff");
  */
 export class SetColor extends HackUi {
-    /**
-     * 颜色模式开关
-     * @配置说明
-     * - true: 设置文本描边颜色
-     * - false: 设置字体/渲染器颜色（默认模式）
-     */
     @property({ displayName: '设置文本描边' })
     isOutline: boolean = false;
+    @property({ displayName: '设置文本阴影' })
+    isShadow: boolean = false;
 
-    /**
-     * 数据驱动颜色更新方法
-     * @param data 颜色数据，支持类型：
-     * - 16进制颜色字符串（如"#ff0000"）
-     * - Color实例
-     * 
-     * @实现流程
-     * 1. 转换输入数据为Color对象
-     * 2. 根据isOutline模式选择目标组件：
-     *    - 描边模式：YJCharLabel > LabelOutline
-     *    - 普通模式：YJCharLabel > UIRenderer
-     * 3. 对找到的第一个有效组件应用颜色
-     */
+    private _comp: LabelOutline | UIRenderer | LabelShadow;
+
     protected onDataChange(data: any) {
-        let color: Color;
-        // 转换输入数据为颜色对象
-        if (typeof data == 'string') {
-            color = no.str2Color(data);
-        } else if (data instanceof Color) {
-            color = data;
-        }
-
-        let comp: YJCharLabel | LabelOutline | UIRenderer;
-        // 根据模式选择目标组件并应用颜色
-        if (this.isOutline) {
-            comp = this.getComponent(YJCharLabel);
-            if (comp) {
-                (comp as YJCharLabel).outlineColor = color;
-            } else {
+        if (!this._comp) {
+            let comp: LabelOutline | UIRenderer | LabelShadow;
+            // 根据模式选择目标组件并应用颜色
+            if (this.isOutline) {
                 comp = this.getComponent(LabelOutline);
-                if (comp) {
-                    comp.color = color;
-                }
-            }
-        } else {
-            comp = this.getComponent(YJCharLabel);
-            if (comp) {
-                (comp as YJCharLabel).fontColor = color;
+            } else if (this.isShadow) {
+                comp = this.getComponent(LabelShadow);
             } else {
                 comp = this.getComponent(UIRenderer);
-                if (comp) {
-                    comp.color = color;
-                    if (comp.renderData)
-                        comp.renderData.vertDirty = true;
-                }
             }
+            this._comp = comp;
         }
+        rendererUtils.color(this._comp, data);
     }
 }

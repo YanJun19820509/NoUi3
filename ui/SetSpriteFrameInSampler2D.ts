@@ -10,6 +10,7 @@ import { YJSample2DMaterialInfo, YJSample2DMaterialManager } from '../engine/YJS
 import { YJMacroConfig } from '../macro';
 import { YJJobManager } from '../base/YJJobManager';
 import { YJi18n } from '../base/YJi18n';
+import { assetUtils } from '../extend/assetUtils';
 
 /**
  * Predefined variables
@@ -320,14 +321,14 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                 this.loadFromAtlas = !this.defaultSpriteFrameUuid.endsWith('@f9941');
 
             // 异步获取资源元信息
-            no.EditorMode.getAssetInfo(this.defaultSpriteFrameUuid).then(info => {
+            assetUtils.EditorMode.getAssetInfo(this.defaultSpriteFrameUuid).then(info => {
                 // 处理基础资源路径
                 this.defaultUrl = info.url.replace(/.png|.jpg/, '');
                 // 检测多语言资源路径特征
                 this.multiLan = this.defaultUrl.indexOf('/language/') > -1;
 
                 // 获取资源包名称
-                no.EditorMode.getBundleName(info.url).then(bundleName => {
+                assetUtils.EditorMode.getBundleName(info.url).then(bundleName => {
                     this.bundleName = bundleName;
                 });
 
@@ -335,7 +336,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
                 if (!this.loadFromAtlas) {
                     const metaUrl = info.url.replace('/spriteFrame', '');
                     // 检查散图压缩设置
-                    no.EditorMode.getAssetMeta(metaUrl).then(info => {
+                    assetUtils.EditorMode.getAssetMeta(metaUrl).then(info => {
                         // 存在压缩设置时禁用打包功能
                         if (info.userData.compressSettings?.useCompressTexture) {
                             this.canPack = false;
@@ -551,7 +552,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * this.setSpriteFrameByUuid('5f5v5a5b-5c5d-5e5f-5g5h-5i5j5k5l5m5n')
      */
     private setSpriteFrameByUuid(uuid: string) {
-        no.assetBundleManager.loadByUuid<SpriteFrame>(uuid, (file) => {
+        assetUtils.assetBundleManager.loadByUuid<SpriteFrame>(uuid, (file) => {
             if (!file) {
                 no.err('setSpriteFrameByUuid by uuid no file', this.node?.name, uuid);
             } else {
@@ -597,7 +598,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
 
         if (this.defaultSpriteFrameUuid) {
             // 尝试从缓存获取精灵帧
-            const s = no.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
+            const s = assetUtils.assetBundleManager.createSpriteFrameFromCache(this.defaultSpriteFrameUuid);
             if (s) {
                 // 更新精灵帧引用
                 if (this._singleSpriteFrame) {
@@ -639,7 +640,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         }
 
         // 通过URL异步加载精灵帧资源
-        no.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
+        assetUtils.assetBundleManager.loadSprite(this.defaultUrl, (file) => {
             if (!file) {
                 // URL加载失败时记录错误并降级到UUID加载
                 no.err('setDefaultSpriteFrame by url no file', this.node.name, this.defaultUrl);
@@ -676,7 +677,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
      * this.loadByUuid(); // 触发UUID加载流程
      */
     private loadByUuid() {
-        no.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
+        assetUtils.assetBundleManager.loadByUuid<SpriteFrame>(this.defaultSpriteFrameUuid, (file) => {
             if (!file) {
                 // UUID加载失败记录错误日志
                 no.err('setDefaultSpriteFrame by uuid no file', this.node?.name, this.defaultSpriteFrameUuid)
@@ -746,7 +747,7 @@ export class SetSpriteFrameInSampler2D extends HackUi {
         }
 
         // 异步加载精灵帧资源
-        no.assetBundleManager.loadSprite(path, spriteFrame => {
+        assetUtils.assetBundleManager.loadSprite(path, spriteFrame => {
             if (!spriteFrame) {
                 // 资源加载失败记录错误日志
                 no.err('setSingleSpriteFrame no file', name);

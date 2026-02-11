@@ -1,22 +1,22 @@
 
-import { ccclass, property, menu, Component, Node } from '../yj';
-import { SetHint } from '../ui/SetHint';
-import { no } from '../no';
+import { SetHint } from '../../ui/SetHint';
+import { ccclass, property, menu, Component } from '../../yj';
+import { hintCenter } from './HintCenter';
 
 /**
  * Predefined variables
- * Name = YJHintWatcher
+ * Name = HintWatcher
  * DateTime = Fri Jan 14 2022 18:02:43 GMT+0800 (中国标准时间)
  * Author = mqsy_yj
- * FileBasename = YJHintWatcher.ts
- * FileBasenameNoExtension = YJHintWatcher
- * URL = db://assets/Script/common/base/YJHintWatcher.ts
+ * FileBasename = HintWatcher.ts
+ * FileBasenameNoExtension = HintWatcher
+ * URL = db://assets/Script/common/base/HintWatcher.ts
  * ManualUrl = https://docs.cocos.com/creator/3.4/manual/en/
  *
  */
 
-@ccclass('YJHintWatcher')
-@menu('NoUi/base/YJHintWatcher(红点监听)')
+@ccclass('HintWatcher')
+@menu('NoUi/base/HintWatcher(红点监听)')
 /**
  * 红点系统监听组件
  * @description 用于监听多个红点状态并更新UI显示
@@ -29,9 +29,9 @@ import { no } from '../no';
  * @example
  * // 代码调用示例：
  * // 动态修改监听key
- * this.getComponent(YJHintWatcher).setHintTypes('shop,achievement');
+ * this.getComponent(HintWatcher).setHintTypes('shop,achievement');
  */
-export class YJHintWatcher extends Component {
+export class HintWatcher extends Component {
     /** 关联的SetHint组件（用于显示红点状态） */
     @property({ type: SetHint })
     hint: SetHint = null;
@@ -51,12 +51,12 @@ export class YJHintWatcher extends Component {
 
     /** 组件禁用时自动解除监听 */
     onDisable() {
-        no.hintCenter.offHint(this);
+        hintCenter.offHint(this);
     }
 
     /** 绑定红点监听 */
     private bind() {
-        no.hintCenter.offHint(this);
+        hintCenter.offHint(this);
         if (this.types == '') return;
         let types = this.types.split(',');
         this.typeList = types;
@@ -70,7 +70,7 @@ export class YJHintWatcher extends Component {
      * @param type 红点类型key
      */
     protected bindHint(type: string): void {
-        no.hintCenter.onHint(type, this.setHint, this);
+        hintCenter.onHint(type, this.setHint, this);
     }
 
     /** 
@@ -79,14 +79,14 @@ export class YJHintWatcher extends Component {
      */
     protected setHint(v: number): void {
         if (!this.hint) {
-            no.hintCenter.offHint(this);
+            hintCenter.offHint(this);
             return;
         }
         let n = 0;
         // 数值型红点：累加所有监听key的数值
         if (this.hint.isNumber) {
             for (let i = 0; i < this.typeList.length; i++) {
-                n += no.hintCenter.getHintValue(this.typeList[i]);
+                n += hintCenter.getHintValue(this.typeList[i]);
             }
         }
         // 布尔型红点：任一key有值即显示
@@ -95,7 +95,7 @@ export class YJHintWatcher extends Component {
             let type: string;
             for (let i = 0; i < len; i++) {
                 type = this.typeList[i];
-                if (no.hintCenter.getHintValue(type) > 0) {
+                if (hintCenter.getHintValue(type) > 0) {
                     n = 1;
                     break;
                 }

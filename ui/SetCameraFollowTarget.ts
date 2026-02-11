@@ -2,7 +2,10 @@ import { ccclass, property, Node, Vec2, v2, view } from '../yj';
 import { HackUi } from '../ui/HackUi';
 import { YJNodeTarget } from '../base/node/YJNodeTarget';
 import { no } from '../no';
-import { nodeTargetManager } from '../NodeTargetManager';
+import { nodeTargetManager } from '../extend/NodeTargetManager';
+import { nodeUtils } from '../extend/nodeUtils';
+import { mathUtils } from '../extend/mathUtils';
+import { vecUtils } from '../extend/vecUtils';
 
 /**
  * 相机跟随目标
@@ -52,7 +55,7 @@ export class SetCameraFollowTarget extends HackUi {
     protected onDataChange(data: any) {
         if (this.boundaryNode && !this._range) {
             const viewSize = view.getVisibleSize();
-            const size = no.size(this.boundaryNode);
+            const size = nodeUtils.size(this.boundaryNode);
             const width = (size.width - viewSize.width) / 2;
             const height = (size.height - viewSize.height) / 2;
             this._range = {
@@ -84,7 +87,7 @@ export class SetCameraFollowTarget extends HackUi {
             });
             return;
         }
-        const camera = no.getCamera(target.node.layer);
+        const camera = nodeUtils.getCamera(target.node.layer);
         if (!camera) {
             no.err('SetCameraFollowTarget 相机未找到');
             return;
@@ -92,17 +95,17 @@ export class SetCameraFollowTarget extends HackUi {
         this._cameraNode = camera.node;
         // 获取目标节点的世界坐标并转换为本地坐标系
         let pos = target.nodeWorldPosition;
-        no.worldPositionInNode(pos, this.boundaryNode, pos);
+        nodeUtils.worldPositionInNode(pos, this.boundaryNode, pos);
         if (this._range) {
-            pos.x = no.clamp(pos.x, this._range.xMin, this._range.xMax);
-            pos.y = no.clamp(pos.y, this._range.yMin, this._range.yMax);
+            pos.x = mathUtils.clamp(pos.x, this._range.xMin, this._range.xMax);
+            pos.y = mathUtils.clamp(pos.y, this._range.yMin, this._range.yMax);
         }
 
         // 计算移动参数
         let p = this.node.position;
-        let dis = no.distance(p, pos); // 三维空间距离计算
+        let dis = vecUtils.distance(p, pos); // 三维空间距离计算
         let duration = this.fixSpeed ? dis / this.speed : this.time; // 持续时间计算策略
-        const radian = no.angleTo(this._cameraNode.position, pos).radian;
+        const radian = vecUtils.angleTo(this._cameraNode.position, pos).radian;
         this._followData = { duration, speed: this.speed, radian };
     }
 

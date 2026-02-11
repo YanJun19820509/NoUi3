@@ -2,7 +2,9 @@ import { ccclass, property, menu, Skeleton, requireComponent, sys, size, EDITOR,
 import { no } from '../no';
 import { HackUi } from './HackUi';
 import { YJSpineManager } from '../base/YJSpineManager';
-import { YJTempData } from '../YJTempData';
+import { YJTempData } from '../extend/YJTempData';
+import { assetUtils } from '../extend/assetUtils';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -99,12 +101,12 @@ export class SetSpine extends HackUi {
             // 记录当前动画名称（示例：'idle'或'attack'）
             const skin = spine.skeletonData.getSkinsEnum()[spine._defaultSkinIndex];
             this.animationName = skin ? `${skin}:${spine.animation}` : spine.animation;
-            no.EditorMode.getAssetUrlByUuid(uuid).then(url => {
+            assetUtils.EditorMode.getAssetUrlByUuid(uuid).then(url => {
                 if (!url) return;
 
                 // 处理资源路径格式（示例：'spine/hero'）
                 const path = url.replace('db://assets/', '').replace('.json', '');
-                no.EditorMode.getBundleName(path).then(bundleName => {
+                assetUtils.EditorMode.getBundleName(path).then(bundleName => {
                     if (bundleName) this.spineUrl = path;
                     else this.spineUrl = '';
                 })
@@ -384,7 +386,7 @@ export class SetSpine extends HackUi {
         this.destroySpineNode(this._curSpine);
         this._curSpine = null;
         // 创建新spine节点
-        const newSpineNode = no.newNode('spine', [Skeleton]);
+        const newSpineNode = nodeUtils.newNode('spine', [Skeleton]);
         newSpineNode.layer = this.node.layer;
         newSpineNode.parent = this.node;
         const spine = newSpineNode.getComponent(Skeleton);
@@ -415,10 +417,10 @@ export class SetSpine extends HackUi {
         const height = res.getRuntimeData().height;
         if (!this.useNodeSize) {
             if (width > 0 && height > 0) {
-                no.size(this.node, size(width, height));
+                nodeUtils.size(this.node, size(width, height));
             }
         } else {
-            const nodeSize = no.size(this.node);
+            const nodeSize = nodeUtils.size(this.node);
             newSpineNode.setScale(nodeSize.width / width, nodeSize.height / height);
         }
 

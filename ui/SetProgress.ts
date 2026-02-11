@@ -2,6 +2,7 @@ import { ProgressBar, ccclass, property, menu, Label, Node } from '../yj';
 import { HackUi } from './HackUi';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { no } from '../no';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -183,12 +184,12 @@ export class SetProgress extends HackUi {
         const mode = this.progressBar.mode;
         const bar = this.progressBar.barSprite.node;
         const total = this.progressBar.totalLength;
-        let { x, y } = no.worldPosition(this.cursor);
+        let { x, y } = nodeUtils.worldPosition(this.cursor);
         if (mode == 0) {
             x = bar.worldPosition.x + total * this.progressBar.progress;
         } else if (mode == 1) {
             y = bar.worldPosition.y + total * this.progressBar.progress;
         }
-        no.worldPosition(this.cursor, { x, y });
+        nodeUtils.worldPosition(this.cursor, { x, y });
     }
 }

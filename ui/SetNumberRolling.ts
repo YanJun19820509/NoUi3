@@ -2,6 +2,9 @@ import { Label, RichText, ccclass, isValid, property } from '../yj';
 import { no } from '../no';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
+import { mathUtils } from '../extend/mathUtils';
+import { scheduleUtils } from '../extend/scheduleUtils';
+import { stringUtils } from '../extend/stringUtils';
 
 /**
  * 数字滚动效果
@@ -71,7 +74,7 @@ export class SetNumberRolling extends HackUi {
             num = Math.min(5, Math.abs(to - from));
         }
         // 计算每次增量（保留指定位数的小数）
-        const add = no.float((to - from) / num, this.decimal);
+        const add = mathUtils.float((to - from) / num, this.decimal);
 
         // 初始化显示
         this.setLabel(from);
@@ -79,10 +82,10 @@ export class SetNumberRolling extends HackUi {
 
         let currentValue = from;
         // 使用定时器分步更新数值
-        no.schedule(
+        scheduleUtils.schedule(
             () => {
                 currentValue += add;
-                this.setLabel(no.floor(currentValue));
+                this.setLabel(mathUtils.floor(currentValue));
             },
             this.duration / num, // 每次更新的间隔时间
             num,                 // 总执行次数
@@ -114,7 +117,7 @@ export class SetNumberRolling extends HackUi {
         }
 
         // 格式化显示数值（示例：当formatter为'Rank:{0}'时显示'Rank:100'）
-        this.label.string = no.formatString(this.formatter, { '0': v.toFixed(this.decimal) });
+        this.label.string = stringUtils.formatString(this.formatter, { '0': v.toFixed(this.decimal) });
     }
 
     /** 预留空方法（根据需求实现） */

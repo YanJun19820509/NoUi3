@@ -1,5 +1,5 @@
+import { HintWatcher } from '../extend/hint/HintWatcher';
 import { ccclass } from '../yj';
-import { YJHintWatcher } from '../base/YJHintWatcher';
 import { HackUi } from './HackUi';
 
 /**
@@ -40,6 +40,6 @@ export class SetHintWatcherTypes extends HackUi {
      */
     protected onDataChange(data: any) {
         // 获取关联的提示监视器组件并更新类型配置
-        this.getComponent(YJHintWatcher).setHintTypes(data);
+        this.getComponent(HintWatcher).setHintTypes(data);
     }
 }

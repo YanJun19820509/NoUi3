@@ -1,4 +1,5 @@
 import { ccclass, menu, property } from '../yj';
+import { nodeUtils } from '../extend/nodeUtils';
 import { HackUi } from './HackUi';
 
 /**
@@ -20,6 +21,6 @@ export class SetAngle extends HackUi {
     reverse: boolean = false;
     protected onDataChange(data: any) {
         const a = Number(data);
-        this.node.angle = this.reverse ? -a : a;
+        nodeUtils.angle(this.node, this.reverse ? -a : a);
     }
 }

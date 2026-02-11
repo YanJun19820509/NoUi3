@@ -1,8 +1,8 @@
 
-import { ccclass, menu, Vec2, v2, Vec3, v3 } from '../../yj';
-import { no } from '../../no';
+import { ccclass, menu } from '../../yj';
 import { SetNodeTweenAction } from '../SetNodeTweenAction';
-import { TweenSet, parseTweenData } from '@hackUi/extend/TweenSet';
+import { TweenSet, parseTweenData } from '../../extend/TweenSet';
+import { vecUtils } from '../../extend/vecUtils';
 
 /**
  * Predefined variables
@@ -47,7 +47,7 @@ export class SetBezier extends SetNodeTweenAction {
      */
     protected createAction(data: any): TweenSet | TweenSet[] {
         // 生成贝塞尔曲线路径点（世界坐标）
-        let points = no.bezierPoints(this.getControlPoints(data.points), data.segment || 50);
+        let points = vecUtils.bezierPoints(this.getControlPoints(data.points), data.segment || 50);
         points.shift(); // 移除起始点（节点当前位置）
 
         // 构建每段动画数据

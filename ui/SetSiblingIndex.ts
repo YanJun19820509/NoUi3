@@ -1,6 +1,6 @@
 import { ccclass, property } from '@hackUi/yj';
 import { HackUi } from '@hackUi/ui/HackUi';
-import { no } from '../no';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * 设置节点顺序索引
@@ -16,6 +16,6 @@ export class SetSiblingIndex extends HackUi {
 
     protected onDataChange(data: any) {
         if (data < 0) return;
-        no.siblingIndex(this.affectParent ? this.node.parent : this.node, data);
+        nodeUtils.siblingIndex(this.affectParent ? this.node.parent : this.node, data);
     }
 }

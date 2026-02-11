@@ -2,7 +2,7 @@
 import { ccclass, property, menu, Component, Node, Label } from '../yj';
 import { YJCharLabel } from '../widget/charLabel/YJCharLabel';
 import { HackUi } from './HackUi';
-import { no } from '../no';
+import { nodeUtils } from '../extend/nodeUtils';
 
 /**
  * Predefined variables
@@ -65,7 +65,7 @@ export class SetHint extends HackUi {
     public set defaultShow(v: boolean) {
         if (v == this._defaultShow) return;
         this._defaultShow = v;
-        no.visible(this.targetNode, v);
+        nodeUtils.visible(this.targetNode, v);
     }
 
     @property({ serializable: true })
@@ -78,7 +78,7 @@ export class SetHint extends HackUi {
         this.targetNode = this.targetNode || this.node;
         // 初始化显示状态
         if (this.bind_keys && !this.dataSetted) {
-            no.visible(this.targetNode, this._defaultShow);
+            nodeUtils.visible(this.targetNode, this._defaultShow);
         }
     }
 
@@ -93,7 +93,7 @@ export class SetHint extends HackUi {
     protected onDataChange(data: any) {
         let v = Number(data);
         // 控制红点显隐
-        no.visible(this.targetNode, v > 0);
+        nodeUtils.visible(this.targetNode, v > 0);
 
         // 更新数字显示
         if (this.isNumber) {

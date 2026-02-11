@@ -1,8 +1,8 @@
 import { BitmapFont, ccclass, property, requireComponent } from '../yj';
-import { no } from '../no';
 import { LoadAssetsInfo } from '../types';
 import { YJBitmapFont } from '../widget/bmfont/YJBitmapFont';
 import { HackUi } from './HackUi';
+import { arrayUtils } from '../extend/arrayUtils';
 
 /**
  * 根据状态设置不同的bitmapfont
@@ -70,12 +70,12 @@ export class SetBitmapFontWithState extends HackUi {
         // 将输入数据统一转换为字符串进行匹配
         const stateKey = String(data);
         // 在状态配置数组中查找匹配项
-        const info = no.itemOfArray<SetBitmapFontWithStateInfo>(
-            this.states, 
+        const info = arrayUtils.itemOfArray<SetBitmapFontWithStateInfo>(
+            this.states,
             stateKey,
             'state'
         );
-        
+
         // 找到有效配置时更新字体
         if (info) {
             // 通过YJBitmapFont组件设置新字体
@@ -83,13 +83,4 @@ export class SetBitmapFontWithState extends HackUi {
             this.getComponent(YJBitmapFont).setBitmapFont(null, info.path);
         }
     }
-
-    /**如果没需求可以不实现 */
-    // onLoad() {
-    //     super.onLoad();
-    // }
-
-    /**如果没需求可以不实现 */
-    // public a_setEmpty(): void {
-    // }
 }
