@@ -175,6 +175,7 @@ export class EventTarget extends _cc.EventTarget { };
 export const Button = _cc.Button;
 export type Button = _cc.Button;
 export class Tween extends _cc.Tween<unknown> { };
+export class TweenSystem extends _cc.TweenSystem { };
 export class Bundle extends _cc.AssetManager.Bundle { };
 export class AssetManager extends _cc.AssetManager { };
 export class Scheduler extends _cc.Scheduler { };
@@ -224,6 +225,7 @@ export function isDisplayStats() {
 export const AttributeName = _cc.gfx.AttributeName;
 export const Attribute = _cc.gfx.Attribute;
 export type Attribute = _cc.gfx.Attribute;
+export type TweenPropsType<T> = _cc.__private._cocos_tween_tween__ConstructorType<T>;
 
 //3d
 export const Ray = _cc.geometry.Ray;
