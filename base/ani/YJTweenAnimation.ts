@@ -503,7 +503,7 @@ export class YJTweenAnimation extends Component {
         if (!isValid(node)) return;
         let action = info.serialAction.createAction(node);
         if (!action) return;
-        if (info.repeat > 1) action.union().repeat(info.repeat - 1);
+        if (info.repeat > 1) action.union().repeat(info.repeat);
         else if (info.repeat == 0) action.union().repeatForever();
         this._tweens[info.type] = this._tweens[info.type] || [];
         this._tweens[info.type].push(action);
@@ -535,7 +535,7 @@ export class YJTweenAnimation extends Component {
         let _1 = actions.shift();
         _1.parallel(...actions);
         _1.start();
-        if (info.repeat > 1) _1.union().repeat(info.repeat - 1);
+        if (info.repeat > 1) _1.union().repeat(info.repeat);
         else if (info.repeat == 0) _1.union().repeatForever();
         this._tweens[info.type] = this._tweens[info.type] || [];
         this._tweens[info.type].push(_1);
