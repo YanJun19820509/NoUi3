@@ -1,7 +1,6 @@
 import { no } from "@hackUi/no";
-import { ccclass, Color, Component, Enum, property, SpriteFrame, v2, Vec2, Node, Tween, UITransform, UIOpacity, UIRenderer, Sprite, v3, isValid, color, tween } from "../../yj";
-import { EasingType } from "@hackUi/types";
-import { getEasingFn } from "./YJTween";
+import { ccclass, Color, Component, Enum, property, SpriteFrame, v2, Vec2, Node, Tween, UITransform, UIOpacity, UIRenderer, Sprite, v3, isValid, color, tween, EDITOR, executeInEditMode, Quat, Size, size } from "../../yj";
+import { EasingType, EasingTypeName } from "@hackUi/types";
 /**
  * 
  * Author mqsy_yj
@@ -29,9 +28,19 @@ enum TargetType {
     SpriteFrame = 5,
 }
 
+class ColorClass {
+    color: Color;
+    renderer: UIRenderer;
+}
+
+class SpriteClass {
+    progress: number;
+    sprite: Sprite;
+}
+
 @ccclass('ActionConfig')
 class ActionConfig {
-    @property({ type: Enum(TargetType), displayName: '目标类型' })
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false } })
     targetType: TargetType = TargetType.Node;
     @property({ type: Enum(ActionType), displayName: '动作类型' })
     actionType: ActionType = ActionType.To;
@@ -57,7 +66,7 @@ class ActionConfig {
     scale: Vec2 = v2(1, 1);
 
     @property({ group: '属性', visible() { return this.isSize } })
-    size: Vec2 = v2(0, 0);
+    size: Size = size(0, 0);
     @property({ group: '属性', visible() { return this.isAnchor } })
     anchor: Vec2 = v2(0.5, 0.5);
 
@@ -80,21 +89,22 @@ class ActionConfig {
     repeatTimes: number = 1;
 
     public properties() {
-        let props: any = { easing: getEasingFn(this.easing) };
+        let props: any = {};
         switch (this.targetType) {
             case TargetType.Node:
                 if (this.isPos)
                     props.position = v3(this.position.x, this.position.y, 0);
-                if (this.isRotation)
-                    props.rotation = this.rotation;
+                if (this.isRotation) {
+                    props.angle = this.rotation;
+                }
                 if (this.isScale)
                     props.scale = v3(this.scale.x, this.scale.y, 1);
                 break;
             case TargetType.UITransform:
                 if (this.isSize)
-                    props.size = v2(this.size.x, this.size.y);
+                    props.contentSize = this.size.clone();
                 if (this.isAnchor)
-                    props.anchor = v2(this.anchor.x, this.anchor.y);
+                    props.anchorPoint = this.anchor.clone();
                 break;
             case TargetType.UIOpacity:
                 props.opacity = this.opacity;
@@ -103,27 +113,124 @@ class ActionConfig {
                 props.color = this.color;
                 break;
             case TargetType.SpriteFrame:
-                props.spriteFrame = this.spriteFrame;
+                props.progress = 1;
                 break;
         }
         return props;
     }
+
+    public options() {
+        let opt: any = { easing: EasingTypeName[this.easing] };
+        switch (this.targetType) {
+            // case TargetType.UITransform:
+            //     opt.onUpdate = (tar: UITransform) => {
+            //         target.setContentSize(tar.contentSize);
+            //         target.setAnchorPoint(tar.anchorPoint);
+            //     }
+            //     break;
+            case TargetType.Color:
+                opt.onUpdate = (tar: ColorClass) => {
+                    tar.renderer.color = this.color;
+                }
+                break;
+            case TargetType.SpriteFrame:
+                opt.onUpdate = (tar: SpriteClass) => {
+                    tar.sprite.spriteFrame = this.spriteFrame;
+                }
+                break;
+        }
+        return opt;
+    }
 }
 
+@ccclass('ActionConfigNode')
+class ActionConfigNode extends ActionConfig {
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false }, override: true })
+    targetType: TargetType = TargetType.Node;
+}
+
+@ccclass('ActionConfigUITransform')
+class ActionConfigUITransform extends ActionConfig {
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false }, override: true })
+    targetType: TargetType = TargetType.UITransform;
+}
+
+@ccclass('ActionConfigUIOpacity')
+class ActionConfigUIOpacity extends ActionConfig {
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false }, override: true })
+    targetType: TargetType = TargetType.UIOpacity;
+}
+
+@ccclass('ActionConfigColor')
+class ActionConfigColor extends ActionConfig {
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false }, override: true })
+    targetType: TargetType = TargetType.Color;
+}
+
+@ccclass('ActionConfigSpriteFrame')
+class ActionConfigSpriteFrame extends ActionConfig {
+    @property({ type: Enum(TargetType), displayName: '目标类型', visible() { return false }, override: true })
+    targetType: TargetType = TargetType.SpriteFrame;
+}
 /**
  * 串行动画效果数组类
  */
 @ccclass('YJTweenAction')
 class YJTweenAction {
+    @property({ type: Enum(TargetType), displayName: '目标类型' })
+    targetType: TargetType = TargetType.Node;
     @property({
-        type: ActionConfig,
-        displayName: "串行动画效果"
+        type: ActionConfigNode,
+        displayName: "动作链",
+        visible() { return this.targetType === TargetType.Node }
     })
-    actionConfigs: ActionConfig[] = [];
+    actionConfigNodes: ActionConfigNode[] = [];
+    @property({
+        type: ActionConfigUITransform,
+        displayName: "动作链",
+        visible() { return this.targetType === TargetType.UITransform }
+    })
+    actionConfigUITransforms: ActionConfigUITransform[] = [];
+    @property({
+        type: ActionConfigUIOpacity,
+        displayName: "动作链",
+        visible() { return this.targetType === TargetType.UIOpacity }
+    })
+    actionConfigUIOpacitys: ActionConfigUIOpacity[] = [];
+    @property({
+        type: ActionConfigColor,
+        displayName: "动作链",
+        visible() { return this.targetType === TargetType.Color }
+    })
+    actionConfigColors: ActionConfigColor[] = [];
+    @property({
+        type: ActionConfigSpriteFrame,
+        displayName: "动作链",
+        visible() { return this.targetType === TargetType.SpriteFrame }
+    })
+    actionConfigSpriteFrames: ActionConfigSpriteFrame[] = [];
 
     private _idx: number;
+    private actionConfigs: ActionConfig[] = [];
 
     public createAction(node: Node): Tween {
+        switch (this.targetType) {
+            case TargetType.Node:
+                this.actionConfigs = this.actionConfigNodes;
+                break;
+            case TargetType.UITransform:
+                this.actionConfigs = this.actionConfigUITransforms;
+                break;
+            case TargetType.UIOpacity:
+                this.actionConfigs = this.actionConfigUIOpacitys;
+                break;
+            case TargetType.Color:
+                this.actionConfigs = this.actionConfigColors;
+                break;
+            case TargetType.SpriteFrame:
+                this.actionConfigs = this.actionConfigSpriteFrames;
+                break;
+        }
         if (this.actionConfigs.length == 0) return null;
         this._idx = 0;
         return this.parseActionConfig(node);
@@ -131,42 +238,46 @@ class YJTweenAction {
 
     private parseActionConfig(node: Node): Tween {
         let config = this.actionConfigs[this._idx];
-        let action: Tween = this.parseTarget(config.targetType, node);
-        if (!action) return null;
+        let target = this.parseTarget(config.targetType, node);
+        if (!target) return null;
+        let action: Tween = tween(target);
         this.parseAction(action, config.actionType, config);
-        this.next(action, node);
+        this.next(action);
+        action.union();
         return action;
     }
 
-    private next(action: Tween, node: Node) {
+    private next(action: Tween) {
         this._idx++;
         let config = this.actionConfigs[this._idx];
         if (!config) return;
-        if (config.targetType !== this.actionConfigs[this._idx - 1].targetType) {
-            action.union();
-            let a = this.parseActionConfig(node);
-            if (a) action.call(() => a.start());
-        } else {
-            this.parseAction(action, config.actionType, config);
-            this.next(action, node);
-        }
+        this.parseAction(action, config.actionType, config);
+        this.next(action);
     }
 
     private parseTarget(targetType: TargetType, node: Node) {
         switch (targetType) {
             case TargetType.Node:
-                return tween(node);
+                return node;
             case TargetType.UITransform:
-                return tween(node.getComponent(UITransform) || node.addComponent(UITransform));
+                return node.getComponent(UITransform) || node.addComponent(UITransform);
             case TargetType.UIOpacity:
-                return tween(node.getComponent(UIOpacity) || node.addComponent(UIOpacity));
+                return node.getComponent(UIOpacity) || node.addComponent(UIOpacity);
             case TargetType.Color:
-                if (node.getComponent(UIRenderer))
-                    return tween(node.getComponent(UIRenderer));
+                if (node.getComponent(UIRenderer)) {
+                    let c = new ColorClass();
+                    c.color = color(0, 0, 0, 255);
+                    c.renderer = node.getComponent(UIRenderer);
+                    return c;
+                }
                 break;
             case TargetType.SpriteFrame:
-                if (node.getComponent(Sprite))
-                    return tween(node.getComponent(Sprite));
+                if (node.getComponent(Sprite)) {
+                    let sprite = new SpriteClass();
+                    sprite.progress = 0;
+                    sprite.sprite = node.getComponent(Sprite);
+                    return sprite;
+                }
                 break;
         }
         return null;
@@ -175,10 +286,10 @@ class YJTweenAction {
     private parseAction(action: Tween, actionType: ActionType, config: ActionConfig) {
         switch (actionType) {
             case ActionType.To:
-                action.to(config.duration, config.properties());
+                action.to(config.duration, config.properties(), config.options());
                 break;
             case ActionType.By:
-                action.by(config.duration, config.properties());
+                action.by(config.duration, config.properties(), config.options());
                 break;
             case ActionType.Set:
                 action.set(config.properties());
@@ -210,28 +321,15 @@ class YJTweenAction {
 class ActionInfo {
     @property
     type: string = '';
-    @property({ displayName: '是否串行' })
-    isSerial: boolean = true;
-
     @property({
         type: YJTweenAction,
-        displayName: "串行",
-        visible() { return this.isSerial }
+        displayName: "动作"
     })
-    serialAction: YJTweenAction = new YJTweenAction();
-
-    @property({ displayName: '是否并行' })
-    isParallel: boolean = false;
-    @property({
-        type: YJTweenAction,
-        displayName: "并行",
-        visible() { return this.isParallel }
-    })
-    parallelAction: YJTweenAction[] = [];
+    actions: YJTweenAction[] = [];
 
     @property({
         displayName: '执行次数',
-        tooltip: '0表示无限循环，1表示执行一次，2表示执行两次，以此类推\n@示例\n// 设置repeat=0创建无限旋转的加载动画\n// 设置repeat=2让按钮抖动两次后停止',
+        tooltip: '0表示无限循环，1表示执行一次，2表示执行两次，以此类推',
         min: 0,
         step: 1
     })
@@ -239,6 +337,7 @@ class ActionInfo {
 }
 
 @ccclass('YJTweenAnimation')
+@executeInEditMode()
 export class YJTweenAnimation extends Component {
     @property({
         type: Node,
@@ -268,9 +367,6 @@ export class YJTweenAnimation extends Component {
     })
     actionInfos: ActionInfo[] = [];
 
-    @property
-    repeat: number = 1;
-
     @property({
         displayName: '自动运行',
         tooltip: '组件启用时自动开始播放动画\n@示例\n// 用于场景开场动画自动播放\n// 或敌人出现时自动执行特效'
@@ -284,7 +380,14 @@ export class YJTweenAnimation extends Component {
 
     private _tweens: { [type: string]: Tween[] } = null;
 
+    onLoad() {
+        if (EDITOR) {
+            if (!this.target) this.target = this.node;
+        }
+    }
+
     onEnable() {
+        if (EDITOR) return;
         if (this.auto) {
             if (!this._tweens) {
                 this._tweens = {};
@@ -303,10 +406,12 @@ export class YJTweenAnimation extends Component {
     }
 
     onDisable() {
+        if (EDITOR) return;
         this.a_stop();
     }
 
     protected onDestroy(): void {
+        if (EDITOR) return;
         for (let key in this._tweens) {
             this._tweens[key]?.forEach(tween => {
                 tween = null;
@@ -443,18 +548,12 @@ export class YJTweenAnimation extends Component {
      */
     public play(node: Node, info: ActionInfo) {
         if (!this.enabled) return;
-        if (info.isSerial)
-            this.playSerial(node, info);
-        if (info.isParallel)
-            this.playParallel(node, info);
+        this.playParallel(node, info);
     }
 
     public playOtherNode(node: Node) {
         const info = this.actionInfos[0];
-        if (info.isSerial)
-            this.playSerial(node, info);
-        if (info.isParallel)
-            this.playParallel(node, info);
+        this.playParallel(node, info);
     }
 
     private _children: Node[] = [];
@@ -486,31 +585,6 @@ export class YJTweenAnimation extends Component {
     }
 
     /**
-     * 串行动画播放控制器
-     * @param node 目标节点
-     * @param repeat 剩余重复次数
-     * @实现逻辑
-     * 1. 调用内部播放器执行动画序列
-     * 2. 根据repeat参数决定是否循环：
-     *    - repeat=0时无限循环
-     *    - repeat>0时递减直到0停止
-     * @示例
-     * // 创建3次循环的进度条动画
-     * this.repeat = 3;
-     * this.playSerial(progressBar, 3);
-     */
-    private playSerial(node: Node, info: ActionInfo) {
-        if (!isValid(node)) return;
-        let action = info.serialAction.createAction(node);
-        if (!action) return;
-        if (info.repeat > 1) action.union().repeat(info.repeat);
-        else if (info.repeat == 0) action.union().repeatForever();
-        this._tweens[info.type] = this._tweens[info.type] || [];
-        this._tweens[info.type].push(action);
-        action.start();
-    }
-
-    /**
      * 并行动画播放控制器
      * @param node 目标节点 
      * @param repeat 剩余重复次数
@@ -527,17 +601,18 @@ export class YJTweenAnimation extends Component {
     private playParallel(node: Node, info: ActionInfo) {
         if (!isValid(node)) return;
         let actions: Tween[] = [];
-        info.parallelAction.forEach(action => {
+        info.actions.forEach(action => {
             let _action = action.createAction(node);
             if (_action) actions.push(_action);
         });
         if (actions.length == 0) return;
-        let _1 = actions.shift();
-        _1.parallel(...actions);
-        _1.start();
-        if (info.repeat > 1) _1.union().repeat(info.repeat);
-        else if (info.repeat == 0) _1.union().repeatForever();
-        this._tweens[info.type] = this._tweens[info.type] || [];
-        this._tweens[info.type].push(_1);
+        for (let i = 0; i < actions.length; i++) {
+            let action = actions[i];
+            if (info.repeat > 1) action.union().repeat(info.repeat);
+            else if (info.repeat == 0) action.union().repeatForever();
+            this._tweens[info.type] = this._tweens[info.type] || [];
+            this._tweens[info.type].push(action);
+            action.start();
+        }
     }
 }
