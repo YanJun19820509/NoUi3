@@ -1,5 +1,6 @@
-import { no } from "@hackUi/no";
-import { tween, Node, Quat, Size, Tween, UIOpacity, UITransform, Vec2, Vec3, ccclass } from "@hackUi/yj";
+import { no } from "../no";
+import { tween, Node, Quat, Size, Tween, UIOpacity, UITransform, Vec2, Vec3, ccclass } from "../yj";
+import { scheduleUtils } from "./scheduleUtils";
 
 export enum TweenSetType {
     Node = 'node',
@@ -385,7 +386,7 @@ export function TweenSetPlay(tweenSets: TweenSet | TweenSet[], endCall?: () => v
                 n++;
             });
         }
-        no.scheduleUpdateCheck(() => {
+        scheduleUtils.scheduleUpdateCheck(() => {
             return n === all;
         }, () => {
             endCall?.();

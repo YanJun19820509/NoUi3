@@ -224,6 +224,7 @@ export function isDisplayStats() {
 export const AttributeName = _cc.gfx.AttributeName;
 export const Attribute = _cc.gfx.Attribute;
 export type Attribute = _cc.gfx.Attribute;
+export type TweenPropsType<T> = _cc.__private._cocos_tween_tween__ConstructorType<T>;
 
 //3d
 export const Ray = _cc.geometry.Ray;
