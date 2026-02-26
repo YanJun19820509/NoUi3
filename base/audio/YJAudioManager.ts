@@ -520,7 +520,7 @@ export class YJAudioManager extends Component {
     private _playClip(clip: AudioClip, volume = 1, loop = true): void {
         if (!this.audioSource) return;
         if (loop) {
-            // this.audioSource.stop();//好像play中会调用stop
+            this.audioSource.stop();
             this.audioSource.clip = clip;
             this.audioSource.loop = true;
             this.audioSource.volume = volume;
