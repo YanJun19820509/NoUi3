@@ -9,14 +9,11 @@
   ],
   "subMetas": {
     "6c48a": {
-      "ver": "1.0.22",
       "importer": "texture",
       "uuid": "b6cd00ff-58da-4e7c-9700-15239737b735@6c48a",
-      "imported": true,
-      "files": [
-        ".json"
-      ],
-      "subMetas": {},
+      "displayName": "a",
+      "id": "6c48a",
+      "name": "texture",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
@@ -29,19 +26,19 @@
         "imageUuidOrDatabaseUri": "b6cd00ff-58da-4e7c-9700-15239737b735",
         "visible": false
       },
-      "displayName": "a",
-      "id": "6c48a",
-      "name": "texture"
-    },
-    "f9941": {
-      "ver": "1.0.11",
-      "importer": "sprite-frame",
-      "uuid": "b6cd00ff-58da-4e7c-9700-15239737b735@f9941",
+      "ver": "1.0.22",
       "imported": true,
       "files": [
         ".json"
       ],
-      "subMetas": {},
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "b6cd00ff-58da-4e7c-9700-15239737b735@f9941",
+      "displayName": "a",
+      "id": "f9941",
+      "name": "spriteFrame",
       "userData": {
         "wrapModeS": "clamp-to-edge",
         "wrapModeT": "clamp-to-edge",
@@ -129,9 +126,12 @@
         "pivotY": 0.5,
         "meshType": 0
       },
-      "displayName": "a",
-      "id": "f9941",
-      "name": "spriteFrame"
+      "ver": "1.0.11",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
     }
   },
   "userData": {
